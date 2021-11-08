@@ -1,23 +1,40 @@
 import Prelude hiding (flip)
 import Data.List
+-- import Data.Set as Set
 
 import Debug.Trace
 
-{- A revised ICFP algorithm:
+{- A lazy subtyping algorithm:
 
 A,B := Int | A -> B | forall a. A 
 T ::= . | T,a | T,^a | T |- A <: B
 
 Algorithm:
 
-T, a                         --> T                                                     
-T, ^a                        --> T                                                     
-T |- Int <: Int              --> T                                                     
-T[a]  |- a <: a              --> T                                                     
-T[^a] |- ^a <: ^a            --> T                                                     
-T |- A -> B <: C -> D        --> T |- C <: A |- B <: D                                 
-T |- A <: forall b . B       --> T,b |- A <: C                                         
-T |- forall a . B <: C       --> T,^a |- [^a/a] B <: C                                 
+T, a                               --> T                                                      (rule 1)
+T[^a] |- [l1..ln] <: ^a <:[u1..um] --> T |- l1 <: u1 .... |- ln <: lm (n x m)                 (rule 2)
+T |- Int <: Int                    --> T                                                      (rule 5)
+T[a]  |- a <: a                    --> T                                                      (rule 6)
+T[^a] |- ^a <: ^a                  --> T                                                      (rule 7)
+
+
+T |- A -> B <: C -> D              --> T |- C <: A |- B <: D                                  (rule 8)
+T |- forall a . B <: C             --> T,^a |- [^a/a] B <: C                                  (rule 9)
+T |- A <: forall b . B             --> T,b |- A <: C                                          (rule 10)
+
+
+T[lb <: ^a < ub] |- ^a <: A -> B   --> [^a1 -> ^a2/^a]_{^a1,^a2} T |- ^a1 -> ^a2 <: A -> B   
+                when not monotype (A->B)  
+T[lb <: ^a < ub] |- A -> B <: ^a   --> [^a1 -> ^a2/^a]_{^a1,^a2} T |- A -> B <: ^a1 -> ^a2   
+                when not monotype (A->B)  
+
+T[a][lb <: ^b < ub] |- a <: ^b     --> T[a][lb  {a} <: ^b < ub] 
+                when not monotype (A->B)  
+T[lb <: ^a < ub] |- A -> B <: ^a   --> [^a1 -> ^a2/^a]_{^a1,^a2} T |- A -> B <: ^a1 -> ^a2   
+                when not monotype (A->B)  
+
+
+
 T |- ^a <: t                 --> [t/^a]_{} T                                           
 T |- t <: ^a                 --> [t/^a]_{} T                                           
 T |- ^a <: A -> B            --> [^a1 -> ^a2/^a]_{^a1,^a2} T |- ^a1 -> ^a2 <: A -> B   
@@ -25,6 +42,9 @@ T |- ^a <: A -> B            --> [^a1 -> ^a2/^a]_{^a1,^a2} T |- ^a1 -> ^a2 <: A 
 T |- A -> B <: ^a            --> [^a1 -> ^a2/^a]_{^a1,^a2} T |- A -> B <: ^a1 -> ^a2   
        when not monotype (A->B)  
 
+
+
+TODO: Does subst rule need changes?
 --------------
 [A/^a]_E T
 --------------
@@ -34,34 +54,12 @@ T |- A -> B <: ^a            --> [^a1 -> ^a2/^a]_{^a1,^a2} T |- A -> B <: ^a1 ->
 [A/^a]_E (T,^b)             = [A/^a]_{E,^b} T     ^b in FV(A)
 [A/^a]_E (T |- B <: C)      = [A/^a]_E T |- [A/^a] B <: [A/^a] C
 
-Concerns:
-
-The system is non-deterministic when the substituted monotype is ^a
-
-Size Measures:
-
-The size measures are a 2 element tuple where the measures have decreasing importance
-as follows:
-
-Measure 1 (always decreasing): number of existentials < splits * 2 + foralls + existentials in worklist
-
-Measure 2 (size of worklist, decreases in the first 8 rules, only increases when the measure 1 decreases)
-
-Alternative algorithm with explicit substitutions:
-
-S | T |- ^a <: t                 --> S + (S . t)/^a | T
-
-Int/^b,Int/^a --> ok
-
-Int->Int/^a,Int/^a --> fail
-
-T |- 
-
 -}
 
 data Typ = TVar (Either Int Int) | TInt | TForall (Typ -> Typ) | TArrow Typ Typ
 
-data Work = V (Either Int Int) | Sub Typ Typ deriving Eq
+-- Consider changing to set
+data Work = V (Either Int Int)  | Sub Typ Typ | Bound Typ [Typ] [Typ] deriving Eq
 
 ppTyp :: Int -> Typ -> String
 ppTyp n (TVar (Left i))  = show i
@@ -84,15 +82,15 @@ instance Show Work where
   show (V (Left i))   = show i
   show (V (Right i))  = "^" ++ show i
   show (Sub a b)      = show a ++ " <: " ++ show b
+  show (Bound a lb ub)  = show lb ++  " <: " ++ show a ++ " <: " ++ show ub
 
 instance Eq Typ where
   t1 == t2 = eqTyp 0 t1 t2
 
-t1 = TForall (\a -> TArrow a a)
-
-t2 = TArrow t1 (TForall (\a -> TArrow a a))
-
-t3 = TArrow TInt TInt
+mono :: Typ -> Bool
+mono (TForall g)  = False
+mono (TArrow a b) = mono a && mono b
+mono _            = True
 
 subst :: Int -> Typ -> Typ -> Typ
 subst i t TInt                    = TInt
@@ -110,16 +108,8 @@ fv (TForall g)      = fv (g TInt)
 fv _                = []
 
 substWL :: Int ->  Typ -> [Int] -> [Work] -> [Work]
-substWL i t es (V (Right j) : ws)
-   | i == j        = if (not (elem i (fv t))) then map (V . Right) es ++ ws else error (show i ++ " in " ++ show t)
-   | elem j (fv t) = substWL i t (j : es) ws
-   | otherwise     = V (Right j) : substWL i t es ws
 substWL i t es (Sub t1 t2 : ws) = Sub (subst i t t1) (subst i t t2) : substWL i t es ws
-
-mono :: Typ -> Bool
-mono (TForall g)  = False
-mono (TArrow a b) = mono a && mono b
-mono _            = True
+substWL i t es _ = error "Incorrect substWL()!"
 
 step :: Int -> [Work] -> (Int, [Work], String)
 step n (V i : ws)            = (n, ws, "Garbage Collection")     
@@ -146,6 +136,7 @@ step n (Sub (TArrow a b) (TVar (Right i)) : ws) = (n + 2, Sub a1 a : Sub b a2 : 
     a1 = TVar $ Right n
     a2 = TVar $ Right (n + 1)
     a1_a2 = TArrow a1 a2
+step n _  = error "Incorrect step()!"
 
 check :: Int -> [Work] -> String
 check n [] = "Success!"
@@ -153,156 +144,3 @@ check n ws =
   let (m,ws',s1) = step n ws
       s2         = check m ws'
   in ("   " ++ show (reverse ws) ++ "\n-->{ Rule: " ++ s1 ++ " \t\t\t Size: " ++ show (size ws) ++ " }\n" ++ s2)
-
-chk = putStrLn .  check 0
-
-t5 = TForall (\t -> t)
-
-t6 = TArrow TInt TInt
-t7 = TArrow t6 t6
-
-test1 = chk [Sub t3 t3]
-test2 = chk [Sub t1 t3]
-test3 = chk [Sub t5 t3] 
-test4 = chk [Sub t5 t1]
-test5 = chk [Sub t1 t6]
-test6 = chk [Sub t6 t3]
-
-test7 = chk [Sub t5 t7]
-
--- failing case 20200810
-test8 = chk [Sub (TForall $ \a -> TArrow a a) (TArrow t5 (TArrow TInt TInt))]
-
-tEx = TVar . Right
-
-ex1 = tEx 1
-ex2 = tEx 2
-
-test9 = putStrLn  $
-  check 4 [Sub ex1 (TArrow TInt ex2), Sub ex2 (TArrow TInt ex1), V (Right 2), V (Right 1)]
-
-
--- SIZES
-
--- number of splits, ws, size
-
-size :: [Work] -> (Int,Int)
-size ws = (measure1 ws, sizeWL ws)
-
--- Measure 1
-
-measure1 :: [Work] -> Int
-measure1 ws = 2 * splits ws + foralls ws + existentials ws
-
-splits []              = 0
-splits (V i : ws)      = splits ws
-splits (Sub a b : ws)  = splitsSub a b + splits ws
-
-splitsSub :: Typ -> Typ -> Int
-splitsSub (TVar (Right i)) t1@(TArrow _ _) = splitsTyp t1
-splitsSub t1@(TArrow _ _) (TVar (Right i)) = splitsTyp t1
-splitsSub (TArrow a b) (TArrow c d) =
-  splitsSub c a + splitsSub b d
-splitsSub a (TForall g) = splitsSub a (g (TVar (Left 0)))
-splitsSub (TForall g) a = splitsSub (g (TVar (Right 0))) a
-splitsSub a b           = 0
-
-splitsTyp (TArrow a b)
-  | not (mono a) && not (mono b) = 1 + splitsTyp a + splitsTyp b
-  | not (mono a)                 = 1 + splitsTyp a
-  | not (mono b)                 = 1 + splitsTyp b
-  | otherwise                    = 0
-splitsTyp (TForall g)            = splitsTyp (g TInt)
-splitsTyp _                      = 0
-
-existentials []                 = 0
-existentials (V (Right i) : ws) = 1 + existentials ws
-existentials (_ : ws)           = existentials ws
-
-foralls []                      = 0
-foralls (V i : ws)              = foralls ws
-foralls (Sub a b : ws)          = forallsTyp a + forallsTyp b + foralls ws
-
-forallsTyp (TForall g)  = 1 + forallsTyp (g TInt)
-forallsTyp (TArrow a b) = forallsTyp a + forallsTyp b
-forallsTyp _            = 0
-
-{-
-
-[Int -> forall a. ^b <: ^c, ^c <: Int -> Int]
-
--}
-
--- Measure 2
-
-sizeWL :: [Work] -> Int
-sizeWL []              = 0
-sizeWL (V i : ws)      = 1 + sizeWL ws
-sizeWL (Sub a b : ws)  = sizeSub a b + sizeWL ws
-
-sizeSub (TArrow a b) (TArrow c d) = 2 + sizeSub c a + sizeSub b d
-sizeSub (TForall g) a             = 2 + sizeSub (g TInt) a
-sizeSub a (TForall g)             = 2 + sizeSub a (g TInt)
-sizeSub _ _                       = 1
-
-
-ex0 = TVar (Right 0)
-
-jimmy = putStrLn $ check 3 [
-  Sub TInt TInt,
-  Sub ex0 (TArrow TInt TInt),
-  Sub (TArrow ex0 (TArrow ex0 $ TForall $ \a -> a)) ex1,
-  V (Right 0),
-  V (Right 1),
-  V (Right 2)
-  ]
-
-
-{-
-
-
-TopLike B
----------
-A <: B
-
-^a, ^a <: Int -> Int, ^a <: Bot -> Top
--->{delete top-like}
-^a, ^a <: Int -> Int
--->{solve}
-done!
-
-^a, ^a <: Int -> Int, ^a <: Bot -> Int
--->{solve}
-^a, Bot -> Int <: Int -> Int
--->
-fail! (would suceed with:  ^a = Int -> Int   )
-
-^a, ^a <: Top -> Int, ^a <: Int -> Int
--->{solve}
-^a, Int -> Int <: Top -> Int
--->
-fail!
-
-With polarized substitution:
-
-^a, Int -> Int <: ^a, ^a <: Bot -> Int
--->{solve}
-^a, Int -> Int <: Bot -> Int
--->{success}
-
-
-
-^a, ^a <: Int -> Int, ^a <: Bot -> Top
--->{}
-^a, ^a <: Int -> Int
--->{solve}
-done!
-
-
-
-
-f :: Bot -> Int     <- not bottom-like or top-like
-f x = x
-
-
--}
