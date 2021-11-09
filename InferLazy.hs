@@ -1,4 +1,3 @@
-{-# LANGUAGE LambdaCase #-}
 import Prelude hiding (flip)
 import Data.List
 -- import Data.Set as Set
@@ -54,7 +53,7 @@ TODO: Does subst rule need changes?
 data Typ = TVar (Either Int Int) | TInt | TForall (Typ -> Typ) | TArrow Typ Typ
 
 -- Consider changing to set
-data Work = V (Either Int Int)  | Sub Typ Typ | Constraint Typ [Typ] [Typ] deriving Eq
+data Work = WVar Int | WExistVar Int [Typ] [Typ] | Sub Typ Typ deriving Eq
 
 data Bound = LB | UB
 
@@ -76,11 +75,9 @@ instance Show Typ where
   show = ppTyp 0
 
 instance Show Work where
-  show (V (Left i))   = show i
-  show (V (Right i))  = "^" ++ show i
+  show (WVar i)   = show i
+  show (WExistVar i lbs ubs)  = show lbs ++ " <: " ++ "^" ++ show i ++ " <: " ++ show ubs
   show (Sub a b)      = show a ++ " <: " ++ show b
-  show (Constraint a lb ub)  = show lb ++  " <: " ++ show a ++ " <: " ++ show ub
-
 instance Eq Typ where
   t1 == t2 = eqTyp 0 t1 t2
 
@@ -106,48 +103,50 @@ fv _                = []
 
 updateBoundWL :: Typ -> (Bound, Typ) -> [Work] -> [Work]
 -- match once and no more recursion
-updateBoundWL var bound (Constraint constraint_var lbs ubs : ws)
-  | var == constraint_var =
+updateBoundWL var@(TVar (Right i)) bound (WExistVar j lbs ubs : ws)
+  | i == j =
       case bound of
-        (LB, typ) -> Constraint constraint_var (typ:lbs) ubs : ws
-        (UB, typ) -> Constraint constraint_var lbs (typ:ubs) : ws
-  | otherwise = Constraint constraint_var lbs ubs : updateBoundWL var bound ws
+        (LB, typ) -> WExistVar j (typ:lbs) ubs : ws
+        (UB, typ) -> WExistVar j lbs (typ:ubs) : ws
+  | otherwise = WExistVar j lbs ubs : updateBoundWL var bound ws
 updateBoundWL var bound (w:ws) = w : updateBoundWL var bound ws
 updateBoundWL var bound [] = error "Var not found!"
 
 addTypsBefore :: Typ -> [Typ] -> [Work] -> [Work]
-addTypsBefore (TVar i) new_vars (V j:ws)
-  | i == j = V j : map typToWork new_vars ++ ws
-  | otherwise = V j : addTypsBefore (TVar i) new_vars ws
+addTypsBefore var@(TVar (Right i)) new_vars (WExistVar j lbs ubs : ws)
+  | i == j = WExistVar j lbs ubs : map typToWork new_vars ++ ws
+  | otherwise = WExistVar j lbs ubs : addTypsBefore var new_vars ws
   where 
     typToWork :: Typ -> Work
-    typToWork (TVar i) = V i
+    typToWork (TVar (Left i)) = WVar i
+    typToWork (TVar (Right i)) = WExistVar i [] []
     typToWork _ = error "Incorrect typeToWork call"
 addTypsBefore _ _ _ = error "Incorrect addTypsBefore call"
 
 -- var a appears before var b in the worklist => var a appears in the sub-worklist starting from var b
 prec :: [Work] -> Typ -> Typ -> Bool
-prec w (TVar a) (TVar b) = elem a . dropWhile (/= b) $ wex
+prec w (TVar i) (TVar j) = elem i . dropWhile (/= j) $ wex
   where
     wex = concatMap (\x -> case x of
-        V v -> [v]
+        WVar i -> [Left i]
+        WExistVar i _ _-> [Right i]
         _   -> []
       ) w
 prec w _ _ = error "Incorrect prec call!"
 
 
 step :: Int -> [Work] -> (Int, [Work], String)
-step n (V i : ws)                               = (n, ws, "Garbage Collection")     -- 01 
-step n (Constraint (TVar (Right i)) lbs ubs : ws)    =                              -- 02
+step n (WVar i : ws)                            = (n, ws, "Garbage Collection")     -- 01 
+step n (WExistVar i lbs ubs : ws)               =                                   -- 02
   (n, [Sub lTyp uTyp | lTyp <- lbs, uTyp <- ubs] ++ ws, "SExpandBounds")
 step n (Sub TInt TInt : ws)                     = (n, ws, "SInt")                   -- 03
 step n (Sub (TVar i) (TVar j) : ws)| i == j     = (n, ws, "SUVar")                  -- 04 + 05
 step n (Sub (TArrow a b) (TArrow c d) : ws)     =                                   -- 06
                   (n, Sub b d : Sub c a : ws, "SArrow")
 step n (Sub (TForall g) b : ws)                 =                                   -- 07
-  (n+1, Sub (g (TVar (Right n))) b : V (Right n) : Constraint (TVar (Right n)) [] [] : ws, "SForallL")
+  (n+1, Sub (g (TVar (Right n))) b : WVar n : WExistVar n [] [] : ws, "SForallL")
 step n (Sub a (TForall g) : ws)                 =                                   -- 08
-  (n+1, Sub a (g (TVar (Left n))) : V (Left n) : ws, "SForallR")
+  (n+1, Sub a (g (TVar (Left n))) : WVar n : ws, "SForallR")
 
 step n (Sub (TVar (Right i)) (TArrow a b) : ws) =                                   -- 09
    (n+2, Sub (TArrow a1 a2) (TArrow a b) : updateBoundWL (TVar (Right i)) (UB, a1_a2) (addTypsBefore (TVar (Right i)) [a1, a2] ws), "SplitL")
@@ -183,55 +182,4 @@ check n [] = "Success!"
 check n ws =
   let (m,ws',s1) = step n ws
       s2         = check m ws'
-  in ("   " ++ show (reverse ws) ++ "\n-->{ Rule: " ++ s1 ++ " \t\t\t Size: " ++ show (size ws) ++ " }\n" ++ s2)
-
-size :: [Work] -> (Int,Int)
-size ws = (measure1 ws, sizeWL ws)
-
--- Measure 1
-
-measure1 :: [Work] -> Int
-measure1 ws = 2 * splits ws + foralls ws + existentials ws
-
-splits []              = 0
-splits (V i : ws)      = splits ws
-splits (Sub a b : ws)  = splitsSub a b + splits ws
-
-splitsSub :: Typ -> Typ -> Int
-splitsSub (TVar (Right i)) t1@(TArrow _ _) = splitsTyp t1
-splitsSub t1@(TArrow _ _) (TVar (Right i)) = splitsTyp t1
-splitsSub (TArrow a b) (TArrow c d) =
-  splitsSub c a + splitsSub b d
-splitsSub a (TForall g) = splitsSub a (g (TVar (Left 0)))
-splitsSub (TForall g) a = splitsSub (g (TVar (Right 0))) a
-splitsSub a b           = 0
-
-splitsTyp (TArrow a b)
-  | not (mono a) && not (mono b) = 1 + splitsTyp a + splitsTyp b
-  | not (mono a)                 = 1 + splitsTyp a
-  | not (mono b)                 = 1 + splitsTyp b
-  | otherwise                    = 0
-splitsTyp (TForall g)            = splitsTyp (g TInt)
-splitsTyp _                      = 0
-
-existentials []                 = 0
-existentials (V (Right i) : ws) = 1 + existentials ws
-existentials (_ : ws)           = existentials ws
-
-foralls []                      = 0
-foralls (V i : ws)              = foralls ws
-foralls (Sub a b : ws)          = forallsTyp a + forallsTyp b + foralls ws
-
-forallsTyp (TForall g)  = 1 + forallsTyp (g TInt)
-forallsTyp (TArrow a b) = forallsTyp a + forallsTyp b
-forallsTyp _            = 0
-
-sizeWL :: [Work] -> Int
-sizeWL []              = 0
-sizeWL (V i : ws)      = 1 + sizeWL ws
-sizeWL (Sub a b : ws)  = sizeSub a b + sizeWL ws
-
-sizeSub (TArrow a b) (TArrow c d) = 2 + sizeSub c a + sizeSub b d
-sizeSub (TForall g) a             = 2 + sizeSub (g TInt) a
-sizeSub a (TForall g)             = 2 + sizeSub a (g TInt)
-sizeSub _ _                       = 1
+  in ("   " ++ show (reverse ws) ++ "\n-->{ Rule: " ++ s1 ++ " \t\t\t Size: " ++ " }\n" ++ s2)
