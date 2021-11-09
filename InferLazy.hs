@@ -140,15 +140,17 @@ prec w _ _ = error "Incorrect prec call!"
 step :: Int -> [Work] -> (Int, [Work], String)
 step n (WVar i : ws)                            = (n, ws, "Garbage Collection")     -- 01 
 step n (WExistVar i lbs ubs : ws)               =                                   -- 02
-  (n, [Sub lTyp uTyp | lTyp <- lbs, uTyp <- ubs] ++ ws, "SExpandBounds")
+  (n, [Sub lTyp uTyp | lTyp <- lbs, uTyp <- ubs] ++ ws, "SUnfoldBounds")
 step n (Sub TInt TInt : ws)                     = (n, ws, "SInt")                   -- 03
 step n (Sub (TVar i) (TVar j) : ws)| i == j     = (n, ws, "SUVar")                  -- 04 + 05
 step n (Sub (TArrow a b) (TArrow c d) : ws)     =                                   -- 06
                   (n, Sub b d : Sub c a : ws, "SArrow")
-step n (Sub (TForall g) b : ws)                 =                                   -- 07
-  (n+1, Sub (g (TVar (Right n))) b : WExistVar n [] [] : ws, "SForallL")
+
 step n (Sub a (TForall g) : ws)                 =                                   -- 08
   (n+1, Sub a (g (TVar (Left n))) : WVar n : ws, "SForallR")
+step n (Sub (TForall g) b : ws)                 =                                   -- 07
+  (n+1, Sub (g (TVar (Right n))) b : WExistVar n [] [] : ws, "SForallL")
+
 
 step n (Sub (TVar (Right i)) (TArrow a b) : ws) =                                   -- 09
    (n+2, Sub (TArrow a1 a2) (TArrow a b) : updateBoundWL (TVar (Right i)) (UB, a1_a2) (addTypsBefore (TVar (Right i)) [a1, a2] ws), "SplitL")
@@ -209,3 +211,5 @@ test5 = chk [Sub t1 t6]
 test6 = chk [Sub t6 t3]
 
 test7 = chk [Sub t5 t7]
+
+test8 = chk [Sub (TForall $ \a -> TArrow a a) (TArrow t5 (TArrow TInt TInt))]
