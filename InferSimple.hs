@@ -1,3 +1,5 @@
+module InferSimple where
+
 import Prelude hiding (flip)
 import Data.List
 
@@ -88,6 +90,11 @@ instance Show Work where
 instance Eq Typ where
   t1 == t2 = eqTyp 0 t1 t2
 
+mono :: Typ -> Bool
+mono (TForall g)  = False
+mono (TArrow a b) = mono a && mono b
+mono _            = True
+
 t1 = TForall (\a -> TArrow a a)
 
 t2 = TArrow t1 (TForall (\a -> TArrow a a))
@@ -116,11 +123,6 @@ substWL i t es (V (Right j) : ws)
    | otherwise     = V (Right j) : substWL i t es ws
 substWL i t es (Sub t1 t2 : ws) = Sub (subst i t t1) (subst i t t2) : substWL i t es ws
 
-mono :: Typ -> Bool
-mono (TForall g)  = False
-mono (TArrow a b) = mono a && mono b
-mono _            = True
-
 step :: Int -> [Work] -> (Int, [Work], String)
 step n (V i : ws)            = (n, ws, "Garbage Collection")     
 step n (Sub TInt TInt : ws)  = (n, ws, "SInt")                
@@ -141,11 +143,12 @@ step n (Sub (TVar (Right i)) (TArrow a b) : ws) = (n + 2, Sub a a1 : Sub a2 b : 
     a1 = TVar (Right n)
     a2 = TVar $ Right (n + 1)
     a1_a2 = TArrow a1 a2
-step n (Sub (TArrow a b) (TVar (Right i)) : ws) = (n + 2, Sub a1 a : Sub b a2 : substWL i a1_a2 [n,n+1] ws, "SplitR")
+step n (Sub (TArrow a b) (TVar (Right i)) : ws) = (n + 2, Sub a1 a : Sub b a2 : substWL i a1_a2 [n,n+1] ws, "SplitR")   
   where
     a1 = TVar $ Right n
     a2 = TVar $ Right (n + 1)
     a1_a2 = TArrow a1 a2
+step n _ = error "Wrong step()!"
 
 check :: Int -> [Work] -> String
 check n [] = "Success!"

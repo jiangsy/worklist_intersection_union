@@ -1,3 +1,4 @@
+{-# LANGUAGE LambdaCase #-}
 import Prelude hiding (flip)
 import Data.List
 -- import Data.Set as Set
@@ -103,10 +104,6 @@ fv (TArrow t1 t2)   = fv t1 `union` fv t2
 fv (TForall g)      = fv (g TInt)
 fv _                = []
 
-substWL :: Int ->  Typ -> [Int] -> [Work] -> [Work]
-substWL i t es (Sub t1 t2 : ws) = Sub (subst i t t1) (subst i t t2) : substWL i t es ws
-substWL i t es _ = error "Incorrect substWL()!"
-
 updateBoundWL :: Typ -> (Bound, Typ) -> [Work] -> [Work]
 -- match once and no more recursion
 updateBoundWL var bound (Constraint constraint_var lbs ubs : ws)
@@ -118,6 +115,17 @@ updateBoundWL var bound (Constraint constraint_var lbs ubs : ws)
 updateBoundWL var bound (w:ws) = w : updateBoundWL var bound ws
 updateBoundWL var bound [] = error "Var not found!"
 
+addTypsBefore :: Typ -> [Typ] -> [Work] -> [Work]
+addTypsBefore (TVar i) new_vars (V j:ws)
+  | i == j = V j : map typToWork new_vars ++ ws
+  | otherwise = V j : addTypsBefore (TVar i) new_vars ws
+  where 
+    typToWork :: Typ -> Work
+    typToWork (TVar i) = V i
+    typToWork _ = error "Incorrect typeToWork call"
+addTypsBefore _ _ _ = error "Incorrect addTypsBefore call"
+
+-- var a appears before var b in the worklist => var a appears in the sub-worklist starting from var b
 prec :: [Work] -> Typ -> Typ -> Bool
 prec w (TVar a) (TVar b) = elem a . dropWhile (/= b) $ wex
   where
@@ -141,14 +149,14 @@ step n (Sub (TForall g) b : ws)                 =                               
 step n (Sub a (TForall g) : ws)                 =                                   -- 08
   (n+1, Sub a (g (TVar (Left n))) : V (Left n) : ws, "SForallR")
 
-step n (Sub (TVar (Right i)) (TArrow a b) : ws) =
-   (n+2, Sub (TArrow a1 a2) (TArrow a b) : updateBoundWL (TVar (Right i)) (UB, a1_a2)  ws, "SplitL")
+step n (Sub (TVar (Right i)) (TArrow a b) : ws) =                                   -- 09
+   (n+2, Sub (TArrow a1 a2) (TArrow a b) : updateBoundWL (TVar (Right i)) (UB, a1_a2) (addTypsBefore (TVar (Right i)) [a1, a2] ws), "SplitL")
   where
     a1 = TVar (Right n)
     a2 = TVar $ Right (n + 1)
     a1_a2 = TArrow a1 a2
-step n (Sub (TArrow a b) (TVar (Right i)) : ws) =
-  (n+2,  Sub (TArrow a b) (TArrow a1 a2) : updateBoundWL (TVar (Right i)) (LB, a1_a2) ws, "SplitR")
+step n (Sub (TArrow a b) (TVar (Right i)) : ws) =                                   -- 10
+  (n+2,  Sub (TArrow a b) (TArrow a1 a2) : updateBoundWL (TVar (Right i)) (LB, a1_a2) (addTypsBefore (TVar (Right i)) [a1, a2] ws), "SplitR")
   where
     a1 = TVar $ Right n
     a2 = TVar $ Right (n + 1)
