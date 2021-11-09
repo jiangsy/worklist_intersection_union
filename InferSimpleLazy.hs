@@ -109,14 +109,14 @@ substWL i t es _ = error "Incorrect substWL()!"
 
 updateBoundWL :: Typ -> (Bound, Typ) -> [Work] -> [Work]
 -- match once and no more recursion
-updateBoundWL var bound oldWL@(Constraint constraint_var lbs ubs : ws)
+updateBoundWL var bound (Constraint constraint_var lbs ubs : ws)
   | var == constraint_var =
       case bound of
         (LB, typ) -> Constraint constraint_var (typ:lbs) ubs : ws
         (UB, typ) -> Constraint constraint_var lbs (typ:ubs) : ws
-  | otherwise = oldWL
+  | otherwise = Constraint constraint_var lbs ubs : updateBoundWL var bound ws
 updateBoundWL var bound (w:ws) = w : updateBoundWL var bound ws
-updateBoundWL var bound [] = []
+updateBoundWL var bound [] = error "Var not found!"
 
 prec :: [Work] -> Typ -> Typ -> Bool
 prec w (TVar a) (TVar b) = elem a . dropWhile (/= b) $ wex
@@ -140,18 +140,20 @@ step n (Sub (TForall g) b : ws)                 =                               
   (n+1, Sub (g (TVar (Right n))) b : V (Right n) : Constraint (TVar (Right n)) [] [] : ws, "SForallL")
 step n (Sub a (TForall g) : ws)                 =                                   -- 08
   (n+1, Sub a (g (TVar (Left n))) : V (Left n) : ws, "SForallR")
--- step n (Sub (TVar (Right i)) (TArrow a b) : ws) =
---    (n+2, Sub a a1 : Sub a2 b : substWL i a1_a2 [n,n+1] ws, "SplitL")
---   where
---     a1 = TVar (Right n)
---     a2 = TVar $ Right (n + 1)
---     a1_a2 = TArrow a1 a2
--- step n (Sub (TArrow a b) (TVar (Right i)) : ws) =
---   (n+2, Sub a1 a : Sub b a2 : substWL i a1_a2 [n,n+1] ws, "SplitR")
---   where
---     a1 = TVar $ Right n
---     a2 = TVar $ Right (n + 1)
---     a1_a2 = TArrow a1 a2
+
+step n (Sub (TVar (Right i)) (TArrow a b) : ws) =
+   (n+2, Sub (TArrow a1 a2) (TArrow a b) : updateBoundWL (TVar (Right i)) (UB, a1_a2)  ws, "SplitL")
+  where
+    a1 = TVar (Right n)
+    a2 = TVar $ Right (n + 1)
+    a1_a2 = TArrow a1 a2
+step n (Sub (TArrow a b) (TVar (Right i)) : ws) =
+  (n+2,  Sub (TArrow a b) (TArrow a1 a2) : updateBoundWL (TVar (Right i)) (LB, a1_a2) ws, "SplitR")
+  where
+    a1 = TVar $ Right n
+    a2 = TVar $ Right (n + 1)
+    a1_a2 = TArrow a1 a2
+
 step n (Sub (TVar (Right i)) (TVar (Left j)) : ws)                                  -- 11
   | prec ws (TVar (Left j)) (TVar (Right i))  = (n, updateBoundWL (TVar (Right i)) (UB, TVar (Left j)) ws, "SolveLVar")
   | otherwise = error "Incorrect var order in step call!"
