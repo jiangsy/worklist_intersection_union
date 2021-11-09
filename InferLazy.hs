@@ -121,7 +121,9 @@ addTypsBefore var@(TVar (Right i)) new_vars (WExistVar j lbs ubs : ws)
     typToWork (TVar (Left i)) = WVar i
     typToWork (TVar (Right i)) = WExistVar i [] []
     typToWork _ = error "Incorrect typeToWork call"
-addTypsBefore _ _ _ = error "Incorrect addTypsBefore call"
+addTypsBefore var new_vars (w:ws) = w : addTypsBefore var new_vars ws
+addTypsBefore var new_vars [] = error ("Typ " ++ show var ++ "is not in the worklist")
+
 
 -- var a appears before var b in the worklist => var a appears in the sub-worklist starting from var b
 prec :: [Work] -> Typ -> Typ -> Bool
@@ -144,7 +146,7 @@ step n (Sub (TVar i) (TVar j) : ws)| i == j     = (n, ws, "SUVar")              
 step n (Sub (TArrow a b) (TArrow c d) : ws)     =                                   -- 06
                   (n, Sub b d : Sub c a : ws, "SArrow")
 step n (Sub (TForall g) b : ws)                 =                                   -- 07
-  (n+1, Sub (g (TVar (Right n))) b : WVar n : WExistVar n [] [] : ws, "SForallL")
+  (n+1, Sub (g (TVar (Right n))) b : WExistVar n [] [] : ws, "SForallL")
 step n (Sub a (TForall g) : ws)                 =                                   -- 08
   (n+1, Sub a (g (TVar (Left n))) : WVar n : ws, "SForallR")
 
@@ -167,6 +169,7 @@ step n (Sub (TVar (Right i)) (TVar (Left j)) : ws)                              
 step n (Sub (TVar (Left j)) (TVar (Right i))  : ws)                                 -- 12
   | prec ws (TVar (Left j)) (TVar (Right i)) = (n, updateBoundWL (TVar (Right i)) (LB, TVar (Right i)) ws, "SolveRVar")
   | otherwise = error "Incorrect var order in step call"
+
 step n (Sub (TVar (Right i)) TInt : ws) =                                           -- 13
   (n, updateBoundWL (TVar (Right i)) (UB, TInt) ws, "SolveLInt")
 step n (Sub TInt (TVar (Right i)) : ws) =                                           -- 14
@@ -182,4 +185,27 @@ check n [] = "Success!"
 check n ws =
   let (m,ws',s1) = step n ws
       s2         = check m ws'
-  in ("   " ++ show (reverse ws) ++ "\n-->{ Rule: " ++ s1 ++ " \t\t\t Size: " ++ " }\n" ++ s2)
+  in ("   " ++ show (reverse ws) ++ "\n-->{ Rule: " ++ s1 ++ " }\n" ++ s2)
+
+
+t1 = TForall (\a -> TArrow a a)
+
+t2 = TArrow t1 (TForall (\a -> TArrow a a))
+
+t3 = TArrow TInt TInt
+
+chk = putStrLn .  check 0
+
+t5 = TForall (\t -> t)
+
+t6 = TArrow TInt TInt
+t7 = TArrow t6 t6
+
+test1 = chk [Sub t3 t3]
+test2 = chk [Sub t1 t3]
+test3 = chk [Sub t5 t3] 
+test4 = chk [Sub t5 t1]
+test5 = chk [Sub t1 t6]
+test6 = chk [Sub t6 t3]
+
+test7 = chk [Sub t5 t7]
