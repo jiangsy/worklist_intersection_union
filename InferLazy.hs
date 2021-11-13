@@ -169,7 +169,7 @@ step n (Sub (TVar (Right i)) (TVar (Left j)) : ws)                              
   | prec ws (TVar (Left j)) (TVar (Right i))  = (n, updateBoundWL (TVar (Right i)) (UB, TVar (Left j)) ws, "SolveLVar")
   | otherwise = error "Incorrect var order in step call!"
 step n (Sub (TVar (Left j)) (TVar (Right i))  : ws)                                 -- 12
-  | prec ws (TVar (Left j)) (TVar (Right i)) = (n, updateBoundWL (TVar (Right i)) (LB, TVar (Right i)) ws, "SolveRVar")
+  | prec ws (TVar (Left j)) (TVar (Right i)) = (n, updateBoundWL (TVar (Right i)) (LB, TVar (Left j)) ws, "SolveRVar")
   | otherwise = error "Incorrect var order in step call"
 
 step n (Sub (TVar (Right i)) TInt : ws) =                                           -- 13
@@ -213,3 +213,11 @@ test6 = chk [Sub t6 t3]
 test7 = chk [Sub t5 t7]
 
 test8 = chk [Sub (TForall $ \a -> TArrow a a) (TArrow t5 (TArrow TInt TInt))]
+
+tEx = TVar . Right
+
+ex1 = tEx 1
+ex2 = tEx 2
+
+test9 = putStrLn  $
+  check 4 [Sub ex1 (TArrow TInt ex2), Sub ex2 (TArrow TInt ex1), WExistVar 2 [] [], WExistVar 1 [] []]
