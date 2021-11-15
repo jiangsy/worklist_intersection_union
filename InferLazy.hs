@@ -221,3 +221,6 @@ ex2 = tEx 2
 
 test9 = putStrLn  $
   check 4 [Sub ex1 (TArrow TInt ex2), Sub ex2 (TArrow TInt ex1), WExistVar 2 [] [], WExistVar 1 [] []]
+
+test10 = putStrLn  $
+  check 5 [WExistVar 4 [TVar (Right 2)] [TArrow (TVar (Right 1)) TInt], WExistVar 3 [TVar (Right 1)] [TArrow (TVar (Right 2)) TInt], WExistVar 2 [] [], WExistVar 1 [] []]
