@@ -197,6 +197,7 @@ size ws = (measure1 ws, sizeWL ws)
 measure1 :: [Work] -> Int
 measure1 ws = 2 * splits ws + foralls ws + existentials ws
 
+splits :: [Work] -> Int
 splits []              = 0
 splits (V i : ws)      = splits ws
 splits (Sub a b : ws)  = splitsSub a b + splits ws
@@ -210,6 +211,7 @@ splitsSub a (TForall g) = splitsSub a (g (TVar (Left 0)))
 splitsSub (TForall g) a = splitsSub (g (TVar (Right 0))) a
 splitsSub a b           = 0
 
+splitsTyp :: Num a => Typ -> a
 splitsTyp (TArrow a b)
   | not (mono a) && not (mono b) = 1 + splitsTyp a + splitsTyp b
   | not (mono a)                 = 1 + splitsTyp a

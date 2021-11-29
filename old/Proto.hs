@@ -6,7 +6,6 @@ import Data.Maybe
 import Control.Monad.Identity (fix)
 -- import Foreign.C.Error (e2BIG)
 import Control.Monad (liftM)
-import Debug.Trace
 
 
 import Data.Void
@@ -16,10 +15,12 @@ import Text.Megaparsec.Char
 import qualified Text.Megaparsec.Char.Lexer as L
 import Control.Monad.Combinators.Expr
 import Text.Megaparsec.Error
+import PrelNames (cTyConKey)
 
 -- Algorithmic Types
 data Typ =
     TInt
+  | TBool
   | TTop
   | TBot
   | TVar String
@@ -32,6 +33,7 @@ data Typ =
 
 instance Show Typ where
   show TInt = "Int"
+  show TBool = "Bool"
   show TTop = "⊤"
   show TBot = "⊥"
   show (TVar x) = x
@@ -44,7 +46,8 @@ instance Show Typ where
 -- Terms
 data Exp =
     Var String
-  | Lit Integer
+  | ILit Integer
+  | BLit Bool
   | Lam String Exp
   | App Exp Exp
   | Ann Exp Typ
@@ -60,7 +63,8 @@ data Exp =
 
 instance Show Exp where
   show (Var x) = x
-  show (Lit n) = show n
+  show (ILit n) = show n
+  show (BLit n) = show n
   show (Lam x e) = "(\\" ++ x ++ " -> " ++ show e ++ ")"
   show (App e1 e2) = "(" ++ show e1 ++ " (" ++ show e2 ++ "))"
   show (Ann e t) = show e ++ " :: " ++ show t
@@ -164,6 +168,7 @@ etsubst e s t = t
 
 tsubst :: String -> Typ -> Typ -> Typ
 tsubst s t TInt = TInt
+tsubst s t TBool = TBool
 tsubst s t TTop = TTop
 tsubst s t TBot = TBot
 tsubst s t (TVar a) = TVar a
@@ -180,6 +185,7 @@ tsubst s t (TList t1) = TList (tsubst s t t1)
 
 ttsubst :: String -> Typ -> Typ -> Typ
 ttsubst s t TInt = TInt
+ttsubst s t TBool = TBool
 ttsubst s t TTop = TTop
 ttsubst s t TBot = TBot
 ttsubst s t (EVar a) = EVar a
@@ -218,6 +224,7 @@ wsubst s xs t = concatMap wsubst1
 
 ftv :: Typ -> [Typ]
 ftv TInt = []
+ftv TBool = []
 ftv TTop = []
 ftv TBot = []
 ftv (TVar a) = [TVar a]
@@ -316,6 +323,7 @@ step (WBind x t : w) = w
 -- Subtyping --
 -- Rules 5 to 9 and 13, 16 and 17
 step (WJug (Sub TInt TInt) : w) = w
+step (WJug (Sub TBool TBool) : w) = w
 step (WJug (Sub (TVar a) (TVar b)) : w)
   | a == b    = w
   | otherwise = error "6"
@@ -335,6 +343,9 @@ step (WJug (Sub (EVar b) (TVar a)) : w)
   | otherwise  = error "19"
 step (WJug (Sub TInt (EVar b)) : w) = wsubst b [] TInt w
 step (WJug (Sub (EVar b) TInt) : w) = wsubst b [] TInt w
+step (WJug (Sub TBool (EVar b)) : w) = wsubst b [] TBool w
+step (WJug (Sub (EVar b) TBool) : w) = wsubst b [] TBool w
+
 -- rule 8 and 9
 step (WJug (Sub _ TTop) : w) = w
 step (WJug (Sub TBot _) : w) = w
@@ -407,8 +418,8 @@ step (WJug (Inf (Var x) c) : w) = case findBind x w of
     Just a  -> WJug (c a) : w
     Nothing -> error $ "No binding for " ++ x
 step (WJug (Inf (Ann e a) c) : w) = WJug (Chk e a) : WJug (c a) : w
-
-step (WJug (Inf (Lit _) c) : w) = WJug (c TInt) : w
+step (WJug (Inf (ILit _) c) : w) = WJug (c TInt) : w
+step (WJug (Inf (BLit _) c) : w) = WJug (c TBool) : w
 step (WJug (Inf (Lam x e) c) : w) = WJug (Chk e' (EVar b)) : WBind y (EVar a) :
       WJug (c (TArr (EVar a) (EVar b))) : WEVar b : WEVar a : w
     where
@@ -463,7 +474,7 @@ success1 = [WJug (Sub (Forall "a" (TArr ta TInt)) (TArr (Forall "a" (TArr ta ta)
 failure1 = [WJug (Sub (Forall "a" (TArr TInt ta)) (TArr TInt (Forall "b" tb)))]
 
 lamId = Lam "x" (Var "x")
-litNum = Lit 33
+litNum = ILit 33
 
 typing1 = [WJug (Chk (App lamId litNum) TInt)]
 
@@ -493,8 +504,8 @@ exList4 = [WJug (Inf Nil (\x -> Sub x x)), WTVar "a"]
 exList5 = [WJug (Chk (Cons lamId (Cons (Ann lamId (TArr TInt TInt)) Nil)) (TList (TArr TInt TInt))), WTVar "a"]
 exList6 = [WJug (Inf (Cons lamId (Cons (Ann lamId (TArr TInt TInt)) Nil)) (\x -> Sub x x)), WTVar "a"]
 
-exCase1 = [WJug (Chk (Case (Cons (Lit 33) Nil) (Lit 0) (Lam "x" (Lam "xs" (Var "x")))) TInt)]
-exCase2 = [WJug (Chk (Case (Cons (Lit 33) (Lit 22)) (Lit 0) (Lam "x" (Lam "xs" (Var "x")))) TInt)]
+exCase1 = [WJug (Chk (Case (Cons (ILit 33) Nil) (ILit 0) (Lam "x" (Lam "xs" (Var "x")))) TInt)]
+exCase2 = [WJug (Chk (Case (Cons (ILit 33) (ILit 22)) (ILit 0) (Lam "x" (Lam "xs" (Var "x")))) TInt)]
 
 mapTyp = Forall "a" (Forall "b" (TArr (TArr ta tb)  (TArr (TList ta) (TList tb))))
 mapFun = Lam "f" (Lam "xs" (
@@ -509,7 +520,7 @@ mapJug = [WJug (Inf (Ann (Fix (Lam "rec" (TAnn "a" (TAnn "b" mapFun)))) mapTyp) 
 plusTyp = TArr TInt (TArr TInt TInt)
 plusFun = Lam "x" (Lam "y" (Var "x"))
 
-exLet = [WJug (Inf (Let "x" (Lit 1) (Cons (Var "x") (Cons (Lit 2) Nil))) Ret)]
+exLet = [WJug (Inf (Let "x" (ILit 1) (Cons (Var "x") (Cons (ILit 2) Nil))) Ret)]
 mapFun' = Lam "f" (Lam "xs" (
     Case (Var "xs")
          Nil
@@ -518,10 +529,23 @@ mapFun' = Lam "f" (Lam "xs" (
                  (App (Var "f") (Var "y"))
                  (App (App (Var "map") (Var "f")) (Var "ys")))))))
 letMapIn = LetA "map" mapTyp (TAnn "a" (TAnn "b" mapFun'))
-succFun = App plusFun (Lit 1)
+succFun = App plusFun (ILit 1)
 
 succJug = [WJug (Inf succFun Ret)]
-mapJug1 = [WJug (Inf (letMapIn (Let "succ" succFun (App (App (Var "map") (Var "succ")) (Cons (Lit 1) (Cons (Lit 2) Nil))))) Ret)]
+mapJug1 = [WJug (Inf (letMapIn (Let "succ" succFun (App (App (Var "map") (Var "succ")) (Cons (ILit 1) (Cons (ILit 2) Nil))))) Ret)]
+
+lamF = Ann (Lam "k" (App (Var "k") (ILit 3))) (TArr (Forall "a" (TArr TInt (TArr ta TInt))) (TArr TBool TInt))
+lamH = Ann (Lam "k" (App lamF (Var "k"))) (TArr (Forall "b" (Forall "a" (TArr tb (TArr ta tb)))) (TArr TBool TInt))
+lamG = Ann (Lam "k" (App (TApp (Var "k") TBool) (ILit 3))) (TArr (Forall "a" (TArr TInt (TArr ta TInt))) (TArr TBool TInt))
+lamH2 = Ann (Lam "k" (App lamG (Var "k"))) (TArr (Forall "b" (Forall "a" (TArr tb (TArr ta tb)))) (TArr TBool TInt))
+lamH3 = Ann (Lam "k" (App (TApp (Var "k") TBool) (ILit 3))) (TArr (Forall "b" (Forall "a" (TArr tb (TArr ta tb)))) (TArr TBool TInt))
+
+cTyp = Forall "a" (TArr ta ta)
+ex2Typ1 = TArr (Forall "a" (TArr ta ta)) (TArr cTyp cTyp)
+ex2Typ2 = TArr (Forall "a" (Forall "b" (TArr tb ta))) (TArr cTyp cTyp)
+ex2_1 = [WJug (Chk (Lam "x" (TApp (Var "x") cTyp)) ex2Typ1)]
+ex2_2 = [WJug (Sub (TArr (Forall "a" (TArr ta ta)) (TArr cTyp cTyp)) ex2Typ2)] -- fail
+ex2_3 = [WJug (Chk (Lam "x" (TApp (Var "x") cTyp)) ex2Typ2)]
 
 run :: String -> IO ()
 run s =
@@ -579,10 +603,13 @@ atom =
     , pCase
     , pFix
     , Var <$> identifier
-    , Lit <$> int
+    , ILit <$> int
     , Nil <$ symbol "[]"
     , parens expr
     ]
+
+pList :: Parser Exp
+pList = undefined 
 
 pLambda :: Parser Exp
 pLambda = do
@@ -596,9 +623,6 @@ pFix :: Parser Exp
 pFix = do
   rword "fix"
   Fix <$> expr
-
-pList :: Parser Exp
-pList = undefined 
 
 pCase :: Parser Exp
 pCase = do
@@ -617,6 +641,13 @@ pCase = do
   symbol "->"
   e2 <- expr
   return $ Case e e1 (Lam x (Lam xs e2))
+
+pColonSp :: Parser () 
+pColonSp = do
+  sc
+  symbol ":"
+  sc 
+  return ()
 
 pOperators :: [[Operator Parser Exp]]
 pOperators = [[InfixR (Cons <$ symbol ":")]]
@@ -647,9 +678,10 @@ pForall = do
 tconst :: Parser Typ
 tconst =
   choice
-    [ TInt <$ rword "Int"
-    , TTop <$ rword "Top"
-    , TBot <$ rword "Bot"]
+    [ TInt  <$ rword "Int"
+    , TBool <$ rword "Bool"
+    , TTop  <$ rword "Top"
+    , TBot  <$ rword "Bot"]
 
 listType :: Parser Typ
 listType = do
@@ -678,16 +710,20 @@ brackets :: Parser a -> Parser a
 brackets = between (symbol "[") (symbol "]")
 
 int :: Parser Integer
-int = L.decimal
+int = 
+  do 
+    i <- L.decimal 
+    sc
+    return i
 
--- colon :: Parser String
--- colon = symbol ":"
+colon :: Parser String
+colon = symbol ":"
 
--- comma :: Parser String
--- comma = symbol ","
+comma :: Parser String
+comma = symbol ","
 
--- vdash :: Parser String
--- vdash = symbol "||-"
+vdash :: Parser String
+vdash = symbol "||-"
 
 rword :: String -> Parser ()
 rword w = string w *> notFollowedBy alphaNumChar *> sc
