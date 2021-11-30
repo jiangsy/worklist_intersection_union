@@ -1,3 +1,4 @@
+{-# LANGUAGE LambdaCase #-}
 import Prelude hiding (flip)
 import Data.List
 import Data.Functor
@@ -95,12 +96,11 @@ fv (TForall g)      = fv (g TInt)
 fv _                = []
 
 wsToVars :: [Work] -> [Either Int Int]
-wsToVars ws =
-  concatMap (\x -> case x of
-        WVar i -> [Left i]
-        WExVar i _ _-> [Right i]
-        _   -> []
-      ) ws
+wsToVars = concatMap (\case
+                        WVar i -> [Left i]
+                        WExVar i _ _ -> [Right i]
+                        _ -> []
+                     )
 
 fvInBounds :: [Typ] -> [Typ] -> [Typ]
 fvInBounds lbs ubs = nub (concatMap fv lbs ++ concatMap fv ubs)
@@ -125,20 +125,7 @@ getVarsBetweenTyp :: [Work] -> Typ -> Typ -> [Typ]
 getVarsBetweenTyp ws (TVar i) (TVar j) = map TVar $ takeWhile (/= i) $ dropWhile (/= j) $ wsToVars ws
 getVarsBetweenTyp ws x y = error (show x ++ "or" ++ show y ++ "is not a type")
 
--- getExWLBetweenExTyp :: [Work] -> Typ -> Typ -> [Work]
--- getExWLBetweenExTyp ws (TVar (Right i)) (TVar (Right j)) =
---   getWLBetweenTypHelper ws False []
---   where getWLBetweenTypHelper (WExVar k lbs ubs : ws) False res
---           | k == j = getWLBetweenTypHelper ws True (WExVar k lbs ubs : res)
---           | otherwise = getWLBetweenTypHelper ws False res
---         getWLBetweenTypHelper (w : ws) False res = getWLBetweenTypHelper ws False res
---         getWLBetweenTypHelper (WExVar k lbs ubs : ws) True res
---           | k == i = res
---           | otherwise = getWLBetweenTypHelper ws True (WExVar k lbs ubs : res)
---         getWLBetweenTypHelper (w : ws) True res = getWLBetweenTypHelper ws True res
---         getWLBetweenTypHelper [] _ _ = error ("No WL between " ++ show (TVar (Right i)) ++ "and" ++ show (TVar (Right j)))
--- getExWLBetweenExTyp ws x y = error (show x ++ "or" ++ show y ++ "is not a type")
-
+getExWLBetweenExTyp :: [Work] -> Typ -> Typ -> [Work]
 getExWLBetweenExTyp ws varA varB = map (getWorkFromExTyp ws) (getVarsBetweenTyp ws varA varB)
 
 getWorkFromExTyp :: [Work] -> Typ -> Work
@@ -161,20 +148,17 @@ getLastExVar ws typ
                       getLastExVarHelper (var : vars) Nothing = getLastExVarHelper vars (Just (var, length (getVarsAfterTyp ws var)))
                       getLastExVarHelper [] res = res
 
-gatherExVarsToMove :: [Work] -> Maybe Work -> Typ -> [(Typ, Int)]
-gatherExVarsToMove ws Nothing var = []
-gatherExVarsToMove ws (Just (WExVar j lbs ubs)) var =
-  gatherExVarsHelp wLBetween [WExVar j lbs ubs] []
+gatherExVarsToMove :: [Work] -> Typ -> Typ -> [Work]
+gatherExVarsToMove ws targetTyp arrowTyp =  map (getWorkFromExTyp ws)
+  (gatherExVarsHelp ws targetTyp (map (getWorkFromExTyp ws) (fv arrowTyp)) [])
+
+gatherExVarsHelp :: [Work] -> Typ -> [Work] -> [(Typ, Int)] -> [Typ]
+gatherExVarsHelp subWL var (WExVar i ubs lbs : ws) res =
+  gatherExVarsHelp subWL var (map (getWorkFromExTyp ws) (filter (`elem` map fst newRes) (fvInBounds lbs ubs)) ++ ws) newRes
   where
-    gatherExVarsHelp :: [Work] -> [Work] -> [(Typ, Int)] -> [(Typ, Int)]
-    gatherExVarsHelp possibleVars (WExVar i ubs lbs : ws) res =
-      gatherExVarsHelp possibleVars (map (getWorkFromExTyp ws) (filter (`elem` map fst newRes) (fvInBounds lbs ubs)) ++ ws) newRes
-      where
-        newRes = nub ((TVar (Right i), length (getVarsBeforeTyp ws var)) : res)
-    gatherExVarsHelp _ (w : ws) res = error (show w ++ "is not a ExVar")
-    gatherExVarsHelp _ [] res = sortBy (\(_,a) (_,b) -> compare a b) res
-    wLBetween = getExWLBetweenExTyp ws var (TVar (Right j))
-gatherExVarsToMove ws w var = error (show w ++ " is not a ExVar")
+    newRes = nub ((TVar (Right i), length (getVarsBeforeTyp ws var)) : res)
+gatherExVarsHelp _ var (w : ws) res = error (show w ++ "is not a ExVar")
+gatherExVarsHelp _ var [] res = map fst (sortBy (\(_,a) (_,b) -> compare a b) res)
 
 rearrangeWL :: [Work] -> Typ -> [Typ] -> [Work]
 rearrangeWL ws var (varToMove : varsToMove)
@@ -302,9 +286,9 @@ testGetLastVar :: Maybe Typ
 testGetLastVar = getLastExVar ws1 (TArrow TInt (TArrow ex2 ex3))
 
 testGetVarsBetweenTyp :: Maybe [Typ]
-testGetVarsBetweenTyp = getLastExVar ws1 (TArrow TInt (TArrow ex2 ex3)) >>= return . getVarsBetweenTyp ws1 ex1
+testGetVarsBetweenTyp = getLastExVar ws1 (TArrow TInt (TArrow ex2 ex3)) <&> getVarsBetweenTyp ws1 ex1
 
 testGetExWLBetweenExTyp :: [Work]
 testGetExWLBetweenExTyp = getExWLBetweenExTyp ws1 ex1 ex2
 
-testGatherExVarsToMove = gatherExVarsToMove ws1 (Just (WExVar 2 [] [])) (TVar (Right 1))
+testGatherExVarsToMove = gatherExVarsToMove ws1 ex1 (TArrow TInt (TArrow ex2 ex3))
