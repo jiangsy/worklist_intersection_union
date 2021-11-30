@@ -100,7 +100,7 @@ fvInBounds lbs ubs = nub (concatMap fv lbs ++ concatMap fv ubs)
 fvInVarBounds :: [Work] -> Typ -> [Typ]
 fvInVarBounds ws var = case getWorkFromExTyp ws var of
                          (WExVar _ lbs ubs) -> fvInBounds lbs ubs
-                         _ -> error "Impossible"
+                         _ -> error "Bug: Impossible in fvInVarBounds"
 
 getVarsBeforeTyp :: [Work] -> Typ -> [Typ]
 getVarsBeforeTyp ws (TVar i) = map TVar $ dropWhile (/= i) $ wsToVars ws
@@ -131,23 +131,26 @@ getWorkFromExTyp (w:ws) (TVar (Right i)) = getWorkFromExTyp ws (TVar (Right i))
 getWorkFromExTyp [] (TVar (Right i)) = error (show (TVar (Right i)) ++ "not found in WL!")
 getWorkFromExTyp _ t = error (show t ++ "is not a ExVar")
 
--- only ExVars need moving forward
 gatherExVarsToMove :: [Work] -> Typ -> Typ -> [Work]
-gatherExVarsToMove ws targetTyp arrowTyp =  map (getWorkFromExTyp ws)
-  (gatherExVarsHelp (getExWLAfterExTyp ws targetTyp) (map (getWorkFromExTyp ws) (fv arrowTyp)) [])
+gatherExVarsToMove wl targetTyp arrowTyp =  map (getWorkFromExTyp wl)
+  -- only ExVars after the target ExVar need moving forward
+  (gatherExVarsHelp (getExWLAfterExTyp wl targetTyp) (map (getWorkFromExTyp wl) (fv arrowTyp)) [])
 
--- args : WL, initial works to process, result accumulator
+-- args : WL, works to process, result accumulator
 gatherExVarsHelp :: [Work] -> [Work] -> [(Typ, Int)] -> [Typ]
 gatherExVarsHelp wl (WExVar i ubs lbs : ws) res =
   gatherExVarsHelp wl (map (getWorkFromExTyp ws) (filter (`elem` map fst newRes) (fvInBounds lbs ubs)) ++ ws) newRes
   where
-    newRes = nub ((TVar (Right i), length (getVarsBeforeTyp wl (TVar (Right i)))) : res)
-gatherExVarsHelp _ (w : ws) res = error (show w ++ "is not a ExVar")
+    newRes
+     | not (null (getVarsBeforeTyp wl (TVar (Right i)))) = nub ((TVar (Right i), length (getVarsBeforeTyp wl (TVar (Right i)))) : res)
+     | otherwise = res
 gatherExVarsHelp _ [] res = map fst (sortBy (\(_,a) (_,b) -> compare a b) res)
+gatherExVarsHelp _ (w : ws) res = error "Bug: Impossible in gatherExVarsHelp!"
 
+-- args : WL, target ExVar, ExVars to move
 rearrangeWL :: [Work] -> Typ -> [Work] -> [Work]
 rearrangeWL wl targetVar@(TVar (Right i)) (WExVar j lbsj ubsj : varsToMove)
-  | targetVar `elem` (concatMap fv lbsj ++ concatMap fv ubsj) = error "Cyclic Dependency"
+  | targetVar `elem` (concatMap fv lbsj ++ concatMap fv ubsj) = error "Error: Cyclic Dependency!"
   | otherwise = rearrangeWL (rearrangeWLHelper wl) targetVar varsToMove
   where
     rearrangeWLHelper (WExVar k lbsk ubsk : wl)
@@ -155,8 +158,8 @@ rearrangeWL wl targetVar@(TVar (Right i)) (WExVar j lbsj ubsj : varsToMove)
       | k == i = WExVar k lbsk ubsk : WExVar j lbsj ubsj : wl
       | otherwise = WExVar k lbsk ubsk : rearrangeWLHelper wl
     rearrangeWLHelper (w : wl) = w : rearrangeWLHelper wl
-    rearrangeWLHelper [] = error "Error!"
-rearrangeWL wl targetVar (var:varWL) = error (show var ++ "should not be rearranged")
+    rearrangeWLHelper [] = error "Error: target type not in WL!"
+rearrangeWL wl targetVar (var:varWL) = error ("Bug: " ++ show var ++ "should not be rearranged!")
 rearrangeWL wl targetVar [] = wl
 
 updateBoundWL :: Typ -> (Bound, Typ) -> [Work] -> [Work]
@@ -197,16 +200,16 @@ step n (Sub (TForall g) b : ws)                 =                               
   (n+1, Sub (g (TVar (Right n))) b : WExVar n [] [] : ws, "SForallL")
 
 step n (Sub (TVar (Right i)) (TArrow a b) : ws)                                    -- 09
-  | mono a && mono b = 
+  | mono a && mono b =
     (n, updateBoundWL (TVar (Right i)) (UB, TArrow a b) (rearrangeWL ws (TVar (Right i)) (gatherExVarsToMove ws (TVar (Right i)) (TArrow a b))), "SplitL move")
   | otherwise = (n+2, Sub (TArrow a1 a2) (TArrow a b) : updateBoundWL (TVar (Right i)) (UB, a1_a2) (addTypsBefore (TVar (Right i)) [a1, a2] ws), "SplitL")
                 where
                   a1 = TVar (Right n)
                   a2 = TVar $ Right (n + 1)
                   a1_a2 = TArrow a1 a2
-                  
+
 step n (Sub (TArrow a b) (TVar (Right i)) : ws)                                     -- 10
-  | mono a && mono b = 
+  | mono a && mono b =
     (n, updateBoundWL (TVar (Right i)) (LB, TArrow a b) (rearrangeWL ws (TVar (Right i)) (gatherExVarsToMove ws (TVar (Right i)) (TArrow a b))), "SplitR move")
   | otherwise = (n+2,  Sub (TArrow a b) (TArrow a1 a2) : updateBoundWL (TVar (Right i)) (LB, a1_a2) (addTypsBefore (TVar (Right i)) [a1, a2] ws), "SplitR")
                 where
@@ -275,8 +278,8 @@ test9 = putStrLn  $
 ex1 = tEx 1
 ex2 = tEx 2
 ex3 = tEx 3
-ws1 = [Sub ex1 (TArrow TInt (TArrow ex2 ex3)), Sub ex2 (TArrow TInt ex1),  WExVar 2 [] [],  WExVar 3 [] [], WExVar 1 [] []]
- 
+ws1 = [Sub ex1 (TArrow TInt (TArrow ex2 ex3)), Sub ex2 (TArrow TInt ex1),  WExVar 2 [] [],  WExVar 1 [] [], WExVar 3 [] []]
+
 testGetExWLBetweenExTyp :: [Work]
 testGetExWLBetweenExTyp = getExWLBetweenExTyp ws1 ex1 ex2
 
@@ -284,4 +287,4 @@ testGatherExVarsToMove :: [Work]
 testGatherExVarsToMove = gatherExVarsToMove ws1 ex1 (TArrow TInt (TArrow ex2 ex3))
 
 testRearrangeWL :: [Work]
-testRearrangeWL = rearrangeWL ws1 (tEx 1) testGatherExVarsToMove 
+testRearrangeWL = rearrangeWL ws1 (tEx 1) testGatherExVarsToMove

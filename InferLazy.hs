@@ -1,3 +1,4 @@
+{-# LANGUAGE LambdaCase #-}
 import Prelude hiding (flip)
 import Data.List
 -- import Data.Set as Set
@@ -38,7 +39,6 @@ Algorithm:
 
 data Typ = TVar (Either Int Int) | TInt | TForall (Typ -> Typ) | TArrow Typ Typ
 
--- Consider changing to set
 data Work = WVar Int | WExVar Int [Typ] [Typ] | Sub Typ Typ deriving Eq
 
 data Bound = LB | UB
@@ -100,22 +100,23 @@ addTypsBefore var new_vars [] = error ("Typ " ++ show var ++ "is not in the work
 -- var a appears before var b in the worklist => var a appears in the sub-worklist starting from var b
 
 wsToVars :: [Work] -> [Either Int Int]
-wsToVars = concatMap (\x -> case x of
-                 WVar i -> [Left i]
-                 WExVar i _ _-> [Right i]
-                 _   -> [])
+wsToVars = concatMap ( \case
+                       WVar i -> [Left i]
+                       WExVar i _ _-> [Right i]
+                       _   -> []
+                     )
 
 getVarsBeforeTyp :: [Work] -> Typ -> [Typ]
-getVarsBeforeTyp ws (TVar i) = map TVar $ dropWhile (/= i) $ wsToVars ws
-getVarsBeforeTyp ws x = error (show x ++ "is not a type")
+getVarsBeforeTyp wl (TVar i) = map TVar $ dropWhile (/= i) $ wsToVars wl
+getVarsBeforeTyp wl x = error (show x ++ "is not a type")
 
 getVarsAfterTyp :: [Work] -> Typ -> [Typ]
-getVarsAfterTyp ws (TVar i) = map TVar $ takeWhile (/= i) $ wsToVars ws
-getVarsAfterTyp ws x = error (show x ++ "is not a type")
+getVarsAfterTyp wl (TVar i) = map TVar $ takeWhile (/= i) $ wsToVars wl
+getVarsAfterTyp wl x = error (show x ++ "is not a type")
 
 -- var a appears before var b in the worklist => var a appears in the sub-worklist starting from var b
 prec :: [Work] -> Typ -> Typ -> Bool
-prec w varA varB = varA `elem` getVarsBeforeTyp w varB
+prec wl varA varB = varA `elem` getVarsBeforeTyp wl varB
 
 
 step :: Int -> [Work] -> (Int, [Work], String)
