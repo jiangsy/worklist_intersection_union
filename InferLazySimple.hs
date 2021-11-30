@@ -1,5 +1,5 @@
 {-# LANGUAGE LambdaCase #-}
-import Prelude hiding (flip)
+import Prelude
 import Data.List
 import Data.Functor
 -- import Data.Set as Set
@@ -156,16 +156,23 @@ gatherExVarsHelp :: [Work] -> Typ -> [Work] -> [(Typ, Int)] -> [Typ]
 gatherExVarsHelp subWL var (WExVar i ubs lbs : ws) res =
   gatherExVarsHelp subWL var (map (getWorkFromExTyp ws) (filter (`elem` map fst newRes) (fvInBounds lbs ubs)) ++ ws) newRes
   where
-    newRes = nub ((TVar (Right i), length (getVarsBeforeTyp ws var)) : res)
+    newRes = nub ((TVar (Right i), length (getVarsBeforeTyp subWL (TVar (Right i)))) : res)
 gatherExVarsHelp _ var (w : ws) res = error (show w ++ "is not a ExVar")
 gatherExVarsHelp _ var [] res = map fst (sortBy (\(_,a) (_,b) -> compare a b) res)
 
-rearrangeWL :: [Work] -> Typ -> [Typ] -> [Work]
-rearrangeWL ws var (varToMove : varsToMove)
-  | var `elem` fvInVarBounds ws varToMove = error "Cyclic Dependency"
-  | otherwise = rearrangeWL (rearrangeWLHelper ws) var varsToMove
-  where rearrangeWLHelper = undefined
-rearrangeWL ws var [] = ws
+rearrangeWL :: [Work] -> Typ -> [Work] -> [Work]
+rearrangeWL wl targetVar@(TVar (Right i)) (WExVar j lbsj ubsj : varsToMove)
+  | targetVar `elem` (concatMap fv lbsj ++ concatMap fv ubsj) = error "Cyclic Dependency"
+  | otherwise = rearrangeWL (rearrangeWLHelper wl) targetVar varsToMove
+  where
+    rearrangeWLHelper (WExVar k lbsk ubsk : wl)
+      | k == j = rearrangeWLHelper wl
+      | k == i = WExVar k lbsk ubsk : WExVar j lbsj ubsj : wl
+      | otherwise = WExVar k lbsk ubsk : rearrangeWLHelper wl
+    rearrangeWLHelper (w : wl) = w : rearrangeWLHelper wl
+    rearrangeWLHelper [] = error "Error!"
+rearrangeWL wl targetVar (var:varWL) = error (show var ++ "should not be rearranged")
+rearrangeWL wl targetVar [] = wl
 
 updateBoundWL :: Typ -> (Bound, Typ) -> [Work] -> [Work]
 -- match once and no more recursion
@@ -228,7 +235,7 @@ step n (Sub (TVar (Left j)) (TVar (Right i))  : ws)                             
 
 step n (Sub (TVar (Right i)) TInt : ws) =                                           -- 13
   (n, updateBoundWL (TVar (Right i)) (UB, TInt) ws, "SolveLInt")
-step n (Sub TInt (TVar (Right i)) : ws) =                                           -- 14
+step n (Sub TInt (TVar (Right i)) : ws) =                                           -- 1c4
   (n, updateBoundWL (TVar (Right i)) (LB, TInt) ws, "SolveRInt")
 step n (Sub (TVar (Right i)) (TVar (Right j)) : ws)                                 -- 15 & 16
   | prec ws (TVar (Right i)) (TVar (Right j)) = (n, updateBoundWL (TVar (Right j)) (LB, TVar (Right i)) ws, "SolveLExtVar")
@@ -291,4 +298,8 @@ testGetVarsBetweenTyp = getLastExVar ws1 (TArrow TInt (TArrow ex2 ex3)) <&> getV
 testGetExWLBetweenExTyp :: [Work]
 testGetExWLBetweenExTyp = getExWLBetweenExTyp ws1 ex1 ex2
 
+testGatherExVarsToMove :: [Work]
 testGatherExVarsToMove = gatherExVarsToMove ws1 ex1 (TArrow TInt (TArrow ex2 ex3))
+
+testRearrangeWL :: [Work]
+testRearrangeWL = rearrangeWL ws1 (tEx 1) testGatherExVarsToMove 
