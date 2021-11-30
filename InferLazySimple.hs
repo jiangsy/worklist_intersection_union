@@ -28,8 +28,11 @@ Algorithm:
 
 09. T[lbs <: ^a < ubs] |- ^a <: A -> B --> T[^a1,^a2, lbs <: ^a < ubs U {^a1,^a2}] |- ^a1 -> ^a2 <: A -> B  
           when not monotype (A->B)  
+    add constraint to ^a and move when monotype (A -> B)
+      
 10. T[lbs <: ^a < ubs] |- A -> B <: ^a --> T[^a1,^a2, lbs U {^a1,^a2} <: ^a < ubs] |- A -> B <: ^a1 -> ^a2   
           when not monotype (A->B)  
+    add constraint to ^a and move when monotype (A -> B)
 
 11. T[a][lbs <: ^b < ubs] |- a <: ^b   --> T[a][lbs U {a} <: ^b < ub] 
 12. T[a][lbs <: ^b < ubs] |- ^b <: a   --> T[a][lbs <: ^b < ub U {a}] 
@@ -128,23 +131,12 @@ getWorkFromExTyp (w:ws) (TVar (Right i)) = getWorkFromExTyp ws (TVar (Right i))
 getWorkFromExTyp [] (TVar (Right i)) = error (show (TVar (Right i)) ++ "not found in WL!")
 getWorkFromExTyp _ t = error (show t ++ "is not a ExVar")
 
-getLastExVar :: [Work] -> Typ -> Maybe Typ
-getLastExVar ws typ
-  | null (fv typ) = Nothing
-  | otherwise = getLastExVarHelper (fv typ) Nothing <&> fst
-                where getLastExVarHelper :: [Typ] -> Maybe (Typ, Int) -> Maybe (Typ, Int)
-                      getLastExVarHelper (var : vars) oldRes@(Just (oldVar, oldLength))
-                        | newLength < oldLength = getLastExVarHelper vars (Just (var, newLength))
-                        | otherwise =  getLastExVarHelper vars oldRes
-                        where newLength = length (getVarsBeforeTyp ws var)
-                      getLastExVarHelper (var : vars) Nothing = getLastExVarHelper vars (Just (var, length (getVarsAfterTyp ws var)))
-                      getLastExVarHelper [] res = res
-
+-- only ExVars need moving forward
 gatherExVarsToMove :: [Work] -> Typ -> Typ -> [Work]
 gatherExVarsToMove ws targetTyp arrowTyp =  map (getWorkFromExTyp ws)
   (gatherExVarsHelp (getExWLAfterExTyp ws targetTyp) (map (getWorkFromExTyp ws) (fv arrowTyp)) [])
 
--- WL, initial works, accumulator
+-- args : WL, initial works to process, result accumulator
 gatherExVarsHelp :: [Work] -> [Work] -> [(Typ, Int)] -> [Typ]
 gatherExVarsHelp wl (WExVar i ubs lbs : ws) res =
   gatherExVarsHelp wl (map (getWorkFromExTyp ws) (filter (`elem` map fst newRes) (fvInBounds lbs ubs)) ++ ws) newRes
@@ -284,13 +276,7 @@ ex1 = tEx 1
 ex2 = tEx 2
 ex3 = tEx 3
 ws1 = [Sub ex1 (TArrow TInt (TArrow ex2 ex3)), Sub ex2 (TArrow TInt ex1),  WExVar 2 [] [],  WExVar 3 [] [], WExVar 1 [] []]
-
-testGetLastVar :: Maybe Typ
-testGetLastVar = getLastExVar ws1 (TArrow TInt (TArrow ex2 ex3))
-
-testGetVarsBetweenTyp :: Maybe [Typ]
-testGetVarsBetweenTyp = getLastExVar ws1 (TArrow TInt (TArrow ex2 ex3)) <&> getVarsBetweenTyp ws1 ex1
-
+ 
 testGetExWLBetweenExTyp :: [Work]
 testGetExWLBetweenExTyp = getExWLBetweenExTyp ws1 ex1 ex2
 
