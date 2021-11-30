@@ -117,6 +117,9 @@ getVarsBetweenTyp ws x y = error (show x ++ "or" ++ show y ++ "is not a type")
 getExWLBetweenExTyp :: [Work] -> Typ -> Typ -> [Work]
 getExWLBetweenExTyp ws varA varB = map (getWorkFromExTyp ws) (getVarsBetweenTyp ws varA varB)
 
+getExWLAfterExTyp :: [Work] -> Typ -> [Work]
+getExWLAfterExTyp ws varA = map (getWorkFromExTyp ws) (getVarsAfterTyp ws varA)
+
 getWorkFromExTyp :: [Work] -> Typ -> Work
 getWorkFromExTyp ((WExVar j lbs ubs):ws) (TVar (Right i))
   | i == j = WExVar j lbs ubs
@@ -139,15 +142,16 @@ getLastExVar ws typ
 
 gatherExVarsToMove :: [Work] -> Typ -> Typ -> [Work]
 gatherExVarsToMove ws targetTyp arrowTyp =  map (getWorkFromExTyp ws)
-  (gatherExVarsHelp ws targetTyp (map (getWorkFromExTyp ws) (fv arrowTyp)) [])
+  (gatherExVarsHelp (getExWLAfterExTyp ws targetTyp) (map (getWorkFromExTyp ws) (fv arrowTyp)) [])
 
-gatherExVarsHelp :: [Work] -> Typ -> [Work] -> [(Typ, Int)] -> [Typ]
-gatherExVarsHelp subWL var (WExVar i ubs lbs : ws) res =
-  gatherExVarsHelp subWL var (map (getWorkFromExTyp ws) (filter (`elem` map fst newRes) (fvInBounds lbs ubs)) ++ ws) newRes
+-- WL, initial works, accumulator
+gatherExVarsHelp :: [Work] -> [Work] -> [(Typ, Int)] -> [Typ]
+gatherExVarsHelp wl (WExVar i ubs lbs : ws) res =
+  gatherExVarsHelp wl (map (getWorkFromExTyp ws) (filter (`elem` map fst newRes) (fvInBounds lbs ubs)) ++ ws) newRes
   where
-    newRes = nub ((TVar (Right i), length (getVarsBeforeTyp subWL (TVar (Right i)))) : res)
-gatherExVarsHelp _ var (w : ws) res = error (show w ++ "is not a ExVar")
-gatherExVarsHelp _ var [] res = map fst (sortBy (\(_,a) (_,b) -> compare a b) res)
+    newRes = nub ((TVar (Right i), length (getVarsBeforeTyp wl (TVar (Right i)))) : res)
+gatherExVarsHelp _ (w : ws) res = error (show w ++ "is not a ExVar")
+gatherExVarsHelp _ [] res = map fst (sortBy (\(_,a) (_,b) -> compare a b) res)
 
 rearrangeWL :: [Work] -> Typ -> [Work] -> [Work]
 rearrangeWL wl targetVar@(TVar (Right i)) (WExVar j lbsj ubsj : varsToMove)
@@ -200,9 +204,6 @@ step n (Sub a (TForall g) : ws)                 =                               
 step n (Sub (TForall g) b : ws)                 =                                   -- 07
   (n+1, Sub (g (TVar (Right n))) b : WExVar n [] [] : ws, "SForallL")
 
-
--- gatherExVarsToMove :: [Work] -> Typ -> Typ -> [Work]
-
 step n (Sub (TVar (Right i)) (TArrow a b) : ws)                                    -- 09
   | mono a && mono b = 
     (n, updateBoundWL (TVar (Right i)) (UB, TArrow a b) (rearrangeWL ws (TVar (Right i)) (gatherExVarsToMove ws (TVar (Right i)) (TArrow a b))), "SplitL move")
@@ -211,6 +212,7 @@ step n (Sub (TVar (Right i)) (TArrow a b) : ws)                                 
                   a1 = TVar (Right n)
                   a2 = TVar $ Right (n + 1)
                   a1_a2 = TArrow a1 a2
+                  
 step n (Sub (TArrow a b) (TVar (Right i)) : ws)                                     -- 10
   | mono a && mono b = 
     (n, updateBoundWL (TVar (Right i)) (LB, TArrow a b) (rearrangeWL ws (TVar (Right i)) (gatherExVarsToMove ws (TVar (Right i)) (TArrow a b))), "SplitR move")
