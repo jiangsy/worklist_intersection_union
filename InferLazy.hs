@@ -23,11 +23,8 @@ Algorithm:
 07. T |- forall a . B <: C             --> T,^a |- [^a/a] B <: C                                  (rule 9)
 08. T |- A <: forall b . B             --> T,b |- A <: C                                          (rule 10)
 
-
 09. T[lbs <: ^a < ubs] |- ^a <: A -> B --> T[^a1,^a2, lbs <: ^a < ubs U {^a1,^a2}] |- ^a1 -> ^a2 <: A -> B   
-                when not monotype (A->B)  
 10. T[lbs <: ^a < ubs] |- A -> B <: ^a --> T[^a1,^a2, lbs U {^a1,^a2} <: ^a < ubs] |- A -> B <: ^a1 -> ^a2   
-                when not monotype (A->B)  
 
 11. T[a][lbs <: ^b < ubs] |- a <: ^b   --> T[a][lbs U {a} <: ^b < ub] 
 12. T[a][lbs <: ^b < ubs] |- ^b <: a   --> T[a][lbs <: ^b < ub U {a}] 
@@ -37,23 +34,12 @@ Algorithm:
 15. T[^a][lbs <: ^b < ubs] |- ^a <: ^b --> T[^a][lb U {^a} <: ^b < ub] 
 16. T[^a][lbs <: ^b < ubs] |- ^b <: ^a --> T[^a][lb <: ^b < ub U {^a}] 
 
-
-TODO: Does subst rule need changes?
---------------
-[A/^a]_E T
---------------
-
-[A/^a]_E (T,^a)             = T,E                 ^a notin fv(A)
-[A/^a]_E (T,^b)             = [A/^a]_E T,^b       ^b notin FV(A)
-[A/^a]_E (T,^b)             = [A/^a]_{E,^b} T     ^b in FV(A)
-[A/^a]_E (T |- B <: C)      = [A/^a]_E T |- [A/^a] B <: [A/^a] C
-
 -}
 
 data Typ = TVar (Either Int Int) | TInt | TForall (Typ -> Typ) | TArrow Typ Typ
 
 -- Consider changing to set
-data Work = WVar Int | WExistVar Int [Typ] [Typ] | Sub Typ Typ deriving Eq
+data Work = WVar Int | WExVar Int [Typ] [Typ] | Sub Typ Typ deriving Eq
 
 data Bound = LB | UB
 
@@ -76,24 +62,10 @@ instance Show Typ where
 
 instance Show Work where
   show (WVar i)   = show i
-  show (WExistVar i lbs ubs)  = show lbs ++ " <: " ++ "^" ++ show i ++ " <: " ++ show ubs
+  show (WExVar i lbs ubs)  = show lbs ++ " <: " ++ "^" ++ show i ++ " <: " ++ show ubs
   show (Sub a b)      = show a ++ " <: " ++ show b
 instance Eq Typ where
   t1 == t2 = eqTyp 0 t1 t2
-
-mono :: Typ -> Bool
-mono (TForall g)  = False
-mono (TArrow a b) = mono a && mono b
-mono _            = True
-
-subst :: Int -> Typ -> Typ -> Typ
-subst i t TInt                    = TInt
-subst i t (TVar v)                =
-   case v of
-     Right j | i == j -> t
-     _                -> TVar v
-subst i t (TArrow t1 t2)        = TArrow (subst i t t1) (subst i t t2)
-subst i t (TForall g)           = TForall (\t1 -> subst i t (g t1))
 
 fv :: Typ -> [Int]
 fv (TVar (Right i)) = [i]
@@ -103,57 +75,66 @@ fv _                = []
 
 updateBoundWL :: Typ -> (Bound, Typ) -> [Work] -> [Work]
 -- match once and no more recursion
-updateBoundWL var@(TVar (Right i)) bound (WExistVar j lbs ubs : ws)
+updateBoundWL var@(TVar (Right i)) bound (WExVar j lbs ubs : ws)
   | i == j =
       case bound of
-        (LB, typ) -> WExistVar j (typ:lbs) ubs : ws
-        (UB, typ) -> WExistVar j lbs (typ:ubs) : ws
-  | otherwise = WExistVar j lbs ubs : updateBoundWL var bound ws
+        (LB, typ) -> WExVar j (typ:lbs) ubs : ws
+        (UB, typ) -> WExVar j lbs (typ:ubs) : ws
+  | otherwise = WExVar j lbs ubs : updateBoundWL var bound ws
 updateBoundWL var bound (w:ws) = w : updateBoundWL var bound ws
 updateBoundWL var bound [] = error "Var not found!"
 
 addTypsBefore :: Typ -> [Typ] -> [Work] -> [Work]
-addTypsBefore var@(TVar (Right i)) new_vars (WExistVar j lbs ubs : ws)
-  | i == j = WExistVar j lbs ubs : map typToWork new_vars ++ ws
-  | otherwise = WExistVar j lbs ubs : addTypsBefore var new_vars ws
-  where 
+addTypsBefore var@(TVar (Right i)) new_vars (WExVar j lbs ubs : ws)
+  | i == j = WExVar j lbs ubs : map typToWork new_vars ++ ws
+  | otherwise = WExVar j lbs ubs : addTypsBefore var new_vars ws
+  where
     typToWork :: Typ -> Work
     typToWork (TVar (Left i)) = WVar i
-    typToWork (TVar (Right i)) = WExistVar i [] []
+    typToWork (TVar (Right i)) = WExVar i [] []
     typToWork _ = error "Incorrect typeToWork call"
 addTypsBefore var new_vars (w:ws) = w : addTypsBefore var new_vars ws
 addTypsBefore var new_vars [] = error ("Typ " ++ show var ++ "is not in the worklist")
 
 
 -- var a appears before var b in the worklist => var a appears in the sub-worklist starting from var b
+
+wsToVars :: [Work] -> [Either Int Int]
+wsToVars = concatMap (\x -> case x of
+                 WVar i -> [Left i]
+                 WExVar i _ _-> [Right i]
+                 _   -> [])
+
+getVarsBeforeTyp :: [Work] -> Typ -> [Typ]
+getVarsBeforeTyp ws (TVar i) = map TVar $ dropWhile (/= i) $ wsToVars ws
+getVarsBeforeTyp ws x = error (show x ++ "is not a type")
+
+getVarsAfterTyp :: [Work] -> Typ -> [Typ]
+getVarsAfterTyp ws (TVar i) = map TVar $ takeWhile (/= i) $ wsToVars ws
+getVarsAfterTyp ws x = error (show x ++ "is not a type")
+
+-- var a appears before var b in the worklist => var a appears in the sub-worklist starting from var b
 prec :: [Work] -> Typ -> Typ -> Bool
-prec w (TVar i) (TVar j) = elem i . dropWhile (/= j) $ wex
-  where
-    wex = concatMap (\x -> case x of
-        WVar i -> [Left i]
-        WExistVar i _ _-> [Right i]
-        _   -> []
-      ) w
-prec w _ _ = error "Incorrect prec call!"
+prec w varA varB = varA `elem` getVarsBeforeTyp w varB
 
 
 step :: Int -> [Work] -> (Int, [Work], String)
 step n (WVar i : ws)                            = (n, ws, "Garbage Collection")     -- 01 
-step n (WExistVar i lbs ubs : ws)               =                                   -- 02
+step n (WExVar i lbs ubs : ws)               =                                   -- 02
   (n, [Sub lTyp uTyp | lTyp <- lbs, uTyp <- ubs] ++ ws, "SUnfoldBounds")
 step n (Sub TInt TInt : ws)                     = (n, ws, "SInt")                   -- 03
 step n (Sub (TVar i) (TVar j) : ws)| i == j     = (n, ws, "SUVar")                  -- 04 + 05
 step n (Sub (TArrow a b) (TArrow c d) : ws)     =                                   -- 06
-                  (n, Sub b d : Sub c a : ws, "SArrow")
+  (n, Sub b d : Sub c a : ws, "SArrow")
 
 step n (Sub a (TForall g) : ws)                 =                                   -- 08
   (n+1, Sub a (g (TVar (Left n))) : WVar n : ws, "SForallR")
 step n (Sub (TForall g) b : ws)                 =                                   -- 07
-  (n+1, Sub (g (TVar (Right n))) b : WExistVar n [] [] : ws, "SForallL")
+  (n+1, Sub (g (TVar (Right n))) b : WExVar n [] [] : ws, "SForallL")
 
 
 step n (Sub (TVar (Right i)) (TArrow a b) : ws) =                                   -- 09
-   (n+2, Sub (TArrow a1 a2) (TArrow a b) : updateBoundWL (TVar (Right i)) (UB, a1_a2) (addTypsBefore (TVar (Right i)) [a1, a2] ws), "SplitL")
+  (n+2, Sub (TArrow a1 a2) (TArrow a b) : updateBoundWL (TVar (Right i)) (UB, a1_a2) (addTypsBefore (TVar (Right i)) [a1, a2] ws), "SplitL")
   where
     a1 = TVar (Right n)
     a2 = TVar $ Right (n + 1)
@@ -205,7 +186,7 @@ t7 = TArrow t6 t6
 
 test1 = chk [Sub t3 t3]
 test2 = chk [Sub t1 t3]
-test3 = chk [Sub t5 t3] 
+test3 = chk [Sub t5 t3]
 test4 = chk [Sub t5 t1]
 test5 = chk [Sub t1 t6]
 test6 = chk [Sub t6 t3]
@@ -220,7 +201,7 @@ ex1 = tEx 1
 ex2 = tEx 2
 
 test9 = putStrLn  $
-  check 4 [Sub ex1 (TArrow TInt ex2), Sub ex2 (TArrow TInt ex1), WExistVar 2 [] [], WExistVar 1 [] []]
+  check 4 [Sub ex1 (TArrow TInt ex2), Sub ex2 (TArrow TInt ex1), WExVar 2 [] [], WExVar 1 [] []]
 
 test10 = putStrLn  $
-  check 5 [WExistVar 4 [TVar (Right 2)] [TArrow (TVar (Right 1)) TInt], WExistVar 3 [TVar (Right 1)] [TArrow (TVar (Right 2)) TInt], WExistVar 2 [] [], WExistVar 1 [] []]
+  check 5 [WExVar 4 [TVar (Right 2)] [TArrow (TVar (Right 1)) TInt], WExVar 3 [TVar (Right 1)] [TArrow (TVar (Right 2)) TInt], WExVar 2 [] [], WExVar 1 [] []]
