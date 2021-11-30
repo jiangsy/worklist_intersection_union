@@ -1,12 +1,11 @@
 {-# LANGUAGE LambdaCase #-}
-import Prelude
+import Prelude hiding (flip)
 import Data.List
 import Data.Functor
 -- import Data.Set as Set
 
 import Debug.Trace
 import GHC.Exts (Constraint)
-import qualified Data.IntSet as Oset
 
 {- A lazy subtyping algorithm:
 
@@ -39,16 +38,6 @@ Algorithm:
 
 15. T[^a][lbs <: ^b < ubs] |- ^a <: ^b --> T[^a][lb U {^a} <: ^b < ub] 
 16. T[^a][lbs <: ^b < ubs] |- ^b <: ^a --> T[^a][lb <: ^b < ub U {^a}] 
-
-
---------------
-[A/^a]_E T
---------------
-
-[A/^a]_E (T,^a)             = T,E                 ^a notin fv(A)
-[A/^a]_E (T,^b)             = [A/^a]_E T,^b       ^b notin FV(A)
-[A/^a]_E (T,^b)             = [A/^a]_{E,^b} T     ^b in FV(A)
-[A/^a]_E (T |- B <: C)      = [A/^a]_E T |- [A/^a] B <: [A/^a] C
 
 -}
 
@@ -211,15 +200,20 @@ step n (Sub a (TForall g) : ws)                 =                               
 step n (Sub (TForall g) b : ws)                 =                                   -- 07
   (n+1, Sub (g (TVar (Right n))) b : WExVar n [] [] : ws, "SForallL")
 
+
+-- gatherExVarsToMove :: [Work] -> Typ -> Typ -> [Work]
+
 step n (Sub (TVar (Right i)) (TArrow a b) : ws)                                    -- 09
-  | mono a && mono b = undefined
+  | mono a && mono b = 
+    (n, updateBoundWL (TVar (Right i)) (UB, TArrow a b) (rearrangeWL ws (TVar (Right i)) (gatherExVarsToMove ws (TVar (Right i)) (TArrow a b))), "SplitL move")
   | otherwise = (n+2, Sub (TArrow a1 a2) (TArrow a b) : updateBoundWL (TVar (Right i)) (UB, a1_a2) (addTypsBefore (TVar (Right i)) [a1, a2] ws), "SplitL")
                 where
                   a1 = TVar (Right n)
                   a2 = TVar $ Right (n + 1)
                   a1_a2 = TArrow a1 a2
 step n (Sub (TArrow a b) (TVar (Right i)) : ws)                                     -- 10
-  | mono a && mono b = undefined
+  | mono a && mono b = 
+    (n, updateBoundWL (TVar (Right i)) (LB, TArrow a b) (rearrangeWL ws (TVar (Right i)) (gatherExVarsToMove ws (TVar (Right i)) (TArrow a b))), "SplitR move")
   | otherwise = (n+2,  Sub (TArrow a b) (TArrow a1 a2) : updateBoundWL (TVar (Right i)) (LB, a1_a2) (addTypsBefore (TVar (Right i)) [a1, a2] ws), "SplitR")
                 where
                   a1 = TVar $ Right n
@@ -235,7 +229,7 @@ step n (Sub (TVar (Left j)) (TVar (Right i))  : ws)                             
 
 step n (Sub (TVar (Right i)) TInt : ws) =                                           -- 13
   (n, updateBoundWL (TVar (Right i)) (UB, TInt) ws, "SolveLInt")
-step n (Sub TInt (TVar (Right i)) : ws) =                                           -- 1c4
+step n (Sub TInt (TVar (Right i)) : ws) =                                           -- 14
   (n, updateBoundWL (TVar (Right i)) (LB, TInt) ws, "SolveRInt")
 step n (Sub (TVar (Right i)) (TVar (Right j)) : ws)                                 -- 15 & 16
   | prec ws (TVar (Right i)) (TVar (Right j)) = (n, updateBoundWL (TVar (Right j)) (LB, TVar (Right i)) ws, "SolveLExtVar")
