@@ -1,8 +1,10 @@
 {-# LANGUAGE LambdaCase #-}
+module InferLazySimple where
+
+import Control.Exception
 import Prelude hiding (flip)
 import Data.List
 import Data.Functor
--- import Data.Set as Set
 
 import Debug.Trace
 import GHC.Exts (Constraint)
@@ -151,7 +153,8 @@ gatherExVarsHelp _ (w : ws) res = error "Bug: Impossible in gatherExVarsHelp!"
 -- args : WL, target ExVar, ExVars to move
 rearrangeWL :: [Work] -> Typ -> [Work] -> [Work]
 rearrangeWL wl targetVar@(TVar (Right i)) (WExVar j lbsj ubsj : varsToMove)
-  | targetVar `elem` (concatMap fv lbsj `union` concatMap fv ubsj) = error "Error: Cyclic Dependency!"
+  | targetVar `elem` (concatMap fv lbsj `union` concatMap fv ubsj) =
+      error ("Error: Cyclic Dependency of " ++ show (TVar (Right i)) ++ " and " ++ show (TVar (Right j)) ++ "!")
   | otherwise = rearrangeWL (rearrangeWLHelper wl) targetVar varsToMove
   where
     rearrangeWLHelper (WExVar k lbsk ubsk : wl)
@@ -244,6 +247,17 @@ check n ws =
   in ("   " ++ show (reverse ws) ++ "\n-->{ Rule: " ++ s1 ++ " }\n" ++ s2)
 
 
+check' :: Int -> [Work] -> IO String
+check' n [] = return "Success!"
+check' n ws = catch (
+  let (m,ws',s1) = step n ws in
+  do
+    check' m ws'
+  ) handler
+    where handler :: ErrorCall -> IO String
+          handler = const (return "Error!")
+
+
 t1 = TForall (\a -> TArrow a a)
 
 
@@ -254,6 +268,8 @@ t3 = TArrow TInt TInt
 
 
 chk = putStrLn .  check 0
+
+chk' x = check' 0 x >>= putStrLn
 
 t5 = TForall (\t -> t)
 

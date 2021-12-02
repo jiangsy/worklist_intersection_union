@@ -1,5 +1,6 @@
-module InferSimple where
+module Old.InferSimple where
 
+import Control.Exception
 import Prelude hiding (flip)
 import Data.List
 
@@ -122,6 +123,7 @@ substWL i t es (V (Right j) : ws)
    | elem j (fv t) = substWL i t (j : es) ws
    | otherwise     = V (Right j) : substWL i t es ws
 substWL i t es (Sub t1 t2 : ws) = Sub (subst i t t1) (subst i t t2) : substWL i t es ws
+substWL _ _ _ _ = error "Error in substWL"
 
 step :: Int -> [Work] -> (Int, [Work], String)
 step n (V i : ws)            = (n, ws, "Garbage Collection")     
@@ -157,7 +159,19 @@ check n ws =
       s2         = check m ws'
   in ("   " ++ show (reverse ws) ++ "\n-->{ Rule: " ++ s1 ++ " \t\t\t Size: " ++ show (size ws) ++ " }\n" ++ s2)
 
+check' :: Int -> [Work] -> IO String
+check' n [] = return "Success!"
+check' n ws = catch (
+  let (m,ws',s1) = step n ws in
+  do
+    check' m ws'
+  ) handler
+    where handler :: ErrorCall -> IO String
+          handler = const (return "Error!")
+
 chk = putStrLn .  check 0
+
+chk' x = check' 0 x >>= putStrLn
 
 t5 = TForall (\t -> t)
 

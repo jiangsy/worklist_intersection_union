@@ -121,7 +121,7 @@ prec wl varA varB = varA `elem` getVarsBeforeTyp wl varB
 
 step :: Int -> [Work] -> (Int, [Work], String)
 step n (WVar i : ws)                            = (n, ws, "Garbage Collection")     -- 01 
-step n (WExVar i lbs ubs : ws)               =                                   -- 02
+step n (WExVar i lbs ubs : ws)                  =                                   -- 02
   (n, [Sub lTyp uTyp | lTyp <- lbs, uTyp <- ubs] ++ ws, "SUnfoldBounds")
 step n (Sub TInt TInt : ws)                     = (n, ws, "SInt")                   -- 03
 step n (Sub (TVar i) (TVar j) : ws)| i == j     = (n, ws, "SUVar")                  -- 04 + 05
@@ -148,19 +148,23 @@ step n (Sub (TArrow a b) (TVar (Right i)) : ws) =                               
     a1_a2 = TArrow a1 a2
 
 step n (Sub (TVar (Right i)) (TVar (Left j)) : ws)                                  -- 11
-  | prec ws (TVar (Left j)) (TVar (Right i))  = (n, updateBoundWL (TVar (Right i)) (UB, TVar (Left j)) ws, "SolveLVar")
+  | prec ws (TVar (Left j)) (TVar (Right i))    = 
+      (n, updateBoundWL (TVar (Right i)) (UB, TVar (Left j)) ws, "SolveLVar")
   | otherwise = error "Incorrect var order in step call!"
 step n (Sub (TVar (Left j)) (TVar (Right i))  : ws)                                 -- 12
-  | prec ws (TVar (Left j)) (TVar (Right i)) = (n, updateBoundWL (TVar (Right i)) (LB, TVar (Left j)) ws, "SolveRVar")
+  | prec ws (TVar (Left j)) (TVar (Right i))    =
+     (n, updateBoundWL (TVar (Right i)) (LB, TVar (Left j)) ws, "SolveRVar")
   | otherwise = error "Incorrect var order in step call"
 
-step n (Sub (TVar (Right i)) TInt : ws) =                                           -- 13
+step n (Sub (TVar (Right i)) TInt : ws)         =                                   -- 13
   (n, updateBoundWL (TVar (Right i)) (UB, TInt) ws, "SolveLInt")
-step n (Sub TInt (TVar (Right i)) : ws) =                                           -- 14
+step n (Sub TInt (TVar (Right i)) : ws)         =                                   -- 14
   (n, updateBoundWL (TVar (Right i)) (LB, TInt) ws, "SolveRInt")
 step n (Sub (TVar (Right i)) (TVar (Right j)) : ws)                                 -- 15 & 16
-  | prec ws (TVar (Right i)) (TVar (Right j)) = (n, updateBoundWL (TVar (Right j)) (LB, TVar (Right i)) ws, "SolveLExtVar")
-  | prec ws (TVar (Right j)) (TVar (Right i)) = (n, updateBoundWL (TVar (Right i)) (UB, TVar (Right j)) ws, "SolveRExtVar")
+  | prec ws (TVar (Right i)) (TVar (Right j))   = 
+    (n, updateBoundWL (TVar (Right j)) (LB, TVar (Right i)) ws, "SolveLExtVar")
+  | prec ws (TVar (Right j)) (TVar (Right i))   = 
+    (n, updateBoundWL (TVar (Right i)) (UB, TVar (Right j)) ws, "SolveRExtVar")
 
 step n _  = error "Incorrect step call!"
 
