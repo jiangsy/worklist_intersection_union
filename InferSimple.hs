@@ -76,6 +76,7 @@ ppTyp n (TForall f)      = "forall " ++ show n ++ ". " ++ ppTyp (n+1) (f (TVar (
 
 eqTyp :: Int -> Typ -> Typ -> Bool
 eqTyp n TInt TInt = True
+eqTyp n TBool TBool = True
 eqTyp n (TVar v1) (TVar v2)  = v1 == v2
 eqTyp n (TArrow a b) (TArrow c d) = a == c && b == d
 eqTyp n (TForall g) (TForall h) = eqTyp (n+1) (g (TVar (Left n))) (h (TVar (Left n)))

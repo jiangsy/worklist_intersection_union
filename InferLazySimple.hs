@@ -63,6 +63,7 @@ ppTyp n (TForall f)      = "forall " ++ show n ++ ". " ++ ppTyp (n+1) (f (TVar (
 
 eqTyp :: Int -> Typ -> Typ -> Bool
 eqTyp n TInt TInt = True
+eqTyp n TBool TBool = True
 eqTyp n (TVar v1) (TVar v2)  = v1 == v2
 eqTyp n (TArrow a b) (TArrow c d) = a == c && b == d
 eqTyp n (TForall g) (TForall h) = eqTyp (n+1) (g (TVar (Left n))) (h (TVar (Left n)))
@@ -246,6 +247,11 @@ step n (Sub (TVar (Right i)) TInt : ws)         =                               
   (n, Right $ updateBoundWL (TVar (Right i)) (UB, TInt) ws, "SolveLInt")
 step n (Sub TInt (TVar (Right i)) : ws)         =                                           -- 14
   (n, Right $ updateBoundWL (TVar (Right i)) (LB, TInt) ws, "SolveRInt")
+step n (Sub (TVar (Right i)) TBool : ws)         =                                           -- 13
+  (n, Right $ updateBoundWL (TVar (Right i)) (UB, TBool) ws, "SolveLBool")
+step n (Sub TBool (TVar (Right i)) : ws)         =                                           -- 14
+  (n, Right $ updateBoundWL (TVar (Right i)) (LB, TBool) ws, "SolveRBool")
+
 step n (Sub (TVar (Right i)) (TVar (Right j)) : ws)                                 -- 15 & 16
   | prec ws (TVar (Right i)) (TVar (Right j))   = 
     (n, Right $ updateBoundWL (TVar (Right j)) (LB, TVar (Right i)) ws, "SolveLExtVar")
