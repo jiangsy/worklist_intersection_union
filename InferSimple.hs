@@ -62,7 +62,7 @@ T |-
 
 -}
 
-data Typ = TVar (Either Int Int) | TInt | TForall (Typ -> Typ) | TArrow Typ Typ
+data Typ = TVar (Either Int Int) | TInt | TBool | TForall (Typ -> Typ) | TArrow Typ Typ
 
 data Work = V (Either Int Int) | Sub Typ Typ deriving Eq
 
@@ -70,6 +70,7 @@ ppTyp :: Int -> Typ -> String
 ppTyp n (TVar (Left i))  = show i
 ppTyp n (TVar (Right i)) = "^" ++ show i
 ppTyp n TInt             = "Int"
+ppTyp n TBool            = "Bool"
 ppTyp n (TArrow a b)     = "(" ++ ppTyp n a ++ ") -> " ++ ppTyp n b
 ppTyp n (TForall f)      = "forall " ++ show n ++ ". " ++ ppTyp (n+1) (f (TVar (Left n)))  
 
@@ -104,6 +105,7 @@ t3 = TArrow TInt TInt
 
 subst :: Int -> Typ -> Typ -> Typ
 subst i t TInt                    = TInt
+subst i t TBool                   = TBool
 subst i t (TVar v)                =
    case v of
      Right j | i == j -> t
@@ -126,31 +128,34 @@ substWL i t es (Sub t1 t2 : ws) = Sub (subst i t t1) (subst i t t2) : substWL i 
 substWL _ _ _ _ = error "Error in substWL"
 
 step :: Int -> [Work] -> (Int, Either String [Work], String)
-step n (V i : ws)            = (n, Right ws, "Garbage Collection")     
-step n (Sub TInt TInt : ws)  = (n, Right ws, "SInt")                
+step n (V i : ws)                           = (n, Right ws, "Garbage Collection")     
+step n (Sub TInt TInt : ws)                 = (n, Right ws, "SInt") 
+step n (Sub TBool TBool : ws)               = (n, Right ws, "SBool")              
 step n (Sub (TVar i) (TVar j) : ws)                             -- TODO: need to check if defined
-                  | i == j   = (n, Right ws, "SUVar")                  
+                  | i == j                  = (n, Right ws, "SUVar")                  
 step n (Sub (TArrow a b) (TArrow c d) : ws) =
                   (n, Right $ Sub b d : Sub c a : ws, "SArrow")         
-step n (Sub a (TForall g) : ws) =                               
+step n (Sub a (TForall g) : ws)             =                               
   (n+1, Right $ Sub a (g (TVar (Left n))) : V (Left n) : ws, "SForallR")
-step n (Sub (TForall g) b : ws) =                               
+step n (Sub (TForall g) b : ws)             =                               
   (n+1, Right $ Sub (g (TVar (Right n))) b : V (Right n) : ws, "SForallL") 
 step n (Sub (TVar (Right i)) a  : ws)       
-  | mono a = (n, Right $ substWL i a [] ws, "SolveL")
+  | mono a                                  = (n, Right $ substWL i a [] ws, "SolveL")
 step n (Sub a (TVar (Right i))  : ws)       
-  | mono a = (n, Right $ substWL i a [] ws, "SolveL")
-step n (Sub (TVar (Right i)) (TArrow a b) : ws) = (n + 2, Right $ Sub a a1 : Sub a2 b : substWL i a1_a2 [n,n+1] ws, "SplitL")
+  | mono a                                  = (n, Right $ substWL i a [] ws, "SolveL")
+step n (Sub (TVar (Right i)) (TArrow a b) : ws) 
+                                            = (n + 2, Right $ Sub a a1 : Sub a2 b : substWL i a1_a2 [n,n+1] ws, "SplitL")
   where
     a1 = TVar (Right n)
     a2 = TVar $ Right (n + 1)
     a1_a2 = TArrow a1 a2
-step n (Sub (TArrow a b) (TVar (Right i)) : ws) = (n + 2, Right $ Sub a1 a : Sub b a2 : substWL i a1_a2 [n,n+1] ws, "SplitR")   
+step n (Sub (TArrow a b) (TVar (Right i)) : ws) 
+                                            = (n + 2, Right $ Sub a1 a : Sub b a2 : substWL i a1_a2 [n,n+1] ws, "SplitR")   
   where
     a1 = TVar $ Right n
     a2 = TVar $ Right (n + 1)
     a1_a2 = TArrow a1 a2
-step n _ = error "Wrong step()!"
+step n _                                    = (n, Left "No matched pattern", "None")
 
 checkAndShow :: Int -> [Work] -> String
 checkAndShow n [] = "Success!"
