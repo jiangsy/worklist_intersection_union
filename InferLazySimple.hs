@@ -210,8 +210,8 @@ step n (Sub (TForall g) b : ws)                 =                               
 step n (Sub (TVar (Right i)) (TArrow a b) : ws)                                     -- 09
   | mono (TArrow a b)                           =
     case rearrangeWL ws (TVar (Right i)) (gatherExVarsToMove ws (TVar (Right i)) (TArrow a b)) of
-      Left e -> (0, Left e, "SplitL mono")
-      Right wl -> (n, Right $  updateBoundWL (TVar (Right i)) (UB, TArrow a b) wl, "SplitL mono")
+      Left e -> (0, Left e, "SplitL mono 1")
+      Right wl -> (n, Right $  updateBoundWL (TVar (Right i)) (UB, TArrow a b) wl, "SplitL mono 2")
   | otherwise                                   = 
     (n+2, Right $ Sub (TArrow a1 a2) (TArrow a b) : updateBoundWL (TVar (Right i)) (UB, a1_a2)
       (addTypsBefore (TVar (Right i)) [a1, a2] ws), "SplitL")
@@ -265,7 +265,7 @@ checkAndShow :: Int -> [Work] -> String
 checkAndShow n [] = "Success!"
 checkAndShow n ws =
   case ws' of
-    Left e -> "Failure!"
+    Left e -> "  " ++ show (reverse ws) ++ "\n-->{Rule : " ++ s1  ++ " }\n" ++ e 
     Right wl -> s2
       where s2 = "   " ++ show (reverse ws) ++ "\n-->{ Rule: " ++ s1 ++ " }\n" ++ checkAndShow m wl
   where
