@@ -4,7 +4,7 @@ import Test.QuickCheck
 import System.Random (StdGen, mkStdGen, random)
 import Control.Monad(liftM,liftM2,liftM3)
 
-import InferLazySimple (Typ(..), Work(..), chk, t1, mono, chkAndShow)
+import InferLazyMF (Typ(..), Work(..), chk, t1, mono, chkAndShow)
 import qualified InferSimple as InferS (Typ(..), Work(..), chk)
 
 adaptTypStoLS :: InferS.Typ -> Typ

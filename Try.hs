@@ -1,5 +1,5 @@
 import TestInfer
-import InferLazySimple
+import InferLazyMF
 
 abstractPoC :: Typ -> Typ
 abstractPoC typ = abstractHelperPoC 0 typ []
