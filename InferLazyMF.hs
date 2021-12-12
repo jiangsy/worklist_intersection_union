@@ -53,7 +53,8 @@ T[lbs <: ^a < ubs] |- ^a <: A -> B and A -> B <: ^a
 
   ...
 
-  since the first ext_var in FV_(i+1) must appear strictly earlier (in the worklist) than the one in FV_i, the iteation always terminate 
+  since the last ext_var in FV_(i+1) must appear strictly earlier (in the worklist) than the one in FV_i, the iteation always terminate
+  (for every dependency path, it always terminates because every ext_var depends on strictly ealier ext_vars)
 
   move lert FV = Ui FV_i. move every element in FV before ^a and keeps their relative order.
   forall ^x \in FV, check if (1) ^a in fv(^x), (2) forall universal var y that appears between ^a and ^x, y in fv
