@@ -48,12 +48,12 @@ detailed rules of re-arranging in split-mono:
 
 T[lbs <: ^a < ubs] |- ^a <: A -> B and A -> B <: ^a
   FV_1 = fv_ext_vars in (lbs + ubs of ^a) that appers after ^a
-  FV_2 = U fv_ext_vars in (U lbs + ubs of x) that appers after x, forall x \in FV_1
-  FV_3 = U fv_ext_vars in (U lbs + ubs of x) that appers after x, forall x \in FV_2
+  FV_2 = U fv_ext_vars in (U lbs + ubs of x) that appers after ^a, forall x \in FV_1 
+  FV_3 = U fv_ext_vars in (U lbs + ubs of x) that appers after ^a, forall x \in FV_2
 
   ...
 
-  since the first ext_var in FV_(i+1) must appear strictly later (in the worklist) than the one in FV_i, the iteation always terminate 
+  since the first ext_var in FV_(i+1) must appear strictly earlier (in the worklist) than the one in FV_i, the iteation always terminate 
 
   move lert FV = Ui FV_i. move every element in FV before ^a and keeps their relative order.
   forall ^x \in FV, check if (1) ^a in fv(^x), (2) forall universal var y that appears between ^a and ^x, y in fv
