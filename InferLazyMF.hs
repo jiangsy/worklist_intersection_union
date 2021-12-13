@@ -112,12 +112,12 @@ fExtVInBounds lbs ubs = concatMap fExtV lbs `union` concatMap fExtV ubs
 fExtVInVarBounds :: [Work] -> Typ -> [Typ]
 fExtVInVarBounds wl var = case getWorkFromExTyp wl var of
                          (WExVar _ lbs ubs) -> fExtVInBounds lbs ubs
-                         _ -> error "Bug: Impossible in fExtVInVarBounds"
+                         _ -> error "Bug: Impossible in fExtVInVarBounds!"
 
 fUniV :: Typ -> [Typ]
 fUniV (TVar (Left i)) = [TVar (Left i)]
 fUniV (TArrow t1 t2)   = fUniV t1 `union` fUniV t2
-fUniV (TForall g)      = fExtV (g TInt)
+fUniV (TForall g)      = fUniV (g TInt)
 fUniV _                = []
 
 fUniVInBounds :: [Typ] -> [Typ] -> [Typ]
@@ -197,16 +197,16 @@ rearrangeWL wl targetVar@(TVar (Right i)) (WExVar j lbsj ubsj : varsToMove)
 rearrangeWL wl targetVar (var:varWL) = error ("Bug: " ++ show var ++ "should not be rearranged!")
 rearrangeWL wl targetVar [] = Right wl
 
-updateBoundWL :: Typ -> (BoundTyp, Typ) -> [Work] -> [Work]
+updateBoundInWL :: Typ -> (BoundTyp, Typ) -> [Work] -> [Work]
 -- match once and no more recursion
-updateBoundWL var@(TVar (Right i)) bound (WExVar j lbs ubs : ws)
+updateBoundInWL var@(TVar (Right i)) bound (WExVar j lbs ubs : ws)
   | i == j =
       case bound of
         (LB, typ) -> WExVar j (typ:lbs) ubs : ws
         (UB, typ) -> WExVar j lbs (typ:ubs) : ws
-  | otherwise = WExVar j lbs ubs : updateBoundWL var bound ws
-updateBoundWL var bound (w:ws) = w : updateBoundWL var bound ws
-updateBoundWL var bound [] = error "Bug: Var not found!"
+  | otherwise = WExVar j lbs ubs : updateBoundInWL var bound ws
+updateBoundInWL var bound (w:ws) = w : updateBoundInWL var bound ws
+updateBoundInWL var bound [] = error "Bug: Var not found!"
 
 addTypsBefore :: Typ -> [Typ] -> [Work] -> [Work]
 addTypsBefore var@(TVar (Right i)) new_vars (WExVar j lbs ubs : ws)
@@ -240,9 +240,9 @@ step n (Sub (TVar (Right i)) (TArrow a b) : ws)                                 
   | mono (TArrow a b)                           =
     case rearrangeWL ws (TVar (Right i)) (gatherExVarsToMove ws (TVar (Right i)) (TArrow a b)) of
       Left e -> (0, Left e, "SplitL mono 1")
-      Right wl -> (n, Right $  updateBoundWL (TVar (Right i)) (UB, TArrow a b) wl, "SplitL mono 2")
+      Right wl -> (n, Right $  updateBoundInWL (TVar (Right i)) (UB, TArrow a b) wl, "SplitL mono 2")
   | otherwise                                   =
-    (n+2, Right $ Sub (TArrow a1 a2) (TArrow a b) : updateBoundWL (TVar (Right i)) (UB, a1_a2)
+    (n+2, Right $ Sub (TArrow a1 a2) (TArrow a b) : updateBoundInWL (TVar (Right i)) (UB, a1_a2)
       (addTypsBefore (TVar (Right i)) [a1, a2] ws), "SplitL")
                 where
                   a1 = TVar (Right n)
@@ -253,9 +253,9 @@ step n (Sub (TArrow a b) (TVar (Right i)) : ws)                                 
   | mono (TArrow a b)                           =
     case rearrangeWL ws (TVar (Right i)) (gatherExVarsToMove ws (TVar (Right i)) (TArrow a b)) of
       Left e -> (0, Left e, "SplitL mono")
-      Right wl -> (n, Right $ updateBoundWL (TVar (Right i)) (LB, TArrow a b) wl, "SplitR mono")
+      Right wl -> (n, Right $ updateBoundInWL (TVar (Right i)) (LB, TArrow a b) wl, "SplitR mono")
   | otherwise                                   =
-    (n+2,  Right $ Sub (TArrow a b) (TArrow a1 a2) : updateBoundWL (TVar (Right i)) (LB, a1_a2)
+    (n+2,  Right $ Sub (TArrow a b) (TArrow a1 a2) : updateBoundInWL (TVar (Right i)) (LB, a1_a2)
       (addTypsBefore (TVar (Right i)) [a1, a2] ws), "SplitR")
                 where
                   a1 = TVar $ Right n
@@ -264,28 +264,28 @@ step n (Sub (TArrow a b) (TVar (Right i)) : ws)                                 
 
 step n (Sub (TVar (Right i)) (TVar (Left j)) : ws)                                  -- 11
   | prec ws (TVar (Left j)) (TVar (Right i))    =
-    (n, Right $ updateBoundWL (TVar (Right i)) (UB, TVar (Left j)) ws, "SolveLVar")
+    (n, Right $ updateBoundInWL (TVar (Right i)) (UB, TVar (Left j)) ws, "SolveLVar")
   | otherwise = error "Bug: Incorrect var order in step call!"
 step n (Sub (TVar (Left j)) (TVar (Right i))  : ws)                                 -- 12
   | prec ws (TVar (Left j)) (TVar (Right i))    =
-    (n, Right $ updateBoundWL (TVar (Right i)) (LB, TVar (Left j)) ws, "SolveRVar")
+    (n, Right $ updateBoundInWL (TVar (Right i)) (LB, TVar (Left j)) ws, "SolveRVar")
   | otherwise                                   =
     error "Bug: Incorrect var order in step call"
 
 step n (Sub (TVar (Right i)) TInt : ws)         =                                           -- 13
-  (n, Right $ updateBoundWL (TVar (Right i)) (UB, TInt) ws, "SolveLInt")
+  (n, Right $ updateBoundInWL (TVar (Right i)) (UB, TInt) ws, "SolveLInt")
 step n (Sub TInt (TVar (Right i)) : ws)         =                                           -- 14
-  (n, Right $ updateBoundWL (TVar (Right i)) (LB, TInt) ws, "SolveRInt")
+  (n, Right $ updateBoundInWL (TVar (Right i)) (LB, TInt) ws, "SolveRInt")
 step n (Sub (TVar (Right i)) TBool : ws)         =                                           -- 13
-  (n, Right $ updateBoundWL (TVar (Right i)) (UB, TBool) ws, "SolveLBool")
+  (n, Right $ updateBoundInWL (TVar (Right i)) (UB, TBool) ws, "SolveLBool")
 step n (Sub TBool (TVar (Right i)) : ws)         =                                           -- 14
-  (n, Right $ updateBoundWL (TVar (Right i)) (LB, TBool) ws, "SolveRBool")
+  (n, Right $ updateBoundInWL (TVar (Right i)) (LB, TBool) ws, "SolveRBool")
 
 step n (Sub (TVar (Right i)) (TVar (Right j)) : ws)                                 -- 15 & 16
   | prec ws (TVar (Right i)) (TVar (Right j))   =
-    (n, Right $ updateBoundWL (TVar (Right j)) (LB, TVar (Right i)) ws, "SolveLExtVar")
+    (n, Right $ updateBoundInWL (TVar (Right j)) (LB, TVar (Right i)) ws, "SolveLExtVar")
   | prec ws (TVar (Right j)) (TVar (Right i))   =
-    (n, Right $ updateBoundWL (TVar (Right i)) (UB, TVar (Right j)) ws, "SolveRExtVar")
+    (n, Right $ updateBoundInWL (TVar (Right i)) (UB, TVar (Right j)) ws, "SolveRExtVar")
 
 step n _                                        = (n, Left "No matched pattern", "None")
 
