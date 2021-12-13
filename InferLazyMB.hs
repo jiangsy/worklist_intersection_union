@@ -177,15 +177,19 @@ addTypsBefore var@(TVar (Right i)) new_vars (WExVar j lbs ubs : ws)
 addTypsBefore var new_vars (w:ws) = w : addTypsBefore var new_vars ws
 addTypsBefore var new_vars [] = error ("Bug: Typ " ++ show var ++ "is not in the worklist")
 
--- check reverse
 
+-- targetTyp, boundType, worklist
 carryBackInWL :: Typ -> Typ -> [Work] -> Either String [Work]
 carryBackInWL targetTyp@(TVar (Right i)) boundTyp wl =
-  carryBackInWLHelper (reverse $ takeWhile notTargetTyp wl) [getWorkFromExTyp wl targetTyp] [TVar (Right i)] (nub (fv boundTyp) `intersect` getVarsAfterTyp wl targetTyp) >>= (\wl' -> Right $ reverse wl' ++ tail (dropWhile notTargetTyp wl))
+  carryBackInWLHelper (reverse $ takeWhile notTargetTyp wl) 
+                      [getWorkFromExTyp wl targetTyp] [TVar (Right i)] 
+                      (nub (fv boundTyp) `intersect` getVarsAfterTyp wl targetTyp)
+     >>= (\wl' -> Right $ reverse wl' ++ tail (dropWhile notTargetTyp wl))
     where
       notTargetTyp = \case
                     WExVar j _ _ -> i/=j
                     _ -> True
+      -- worklist, worksToCarryBack, typsToCarryBack, freeExtVars
       carryBackInWLHelper :: [Work] -> [Work] -> [Typ] -> [Typ] -> Either String [Work]
       carryBackInWLHelper wl' worksToCarryBack varsToCarryBack [] =  Right $ reverse worksToCarryBack ++ wl'
       carryBackInWLHelper (wexvar@(WExVar j lbs ubs):wl') worksToCarryBack varsToCarryBack fvs
