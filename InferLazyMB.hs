@@ -9,6 +9,7 @@ import Data.Functor
 import Debug.Trace
 import GHC.Exts (Constraint)
 
+import LazyDef
 {- A lazy subtyping algorithm:
 
 A,B := a | ^a | Int | A -> B | forall a. A | 
@@ -60,7 +61,7 @@ old rules
 
 new rules
 
-cv(E) : carried vars in E
+cv(E) : carried vars (ext+uni) in E
 fv(*) : free vars in *
 FV    : free vars in A that appears after ^a 
 
@@ -70,46 +71,13 @@ FV    : free vars in A that appears after ^a
 2. [A/^a]_E (T, L <: ^b <: R)  = [A/^a]_{E,L <: ^b <: R}          ^b notin fv and cv(E) ∩ fv(L + R) /= ϕ
 
 3. [A/^a]_E (T, a)             = [A/^a]_{E, a}                    (always carry uni var back)
+
 (always carrying WSub back doesn't seem to be a problem)
 4. [A/^a]_E (T, B <: C)        = T, [A/^a]_(E, B <: C)             fv(B + C) in fv(A + E)
 
 5. [A/^a]_E (T, B <: C)        = T, B <: C, [A/^a]_(E)             not (fv(B + C) in fv(A + E))
 
 -}
-
-data Typ = TVar (Either Int Int) | TInt | TBool | TForall (Typ -> Typ) | TArrow Typ Typ
-
--- Consider changing to set
-data Work = WVar Int | WExVar Int [Typ] [Typ] | Sub Typ Typ deriving Eq
-
-data BoundTyp = LB | UB
-
-ppTyp :: Int -> Typ -> String
-ppTyp n (TVar (Left i))  = show i
-ppTyp n (TVar (Right i)) = "^" ++ show i
-ppTyp n TInt             = "Int"
-ppTyp n TBool            = "Bool"
-ppTyp n (TArrow a b)     = "(" ++ ppTyp n a ++ ") -> " ++ ppTyp n b
-ppTyp n (TForall f)      = "forall " ++ show n ++ ". " ++ ppTyp (n+1) (f (TVar (Left n)))
-
-eqTyp :: Int -> Typ -> Typ -> Bool
-eqTyp n TInt TInt = True
-eqTyp n TBool TBool = True
-eqTyp n (TVar v1) (TVar v2)  = v1 == v2
-eqTyp n (TArrow a b) (TArrow c d) = a == c && b == d
-eqTyp n (TForall g) (TForall h) = eqTyp (n+1) (g (TVar (Left n))) (h (TVar (Left n)))
-eqTyp n _ _ = False
-
-instance Show Typ where
-  show = ppTyp 0
-
-instance Show Work where
-  show (WVar i)   = show i
-  show (WExVar i lbs ubs)  = show lbs ++ " <: " ++ "^" ++ show i ++ " <: " ++ show ubs
-  show (Sub a b)      = show a ++ " <: " ++ show b
-
-instance Eq Typ where
-  t1 == t2 = eqTyp 0 t1 t2
 
 mono :: Typ -> Bool
 mono (TForall g)  = False
