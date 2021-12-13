@@ -10,6 +10,7 @@ import Debug.Trace
 import GHC.Exts (Constraint)
 
 import LazyDef
+import TestCase
 {- A lazy subtyping algorithm:
 
 A,B := a | ^a | Int | A -> B | forall a. A | 
@@ -152,15 +153,15 @@ rearrangeWL wl targetVar@(TVar (Right i)) (WExVar j lbsj ubsj : varsToMove)
   | otherwise = rearrangeWLHelper wl >>= (\wl -> rearrangeWL wl targetVar varsToMove)
   where
     rearrangeWLHelper :: [Work] -> Either String [Work]
-    rearrangeWLHelper (WExVar k lbsk ubsk : wl)
-      | k == j = rearrangeWLHelper wl
-      | k == i = Right $ WExVar k lbsk ubsk : WExVar j lbsj ubsj : wl
-      | otherwise = rearrangeWLHelper wl >>= (\wl' -> Right $ WExVar k lbsk ubsk : wl')
-    rearrangeWLHelper (WVar k : wl)
+    rearrangeWLHelper (WExVar k lbsk ubsk : wl')
+      | k == j = rearrangeWLHelper wl'
+      | k == i = Right $ WExVar k lbsk ubsk : WExVar j lbsj ubsj : wl'
+      | otherwise = rearrangeWLHelper wl >>= (\wl'' -> Right $ WExVar k lbsk ubsk : wl'')
+    rearrangeWLHelper (WVar k : wl')
       | TVar (Left k) `elem` (concatMap fUniV lbsj `union` concatMap fUniV ubsj) =
             Left ("Error: Cyclic Dependency of " ++ show (TVar (Right j)) ++ " and " ++ show (TVar (Left k)) ++ "!")
-      | otherwise =  rearrangeWLHelper wl >>= (\wl' -> Right $ WVar j : wl')
-    rearrangeWLHelper (w : wl) = rearrangeWLHelper wl >>= (\wl' -> Right $ w:wl')
+      | otherwise =  rearrangeWLHelper wl' >>= (\wl'' -> Right $ WVar j : wl'')
+    rearrangeWLHelper (w : wl') = rearrangeWLHelper wl' >>= (\wl'' -> Right $ w:wl'')
     rearrangeWLHelper [] = error "Bug: target type not in WL!"
 rearrangeWL wl targetVar (var:varWL) = error ("Bug: " ++ show var ++ "should not be rearranged!")
 
@@ -278,22 +279,10 @@ check n ws =
       Right wl -> check m wl
 
 
-t1 = TForall (\a -> TArrow a a)
-
-
-t2 = TArrow t1 (TForall (\a -> TArrow a a))
-
-
-t3 = TArrow TInt TInt
-
 chkAndShow = putStrLn .  checkAndShow 0
 
 chk = check 0
 
-t5 = TForall (\t -> t)
-
-t6 = TArrow TInt TInt
-t7 = TArrow t6 t6
 
 test1 = chkAndShow [Sub t3 t3]
 test2 = chkAndShow [Sub t1 t3]
@@ -310,9 +299,7 @@ tEx = TVar . Right
 
 test9 = chkAndShow [Sub ex1 (TArrow TInt ex2), Sub ex2 (TArrow TInt ex1), WExVar 2 [] [], WExVar 1 [] []]
 test10 = chkAndShow [Sub (TArrow TInt (TArrow TInt TBool )) (TForall (\t -> (TArrow t (TArrow TInt t))))]
-ex1 = tEx 1
-ex2 = tEx 2
-ex3 = tEx 3
+
 ws1 = [Sub ex1 (TArrow TInt (TArrow ex2 ex3)), Sub ex2 (TArrow TInt ex1),  WExVar 2 [] [],  WExVar 1 [] [], WExVar 3 [] []]
 
 testGetExWLBetweenExTyp :: [Work]
@@ -322,4 +309,4 @@ testGatherExVarsToMove :: [Work]
 testGatherExVarsToMove = gatherExVarsToMove ws1 ex1 (TArrow TInt (TArrow ex2 ex3))
 
 testRearrangeWL :: Either String [Work]
-testRearrangeWL = rearrangeWL ws1 (tEx 1) testGatherExVarsToMove
+testRearrangeWL = rearrangeWL ws1 (ex1) testGatherExVarsToMove

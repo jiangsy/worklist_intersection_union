@@ -7,6 +7,7 @@ import Debug.Trace
 import GHC.Exts (Constraint)
 
 import LazyDef
+import TestCase
 
 {- A lazy subtyping algorithm:
 
@@ -160,21 +161,13 @@ check n ws =
       Right wl -> check m wl
 
 
-t1 = TForall (\a -> TArrow a a)
-
-t2 = TArrow t1 (TForall (\a -> TArrow a a))
-
-t3 = TArrow TInt TInt
 
 chkAndShow = putStrLn .  checkAndShow 0
 
 chk = check 0
 
 
-t5 = TForall (\t -> t)
 
-t6 = TArrow TInt TInt
-t7 = TArrow t6 t6
 
 test1 = chk [Sub t3 t3]
 test2 = chk [Sub t1 t3]
@@ -187,10 +180,7 @@ test7 = chk [Sub t5 t7]
 
 test8 = chk [Sub (TForall $ \a -> TArrow a a) (TArrow t5 (TArrow TInt TInt))]
 
-tEx = TVar . Right
 
-ex1 = tEx 1
-ex2 = tEx 2
 
 test9 = putStrLn  $
   check 4 [Sub ex1 (TArrow TInt ex2), Sub ex2 (TArrow TInt ex1), WExVar 2 [] [], WExVar 1 [] []]

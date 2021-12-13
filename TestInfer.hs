@@ -4,7 +4,8 @@ import Test.QuickCheck
 import System.Random (StdGen, mkStdGen, random)
 import Control.Monad(liftM,liftM2,liftM3)
 
-import InferLazyMF (Typ(..), Work(..), chk, t1, mono, chkAndShow)
+import LazyDef (Typ(..), Work(..))
+import InferLazyMF (chk, mono, chkAndShow)
 import qualified InferSimple as InferS (Typ(..), Work(..), chk)
 
 adaptTypStoLS :: InferS.Typ -> Typ
@@ -61,3 +62,4 @@ instance {-# OVERLAPPING #-} Arbitrary [Work] where
                           (1, return [Sub leftTyp rightTyp])]
 
 test1 = chkAndShow [Sub (TArrow TInt (TArrow TInt TBool )) (TForall (\t -> (TArrow t (TArrow TInt t))))]
+
