@@ -1,5 +1,5 @@
 {-# LANGUAGE LambdaCase #-}
-module InferLazyMF where
+module InferLazyMB where
 
 import Control.Exception
 import Prelude hiding (flip)
@@ -60,15 +60,18 @@ old rules
 
 new rules
 
-cv : carried vars in E
-fv : free vars in A that appears after ^a 
+cv(E) : carried vars in E
+fv(*) : free vars in *
+FV    : free vars in A that appears after ^a 
 
 1. [A/^a]_E (T,L <: ^b <: R)   = T,L <: ^b <: R, [A/^a]_E         ^a notin FV(L+R), cv(E) ∩ fv(L + R) = ϕ
+                                                                  if every v in FV has been traversed, the iteration stops 
                                                               
 2. [A/^a]_E (T, L <: ^b <: R)  = [A/^a]_{E,L <: ^b <: R}          ^b notin fv and cv(E) ∩ fv(L + R) /= ϕ
 
 3. [A/^a]_E (T, a)             = error, the iteration must stop before any uni var because otherwise the scope of ext vars in E will be enlarged 
 
+(always carrying WSub back doesn't seem to be a problem)
 4. [A/^a]_E (T, B <: C)        = T, [A/^a]_(E, B <: C)             fv(B + C) in fv(A + E)
 
 5. [A/^a]_E (T, B <: C)        = T, B <: C, [A/^a]_(E)             not (fv(B + C) in fv(A + E))
@@ -115,7 +118,7 @@ mono (TArrow a b) = mono a && mono b
 mono _            = True
 
 fv :: Typ -> [Typ]
-fv (TVar i)         = fv (TVar i)
+fv (TVar i)         = [TVar i]
 fv (TArrow t1 t2)   = fv t1 `union` fv t2
 fv (TForall g)      = fv (g TInt)
 fv _                = []
@@ -174,23 +177,28 @@ addTypsBefore var@(TVar (Right i)) new_vars (WExVar j lbs ubs : ws)
 addTypsBefore var new_vars (w:ws) = w : addTypsBefore var new_vars ws
 addTypsBefore var new_vars [] = error ("Bug: Typ " ++ show var ++ "is not in the worklist")
 
+-- check reverse
 
 carryBackInWL :: Typ -> Typ -> [Work] -> Either String [Work]
 carryBackInWL targetTyp@(TVar (Right i)) boundTyp wl =
-  carryBackInWLHelper (reverse $ dropWhile (not . isTargetTyp) wl) [] [] [] >>= (\wl' -> Right $ reverse wl' ++ takeWhile isTargetTyp wl)
+  carryBackInWLHelper (reverse $ takeWhile notTargetTyp wl) [getWorkFromExTyp wl targetTyp] [TVar (Right i)] (nub (fv boundTyp) `intersect` getVarsAfterTyp wl targetTyp) >>= (\wl' -> Right $ reverse wl' ++ tail (dropWhile notTargetTyp wl))
     where
-      isTargetTyp = \case
-                    WExVar i _ _ -> True
-                    _ -> False
+      notTargetTyp = \case
+                    WExVar j _ _ -> i/=j
+                    _ -> True
       carryBackInWLHelper :: [Work] -> [Work] -> [Typ] -> [Typ] -> Either String [Work]
-      carryBackInWLHelper ((WExVar j lbs ubs):wl') worksToCarryBack varsToCarryBack fvs
-        | TVar (Right j) `elem` fv boundTyp = Left "Error: Cyclic Dependency!"
-      carryBackInWLHelper (wvar@(WVar j):wl') workstoCarryBack varsToCarryBack fvs = Left "Error: Cyclic Dependency!"
-      carryBackInWLHelper (wsub@(Sub t1 t2):wl') workstoCarryBack varsToCarryBack fvs
-        | null (varsToCarryBack `intersect` fvInWork wsub) = 
-          carryBackInWLHelper wl' workstoCarryBack varsToCarryBack fvs >>= (\wl'' -> Right $ wsub : wl'')
-        | otherwise  = carryBackInWLHelper wl' (wsub:workstoCarryBack) varsToCarryBack fvs
-      carryBackInWLHelper _ _ _ _ = error "Bug: Impossible in carryBackInWL"
+      carryBackInWLHelper wl' worksToCarryBack varsToCarryBack [] =  Right $ reverse worksToCarryBack ++ wl'
+      carryBackInWLHelper (wexvar@(WExVar j lbs ubs):wl') worksToCarryBack varsToCarryBack fvs
+        | null $ intersect varsToCarryBack (concatMap fv lbs `union` concatMap fv ubs) =
+          carryBackInWLHelper wl' worksToCarryBack varsToCarryBack (delete (TVar (Right j)) fvs) >>= (\wl'' -> Right $ wexvar : wl'')
+        | otherwise = if TVar (Right j) `elem` fvs then Left "Error: Cyclic Dependency" else
+            carryBackInWLHelper wl' (wexvar:worksToCarryBack) (TVar (Right j):varsToCarryBack) fvs
+      carryBackInWLHelper (wvar@(WVar j):wl') worksToCarryBack varsToCarryBack fvs = Left "Error: Cyclic Dependency!"
+      carryBackInWLHelper (wsub@(Sub t1 t2):wl') worksToCarryBack varsToCarryBack fvs
+        | null (varsToCarryBack `intersect` fvInWork wsub) =
+          carryBackInWLHelper wl' worksToCarryBack varsToCarryBack fvs >>= (\wl'' -> Right $ wsub : wl'')
+        | otherwise  = carryBackInWLHelper wl' (wsub:worksToCarryBack) varsToCarryBack fvs
+      carryBackInWLHelper wl' wtc vtc fvs = error (show wl' ++ "\n" ++ show wtc ++ "\n" ++ show vtc ++ "\n" ++ show fvs)
 carryBackInWL _ _ _ = error "Bug : Wrong targetTyp"
 
 step :: Int -> [Work] -> (Int, Either String [Work], String)
@@ -210,7 +218,10 @@ step n (Sub (TForall g) b : ws)                 =                               
   (n+1, Right $  Sub (g (TVar (Right n))) b : WExVar n [] [] : ws, "SForallL")
 
 step n (Sub (TVar (Right i)) (TArrow a b) : ws)                                     -- 09
-  | mono (TArrow a b)                           = undefined
+  | mono (TArrow a b)                           =
+    case carryBackInWL (TVar (Right i)) (TArrow a b) ws of
+       Left e -> (n, Left e, "SplitL mono")
+       Right wl -> (n, Right $ updateBoundInWL (TVar (Right i)) (UB, TArrow a b) wl, "SplitL mono")
   | otherwise                                   =
     (n+2, Right $ Sub (TArrow a1 a2) (TArrow a b) : updateBoundInWL (TVar (Right i)) (UB, a1_a2)
       (addTypsBefore (TVar (Right i)) [a1, a2] ws), "SplitL")
@@ -220,7 +231,10 @@ step n (Sub (TVar (Right i)) (TArrow a b) : ws)                                 
                   a1_a2 = TArrow a1 a2
 
 step n (Sub (TArrow a b) (TVar (Right i)) : ws)                                     -- 10
-  | mono (TArrow a b)                           = undefined
+  | mono (TArrow a b)                           =
+    case carryBackInWL (TVar (Right i)) (TArrow a b) ws of
+       Left e -> (n, Left e, "SplitR mono")
+       Right wl -> (n, Right $ updateBoundInWL (TVar (Right i)) (LB, TArrow a b) wl, "SplitR mono")
   | otherwise                                   =
     (n+2,  Right $ Sub (TArrow a b) (TArrow a1 a2) : updateBoundInWL (TVar (Right i)) (LB, a1_a2)
       (addTypsBefore (TVar (Right i)) [a1, a2] ws), "SplitR")
