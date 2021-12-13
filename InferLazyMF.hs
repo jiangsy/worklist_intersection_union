@@ -165,6 +165,15 @@ rearrangeWL wl targetVar@(TVar (Right i)) (WExVar j lbsj ubsj : varsToMove)
     rearrangeWLHelper [] = error "Bug: target type not in WL!"
 rearrangeWL wl targetVar (var:varWL) = error ("Bug: " ++ show var ++ "should not be rearranged!")
 
+testGetExWLBetweenExTyp :: [Work]
+testGetExWLBetweenExTyp = getExWLBetweenExTyp ws1 ex1 ex2
+
+testGatherExVarsToMove :: [Work]
+testGatherExVarsToMove = gatherExVarsToMove ws1 ex1 (TArrow TInt (TArrow ex2 ex3))
+
+testRearrangeWL :: Either String [Work]
+testRearrangeWL = rearrangeWL ws1 (ex1) testGatherExVarsToMove
+
 updateBoundInWL :: Typ -> (BoundTyp, Typ) -> [Work] -> [Work]
 -- match once and no more recursion
 updateBoundInWL var@(TVar (Right i)) bound (WExVar j lbs ubs : ws)
@@ -262,7 +271,7 @@ checkAndShow :: Int -> [Work] -> String
 checkAndShow n [] = "Success!"
 checkAndShow n ws =
   case ws' of
-    Left e -> "  " ++ show (reverse ws) ++ "\n-->{Rule : " ++ s1  ++ " }\n" ++ e
+    Left e -> "   " ++ show (reverse ws) ++ "\n-->{Rule : " ++ s1  ++ " }\n" ++ e
     Right wl -> s2
       where s2 = "   " ++ show (reverse ws) ++ "\n-->{ Rule: " ++ s1 ++ " }\n" ++ checkAndShow m wl
   where
@@ -278,11 +287,9 @@ check n ws =
       Left e -> "Failure!"
       Right wl -> check m wl
 
-
 chkAndShow = putStrLn .  checkAndShow 0
 
 chk = check 0
-
 
 test1 = chkAndShow [Sub t3 t3]
 test2 = chkAndShow [Sub t1 t3]
@@ -290,23 +297,10 @@ test3 = chkAndShow [Sub t5 t3]
 test4 = chkAndShow [Sub t5 t1]
 test5 = chkAndShow [Sub t1 t6]
 test6 = chkAndShow [Sub t6 t3]
-
 test7 = chkAndShow [Sub t5 t7]
-
 test8 = chkAndShow [Sub (TForall $ \a -> TArrow a a) (TArrow t5 (TArrow TInt TInt))]
-
-tEx = TVar . Right
-
 test9 = chkAndShow [Sub ex1 (TArrow TInt ex2), Sub ex2 (TArrow TInt ex1), WExVar 2 [] [], WExVar 1 [] []]
 test10 = chkAndShow [Sub (TArrow TInt (TArrow TInt TBool )) (TForall (\t -> (TArrow t (TArrow TInt t))))]
 
 ws1 = [Sub ex1 (TArrow TInt (TArrow ex2 ex3)), Sub ex2 (TArrow TInt ex1),  WExVar 2 [] [],  WExVar 1 [] [], WExVar 3 [] []]
 
-testGetExWLBetweenExTyp :: [Work]
-testGetExWLBetweenExTyp = getExWLBetweenExTyp ws1 ex1 ex2
-
-testGatherExVarsToMove :: [Work]
-testGatherExVarsToMove = gatherExVarsToMove ws1 ex1 (TArrow TInt (TArrow ex2 ex3))
-
-testRearrangeWL :: Either String [Work]
-testRearrangeWL = rearrangeWL ws1 (ex1) testGatherExVarsToMove

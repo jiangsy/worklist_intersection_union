@@ -167,23 +167,14 @@ chkAndShow = putStrLn .  checkAndShow 0
 chk = check 0
 
 
+test1 = chkAndShow [Sub t3 t3]
+test2 = chkAndShow [Sub t1 t3]
+test3 = chkAndShow [Sub t5 t3]
+test4 = chkAndShow [Sub t5 t1]
+test5 = chkAndShow [Sub t1 t6]
+test6 = chkAndShow [Sub t6 t3]
+test7 = chkAndShow [Sub t5 t7]
+test8 = chkAndShow [Sub (TForall $ \a -> TArrow a a) (TArrow t5 (TArrow TInt TInt))]
+test9 = chkAndShow [Sub ex1 (TArrow TInt ex2), Sub ex2 (TArrow TInt ex1), WExVar 2 [] [], WExVar 1 [] []]
 
-
-test1 = chk [Sub t3 t3]
-test2 = chk [Sub t1 t3]
-test3 = chk [Sub t5 t3]
-test4 = chk [Sub t5 t1]
-test5 = chk [Sub t1 t6]
-test6 = chk [Sub t6 t3]
-
-test7 = chk [Sub t5 t7]
-
-test8 = chk [Sub (TForall $ \a -> TArrow a a) (TArrow t5 (TArrow TInt TInt))]
-
-
-
-test9 = putStrLn  $
-  check 4 [Sub ex1 (TArrow TInt ex2), Sub ex2 (TArrow TInt ex1), WExVar 2 [] [], WExVar 1 [] []]
-
-test10 = putStrLn  $
-  check 5 [WExVar 4 [TVar (Right 2)] [TArrow (TVar (Right 1)) TInt], WExVar 3 [TVar (Right 1)] [TArrow (TVar (Right 2)) TInt], WExVar 2 [] [], WExVar 1 [] []]
+test10 = chkAndShow [WExVar 4 [TVar (Right 2)] [TArrow (TVar (Right 1)) TInt], WExVar 3 [TVar (Right 1)] [TArrow (TVar (Right 2)) TInt], WExVar 2 [] [], WExVar 1 [] []]
