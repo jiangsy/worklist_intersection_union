@@ -69,8 +69,7 @@ FV    : free vars in A that appears after ^a
                                                               
 2. [A/^a]_E (T, L <: ^b <: R)  = [A/^a]_{E,L <: ^b <: R}          ^b notin fv and cv(E) ∩ fv(L + R) /= ϕ
 
-3. [A/^a]_E (T, a)             = error, the iteration must stop before any uni var because otherwise the scope of ext vars in E will be enlarged 
-
+3. [A/^a]_E (T, a)             = [A/^a]_{E, a}                    (always carry uni var back)
 (always carrying WSub back doesn't seem to be a problem)
 4. [A/^a]_E (T, B <: C)        = T, [A/^a]_(E, B <: C)             fv(B + C) in fv(A + E)
 
@@ -197,7 +196,8 @@ carryBackInWL targetTyp@(TVar (Right i)) boundTyp wl =
           carryBackInWLHelper wl' worksToCarryBack varsToCarryBack (delete (TVar (Right j)) fvs) >>= (\wl'' -> Right $ wexvar : wl'')
         | otherwise = if TVar (Right j) `elem` fvs then Left "Error: Cyclic Dependency" else
             carryBackInWLHelper wl' (wexvar:worksToCarryBack) (TVar (Right j):varsToCarryBack) fvs
-      carryBackInWLHelper (wvar@(WVar j):wl') worksToCarryBack varsToCarryBack fvs = Left "Error: Cyclic Dependency!"
+      carryBackInWLHelper (wvar@(WVar j):wl') worksToCarryBack varsToCarryBack fvs = 
+        carryBackInWLHelper wl' (wvar:worksToCarryBack) (TVar (Left j):varsToCarryBack) fvs
       carryBackInWLHelper (wsub@(Sub t1 t2):wl') worksToCarryBack varsToCarryBack fvs
         | null (varsToCarryBack `intersect` fvInWork wsub) =
           carryBackInWLHelper wl' worksToCarryBack varsToCarryBack fvs >>= (\wl'' -> Right $ wsub : wl'')

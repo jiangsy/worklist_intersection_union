@@ -178,6 +178,7 @@ gatherExVarsHelp _ (w : ws) res = error "Bug: Impossible in gatherExVarsHelp!"
 
 -- args : WL, target ExVar, ExVars to move
 rearrangeWL :: [Work] -> Typ -> [Work] -> Either String [Work]
+rearrangeWL wl targetVar [] = Right wl
 rearrangeWL wl targetVar@(TVar (Right i)) (WExVar j lbsj ubsj : varsToMove)
   | targetVar `elem` (concatMap fExtV lbsj `union` concatMap fExtV ubsj) =
       Left ("Error: Cyclic Dependency of " ++ show (TVar (Right i)) ++ " and " ++ show (TVar (Right j)) ++ "!")
@@ -195,7 +196,6 @@ rearrangeWL wl targetVar@(TVar (Right i)) (WExVar j lbsj ubsj : varsToMove)
     rearrangeWLHelper (w : wl) = rearrangeWLHelper wl >>= (\wl' -> Right $ w:wl')
     rearrangeWLHelper [] = error "Bug: target type not in WL!"
 rearrangeWL wl targetVar (var:varWL) = error ("Bug: " ++ show var ++ "should not be rearranged!")
-rearrangeWL wl targetVar [] = Right wl
 
 updateBoundInWL :: Typ -> (BoundTyp, Typ) -> [Work] -> [Work]
 -- match once and no more recursion
