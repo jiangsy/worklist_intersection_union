@@ -52,7 +52,7 @@ Algorithm:
 --------------
 
 [A/^a]_E (T,L <: ^a <: R)   = T,E,L <: ^a <: R                 ^a notin fv(A) and ^a notin fv(E)
-[A/^a]_E (T,L <: ^b <: R)   = [A/^a]_E T,^b                    ^b notin FV(A + E) and ^a notin(L+R)
+[A/^a]_E (T,L <: ^b <: R)   = [A/^a]_E T,L <: ^b <: R          ^b notin FV(A + E) and ^a notin(L+R)
 [A/^a]_E (T, L <: ^b <: R)  = [A/^a]_{E,L <: ^b <: R} T        ^b in FV(A) or ^b in FV(E) and ^a notin(L+R)
 [A/^a]_E (T, a)             = [A/^a]_{E,L <: ^b <: R} T        a notin FV(A+ E) 
 [A/^a]_E (T |- B <: C)      = [A/^a]_(E, B <: C) T             fv(B + C) in fv(A + E)
@@ -73,8 +73,8 @@ fv _                = []
 
 fvInWork :: Work -> [Typ]
 fvInWork (WVar i) = []
-fvInWork (WExVar j lbs ubs) = nub $ concatMap fv lbs `union` concatMap fv ubs
-fvInWork (Sub t1 t2) = fv t1 `union` fv t2
+fvInWork (WExVar j lbs ubs) = nub (concatMap fv lbs) `union` nub (concatMap fv ubs)
+fvInWork (Sub t1 t2) = nub (fv t1) `union` nub (fv t2)
 
 worksToTyps :: [Work] -> [Either Int Int]
 worksToTyps = concatMap (\case
@@ -93,14 +93,6 @@ getVarsAfterTyp wl x = error (show x ++ "is not a type")
 
 prec :: [Work] -> Typ -> Typ -> Bool
 prec w varA varB = varA `elem` getVarsBeforeTyp w varB
-
-getWorkFromExTyp :: [Work] -> Typ -> Work
-getWorkFromExTyp ((WExVar j lbs ubs):wl) (TVar (Right i))
-  | i == j = WExVar j lbs ubs
-  | otherwise = getWorkFromExTyp wl (TVar (Right i))
-getWorkFromExTyp (w:wl) (TVar (Right i)) = getWorkFromExTyp wl (TVar (Right i))
-getWorkFromExTyp [] (TVar (Right i)) = error (show (TVar (Right i)) ++ "not found in WL!")
-getWorkFromExTyp _ t = error (show t ++ "is not a ExVar")
 
 updateBoundInWL :: Typ -> (BoundTyp, Typ) -> [Work] -> [Work]
 -- match once and no more recursion
@@ -136,12 +128,11 @@ carryBackInWL targetTyp@(TVar (Right i)) boundTyp wl =
       | i == j = if TVar (Right i) `elem` fvs then Left "Error: Cyclic Dependency"
                                                 else Right $ wexvar:(reverse toCarryBack++wl')
       | otherwise = if
-        | (TVar (Right j) `notElem` fvs) && (TVar (Right i) `notElem` fvInBounds) -> 
+        | (TVar (Right j) `notElem` fvs) ->
           carryBackInWLHelper wl' toCarryBack fvs >>= (\wl'' -> Right $ wexvar:wl'')
-        | (TVar (Right j) `elem` fvs) && (TVar (Right i) `notElem` fvInBounds) ->
-          carryBackInWLHelper wl' (wexvar:toCarryBack) (fvInBounds `union` fvs)
+        | (TVar (Right j) `elem` fvs) && (TVar (Right i) `notElem` fvInWork wexvar) ->
+          carryBackInWLHelper wl' (wexvar:toCarryBack) (fvInWork wexvar `union` fvs)
         | otherwise -> Left "Error: Cyclic Dependency"
-      where fvInBounds = nub (concatMap fv lbs) `union` nub (concatMap fv ubs)
     carryBackInWLHelper (wvar@(WVar j):wl') toCarryBack fvs
       | TVar (Left j) `elem` fvs = Left "Error: Cyclic Dependency!"
       | otherwise = carryBackInWLHelper wl' toCarryBack fvs >>= (\wl'' -> Right $ wvar:wl'')
