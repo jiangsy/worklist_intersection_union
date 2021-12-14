@@ -1,4 +1,4 @@
-{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE LambdaCase, MultiWayIf #-}
 module InferLazyMB where
 
 import Control.Exception
@@ -51,32 +51,12 @@ Algorithm:
 [A/^a]_E T
 --------------
 
-old rules
-
 [A/^a]_E (T,L <: ^a <: R)   = T,E,L <: ^a <: R                 ^a notin fv(A) and ^a notin fv(E)
 [A/^a]_E (T,L <: ^b <: R)   = [A/^a]_E T,^b                    ^b notin FV(A + E) and ^a notin(L+R)
 [A/^a]_E (T, L <: ^b <: R)  = [A/^a]_{E,L <: ^b <: R} T        ^b in FV(A) or ^b in FV(E) and ^a notin(L+R)
 [A/^a]_E (T, a)             = [A/^a]_{E,L <: ^b <: R} T        a notin FV(A+ E) 
 [A/^a]_E (T |- B <: C)      = [A/^a]_(E, B <: C) T             fv(B + C) in fv(A + E)
 [A/^a]_E (T |- B <: C)      = [A/^a]_(E) (T |- B <: C)         not (fv(B + C) in fv(A + E))
-
-new rules
-
-cv(E) : carried vars (ext+uni) in E
-fv(*) : free vars in *
-FV    : free vars in A that appears after ^a 
-
-1. [A/^a]_E (T,L <: ^b <: R)   = T,L <: ^b <: R, [A/^a]_E         ^a notin FV(L+R), cv(E) ∩ fv(L + R) = ϕ
-                                                                  if every v in FV has been traversed, the iteration stops 
-                                                              
-2. [A/^a]_E (T, L <: ^b <: R)  = [A/^a]_{E,L <: ^b <: R}          ^b notin fv and cv(E) ∩ fv(L + R) /= ϕ
-
-3. [A/^a]_E (T, a)             = [A/^a]_{E, a}                    (always carry uni var back)
-
-(always carrying WSub back doesn't seem to be a problem)
-4. [A/^a]_E (T, B <: C)        = T, [A/^a]_(E, B <: C)             fv(B + C) in fv(A + E)
-
-5. [A/^a]_E (T, B <: C)        = T, B <: C, [A/^a]_(E)             not (fv(B + C) in fv(A + E))
 
 -}
 
@@ -149,30 +129,28 @@ addTypsBefore var new_vars [] = error ("Bug: Typ " ++ show var ++ "is not in the
 -- targetTyp, boundType, worklist
 carryBackInWL :: Typ -> Typ -> [Work] -> Either String [Work]
 carryBackInWL targetTyp@(TVar (Right i)) boundTyp wl =
-  carryBackInWLHelper (reverse $ takeWhile notTargetTyp wl) 
-                      [getWorkFromExTyp wl targetTyp] [TVar (Right i)] 
-                      (nub (fv boundTyp) `intersect` getVarsAfterTyp wl targetTyp)
-     >>= (\wl' -> Right $ reverse wl' ++ tail (dropWhile notTargetTyp wl))
-    where
-      notTargetTyp = \case
-                    WExVar j _ _ -> i/=j
-                    _ -> True
-      -- worklist, worksToCarryBack, typsToCarryBack, freeExtVars
-      carryBackInWLHelper :: [Work] -> [Work] -> [Typ] -> [Typ] -> Either String [Work]
-      carryBackInWLHelper wl' worksToCarryBack varsToCarryBack [] =  Right $ reverse worksToCarryBack ++ wl'
-      carryBackInWLHelper (wexvar@(WExVar j lbs ubs):wl') worksToCarryBack varsToCarryBack fvs
-        | null $ intersect varsToCarryBack (concatMap fv lbs `union` concatMap fv ubs) =
-          carryBackInWLHelper wl' worksToCarryBack varsToCarryBack (delete (TVar (Right j)) fvs) >>= (\wl'' -> Right $ wexvar : wl'')
-        | otherwise = if TVar (Right j) `elem` fvs then Left "Error: Cyclic Dependency" else
-            carryBackInWLHelper wl' (wexvar:worksToCarryBack) (TVar (Right j):varsToCarryBack) fvs
-      carryBackInWLHelper (wvar@(WVar j):wl') worksToCarryBack varsToCarryBack fvs = 
-        carryBackInWLHelper wl' (wvar:worksToCarryBack) (TVar (Left j):varsToCarryBack) fvs
-      carryBackInWLHelper (wsub@(Sub t1 t2):wl') worksToCarryBack varsToCarryBack fvs
-        | null (varsToCarryBack `intersect` fvInWork wsub) =
-          carryBackInWLHelper wl' worksToCarryBack varsToCarryBack fvs >>= (\wl'' -> Right $ wsub : wl'')
-        | otherwise  = carryBackInWLHelper wl' (wsub:worksToCarryBack) varsToCarryBack fvs
-      carryBackInWLHelper wl' wtc vtc fvs = error (show wl' ++ "\n" ++ show wtc ++ "\n" ++ show vtc ++ "\n" ++ show fvs)
-carryBackInWL _ _ _ = error "Bug : Wrong targetTyp"
+  carryBackInWLHelper wl [] (nub $ fv boundTyp)
+  where
+    carryBackInWLHelper :: [Work] -> [Work] -> [Typ] -> Either String [Work]
+    carryBackInWLHelper (wexvar@(WExVar j lbs ubs):wl') toCarryBack fvs
+      | i == j = if TVar (Right i) `elem` fvs then Left "Error: Cyclic Dependency"
+                                                else Right $ wexvar:(reverse toCarryBack++wl')
+      | otherwise = if
+        | (TVar (Right j) `notElem` fvs) && (TVar (Right i) `notElem` fvInBounds) -> 
+          carryBackInWLHelper wl' toCarryBack fvs >>= (\wl'' -> Right $ wexvar:wl'')
+        | (TVar (Right j) `elem` fvs) && (TVar (Right i) `notElem` fvInBounds) ->
+          carryBackInWLHelper wl' (wexvar:toCarryBack) (fvInBounds `union` fvs)
+        | otherwise -> Left "Error: Cyclic Dependency"
+      where fvInBounds = nub (concatMap fv lbs) `union` nub (concatMap fv ubs)
+    carryBackInWLHelper (wvar@(WVar j):wl') toCarryBack fvs
+      | TVar (Left j) `elem` fvs = Left "Error: Cyclic Dependency!"
+      | otherwise = carryBackInWLHelper wl' toCarryBack fvs >>= (\wl'' -> Right $ wvar:wl'')
+    carryBackInWLHelper (wsub@(Sub t1 t2):wl') toCarryBack fvs =
+      carryBackInWLHelper wl' toCarryBack fvs >>= (\wl'' -> Right $ wsub:wl'')
+    carryBackInWLHelper [] _ _ = Left "Error: Impossible in carryBackInWL"
+
+carryBackInWL _ _ _ = error "Bug: Wrong targetTyp in carryBackInWL"
+
 
 step :: Int -> [Work] -> (Int, Either String [Work], String)
 step n (WVar i : ws)                            = (n, Right ws, "Garbage Collection")     -- 01 
