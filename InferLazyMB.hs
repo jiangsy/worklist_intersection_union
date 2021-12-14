@@ -56,7 +56,7 @@ old rules
 [A/^a]_E (T,L <: ^a <: R)   = T,E,L <: ^a <: R                 ^a notin fv(A) and ^a notin fv(E)
 [A/^a]_E (T,L <: ^b <: R)   = [A/^a]_E T,^b                    ^b notin FV(A + E) and ^a notin(L+R)
 [A/^a]_E (T, L <: ^b <: R)  = [A/^a]_{E,L <: ^b <: R} T        ^b in FV(A) or ^b in FV(E) and ^a notin(L+R)
-[A/^a]_E (T, a)             = [A/^a]_{E,L <: ^b <: R} T        a notin FV(A + E) 
+[A/^a]_E (T, a)             = [A/^a]_{E,L <: ^b <: R} T        a notin FV(A+ E) 
 [A/^a]_E (T |- B <: C)      = [A/^a]_(E, B <: C) T             fv(B + C) in fv(A + E)
 [A/^a]_E (T |- B <: C)      = [A/^a]_(E) (T |- B <: C)         not (fv(B + C) in fv(A + E))
 

@@ -1,5 +1,5 @@
 {-# LANGUAGE LambdaCase #-}
-module InferLazyMF where
+module InferLazyMBOld where
 
 import Control.Exception
 import Prelude hiding (flip)
@@ -46,22 +46,20 @@ Algorithm:
 15. T[^a][lbs <: ^b < ubs] |- ^a <: ^b --> T[^a][lb U {^a} <: ^b < ub] 
 16. T[^a][lbs <: ^b < ubs] |- ^b <: ^a --> T[^a][lb <: ^b < ub U {^a}] 
 
+detailed rules of re-arranging in split-mono:
 
---------------
-[A/^a]_E T
---------------
+T[lbs <: ^a < ubs] |- ^a <: A -> B and A -> B <: ^a
+  FV_1 = fv_ext_vars in (lbs + ubs of ^a) that appers after ^a
+  FV_2 = U fv_ext_vars in (U lbs + ubs of x) that appers after ^a, forall x \in FV_1 
+  FV_3 = U fv_ext_vars in (U lbs + ubs of x) that appers after ^a, forall x \in FV_2
 
-1. [A/^a]_E (T,L <: ^b <: R)   = T,L <: ^b <: R, [A/^a]_E         ^a notin FV(L+R), cv(E) ∩ fv(L + R) = ϕ
-                                                                  if every v in FV has been traversed, the iteration stops 
-                                                              
-2. [A/^a]_E (T, L <: ^b <: R)  = [A/^a]_{E,L <: ^b <: R}          ^b notin fv and cv(E) ∩ fv(L + R) /= ϕ
+  ...
 
-3. [A/^a]_E (T, a)             = [A/^a]_{E, a}                    (always carry uni var back)
+  since the last ext_var in FV_(i+1) must appear strictly earlier (in the worklist) than the one in FV_i, the iteation always terminate
+  (for every dependency path, it always terminates because every ext_var depends on strictly ealier ext_vars)
 
-(always carrying WSub back doesn't seem to be a problem)
-4. [A/^a]_E (T, B <: C)        = T, [A/^a]_(E, B <: C)             fv(B + C) in fv(A + E)
-
-5. [A/^a]_E (T, B <: C)        = T, B <: C, [A/^a]_(E)             not (fv(B + C) in fv(A + E))
+  move lert FV = Ui FV_i. move every element in FV before ^a and keeps their relative order.
+  forall ^x \in FV, check if (1) ^a in fv(^x), (2) forall universal var y that appears between ^a and ^x, y in fv
 
 -}
 
@@ -70,16 +68,28 @@ mono (TForall g)  = False
 mono (TArrow a b) = mono a && mono b
 mono _            = True
 
-fv :: Typ -> [Typ]
-fv (TVar i)         = [TVar i]
-fv (TArrow t1 t2)   = fv t1 `union` fv t2
-fv (TForall g)      = fv (g TInt)
-fv _                = []
+fExtV :: Typ -> [Typ]
+fExtV (TVar (Right i)) = [TVar (Right i)]
+fExtV (TArrow t1 t2)   = fExtV t1 `union` fExtV t2
+fExtV (TForall g)      = fExtV (g TInt)
+fExtV _                = []
 
-fvInWork :: Work -> [Typ]
-fvInWork (WVar i) = []
-fvInWork (WExVar j lbs ubs) = nub $ concatMap fv lbs `union` concatMap fv ubs
-fvInWork (Sub t1 t2) = fv t1 `union` fv t2
+fExtVInBounds :: [Typ] -> [Typ] -> [Typ]
+fExtVInBounds lbs ubs = concatMap fExtV lbs `union` concatMap fExtV ubs
+
+fExtVInVarBounds :: [Work] -> Typ -> [Typ]
+fExtVInVarBounds wl var = case getWorkFromExTyp wl var of
+                         (WExVar _ lbs ubs) -> fExtVInBounds lbs ubs
+                         _ -> error "Bug: Impossible in fExtVInVarBounds!"
+
+fUniV :: Typ -> [Typ]
+fUniV (TVar (Left i)) = [TVar (Left i)]
+fUniV (TArrow t1 t2)   = fUniV t1 `union` fUniV t2
+fUniV (TForall g)      = fUniV (g TInt)
+fUniV _                = []
+
+fUniVInBounds :: [Typ] -> [Typ] -> [Typ]
+fUniVInBounds lbs ubs = concatMap fUniV lbs `union` concatMap fUniV ubs
 
 worksToTyps :: [Work] -> [Either Int Int]
 worksToTyps = concatMap (\case
@@ -99,6 +109,16 @@ getVarsAfterTyp wl x = error (show x ++ "is not a type")
 prec :: [Work] -> Typ -> Typ -> Bool
 prec w varA varB = varA `elem` getVarsBeforeTyp w varB
 
+getVarsBetweenTyp :: [Work] -> Typ -> Typ -> [Typ]
+getVarsBetweenTyp wl (TVar i) (TVar j) = map TVar $ takeWhile (/= i) $ dropWhile (/= j) $ worksToTyps wl
+getVarsBetweenTyp wl x y = error (show x ++ "or" ++ show y ++ "is not a type")
+
+getExWLBetweenExTyp :: [Work] -> Typ -> Typ -> [Work]
+getExWLBetweenExTyp wl varA varB = map (getWorkFromExTyp wl) (getVarsBetweenTyp wl varA varB)
+
+getExWLAfterExTyp :: [Work] -> Typ -> [Work]
+getExWLAfterExTyp wl varA = map (getWorkFromExTyp wl) (getVarsAfterTyp wl varA)
+
 getWorkFromExTyp :: [Work] -> Typ -> Work
 getWorkFromExTyp ((WExVar j lbs ubs):wl) (TVar (Right i))
   | i == j = WExVar j lbs ubs
@@ -106,6 +126,53 @@ getWorkFromExTyp ((WExVar j lbs ubs):wl) (TVar (Right i))
 getWorkFromExTyp (w:wl) (TVar (Right i)) = getWorkFromExTyp wl (TVar (Right i))
 getWorkFromExTyp [] (TVar (Right i)) = error (show (TVar (Right i)) ++ "not found in WL!")
 getWorkFromExTyp _ t = error (show t ++ "is not a ExVar")
+
+gatherExVarsToMove :: [Work] -> Typ -> Typ -> [Work]
+gatherExVarsToMove wl targetTyp arrowTyp =  map (getWorkFromExTyp wl)
+  -- only ExVars after the target ExVar need moving forward
+  (gatherExVarsHelp (getExWLAfterExTyp wl targetTyp) (map (getWorkFromExTyp wl) (fExtV arrowTyp)) [])
+
+-- args : WL, works to process, result accumulator
+gatherExVarsHelp :: [Work] -> [Work] -> [(Typ, Int)] -> [Typ]
+gatherExVarsHelp wl (WExVar i ubs lbs : ws) res =
+  gatherExVarsHelp wl (map (getWorkFromExTyp ws) (filter (`elem` map fst newRes) (fExtVInBounds lbs ubs)) ++ ws) newRes
+  where
+    newRes
+      -- only ExVars after the target ExVar need moving forward
+     | not (null (getVarsBeforeTyp wl (TVar (Right i)))) = nub ((TVar (Right i), length (getVarsBeforeTyp wl (TVar (Right i)))) : res)
+     | otherwise = res
+gatherExVarsHelp _ [] res = map fst (sortBy (\(_,a) (_,b) -> compare a b) res)
+gatherExVarsHelp _ (w : ws) res = error "Bug: Impossible in gatherExVarsHelp!"
+
+-- args : WL, target ExVar, ExVars to move
+rearrangeWL :: [Work] -> Typ -> [Work] -> Either String [Work]
+rearrangeWL wl targetVar [] = Right wl
+rearrangeWL wl targetVar@(TVar (Right i)) (WExVar j lbsj ubsj : varsToMove)
+  | targetVar `elem` (concatMap fExtV lbsj `union` concatMap fExtV ubsj) =
+      Left ("Error: Cyclic Dependency of " ++ show (TVar (Right i)) ++ " and " ++ show (TVar (Right j)) ++ "!")
+  | otherwise = rearrangeWLHelper wl >>= (\wl -> rearrangeWL wl targetVar varsToMove)
+  where
+    rearrangeWLHelper :: [Work] -> Either String [Work]
+    rearrangeWLHelper (WExVar k lbsk ubsk : wl')
+      | k == j = rearrangeWLHelper wl'
+      | k == i = Right $ WExVar k lbsk ubsk : WExVar j lbsj ubsj : wl'
+      | otherwise = rearrangeWLHelper wl >>= (\wl'' -> Right $ WExVar k lbsk ubsk : wl'')
+    rearrangeWLHelper (WVar k : wl')
+      | TVar (Left k) `elem` (concatMap fUniV lbsj `union` concatMap fUniV ubsj) =
+            Left ("Error: Cyclic Dependency of " ++ show (TVar (Right j)) ++ " and " ++ show (TVar (Left k)) ++ "!")
+      | otherwise =  rearrangeWLHelper wl' >>= (\wl'' -> Right $ WVar j : wl'')
+    rearrangeWLHelper (w : wl') = rearrangeWLHelper wl' >>= (\wl'' -> Right $ w:wl'')
+    rearrangeWLHelper [] = error "Bug: target type not in WL!"
+rearrangeWL wl targetVar (var:varWL) = error ("Bug: " ++ show var ++ "should not be rearranged!")
+
+testGetExWLBetweenExTyp :: [Work]
+testGetExWLBetweenExTyp = getExWLBetweenExTyp ws1 ex1 ex2
+
+testGatherExVarsToMove :: [Work]
+testGatherExVarsToMove = gatherExVarsToMove ws1 ex1 (TArrow TInt (TArrow ex2 ex3))
+
+testRearrangeWL :: Either String [Work]
+testRearrangeWL = rearrangeWL ws1 (ex1) testGatherExVarsToMove
 
 updateBoundInWL :: Typ -> (BoundTyp, Typ) -> [Work] -> [Work]
 -- match once and no more recursion
@@ -130,55 +197,27 @@ addTypsBefore var@(TVar (Right i)) new_vars (WExVar j lbs ubs : ws)
 addTypsBefore var new_vars (w:ws) = w : addTypsBefore var new_vars ws
 addTypsBefore var new_vars [] = error ("Bug: Typ " ++ show var ++ "is not in the worklist")
 
--- targetTyp, boundType, worklist
-carryForwardInWL :: Typ -> Typ -> [Work] -> Either String [Work]
-carryForwardInWL targetTyp@(TVar (Right i)) boundTyp wl =
-  carryForwardInWLHelper (reverse $ takeWhile notTargetTyp wl) 
-                      [getWorkFromExTyp wl targetTyp] [TVar (Right i)] 
-                      (nub (fv boundTyp) `intersect` getVarsAfterTyp wl targetTyp)
-     >>= (\wl' -> Right $ reverse wl' ++ tail (dropWhile notTargetTyp wl))
-    where
-      notTargetTyp = \case
-                    WExVar j _ _ -> i/=j
-                    _ -> True
-      -- worklist, worksToCarryBack, typsToCarryBack, freeExtVars
-      carryForwardInWLHelper :: [Work] -> [Work] -> [Typ] -> [Typ] -> Either String [Work]
-      carryForwardInWLHelper wl' worksToCarryBack varsToCarryBack [] =  Right $ reverse worksToCarryBack ++ wl'
-      carryForwardInWLHelper (wexvar@(WExVar j lbs ubs):wl') worksToCarryBack varsToCarryBack fvs
-        | null $ intersect varsToCarryBack (concatMap fv lbs `union` concatMap fv ubs) =
-          carryForwardInWLHelper wl' worksToCarryBack varsToCarryBack (delete (TVar (Right j)) fvs) >>= (\wl'' -> Right $ wexvar : wl'')
-        | otherwise = if TVar (Right j) `elem` fvs then Left "Error: Cyclic Dependency" else
-            carryForwardInWLHelper wl' (wexvar:worksToCarryBack) (TVar (Right j):varsToCarryBack) fvs
-      carryForwardInWLHelper (wvar@(WVar j):wl') worksToCarryBack varsToCarryBack fvs = 
-        carryForwardInWLHelper wl' (wvar:worksToCarryBack) (TVar (Left j):varsToCarryBack) fvs
-      carryForwardInWLHelper (wsub@(Sub t1 t2):wl') worksToCarryBack varsToCarryBack fvs
-        | null (varsToCarryBack `intersect` fvInWork wsub) =
-          carryForwardInWLHelper wl' worksToCarryBack varsToCarryBack fvs >>= (\wl'' -> Right $ wsub : wl'')
-        | otherwise  = carryForwardInWLHelper wl' (wsub:worksToCarryBack) varsToCarryBack fvs
-      carryForwardInWLHelper wl' wtc vtc fvs = error (show wl' ++ "\n" ++ show wtc ++ "\n" ++ show vtc ++ "\n" ++ show fvs)
-carryForwardInWL _ _ _ = error "Bug : Wrong targetTyp"
-
 step :: Int -> [Work] -> (Int, Either String [Work], String)
 step n (WVar i : ws)                            = (n, Right ws, "Garbage Collection")     -- 01 
-step n (WExVar i lbs ubs : ws)                  =                                         -- 02
+step n (WExVar i lbs ubs : ws)                  =                                      -- 02
   (n, Right $ [Sub lTyp uTyp | lTyp <- lbs, uTyp <- ubs] ++ ws, "SUnfoldBounds")
 step n (Sub TInt TInt : ws)                     = (n, Right ws, "SInt")                   -- 03
-step n (Sub TBool TBool : ws)                   = (n, Right ws, "SBool")                  -- 03
+step n (Sub TBool TBool : ws)                   = (n, Right ws, "SBool")                   -- 03
 
 step n (Sub (TVar i) (TVar j) : ws)| i == j     = (n, Right ws, "SUVar")                  -- 04 + 05
-step n (Sub (TArrow a b) (TArrow c d) : ws)     =                                         -- 06
+step n (Sub (TArrow a b) (TArrow c d) : ws)     =                                   -- 06
   (n, Right $  Sub b d : Sub c a : ws, "SArrow")
 
-step n (Sub a (TForall g) : ws)                 =                                         -- 08
+step n (Sub a (TForall g) : ws)                 =                                   -- 08
   (n+1, Right $ Sub a (g (TVar (Left n))) : WVar n : ws, "SForallR")
-step n (Sub (TForall g) b : ws)                 =                                         -- 07
+step n (Sub (TForall g) b : ws)                 =                                   -- 07
   (n+1, Right $  Sub (g (TVar (Right n))) b : WExVar n [] [] : ws, "SForallL")
 
-step n (Sub (TVar (Right i)) (TArrow a b) : ws)                                           -- 09
+step n (Sub (TVar (Right i)) (TArrow a b) : ws)                                     -- 09
   | mono (TArrow a b)                           =
-    case carryForwardInWL (TVar (Right i)) (TArrow a b) ws of
-       Left e -> (n, Left e, "SplitL mono")
-       Right wl -> (n, Right $ updateBoundInWL (TVar (Right i)) (UB, TArrow a b) wl, "SplitL mono")
+    case rearrangeWL ws (TVar (Right i)) (gatherExVarsToMove ws (TVar (Right i)) (TArrow a b)) of
+      Left e -> (0, Left e, "SplitL mono 1")
+      Right wl -> (n, Right $  updateBoundInWL (TVar (Right i)) (UB, TArrow a b) wl, "SplitL mono 2")
   | otherwise                                   =
     (n+2, Right $ Sub (TArrow a1 a2) (TArrow a b) : updateBoundInWL (TVar (Right i)) (UB, a1_a2)
       (addTypsBefore (TVar (Right i)) [a1, a2] ws), "SplitL")
@@ -187,11 +226,11 @@ step n (Sub (TVar (Right i)) (TArrow a b) : ws)                                 
                   a2 = TVar $ Right (n + 1)
                   a1_a2 = TArrow a1 a2
 
-step n (Sub (TArrow a b) (TVar (Right i)) : ws)                                           -- 10
+step n (Sub (TArrow a b) (TVar (Right i)) : ws)                                     -- 10
   | mono (TArrow a b)                           =
-    case carryForwardInWL (TVar (Right i)) (TArrow a b) ws of
-       Left e -> (n, Left e, "SplitR mono")
-       Right wl -> (n, Right $ updateBoundInWL (TVar (Right i)) (LB, TArrow a b) wl, "SplitR mono")
+    case rearrangeWL ws (TVar (Right i)) (gatherExVarsToMove ws (TVar (Right i)) (TArrow a b)) of
+      Left e -> (0, Left e, "SplitL mono")
+      Right wl -> (n, Right $ updateBoundInWL (TVar (Right i)) (LB, TArrow a b) wl, "SplitR mono")
   | otherwise                                   =
     (n+2,  Right $ Sub (TArrow a b) (TArrow a1 a2) : updateBoundInWL (TVar (Right i)) (LB, a1_a2)
       (addTypsBefore (TVar (Right i)) [a1, a2] ws), "SplitR")
@@ -200,26 +239,26 @@ step n (Sub (TArrow a b) (TVar (Right i)) : ws)                                 
                   a2 = TVar $ Right (n + 1)
                   a1_a2 = TArrow a1 a2
 
-step n (Sub (TVar (Right i)) (TVar (Left j)) : ws)                                        -- 11
+step n (Sub (TVar (Right i)) (TVar (Left j)) : ws)                                  -- 11
   | prec ws (TVar (Left j)) (TVar (Right i))    =
     (n, Right $ updateBoundInWL (TVar (Right i)) (UB, TVar (Left j)) ws, "SolveLVar")
   | otherwise = error "Bug: Incorrect var order in step call!"
-step n (Sub (TVar (Left j)) (TVar (Right i))  : ws)                                       -- 12
+step n (Sub (TVar (Left j)) (TVar (Right i))  : ws)                                 -- 12
   | prec ws (TVar (Left j)) (TVar (Right i))    =
     (n, Right $ updateBoundInWL (TVar (Right i)) (LB, TVar (Left j)) ws, "SolveRVar")
   | otherwise                                   =
     error "Bug: Incorrect var order in step call"
 
-step n (Sub (TVar (Right i)) TInt : ws)         =                                         -- 13
+step n (Sub (TVar (Right i)) TInt : ws)         =                                           -- 13
   (n, Right $ updateBoundInWL (TVar (Right i)) (UB, TInt) ws, "SolveLInt")
-step n (Sub TInt (TVar (Right i)) : ws)         =                                         -- 14
+step n (Sub TInt (TVar (Right i)) : ws)         =                                           -- 14
   (n, Right $ updateBoundInWL (TVar (Right i)) (LB, TInt) ws, "SolveRInt")
-step n (Sub (TVar (Right i)) TBool : ws)         =                                        -- 13
+step n (Sub (TVar (Right i)) TBool : ws)         =                                           -- 13
   (n, Right $ updateBoundInWL (TVar (Right i)) (UB, TBool) ws, "SolveLBool")
-step n (Sub TBool (TVar (Right i)) : ws)         =                                        -- 14
+step n (Sub TBool (TVar (Right i)) : ws)         =                                           -- 14
   (n, Right $ updateBoundInWL (TVar (Right i)) (LB, TBool) ws, "SolveRBool")
 
-step n (Sub (TVar (Right i)) (TVar (Right j)) : ws)                                       -- 15 & 16
+step n (Sub (TVar (Right i)) (TVar (Right j)) : ws)                                 -- 15 & 16
   | prec ws (TVar (Right i)) (TVar (Right j))   =
     (n, Right $ updateBoundInWL (TVar (Right j)) (LB, TVar (Right i)) ws, "SolveLExtVar")
   | prec ws (TVar (Right j)) (TVar (Right i))   =
@@ -262,4 +301,6 @@ test7 = chkAndShow [Sub t5 t7]
 test8 = chkAndShow [Sub (TForall $ \a -> TArrow a a) (TArrow t5 (TArrow TInt TInt))]
 test9 = chkAndShow [Sub ex1 (TArrow TInt ex2), Sub ex2 (TArrow TInt ex1), WExVar 2 [] [], WExVar 1 [] []]
 test10 = chkAndShow [Sub (TArrow TInt (TArrow TInt TBool )) (TForall (\t -> (TArrow t (TArrow TInt t))))]
+
 ws1 = [Sub ex1 (TArrow TInt (TArrow ex2 ex3)), Sub ex2 (TArrow TInt ex1),  WExVar 2 [] [],  WExVar 1 [] [], WExVar 3 [] []]
+
