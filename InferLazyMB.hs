@@ -52,7 +52,7 @@ Algorithm:
 --------------
 
 [A/^a]_E (T,L <: ^a <: R)   = T,E,L <: ^a <: R                 ^a notin fv(A) and ^a notin fv(E)
-[A/^a]_E (T,L <: ^b <: R)   = [A/^a]_E T,L <: ^b <: R          ^b notin FV(A + E) and ^a notin(L+R)
+[A/^a]_E (T,L <: ^b <: R)   = [A/^a]_E T,L <: ^b <: R          ^b notin FV(A + E)
 [A/^a]_E (T, L <: ^b <: R)  = [A/^a]_{E,L <: ^b <: R} T        ^b in FV(A) or ^b in FV(E) and ^a notin(L+R)
 [A/^a]_E (T, a)             = [A/^a]_{E,L <: ^b <: R} T        a notin FV(A+ E) 
 [A/^a]_E (T |- B <: C)      = [A/^a]_(E, B <: C) T             fv(B + C) in fv(A + E)
@@ -121,25 +121,26 @@ addTypsBefore var new_vars [] = error ("Bug: Typ " ++ show var ++ "is not in the
 -- targetTyp, boundType, worklist
 carryBackInWL :: Typ -> Typ -> [Work] -> Either String [Work]
 carryBackInWL targetTyp@(TVar (Right i)) boundTyp wl =
-  carryBackInWLHelper wl [] (nub $ fv boundTyp)
-  where
-    carryBackInWLHelper :: [Work] -> [Work] -> [Typ] -> Either String [Work]
-    carryBackInWLHelper (wexvar@(WExVar j lbs ubs):wl') toCarryBack fvs
-      | i == j = if TVar (Right i) `elem` fvs then Left "Error: Cyclic Dependency"
-                                                else Right $ wexvar:(reverse toCarryBack++wl')
-      | otherwise = if
-        | (TVar (Right j) `notElem` fvs) ->
-          carryBackInWLHelper wl' toCarryBack fvs >>= (\wl'' -> Right $ wexvar:wl'')
-        | (TVar (Right j) `elem` fvs) && (TVar (Right i) `notElem` fvInWork wexvar) ->
-          carryBackInWLHelper wl' (wexvar:toCarryBack) (fvInWork wexvar `union` fvs)
-        | otherwise -> Left "Error: Cyclic Dependency"
-    carryBackInWLHelper (wvar@(WVar j):wl') toCarryBack fvs
-      | TVar (Left j) `elem` fvs = Left "Error: Cyclic Dependency!"
-      | otherwise = carryBackInWLHelper wl' toCarryBack fvs >>= (\wl'' -> Right $ wvar:wl'')
-    carryBackInWLHelper (wsub@(Sub t1 t2):wl') toCarryBack fvs =
-      carryBackInWLHelper wl' toCarryBack fvs >>= (\wl'' -> Right $ wsub:wl'')
-    carryBackInWLHelper [] _ _ = Left "Error: Impossible in carryBackInWL"
-
+  if targetTyp `elem` fVars then Left "Error: Cyclic Dependency of self" else 
+    carryBackInWLHelper wl [] fVars
+    where
+      carryBackInWLHelper :: [Work] -> [Work] -> [Typ] -> Either String [Work]
+      carryBackInWLHelper (wexvar@(WExVar j lbs ubs):wl') toCarryBack fvs
+        | i == j = Right $ wexvar:(reverse toCarryBack++wl')
+        | otherwise = if
+          | (TVar (Right j) `notElem` fvs) ->
+            carryBackInWLHelper wl' toCarryBack fvs >>= (\wl'' -> Right $ wexvar:wl'')
+          | (TVar (Right j) `elem` fvs) && (TVar (Right i) `notElem` fvInWork wexvar) ->
+            carryBackInWLHelper wl' (wexvar:toCarryBack) (fvInWork wexvar `union` fvs)
+          | otherwise -> Left $ "Error: Cyclic Dependency of " ++ show targetTyp ++ " and " ++ show (TVar (Right j))
+      carryBackInWLHelper (wvar@(WVar j):wl') toCarryBack fvs
+        | TVar (Left j) `elem` fvs = Left $ "Error: Cyclic Dependency of " ++ show targetTyp ++ " and " ++ show (TVar (Left j))
+        | otherwise = carryBackInWLHelper wl' toCarryBack fvs >>= (\wl'' -> Right $ wvar:wl'')
+      carryBackInWLHelper (wsub@(Sub t1 t2):wl') toCarryBack fvs =
+        carryBackInWLHelper wl' toCarryBack fvs >>= (\wl'' -> Right $ wsub:wl'')
+      carryBackInWLHelper [] _ _ = Left "Error: Impossible in carryBackInWL"
+      fVars :: [Typ]
+      fVars = nub $ fv boundTyp 
 carryBackInWL _ _ _ = error "Bug: Wrong targetTyp in carryBackInWL"
 
 
@@ -246,5 +247,5 @@ test6 = chkAndShow [Sub t6 t3]
 test7 = chkAndShow [Sub t5 t7]
 test8 = chkAndShow [Sub (TForall $ \a -> TArrow a a) (TArrow t5 (TArrow TInt TInt))]
 test9 = chkAndShow [Sub ex1 (TArrow TInt ex2), Sub ex2 (TArrow TInt ex1), WExVar 2 [] [], WExVar 1 [] []]
-test10 = chkAndShow [Sub (TArrow TInt (TArrow TInt TBool )) (TForall (\t -> (TArrow t (TArrow TInt t))))]
+test10 = chkAndShow [Sub (TForall (\t -> (TArrow t (TForall (\t1 -> TArrow t1 t))))) (TForall (\t -> (TArrow t (TArrow t t)))) ]
 ws1 = [Sub ex1 (TArrow TInt (TArrow ex2 ex3)), Sub ex2 (TArrow TInt ex1),  WExVar 2 [] [],  WExVar 1 [] [], WExVar 3 [] []]
