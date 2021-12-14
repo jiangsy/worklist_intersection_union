@@ -13,19 +13,19 @@ T ::= . | T,a | T,^a | T |- A <: B
 
 Algorithm:
 
-T, a                         --> T                                                     
-T, ^a                        --> T                                                     
-T |- Int <: Int              --> T                                                     
-T[a]  |- a <: a              --> T                                                     
-T[^a] |- ^a <: ^a            --> T                                                     
-T |- A -> B <: C -> D        --> T |- C <: A |- B <: D                                 
-T |- A <: forall b . B       --> T,b |- A <: C                                         
-T |- forall a . B <: C       --> T,^a |- [^a/a] B <: C                                 
-T |- ^a <: t                 --> [t/^a]_{} T                                           
-T |- t <: ^a                 --> [t/^a]_{} T                                           
-T |- ^a <: A -> B            --> [^a1 -> ^a2/^a]_{^a1,^a2} T |- ^a1 -> ^a2 <: A -> B   
+01. T, a                         --> T                                                     
+02. T, ^a                        --> T                                                     
+03. T |- Int <: Int              --> T                                                     
+04. T[a]  |- a <: a              --> T                                                     
+05. T[^a] |- ^a <: ^a            --> T                                                     
+06. T |- A -> B <: C -> D        --> T |- C <: A |- B <: D                                 
+07. T |- A <: forall b . B       --> T,b |- A <: C                                         
+08. T |- forall a . B <: C       --> T,^a |- [^a/a] B <: C                                 
+09. T |- ^a <: t                 --> [t/^a]_{} T                                           
+10. T |- t <: ^a                 --> [t/^a]_{} T                                           
+11. T |- ^a <: A -> B            --> [^a1 -> ^a2/^a]_{^a1,^a2} T |- ^a1 -> ^a2 <: A -> B   
        when not monotype (A->B)  
-T |- A -> B <: ^a            --> [^a1 -> ^a2/^a]_{^a1,^a2} T |- A -> B <: ^a1 -> ^a2   
+12. T |- A -> B <: ^a            --> [^a1 -> ^a2/^a]_{^a1,^a2} T |- A -> B <: ^a1 -> ^a2   
        when not monotype (A->B)  
 
 --------------

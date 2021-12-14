@@ -18,33 +18,65 @@ T ::= . | T,a | T,^a | T, lbs <: ^a <: ubs |- A <: B
 
 Algorithm:
 
-01. T, a                               --> T                                                      (rule 1)
-02. T[^a] |- [l1..ln] <: ^a <:[u1..um] --> T |- l1 <: u1 .... |- ln <: lm (n x m)                 (rule 2)
-03. T |- Int <: Int                    --> T                                                      (rule 5)
-04. T[a]  |- a <: a                    --> T                                                      (rule 6)
-05. T[^a] |- ^a <: ^a                  --> T                                                      (rule 7)
+[#ext, #forall, splits, |wl|]
 
+01. T, a                               --> T                                                      (rule 1)
+[0, 0, 0, -1]
+
+02. T[^a] |- [l1..ln] <: ^a <:[u1..um] --> T |- l1 <: u1 .... |- ln <: lm (n x m)                 (rule 2)
+[-1, 0, 0, +(n*m)]
+
+03. T |- Int <: Int                    --> T                                                      (rule 5)
+[0, 0, 0, -1]
+
+04. T[a]  |- a <: a                    --> T                                                      (rule 6)
+[0, 0, 0, -1]
+
+05. T[^a] |- ^a <: ^a                  --> T                                                      (rule 7)
+[0, 0, 0, -1]
 
 06. T |- A -> B <: C -> D              --> T |- C <: A |- B <: D                                  (rule 8)
-07. T |- forall a . B <: C             --> T,^a |- [^a/a] B <: C                                  (rule 9)
-08. T |- A <: forall b . B             --> T,b |- A <: C                                          (rule 10)
+[0, 0, 0, -1]
 
+
+07. T |- forall a . B <: C             --> T,^a |- [^a/a] B <: C                                  (rule 9)
+[+1, -1, 0, -1]
+
+08. T |- A <: forall b . B             --> T,b |- A <: C                                          (rule 10)
+[0, -1, 0, -1]
 
 09. T[lbs <: ^a < ubs] |- ^a <: A -> B --> T[^a1,^a2, lbs <: ^a < ubs U {^a1,^a2}] |- ^a1 -> ^a2 <: A -> B  
           when not monotype (A->B)  
-    add constraint to ^a and move when monotype (A -> B)
-      
+[+2, 0, ?, +2]
+
+09'. T[lbs <: ^a < ubs] |- ^a <: A -> B --> T[lbs <: ^a < ubs U {A->B}] |-
+          when monotype (A->B)  
+
+
 10. T[lbs <: ^a < ubs] |- A -> B <: ^a --> T[^a1,^a2, lbs U {^a1,^a2} <: ^a < ubs] |- A -> B <: ^a1 -> ^a2   
           when not monotype (A->B)  
-    add constraint to ^a and move when monotype (A -> B)
+[+2, 0, ?, +2]
+
+10'. T[lbs <: ^a < ubs] |- A -> B <: ^a --> T[^a1,^a2, lbs U {^a1,^a2} <: ^a < ubs] |- 
+          when monotype (A->B)  
 
 11. T[a][lbs <: ^b < ubs] |- a <: ^b   --> T[a][lbs U {a} <: ^b < ub] 
+[0, 0, 0, -1]
+
 12. T[a][lbs <: ^b < ubs] |- ^b <: a   --> T[a][lbs <: ^b < ub U {a}] 
+[0, 0, 0, -1]
+
 13. T[lbs <: ^b < ubs] |- Int <: ^b    --> T[a][lbs U {Int} <: ^b < ub] 
+[0, 0, 0, -1]
+
 14. T[lbs <: ^b < ubs] |- ^b <: Int    --> T[a][lb s<: ^b < ub U {Int}] 
+[0, 0, 0, -1]
 
 15. T[^a][lbs <: ^b < ubs] |- ^a <: ^b --> T[^a][lb U {^a} <: ^b < ub] 
+[0, 0, 0, -1]
+
 16. T[^a][lbs <: ^b < ubs] |- ^b <: ^a --> T[^a][lb <: ^b < ub U {^a}] 
+[0, 0, 0, -1]
 
 
 --------------
