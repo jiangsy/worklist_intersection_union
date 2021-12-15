@@ -253,11 +253,11 @@ splits (Sub a b : ws)  = splitsSub a b + splits ws
 splitsSub :: Typ -> Typ -> Int
 splitsSub (TVar (Right i)) t1@(TArrow _ _) = splitsTyp t1
 splitsSub t1@(TArrow _ _) (TVar (Right i)) = splitsTyp t1
-splitsSub (TArrow a b) (TArrow c d) =
+splitsSub (TArrow a b) (TArrow c d)        =
   splitsSub c a + splitsSub b d
-splitsSub a (TForall g) = splitsSub a (g (TVar (Left 0)))
-splitsSub (TForall g) a = splitsSub (g (TVar (Right 0))) a
-splitsSub a b           = 0
+splitsSub a (TForall g)                    = splitsSub a (g (TVar (Left 0)))
+splitsSub (TForall g) a                    = splitsSub (g (TVar (Right 0))) a
+splitsSub a b                              = 0
 
 splitsTyp :: Num a => Typ -> a
 splitsTyp (TArrow a b)

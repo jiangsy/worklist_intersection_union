@@ -26,7 +26,7 @@ Algorithm:
 [0, 0, 0, -1]
 
 02. T[^a] |- [l1..ln] <: ^a <:[u1..um] --> T |- l1 <: u1 .... |- ln <: lm (n x m)                 (rule 2)
-[0(?), 0, -1 (all types are mono?), +(n*m-1)]                                                                 ), +(n*m)] 
+[0(?) (all types are mono?), 0, -1, +(n*m-1)]                                                                 ), +(n*m)] 
 
 03. T |- Int <: Int                    --> T                                                      (rule 5)
 [0, 0, 0, -1]
@@ -156,7 +156,7 @@ addTypsBefore var new_vars [] = error ("Bug: Typ " ++ show var ++ "is not in the
 -- targetTyp, boundType, worklist
 carryBackInWL :: Typ -> Typ -> [Work] -> Either String [Work]
 carryBackInWL targetTyp@(TVar (Right i)) boundTyp wl =
-  if targetTyp `elem` fVars then Left "Error: Cyclic Dependency of self" else 
+  if targetTyp `elem` fVars then Left "Error: Cyclic Dependency of self" else
     carryBackInWLHelper wl [] fVars
     where
       carryBackInWLHelper :: [Work] -> [Work] -> [Typ] -> Either String [Work]
@@ -175,7 +175,7 @@ carryBackInWL targetTyp@(TVar (Right i)) boundTyp wl =
         carryBackInWLHelper wl' toCarryBack fvs >>= (\wl'' -> Right $ wsub:wl'')
       carryBackInWLHelper [] _ _ = Left "Error: Impossible in carryBackInWL"
       fVars :: [Typ]
-      fVars = nub $ fv boundTyp 
+      fVars = nub $ fv boundTyp
 carryBackInWL _ _ _ = error "Bug: Wrong targetTyp in carryBackInWL"
 
 
@@ -253,9 +253,9 @@ checkAndShow :: Int -> [Work] -> String
 checkAndShow n [] = "Success!"
 checkAndShow n ws =
   case ws' of
-    Left e -> "   " ++ show (reverse ws) ++ "\n-->{Rule : " ++ s1  ++ " }\n" ++ e
+    Left e -> "   " ++ show (reverse ws) ++ "\n-->{ Rule: " ++ s1 ++ replicate (15 - length s1) ' ' ++ "Size: " ++ show (size ws) ++ " }\n" ++ e
     Right wl -> s2
-      where s2 = "   " ++ show (reverse ws) ++ "\n-->{ Rule: " ++ s1 ++ " }\n" ++ checkAndShow m wl
+      where s2 = "   " ++ show (reverse ws) ++ "\n-->{ Rule: " ++ s1 ++ replicate (15 - length s1) ' ' ++ "Size: " ++ show (size ws) ++ " }\n" ++ checkAndShow m wl
   where
     (m, ws', s1) = step n ws
 
@@ -268,6 +268,75 @@ check n ws =
     case ws' of
       Left e -> "Failure!"
       Right wl -> check m wl
+
+
+size :: [Work] -> (Int,Int)
+size ws = (measure1 ws, sizeWL ws)
+
+-- Measure 1
+
+measure1 :: [Work] -> Int
+measure1 ws = 3 * splits ws + foralls ws + existentials ws
+
+splits :: [Work] -> Int
+splits []              = 0
+splits (WVar {} : ws)   = splits ws
+splits (WExVar {}:ws) = splits ws
+splits (Sub a b : ws)  = splitsSub a b + splits ws
+
+splitsSub :: Typ -> Typ -> Int
+splitsSub (TVar (Right i)) t1@(TArrow _ _) = splitsTyp t1
+splitsSub t1@(TArrow _ _) (TVar (Right i)) = splitsTyp t1
+splitsSub (TArrow a b) (TArrow c d) =
+  splitsSub c a + splitsSub b d
+splitsSub a (TForall g) = splitsSub a (g (TVar (Left 0)))
+splitsSub (TForall g) a = splitsSub (g (TVar (Right 0))) a
+splitsSub a b           = 0
+
+splitsTyp :: Num a => Typ -> a
+splitsTyp (TArrow a b)
+  | not (mono a) && not (mono b) = 1 + splitsTyp a + splitsTyp b
+  | not (mono a)                 = 1 + splitsTyp a
+  | not (mono b)                 = 1 + splitsTyp b
+  | otherwise                    = 0
+splitsTyp (TForall g)            = splitsTyp (g TInt)
+splitsTyp _                      = 0
+
+existentials :: Num a => [Work] -> a
+existentials []                 = 0
+existentials (WExVar {} : ws)   = 1 + existentials ws
+existentials (_ : ws)           = existentials ws
+
+foralls :: Num a => [Work] -> a
+foralls []                      = 0
+foralls (Sub a b : ws)          = forallsTyp a + forallsTyp b + foralls ws
+foralls (_ : ws)                = foralls ws
+
+forallsTyp :: Num a => Typ -> a
+forallsTyp (TForall g)  = 1 + forallsTyp (g TInt)
+forallsTyp (TArrow a b) = forallsTyp a + forallsTyp b
+forallsTyp _            = 0
+
+{-
+
+[Int -> forall a. ^b <: ^c, ^c <: Int -> Int]
+
+-}
+
+-- Measure 2
+
+sizeWL :: [Work] -> Int
+sizeWL []              = 0
+sizeWL (Sub a b : ws)  = sizeSub a b + sizeWL ws
+sizeWL (_ : ws)        = 1 + sizeWL ws
+
+
+sizeSub (TArrow a b) (TArrow c d) = 2 + sizeSub c a + sizeSub b d
+sizeSub (TForall g) a             = 2 + sizeSub (g TInt) a
+sizeSub a (TForall g)             = 2 + sizeSub a (g TInt)
+sizeSub _ _                       = 1
+
+
 
 chkAndShow = putStrLn .  checkAndShow 0
 
@@ -284,3 +353,14 @@ test8 = chkAndShow [Sub (TForall $ \a -> TArrow a a) (TArrow t5 (TArrow TInt TIn
 test9 = chkAndShow [Sub ex1 (TArrow TInt ex2), Sub ex2 (TArrow TInt ex1), WExVar 2 [] [], WExVar 1 [] []]
 test10 = chkAndShow [Sub (TForall (\t -> (TArrow t (TForall (\t1 -> TArrow t1 t))))) (TForall (\t -> (TArrow t (TArrow t t)))) ]
 ws1 = [Sub ex1 (TArrow TInt (TArrow ex2 ex3)), Sub ex2 (TArrow TInt ex1),  WExVar 2 [] [],  WExVar 1 [] [], WExVar 3 [] []]
+
+ex0 = TVar (Right 0)
+
+jimmy = chkAndShow [
+  Sub TInt TInt,
+  Sub ex0 (TArrow TInt TInt),
+  Sub (TArrow ex0 (TArrow ex0 $ TForall $ \a -> a)) ex1,
+  WExVar 0 [] [],
+  WExVar 1 [] [],
+  WExVar 2 [] []
+  ]
