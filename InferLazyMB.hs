@@ -127,15 +127,17 @@ getVarsAfterTyp wl x = error (show x ++ "is not a type")
 prec :: [Work] -> Typ -> Typ -> Bool
 prec w varA varB = varA `elem` getVarsBeforeTyp w varB
 
-updateBoundInWL :: Typ -> (BoundTyp, Typ) -> [Work] -> [Work]
+updateBoundInWL :: Typ -> (BoundTyp, Typ) -> [Work] -> Either String [Work]
 -- match once and no more recursion
 updateBoundInWL var@(TVar (Right i)) bound (WExVar j lbs ubs : ws)
   | i == j =
       case bound of
-        (LB, typ) -> WExVar j (typ:lbs) ubs : ws
-        (UB, typ) -> WExVar j lbs (typ:ubs) : ws
-  | otherwise = WExVar j lbs ubs : updateBoundInWL var bound ws
-updateBoundInWL var bound (w:ws) = w : updateBoundInWL var bound ws
+        (LB, typ) -> if var `elem` fVars then Left $  "Error: Cyclic Dependency of " ++ show var ++ " self!"  else Right $ WExVar j (typ:lbs) ubs : ws
+          where fVars = nub $ fv typ
+        (UB, typ) -> if var `elem` fVars then Left $  "Error: Cyclic Dependency of " ++ show var ++ " self!" else Right $ WExVar j lbs (typ:ubs) : ws
+          where fVars = nub $ fv typ
+  | otherwise = updateBoundInWL var bound ws >>= (\ws' -> Right $ WExVar j lbs ubs : ws')
+updateBoundInWL var bound (w:ws) = updateBoundInWL var bound ws >>= (\ws' -> Right $ w : ws')
 updateBoundInWL var bound [] = error "Bug: Var not found!"
 
 addTypsBefore :: Typ -> [Typ] -> [Work] -> [Work]
@@ -154,7 +156,6 @@ addTypsBefore var new_vars [] = error ("Bug: Typ " ++ show var ++ "is not in the
 -- targetTyp, boundType, worklist
 carryBackInWL :: Typ -> Typ -> [Work] -> Either String [Work]
 carryBackInWL targetTyp@(TVar (Right i)) boundTyp wl =
-  if targetTyp `elem` fVars then Left "Error: Cyclic Dependency of self" else
     carryBackInWLHelper wl [] fVars
     where
       carryBackInWLHelper :: [Work] -> [Work] -> [Typ] -> Either String [Work]
@@ -195,12 +196,11 @@ step n (Sub (TForall g) b : ws)                 =                               
 
 step n (Sub (TVar (Right i)) (TArrow a b) : ws)                                           -- 09
   | mono (TArrow a b)                           =
-    case carryBackInWL (TVar (Right i)) (TArrow a b) ws of
-       Left e -> (n, Left e, "SplitL mono")
-       Right wl -> (n, Right $ updateBoundInWL (TVar (Right i)) (UB, TArrow a b) wl, "SplitL mono")
+    (n, carryBackInWL (TVar (Right i)) (TArrow a b) ws >>= 
+      updateBoundInWL (TVar (Right i)) (UB, TArrow a b), "SplitL mono")
   | otherwise                                   =
-    (n+2, Right $ Sub (TArrow a1 a2) (TArrow a b) : updateBoundInWL (TVar (Right i)) (UB, a1_a2)
-      (addTypsBefore (TVar (Right i)) [a1, a2] ws), "SplitL")
+    (n+2, updateBoundInWL (TVar (Right i)) (UB, a1_a2) (addTypsBefore (TVar (Right i)) [a1, a2] ws) >>=
+      (\wl' -> Right $ Sub (TArrow a1 a2) (TArrow a b):wl'), "SplitL")
                 where
                   a1 = TVar (Right n)
                   a2 = TVar $ Right (n + 1)
@@ -208,12 +208,11 @@ step n (Sub (TVar (Right i)) (TArrow a b) : ws)                                 
 
 step n (Sub (TArrow a b) (TVar (Right i)) : ws)                                           -- 10
   | mono (TArrow a b)                           =
-    case carryBackInWL (TVar (Right i)) (TArrow a b) ws of
-       Left e -> (n, Left e, "SplitR mono")
-       Right wl -> (n, Right $ updateBoundInWL (TVar (Right i)) (LB, TArrow a b) wl, "SplitR mono")
+    (n, carryBackInWL (TVar (Right i)) (TArrow a b) ws >>=  
+      updateBoundInWL (TVar (Right i)) (LB, TArrow a b), "SplitR mono")
   | otherwise                                   =
-    (n+2,  Right $ Sub (TArrow a b) (TArrow a1 a2) : updateBoundInWL (TVar (Right i)) (LB, a1_a2)
-      (addTypsBefore (TVar (Right i)) [a1, a2] ws), "SplitR")
+    (n+2, updateBoundInWL (TVar (Right i)) (LB, a1_a2) (addTypsBefore (TVar (Right i)) [a1, a2] ws) >>= 
+      (\wl' -> Right $ Sub (TArrow a b) (TArrow a1 a2) : wl')  , "SplitR")
                 where
                   a1 = TVar $ Right n
                   a2 = TVar $ Right (n + 1)
@@ -221,27 +220,27 @@ step n (Sub (TArrow a b) (TVar (Right i)) : ws)                                 
 
 step n (Sub (TVar (Right i)) (TVar (Left j)) : ws)                                        -- 11
   | prec ws (TVar (Left j)) (TVar (Right i))    =
-    (n, Right $ updateBoundInWL (TVar (Right i)) (UB, TVar (Left j)) ws, "SolveLVar")
+    (n, updateBoundInWL (TVar (Right i)) (UB, TVar (Left j)) ws, "SolveLVar")
   | otherwise = error "Bug: Incorrect var order in step call!"
 step n (Sub (TVar (Left j)) (TVar (Right i))  : ws)                                       -- 12
   | prec ws (TVar (Left j)) (TVar (Right i))    =
-    (n, Right $ updateBoundInWL (TVar (Right i)) (LB, TVar (Left j)) ws, "SolveRVar")
+    (n, updateBoundInWL (TVar (Right i)) (LB, TVar (Left j)) ws, "SolveRVar")
   | otherwise = error "Bug: Incorrect var order in step call"
 
 step n (Sub (TVar (Right i)) TInt : ws)         =                                         -- 13
-  (n, Right $ updateBoundInWL (TVar (Right i)) (UB, TInt) ws, "SolveLInt")
+  (n, updateBoundInWL (TVar (Right i)) (UB, TInt) ws, "SolveLInt")
 step n (Sub TInt (TVar (Right i)) : ws)         =                                         -- 14
-  (n, Right $ updateBoundInWL (TVar (Right i)) (LB, TInt) ws, "SolveRInt")
+  (n, updateBoundInWL (TVar (Right i)) (LB, TInt) ws, "SolveRInt")
 step n (Sub (TVar (Right i)) TBool : ws)         =                                        -- 13
-  (n, Right $ updateBoundInWL (TVar (Right i)) (UB, TBool) ws, "SolveLBool")
+  (n, updateBoundInWL (TVar (Right i)) (UB, TBool) ws, "SolveLBool")
 step n (Sub TBool (TVar (Right i)) : ws)         =                                        -- 14
-  (n, Right $ updateBoundInWL (TVar (Right i)) (LB, TBool) ws, "SolveRBool")
+  (n, updateBoundInWL (TVar (Right i)) (LB, TBool) ws, "SolveRBool")
 
 step n (Sub (TVar (Right i)) (TVar (Right j)) : ws)                                       -- 15 & 16
   | prec ws (TVar (Right i)) (TVar (Right j))   =
-    (n, Right $ updateBoundInWL (TVar (Right j)) (LB, TVar (Right i)) ws, "SolveLExtVar")
+    (n, updateBoundInWL (TVar (Right j)) (LB, TVar (Right i)) ws, "SolveLExtVar")
   | prec ws (TVar (Right j)) (TVar (Right i))   =
-    (n, Right $ updateBoundInWL (TVar (Right i)) (UB, TVar (Right j)) ws, "SolveRExtVar")
+    (n, updateBoundInWL (TVar (Right i)) (UB, TVar (Right j)) ws, "SolveRExtVar")
 
 step n _                                        = (n, Left "No matched pattern", "None")
 
