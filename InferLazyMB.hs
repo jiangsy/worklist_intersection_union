@@ -14,73 +14,71 @@ import TestCase
 {- A lazy subtyping algorithm:
 
 A,B := a | ^a | Int | A -> B | forall a. A | 
-T ::= . | T,a | T,^a | T, lbs <: ^a <: ubs |- A <: B
+T ::= . | T,a | T, lbs <: ^a <: ubs |- A <: B
 
 Algorithm:
 
-[#splits, #forall, #ext, |wl|]
+[#splits, #forall, #existential, |wl|]
 
-(2 * #splits + #ext + #forall, |wl|)
+(3 * #splits + #forall + #existential, |wl|)
 
 01. T, a                               --> T                                                      (rule 1)
-[0, 0, 0, -1]
+[0, 0, 0, -1] -> (0, -1)
 
 02. T[^a] |- [l1..ln] <: ^a <:[u1..um] --> T |- l1 <: u1 .... |- ln <: lm (n x m)                 (rule 2)
-[0(?) (all types are mono?), 0, -1, +(n*m-1)]                                                                 ), +(n*m)] 
+[0, 0, -1, +(n*m-1)] -> (-1, +?)
 
 03. T |- Int <: Int                    --> T                                                      (rule 5)
-[0, 0, 0, -1]
+[0, 0, 0, -1] -> (0, -1)
 
 04. T[a]  |- a <: a                    --> T                                                      (rule 6)
-[0, 0, 0, -1]
+[0, 0, 0, -1] -> (0, -1)
 
 05. T[^a] |- ^a <: ^a                  --> T                                                      (rule 7)
-[0, 0, 0, -1]
+[0, 0, 0, -1] -> (0, -1)
 
 06. T |- A -> B <: C -> D              --> T |- C <: A |- B <: D                                  (rule 8)
-[0, 0, 0, -1]
-
+[0, 0, 0, -2] -> (0, -2)
 
 07. T |- forall a . B <: C             --> T,^a |- [^a/a] B <: C                                  (rule 9)
-[0, -1, +1, -1]
+[0, -1, +1, -1] -> (0, -1)
 
 08. T |- A <: forall b . B             --> T,b |- A <: C                                          (rule 10)
-[0, -1, 0, -1]
+[0, -1, 0, -1] -> (-1, -1)
 
-09. T[lbs <: ^a < ubs] |- ^a <: A -> B --> T[^a1,^a2, lbs <: ^a < ubs U {^a1,^a2}] |- ^a1 -> ^a2 <: A -> B  
+09. T[lbs <: ^a < ubs] |- ^a <: A -> B --> T[^a1,^a2,lbs <: ^a < ubs ∪ {^a1->^a2}] |- ^a1 -> ^a2 <: A -> B  
           when not monotype (A->B)  
-[?, 0, +2, +2]
+[-1, 0, +2, +?] -> (-1, +?)
 
-09'. T[lbs <: ^a < ubs] |- ^a <: A -> B --> T[lbs <: ^a < ubs U {A->B}] |-
+09'. T[lbs <: ^a < ubs] |- ^a <: A -> B --> ([A->B/^a]_[] T) [lbs <: ^a < ubs ∪ {A->B}] |-
           when monotype (A->B)  
-[0, 0, 0, -1]
+[0, 0, 0, -1] -> (0, -1)
 
-10. T[lbs <: ^a < ubs] |- A -> B <: ^a --> T[^a1,^a2, lbs U {^a1,^a2} <: ^a < ubs] |- A -> B <: ^a1 -> ^a2   
+10. T[lbs <: ^a < ubs] |- A -> B <: ^a --> T[^a1,^a2, lbs ∪ {^a1,^a2} <: ^a < ubs] |- A -> B <: ^a1 -> ^a2   
           when not monotype (A->B)  
-[?, 0, +2, +2]
+[-1, 0, +2, +?] -> (-1, +?)
 
-10'. T[lbs <: ^a < ubs] |- A -> B <: ^a --> T[^a1,^a2, lbs U {^a1,^a2} <: ^a < ubs] |- 
+10'. T[lbs <: ^a < ubs] |- A -> B <: ^a --> ([A->B/^a]_[] T) [lbs ∪ {A->B} <: ^a < ubs] |- 
           when monotype (A->B)  
-[0, 0, 0, -1]
+[0, 0, 0, -1] -> (0, -1)
 
-11. T[a][lbs <: ^b < ubs] |- a <: ^b   --> T[a][lbs U {a} <: ^b < ub] 
-[0, 0, 0, -1]
+11. T[a][lbs <: ^b < ubs] |- a <: ^b   --> T[a][lbs ∪ {a} <: ^b < ubs] 
+[0, 0, 0, -1] -> (0, -1)
 
-12. T[a][lbs <: ^b < ubs] |- ^b <: a   --> T[a][lbs <: ^b < ub U {a}] 
-[0, 0, 0, -1]
+12. T[a][lbs <: ^b < ubs] |- ^b <: a   --> T[a][lbs <: ^b <: ubs ∪ {a}] 
+[0, 0, 0, -1] -> (0, -1)
 
-13. T[lbs <: ^b < ubs] |- Int <: ^b    --> T[a][lbs U {Int} <: ^b < ub] 
-[0, 0, 0, -1]
+13. T[lbs <: ^b < ubs] |- Int <: ^b    --> T[a][lbs U {Int} <: ^b <: ubs] 
+[0, 0, 0, -1] -> (0, -1)
 
-14. T[lbs <: ^b < ubs] |- ^b <: Int    --> T[a][lb s<: ^b < ub U {Int}] 
-[0, 0, 0, -1]
+14. T[lbs <: ^b < ubs] |- ^b <: Int    --> T[a][lbs <: ^b <: ubs ∪ {Int}] 
+[0, 0, 0, -1] -> (0, -1)
 
-15. T[^a][lbs <: ^b < ubs] |- ^a <: ^b --> T[^a][lb U {^a} <: ^b < ub] 
-[0, 0, 0, -1]
+15. T[^a][lbs <: ^b < ubs] |- ^a <: ^b --> T[^a][lbs ∪ {^a} <: ^b < ubs] 
+[0, 0, 0, -1] -> (0, -1)
 
-16. T[^a][lbs <: ^b < ubs] |- ^b <: ^a --> T[^a][lb <: ^b < ub U {^a}] 
-[0, 0, 0, -1]
-
+16. T[^a][lbs <: ^b < ubs] |- ^b <: ^a --> T[^a][lbs <: ^b < ubs ∪ {^a}] 
+[0, 0, 0, -1] -> (0, -1)
 
 --------------
 [A/^a]_E T
@@ -113,10 +111,10 @@ fvInWork (Sub t1 t2) = nub (fv t1) `union` nub (fv t2)
 
 worksToTyps :: [Work] -> [Either Int Int]
 worksToTyps = concatMap (\case
-                        WVar i -> [Left i]
-                        WExVar i _ _ -> [Right i]
-                        _ -> []
-                     )
+                          WVar i -> [Left i]
+                          WExVar i _ _ -> [Right i]
+                          _ -> []
+                        )
 
 getVarsBeforeTyp :: [Work] -> Typ -> [Typ]
 getVarsBeforeTyp wl (TVar i) = map TVar $ dropWhile (/= i) $ worksToTyps wl
@@ -228,8 +226,7 @@ step n (Sub (TVar (Right i)) (TVar (Left j)) : ws)                              
 step n (Sub (TVar (Left j)) (TVar (Right i))  : ws)                                       -- 12
   | prec ws (TVar (Left j)) (TVar (Right i))    =
     (n, Right $ updateBoundInWL (TVar (Right i)) (LB, TVar (Left j)) ws, "SolveRVar")
-  | otherwise                                   =
-    error "Bug: Incorrect var order in step call"
+  | otherwise = error "Bug: Incorrect var order in step call"
 
 step n (Sub (TVar (Right i)) TInt : ws)         =                                         -- 13
   (n, Right $ updateBoundInWL (TVar (Right i)) (UB, TInt) ws, "SolveLInt")
@@ -356,7 +353,7 @@ ws1 = [Sub ex1 (TArrow TInt (TArrow ex2 ex3)), Sub ex2 (TArrow TInt ex1),  WExVa
 
 ex0 = TVar (Right 0)
 
-jimmy = chkAndShow [
+jimmy = putStrLn $ checkAndShow 3 [
   Sub TInt TInt,
   Sub ex0 (TArrow TInt TInt),
   Sub (TArrow ex0 (TArrow ex0 $ TForall $ \a -> a)) ex1,
