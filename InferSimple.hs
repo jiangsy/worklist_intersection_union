@@ -1,10 +1,6 @@
 module InferSimple where
 
-import Control.Exception
-import Prelude hiding (flip)
 import Data.List
-
-import Debug.Trace
 
 {- A revised ICFP algorithm:
 

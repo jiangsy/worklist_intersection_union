@@ -1,13 +1,7 @@
 {-# LANGUAGE LambdaCase, MultiWayIf #-}
 module InferLazyMB where
 
-import Control.Exception
-import Prelude hiding (flip)
 import Data.List
-import Data.Functor
-
-import Debug.Trace
-import GHC.Exts (Constraint)
 
 import LazyDef
 import TestCase
@@ -231,9 +225,9 @@ step n (Sub (TVar (Right i)) TInt : ws)         =                               
   (n, updateBoundInWL (TVar (Right i)) (UB, TInt) ws, "SolveLInt")
 step n (Sub TInt (TVar (Right i)) : ws)         =                                         -- 14
   (n, updateBoundInWL (TVar (Right i)) (LB, TInt) ws, "SolveRInt")
-step n (Sub (TVar (Right i)) TBool : ws)         =                                        -- 13
+step n (Sub (TVar (Right i)) TBool : ws)        =                                         -- 13
   (n, updateBoundInWL (TVar (Right i)) (UB, TBool) ws, "SolveLBool")
-step n (Sub TBool (TVar (Right i)) : ws)         =                                        -- 14
+step n (Sub TBool (TVar (Right i)) : ws)        =                                         -- 14
   (n, updateBoundInWL (TVar (Right i)) (LB, TBool) ws, "SolveRBool")
 
 step n (Sub (TVar (Right i)) (TVar (Right j)) : ws)                                       -- 15 & 16
@@ -327,7 +321,7 @@ sizeWL (Sub a b : ws)  = sizeSub a b + sizeWL ws
 sizeWL (_ : ws)        = 1 + sizeWL ws
 
 
-sizeSub (TArrow a b) (TArrow c d) = 2 + sizeSub c a + sizeSub b d
+sizeSub (TArrow a b) (TArrow c d) = 1 + sizeSub c a + sizeSub b d
 sizeSub (TForall g) a             = 2 + sizeSub (g TInt) a
 sizeSub a (TForall g)             = 2 + sizeSub a (g TInt)
 sizeSub _ _                       = 1

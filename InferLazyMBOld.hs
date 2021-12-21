@@ -1,13 +1,7 @@
 {-# LANGUAGE LambdaCase #-}
 module InferLazyMBOld where
 
-import Control.Exception
-import Prelude hiding (flip)
 import Data.List
-import Data.Functor
-
-import Debug.Trace
-import GHC.Exts (Constraint)
 
 import LazyDef
 import TestCase

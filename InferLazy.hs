@@ -1,10 +1,5 @@
 {-# LANGUAGE LambdaCase #-}
-import Prelude hiding (flip)
 import Data.List
--- import Data.Set as Set
-
-import Debug.Trace
-import GHC.Exts (Constraint)
 
 import LazyDef
 import TestCase

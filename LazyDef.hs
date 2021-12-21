@@ -1,5 +1,6 @@
 module LazyDef where
 
+
 data Typ = TVar (Either Int Int) | TInt | TBool | TForall (Typ -> Typ) | TArrow Typ Typ
 
 data Work = WVar Int | WExVar Int [Typ] [Typ] | Sub Typ Typ deriving Eq
