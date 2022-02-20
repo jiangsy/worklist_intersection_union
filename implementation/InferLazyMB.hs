@@ -146,6 +146,12 @@ addTypsBefore var@(TVar (Right i)) new_vars (WExVar j lbs ubs : ws)
 addTypsBefore var new_vars (w:ws) = w : addTypsBefore var new_vars ws
 addTypsBefore var new_vars [] = error ("Bug: Typ " ++ show var ++ "is not in the worklist")
 
+-- https://stackoverflow.com/questions/27726739/implementing-an-efficient-sliding-window-algorithm-in-haskell
+windows :: Int -> [a] -> [[a]]
+windows n = foldr (zipWith (:)) (repeat []) . take n . tails
+
+generateOneSideConstraints :: [Typ] -> [Work]
+generateOneSideConstraints bounds = map (\ts -> Sub (head ts) (last ts)) (windows 2 bounds)
 
 -- targetTyp, boundType, worklist
 carryBackInWL :: Typ -> Typ -> [Work] -> Either String [Work]
@@ -174,8 +180,10 @@ carryBackInWL _ _ _ = error "Bug: Wrong targetTyp in carryBackInWL"
 
 step :: Int -> [Work] -> (Int, Either String [Work], String)
 step n (WVar i : ws)                            = (n, Right ws, "Garbage Collection")     -- 01 
-step n (WExVar i lbs ubs : ws)                  =                                         -- 02
-  (n, Right $ [Sub lTyp uTyp | lTyp <- lbs, uTyp <- ubs] ++ ws, "SUnfoldBounds")
+step n (WExVar i lbs ubs : ws)  
+  | null lbs && length ubs > 1 = (n, Right $ generateOneSideConstraints ubs ++ ws, "SUnfoldBounds")                
+  | null ubs && length lbs > 1 = (n, Right $ generateOneSideConstraints lbs ++ ws, "SUnfoldBounds")                 
+  | otherwise = (n, Right $ [Sub lTyp uTyp | lTyp <- lbs, uTyp <- ubs] ++ ws, "SUnfoldBounds")
 step n (Sub TInt TInt : ws)                     = (n, Right ws, "SInt")                   -- 03
 step n (Sub TBool TBool : ws)                   = (n, Right ws, "SBool")                  -- 03
 

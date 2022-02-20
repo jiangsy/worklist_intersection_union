@@ -1,5 +1,6 @@
 module TestCase where
 
+import System.Random (StdGen, mkStdGen, next)
 import LazyDef
 
 

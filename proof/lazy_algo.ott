@@ -1,0 +1,84 @@
+
+metavar var, x, y, z ::= {{ repr-locally-nameless }}
+metavar exvar, ex, ey, ez ::= {{ coq var }}
+metavar tvar, tx, ty, tz ::= {{ coq var}}
+indexvar index, i, j, n, m ::= {{ coq nat }} 
+
+
+
+grammar
+
+latype, t :: 'la_t_' ::= 
+  | int :: :: int
+  | forall x . t :: :: forall (+ bind x in t +) 
+  | t1 -> t2 :: :: arrow 
+  | tx :: :: tvar
+  | ex :: :: extvar
+  | ( t )         :: S :: paren {{ coq ([[e]]) }}
+  % used in introducing existential variables only
+  | [ t1 / x ] t2 :: M :: subst {{ coq (open_bexpr_wrt_bexpr [[x e2]] [[e1]]) }}  
+
+
+latvar, tv :: 'la_tvar_' ::=
+  | tx :: :: var
+
+latexvar, ev :: 'la_texvar_' ::=
+  | ex :: :: var
+
+bounds, B :: ''la_bounds_' ::=
+  | nil :: :: nil 
+  | B, t :: :: cons 
+
+lawork, w :: 'w_' ::=
+  | tv :: :: tvar
+  | B1 <: ev <: B2 :: :: ex_tvar
+  | t1 < t2 :: :: subtyp
+
+laworklist, ws :: 'la_wl_' ::= 
+  | wnil    :: :: nil 
+  | ws |- w :: :: cons 
+
+subrules 
+  latexvar <:: latype
+  latvar <:: latype
+
+freevars
+  latype    x :: fv
+
+% substitutions
+%   single latype ev :: subst  
+
+
+
+defns
+Monotype :: '' ::=
+
+defn
+mono t :: :: mono_type :: 'amono_'
+by
+
+----------- :: tvar
+mono latvar
+
+----------- :: texvar
+mono latexvar
+
+------------- :: int
+mono int
+
+mono t1
+mono t2
+----------------- :: arrow
+mono (t1 -> t2)
+
+
+defn 
+ws |- w :: :: red :: E_ {{ com Evaluation }} by
+
+|=> ws 
+------------ :: int
+ws |- int <: int
+
+|=> ws 
+------------ :: var
+ws |- tx <: tx
