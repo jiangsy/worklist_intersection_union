@@ -4,34 +4,45 @@ metavar var, x, y, z ::= {{ repr-locally-nameless }}
 
 grammar
 
-context, G :: 'ld_ctx_' ::=
-  | nil       :: :: nil
-  | G , x :: :: cons
+type, t, A, B :: 'ld_t_' ::= 
+  | int           :: :: int
+  | forall x . t  :: :: forall (+ bind x in t +)
+  | t1 -> t2      :: :: arrow
+  | x             :: :: var
+  | ( t )         :: S :: paren {{ coq [[t]] }} 
+  | [ t / x ] A   :: M :: susbt {{ coq (open_type_wrt_type [[x A]] [[t]]) }}
 
-type, t, A, B :: 'la_t_' ::= 
-    | int :: :: int
-    | forall x . t :: :: forall (+ bind x in t +)
-    | t1 -> t2 :: :: arrow
-    | x :: :: var
-    | ( t ) :: S :: paren {{ coq [[t]] }} 
-    | [ t1 / x ] t2 :: M :: susbt{{ coq (tsubst_t [[t1]] [[x]] [[t2]])}}
+context, G :: 'ld_ctx_' ::=
+  | nil     :: :: nil
+  | G , x  :: :: cons
 
 formula :: formula_ ::=
   | judgement  ::   :: judgement
-  | x # G      :: M :: ctx_fresh {{ coq ([[x]] `notin` [[G]]) }}
+  | x # G      :: M :: ctx_fresh {{ coq ([[x]] `notin` ctx_dom [[G]]) }}
+  | x $ G      :: M :: ctx_in {{ coq ([[x]] `in` ctx_dom [[G]]) }}
 
 substitutions
-  single t x :: tsubst
+  single type x :: subst
 
 freevars
   type    x :: fv
 
+embed {{ coq
+
+Fixpoint ctx_dom (G : context) : atoms :=
+  match G with
+  | ld_ctx_nil => {}
+  | ld_ctx_cons G' x => add x (ctx_dom G')
+  end
+.
+
+}}
 
 defns
 Monotype :: '' ::=
 
 defn
-mono A :: :: mono_type :: 'mono_'
+mono A :: :: mono_type :: 'ld_mono_'
 by
 
 --------------- :: int
@@ -47,25 +58,10 @@ mono t1 -> t2
 
 
 defns
-InContext :: '' ::=
-
-defn
-x in G :: :: in_ctx :: 'in_'
-by
-
------------------- :: here
-x in G, x
-
-x in G
------------------- :: there
-x in G, y 
-
-
-defns
 DeclarativeSubtyping :: '' ::=
 
 defn
-|- G :: :: wf_context :: 'wf_ctx_'
+|- G :: :: wf_context :: 'ld_wf_ctx_'
 by
 
 ---------- :: nil
@@ -77,7 +73,7 @@ x # G
 |- G , x
 
 defn
-G |- t  :: :: wf_type :: 'wf_typ_'
+G |- t  :: :: wf_type :: 'ld_wf_typ_'
 by
 
 |- G
@@ -85,7 +81,7 @@ by
 G |- int
 
 |- G
-x in G 
+x $ G 
 ---------------- :: var
 G |- x
 
@@ -97,19 +93,21 @@ G |- t1 -> t2
 
 
 defn
-G |- t1 <: t2 :: :: dsub :: 's_'
+G |- t1 <: t2 :: :: sub :: 'ld_sub_'
 by
 
-x in G
+x $ G
+|- G
 ------------------- :: var
 G |- x <: x
 
+|- G
 ------------------- :: int
 G |- int <: int
 
 
 G |- B1 <: A1
-G |- A2 <: A2
+G |- A2 <: B2
 ------------------- :: arrow
 G |- A1 -> A2 <: B1 -> B2
 
@@ -118,7 +116,6 @@ G |- [ t / x ] A <: B
 ------------------- :: forallL
 G |- forall x. A <: B
 
-
-G, x |- A <: B
+G , x |- A <: B
 ------------------- :: forallR
 G |- A <: forall x. B
