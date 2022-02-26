@@ -2,45 +2,46 @@
 metavar x, y, z ::= {{ repr-locally-nameless }}
 metavar ex, ey, ez ::= {{ coq var }}
 
+
 grammar
 
-
 type, t, A, B :: 'la_type_' ::= 
-  | int          ::   :: int
-  | forall x . t ::   :: forall (+ bind x in t +) 
-  | t1 -> t2     ::   :: arrow 
-  | x            ::   :: tvar
-  | ex         ::   :: extvar
-  | ( t )        :: S :: paren {{ coq ([[t]]) }}
-  | [ t / x ] A  :: M :: susbt {{ coq (open_type_wrt_type [[x A]] [[t]]) }}
-
+  | int           ::   :: int
+  | forall x . t  ::   :: forall (+ bind x in t +) 
+  | t1 -> t2      ::   :: arrow 
+  | x             ::   :: var
+  | ex            ::   :: tvar
+  | ^ ex          ::   :: extvar
+  | ( t )         :: S :: paren {{ coq ([[t]]) }}
+  | [ t / x ] A   :: M :: susbt {{ coq (open_type_wrt_type [[x A]] [[t]]) }}
 
 typelist, tl :: 'la_typelist_' ::= 
   | tnil   :: :: nil  
   | tl , t :: :: cons 
 
 work, w :: 'la_work_' ::=
-  | ~ x               :: :: tvar 
+  | ~ ex              :: :: tvar 
   | tl <= ^ ex <= tl' :: :: extvar
   | t1 <: t2          :: :: subtyp
 
 worklist, wl :: 'la_worklist_' ::= 
-  | wnil             ::   :: nil 
-  | wl , w           ::   :: cons
-  | wl1 ++ wl2       :: M :: app {{ coq (wl_app [[wl1]] [[wl2]]) }}
-  | < tl >           :: M :: single_constraint {{ coq (single_side_constraints [[tl]]) }}
-  | < tl1 * tl2 >    :: M :: double_constraint {{ coq (double_side_constraints [[tl1]] [[tl2]])}}
-  | wl @ t <+ ex     :: M :: update_lb {{ coq (update_lowerbound_in_wl [[t]] [[wl]] [[ex]]) }}
-  | wl @ ex <+ t     :: M :: update_ub {{ coq (update_upperbound_in_wl [[t]] [[wl]] [[ex]]) }}
-  | wl @ ex << ex1   :: M :: add_before {{ coq (add_var_before [[ex1]] [[wl]] [[ex]])}}
+  | wnil                ::   :: nil 
+  | wl , w              ::   :: cons
+  | wl1 ++ wl2          :: M :: app {{ coq (wl_app [[wl1]] [[wl2]]) }}
+  | < tl >              :: M :: single_constraint {{ coq (single_side_constraints [[tl]]) }}
+  | < tl1 * tl2 >       :: M :: double_constraint {{ coq (double_side_constraints [[tl1]] [[tl2]])}}
+  | wl @ ^ ex +> t      :: M :: update_lb {{ coq (update_lowerbound_in_wl [[t]] [[wl]] [[ex]]) }}
+  | wl @ ^ ex <+ t      :: M :: update_ub {{ coq (update_upperbound_in_wl [[t]] [[wl]] [[ex]]) }}
+  | wl @ ^ ex << ^ ex1  :: M :: add_before {{ coq (add_var_before [[ex1]] [[wl]] [[ex]])}}
 
 
 formula :: formula_ ::=
-  | judgement                   ::   :: judgement
-  | ex # wl                     :: M :: extvar_fresh {{ coq ([[ex]] `notin` (extvar_dom [[wl]])) }}
-  | x # wl                      :: M :: tvar_fresh {{ coq ([[x]] `notin` (tvar_dom [[wl]])) }}
-  | ex $ wl                     :: M :: extvar_in {{ coq ([[ex]] `in` (extvar_dom [[wl]])) }}
-  | x $ wl                      :: M :: tvar_in {{ coq ([[x]] `in` (tvar_dom [[wl]])) }}
+  | judgement  ::   :: judgement
+  | ^ ex # wl  :: M :: extvar_fresh {{ coq ([[ex]] `notin` (extvar_dom [[wl]])) }}
+  | ex # wl    :: M :: tvar_fresh {{ coq ([[ex]] `notin` (tvar_dom [[wl]])) }}
+  | ^ ex $ wl  :: M :: extvar_in {{ coq ([[ex]] `in` (extvar_dom [[wl]])) }}
+  | ex $ wl    :: M :: tvar_in {{ coq ([[ex]] `in` (tvar_dom [[wl]])) }}
+
 
 substitutions
   single type x :: subst
@@ -49,7 +50,6 @@ substitutions
 freevars
   type    x :: fv
   type    ex :: fex
-
 
 
 embed {{ coq
@@ -110,8 +110,6 @@ Fixpoint add_var_before (v : var) (wl : worklist) (target : var) : worklist :=
   end
 .
 
-
-
 Fixpoint single_side_constraints_helper (t : type) (tl : typelist) : worklist := 
   match tl with
   | la_typelist_nil => la_worklist_nil
@@ -133,7 +131,6 @@ Fixpoint double_side_constraints_helper (t : type) (tl : typelist) : worklist :=
   end
 .
 
-
 Fixpoint double_side_constraints (tl1 tl2 : typelist) : worklist :=
   match tl1 with 
   | la_typelist_nil => la_worklist_nil
@@ -152,10 +149,10 @@ mono t :: :: mono_type :: 'la_mono_'
 by
 
 ----------- :: tvar
-mono x
+mono ex
 
 ----------- :: extvar
-mono ex
+mono ^ ex
 
 ------------- :: int
 mono int
@@ -165,25 +162,27 @@ mono t2
 ----------------- :: arrow
 mono (t1 -> t2)
 
-% defns
-% InWorklist :: '' ::=
+
+defns
+InWorklist :: '' ::=
 
 defn
 t in wl :: :: in_wl :: 'la_inworklist_'
 by
 
 ------------------------------ :: here_tvar
-x in wl , ~ x
+ex in wl , ~ ex
 
-x in wl
+ex in wl
 ------------------------------ :: there_tvar
-x in wl , w
+ex in wl , w
 
 ------------------------------ :: here_extvar
-ex in wl , tl <= ^ ex <= tl'
+^ ex in wl , tl <= ^ ex <= tl'
 
 ------------------------------ :: there_extvar
-ex in wl , w
+^ ex in wl , w
+
 
 defns
 InScope :: '' ::=
@@ -194,11 +193,11 @@ by
 
 t1 in wl
 ------------------------------------ :: here_var
-wl , ~ x [t1] [x]
+wl , ~ ex [t1] [ex]
 
 t1 in wl
 ------------------------------------ :: here_extvar
-wl , tl <= ^ ex <= tl' [ t1 ] [ ex ]
+wl , tl <= ^ ex <= tl' [ t1 ] [ ^ ex ]
 
 wl [ t1 ] [ t2 ]
 ------------------------------------ :: there_w
@@ -214,88 +213,101 @@ defn
 by
 
 |- wl
---------------------------- :: var
-|- wl , ~ x
+-------------------------------------------------- :: var
+|- wl , ~ ex
 
 |- wl ++ < tl >
------------------------------------------------------------ :: extvar_unfold_lnil
+-------------------------------------------------- :: extvar_unfold_lnil
 |- wl , tnil <= ^ ex <= tl
 
 |- wl ++ < tl' >
------------------------------------------------------------ :: extvar_unfold_unil
+-------------------------------------------------- :: extvar_unfold_unil
 |- wl , tl <= ^ ex <= tnil
 
 |- wl ++ < tl * tl' >
------------------------------------------------------------ :: extvar_unfold
+-------------------------------------------------- :: extvar_unfold
 |- wl , tl <= ^ ex <= tl'
 
 |- wl
--------------------------------------------- :: sub_int
+-------------------------------------------------- :: sub_int
 |- wl , int <: int
-
-x $ wl
-|- wl
--------------------------------------------- :: sub_tvar
-|- wl , x <: x
 
 ex $ wl
 |- wl
--------------------------------------------- :: sub_extvar
+-------------------------------------------------- :: sub_tvar
 |- wl , ex <: ex
+
+^ ex $ wl
+|- wl
+-------------------------------------------------- :: sub_extvar
+|- wl , ^ ex <: ^ ex
 
 ex # wl
 |- wl , tnil <= ^ ex <= tnil , [ ex / x ] A <: B
--------------------------------------------- :: sub_forallL
+-------------------------------------------------- :: sub_forallL
 |- wl , forall x. A <: B
 
-|- wl , ~ x , A <: B
--------------------------------------------- :: sub_forallR
+ex # wl 
+|- wl , ~ ex , [ ex / x ] A <: B
+-------------------------------------------------- :: sub_forallR
 |- wl , A <: forall x. B
 
 |- wl , A2 <: B2 , B1 <: A1
--------------------------------------------- :: sub_arrow_arrow
+-------------------------------------------------- :: sub_arrow_arrow
 |- wl , A1 -> A2 <: B1 -> B2
 
 mono (A -> B)
-ex $ wl
+^ ex $ wl
 |- wl
---------------------------------------------- :: sub_extvar_arrow_mono
+-------------------------------------------------- :: sub_extvar_arrow_mono
 |- wl , ex <: A -> B
 
 mono (A -> B)
-ex $ wl
+^ ex $ wl
 |- wl 
---------------------------------------------- :: sub_arrow_extvar_mono
+-------------------------------------------------- :: sub_arrow_extvar_mono
 |- wl , A -> B <: ex
+
+^ ex $ wl
+^ ex1 # wl 
+^ ex2 # wl , tnil <= ^ ex1 <= tnil
+|- wl @ ^ ex << ^ ex1 @ ^ ex << ^ ex2 @ ^ ex <+ (^ ex1 -> ^ex2)
+------------------------------------------------------------------ :: sub_extvar_arrow
+|- wl , ^ ex <: A -> B
 
 ex $ wl
 ex1 # wl 
 ex2 # wl , tnil <= ^ ex1 <= tnil
-|- wl @ ex << ex1 @ ex << ex2 @ ex <+ (ex1 -> ex2)
---------------------------------------------------- :: sub_extvar_arrow
-|- wl , ex <: A -> B
+|- wl @ ^ ex << ^ ex1 @ ^ ex << ^ ex2 @ ^ ex +> (^ ex1 -> ^ ex2)
+------------------------------------------------------------------ :: sub_arrow_extvar
+|- wl , A -> B <: ^ ex
 
-ex $ wl
-ex1 # wl 
-ex2 # wl , tnil <= ^ ex1 <= tnil
-|- wl @ ex << ex1 @ ex << ex2 @ (ex1 -> ex2) <+ ex
---------------------------------------------------- :: sub_arrow_extvar
-|- wl , A -> B <: ex
+^ ex $ wl
+|- wl @ ^ ex +> int
+------------------------------------------------------------------ :: sub_int_extvar
+|- wl , int <: ^ ex
 
-ex $ wl
-|- wl @ int <+ ex
---------------------------------------------- :: sub_int_extvar
-|- wl , int <: ex
+^ ex $ wl
+|- wl @ ^ ex <+ int
+------------------------------------------------------------------ :: sub_extvar_int
+|- wl , ^ ex <: int
 
-ex $ wl
-|- wl @ ex <+ int
---------------------------------------------- :: sub_extvar_int
-|- wl , ex <: int
+wl [ ex ] [^ ey]
+|- wl @ ^ ey +>  ex
+------------------------------------------------------------------ :: sub_tvar_extvar
+|- wl , ex <: ^ ey
 
-|- wl @ x <+ ex
---------------------------------------------- :: sub_tvar_extvar
-|- wl , x <: ex
+wl [ ex ] [^ ey]
+|- wl @ ^ ey <+ ex
+------------------------------------------------------------------ :: sub_extvar_tvar
+|- wl , ^ ey <: ex
 
-|- wl @ ex <+ x
---------------------------------------------- :: sub_extvar_tvar
-|- wl , ex <: x
+wl [^ ex] [^ ey]
+|- wl @ ^ ey +> ^ ex
+------------------------------------------------------------------ :: sub_extvar_extvarR
+|- wl , ^ ex <: ^ ey
+
+wl [^ ex] [^ ey]
+|- wl @ ^ ey <+ ^ ex
+------------------------------------------------------------------ :: sub_extvar_extvarL
+|- wl , ^ ey <: ^ ex
