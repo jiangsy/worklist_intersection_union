@@ -12,7 +12,7 @@ type, t, A, B :: 'ld_t_' ::=
   | ( t )         :: S :: paren {{ coq [[t]] }} 
   | [ t / x ] A   :: M :: susbt {{ coq (open_type_wrt_type [[x A]] [[t]]) }}
 
-context, G :: 'ld_ctx_' ::=
+context, G :: 'ctx_' ::=
   | nil     :: :: nil
   | G , x  :: :: cons
 
@@ -31,8 +31,8 @@ embed {{ coq
 
 Fixpoint ctx_dom (G : context) : atoms :=
   match G with
-  | ld_ctx_nil => {}
-  | ld_ctx_cons G' x => add x (ctx_dom G')
+  | ctx_nil => {}
+  | ctx_cons G' x => add x (ctx_dom G')
   end
 .
 
@@ -42,7 +42,7 @@ defns
 Monotype :: '' ::=
 
 defn
-mono A :: :: mono_type :: 'ld_mono_'
+mono A :: :: ld_mono :: 'mono_'
 by
 
 --------------- :: int
@@ -61,7 +61,7 @@ defns
 DeclarativeSubtyping :: '' ::=
 
 defn
-|- G :: :: wf_context :: 'ld_wf_ctx_'
+|- G :: :: wf_context :: 'wf_ctx_'
 by
 
 ---------- :: nil
@@ -73,7 +73,7 @@ x # G
 |- G , x
 
 defn
-G |- t  :: :: wf_type :: 'ld_wf_typ_'
+G |- t  :: :: wf_type :: 'wf_typ_'
 by
 
 |- G
@@ -93,7 +93,7 @@ G |- t1 -> t2
 
 
 defn
-G |- t1 <: t2 :: :: sub :: 'ld_sub_'
+G |- t1 <: t2 :: :: sub :: 'dsub_'
 by
 
 x $ G
