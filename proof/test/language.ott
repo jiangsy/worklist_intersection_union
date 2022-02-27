@@ -1,0 +1,141 @@
+
+metavar x, y, z ::= {{ repr-locally-nameless }}
+metavar ex, ey, ez ::= {{ coq var }}
+
+
+grammar
+
+type, t, A, B :: 'la_type_' ::= 
+  | int           ::   :: int
+  | forall x . t  ::   :: forall (+ bind x in t +) 
+  | t1 -> t2      ::   :: arrow 
+  | x             ::   :: tvar
+  | ^ ex          ::   :: extvar
+  | ( t )         :: S :: paren {{ coq ([[t]]) }}
+  | [ t / x ] A   :: M :: susbt {{ coq (open_type_wrt_type [[x A]] [[t]]) }}
+
+typelist, tl :: 'la_typelist_' ::= 
+  | tnil   :: :: nil  
+  | tl , t :: :: cons 
+
+work, w :: 'la_work_' ::=
+  | ex                :: :: tvar 
+  | tl <= ^ ex <= tl' :: :: extvar
+  | t1 <: t2          :: :: subtyp
+
+worklist, wl :: 'la_worklist_' ::= 
+  | wnil                ::   :: nil 
+  | wl , w              ::   :: cons
+  % | wl1 ++ wl2          :: M :: app {{ coq (wl_app [[wl1]] [[wl2]]) }}
+  % | < tl >              :: M :: single_constraint {{ coq (single_side_constraints [[tl]]) }}
+  % | < tl1 * tl2 >       :: M :: double_constraint {{ coq (double_side_constraints [[tl1]] [[tl2]])}}
+  % | wl @ ^ ex +> t      :: M :: update_lb {{ coq (update_lowerbound_in_wl [[t]] [[wl]] [[ex]]) }}
+  % | wl @ ^ ex <+ t      :: M :: update_ub {{ coq (update_upperbound_in_wl [[t]] [[wl]] [[ex]]) }}
+  % | wl @ ^ ex << ^ ex1  :: M :: add_before {{ coq (add_var_before [[ex1]] [[wl]] [[ex]])}}
+
+
+formula :: formula_ ::=
+  | judgement  ::   :: judgement
+  % | ^ ex # wl  :: M :: extvar_fresh {{ coq ([[ex]] `notin` (extvar_dom [[wl]])) }}
+  % | ex # wl    :: M :: tvar_fresh {{ coq ([[ex]] `notin` (tvar_dom [[wl]])) }}
+  % | ^ ex $ wl  :: M :: extvar_in {{ coq ([[ex]] `in` (extvar_dom [[wl]])) }}
+  % | ex $ wl    :: M :: tvar_in {{ coq ([[ex]] `in` (tvar_dom [[wl]])) }}
+
+
+substitutions
+  single type x :: subst
+
+
+freevars
+  type    x :: fv
+  type    ex :: fex
+
+
+embed {{ coq
+
+Fixpoint wl_app (wl1 wl2 : worklist) : worklist :=
+  match wl2 with
+  | la_worklist_nil => wl1 
+  | la_worklist_cons wl2' w2 => la_worklist_cons (wl_app wl1 wl2') w2
+  end
+.
+
+Fixpoint tvar_dom (wl : worklist) : atoms :=
+  match wl with
+  | la_worklist_nil => {}
+  | la_worklist_cons wl' (la_work_tvar tvar) => add tvar (tvar_dom wl')
+  | la_worklist_cons wl' _ => tvar_dom wl'
+  end
+.
+
+Fixpoint extvar_dom (wl : worklist) : atoms :=
+  match wl with
+  | la_worklist_nil => {}
+  | la_worklist_cons wl' (la_work_extvar _ extvar _) => add extvar (extvar_dom wl')
+  | la_worklist_cons wl' _ => extvar_dom wl'
+  end
+.
+
+Fixpoint update_lowerbound_in_wl (t: type) (wl : worklist) (target : var) : worklist :=
+  match wl with 
+  | la_worklist_nil => la_worklist_nil
+  | la_worklist_cons wl' (la_work_extvar tl extvar tl') => 
+    if (eq_dec target extvar) 
+      then la_worklist_cons (update_lowerbound_in_wl t wl' target) (la_work_extvar (la_typelist_cons tl t) extvar tl') 
+      else la_worklist_cons (update_lowerbound_in_wl t wl' target) (la_work_extvar tl extvar tl')
+  | la_worklist_cons wl' w => la_worklist_cons (update_lowerbound_in_wl t wl' target) w
+  end
+.
+
+Fixpoint update_upperbound_in_wl (t: type) (wl : worklist) (target : var) : worklist :=
+  match wl with 
+  | la_worklist_nil => la_worklist_nil
+  | la_worklist_cons wl' (la_work_extvar tl extvar tl') => 
+    if (eq_dec target extvar) 
+      then la_worklist_cons (update_upperbound_in_wl t wl' target) (la_work_extvar tl extvar (la_typelist_cons tl' t)) 
+      else la_worklist_cons (update_upperbound_in_wl t wl' target) (la_work_extvar tl extvar tl')
+  | la_worklist_cons wl' w => la_worklist_cons (update_upperbound_in_wl t wl' target) w
+  end
+.
+
+Fixpoint add_var_before (v : var) (wl : worklist) (target : var) : worklist :=
+  match wl with 
+  | la_worklist_nil => la_worklist_nil
+  | la_worklist_cons wl' (la_work_extvar tl extvar tl') => 
+    if (eq_dec target v) 
+      then la_worklist_cons (la_worklist_cons (add_var_before v wl' target) (la_work_extvar la_typelist_nil v la_typelist_nil)) (la_work_extvar tl extvar tl') 
+      else la_worklist_cons (add_var_before v wl' target) (la_work_extvar tl extvar tl')
+  | la_worklist_cons wl' w => la_worklist_cons (add_var_before v wl' target) w
+  end
+.
+
+Fixpoint single_side_constraints_helper (t : type) (tl : typelist) : worklist := 
+  match tl with
+  | la_typelist_nil => la_worklist_nil
+  | la_typelist_cons tl' t' => la_worklist_cons (single_side_constraints_helper t' tl') (la_work_subtyp t t')
+  end
+.
+
+Definition single_side_constraints (tl : typelist) : worklist := 
+  match tl with
+  | la_typelist_nil => la_worklist_nil
+  | la_typelist_cons tl' t => single_side_constraints_helper t tl'
+  end
+.
+
+Fixpoint double_side_constraints_helper (t : type) (tl : typelist) : worklist :=
+  match tl with 
+  | la_typelist_nil => la_worklist_nil
+  | la_typelist_cons tl' t' => la_worklist_cons (double_side_constraints_helper t tl') (la_work_subtyp t t')
+  end
+.
+
+Fixpoint double_side_constraints (tl1 tl2 : typelist) : worklist :=
+  match tl1 with 
+  | la_typelist_nil => la_worklist_nil
+  | la_typelist_cons tl1' t1 => wl_app (double_side_constraints tl1' tl2) (double_side_constraints_helper t1 tl2)
+  end
+.
+
+}}
+
