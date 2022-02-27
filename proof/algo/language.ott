@@ -299,16 +299,16 @@ tx # wl
 mono (A -> B)
 ex $ wl
 wl' := wl <<= ex <:> t 
-|- wl'
+|- wl' @ ex <+ A -> B
 ------------------------------------------------------------------ :: evar_arrow_mono
-|- wl , tx <: A -> B
+|- wl , ex <: A -> B
 
 mono (A -> B)
 ex $ wl
 wl' := wl <<= ex <:> t 
-|- wl' 
+|- wl' @ ex +> A -> B
 ------------------------------------------------------------------ :: arrow_evar_mono
-|- wl , A -> B <: tx
+|- wl , A -> B <: ex
 
 ex $ wl
 ex1 # wl 
