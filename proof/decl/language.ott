@@ -14,18 +14,21 @@ type, t, A, B :: 'ld_t_' ::=
 
 context, G :: 'ctx_' ::=
   | nil     :: :: nil
-  | G , x  :: :: cons
+  | G , x   :: :: cons
 
 formula :: formula_ ::=
   | judgement  ::   :: judgement
   | x # G      :: M :: ctx_fresh {{ coq ([[x]] `notin` ctx_dom [[G]]) }}
   | x $ G      :: M :: ctx_in {{ coq ([[x]] `in` ctx_dom [[G]]) }}
 
+
 substitutions
   single type x :: subst
 
+
 freevars
   type    x :: fv
+
 
 embed {{ coq
 
@@ -37,6 +40,7 @@ Fixpoint ctx_dom (G : context) : atoms :=
 .
 
 }}
+
 
 defns
 Monotype :: '' ::=
@@ -58,7 +62,7 @@ mono t1 -> t2
 
 
 defns
-DeclarativeSubtyping :: '' ::=
+WellFormedConext :: '' ::=
 
 defn
 |- G :: :: wf_context :: 'wf_ctx_'
@@ -71,6 +75,10 @@ by
 x # G
 ---------- :: cons
 |- G , x
+
+
+defns
+WellFormedType :: '' ::=
 
 defn
 G |- t  :: :: wf_type :: 'wf_typ_'
@@ -91,6 +99,9 @@ G |- t2
 ---------------- :: arrow
 G |- t1 -> t2
 
+
+defns
+DeclarativeSubtyping :: '' ::=
 
 defn
 G |- t1 <: t2 :: :: sub :: 'dsub_'
