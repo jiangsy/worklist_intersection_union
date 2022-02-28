@@ -78,14 +78,15 @@ Algorithm:
 [A/^a]_E T
 --------------
 
-[A/^a]_E (T,L <: ^a <: R)   = T,E,L <: ^a <: R                 ^a notin fv(A) and ^a notin fv(E)
-[A/^a]_E (T,L <: ^b <: R)   = [A/^a]_E T,L <: ^b <: R          ^b notin FV(A + E)
-[A/^a]_E (T, L <: ^b <: R)  = [A/^a]_{E,L <: ^b <: R} T        ^b in FV(A) or ^b in FV(E) and ^a notin(L+R)
-[A/^a]_E (T, a)             = [A/^a]_{E,L <: ^b <: R} T        a notin FV(A+ E) 
-[A/^a]_E (T |- B <: C)      = [A/^a]_(E, B <: C) T             fv(B + C) in fv(A + E)
-[A/^a]_E (T |- B <: C)      = [A/^a]_(E) (T |- B <: C)         not (fv(B + C) in fv(A + E))
+[A/^a]_E (T,L <: ^a <: R)   = T, reverse E, L <: ^a <: R                 ^a notin fv(A) and ^a notin fv(E)
+[A/^a]_E (T,L <: ^b <: R)   = [A/^a]_E T, L <: ^b <: R          ^b notin FV(A + E)
+[A/^a]_E (T, L <: ^b <: R)  = [A/^a]_{E, L <: ^b <: R} T        (^b in FV(A) or ^b in FV(E)) and ^a notin(L+R)
+[A/^a]_E (T, a)             = [A/^a]_{E} T, a                   a notin FV(A+ E) 
+[A/^a]_E (T |- B <: C)      = [A/^a]_(E, B <: C) T             fv(B + C) ∩ fv(A + E) != Φ
+[A/^a]_E (T |- B <: C)      = [A/^a]_(E) (T |- B <: C)         fv(B + C) ∩ fv(A + E) = Φ
 
 -}
+
 
 mono :: Typ -> Bool
 mono (TForall g)  = False
@@ -112,11 +113,11 @@ worksToTyps = concatMap (\case
 
 getVarsBeforeTyp :: [Work] -> Typ -> [Typ]
 getVarsBeforeTyp wl (TVar i) = map TVar $ dropWhile (/= i) $ worksToTyps wl
-getVarsBeforeTyp wl x = error (show x ++ "is not a type")
+getVarsBeforeTyp wl x = error ("Bug:" ++ show x ++ "is not a type")
 
 getVarsAfterTyp :: [Work] -> Typ -> [Typ]
 getVarsAfterTyp wl (TVar i) = map TVar $ takeWhile (/= i) $ worksToTyps wl
-getVarsAfterTyp wl x = error (show x ++ "is not a type")
+getVarsAfterTyp wl x = error ("Bug:" ++ show x ++ "is not a type")
 
 prec :: [Work] -> Typ -> Typ -> Bool
 prec w varA varB = varA `elem` getVarsBeforeTyp w varB
@@ -153,7 +154,7 @@ windows n = foldr (zipWith (:)) (repeat []) . take n . tails
 generateOneSideConstraints :: [Typ] -> [Work]
 generateOneSideConstraints bounds = map (\ts -> Sub (head ts) (last ts)) (windows 2 bounds)
 
--- targetTyp, boundType, worklist
+-- targetTyp, boundTyp, worklist
 carryBackInWL :: Typ -> Typ -> [Work] -> Either String [Work]
 carryBackInWL targetTyp@(TVar (Right i)) boundTyp wl =
     carryBackInWLHelper wl [] fVars
@@ -172,7 +173,7 @@ carryBackInWL targetTyp@(TVar (Right i)) boundTyp wl =
         | otherwise = carryBackInWLHelper wl' toCarryBack fvs >>= (\wl'' -> Right $ wvar:wl'')
       carryBackInWLHelper (wsub@(Sub t1 t2):wl') toCarryBack fvs =
         carryBackInWLHelper wl' toCarryBack fvs >>= (\wl'' -> Right $ wsub:wl'')
-      carryBackInWLHelper [] _ _ = Left "Error: Impossible in carryBackInWL"
+      carryBackInWLHelper [] _ _ = Left "Bug: Impossible in carryBackInWL"
       fVars :: [Typ]
       fVars = nub $ fv boundTyp
 carryBackInWL _ _ _ = error "Bug: Wrong targetTyp in carryBackInWL"
@@ -181,8 +182,8 @@ carryBackInWL _ _ _ = error "Bug: Wrong targetTyp in carryBackInWL"
 step :: Int -> [Work] -> (Int, Either String [Work], String)
 step n (WVar i : ws)                            = (n, Right ws, "Garbage Collection")     -- 01 
 step n (WExVar i lbs ubs : ws)  
-  | null lbs && length ubs > 1 = (n, Right $ [Sub (head ubs) uTyp | uTyp <- tail ubs] ++ ws, "SUnfoldBoundsEmptyL")                
-  | null ubs && length lbs > 1 = (n, Right $ [Sub (head lbs) uTyp | uTyp <- tail lbs] ++ ws, "SUnfoldBoundsEmptyU")                 
+  | null lbs = (n, Right $ [Sub (head ubs) uTyp | uTyp <- tail ubs] ++ ws, "SUnfoldBoundsEmptyL")                
+  | null ubs = (n, Right $ [Sub (head lbs) uTyp | uTyp <- tail lbs] ++ ws, "SUnfoldBoundsEmptyU")                 
   | otherwise = (n, Right $ [Sub lTyp uTyp | lTyp <- lbs, uTyp <- ubs] ++ ws, "SUnfoldBounds")
 step n (Sub TInt TInt : ws)                     = (n, Right ws, "SInt")                   -- 03
 step n (Sub TBool TBool : ws)                   = (n, Right ws, "SBool")                  -- 03
@@ -251,9 +252,9 @@ checkAndShow :: Int -> [Work] -> String
 checkAndShow n [] = "Success!"
 checkAndShow n ws =
   case ws' of
-    Left e -> "   " ++ show (reverse ws) ++ "\n-->{ Rule: " ++ s1 ++ replicate (15 - length s1) ' ' ++ "Size: " ++ show (size ws) ++ " }\n" ++ e
+    Left e -> "   " ++ show (reverse ws) ++ "\n-->{ Rule: " ++ s1 ++ replicate (20 - length s1) ' ' ++ "Size: " ++ show (size ws) ++ " }\n" ++ e
     Right wl -> s2
-      where s2 = "   " ++ show (reverse ws) ++ "\n-->{ Rule: " ++ s1 ++ replicate (15 - length s1) ' ' ++ "Size: " ++ show (size ws) ++ " }\n" ++ checkAndShow m wl
+      where s2 = "   " ++ show (reverse ws) ++ "\n-->{ Rule: " ++ s1 ++ replicate (20 - length s1) ' ' ++ "Size: " ++ show (size ws) ++ " }\n" ++ checkAndShow m wl
   where
     (m, ws', s1) = step n ws
 
@@ -338,6 +339,7 @@ sizeSub _ _                       = 1
 
 chkAndShow = putStrLn .  checkAndShow 0
 
+chk :: [Work] -> String
 chk = check 0
 
 test1 = chkAndShow [Sub t3 t3]
@@ -350,7 +352,7 @@ test7 = chkAndShow [Sub t5 t7]
 test8 = chkAndShow [Sub (TForall $ \a -> TArrow a a) (TArrow t5 (TArrow TInt TInt))]
 test9 = chkAndShow [Sub ex1 (TArrow TInt ex2), Sub ex2 (TArrow TInt ex1), WExVar 2 [] [], WExVar 1 [] []]
 test10 = chkAndShow [Sub (TForall (\t -> (TArrow t (TForall (\t1 -> TArrow t1 t))))) (TForall (\t -> (TArrow t (TArrow t t)))) ]
-ws1 = [Sub ex1 (TArrow TInt (TArrow ex2 ex3)), Sub ex2 (TArrow TInt ex1),  WExVar 2 [] [],  WExVar 1 [] [], WExVar 3 [] []]
+ws1 = [Sub ex1 (TArrow TInt (TArrow ex2 ex3)), Sub ex2 (TArrow TInt ex1),  WExVar 2 [] [],   WExVar 3 [] [], WExVar 1 [] []]
 
 ex0 = TVar (Right 0)
 
