@@ -42,7 +42,7 @@ inferEqProp wl = chk wl == InferS.chk (map adaptWorkLStoS wl)
 --         (ls !! idx, nextGen)
 
 probs :: [Float]
-probs = [0.2, 0.2, 0.2, 0.2, 0.2]
+probs = [0.3, 0.3, 0.3, 0.1]
 
 cumProbs :: [Float]
 cumProbs = 
@@ -107,6 +107,7 @@ getRandomFloat seed  =
         x = fst $ random gen
         nextSeed = fromIntegral $ fst $ genWord32 gen
 
+-- avoid call-by-need optimization, otherwise calling getSeedFromTime will get the same result
 getSeedFromTime :: Int -> Int
 getSeedFromTime _ = round $ 1e6 * unsafePerformIO (getCurrentTime <&> (fromRational . toRational . utctDayTime))
 
@@ -120,7 +121,7 @@ abstractHelper seed TInt typLs =
         (TInt, seed)
     else
         let (x :: Float, nextSeed) = getRandomFloat seed in
-            if x < 0.5 
+            if x < 0.2
                 then (TInt, nextSeed) 
                 else getRandomElement nextSeed typLs
 abstractHelper seed TBool typLs =
@@ -128,24 +129,36 @@ abstractHelper seed TBool typLs =
         (TBool, seed)
     else
         let (x :: Float, nextSeed) = getRandomFloat seed in
-            if x < 0.5 
+            if x < 0.2
                 then (TBool, nextSeed) 
                 else getRandomElement nextSeed typLs
 abstractHelper seed (TArrow t1 t2) typLs =
-    let (x :: Float, nextSeed) = getRandomFloat seed in
-        if | x > head cumProbs && x < cumProbs !! 1->
-                let (polyt1, nextSeed') = abstractHelper nextSeed t1 typLs 
-                    (polyt2, nextSeed'') = abstractHelper nextSeed' t2 typLs in
-                        (TArrow polyt1 polyt2, nextSeed'')
-            | x > cumProbs !! 1 && x < cumProbs !! 2 ->
-                (TForall $ \x -> 
-                    let (polyt1, nextSeed') = abstractHelper nextSeed t1 (x:typLs) 
-                        (polyt2, _) = abstractHelper nextSeed' t1 (x:typLs) in 
-                    TArrow polyt1 polyt2,  getSeedFromTime 0)
-            | x > cumProbs !! 2 && x < cumProbs !! 3 ->
-                 (TForall $ \x -> x, nextSeed)
-            | x > cumProbs !! 3 && x < cumProbs !! 4 -> getRandomElement seed typLs
-            | otherwise -> (TArrow t1 t2, seed)
+    if null typLs then 
+        let (x :: Float, nextSeed) = getRandomFloat seed in
+            if | x < 0.2 ->
+                    let (polyt1, nextSeed') = abstractHelper nextSeed t1 typLs 
+                        (polyt2, nextSeed'') = abstractHelper nextSeed' t2 typLs in
+                            (TArrow polyt1 polyt2, nextSeed'')
+                | x >= 0.2 && x < 0.95 ->
+                    (TForall $ \x -> 
+                        let (polyt1, nextSeed') = abstractHelper nextSeed t1 (x:typLs) 
+                            (polyt2, _) = abstractHelper nextSeed' t2 (x:typLs) in 
+                        TArrow polyt1 polyt2,  getSeedFromTime 0)
+                | otherwise -> (TArrow t1 t2, seed)
+    else 
+        let (x :: Float, nextSeed) = getRandomFloat seed in
+            if | x < 0.3 ->
+                    let (polyt1, nextSeed') = abstractHelper nextSeed t1 typLs 
+                        (polyt2, nextSeed'') = abstractHelper nextSeed' t2 typLs in
+                            (TArrow polyt1 polyt2, nextSeed'')
+                | x >= 0.3 && x < 0.6 ->
+                    (TForall $ \x -> 
+                        let (polyt1, nextSeed') = abstractHelper nextSeed t1 (x:typLs) 
+                            (polyt2, _) = abstractHelper nextSeed' t2 (x:typLs) in 
+                        TArrow polyt1 polyt2,  getSeedFromTime 0)
+                | x >= 0.6 && x < 0.9 -> 
+                    getRandomElement seed typLs
+                | otherwise -> (TArrow t1 t2, seed)
 abstractHelper seed t typLs = error $ "Bug: Wellformed mono type should not contain " ++ show t ++ "!"
 
 
