@@ -13,7 +13,7 @@ ppTyp n (TVar (Right i)) = "^" ++ show i
 ppTyp n TInt             = "Int"
 ppTyp n TBool            = "Bool"
 ppTyp n (TArrow a b)     = "(" ++ ppTyp n a ++ ") -> " ++ ppTyp n b
-ppTyp n (TForall f)      = "forall " ++ show n ++ ". " ++ ppTyp (n+1) (f (TVar (Left n)))
+ppTyp n (TForall f)      = "forall " ++ show n ++ ". " ++ "(" ++ ppTyp (n+1) (f (TVar (Left n))) ++ ")"
 
 eqTyp :: Int -> Typ -> Typ -> Bool
 eqTyp n TInt TInt = True

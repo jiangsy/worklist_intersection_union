@@ -2,14 +2,16 @@
 module TestInfer where
 import Data.Time.Clock
 import Test.QuickCheck
+import Test.QuickCheck.Property (succeeded, failed, reason)
 import System.Random(StdGen, mkStdGen, random, randomR, randomRs, RandomGen)
 import System.IO.Unsafe
 import Control.Monad(liftM,liftM2,liftM3)
 import Data.Functor
 
 import LazyDef (Typ(..), Work(..))
-import InferLazyMB (chk, mono, chkAndShow)
-import qualified InferSimple as InferS (Typ(..), Work(..), chk)
+import InferLazyMB (chk, mono, chkAndShow, checkAndShow)
+import TestCase
+import qualified InferSimple as InferS (Typ(..), Work(..), chk, chkAndShow, checkAndShow)
 import Test.QuickCheck.Gen (elements)
 import System.Posix.ByteString (seekDirStream)
 import System.Random.Stateful (RandomGen(genWord32))
@@ -35,6 +37,18 @@ adaptWorkLStoS (Sub typ typ') = InferS.Sub (adaptTypLStoS typ) (adaptTypLStoS ty
 
 inferEqProp :: [Work] -> Bool
 inferEqProp wl = chk wl == InferS.chk (map adaptWorkLStoS wl)
+
+prop wl =
+  if last_line == last_line'
+    then succeeded
+    else failed { Test.QuickCheck.Property.reason = reason' }
+   where
+      wl' = map adaptWorkLStoS wl
+      full_chk_res = checkAndShow 0 wl 
+      full_chk_res' = InferS.checkAndShow 0 wl'
+      last_line = last (lines full_chk_res)
+      last_line' = last (lines full_chk_res')
+      reason' = full_chk_res ++ "\n" ++ full_chk_res' ++ "\n"
 
 -- getRandomElement :: RandomGen g => g -> [a] -> (a, g)
 -- getRandomElement gen ls =
@@ -225,4 +239,7 @@ instance {-# OVERLAPPING #-} Arbitrary [Work] where
 
 test1 = chkAndShow [Sub (TArrow TInt (TArrow TInt TBool )) (TForall (\t -> (TArrow t (TArrow TInt t))))]
 
+
 main = verboseCheck inferEqProp
+
+

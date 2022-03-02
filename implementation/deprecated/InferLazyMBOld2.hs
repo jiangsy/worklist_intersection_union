@@ -199,7 +199,10 @@ step n (Sub (TForall g) b : ws)                 =                               
   (n+1, Right $  Sub (g (TVar (Right n))) b : WExVar n [] [] : ws, "SForallL")
 
 step n (Sub (TVar (Right i)) (TArrow a b) : ws)                                           -- 09
-   | not $ mono (TArrow a b)                    =
+  | mono (TArrow a b)                           =
+    (n, carryBackInWL (TVar (Right i)) (TArrow a b) ws >>= 
+      updateBoundInWL (TVar (Right i)) (UB, TArrow a b), "SplitL mono")
+  | otherwise                                   =
     (n+2, updateBoundInWL (TVar (Right i)) (UB, a1_a2) (addTypsBefore (TVar (Right i)) [a1, a2] ws) >>=
       (\wl' -> Right $ Sub (TArrow a1 a2) (TArrow a b):wl'), "SplitL")
                 where
@@ -208,7 +211,10 @@ step n (Sub (TVar (Right i)) (TArrow a b) : ws)                                 
                   a1_a2 = TArrow a1 a2
 
 step n (Sub (TArrow a b) (TVar (Right i)) : ws)                                           -- 10
-  | not $ mono (TArrow a b)                     =
+  | mono (TArrow a b)                           =
+    (n, carryBackInWL (TVar (Right i)) (TArrow a b) ws >>=  
+      updateBoundInWL (TVar (Right i)) (LB, TArrow a b), "SplitR mono")
+  | otherwise                                   =
     (n+2, updateBoundInWL (TVar (Right i)) (LB, a1_a2) (addTypsBefore (TVar (Right i)) [a1, a2] ws) >>= 
       (\wl' -> Right $ Sub (TArrow a b) (TArrow a1 a2) : wl')  , "SplitR")
                 where
@@ -216,22 +222,29 @@ step n (Sub (TArrow a b) (TVar (Right i)) : ws)                                 
                   a2 = TVar $ Right (n + 1)
                   a1_a2 = TArrow a1 a2
 
+step n (Sub (TVar (Right i)) (TVar (Left j)) : ws)                                        -- 11
+  | prec ws (TVar (Left j)) (TVar (Right i))    =
+    (n, updateBoundInWL (TVar (Right i)) (UB, TVar (Left j)) ws, "SolveLVar")
+  | otherwise = error "Bug: Incorrect var order in step call!"
+step n (Sub (TVar (Left j)) (TVar (Right i))  : ws)                                       -- 12
+  | prec ws (TVar (Left j)) (TVar (Right i))    =
+    (n, updateBoundInWL (TVar (Right i)) (LB, TVar (Left j)) ws, "SolveRVar")
+  | otherwise = error "Bug: Incorrect var order in step call"
+
+step n (Sub (TVar (Right i)) TInt : ws)         =                                         -- 13
+  (n, updateBoundInWL (TVar (Right i)) (UB, TInt) ws, "SolveLInt")
+step n (Sub TInt (TVar (Right i)) : ws)         =                                         -- 14
+  (n, updateBoundInWL (TVar (Right i)) (LB, TInt) ws, "SolveRInt")
+step n (Sub (TVar (Right i)) TBool : ws)        =                                         -- 13
+  (n, updateBoundInWL (TVar (Right i)) (UB, TBool) ws, "SolveLBool")
+step n (Sub TBool (TVar (Right i)) : ws)        =                                         -- 14
+  (n, updateBoundInWL (TVar (Right i)) (LB, TBool) ws, "SolveRBool")
+
 step n (Sub (TVar (Right i)) (TVar (Right j)) : ws)                                       -- 15 & 16
   | prec ws (TVar (Right i)) (TVar (Right j))   =
     (n, updateBoundInWL (TVar (Right j)) (LB, TVar (Right i)) ws, "SolveLExtVar")
   | prec ws (TVar (Right j)) (TVar (Right i))   =
     (n, updateBoundInWL (TVar (Right i)) (UB, TVar (Right j)) ws, "SolveRExtVar")
-
-step n (Sub (TVar (Right i)) t : ws)                                        -- 11
-  | mono t                                      =
-    (n, carryBackInWL (TVar (Right i)) t ws >>= 
-      updateBoundInWL (TVar (Right i)) (UB, t), "Solve mono R")
-  | otherwise =  error $ "Bug: Incorrect " ++ show t ++ " !"
-step n (Sub t (TVar (Right i))  : ws)                                       -- 12
-  | mono t                                      =
-    (n, carryBackInWL (TVar (Right i)) t ws >>= 
-      updateBoundInWL (TVar (Right i)) (LB, t), "Solve mono L")
-  | otherwise = error $ "Bug: Incorrect " ++ show t ++ " !"
 
 step n _                                        = (n, Left "No matched pattern", "None")
 

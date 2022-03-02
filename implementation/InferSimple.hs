@@ -141,14 +141,13 @@ fv (TArrow t1 t2)   = fv t1 `union` fv t2
 fv (TForall g)      = fv (g TInt)
 fv _                = []
 
-substWL :: Int ->  Typ -> [Int] -> [Work] -> [Work]
+substWL :: Int ->  Typ -> [Int] -> [Work] -> Either String [Work]
 substWL i t es (V (Right j) : ws)
-   | i == j                     = if i `notElem` fv t then map (V . Right) es ++ ws else error (show i ++ " in " ++ show t)
+   | i == j                     = if i `notElem` fv t then Right $ map (V . Right) es ++ ws else error (show i ++ " in " ++ show t)
    | j `elem` fv t              = substWL i t (j : es) ws
-   | otherwise                  = V (Right j) : substWL i t es ws
-substWL i t es (Sub t1 t2 : ws) = Sub (subst i t t1) (subst i t t2) : substWL i t es ws
-substWL i t es (w : ws)         = w : substWL i t es ws 
-substWL i t es []               = []
+   | otherwise                  = substWL i t es ws >>= (\ws'  -> Right $ V (Right j) : ws')
+substWL i t es (Sub t1 t2 : ws) = substWL i t es ws >>= (\ws' -> Right $ Sub (subst i t t1) (subst i t t2) : ws')
+substWL _ _ _ _                 = Left "No matched pattern"   
 
 step :: Int -> [Work] -> (Int, Either String [Work], String)
 step n (V i : ws)                           = (n, Right ws, "Garbage Collection")
@@ -163,17 +162,17 @@ step n (Sub a (TForall g) : ws)             =
 step n (Sub (TForall g) b : ws)             =
   (n+1, Right $ Sub (g (TVar (Right n))) b : V (Right n) : ws, "SForallL")
 step n (Sub (TVar (Right i)) a  : ws)
-  | mono a                                  = (n, Right $ substWL i a [] ws, "SolveL")
+  | mono a                                  = (n, substWL i a [] ws, "SolveL")
 step n (Sub a (TVar (Right i))  : ws)
-  | mono a                                  = (n, Right $ substWL i a [] ws, "SolveL")
+  | mono a                                  = (n, substWL i a [] ws, "SolveL")
 step n (Sub (TVar (Right i)) (TArrow a b) : ws)
-                                            = (n + 2, Right $ Sub a a1 : Sub a2 b : substWL i a1_a2 [n,n+1] ws, "SplitL")
+                                            = (n + 2, substWL i a1_a2 [n,n+1] ws >>= (\ws' -> Right $ Sub a a1 : Sub a2 b : ws'), "SplitL")
   where
     a1 = TVar (Right n)
     a2 = TVar $ Right (n + 1)
     a1_a2 = TArrow a1 a2
 step n (Sub (TArrow a b) (TVar (Right i)) : ws)
-                                            = (n + 2, Right $ Sub a1 a : Sub b a2 : substWL i a1_a2 [n,n+1] ws, "SplitR")
+                                            = (n + 2, substWL i a1_a2 [n,n+1] ws >>= (\ws' -> Right $ Sub a1 a : Sub b a2 : ws'), "SplitR")
   where
     a1 = TVar $ Right n
     a2 = TVar $ Right (n + 1)
@@ -184,7 +183,7 @@ checkAndShow :: Int -> [Work] -> String
 checkAndShow n [] = "Success!"
 checkAndShow n ws =
   case ws' of
-    Left e -> "Failure!"
+    Left e -> e
     Right wl -> s2
       where s2 = "   " ++ show (reverse ws) ++ "\n-->{ Rule: " ++ s1 ++ " }\n" ++ checkAndShow m wl
   where
@@ -193,12 +192,12 @@ checkAndShow n ws =
 
 check :: Int -> [Work] -> String
 check n [] = "Success!"
-check n ws =
-  let (m,ws',s1) = step n ws
+check n wl =
+  let (m, res, s1) = step n wl
   in
-    case ws' of
+    case res of
       Left e -> "Failure!"
-      Right wl -> check m wl
+      Right wl' -> check m wl'
 
 chkAndShow = putStrLn .  checkAndShow 0
 
