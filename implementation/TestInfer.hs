@@ -215,14 +215,13 @@ instance Arbitrary Typ where
 instance {-# OVERLAPPING #-} Arbitrary [Work] where
     arbitrary = do
                    t1 <- arbitrary
-                --    t2 <- arbitrary
+                   t2 <- arbitrary
                    seed1 <- arbitrary
-                --    seed2 <- arbitrary 
-                   return [Sub (abstract t1 seed1) t1]
-                --    frequency
-                --          [(1, return [Sub  (abstract t1 seed1) ]),
-                --           (2, return [Sub (abstract t1 seed1) (abstract t1 seed2)]),
-                --           (2, return [Sub (abstract t1 seed1) (abstract t2 seed2)])]
+                   seed2 <- arbitrary 
+                   frequency
+                         [(1, return [Sub (abstract t1 seed1) t1]),
+                          (2, return [Sub (abstract t1 seed1) (abstract t1 seed2)]),
+                          (2, return [Sub (abstract t1 seed1) (abstract t2 seed2)])]
 
 test1 = chkAndShow [Sub (TArrow TInt (TArrow TInt TBool )) (TForall (\t -> (TArrow t (TArrow TInt t))))]
 

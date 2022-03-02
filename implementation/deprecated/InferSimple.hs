@@ -71,7 +71,7 @@ ppTyp n (TVar (Left i))  = show i
 ppTyp n (TVar (Right i)) = "^" ++ show i
 ppTyp n TInt             = "Int"
 ppTyp n (TArrow a b)     = "(" ++ ppTyp n a ++ ") -> " ++ ppTyp n b
-ppTyp n (TForall f)      = "forall " ++ show n ++ ". " ++ ppTyp (n+1) (f (TVar (Left n)))  
+ppTyp n (TForall f)      = "forall " ++ show n ++ ". " ++ ppTyp (n+1) (f (TVar (Left n)))
 
 eqTyp :: Int -> Typ -> Typ -> Bool
 eqTyp n TInt TInt = True
@@ -119,33 +119,33 @@ fv _                = []
 
 substWL :: Int ->  Typ -> [Int] -> [Work] -> [Work]
 substWL i t es (V (Right j) : ws)
-   | i == j        = if (not (elem i (fv t))) then map (V . Right) es ++ ws else error (show i ++ " in " ++ show t)
-   | elem j (fv t) = substWL i t (j : es) ws
+   | i == j        = if i `notElem` fv t then map (V . Right) es ++ ws else error (show i ++ " in " ++ show t)
+   | j `elem` fv t = substWL i t (j : es) ws
    | otherwise     = V (Right j) : substWL i t es ws
 substWL i t es (Sub t1 t2 : ws) = Sub (subst i t t1) (subst i t t2) : substWL i t es ws
 substWL _ _ _ _ = error "Error in substWL"
 
 step :: Int -> [Work] -> (Int, [Work], String)
-step n (V i : ws)            = (n, ws, "Garbage Collection")     
-step n (Sub TInt TInt : ws)  = (n, ws, "SInt")                
+step n (V i : ws)            = (n, ws, "Garbage Collection")
+step n (Sub TInt TInt : ws)  = (n, ws, "SInt")
 step n (Sub (TVar i) (TVar j) : ws)                             -- TODO: need to check if defined
-                  | i == j   = (n, ws, "SUVar")                  
+                  | i == j   = (n, ws, "SUVar")
 step n (Sub (TArrow a b) (TArrow c d) : ws) =
-                  (n, Sub b d : Sub c a : ws, "SArrow")         
-step n (Sub a (TForall g) : ws) =                               
+                  (n, Sub b d : Sub c a : ws, "SArrow")
+step n (Sub a (TForall g) : ws) =
   (n+1, Sub a (g (TVar (Left n))) : V (Left n) : ws, "SForallR")
-step n (Sub (TForall g) b : ws) =                               
-  (n+1, Sub (g (TVar (Right n))) b : V (Right n) : ws, "SForallL") 
-step n (Sub (TVar (Right i)) a  : ws)       
+step n (Sub (TForall g) b : ws) =
+  (n+1, Sub (g (TVar (Right n))) b : V (Right n) : ws, "SForallL")
+step n (Sub (TVar (Right i)) a  : ws)
   | mono a = (n, substWL i a [] ws, "SolveL")
-step n (Sub a (TVar (Right i))  : ws)       
+step n (Sub a (TVar (Right i))  : ws)
   | mono a = (n, substWL i a [] ws, "SolveL")
 step n (Sub (TVar (Right i)) (TArrow a b) : ws) = (n + 2, Sub a a1 : Sub a2 b : substWL i a1_a2 [n,n+1] ws, "SplitL")
   where
     a1 = TVar (Right n)
     a2 = TVar $ Right (n + 1)
     a1_a2 = TArrow a1 a2
-step n (Sub (TArrow a b) (TVar (Right i)) : ws) = (n + 2, Sub a1 a : Sub b a2 : substWL i a1_a2 [n,n+1] ws, "SplitR")   
+step n (Sub (TArrow a b) (TVar (Right i)) : ws) = (n + 2, Sub a1 a : Sub b a2 : substWL i a1_a2 [n,n+1] ws, "SplitR")
   where
     a1 = TVar $ Right n
     a2 = TVar $ Right (n + 1)
@@ -180,7 +180,7 @@ t7 = TArrow t6 t6
 
 test1 = chk [Sub t3 t3]
 test2 = chk [Sub t1 t3]
-test3 = chk [Sub t5 t3] 
+test3 = chk [Sub t5 t3]
 test4 = chk [Sub t5 t1]
 test5 = chk [Sub t1 t6]
 test6 = chk [Sub t6 t3]

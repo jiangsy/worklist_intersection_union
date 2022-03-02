@@ -17,32 +17,32 @@ type, t, A, B :: 'la_t_' ::=
   | [ t / x ] A   :: M :: susbt {{ coq (open_type_wrt_type [[x A]] [[t]]) }}
 
 typelist, tl :: 'tl_' ::= 
-  | tnil   :: :: nil  
-  | tl , t :: :: cons 
+  | tnil    :: :: nil  
+  | tl , t  :: :: cons 
 
 work, w :: 'w_' ::=
-  | tx                :: :: tvar 
-  | tl <= ex <= tl'   :: :: evar
-  | t1 <: t2          :: :: subtyp
+  | tx               :: :: tvar 
+  | tl <= ex <= tl'  :: :: evar
+  | t1 <: t2         :: :: subtyp
 
 worklist, wl :: 'wl_' ::= 
-  | wnil                ::   :: nil 
-  | wl , w              ::   :: cons
-  | wl1 ++ wl2          :: M :: app {{ coq (wl_app [[wl1]] [[wl2]]) }}
-  | < tl >              :: M :: single_constraint {{ coq (single_side_constraints [[tl]]) }}
-  | < tl1 * tl2 >       :: M :: double_constraint {{ coq (double_side_constraints [[tl1]] [[tl2]])}}
-  | wl @ ex +> t        :: M :: update_lb {{ coq (update_lowerbound_in_wl [[t]] [[wl]] [[ex]]) }}
-  | wl @ ex <+ t        :: M :: update_ub {{ coq (update_upperbound_in_wl [[t]] [[wl]] [[ex]]) }}
-  | wl @ ex << ex1      :: M :: add_before {{ coq (add_evar_before [[ex1]] [[wl]] [[ex]])}}
+  | wnil            ::   :: nil 
+  | wl , w          ::   :: cons
+  | wl1 ++ wl2      :: M :: app {{ coq (wl_app [[wl1]] [[wl2]]) }}
+  | < tl >          :: M :: single_constraint {{ coq (single_side_constraints [[tl]]) }}
+  | < tl1 * tl2 >   :: M :: double_constraint {{ coq (double_side_constraints [[tl1]] [[tl2]])}}
+  | wl @ ex +> t    :: M :: update_lb {{ coq (update_lowerbound_in_wl [[t]] [[wl]] [[ex]]) }}
+  | wl @ ex <+ t    :: M :: update_ub {{ coq (update_upperbound_in_wl [[t]] [[wl]] [[ex]]) }}
+  | wl @ ex << ex1  :: M :: add_before {{ coq (add_evar_before [[ex1]] [[wl]] [[ex]])}}
 
 
 formula :: formula_ ::=
-  | judgement                  ::   :: judgement
-  | ex # wl                    :: M :: evar_fresh {{ coq ([[ex]] `notin` (evar_dom [[wl]])) }}
-  | tx # wl                    :: M :: tvar_fresh {{ coq ([[tx]] `notin` (tvar_dom [[wl]])) }}
-  | ex $ wl                    :: M :: evar_in {{ coq ([[ex]] `in` (evar_dom [[wl]])) }}
-  | tx $ wl                    :: M :: tvar_in {{ coq ([[tx]] `in` (tvar_dom [[wl]])) }}
-  | wl' := wl <<= ex <:> t     :: M :: reorder {{ coq (reorder [[wl]] [[ex]] [[t]] wl_nil [[wl']])}}
+  | judgement               ::   :: judgement
+  | ex # wl                 :: M :: evar_fresh {{ coq ([[ex]] `notin` (evar_dom [[wl]])) }}
+  | tx # wl                 :: M :: tvar_fresh {{ coq ([[tx]] `notin` (tvar_dom [[wl]])) }}
+  | ex $ wl                 :: M :: evar_in {{ coq ([[ex]] `in` (evar_dom [[wl]])) }}
+  | tx $ wl                 :: M :: tvar_in {{ coq ([[tx]] `in` (tvar_dom [[wl]])) }}
+  | wl' := wl <<= ex <:> t  :: M :: reorder {{ coq (reorder [[wl]] [[ex]] [[t]] wl_nil [[wl']]) }}
 
 
 substitutions
@@ -50,9 +50,9 @@ substitutions
 
 
 freevars
-  type    x :: fv
-  type    tx :: ftx
-  type    ex :: fex
+  type  x   :: fv
+  type  tx  :: ftx
+  type  ex  :: fex
 
 
 embed {{ coq
@@ -85,7 +85,7 @@ Fixpoint update_lowerbound_in_wl (t: type) (wl : worklist) (target : var) : work
   | wl_nil => wl_nil
   | wl_cons wl' (w_evar tl evar tl') => 
     if (eq_dec target evar) 
-      then wl_cons (update_lowerbound_in_wl t wl' target) (w_evar (tl_cons tl t) evar tl') 
+      then wl_cons wl' (w_evar (tl_cons tl t) evar tl') 
       else wl_cons (update_lowerbound_in_wl t wl' target) (w_evar tl evar tl')
   | wl_cons wl' w => wl_cons (update_lowerbound_in_wl t wl' target) w
   end
@@ -96,7 +96,7 @@ Fixpoint update_upperbound_in_wl (t: type) (wl : worklist) (target : var) : work
   | wl_nil => wl_nil
   | wl_cons wl' (w_evar tl evar tl') => 
     if (eq_dec target evar) 
-      then wl_cons (update_upperbound_in_wl t wl' target) (w_evar tl evar (tl_cons tl' t)) 
+      then wl_cons wl' (w_evar tl evar (tl_cons tl' t)) 
       else wl_cons (update_upperbound_in_wl t wl' target) (w_evar tl evar tl')
   | wl_cons wl' w => wl_cons (update_upperbound_in_wl t wl' target) w
   end
@@ -107,7 +107,7 @@ Fixpoint add_evar_before (v : var) (wl : worklist) (target : var) : worklist :=
   | wl_nil => wl_nil
   | wl_cons wl' (w_evar tl evar tl') => 
     if (eq_dec target v) 
-      then wl_cons (wl_cons (add_evar_before v wl' target) (w_evar tl_nil v tl_nil)) (w_evar tl evar tl') 
+      then wl_cons (wl_cons wl' (w_evar tl_nil v tl_nil)) (w_evar tl evar tl') 
       else wl_cons (add_evar_before v wl' target) (w_evar tl evar tl')
   | wl_cons wl' w => wl_cons (add_evar_before v wl' target) w
   end
@@ -188,13 +188,13 @@ defn
 mono t :: :: la_mono :: 'mono_'
 by
 
------------ :: tvar
+----------------- :: tvar
 mono tx
 
------------ :: evar
+----------------- :: evar
 mono ex
 
-------------- :: int
+----------------- :: int
 mono int
 
 mono t1
@@ -210,17 +210,17 @@ defn
 t in wl :: :: in_wl :: 'inwl_'
 by
 
------------------------------- :: here_tvar
+---------------------------- :: here_tvar
 tx in wl , tx
 
 tx in wl
------------------------------- :: there_tvar
+---------------------------- :: there_tvar
 tx in wl , w
 
------------------------------- :: here_evar
+---------------------------- :: here_evar
 ex in wl , tl <= ex <= tl'
 
------------------------------- :: there_evar
+---------------------------- :: there_evar
 ex in wl , w
 
 
@@ -244,7 +244,6 @@ wl [ t1 ] [ t2 ]
 wl , w [ t1 ] [ t2 ]
 
 
-
 defns 
 AlgorithmeticSubtyping :: '' ::=
 
@@ -253,103 +252,103 @@ defn
 by
 
 |- wl
------------------------------------------------------------------- :: tvar
+---------------------------------------------------- :: tvar
 |- wl , tx
 
 |- wl ++ < tl >
------------------------------------------------------------------- :: evar_nil_l
+---------------------------------------------------- :: evar_nil_l
 |- wl , tnil <= ex <= tl
 
 |- wl ++ < tl' >
------------------------------------------------------------------- :: evar_nil_r
+---------------------------------------------------- :: evar_nil_r
 |- wl , tl <= ex <= tnil
 
 |- wl ++ < tl * tl' >
------------------------------------------------------------------- :: evar
+---------------------------------------------------- :: evar
 |- wl , tl <= ex <= tl'
 
 |- wl
------------------------------------------------------------------- :: int_int
+---------------------------------------------------- :: int_int
 |- wl , int <: int
 
 tx $ wl
 |- wl
------------------------------------------------------------------- :: tvar_tvar
+---------------------------------------------------- :: tvar_tvar
 |- wl , tx <: tx
 
 ex $ wl
 |- wl
------------------------------------------------------------------- :: evar_evar
+---------------------------------------------------- :: evar_evar
 |- wl , ex <: ex
 
 tx # wl
 |- wl , tnil <= ex <= tnil , [ tx / x ] A <: B
------------------------------------------------------------------- :: forall_l
+---------------------------------------------------- :: forall_l
 |- wl , forall x. A <: B
 
 tx # wl 
 |- wl , tx , [ tx / x ] A <: B
------------------------------------------------------------------- :: forall_r
+---------------------------------------------------- :: forall_r
 |- wl , A <: forall x. B
 
 |- wl , A2 <: B2 , B1 <: A1
------------------------------------------------------------------- :: arrow_arrow
+---------------------------------------------------- :: arrow_arrow
 |- wl , A1 -> A2 <: B1 -> B2
 
 mono (A -> B)
 ex $ wl
 wl' := wl <<= ex <:> t 
 |- wl' @ ex <+ A -> B
------------------------------------------------------------------- :: evar_arrow_mono
+---------------------------------------------------- :: evar_arrow_mono
 |- wl , ex <: A -> B
 
 mono (A -> B)
 ex $ wl
 wl' := wl <<= ex <:> t 
 |- wl' @ ex +> A -> B
------------------------------------------------------------------- :: arrow_evar_mono
+---------------------------------------------------- :: arrow_evar_mono
 |- wl , A -> B <: ex
 
 ex $ wl
 ex1 # wl 
 ex2 # wl , tnil <= ex1 <= tnil
 |- wl @ ex << ex1 @ ex << ex2 @ ex <+ (ex1 -> ex2)
------------------------------------------------------------------- :: evar_arrow
+---------------------------------------------------- :: evar_arrow
 |- wl , ex <: A -> B
 
-tx $ wl
-tx1 # wl 
-tx2 # wl , tnil <= ex1 <= tnil
+ex $ wl
+ex1 # wl 
+ex2 # wl , tnil <= ex1 <= tnil
 |- wl @ ex << ex1 @ ex << ex2 @ ex +> (ex1 -> ex2)
------------------------------------------------------------------- :: arrow_evar
+---------------------------------------------------- :: arrow_evar
 |- wl , A -> B <: ex
 
 ex $ wl
 |- wl @ ex +> int
------------------------------------------------------------------- :: int_evar
+---------------------------------------------------- :: int_evar
 |- wl , int <: ex
 
 ex $ wl
 |- wl @ ex <+ int
------------------------------------------------------------------- :: evar_int
+---------------------------------------------------- :: evar_int
 |- wl , ex <: int
 
 wl [ tx ] [ ex ]
 |- wl @ ex +> tx
------------------------------------------------------------------- :: tvar_evar
+---------------------------------------------------- :: tvar_evar
 |- wl , tx <: ex
 
 wl [ tx ] [ ex ]
 |- wl @ ex <+ tx
------------------------------------------------------------------- :: evar_tvar
+---------------------------------------------------- :: evar_tvar
 |- wl , ex <: tx
 
 wl [ex] [ey]
 |- wl @ ey +> ex
------------------------------------------------------------------- :: evar_evar_r
+---------------------------------------------------- :: evar_evar_r
 |- wl , ex <: ey
 
 wl [ex] [ey]
 |- wl @ ey <+ ex
------------------------------------------------------------------- :: evar_evar_l
+---------------------------------------------------- :: evar_evar_l
 |- wl , ey <: ex
