@@ -8,7 +8,7 @@ import Control.Monad(liftM,liftM2,liftM3)
 import Data.Functor
 
 import LazyDef (Typ(..), Work(..))
-import InferLazyMF (chk, mono, chkAndShow)
+import InferLazyMB (chk, mono, chkAndShow)
 import qualified InferSimple as InferS (Typ(..), Work(..), chk)
 import Test.QuickCheck.Gen (elements)
 import System.Posix.ByteString (seekDirStream)
@@ -214,13 +214,16 @@ instance Arbitrary Typ where
 
 instance {-# OVERLAPPING #-} Arbitrary [Work] where
     arbitrary = do
-                   leftTyp <- arbitrary
-                   rightTyp <- arbitrary
-                   seed <- arbitrary
-                   frequency
-                         [(2, return [Sub leftTyp (abstract leftTyp seed)]),
-                          (1, return [Sub leftTyp rightTyp])]
+                   t1 <- arbitrary
+                --    t2 <- arbitrary
+                   seed1 <- arbitrary
+                --    seed2 <- arbitrary 
+                   return [Sub (abstract t1 seed1) t1]
+                --    frequency
+                --          [(1, return [Sub  (abstract t1 seed1) ]),
+                --           (2, return [Sub (abstract t1 seed1) (abstract t1 seed2)]),
+                --           (2, return [Sub (abstract t1 seed1) (abstract t2 seed2)])]
 
 test1 = chkAndShow [Sub (TArrow TInt (TArrow TInt TBool )) (TForall (\t -> (TArrow t (TArrow TInt t))))]
 
-testSample = take 10 (randomRs ('a', 'z') (mkStdGen 10))
+main = verboseCheck inferEqProp

@@ -182,6 +182,7 @@ carryBackInWL _ _ _ = error "Bug: Wrong targetTyp in carryBackInWL"
 step :: Int -> [Work] -> (Int, Either String [Work], String)
 step n (WVar i : ws)                            = (n, Right ws, "Garbage Collection")     -- 01 
 step n (WExVar i lbs ubs : ws)  
+  | null lbs && null ubs = (n, Right ws, "SUnfoldBoundsEmptyLU")
   | null lbs = (n, Right $ [Sub (head ubs) uTyp | uTyp <- tail ubs] ++ ws, "SUnfoldBoundsEmptyL")                
   | null ubs = (n, Right $ [Sub (head lbs) uTyp | uTyp <- tail lbs] ++ ws, "SUnfoldBoundsEmptyU")                 
   | otherwise = (n, Right $ [Sub lTyp uTyp | lTyp <- lbs, uTyp <- ubs] ++ ws, "SUnfoldBounds")
