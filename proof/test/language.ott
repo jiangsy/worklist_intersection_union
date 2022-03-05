@@ -10,7 +10,7 @@ type, t, A, B :: 'la_type_' ::=
   | forall x . t  ::   :: forall (+ bind x in t +) 
   | t1 -> t2      ::   :: arrow 
   | x             ::   :: tvar
-  | ex          ::   :: extvar
+  | ex            ::   :: extvar
   | ( t )         :: S :: paren {{ coq ([[t]]) }}
   | [ t / x ] A   :: M :: susbt {{ coq (open_type_wrt_type [[x A]] [[t]]) }}
 
