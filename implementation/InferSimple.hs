@@ -148,13 +148,15 @@ fv _                = []
 
 substWL :: Int ->  Typ -> [Int] -> [Work] -> Either String [Work]
 substWL i t es (V (Right j) : ws)
-   | i == j                     = if i `notElem` fv t then Right $ map (V . Right) es ++ ws else error (show i ++ " in " ++ show t)
+   | i == j                     = if i `notElem` fv t then Right $ map (V . Right) es ++ ws else
+                                  Left $ "Error: Cyclic Dependency of " ++ show t
    | j `elem` fv t              = substWL i t (j : es) ws
    | otherwise                  = substWL i t es ws >>= (\ws'  -> Right $ V (Right j) : ws')
 substWL i t es (Sub t1 t2 : ws) = substWL i t es ws >>= (\ws' -> Right $ Sub (subst i t t1) (subst i t t2) : ws')
 substWL i t es (V (Left j):ws) 
    | prim t                     = substWL i t es ws >>= (\ws' -> Right $ V (Left j):ws')
-substWL i t es ws               = Left "No matched pattern in substWL"
+   | otherwise                  = Left $ "Error: Cyclic Dependency between " ++ show t ++ " and " ++ show (V (Left j))
+substWL i t es []               = Left "Bug: target var not found"
 
 
 step :: Int -> [Work] -> (Int, Either String [Work], String)

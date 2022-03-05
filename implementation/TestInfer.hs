@@ -41,19 +41,45 @@ adaptWorkLStoS (WVar n) = InferS.V (Left n)
 adaptWorkLStoS (WExVar n typs typs') = InferS.V (Right n)
 adaptWorkLStoS (Sub typ typ') = InferS.Sub (adaptTypLStoS typ) (adaptTypLStoS typ')
 
+newtype TestEqWork = TestEqWork Work deriving Eq
+newtype TestReflWork = TestReflWork Work deriving Eq
 
-inferEqProp :: [Work] -> Test.QuickCheck.Property.Result
-inferEqProp wl =
+instance Show TestEqWork where
+    show (TestEqWork w) = show w
+
+instance Show TestReflWork where
+    show (TestReflWork w) = show w
+
+testEqWorkToWork :: TestEqWork -> Work
+testEqWorkToWork (TestEqWork w) = w
+
+testReflWorkToWork :: TestReflWork -> Work
+testReflWorkToWork (TestReflWork w) = w
+
+subEqProp :: [TestEqWork] -> Test.QuickCheck.Property.Result
+subEqProp tewl =
   if chk wl == InferS.chk wl'
     then succeeded
     else failed { reason = reason' }
    where
+      wl = map testEqWorkToWork tewl
       wl' = map adaptWorkLStoS wl
       full_chk_res = checkAndShow 0 wl 
       full_chk_res' = InferS.checkAndShow 0 wl'
       last_line = last (lines full_chk_res)
       last_line' = last (lines full_chk_res')
       reason' = full_chk_res ++ "\n" ++ full_chk_res' ++ "\n"
+
+subReflProp :: [TestReflWork] -> Test.QuickCheck.Property.Result
+subReflProp trwl =
+  if chk wl == "Success!"
+    then succeeded
+    else failed { reason = reason' }
+   where
+      wl = map testReflWorkToWork trwl
+      full_chk_res = checkAndShow 0 wl 
+      last_line = last (lines full_chk_res)
+      reason' = full_chk_res ++ "\n"
 
 -- getRandomElement :: RandomGen g => g -> [a] -> (a, g)
 -- getRandomElement gen ls =
@@ -166,21 +192,27 @@ instance Arbitrary Typ where
                     (2, chooseInt (6, 10))]
             monoNTypGen n
 
-instance {-# OVERLAPPING #-} Arbitrary [Work] where
+instance {-# OVERLAPPING #-} Arbitrary [TestEqWork] where
     arbitrary = do
                    t1 <- arbitrary
                    t2 <- arbitrary
                    seed1 <- arbitrary
                    frequency
-                         [(1, return [Sub (abstract t1 seed1) t1]),
-                          (2, return [Sub (abstract t1 seed1) (abstract t1 (seed1+1))]),
-                          (2, return [Sub (abstract t1 seed1) (abstract t2 (seed1+1))])]
+                         [(1, return [TestEqWork $ Sub (abstract t1 seed1) t1]),
+                          (2, return [TestEqWork $ Sub (abstract t1 seed1) (abstract t1 (seed1+1))]),
+                          (2, return [TestEqWork $ Sub (abstract t1 seed1) (abstract t2 (seed1+1))])]
+
+instance {-# OVERLAPPING #-} Arbitrary [TestReflWork] where
+    arbitrary = do
+                   t <- arbitrary
+                   seed <- arbitrary
+                   return [TestReflWork $ Sub (abstract t seed) (abstract t seed)]
 
 test1 = chkAndShow [Sub (TArrow TInt (TArrow TInt TBool)) (TForall (\t -> (TArrow t (TArrow TInt t))))]
 
 wl = [Sub t12 t13]
 wl' = map adaptWorkLStoS wl 
-main = verboseCheck inferEqProp
+main = verboseCheck subEqProp
 
 wl2 = [Sub t14 t15]
 wl2' = map adaptWorkLStoS wl2
