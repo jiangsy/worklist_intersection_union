@@ -170,10 +170,8 @@ step n (Sub a (TForall g) : ws)             =
 step n (Sub (TForall g) b : ws)             =
   (n+1, Right $ Sub (g (TVar (Right n))) b : V (Right n) : ws, "SForallL")
 step n (Sub (TVar (Right i)) a  : ws)
-  | prim a                                  = (n, substWL i a [] ws, "SolveL")
   | mono a                                  = (n, substWL i a [] ws, "SolveL")
 step n (Sub a (TVar (Right i))  : ws)
-  | prim a                                  = (n, substWL i a [] ws, "SolveL")
   | mono a                                  = (n, substWL i a [] ws, "SolveL")
 step n (Sub (TVar (Right i)) (TArrow a b) : ws)
                                             = (n + 2, substWL i a1_a2 [n,n+1] ws >>= (\ws' -> Right $ Sub a a1 : Sub a2 b : ws'), "SplitL")
