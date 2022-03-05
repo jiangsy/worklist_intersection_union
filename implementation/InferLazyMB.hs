@@ -249,12 +249,12 @@ checkAndShow n ws =
 
 check :: Int -> [Work] -> String
 check n [] = "Success!"
-check n ws =
-  let (m,ws',s1) = step n ws
+check n wl =
+  let (n', res, s1) = step n wl
   in
-    case ws' of
+    case res of
       Left e -> "Failure!"
-      Right wl -> check m wl
+      Right wl' -> check n' wl'
 
 
 size :: [Work] -> (Int,Int)

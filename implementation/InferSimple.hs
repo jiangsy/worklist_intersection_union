@@ -114,6 +114,11 @@ instance Show Work where
 instance Eq Typ where
   t1 == t2 = eqTyp 0 t1 t2
 
+prim :: Typ -> Bool
+prim TInt  = True
+prim TBool = True
+prim _     = False
+
 mono :: Typ -> Bool
 mono (TForall g)  = False
 mono (TArrow a b) = mono a && mono b
@@ -147,7 +152,10 @@ substWL i t es (V (Right j) : ws)
    | j `elem` fv t              = substWL i t (j : es) ws
    | otherwise                  = substWL i t es ws >>= (\ws'  -> Right $ V (Right j) : ws')
 substWL i t es (Sub t1 t2 : ws) = substWL i t es ws >>= (\ws' -> Right $ Sub (subst i t t1) (subst i t t2) : ws')
-substWL _ _ _ _                 = Left "No matched pattern"   
+substWL i t es (V (Left j):ws) 
+   | prim t                     = substWL i t es ws >>= (\ws' -> Right $ V (Left j):ws')
+substWL i t es ws               = Left "No matched pattern in substWL"
+
 
 step :: Int -> [Work] -> (Int, Either String [Work], String)
 step n (V i : ws)                           = (n, Right ws, "Garbage Collection")
@@ -162,8 +170,10 @@ step n (Sub a (TForall g) : ws)             =
 step n (Sub (TForall g) b : ws)             =
   (n+1, Right $ Sub (g (TVar (Right n))) b : V (Right n) : ws, "SForallL")
 step n (Sub (TVar (Right i)) a  : ws)
+  | prim a                                  = (n, substWL i a [] ws, "SolveL")
   | mono a                                  = (n, substWL i a [] ws, "SolveL")
 step n (Sub a (TVar (Right i))  : ws)
+  | prim a                                  = (n, substWL i a [] ws, "SolveL")
   | mono a                                  = (n, substWL i a [] ws, "SolveL")
 step n (Sub (TVar (Right i)) (TArrow a b) : ws)
                                             = (n + 2, substWL i a1_a2 [n,n+1] ws >>= (\ws' -> Right $ Sub a a1 : Sub a2 b : ws'), "SplitL")
@@ -183,7 +193,7 @@ checkAndShow :: Int -> [Work] -> String
 checkAndShow n [] = "Success!"
 checkAndShow n ws =
   case ws' of
-    Left e -> e
+    Left e -> "   " ++ show (reverse ws) ++ "\n-->{ Rule: " ++ s1 ++ " }\n" ++ e
     Right wl -> s2
       where s2 = "   " ++ show (reverse ws) ++ "\n-->{ Rule: " ++ s1 ++ " }\n" ++ checkAndShow m wl
   where
@@ -193,11 +203,11 @@ checkAndShow n ws =
 check :: Int -> [Work] -> String
 check n [] = "Success!"
 check n wl =
-  let (m, res, s1) = step n wl
+  let (n', res, s1) = step n wl
   in
     case res of
       Left e -> "Failure!"
-      Right wl' -> check m wl'
+      Right wl' -> check n' wl'
 
 chkAndShow = putStrLn .  checkAndShow 0
 

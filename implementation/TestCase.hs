@@ -25,11 +25,23 @@ t8 = TForall $ \t -> TArrow TInt (TArrow t t)
 
 t9 = TForall $ \t1 -> TArrow TInt (TForall (\t2 -> TArrow (TArrow t1 t2) t2))
 
--- [forall 0. ((forall 1. ((1) -> 1)) -> 0) <: forall 0. ((forall 1. ((1) -> 1)) -> ((0) -> 0) -> 0)]
--- [forall 0. ((0) -> (0) -> 0) <: forall 0. ((0) -> forall 1. ((0) -> 0))]
--- [forall 0. ((forall 1. ((0) -> Int)) -> (Bool) -> Bool) <: ((Bool) -> Int) -> (Bool) -> Bool]
+t10 = TForall $ \t0 -> TArrow TInt (TArrow t0 t0)
+t11 = TForall $ \t0 -> TArrow TInt (TForall $ \t1 -> TArrow (TArrow t0 t1) t1)
 
--- [forall 0. ((0) -> 0) <: forall 0. ((forall 1. ((0) -> 0)) -> 0)]
--- [(((Int) -> forall 0. ((Bool) -> 0)) -> Int) -> forall 0. ((0) -> 0) <: forall 0. ((forall 1. (((Int) -> (Bool) -> Bool) -> 1)) -> (0) -> 0)]
-t10 = TForall $ \t0 -> TArrow t0 t0
-t11 = TForall $ \t0 -> TArrow (TForall $ \t1 -> TArrow t0 t0) t0
+
+t12 = TForall $ \t0 -> TArrow (TArrow t0 (TArrow t0 t0)) t0
+t13 = TForall $ \t0 -> TForall $ \t1 -> TArrow (TArrow t0 (TArrow t1 t0)) t0
+
+t14 = TForall $ \t0 -> TArrow t0 (TForall $ \t1 -> TArrow t1 t0)
+t15 = TForall $ \t0 -> TArrow t0 (TForall $ \t1 -> TArrow t0 t0)
+
+
+t16 = TForall $ \t0 -> TArrow TInt TInt
+t17 = TArrow TInt TInt
+
+t18 = TForall $ \t0 -> TArrow t0 TBool
+t19 = TForall $ \t0 -> TArrow (TArrow TBool t0) TBool 
+
+t20 = TForall $ \t0 -> TArrow (TForall $ \t1 -> TArrow (TArrow t0 t1) t0) TInt
+t21 = TArrow (TForall $ \t0 -> TArrow t0 TInt) TInt 
+

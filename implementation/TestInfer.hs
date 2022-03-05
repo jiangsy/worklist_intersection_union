@@ -1,20 +1,28 @@
 {-# LANGUAGE FlexibleInstances, MultiWayIf, ScopedTypeVariables #-}
 module TestInfer where
-import Data.Time.Clock
-import Test.QuickCheck
-import Test.QuickCheck.Property (succeeded, failed, reason)
-import System.Random(StdGen, mkStdGen, random, randomR, randomRs, RandomGen)
-import System.IO.Unsafe
-import Control.Monad(liftM,liftM2,liftM3)
+
+import Control.Monad (liftM,liftM2,liftM3)
 import Data.Functor
+import Data.Time.Clock ( UTCTime(utctDayTime), getCurrentTime )
+import Test.QuickCheck
+    ( chooseInt,
+      elements,
+      frequency,
+      oneof,
+      sized,
+      verboseCheck,
+      Arbitrary(arbitrary),
+      Gen )
+import Test.QuickCheck.Property (succeeded, failed, reason, Result)
+import System.IO.Unsafe
+import System.Random (StdGen, mkStdGen, random, randomR, randomRs, RandomGen)
+import System.Random.Stateful (RandomGen(genWord32))
+
 
 import LazyDef (Typ(..), Work(..))
 import InferLazyMB (chk, mono, chkAndShow, checkAndShow)
 import TestCase
 import qualified InferSimple as InferS (Typ(..), Work(..), chk, chkAndShow, checkAndShow)
-import Test.QuickCheck.Gen (elements)
-import System.Posix.ByteString (seekDirStream)
-import System.Random.Stateful (RandomGen(genWord32))
 
 adaptTypStoLS :: InferS.Typ -> Typ
 adaptTypStoLS (InferS.TVar e) = TVar e
@@ -35,13 +43,12 @@ adaptWorkLStoS (WVar n) = InferS.V (Left n)
 adaptWorkLStoS (WExVar n typs typs') = InferS.V (Right n)
 adaptWorkLStoS (Sub typ typ') = InferS.Sub (adaptTypLStoS typ) (adaptTypLStoS typ')
 
-inferEqProp :: [Work] -> Bool
-inferEqProp wl = chk wl == InferS.chk (map adaptWorkLStoS wl)
 
-prop wl =
-  if last_line == last_line'
+inferEqProp :: [Work] -> Test.QuickCheck.Property.Result
+inferEqProp wl =
+  if chk wl == InferS.chk wl'
     then succeeded
-    else failed { Test.QuickCheck.Property.reason = reason' }
+    else failed { reason = reason' }
    where
       wl' = map adaptWorkLStoS wl
       full_chk_res = checkAndShow 0 wl 
@@ -103,7 +110,19 @@ cumProbs =
 
 -- abstract :: Typ -> Int -> Typ
 -- abstract typ seed = fst $ abstractHelper (mkStdGen seed) typ []
+maxRandomSeedUsed :: Typ -> Int
+maxRandomSeedUsed TInt           = 2
+maxRandomSeedUsed TBool          = 2
+maxRandomSeedUsed (TArrow t1 t2) = 3 + maxRandomSeedUsed t1 + maxRandomSeedUsed t2
+maxRandomSeedUsed _              = error "Bug: maxRandomSeedUsed should be called on mono type only!"
 
+
+getNewSeed :: Int -> Int -> Int 
+getNewSeed seed n = getNewSeedHelper gen n
+    where gen = mkStdGen seed
+          getNewSeedHelper gen 0 = fromIntegral $ fst $ genWord32 gen
+          getNewSeedHelper gen n = getNewSeedHelper (snd $ genWord32 gen) (n-1)
+    
 
 getRandomElement :: Int -> [a] -> (a, Int)
 getRandomElement seed ls =
@@ -146,7 +165,7 @@ abstractHelper seed TBool typLs =
             if x < 0.2
                 then (TBool, nextSeed) 
                 else getRandomElement nextSeed typLs
-abstractHelper seed (TArrow t1 t2) typLs =
+abstractHelper seed t@(TArrow t1 t2) typLs =
     if null typLs then 
         let (x :: Float, nextSeed) = getRandomFloat seed in
             if | x < 0.2 ->
@@ -157,9 +176,9 @@ abstractHelper seed (TArrow t1 t2) typLs =
                     (TForall $ \x -> 
                         let (polyt1, nextSeed') = abstractHelper nextSeed t1 (x:typLs) 
                             (polyt2, _) = abstractHelper nextSeed' t2 (x:typLs) in 
-                        TArrow polyt1 polyt2,  getSeedFromTime 0)
+                        TArrow polyt1 polyt2, getNewSeed seed (maxRandomSeedUsed t))
                 | otherwise -> (TArrow t1 t2, seed)
-    else 
+    else
         let (x :: Float, nextSeed) = getRandomFloat seed in
             if | x < 0.3 ->
                     let (polyt1, nextSeed') = abstractHelper nextSeed t1 typLs 
@@ -169,7 +188,7 @@ abstractHelper seed (TArrow t1 t2) typLs =
                     (TForall $ \x -> 
                         let (polyt1, nextSeed') = abstractHelper nextSeed t1 (x:typLs) 
                             (polyt2, _) = abstractHelper nextSeed' t2 (x:typLs) in 
-                        TArrow polyt1 polyt2,  getSeedFromTime 0)
+                        TArrow polyt1 polyt2, getNewSeed seed (maxRandomSeedUsed t))
                 | x >= 0.6 && x < 0.9 -> 
                     getRandomElement seed typLs
                 | otherwise -> (TArrow t1 t2, seed)
@@ -186,9 +205,15 @@ abstract typ seed = fst $ abstractHelper seed typ []
 monoTypGen :: Gen Typ
 monoTypGen = sized monoNTypGen
     where monoNTypGen 0 = elements [TBool, TInt]
-          monoNTypGen n = oneof [liftM2 TArrow (monoNTypGen (n - 1)) (monoNTypGen (n - 1)),
-                                 elements [TBool, TInt]
-                                ]
+          monoNTypGen n = frequency [(4, liftM2 TArrow (monoNTypGen (n - 1)) (monoNTypGen (n - 1))),
+                                     (1, elements [TBool, TInt])]
+
+monoNTypGen :: Int -> Gen Typ
+monoNTypGen 0 = elements [TBool, TInt]
+monoNTypGen n = oneof [liftM2 TArrow (monoNTypGen (n - 1)) (monoNTypGen (n - 1)),
+                        elements [TBool, TInt]
+                    ]
+
 polyTypGen :: Typ -> Gen Typ
 polyTypGen = polyTypGenHelper []
     where
@@ -224,22 +249,42 @@ polyTypGen = polyTypGenHelper []
 
 
 instance Arbitrary Typ where
-    arbitrary = monoTypGen
+    arbitrary = 
+        do 
+            n <- frequency [    
+                    (1, chooseInt (1, 2)),
+                    (7, chooseInt (3, 5)),
+                    (2, chooseInt (6, 10))]
+            monoNTypGen n
 
 instance {-# OVERLAPPING #-} Arbitrary [Work] where
     arbitrary = do
                    t1 <- arbitrary
                    t2 <- arbitrary
                    seed1 <- arbitrary
-                   seed2 <- arbitrary 
                    frequency
                          [(1, return [Sub (abstract t1 seed1) t1]),
-                          (2, return [Sub (abstract t1 seed1) (abstract t1 seed2)]),
-                          (2, return [Sub (abstract t1 seed1) (abstract t2 seed2)])]
+                          (2, return [Sub (abstract t1 seed1) (abstract t1 (seed1+1))]),
+                          (2, return [Sub (abstract t1 seed1) (abstract t2 (seed1+1))])]
 
 test1 = chkAndShow [Sub (TArrow TInt (TArrow TInt TBool )) (TForall (\t -> (TArrow t (TArrow TInt t))))]
 
-
+wl = [Sub t12 t13]
+wl' = map adaptWorkLStoS wl 
 main = verboseCheck inferEqProp
 
+wl2 = [Sub t14 t15]
+wl2' = map adaptWorkLStoS wl2
 
+
+wl3 = [Sub t16 t17]
+wl3' = map adaptWorkLStoS wl3
+
+wl4 = [Sub t10 t11]
+wl4' = map adaptWorkLStoS wl4
+
+wl5 = [Sub t18 t19]
+wl5' = map adaptWorkLStoS wl5
+
+wl6 = [Sub t20 t21]
+wl6' = map adaptWorkLStoS wl6
