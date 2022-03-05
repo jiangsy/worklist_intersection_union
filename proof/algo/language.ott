@@ -281,8 +281,8 @@ ex $ wl
 ---------------------------------------------------- :: evar_evar
 |- wl , ex <: ex
 
-tx # wl
-|- wl , tnil <= ex <= tnil , [ tx / x ] A <: B
+ex # wl
+|- wl , tnil <= ex <= tnil , [ ex / x ] A <: B
 ---------------------------------------------------- :: forall_l
 |- wl , forall x. A <: B
 
