@@ -202,6 +202,22 @@ mono t2
 ----------------- :: arrow
 mono (t1 -> t2)
 
+defns
+NotForallType :: '' ::=
+
+defn
+not_all A :: :: ld_notall :: 'notall_'
+by
+
+--------------- :: int
+not_all int
+
+--------------- :: var
+not_all x
+
+--------------- :: arrow
+not_all t1 -> t2
+
 
 defns
 InWorklist :: '' ::=
@@ -281,6 +297,7 @@ ex $ wl
 ---------------------------------------------------- :: evar_evar
 |- wl , ex <: ex
 
+not_all B
 ex # wl
 |- wl , tnil <= ex <= tnil , [ ex / x ] A <: B
 ---------------------------------------------------- :: forall_l
