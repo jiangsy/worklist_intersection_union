@@ -1,5 +1,5 @@
 # git status --porcelain | grep '^??' | cut -c4- >> .gitignore
-`
+
 .DS_STORE
 *.aux
 proof/.CoqMakefile.d

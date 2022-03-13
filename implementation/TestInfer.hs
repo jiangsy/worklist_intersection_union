@@ -81,27 +81,11 @@ subReflProp trwl =
       last_line = last (lines full_chk_res)
       reason' = full_chk_res ++ "\n"
 
--- getRandomElement :: RandomGen g => g -> [a] -> (a, g)
--- getRandomElement gen ls =
---     let (idx, nextGen) = randomR (0, length ls) gen in
---         (ls !! idx, nextGen)
-
-probs :: [Float]
-probs = [0.3, 0.3, 0.3, 0.1]
-
-cumProbs :: [Float]
-cumProbs = 
-    let cumProbs = 0.0 : scanl1 (+) probs in
-        if abs(1.0 - last cumProbs) < 0.01 then cumProbs else error "Error: all probs should sum to 1.0!"
-        
--- abstract :: Typ -> Int -> Typ
--- abstract typ seed = fst $ abstractHelper (mkStdGen seed) typ []
 maxRandomSeedUsed :: Typ -> Int
 maxRandomSeedUsed TInt           = 2
 maxRandomSeedUsed TBool          = 2
 maxRandomSeedUsed (TArrow t1 t2) = 3 + maxRandomSeedUsed t1 + maxRandomSeedUsed t2
-maxRandomSeedUsed _              = error "Bug: maxRandomSeedUsed should be called on mono type only!"
-
+maxRandomSeedUsed t              = error $ "Bug: maxRandomSeedUsed should be called on mono type only, not "  ++ show t ++ "!"
 
 getNewSeed :: Int -> Int -> Int 
 getNewSeed seed n = getNewSeedHelper gen n
@@ -170,7 +154,7 @@ abstractHelper seed t@(TArrow t1 t2) typLs =
                 | x >= 0.6 && x < 0.9 -> 
                     getRandomElement seed typLs
                 | otherwise -> (TArrow t1 t2, seed)
-abstractHelper seed t typLs = error $ "Bug: Wellformed mono type should not contain " ++ show t ++ "!"
+abstractHelper seed t typLs = error $ "Bug: abstractHelper should be called on monotype, not " ++ show t ++ "!"
 
 
 abstract :: Typ -> Int -> Typ

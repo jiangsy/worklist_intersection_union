@@ -56,6 +56,7 @@ Algorithm:
 [A/^a]_E (T,^a)             = T,E                 ^a notin fv(A)
 [A/^a]_E (T,^b)             = [A/^a]_E T,^b       ^b notin FV(A)
 [A/^a]_E (T,^b)             = [A/^a]_{E,^b} T     ^b in FV(A)
+[A/^a]_E (T,b)              = [A/^a]_E T, b        b notin fv(A)
 [A/^a]_E (T |- B <: C)      = [A/^a]_E T |- [A/^a] B <: [A/^a] C
 
 Concerns:
@@ -114,10 +115,6 @@ instance Show Work where
 instance Eq Typ where
   t1 == t2 = eqTyp 0 t1 t2
 
-prim :: Typ -> Bool
-prim TInt  = True
-prim TBool = True
-prim _     = False
 
 mono :: Typ -> Bool
 mono (TForall g)  = False
@@ -140,23 +137,23 @@ subst i t (TVar v)                =
 subst i t (TArrow t1 t2)        = TArrow (subst i t t1) (subst i t t2)
 subst i t (TForall g)           = TForall (\t1 -> subst i t (g t1))
 
-fv :: Typ -> [Int]
-fv (TVar (Right i)) = [i]
+fv :: Typ -> [Typ]
+fv (TVar i)         = [TVar i]
 fv (TArrow t1 t2)   = fv t1 `union` fv t2
 fv (TForall g)      = fv (g TInt)
 fv _                = []
 
 substWL :: Int ->  Typ -> [Int] -> [Work] -> Either String [Work]
 substWL i t es (V (Right j) : ws)
-   | i == j                     = if i `notElem` fv t then Right $ map (V . Right) es ++ ws else
-                                  Left $ "Error: Cyclic Dependency of " ++ show t
-   | j `elem` fv t              = substWL i t (j : es) ws
-   | otherwise                  = substWL i t es ws >>= (\ws'  -> Right $ V (Right j) : ws')
-substWL i t es (Sub t1 t2 : ws) = substWL i t es ws >>= (\ws' -> Right $ Sub (subst i t t1) (subst i t t2) : ws')
-substWL i t es (V (Left j):ws) 
-   | prim t                     = substWL i t es ws >>= (\ws' -> Right $ V (Left j):ws')
-   | otherwise                  = Left $ "Error: Cyclic Dependency between " ++ show t ++ " and " ++ show (V (Left j))
-substWL i t es []               = Left "Bug: target var not found"
+   | i == j                        = if TVar (Left i) `notElem` fv t then Right $ map (V . Right) es ++ ws else
+                                     Left $ "Error: Cyclic Dependency of " ++ show t
+   | TVar (Right j) `elem` fv t    = substWL i t (j : es) ws
+   | otherwise                     = substWL i t es ws >>= (\ws'  -> Right $ V (Right j) : ws')
+substWL i t es (Sub t1 t2 : ws)    = substWL i t es ws >>= (\ws' -> Right $ Sub (subst i t t1) (subst i t t2) : ws')
+substWL i t es (V (Left j):ws)
+   | TVar (Left j) `notElem` fv t  = substWL i t es ws >>= (\ws' -> Right $ V (Left j):ws')
+   | otherwise                     = Left $ "Error: Cyclic Dependency between " ++ show t ++ " and " ++ show (V (Left j))
+substWL i t es []                  = Left "Bug: target var not found"
 
 
 step :: Int -> [Work] -> (Int, Either String [Work], String)
