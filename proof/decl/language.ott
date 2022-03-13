@@ -4,38 +4,37 @@ metavar var, x, y, z ::= {{ repr-locally-nameless }}
 
 grammar
 
-type, t, A, B :: 'ld_t_' ::= 
-  | int           :: :: int
-  | forall x . t  :: :: forall (+ bind x in t +)
-  | t1 -> t2      :: :: arrow
-  | x             :: :: var
+ld_type, t, A, B :: 'ld_t_' ::= 
+  | int           ::   :: int
+  | forall x . t  ::   :: forall (+ bind x in t +)
+  | t1 -> t2      ::   :: arrow
+  | x             ::   :: var
   | ( t )         :: S :: paren {{ coq [[t]] }} 
-  | [ t / x ] A   :: M :: susbt {{ coq (open_type_wrt_type [[x A]] [[t]]) }}
+  | [ t / x ] A   :: M :: susbt {{ coq (open_ld_type_wrt_ld_type [[x A]] [[t]]) }}
 
-context, G :: 'ctx_' ::=
-  | nil     :: :: nil
-  | G , x   :: :: cons
+ld_context, G :: 'ld_ctx_' ::=
+  | nil           ::   :: nil
+  | G , x         ::   :: cons
 
 formula :: formula_ ::=
-  | judgement  ::   :: judgement
-  | x # G      :: M :: ctx_fresh {{ coq ([[x]] `notin` ctx_dom [[G]]) }}
-  | x $ G      :: M :: ctx_in {{ coq ([[x]] `in` ctx_dom [[G]]) }}
+  | judgement     ::   :: judgement
+  | x notin G     :: M :: ctx_fresh {{ coq ([[x]] `notin` ctx_dom [[G]]) }}
 
 
 substitutions
-  single type x :: subst
+  single ld_type x :: subst
 
 
 freevars
-  type    x :: fv
+  ld_type    x :: fv
 
 
 embed {{ coq
 
-Fixpoint ctx_dom (G : context) : atoms :=
+Fixpoint ctx_dom (G : ld_context) : atoms :=
   match G with
-  | ctx_nil => {}
-  | ctx_cons G' x => add x (ctx_dom G')
+  | ld_ctx_nil => {}
+  | ld_ctx_cons G' x => add x (ctx_dom G')
   end
 .
 
@@ -46,7 +45,7 @@ defns
 Monotype :: '' ::=
 
 defn
-mono A :: :: ld_mono :: 'mono_'
+mono A :: :: ld_mono_type :: 'ld_mono_'
 by
 
 --------------- :: int
@@ -64,31 +63,46 @@ defns
 NotForallType :: '' ::=
 
 defn
-not_all A :: :: ld_notall :: 'notall_'
+!forall A :: :: ld_notforall_type :: 'ld_nf_'
 by
 
 --------------- :: int
-not_all int
+!forall int
 
 --------------- :: var
-not_all x
+!forall x
 
 --------------- :: arrow
-not_all t1 -> t2
+!forall t1 -> t2
+
+
+defns
+InContext :: '' ::=
+
+defn
+x in G :: :: ld_in_context :: 'ld_inc_'
+by
+
+------------------ :: here
+x in G, x 
+
+x in G
+------------------ :: there
+x in G, y 
 
 
 defns
 WellFormedConext :: '' ::=
 
 defn
-|- G :: :: wf_context :: 'wf_ctx_'
+|- G :: :: ld_wf_context :: 'ld_wfc_'
 by
 
 ---------- :: nil
 |- nil
 
 |- G
-x # G
+x notin G
 ---------- :: cons
 |- G , x
 
@@ -97,7 +111,7 @@ defns
 WellFormedType :: '' ::=
 
 defn
-G |- t  :: :: wf_type :: 'wf_typ_'
+G |- t  :: :: ld_wf_type :: 'ld_wft_'
 by
 
 |- G
@@ -105,7 +119,7 @@ by
 G |- int
 
 |- G
-x $ G 
+x in G 
 ---------------- :: var
 G |- x
 
@@ -119,11 +133,11 @@ defns
 DeclarativeSubtyping :: '' ::=
 
 defn
-G |- t1 <: t2 :: :: sub :: 'dsub_'
+G |- t1 <: t2 :: :: ld_sub :: 'ld_sub_'
 by
 
-x $ G
 |- G
+x in G
 ------------------- :: var
 G |- x <: x
 
@@ -137,12 +151,12 @@ G |- A2 <: B2
 ------------------- :: arrow
 G |- A1 -> A2 <: B1 -> B2
 
-not_all B
+!forall B
 G |- t
 G |- [ t / x ] A <: B
-------------------- :: forall_l
+------------------- :: foralll
 G |- forall x. A <: B
 
 G , x |- A <: B
-------------------- :: forall_r
+------------------- :: forallr
 G |- A <: forall x. B
