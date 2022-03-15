@@ -265,10 +265,12 @@ defn
 |- wl :: :: la_worklist_reducible :: 'la_wlred_'
 by
 
+tx notin wl
 |- wl
 ---------------------------------------------------- :: tvar
 |- wl , tx
 
+ex notin wl
 |- wl ++ < tl >
 ---------------------------------------------------- :: evar_nil_l
 |- wl , tnil <= ex <= tl

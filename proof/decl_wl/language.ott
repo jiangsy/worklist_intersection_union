@@ -80,10 +80,10 @@ by
 
 
 defns
-InContext :: '' ::=
+InWorklist :: '' ::=
 
 defn
-x in wl :: :: ld_in_context :: 'ld_inc_'
+x in wl :: :: ld_in_worklist :: 'ld_inwl_'
 by
 
 ------------------ :: here
@@ -98,7 +98,7 @@ x in wl
 x in wl, t1 <: t2
 
 defns
-WellFormedness :: '' ::=
+WellFormedType :: '' ::=
 
 defn
 wl |=> t  :: :: ld_wf_type :: 'ld_wft_'
@@ -140,9 +140,8 @@ x in wl
 |- wl
 ------------------- :: int
 |- wl , int <: int
-
-|- wl, B1 <: A1
-|- wl, A2 <: B2
+ 
+|- wl, B1 <: A1, A2 <: B2
 --------------------------- :: arrow
 |- wl , A1 -> A2 <: B1 -> B2
 
