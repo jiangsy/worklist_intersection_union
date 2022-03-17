@@ -1,5 +1,5 @@
 {-# LANGUAGE LambdaCase, MultiWayIf #-}
-module InferLazyMB where
+module InferLazySimple where
 
 import Data.List
 
@@ -135,18 +135,6 @@ updateBoundInWL var@(TVar (Right i)) bound (WExVar j lbs ubs : ws)
 updateBoundInWL var bound (w:ws) = updateBoundInWL var bound ws >>= (\ws' -> Right $ w : ws')
 updateBoundInWL var bound [] = error "Bug: Var not found!"
 
-addTypsBefore :: Typ -> [Typ] -> [Work] -> [Work]
-addTypsBefore var@(TVar (Right i)) new_vars (WExVar j lbs ubs : ws)
-  | i == j = WExVar j lbs ubs : map typToWork new_vars ++ ws
-  | otherwise = WExVar j lbs ubs : addTypsBefore var new_vars ws
-  where
-    typToWork :: Typ -> Work
-    typToWork (TVar (Left i)) = WVar i
-    typToWork (TVar (Right i)) = WExVar i [] []
-    typToWork _ = error "Bug: Incorrect typeToWork call"
-addTypsBefore var new_vars (w:ws) = w : addTypsBefore var new_vars ws
-addTypsBefore var new_vars [] = error ("Bug: Typ " ++ show var ++ "is not in the worklist")
-
 -- https://stackoverflow.com/questions/27726739/implementing-an-efficient-sliding-window-algorithm-in-haskell
 windows :: Int -> [Typ] -> [[Typ]]
 windows n = foldr (zipWith (:)) (repeat []) . take n . tails
@@ -181,10 +169,10 @@ carryBackInWL _ _ _ = error "Bug: Wrong targetTyp in carryBackInWL"
 
 step :: Int -> [Work] -> (Int, Either String [Work], String)
 step n (WVar i : ws)                            = (n, Right ws, "Garbage Collection")     -- 01 
-step n (WExVar i lbs ubs : ws)  
+step n (WExVar i lbs ubs : ws)
   | null lbs && null ubs = (n, Right ws, "SUnfoldBoundsEmptyLU")
-  | null lbs = (n, Right $ [Sub (head ubs) uTyp | uTyp <- tail ubs] ++ ws, "SUnfoldBoundsEmptyL")                
-  | null ubs = (n, Right $ [Sub (head lbs) uTyp | uTyp <- tail lbs] ++ ws, "SUnfoldBoundsEmptyU")                 
+  | null lbs = (n, Right $ [Sub (head ubs) uTyp | uTyp <- tail ubs] ++ ws, "SUnfoldBoundsEmptyL")
+  | null ubs = (n, Right $ [Sub (head lbs) uTyp | uTyp <- tail lbs] ++ ws, "SUnfoldBoundsEmptyU")
   | otherwise = (n, Right $ [Sub lTyp uTyp | lTyp <- lbs, uTyp <- ubs] ++ ws, "SUnfoldBounds")
 step n (Sub TInt TInt : ws)                     = (n, Right ws, "SInt")                   -- 03
 step n (Sub TBool TBool : ws)                   = (n, Right ws, "SBool")                  -- 03
@@ -198,21 +186,22 @@ step n (Sub a (TForall g) : ws)                 =                               
 step n (Sub (TForall g) b : ws)                 =                                         -- 07
   (n+1, Right $  Sub (g (TVar (Right n))) b : WExVar n [] [] : ws, "SForallL")
 
+
 step n (Sub (TVar (Right i)) (TArrow a b) : ws)                                           -- 09
    | not $ mono (TArrow a b)                    =
-    (n+2, updateBoundInWL (TVar (Right i)) (UB, a1_a2) (addTypsBefore (TVar (Right i)) [a1, a2] ws) >>=
-      (\wl' -> Right $ Sub (TArrow a1 a2) (TArrow a b):wl'), "SplitL")
+    (n+2, carryBackInWL (TVar (Right i)) a1_a2 (Sub a1_a2 (TArrow a b) : WExVar (n+1) [] [] : WExVar n [] [] : ws) >>=
+      updateBoundInWL (TVar (Right i)) (UB, a1_a2), "SplitL")
                 where
                   a1 = TVar (Right n)
                   a2 = TVar $ Right (n + 1)
                   a1_a2 = TArrow a1 a2
 
-step n (Sub (TArrow a b) (TVar (Right i)) : ws)                                           -- 10
-  | not $ mono (TArrow a b)                     =
-    (n+2, updateBoundInWL (TVar (Right i)) (LB, a1_a2) (addTypsBefore (TVar (Right i)) [a1, a2] ws) >>= 
-      (\wl' -> Right $ Sub (TArrow a b) (TArrow a1 a2) : wl')  , "SplitR")
+step n (Sub (TArrow a b) (TVar (Right i)) : ws)                                           -- 09
+   | not $ mono (TArrow a b)                    =
+    (n+2, carryBackInWL (TVar (Right i)) a1_a2 (Sub (TArrow a b) a1_a2 : WExVar (n+1) [] [] : WExVar n [] [] : ws) >>=
+      updateBoundInWL (TVar (Right i)) (LB, a1_a2), "SplitL")
                 where
-                  a1 = TVar $ Right n
+                  a1 = TVar (Right n)
                   a2 = TVar $ Right (n + 1)
                   a1_a2 = TArrow a1 a2
 
@@ -224,12 +213,12 @@ step n (Sub (TVar (Right i)) (TVar (Right j)) : ws)                             
 
 step n (Sub (TVar (Right i)) t : ws)                                        -- 11
   | mono t                                      =
-    (n, carryBackInWL (TVar (Right i)) t ws >>= 
+    (n, carryBackInWL (TVar (Right i)) t ws >>=
       updateBoundInWL (TVar (Right i)) (UB, t), "Solve mono R")
   | otherwise =  error $ "Bug: Incorrect " ++ show t ++ " !"
 step n (Sub t (TVar (Right i))  : ws)                                       -- 12
   | mono t                                      =
-    (n, carryBackInWL (TVar (Right i)) t ws >>= 
+    (n, carryBackInWL (TVar (Right i)) t ws >>=
       updateBoundInWL (TVar (Right i)) (LB, t), "Solve mono L")
   | otherwise = error $ "Bug: Incorrect " ++ show t ++ " !"
 

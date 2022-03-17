@@ -18,7 +18,7 @@ import System.Random
 
 
 import LazyDef (Typ(..), Work(..))
-import InferLazyMB (chk, mono, chkAndShow, checkAndShow)
+import InferLazy (chk, mono, chkAndShow, checkAndShow)
 import TestCase
 import qualified InferSimple as InferS (Typ(..), Work(..), chk, chkAndShow, checkAndShow)
 
