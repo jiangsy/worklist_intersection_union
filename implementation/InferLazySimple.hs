@@ -205,11 +205,11 @@ step n (Sub (TArrow a b) (TVar (Right i)) : ws)                                 
                   a2 = TVar $ Right (n + 1)
                   a1_a2 = TArrow a1 a2
 
-step n (Sub (TVar (Right i)) (TVar (Right j)) : ws)                                       -- 15 & 16
-  | prec ws (TVar (Right i)) (TVar (Right j))   =
-    (n, updateBoundInWL (TVar (Right j)) (LB, TVar (Right i)) ws, "SolveLExtVar")
-  | prec ws (TVar (Right j)) (TVar (Right i))   =
-    (n, updateBoundInWL (TVar (Right i)) (UB, TVar (Right j)) ws, "SolveRExtVar")
+step n (Sub vi@(TVar (Right i)) vj@(TVar (Right j)) : ws)                                       -- 15 & 16
+  | prec ws vi vj                               =
+    (n, carryBackInWL vj vi ws >>= updateBoundInWL vj (UB, vi), "SolveLExtVar")
+  | prec ws vj vi                               =
+    (n, carryBackInWL vi vj ws >>= updateBoundInWL vi (UB, vj), "SolveRExtVar")
 
 step n (Sub (TVar (Right i)) t : ws)                                        -- 11
   | mono t                                      =
