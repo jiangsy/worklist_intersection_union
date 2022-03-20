@@ -55,13 +55,6 @@
 \end{center}
 
 
-\newcommand{\substwl}[6]{\{#2/#1\}_{#3}^{#4}\,#5 \longmapsto #6}
-\newcommand{\substwln}[4]{\{#2/#1\}\,#3 \rto #4}
-\makeatletter
-\newcommand{\specialcell}[1]{\ifmeasuring@#1\else\omit$\displaystyle#1$\ignorespaces\fi}
-\makeatother
-
-
 $$\begin{aligned}
 \text{Type variable}\qquad&a, b\\
 \text{Existential variable}\qquad&\al, \bt\\[3mm]
@@ -78,7 +71,7 @@ $$\begin{aligned}
 
 \begin{figure}[htp]
 
-\phantom{phantom} \hfill \framebox{$\Psi\vdash A \le B$}  \hfill \framebok{Declarative Subtyping}
+\phantom{phantom} \hfill \framebox{$\Psi\vdash A \le B$}  \hfill \framebox{Declarative Subtyping}
 
 \begin{gather*}
     \inferrule*[right=$\le\mathtt{Var}$]
@@ -117,17 +110,17 @@ $$\begin{aligned}
 			\Gamma[a] \Vdash a\le a &\Longrightarrow \Gamma\\
 			\Gamma[\al] \Vdash \al\le \al &\Longrightarrow \Gamma\\
 			\Gamma \Vdash A_1\to A_2 \le B_1\to B_2 &\Longrightarrow \Gamma \Vdash A_2 \le B_2 \Vdash B_1\le A_1\\
-			\Gamma \Vdash \all a A\le B &\Longrightarrow \Gamma,\al \Vdash [\al/a]A\le B & B \neq \all * *\\
+			\Gamma \Vdash \all a A\le B &\Longrightarrow \Gamma,\cdot\le\al\le\cdot \Vdash [\al/a]A\le B & B \neq \all * *\\
 			\Gamma \Vdash A\le \all b B &\Longrightarrow \Gamma,b \Vdash A\le B\\
-			\Gamma[\al][\bt] \Vdash \al \le \bt  &\Longrightarrow
-			\{\al/\bt\}^>_{\cdot}\Gamma \\
-			\Gamma[\al][\bt] \Vdash \bt \le \al  &\Longrightarrow \{\al/\bt\}^<_{\cdot}\Gamma \\
-			\Gamma[\al] \Vdash \al\le u &\Longrightarrow \{u/\al\}^<_{\cdot}\Gamma &\al \notin FV(u) \\
-			\Gamma[\al] \Vdash  l \le \al &\Longrightarrow \{l/\al\}^>_{\cdot}\Gamma &\al \notin FV(l)\\
-            \Gamma[\al] \Vdash \al \le A\to B &\Longrightarrow \{\al[1] \to \al[2] / \al\}_{\cdot}^<(\Gamma, \cdot\le \al[1]\le\cdot, \cdot\le \al[2]\le\cdot)\Vdash \al[1] \to \al[2] \le A \to B\\
-            &\qquad\qquad\text{not monotype } (A\to B) \wedge \al \notin FV(A \to B)\\
-            \Gamma[\al] \Vdash  A\to B\le\al &\Longrightarrow \{\al[1] \to\al[2]/\al\}_{\cdot}^>(\Gamma, \cdot\le\al[1]\le\cdot, \cdot\le\al[2]\le\cdot) \Vdash \al[1] \to \al[2] \le A \to B\\
-            &\qquad\qquad\text{not monotype } (A\to B) \wedge \al \notin FV(A \to B)\\
+			\Gamma[\bt][\al] \Vdash \al \le \bt  &\Longrightarrow
+			\{\al\cup^+\bt\}_{\cdot}\Gamma \\
+			\Gamma[\bt][\al] \Vdash \bt \le \al  &\Longrightarrow \{\al\cup^-\bt\}_{\cdot}\Gamma \\
+			\Gamma[\al] \Vdash \al\le u &\Longrightarrow \{\al\cup^+u\}_{\cdot}\Gamma &u\neq\bt, \al \notin FV(u) \\
+			\Gamma[\al] \Vdash  l \le \al &\Longrightarrow \{\al\cup^-l\}_{\cdot}\Gamma &l\neq\beta, \al \notin FV(l)\\
+            \Gamma[\al] \Vdash \al \le A\to B &\Longrightarrow \{\al\cup^+\al[1] \to \al[2] \}_{\cdot}(\Gamma, \cdot\le \al[1]\le\cdot, \cdot\le \al[2]\le\cdot)\Vdash \al[1] \to \al[2] \le A \to B\\
+            &\qquad\qquad\qquad\qquad\qquad\qquad\sim\text{ monotype } (A\to B) \wedge \al \notin \text{FV}(A \to B)\\
+            \Gamma[\al] \Vdash  A\to B\le\al &\Longrightarrow \{\al\cup^-\al[1] \to\al[2]\}_{\cdot}(\Gamma, \cdot\le\al[1]\le\cdot, \cdot\le\al[2]\le\cdot) \Vdash \al[1] \to \al[2] \le A \to B\\
+            &\qquad\qquad\qquad\qquad\qquad\qquad\sim\text{monotype } (A\to B) \wedge \al \notin \text{FV}(A \to B)\\
 		\end{aligned}
 		$$
 }
@@ -139,16 +132,15 @@ $$\begin{aligned}
 
 \begin{figure}[!t]
 {\small 
-\hfill \framebox{
- $\substwl{\al}{A}{\tilde\Gamma}{*}{\Gamma}{\Gamma'}$} \hfill ReorderWL
+\phantom{phantom} \hfill \framebox{
+ $\{\al\cup^*A\}_{\tilde\Gamma} \longmapsto \Gamma'$} \hfill AddBound\&ReorderWL
  $$\begin{aligned}
- \{A/\al\}_{\tilde\Gamma}^{>} (\Gamma, \mathcal{L}\le\al\le\mathcal{U}) &\longmapsto \Gamma,, \texttt{rev}({\tilde\Gamma}), \mathcal{L}\le \al\le\mathcal{U}\cup\{A\}&  \\
- \{A/\al\}_{\tilde\Gamma}^{<} (\Gamma, \mathcal{L}\le\al\le\mathcal{U}) &\longmapsto \Gamma,, \texttt{rev}({\tilde\Gamma}), L\cup\{A\}\le \al\le\mathcal{U}& \\
- \{A/\al\}_{\tilde\Gamma}^{*} (\Gamma, b) &\longmapsto \{A/\al\}_{\tilde\Gamma}^{*}\Gamma, b \qquad &b \notin \text{FV}(\tilde\Gamma)\cup\text{FV}(A) \\
-  \{A/\al\}_{\tilde\Gamma}^{*} (\Gamma, \mathcal{L}\le\bt\le\mathcal{U}) &\longmapsto \{A/\al\}_{\tilde\Gamma}^{*}\Gamma, \mathcal{L}\le\bt\le\mathcal{U}  &\bt \notin \text{FV}(\tilde\Gamma)\cup\text{FV}(A) \\
-  \{A/\al\}_{\tilde\Gamma}^{*} (\Gamma, \mathcal{L}\le\bt\le\mathcal{U}) &\longmapsto \{A/\al\}_{\tilde\Gamma, \mathcal{L}\le \bt\le\mathcal{U}}^{*}\Gamma  &\bt \in \text{FV}(\tilde\Gamma)\cup\text{FV}(A) \wedge \al \notin \text{FV}(L)\cup\text{FV}(U) \\
-  \{A/\al\}_{\tilde\Gamma}^{*} (\Gamma\Vdash B\le C) &\longmapsto \{A/\al\}_{\tilde\Gamma}^{*}\Gamma\Vdash B\le C  & \\
-
+ \{\al\cup^-A\}_{\tilde\Gamma} (\Gamma, \mathcal{L}\le\al\le\mathcal{U}) &\longmapsto \Gamma,, \texttt{rev}({\tilde\Gamma}), \mathcal{L}\cup\{A\}\le \al\le\mathcal{U}&  \\
+ \{\al\cup^+A\}_{\tilde\Gamma}(\Gamma, \mathcal{L}\le\al\le\mathcal{U}) &\longmapsto \Gamma,, \texttt{rev}({\tilde\Gamma}), L\le \al\le\mathcal{U}\cup\{A\}& \\
+ \{\al\cup^*A\}_{\tilde\Gamma} (\Gamma, b) &\longmapsto \{\al\cup^*A\}_{\tilde\Gamma}\Gamma, b \qquad &b \notin \text{FV}(\tilde\Gamma)\cup\text{FV}(A) \\
+  \{\al\cup^*A\}_{\tilde\Gamma} (\Gamma, \mathcal{L}\le\bt\le\mathcal{U}) &\longmapsto \{\al\cup^*A\}_{\tilde\Gamma}\Gamma, \mathcal{L}\le\bt\le\mathcal{U}  &\bt \notin \text{FV}(\tilde\Gamma)\cup\text{FV}(A) \\
+  \{\al\cup^*A\}_{\tilde\Gamma} (\Gamma, \mathcal{L}\le\bt\le\mathcal{U}) &\longmapsto \{\al\cup^* A\}_{\tilde\Gamma, \mathcal{L}\le \bt\le\mathcal{U}}\Gamma  &\bt \in \text{FV}(\tilde\Gamma)\cup\text{FV}(A) \wedge \al \notin \text{FV}(L)\cup\text{FV}(U) \\
+  \{\al\cup^*A\}_{\tilde\Gamma} (\Gamma\Vdash B\le C) &\longmapsto \{\al\cup^*A\}_{\tilde\Gamma}\Gamma\Vdash B\le C  & \\
 \end{aligned}
 $$
 } 
