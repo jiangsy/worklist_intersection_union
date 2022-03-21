@@ -1,6 +1,8 @@
 Require Import Coq.Program.Equality.
+Require Import Metalib.Metatheory.
 
 Require Import decl.notations.
+
 
 Definition wf_dom : forall {Γ}, ⊢ Γ -> atoms.
 Proof.

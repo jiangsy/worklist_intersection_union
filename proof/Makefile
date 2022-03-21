@@ -3,7 +3,7 @@ COQ_MAKEFILE := CoqMakefile
 
 OTT_FLAGS := -coq_lngen true -signal_parse_errors true
 
-SYSTEMS := decl decl_wl algo_wl
+SYSTEMS := decl algo
 OTT_OUTS   := $(addsuffix /ott.v,${SYSTEMS})
 LNGEN_OUTS := $(addsuffix /ln_inf.v,${SYSTEMS})
 

@@ -6,7 +6,7 @@ metavar tx, ty, tz ::= {{ coq var }}
 
 grammar
 
-type, t, A, B :: 'la_t_' ::= 
+la_type, t, A, B :: 'la_t_' ::= 
   | int           ::   :: int
   | forall x . t  ::   :: forall (+ bind x in t +) 
   | t1 -> t2      ::   :: arrow 
@@ -14,18 +14,23 @@ type, t, A, B :: 'la_t_' ::=
   | tx            ::   :: tvar
   | ex            ::   :: evar
   | ( t )         :: S :: paren {{ coq ([[t]]) }}
-  | [ t / x ] A   :: M :: susbt {{ coq (open_type_wrt_type [[x A]] [[t]]) }}
+  | [ t / x ] A   :: M :: susbt {{ coq (open_la_type_wrt_la_type [[x A]] [[t]]) }}
 
-typelist, tl :: 'la_tl_' ::= 
+la_typelist, tl :: 'la_tl_' ::= 
   | tnil    :: :: nil  
   | tl , t  :: :: cons 
 
-work, w :: 'la_w_' ::=
+la_work, w :: 'la_w_' ::=
   | tx               :: :: tvar 
   | tl <= ex <= tl'  :: :: evar
   | t1 <: t2         :: :: sub
 
-worklist, wl :: 'la_wl_' ::= 
+la_mode, m :: 'la_m_' ::=
+  | +                :: :: u
+  | -                :: :: l
+
+
+la_worklist, wl :: 'la_wl_' ::= 
   | wnil            ::   :: nil 
   | wl , w          ::   :: cons
   | wl1 ++ wl2      :: M :: app {{ coq (wl_app [[wl1]] [[wl2]]) }}
@@ -44,25 +49,25 @@ formula :: formula_ ::=
 
 
 substitutions
-  single type x :: subst
+  single la_type x :: subst
 
 
 freevars
-  type  x   :: fv
-  type  tx  :: ftx
-  type  ex  :: fex
+  la_type  x   :: fv
+  la_type  tx  :: ftx
+  la_type  ex  :: fex
 
 
 embed {{ coq
 
-Fixpoint wl_app (wl1 wl2 : worklist) : worklist :=
+Fixpoint wl_app (wl1 wl2 : la_worklist) : la_worklist :=
   match wl2 with
   | la_wl_nil => wl1 
   | la_wl_cons wl2' w2 => la_wl_cons (wl_app wl1 wl2') w2
   end
 .
 
-Fixpoint tvar_dom (wl : worklist) : atoms :=
+Fixpoint tvar_dom (wl : la_worklist) : atoms :=
   match wl with
   | la_wl_nil => {}
   | la_wl_cons wl' (la_w_tvar tvar) => add tvar (tvar_dom wl')
@@ -70,7 +75,7 @@ Fixpoint tvar_dom (wl : worklist) : atoms :=
   end
 .
 
-Fixpoint evar_dom (wl : worklist) : atoms :=
+Fixpoint evar_dom (wl : la_worklist) : atoms :=
   match wl with
   | la_wl_nil => {}
   | la_wl_cons wl' (la_w_evar _ evar _) => add evar (evar_dom wl')
@@ -78,7 +83,7 @@ Fixpoint evar_dom (wl : worklist) : atoms :=
   end
 .
 
-Fixpoint update_lowerbound_in_wl (t: type) (wl : worklist) (target : var) : worklist :=
+Fixpoint update_lowerbound_in_wl (t: la_type) (wl : la_worklist) (target : var) : la_worklist :=
   match wl with 
   | la_wl_nil => la_wl_nil
   | la_wl_cons wl' (la_w_evar tl evar tl') => 
@@ -89,7 +94,7 @@ Fixpoint update_lowerbound_in_wl (t: type) (wl : worklist) (target : var) : work
   end
 .
 
-Fixpoint update_upperbound_in_wl (t: type) (wl : worklist) (target : var) : worklist :=
+Fixpoint update_upperbound_in_wl (t: la_type) (wl : la_worklist) (target : var) : la_worklist :=
   match wl with 
   | la_wl_nil => la_wl_nil
   | la_wl_cons wl' (la_w_evar tl evar tl') => 
@@ -100,7 +105,7 @@ Fixpoint update_upperbound_in_wl (t: type) (wl : worklist) (target : var) : work
   end
 .
 
-Fixpoint add_evar_before (v : var) (wl : worklist) (target : var) : worklist :=
+Fixpoint add_evar_before (v : var) (wl : la_worklist) (target : var) : la_worklist :=
   match wl with 
   | la_wl_nil => la_wl_nil
   | la_wl_cons wl' (la_w_evar tl evar tl') => 
@@ -111,67 +116,67 @@ Fixpoint add_evar_before (v : var) (wl : worklist) (target : var) : worklist :=
   end
 .
 
-Fixpoint single_side_constraints_helper (t : type) (tl : typelist) : worklist := 
+Fixpoint single_side_constraints_helper (t : la_type) (tl : la_typelist) : la_worklist := 
   match tl with
   | la_tl_nil => la_wl_nil
   | la_tl_cons tl' t' => la_wl_cons (single_side_constraints_helper t' tl') (la_w_sub t t')
   end
 .
 
-Definition single_side_constraints (tl : typelist) : worklist := 
+Definition single_side_constraints (tl : la_typelist) : la_worklist := 
   match tl with
   | la_tl_nil => la_wl_nil
   | la_tl_cons tl' t => single_side_constraints_helper t tl'
   end
 .
 
-Fixpoint double_side_constraints_helper (t : type) (tl : typelist) : worklist :=
+Fixpoint double_side_constraints_helper (t : la_type) (tl : la_typelist) : la_worklist :=
   match tl with 
   | la_tl_nil => la_wl_nil
   | la_tl_cons tl' t' => la_wl_cons (double_side_constraints_helper t tl') (la_w_sub t t')
   end
 .
 
-Fixpoint double_side_constraints (tl1 tl2 : typelist) : worklist :=
+Fixpoint double_side_constraints (tl1 tl2 : la_typelist) : la_worklist :=
   match tl1 with 
   | la_tl_nil => la_wl_nil
   | la_tl_cons tl1' t1 => wl_app (double_side_constraints tl1' tl2) (double_side_constraints_helper t1 tl2)
   end
 .
 
-Fixpoint wl_app_rev (wl1 wl2 : worklist) : worklist :=
+Fixpoint wl_app_rev (wl1 wl2 : la_worklist) : la_worklist :=
   match wl2 with
   | la_wl_nil => wl1 
   | la_wl_cons wl2' w2 => wl_app_rev (la_wl_cons wl1 w2) wl2'
   end
 .
 
-Inductive reorder : worklist -> var -> type -> worklist -> worklist -> Prop :=
+Inductive reorder : la_worklist -> var -> la_type -> la_worklist -> la_worklist -> Prop :=
 | re_stop : forall Γ x lbs ubs t Γ'
-  , x `notin` fex_worklist Γ' `union` fex_type t
+  , x `notin` fex_la_worklist Γ' `union` fex_la_type t
   -> reorder (la_wl_cons Γ (la_w_evar lbs x ubs)) x t la_wl_nil 
   (wl_app_rev (la_wl_cons Γ (la_w_evar lbs x ubs)) Γ')
 | re_tx_stay : forall Γ1 Γ2 x y t Γ'
-  , y `notin` ftx_worklist Γ' `union` ftx_type t
+  , y `notin` ftx_la_worklist Γ' `union` ftx_la_type t
   -> reorder Γ1 x t Γ' Γ2
   -> reorder (la_wl_cons Γ1 (la_w_tvar y)) x t Γ' (la_wl_cons Γ2 (la_w_tvar y))
 | re_ex_stay : forall Γ1 Γ2 y lbs ubs x t Γ'
-  , y `notin` fex_worklist Γ' `union` fex_type t
+  , y `notin` fex_la_worklist Γ' `union` fex_la_type t
   -> reorder Γ1 x t Γ' Γ2
   -> reorder (la_wl_cons Γ1 (la_w_evar lbs y ubs)) x t Γ' (la_wl_cons Γ2 (la_w_evar lbs y ubs))
 | re_ex_move : forall Γ1 Γ2 y lbs ubs x t Γ'
-  , x `notin` fex_typelist lbs `union` fex_typelist ubs
+  , x `notin` fex_la_typelist lbs `union` fex_la_typelist ubs
   -> reorder Γ1 x t (la_wl_cons Γ' (la_w_evar lbs y ubs)) Γ2
   -> reorder (la_wl_cons Γ1 (la_w_evar lbs y ubs)) x t Γ' (la_wl_cons Γ2 (la_w_evar lbs y ubs))
 | re_sub_stay : forall Γ1 Γ2 t1 t2 x t Γ' y
-  , y `in` fex_worklist Γ' `union` fex_type t -> y `notin` fex_type t1 `union` fex_type t2
-  -> forall y, y `in` ftx_worklist Γ' `union` ftx_type t -> y `notin` ftx_type t1 `union` ftx_type t2
+  , y `in` fex_la_worklist Γ' `union` fex_la_type t -> y `notin` fex_la_type t1 `union` fex_la_type t2
+  -> forall y, y `in` ftx_la_worklist Γ' `union` ftx_la_type t -> y `notin` ftx_la_type t1 `union` ftx_la_type t2
   -> reorder Γ1 x t Γ' Γ2
   -> reorder (la_wl_cons Γ1 (la_w_sub t1 t2)) x t Γ' (la_wl_cons Γ2 (la_w_sub t1 t2))
 | re_sub_move : forall Γ1 Γ2 t1 t2 x t Γ'
   , (exists y, 
-      ((y `in` fex_worklist Γ' `union` fex_type t) /\ (y `in` fex_type t1 `union` fex_type t2)) \/ 
-      ((y `in` ftx_worklist Γ' `union` ftx_type t) /\ (y `in` ftx_type t1 `union` ftx_type t2)))
+      ((y `in` fex_la_worklist Γ' `union` fex_la_type t) /\ (y `in` fex_la_type t1 `union` fex_la_type t2)) \/ 
+      ((y `in` ftx_la_worklist Γ' `union` ftx_la_type t) /\ (y `in` ftx_la_type t1 `union` ftx_la_type t2)))
   -> reorder Γ1 x t (la_wl_cons Γ' (la_w_sub t1 t2)) Γ2
   -> reorder (la_wl_cons Γ1 (la_w_sub t1 t2)) x t Γ' (la_wl_cons Γ2 (la_w_sub t1 t2))
 .

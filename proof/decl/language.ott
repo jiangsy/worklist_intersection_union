@@ -1,4 +1,3 @@
-
 metavar var, x, y, z ::= {{ repr-locally-nameless }}
 
 
@@ -12,14 +11,20 @@ ld_type, t, A, B :: 'ld_t_' ::=
   | ( t )         :: S :: paren {{ coq [[t]] }} 
   | [ t / x ] A   :: M :: susbt {{ coq (open_ld_type_wrt_ld_type [[x A]] [[t]]) }}
 
+
+ld_worklist, wl :: 'ld_wl_' ::= 
+  | nil            :: :: nil 
+  | wl , x         :: :: cons_tvar
+  | wl , t1 <: t2  :: :: cons_sub
+
 ld_context, G :: 'ld_ctx_' ::=
-  | nil           ::   :: nil
-  | G , x         ::   :: cons
+  | nil            ::   :: nil
+  | G , x          ::   :: cons
+  | [| wl |]       :: M :: wl {{ coq (wl_to_ctx [[wl]]) }}
 
 formula :: formula_ ::=
   | judgement     ::   :: judgement
   | x notin G     :: M :: ctx_fresh {{ coq ([[x]] `notin` ctx_dom [[G]]) }}
-
 
 substitutions
   single ld_type x :: subst
@@ -35,6 +40,14 @@ Fixpoint ctx_dom (G : ld_context) : atoms :=
   match G with
   | ld_ctx_nil => {}
   | ld_ctx_cons G' x => add x (ctx_dom G')
+  end
+.
+
+Fixpoint wl_to_ctx (wl : ld_worklist) : ld_context := 
+  match wl with
+  | ld_wl_nil               => ld_ctx_nil
+  | ld_wl_cons_tvar wl' x   => ld_ctx_cons (wl_to_ctx wl') x 
+  | ld_wl_cons_sub wl' t1 t2 => wl_to_ctx wl'
   end
 .
 
@@ -91,6 +104,7 @@ x in G
 x in G, y 
 
 
+
 defns
 WellFormedContext :: '' ::=
 
@@ -111,7 +125,7 @@ defns
 WellFormedType :: '' ::=
 
 defn
-G |=> t  :: :: ld_wf_type :: 'ld_wft_'
+G |=> t  :: :: ld_wf_mtype :: 'ld_wft_'
 by
 
 |=> G
@@ -127,6 +141,32 @@ G |=>  t1
 G |=>  t2 
 ---------------- :: arrow
 G |=>  t1 -> t2
+
+G , x |=> t 
+----------------- :: forall 
+G |=> forall x. t
+
+
+defns
+WellFormedMonoType :: '' ::=
+
+defn
+G |==> t  :: :: ld_wf_type :: 'ld_wfmt_'
+by
+
+|=> G
+---------------- :: int
+G |==> int
+
+|=> G
+x in G 
+---------------- :: var
+G |==>  x
+
+G |==> t1
+G |==> t2 
+---------------- :: arrow
+G |==> t1 -> t2
 
 
 defns
@@ -145,14 +185,13 @@ G |- x <: x
 ------------------- :: int
 G |- int <: int
 
-
 G |- B1 <: A1
 G |- A2 <: B2
 ------------------- :: arrow
 G |- A1 -> A2 <: B1 -> B2
 
 !forall B
-G |=> t
+G |==> t
 G |- [ t / x ] A <: B
 ------------------- :: foralll
 G |- forall x. A <: B
@@ -160,3 +199,27 @@ G |- forall x. A <: B
 G , x |- A <: B
 ------------------- :: forallr
 G |- A <: forall x. B
+
+
+defns
+DeclarativeWorklistSubtyping :: '' ::=
+
+defn
+|- wl :: :: ld_worklist_reducible :: 'ld_wlred_'
+by
+
+---------- :: nil
+|- nil
+
+|=> [| wl , x|]
+|- wl
+------------ :: cons_tvar
+|- wl , x
+
+
+[| wl |] |- t1 <: t2
+|- wl
+--------------------------- :: sub
+|- wl , t1 <: t2 
+
+
