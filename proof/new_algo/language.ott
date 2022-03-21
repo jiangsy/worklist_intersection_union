@@ -22,8 +22,12 @@ la_typelist, tl :: 'la_tl_' ::=
 
 la_work, w :: 'la_w_' ::=
   | tx               :: :: tvar 
-  | tl <= ex <= tl'  :: :: evar
+  | tl ≤ ex ≤ tl'  :: :: evar
   | t1 <: t2         :: :: sub
+
+la_mode, m :: 'la_m_' ::=
+  | +                :: :: u
+  | -                :: :: l
 
 
 la_worklist, wl :: 'la_wl_' ::= 
@@ -41,7 +45,7 @@ formula :: formula_ ::=
   | judgement               ::   :: judgement
   | ex notin wl             :: M :: evar_fresh {{ coq ([[ex]] `notin` (evar_dom [[wl]])) }}
   | tx notin wl             :: M :: tvar_fresh {{ coq ([[tx]] `notin` (tvar_dom [[wl]])) }}
-  | wl' := wl <<= ex <:> t  :: M :: reorder {{ coq (reorder [[wl]] [[ex]] [[t]] la_wl_nil [[wl']]) }}
+  | m { ex ∪ t } wl -> wl'  :: M :: reorder {{ coq (reorder [[wl]] [[ex]] [[t]] la_wl_nil [[wl']]) }}
 
 
 substitutions
@@ -205,17 +209,17 @@ defns
 NotForallType :: '' ::=
 
 defn
-!forall A :: :: la_notforall_type :: 'la_nf_'
+~∀ A :: :: la_notforall_type :: 'la_nf_'
 by
 
 --------------- :: int
-!forall int
+~∀ int
 
 --------------- :: var
-!forall x
+~∀ x
 
 --------------- :: arrow
-!forall t1 -> t2
+~∀ t1 -> t2
 
 
 defns
@@ -233,7 +237,7 @@ tx in wl
 tx in wl , w
 
 ---------------------------- :: here_evar
-ex in wl , tl <= ex <= tl'
+ex in wl , tl ≤ ex ≤ tl'
 
 ---------------------------- :: there_evar
 ex in wl , w
@@ -252,7 +256,7 @@ wl , tx [t1] [tx]
 
 t1 in wl
 ------------------------------------ :: here_evar
-wl , tl <= ex <= tl' [ t1 ] [ ex ]
+wl , tl ≤ ex ≤ tl' [ t1 ] [ ex ]
 
 wl [ t1 ] [ t2 ]
 ------------------------------------ :: there_w
@@ -274,33 +278,33 @@ tx notin wl
 ex notin wl
 |- wl ++ < tl >
 ---------------------------------------------------- :: evar_nil_l
-|- wl , tnil <= ex <= tl
+|- wl , tnil ≤ ex ≤ tl
 
 |- wl ++ < tl' >
 ---------------------------------------------------- :: evar_nil_r
-|- wl , tl <= ex <= tnil
+|- wl , tl ≤ ex ≤ tnil
 
 |- wl ++ < tl * tl' >
 ---------------------------------------------------- :: evar
-|- wl , tl <= ex <= tl'
+|- wl , tl ≤ ex ≤ tl'
 
 |- wl
 ---------------------------------------------------- :: int_int
 |- wl , int <: int
 
+ex in wl
 |- wl
-tx in wl
 ---------------------------------------------------- :: tvar_tvar
 |- wl , tx <: tx
 
-|- wl
 ex in wl
+|- wl
 ---------------------------------------------------- :: evar_evar
 |- wl , ex <: ex
 
-!forall B
+~∀ B
 ex notin wl
-|- wl , tnil <= ex <= tnil , [ ex / x ] A <: B
+|- wl , tnil ≤ ex ≤ tnil , [ ex / x ] A <: B
 ---------------------------------------------------- :: forall_l
 |- wl , forall x. A <: B
 
@@ -313,60 +317,61 @@ tx notin wl
 ---------------------------------------------------- :: arrow_arrow
 |- wl , A1 -> A2 <: B1 -> B2
 
-mono (A -> B)
 ex in wl
-wl' := wl <<= ex <:> t 
-|- wl' @ ex <+ A -> B
+mono (A -> B)
++ { ex ∪ (A -> B) } wl -> wl'
+|- wl'
 ---------------------------------------------------- :: evar_arrow_mono
 |- wl , ex <: A -> B
 
-mono (A -> B)
 ex in wl
-wl' := wl <<= ex <:> t 
-|- wl' @ ex +> A -> B
+mono (A -> B)
+- { ex ∪ (A -> B) } wl -> wl'
+|- wl' 
 ---------------------------------------------------- :: arrow_evar_mono
 |- wl , A -> B <: ex
 
 ex in wl
 ex1 notin wl 
-ex2 notin wl , tnil <= ex1 <= tnil
-|- wl @ ex << ex1 @ ex << ex2 @ ex <+ (ex1 -> ex2)
+ex2 notin wl , tnil ≤ ex1 ≤ tnil
++ { ex ∪ (ex1 -> ex2) } wl, tnil ≤ ex1 ≤ tnil, tnil ≤ ex2 ≤ tnil -> wl'
+|- wl', ex1 -> ex2 <: A -> B
 ---------------------------------------------------- :: evar_arrow
 |- wl , ex <: A -> B
 
 ex in wl
 ex1 notin wl 
-ex2 notin wl , tnil <= ex1 <= tnil
-|- wl @ ex << ex1 @ ex << ex2 @ ex +> (ex1 -> ex2)
+ex2 notin wl , tnil ≤ ex1 ≤ tnil
+- { ex ∪ (ex1 -> ex2) } wl, tnil ≤ ex1 ≤ tnil, tnil ≤ ex2 ≤ tnil -> wl'
+|- wl', A -> B <: ex1 -> ex2 
 ---------------------------------------------------- :: arrow_evar
 |- wl , A -> B <: ex
 
-ex in wl
-|- wl @ ex +> int
----------------------------------------------------- :: int_evar
-|- wl , int <: ex
-
-ex in wl
-|- wl @ ex <+ int
----------------------------------------------------- :: evar_int
-|- wl , ex <: int
-
-wl [ tx ] [ ex ]
-|- wl @ ex +> tx
----------------------------------------------------- :: tvar_evar
-|- wl , tx <: ex
-
-wl [ tx ] [ ex ]
-|- wl @ ex <+ tx
----------------------------------------------------- :: evar_tvar
-|- wl , ex <: tx
-
-wl [ex] [ey]
-|- wl @ ey +> ex
----------------------------------------------------- :: evar_evar_r
+wl [ey] [ex]
++ { ex ∪ ey } wl -> wl'
+|- wl'
+---------------------------------------------------- :: evar_evar_l
 |- wl , ex <: ey
 
-wl [ex] [ey]
+wl [ey] [ex]
+- { ex ∪ ey } wl -> wl'
 |- wl @ ey <+ ex
----------------------------------------------------- :: evar_evar_l
+---------------------------------------------------- :: evar_evar_r
 |- wl , ey <: ex
+
+ex in wl
+mono t 
+- { ex ∪ t } wl -> wl'
+|- wl'
+---------------------------------------------------- :: mono_evar
+|- wl , t <: ex
+
+ex in wl
+mono t 
++ { ex ∪ t } wl -> wl'
+|- wl'
+---------------------------------------------------- :: evar_mono
+|- wl , ex <: t
+
+
+
