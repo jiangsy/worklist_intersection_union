@@ -36,16 +36,14 @@ la_worklist, wl :: 'la_wl_' ::=
   | wl1 ++ wl2      :: M :: app {{ coq (wl_app [[wl1]] [[wl2]]) }}
   | < tl >          :: M :: single_constraint {{ coq (single_side_constraints [[tl]]) }}
   | < tl1 * tl2 >   :: M :: double_constraint {{ coq (double_side_constraints [[tl1]] [[tl2]])}}
-  | wl @ ex +> t    :: M :: update_lb {{ coq (update_lowerbound_in_wl [[t]] [[wl]] [[ex]]) }}
-  | wl @ ex <+ t    :: M :: update_ub {{ coq (update_upperbound_in_wl [[t]] [[wl]] [[ex]]) }}
-  | wl @ ex << ex1  :: M :: add_before {{ coq (add_evar_before [[ex1]] [[wl]] [[ex]])}}
+
 
 
 formula :: formula_ ::=
   | judgement               ::   :: judgement
   | ex notin wl             :: M :: evar_fresh {{ coq ([[ex]] `notin` (evar_dom [[wl]])) }}
   | tx notin wl             :: M :: tvar_fresh {{ coq ([[tx]] `notin` (tvar_dom [[wl]])) }}
-  | m { ex ∪ t } wl -> wl'  :: M :: reorder {{ coq (reorder [[wl]] [[ex]] [[t]] la_wl_nil [[wl']]) }}
+  | m { ex ∪ t } wl -> wl'  :: M :: reorder {{ coq (reorder [[wl]] [[ex]] [[t]] [[m]] la_wl_nil [[wl']]) }}
 
 
 substitutions
@@ -80,39 +78,6 @@ Fixpoint evar_dom (wl : la_worklist) : atoms :=
   | la_wl_nil => {}
   | la_wl_cons wl' (la_w_evar _ evar _) => add evar (evar_dom wl')
   | la_wl_cons wl' _ => evar_dom wl'
-  end
-.
-
-Fixpoint update_lowerbound_in_wl (t: la_type) (wl : la_worklist) (target : var) : la_worklist :=
-  match wl with 
-  | la_wl_nil => la_wl_nil
-  | la_wl_cons wl' (la_w_evar tl evar tl') => 
-    if (eq_dec target evar) 
-      then la_wl_cons wl' (la_w_evar (la_tl_cons tl t) evar tl') 
-      else la_wl_cons (update_lowerbound_in_wl t wl' target) (la_w_evar tl evar tl')
-  | la_wl_cons wl' w => la_wl_cons (update_lowerbound_in_wl t wl' target) w
-  end
-.
-
-Fixpoint update_upperbound_in_wl (t: la_type) (wl : la_worklist) (target : var) : la_worklist :=
-  match wl with 
-  | la_wl_nil => la_wl_nil
-  | la_wl_cons wl' (la_w_evar tl evar tl') => 
-    if (eq_dec target evar) 
-      then la_wl_cons wl' (la_w_evar tl evar (la_tl_cons tl' t)) 
-      else la_wl_cons (update_upperbound_in_wl t wl' target) (la_w_evar tl evar tl')
-  | la_wl_cons wl' w => la_wl_cons (update_upperbound_in_wl t wl' target) w
-  end
-.
-
-Fixpoint add_evar_before (v : var) (wl : la_worklist) (target : var) : la_worklist :=
-  match wl with 
-  | la_wl_nil => la_wl_nil
-  | la_wl_cons wl' (la_w_evar tl evar tl') => 
-    if (eq_dec target v) 
-      then la_wl_cons (la_wl_cons wl' (la_w_evar la_tl_nil v la_tl_nil)) (la_w_evar tl evar tl') 
-      else la_wl_cons (add_evar_before v wl' target) (la_w_evar tl evar tl')
-  | la_wl_cons wl' w => la_wl_cons (add_evar_before v wl' target) w
   end
 .
 
@@ -151,34 +116,30 @@ Fixpoint wl_app_rev (wl1 wl2 : la_worklist) : la_worklist :=
   end
 .
 
-Inductive reorder : la_worklist -> var -> la_type -> la_worklist -> la_worklist -> Prop :=
-| re_stop : forall Γ x lbs ubs t Γ'
+Inductive reorder : la_worklist -> var -> la_type -> la_mode -> la_worklist -> la_worklist -> Prop :=
+| re_add_ub : forall Γ x lbs ubs t Γ'
   , x `notin` fex_la_worklist Γ' `union` fex_la_type t
-  -> reorder (la_wl_cons Γ (la_w_evar lbs x ubs)) x t la_wl_nil 
-  (wl_app_rev (la_wl_cons Γ (la_w_evar lbs x ubs)) Γ')
-| re_tx_stay : forall Γ1 Γ2 x y t Γ'
+  -> reorder (la_wl_cons Γ (la_w_evar lbs x ubs)) x t la_m_u la_wl_nil 
+  (wl_app_rev (la_wl_cons Γ (la_w_evar lbs x (la_tl_cons ubs t))) Γ')
+| re_add_lb : forall Γ x lbs ubs t Γ'
+  , x `notin` fex_la_worklist Γ' `union` fex_la_type t
+  -> reorder (la_wl_cons Γ (la_w_evar lbs x ubs)) x t la_m_l la_wl_nil 
+  (wl_app_rev (la_wl_cons Γ (la_w_evar (la_tl_cons lbs t) x ubs)) Γ')
+| re_tx_stay : forall Γ1 Γ2 x y t m Γ'
   , y `notin` ftx_la_worklist Γ' `union` ftx_la_type t
-  -> reorder Γ1 x t Γ' Γ2
-  -> reorder (la_wl_cons Γ1 (la_w_tvar y)) x t Γ' (la_wl_cons Γ2 (la_w_tvar y))
-| re_ex_stay : forall Γ1 Γ2 y lbs ubs x t Γ'
+  -> reorder Γ1 x t m Γ' Γ2
+  -> reorder (la_wl_cons Γ1 (la_w_tvar y)) x t m Γ' (la_wl_cons Γ2 (la_w_tvar y))
+| re_ex_stay : forall Γ1 Γ2 y lbs ubs x t m Γ'
   , y `notin` fex_la_worklist Γ' `union` fex_la_type t
-  -> reorder Γ1 x t Γ' Γ2
-  -> reorder (la_wl_cons Γ1 (la_w_evar lbs y ubs)) x t Γ' (la_wl_cons Γ2 (la_w_evar lbs y ubs))
-| re_ex_move : forall Γ1 Γ2 y lbs ubs x t Γ'
+  -> reorder Γ1 x t m Γ' Γ2
+  -> reorder (la_wl_cons Γ1 (la_w_evar lbs y ubs)) x t m Γ' (la_wl_cons Γ2 (la_w_evar lbs y ubs))
+| re_ex_move : forall Γ1 Γ2 y lbs ubs x t m Γ'
   , x `notin` fex_la_typelist lbs `union` fex_la_typelist ubs
-  -> reorder Γ1 x t (la_wl_cons Γ' (la_w_evar lbs y ubs)) Γ2
-  -> reorder (la_wl_cons Γ1 (la_w_evar lbs y ubs)) x t Γ' (la_wl_cons Γ2 (la_w_evar lbs y ubs))
-| re_sub_stay : forall Γ1 Γ2 t1 t2 x t Γ' y
-  , y `in` fex_la_worklist Γ' `union` fex_la_type t -> y `notin` fex_la_type t1 `union` fex_la_type t2
-  -> forall y, y `in` ftx_la_worklist Γ' `union` ftx_la_type t -> y `notin` ftx_la_type t1 `union` ftx_la_type t2
-  -> reorder Γ1 x t Γ' Γ2
-  -> reorder (la_wl_cons Γ1 (la_w_sub t1 t2)) x t Γ' (la_wl_cons Γ2 (la_w_sub t1 t2))
-| re_sub_move : forall Γ1 Γ2 t1 t2 x t Γ'
-  , (exists y, 
-      ((y `in` fex_la_worklist Γ' `union` fex_la_type t) /\ (y `in` fex_la_type t1 `union` fex_la_type t2)) \/ 
-      ((y `in` ftx_la_worklist Γ' `union` ftx_la_type t) /\ (y `in` ftx_la_type t1 `union` ftx_la_type t2)))
-  -> reorder Γ1 x t (la_wl_cons Γ' (la_w_sub t1 t2)) Γ2
-  -> reorder (la_wl_cons Γ1 (la_w_sub t1 t2)) x t Γ' (la_wl_cons Γ2 (la_w_sub t1 t2))
+  -> reorder Γ1 x t m (la_wl_cons Γ' (la_w_evar lbs y ubs)) Γ2
+  -> reorder (la_wl_cons Γ1 (la_w_evar lbs y ubs)) x t m Γ' (la_wl_cons Γ2 (la_w_evar lbs y ubs))
+| re_sub_stay : forall Γ1 Γ2 t1 t2 x t m Γ' y
+  , reorder Γ1 x t m Γ' Γ2
+  -> reorder (la_wl_cons Γ1 (la_w_sub t1 t2)) x t m Γ' (la_wl_cons Γ2 (la_w_sub t1 t2))
 .
 
 }}
@@ -292,7 +253,7 @@ ex notin wl
 ---------------------------------------------------- :: int_int
 |- wl , int <: int
 
-ex in wl
+tx in wl
 |- wl
 ---------------------------------------------------- :: tvar_tvar
 |- wl , tx <: tx
@@ -355,11 +316,12 @@ wl [ey] [ex]
 
 wl [ey] [ex]
 - { ex ∪ ey } wl -> wl'
-|- wl @ ey <+ ex
+|- wl'
 ---------------------------------------------------- :: evar_evar_r
 |- wl , ey <: ex
 
 ex in wl
+% check wellformed t
 mono t 
 - { ex ∪ t } wl -> wl'
 |- wl'
@@ -368,6 +330,7 @@ mono t
 
 ex in wl
 mono t 
+% check wellformed t
 + { ex ∪ t } wl -> wl'
 |- wl'
 ---------------------------------------------------- :: evar_mono
