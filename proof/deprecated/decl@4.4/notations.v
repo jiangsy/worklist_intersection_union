@@ -1,7 +1,7 @@
 Require Export Coq.Unicode.Utf8.
 
-Require Export decl_new.ott.
-Require Export decl_new.ln_inf.
+Require Export decl.ott.
+Require Export decl.ln_inf.
 
 Notation "⊢ G" :=
   (ld_wf_context G)
