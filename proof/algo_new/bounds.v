@@ -4,7 +4,7 @@ Require Import Coq.Program.Equality.
 Require Import Metalib.Metatheory.
 Require Import List.
 
-Require Import algo.ott.
+Require Import algo_new.ott.
 
 
 Ltac solve_eq_or_not :=
@@ -26,7 +26,6 @@ Proof.
     + solve_eq_or_not. 
   - destruct (n == n0); solve_eq_or_not.
   - destruct (x5 == x0); solve_eq_or_not.
-  - destruct (tx5 == tx0); solve_eq_or_not.
   - destruct (ex5 == ex0); solve_eq_or_not.
 Qed.
 

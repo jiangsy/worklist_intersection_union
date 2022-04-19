@@ -1,4 +1,4 @@
-Require Import Coq.Program.Equality.
+(* Require Import Coq.Program.Equality.
 Require Import Metalib.Metatheory.
 
 Require Import decl.notations.
@@ -63,4 +63,4 @@ Proof.
   - pick fresh x and apply ld_sub_forallr for weakening.
     replace (G1,, G2,, G3, x) with (G1,, G2,, (G3, x)) by auto.
     eapply H0; auto. constructor; auto.
-Qed.
+Qed. *)
