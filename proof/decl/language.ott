@@ -16,8 +16,8 @@ ld_work, w :: 'ld_w_' ::=
 
 ld_worklist, wl :: 'ld_wl_' ::= 
   | nil            :: :: nil 
-  | wl , x         :: :: bind
-  | wl |- w        :: :: cons
+  | wl , x         :: :: cons_tv
+  | wl |- w        :: :: cons_w
 
 ld_context, G :: 'ld_ctx_' ::=
   | nil            ::   :: nil
@@ -37,11 +37,11 @@ freevars
 
 embed {{ coq
 
-Fixpoint ld_wl_app (wl1 wl2 : ld_worklist) : la_worklist :=
+Fixpoint ld_wl_app (wl1 wl2 : ld_worklist) : ld_worklist :=
   match wl2 with
   | ld_wl_nil => wl1 
-  | ld_wl_cons wl2' w2 => ld_wl_cons (ld_wl_app wl1 wl2') w2
-  | ld_wl_bind wl2' x => ld_wl_bind (ld_wl_app wl1 wl2') x
+  | ld_wl_cons_w wl2' w2 => ld_wl_cons_w (ld_wl_app wl1 wl2') w2
+  | ld_wl_cons_tv wl2' x => ld_wl_cons_tv (ld_wl_app wl1 wl2') x
   end
 .
 
@@ -55,8 +55,8 @@ Fixpoint ld_ctx_dom (G : ld_context) : atoms :=
 Fixpoint ld_wl_to_ctx (wl : ld_worklist) : ld_context := 
   match wl with 
   | ld_wl_nil                     => ld_ctx_nil
-  | ld_wl_bind wl' x              => ld_ctx_cons (ld_wl_to_ctx wl') x 
-  | ld_wl_cons wl' _              => ld_wl_to_ctx wl'
+  | ld_wl_cons_tv wl' x              => ld_ctx_cons (ld_wl_to_ctx wl') x 
+  | ld_wl_cons_w wl' _              => ld_wl_to_ctx wl'
   end
 .
 

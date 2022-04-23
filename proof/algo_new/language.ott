@@ -18,6 +18,7 @@ la_typelist, tl :: 'la_tl_' ::=
   | tnil    :: :: nil  
   | tl , t  :: :: cons 
 
+
 la_work, w :: 'la_w_' ::=
   | tl ≤ ex ≤ tl'    :: :: evar
   | t1 <: t2         :: :: sub
