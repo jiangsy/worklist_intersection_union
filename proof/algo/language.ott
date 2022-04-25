@@ -192,17 +192,34 @@ defn
 t in wl :: :: la_in_worklist :: 'la_inwl_'
 by
 
----------------------------- :: here_tvar
+---------------------------- :: tv_here
 x in wl , x
 
 x in wl
----------------------------- :: there_tvar
+---------------------------  :: tv_there_tv
+x in wl , y
+
+x in wl 
+--------------------------   :: tv_there_ev
+x in wl , tl ≤ ex ≤ tl'
+
+x in wl
+---------------------------- :: tv_there_w
 x in wl |- w
 
----------------------------- :: here_evar
+---------------------------- :: ev_here
 ex in wl , tl ≤ ex ≤ tl'
 
----------------------------- :: there_evar
+ex in wl 
+---------------------------- :: ev_there_tv
+ex in wl , x
+
+ex in wl 
+---------------------------- :: ev_there_ev
+ex in wl , tl ≤ ey ≤ tl'
+
+ex in wl
+---------------------------- :: ev_there_w
 ex in wl |- w
 
 
@@ -213,17 +230,24 @@ defn
 wl [ t1 ] [ t2 ] :: :: la_in_scope :: 'la_ins_'
 by
 
-t1 in wl
------------------------------------- :: here_var
-wl , x [t1] [x]
+ex1 in wl
+------------------------------------ :: ev_here
+wl , tl ≤ ex2 ≤ tl' [ex1] [ex2]
 
-t1 in wl
------------------------------------- :: here_evar
-wl , tl ≤ ex ≤ tl' [ t1 ] [ ex ]
 
-wl [ t1 ] [ t2 ]
------------------------------------- :: there_w
-wl |- w [ t1 ] [ t2 ]
+wl [ ex1 ] [ ex2 ]
+------------------------------------ :: tv_between
+wl , x [ ex1 ] [ ex2 ]
+
+
+wl [ ex1 ] [ ex2 ]
+------------------------------------ :: ev_between
+wl , tl ≤ ex ≤ tl' [ ex1 ] [ ex2 ]
+
+
+wl [ ex1 ] [ ex2 ]
+------------------------------------ :: w_between
+wl |- w [ ex1 ] [ ex2 ]
 
 
 defns 
