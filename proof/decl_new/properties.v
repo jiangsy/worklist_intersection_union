@@ -1,7 +1,7 @@
 Require Import Coq.Program.Equality.
+Require Import Program.Tactics.
 Require Import Lia.
 Require Import Metalib.Metatheory.
-
 
 Require Import decl_new.notations.
 Require Import ln_utils.
@@ -27,6 +27,29 @@ Ltac apply_fresh_base_fixed H gather_vars atom_name :=
 
 Tactic Notation "pick" "fresh" ident(x) "and" "apply" constr(H) "for" "weakening" :=
   apply_fresh_base_fixed H gather_for_weakening x.
+
+Lemma subst_same_eq : forall A x,
+  A = [`x /_ x] A.
+Proof.
+  intros.
+  induction A; auto.
+  - simpl. rewrite <- IHA. auto.
+  - simpl. rewrite <- IHA1. rewrite <- IHA2. auto.
+  - simpl. destruct (x0==x); subst; auto.
+Qed.
+
+
+Lemma open_subst_eq : forall A x t, 
+  x `notin` fv_ld_type A -> lc_ld_type t  ->
+    A ^^ t = [t /_ x] A ^^ `x.
+Proof.
+  intros.  
+  rewrite subst_ld_type_open_ld_type_wrt_ld_type. simpl.
+  rewrite eq_dec_refl.
+  rewrite subst_ld_type_fresh_eq.
+  all : auto.
+Qed. 
+
 
 Lemma ld_wf_mtype_is_mtype : forall G t,
   ld_wf_mtype G t -> ld_mono_type t.
@@ -311,11 +334,13 @@ Inductive sized_ld_sub : ld_context -> ld_type -> ld_type -> nat -> Prop :=
     G ⊢ A <: (ld_t_forall B) | S n
 where "G ⊢ t1 <: t2 | n" := (sized_ld_sub G t1 t2 n).
 
+
 Lemma sized_ld_sub_to_ld_sub : forall G t1 t2 n,
   G ⊢ t1 <: t2 | n -> (ld_sub G t1 t2).
 Proof.
   intros. induction H; eauto.
 Qed.
+
 
 Lemma sized_ld_sub_weakening : forall G1 G2 G3 t1 t2 n,
   G1 ,, G3 ⊢ t1 <: t2 | n -> ⊢ G1 ,, G2 ,, G3 ->
@@ -343,28 +368,138 @@ Proof.
 Qed.
 
 
+Theorem ld_wf_type_is_wf_ctx : forall G A,
+  ld_wf_type G A -> ⊢ G.
+Proof.
+  intros. induction H; auto.
+  inst_cofinites_with_new. dependent destruction H0.
+  auto.
+Qed.
+
+Theorem context_cons_app_eq : forall G1 G2 x,
+  G1, x ,, G2 = G1 ,, (ld_ctx_nil, x ,, G2).
+Proof.
+  intros. induction G2; auto.
+  simpl. rewrite IHG2. auto.
+Qed.
+
+Theorem ld_wf_ctx_middle : forall G1 G2 x x',
+  x <> x' -> ld_wf_context (G1, x,, G2) -> ld_wf_context (G1, x',, G2) -> ld_wf_context (G1, x', x,, G2).
+Proof.
+  intros. induction G2; simpl in *.
+  - constructor. auto. simpl. apply notin_add_3. auto.
+    dependent destruction H0. auto.
+  - dependent destruction H0. dependent destruction H2. constructor. auto.
+    clear H0. clear H2. clear IHG2.
+    induction G2; simpl in *.
+    + apply notin_add_3. specialize (notin_add_1 _ _ _ H1). auto.
+      apply notin_add_3. specialize (notin_add_1 _ _ _ H1). auto.  specialize (notin_add_1 _ _ _ H3). auto.
+    + apply notin_add_3.
+      apply notin_add_1 in H1. auto.
+      apply notin_add_2 in H1. apply notin_add_2 in H3. auto.
+Qed.
+
+
+Theorem sized_var_substitution : forall G1 G2 x x' A B n,
+  G1 , x  ,, G2 ⊢ A <: B | n ->
+  ⊢ G1, x' ,, G2 ->
+  G1 , x' ,, G2 ⊢ [`x' /_ x] A <: [`x' /_ x] B | n.
+Proof.
+  intros.
+  dependent induction H.
+  - simpl. destruct (x0 == x). 
+    + subst. constructor; auto. clear H1. clear H0. clear H. induction G2.
+      * simpl. constructor.
+      * simpl. constructor. eauto.
+    + constructor.
+      * auto.
+      * eapply ld_in_context_other in H0; eauto.
+        replace (G1,x',,G2) with (G1,,(ld_ctx_nil, x'),,G2) by auto. apply ld_in_context_weakenning. auto.
+  - simpl. constructor. auto. 
+  - simpl. constructor; eauto.
+  - simpl. eapply sls_foralll with (t:=[`x' /_ x] t). 
+    + destruct (x==x'); subst.
+      * replace ([` x' /_ x'] t) with t; auto.
+        now apply subst_same_eq.
+      * apply ld_wf_mtype_equiv_ld_wf_type_and_mono in H. destruct H.
+        apply ld_wf_mtype_subst.
+        -- auto.
+        -- apply ld_wf_mtype_equiv_ld_wf_type_and_mono. split; auto.
+            replace (G1, x', x,, G2) with (G1,, (ld_ctx_nil, x'),, (ld_ctx_nil, x,, G2)).
+            apply ld_wf_type_weakening.
+            ++ simpl. rewrite <- context_cons_app_eq. auto. 
+            ++ simpl. clear IHsized_ld_sub. 
+               apply ld_wf_type_is_wf_ctx in H.
+               rewrite <- context_cons_app_eq. apply ld_wf_ctx_middle; auto. 
+            ++ clear. induction G2; auto.
+               simpl. rewrite <- IHG2. auto.
+        -- constructor. replace (G1, x') with (G1,x',,ld_ctx_nil) by auto. eapply ld_wf_ctx_weakening; eauto.
+           constructor. 
+    + replace (([`x' /_ x] A) ^^ ([`x' /_ x] t)) with ([`x' /_ x] A ^^ t).
+      * apply IHsized_ld_sub; auto.
+      * rewrite subst_ld_type_open_ld_type_wrt_ld_type; auto. 
+  - simpl. eapply sls_forallr with (L:=L `union` singleton x `union` ld_ctx_dom ( G1, x',, G2)).
+    intros. inst_cofinites_with x0.
+    rewrite_subst_open_var.
+    replace  (([`x' /_ x] B) ^^ ([`x' /_ x] ` x0)) with ( [`x' /_ x] B ^^ ` x0).
+    + replace (G1, x',, G2, x0 ) with (G1,x',, (G2, x0)) by auto. apply H0; auto.
+      simpl. constructor; auto. 
+    + rewrite subst_ld_type_open_ld_type_wrt_ld_type. reflexivity. simpl.
+      replace (G1,, G2, x0 ) with (G1,, (G2, x0)) by auto. now apply ld_mono_is_ld_lc.
+Qed.
+
+
+Hint Resolve ld_sub_wf_ctx : trans.
+Hint Resolve sized_ld_sub_to_ld_sub : trans.
+Hint Resolve sized_ld_sub_weakening_cons : trans.
+Hint Resolve ld_wf_mtype_is_mtype : trans.
+Hint Resolve sized_ld_sub_weakening : trans.
+Hint Resolve open_subst_eq : trans.
+Hint Extern 1 (?x < ?y) => lia : trans.
+
+
+Lemma ld_sub_to_sized_ld_sub : forall G t1 t2,
+  (ld_sub G t1 t2) -> exists n', G ⊢ t1 <: t2 | n'.
+Proof with eauto with trans.
+  intros. induction H.
+  + exists 0. econstructor; eauto.
+  + exists 0. econstructor; eauto.
+  + destruct IHld_sub1 as [n1].
+    destruct IHld_sub2 as [n2].
+    exists (S (n1 + n2)). econstructor; eauto.
+  + destruct IHld_sub as [n].
+    exists (S n). econstructor; eauto.
+  + inst_cofinites_by (L `union` fv_ld_type A `union` fv_ld_type B). destruct H0 as [n].
+    exists (S n). eapply sls_forallr with (L:=L `union` (ld_ctx_dom G)). intros.
+    replace (G, x0) with (G, x0,,ld_ctx_nil) by auto.
+    replace A with ([`x0 /_ x] A).
+    replace (B ^^ `x0) with ([`x0 /_ x] B ^^ `x).
+    eapply  sized_var_substitution; eauto.
+    * simpl. constructor; auto.
+      apply ld_sub_wf_ctx in H. dependent destruction H. auto.
+    * apply eq_sym. eauto...
+    * rewrite subst_ld_type_fresh_eq; auto.
+Qed.
+
 
 Theorem sized_substitution : forall G1 G2 x A B t n,
   G1 , x  ,, G2 ⊢ A <: B | n ->
   ld_wf_type G1 t -> ld_mono_type t ->
-  G1 ,, G2 ⊢ [t /_ x] A <: [t /_ x] B | n.
+  exists n', G1 ,, G2 ⊢ [t /_ x] A <: [t /_ x] B | n'.
 Proof.
   intros.
-  dependent induction H.
-Admitted.
+  apply sized_ld_sub_to_ld_sub in H.
+  apply substitution with (t:=t) in H; auto.
+  apply ld_sub_to_sized_ld_sub in H. auto.
+Qed.
 
-Hint Resolve sized_ld_sub_to_ld_sub : trans.
 
-Lemma open_subst_eq : forall A x t, 
-  x `notin` fv_ld_type A -> lc_ld_type t  ->
-    A ^^ t = [t /_ x] A ^^ `x.
-Proof.
-  intros.  
-  rewrite subst_ld_type_open_ld_type_wrt_ld_type. simpl.
-  rewrite eq_dec_refl.
-  rewrite subst_ld_type_fresh_eq.
-  all : auto.
-Qed. 
+Ltac notin_not_eq :=
+  match goal with 
+  | H : ?x `notin` union ?G (singleton ?x') |- ?x<>?x' =>
+    apply notin_union_2 in H; apply notin_singleton_1 in H; unfold not; intros; subst; contradiction
+  end.
+
 
 Theorem generalized_transitivity : forall t_order t_ssize G A B C n1 n2 ,
   type_order B < t_order ->
@@ -378,52 +513,42 @@ Proof with eauto with trans.
   - dependent destruction H1...
       + dependent destruction H2. 
         * simpl in H. econstructor. 
-          eapply IHt_ssize with (B:=C0); eauto; lia. 
-          eapply IHt_ssize with (B:=D); eauto; lia.
+          eapply IHt_ssize with (B:=C0); eauto...
+          eapply IHt_ssize with (B:=D); eauto...
         * eapply ld_sub_forallr with (L:=L `union` ld_ctx_dom G). intros. inst_cofinites_with x.
-          eapply IHt_ssize with (B:=ld_t_arrow C0 D) (n1:=S (n1 + n0)); eauto. lia.
-          econstructor; eapply sized_ld_sub_weakening_cons; eauto. 
+          eapply IHt_ssize with (B:=ld_t_arrow C0 D) (n1:=S (n1 + n0)); eauto...
+          econstructor; eauto... 
       + eapply ld_sub_foralll with (t:=t). auto.
-        eapply IHt_ssize with (B:=B); eauto. lia.
+        eapply IHt_ssize with (B:=B); eauto...
       + dependent destruction H2. 
-        * eapply IHt_order with (B:=B ^^ t) (n1:=n) (n2:=n0); eauto. simpl in H; eauto.
-          rewrite (open_mono_order B t). lia. eapply ld_wf_mtype_is_mtype; eauto.
-          inst_cofinites_by (L `union` fv_ld_type A `union` fv_ld_type B).
+        * inst_cofinites_by (L `union` fv_ld_type A `union` fv_ld_type B).
+          apply ld_wf_mtype_equiv_ld_wf_type_and_mono in H2. destruct H2.
+          specialize (sized_substitution G ld_ctx_nil x _ _ _ _ H1 H2 H4).
+          intros. destruct H5 as [n1 Hsub].
+          eapply IHt_order with (B:=B ^^ t) (n1:=n1) (n2:=n0); eauto. simpl in H; eauto.
+          rewrite (open_mono_order B t); eauto...
           replace G with (G ,, ld_ctx_nil) by auto.
           replace (B ^^ t) with ([t /_ x] B ^^ `x).
           replace A with ([t /_ x] A).
-          apply sized_substitution; auto. 
-          -- apply ld_wf_mtype_equiv_ld_wf_type_and_mono in H2; intuition.
-          -- apply ld_wf_mtype_equiv_ld_wf_type_and_mono in H2; intuition.
+          -- auto. 
           -- rewrite subst_ld_type_fresh_eq; auto.
-          -- apply eq_sym. eapply open_subst_eq; auto. 
-             apply ld_mono_is_ld_lc. apply ld_wf_mtype_equiv_ld_wf_type_and_mono in H2. intuition.
+          -- apply eq_sym. eapply open_subst_eq; auto.
+             apply ld_mono_is_ld_lc. auto. 
         * apply ld_sub_forallr with (L:=L `union` L0 `union` fv_ld_type B `union` fv_ld_type A).
           intros. inst_cofinites_with x.
-          
-          eapply IHt_ssize with (B:=ld_t_forall B) (n1:=S n) (n2:=n0); auto. lia. 
+          eapply IHt_ssize with (B:=ld_t_forall B) (n1:=S n) (n2:=n0); auto... 
           eapply sls_forallr with (L:= (ld_ctx_dom G) `union` singleton x). intros.
-          assert (⊢ G, x). {
-            eapply ld_sub_wf_ctx; eauto.
-            eapply sized_ld_sub_to_ld_sub. eauto.
-          } 
-          assert (⊢ G, x0). {
-            constructor. dependent destruction H5. auto. auto.
-          }
-
-
+          assert (⊢ G, x). { auto... } 
+          assert (⊢ G, x0). { constructor. dependent destruction H5;  auto. auto. }
           replace (G, x, x0) with (G ,, (ld_ctx_nil,  x) ,, (ld_ctx_nil, x0)) by auto.
-          eapply sized_ld_sub_weakening. simpl.
+          eapply sized_ld_sub_weakening; simpl.
           replace A with ([`x0 /_ x] A).
           replace (B ^^ `x0) with ([`x0 /_ x] B ^^ `x).
           replace (G, x0) with (G, x0,, ld_ctx_nil) by auto.
-          apply sized_substitution; auto.
-          -- simpl. replace (G, x0, x) with (G ,, (ld_ctx_nil,  x0) ,, (ld_ctx_nil, x)) by auto. eapply sized_ld_sub_weakening. simpl. auto.
-          simpl. constructor; simpl. auto. 
-          apply notin_add_3. 
-          apply notin_union_2 in H4. apply notin_singleton_1 in H4. unfold not. intros. subst. contradiction. dependent destruction H5. auto. 
-          -- apply eq_sym. eapply open_subst_eq; auto.
+          apply sized_var_substitution; auto.
+          -- apply eq_sym. eauto... 
           -- rewrite subst_ld_type_fresh_eq; auto.
-          -- simpl. econstructor. eauto.
-             simpl. auto.
+          -- econstructor; eauto.
 Qed.
+
+Print Assumptions generalized_transitivity.
