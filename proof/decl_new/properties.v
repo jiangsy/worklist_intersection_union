@@ -68,7 +68,6 @@ Proof.
 Qed.
 
 
-
 Lemma ld_sub_refl :
   forall G A, ld_wf_type G A -> ld_sub G A A.
 Proof.
@@ -494,13 +493,6 @@ Proof.
 Qed.
 
 
-Ltac notin_not_eq :=
-  match goal with 
-  | H : ?x `notin` union ?G (singleton ?x') |- ?x<>?x' =>
-    apply notin_union_2 in H; apply notin_singleton_1 in H; unfold not; intros; subst; contradiction
-  end.
-
-
 Theorem generalized_transitivity : forall t_order t_ssize G A B C n1 n2 ,
   type_order B < t_order ->
   n1 + n2 < t_ssize -> 
@@ -515,7 +507,8 @@ Proof with eauto with trans.
         * simpl in H. econstructor. 
           eapply IHt_ssize with (B:=C0); eauto...
           eapply IHt_ssize with (B:=D); eauto...
-        * eapply ld_sub_forallr with (L:=L `union` ld_ctx_dom G). intros. inst_cofinites_with x.
+        * eapply ld_sub_forallr with (L:=L `union` ld_ctx_dom G). 
+          intros. inst_cofinites_with x.
           eapply IHt_ssize with (B:=ld_t_arrow C0 D) (n1:=S (n1 + n0)); eauto...
           econstructor; eauto... 
       + eapply ld_sub_foralll with (t:=t). auto.
@@ -551,4 +544,13 @@ Proof with eauto with trans.
           -- econstructor; eauto.
 Qed.
 
-Print Assumptions generalized_transitivity.
+Theorem transitivity : forall G A B C,
+  (ld_sub G A B) -> (ld_sub G B C) -> (ld_sub G A C).
+Proof.
+  intros.
+  apply ld_sub_to_sized_ld_sub in H. destruct H as [n1].
+  apply ld_sub_to_sized_ld_sub in H0. destruct H0 as [n2].
+  eapply generalized_transitivity; eauto.
+Qed.
+
+Print Assumptions transitivity.
