@@ -32,6 +32,14 @@ Algorithm:
 ------------------------------
 |- T , Int <: Int  
 
+|- T 
+------------------------------
+|- T , t <: Top  
+
+|- T 
+------------------------------
+|- T , Bot <: t  
+
 |- T  /\  a in T
 ------------------------------
 |- T , a <: a
@@ -68,7 +76,7 @@ Algorithm:
 -----------------
 |- T, C <: A ∪ B
 
-|- T, ⊥<:^a<:⊤, [^a/a] B 
+|- T, ⊥<:^a<:⊤, [^a/a] B <: C
 ------------------------
 |- T, forall a . B <: C            
 
@@ -115,7 +123,7 @@ Algorithm:
 -}
 
 
-data Typ = TVar (Either Int Int) | TInt | TBool | TForall (Typ -> Typ) | TArrow Typ Typ | 
+data Typ = TVar (Either Int Int) | TInt | TBool | TForall (Typ -> Typ) | TArrow Typ Typ |
            TUnion Typ Typ | TIntersection Typ Typ | TBot | TTop
 
 data Work = WVar Int | WExVar Int Typ Typ | Sub Typ Typ deriving Eq
@@ -159,7 +167,7 @@ instance Show Work where
 
 mono :: Typ -> Bool
 mono (TForall g)           = False
-mono TBot                  = False 
+mono TBot                  = False
 mono TTop                  = False
 mono (TArrow a b)          = mono a && mono b
 mono (TUnion a b)          = mono a && mono b
@@ -248,74 +256,80 @@ curInfo ws s1 =  "   " ++ show (reverse ws) ++ "\n-->{ Rule: " ++ s1 ++ replicat
 
 bigStep :: Int -> String -> [Work] -> (Bool, String)
 bigStep _ info []                                   = (True, info)
-bigStep n info (WVar i : ws)                        = bigStep n (info ++ curInfo ws "Garbage Collection") ws
-bigStep n info (WExVar i lb ub : ws)                = bigStep n (info ++ curInfo ws "SCompareBound") (Sub lb ub : ws)
+bigStep n info (WVar i : ws)                        = bigStep n (info++curInfo ws "Garbage Collection") ws
+bigStep n info (WExVar i lb ub : ws)                = bigStep n (info++curInfo ws' "SCompareBound") ws'
+                                                        where ws' = Sub lb ub : ws
 
-bigStep n info (Sub _ TTop : ws)                    = bigStep n (info ++ curInfo ws "STop") ws
-bigStep n info (Sub TBot _ : ws)                    = bigStep n (info ++ curInfo ws "SBot") ws
-bigStep n info (Sub TInt TInt : ws)                 = bigStep n (info ++ curInfo ws "SInt") ws
-bigStep n info (Sub TBool TBool : ws)               = bigStep n (info ++ curInfo ws "SBool") ws
+bigStep n info (Sub _ TTop : ws)                    = bigStep n (info++curInfo ws "STop") ws
+bigStep n info (Sub TBot _ : ws)                    = bigStep n (info++curInfo ws "SBot") ws
+bigStep n info (Sub TInt TInt : ws)                 = bigStep n (info++curInfo ws "SInt") ws
+bigStep n info (Sub TBool TBool : ws)               = bigStep n (info++curInfo ws "SBool") ws
 
 
 bigStep n info (Sub (TVar i) (TVar j) : ws )
                          | i == j                   = bigStep n (info ++ curInfo ws "STVar") ws
-bigStep n info (Sub (TArrow a b) (TArrow c d) : ws) = bigStep n (info ++ curInfo ws "SArrow") (Sub b d : Sub c a : ws)
-bigStep n info (Sub a (TForall g) : ws)             = bigStep (n+1) (info ++ curInfo ws "SFroallR") (Sub a (g (TVar (Left n))) : WVar n : ws)
-bigStep n info (Sub (TForall g) b : ws)             = bigStep (n+1) (info ++ curInfo ws "SForallL") (Sub (g (TVar (Right n))) b: WExVar n TBot TTop : ws)
+bigStep n info (Sub (TArrow a b) (TArrow c d) : ws) = bigStep n (info ++ curInfo ws' "SArrow") ws'
+                                                        where ws' = Sub b d : Sub c a : ws
+bigStep n info (Sub a (TForall g) : ws)             = bigStep (n+1) (info ++ curInfo ws' "SFroallR") ws'
+                                                        where ws' = Sub a (g (TVar (Left n))) : WVar n : ws
+bigStep n info (Sub (TForall g) b : ws)             = bigStep (n+1) (info ++ curInfo ws' "SForallL") ws'
+                                                        where ws' = Sub (g (TVar (Right n))) b: WExVar n TBot TTop : ws
 
 
 bigStep n info (Sub (TVar (Right i)) (TArrow a b) : ws)
   | not $ mono (TArrow a b)                         = case carryBackInWL (TVar (Right i)) a1_a2 (Sub a1_a2 (TArrow a b) :
-                                                                                                 WExVar (n+1) TBot TTop : 
-                                                                                                 WExVar n TBot TTop : ws) 
+                                                                                                 WExVar (n+1) TBot TTop :
+                                                                                                 WExVar n TBot TTop : ws)
                                                            >>= updateBoundInWL (TVar (Right i)) (UB, a1_a2) of
                                                         Left error -> (False, info++error)
-                                                        Right ws' -> bigStep (n+2) (info ++ curInfo ws "SplitL") ws'
+                                                        Right ws' -> bigStep (n+2) (info ++ curInfo ws' "SplitL") ws'
                                                       where
                                                         a1 = TVar (Right n)
                                                         a2 = TVar $ Right (n + 1)
                                                         a1_a2 = TArrow a1 a2
-bigStep n info (Sub (TArrow a b) (TVar (Right i)) : ws) 
+bigStep n info (Sub (TArrow a b) (TVar (Right i)) : ws)
   | not $ mono (TArrow a b)                         = case carryBackInWL (TVar (Right i)) a1_a2 (Sub (TArrow a b) a1_a2 :
                                                                                                  WExVar (n+1) TBot TTop :
-                                                                                                 WExVar n TBot TTop : ws) 
+                                                                                                 WExVar n TBot TTop : ws)
                                                           >>= updateBoundInWL (TVar (Right i)) (LB, a1_a2) of
                                                         Left error -> (False, info ++ error)
-                                                        Right ws' -> bigStep (n+1) (info ++ curInfo ws "SplitR") ws'
+                                                        Right ws' -> bigStep (n+1) (info ++ curInfo ws' "SplitR") ws'
                                                       where
                                                         a1 = TVar (Right n)
                                                         a2 = TVar $ Right (n + 1)
                                                         a1_a2 = TArrow a1 a2
 
 bigStep n info (Sub vi@(TVar (Right i)) vj@(TVar (Right j)) : ws)                                       -- 15 & 16
-  | prec ws vi vj                                   = case carryBackInWL vj vi ws >>= updateBoundInWL vj (UB, vi) of 
+  | prec ws vi vj                                   = case carryBackInWL vj vi ws >>= updateBoundInWL vj (UB, vi) of
                                                         Left error -> (False, info++error)
-                                                        Right ws' -> bigStep n (info++curInfo ws "SolveLExtVar") ws'
-  | prec ws vj vi                                   = case carryBackInWL vi vj ws >>= updateBoundInWL vi (UB, vj) of 
+                                                        Right ws' -> bigStep n (info++curInfo ws' "SolveLExtVar") ws'
+  | prec ws vj vi                                   = case carryBackInWL vi vj ws >>= updateBoundInWL vi (UB, vj) of
                                                         Left error -> (False, info ++ error)
-                                                        Right ws' -> bigStep n (info++curInfo ws "SolveRExtVar") ws'
+                                                        Right ws' -> bigStep n (info++curInfo ws' "SolveRExtVar") ws'
 
 bigStep n info (Sub (TVar (Right i)) t : ws)                                        -- 11
-  | mono t                                          = case carryBackInWL (TVar (Right i)) t ws >>= 
+  | mono t                                          = case carryBackInWL (TVar (Right i)) t ws >>=
                                                           updateBoundInWL (TVar (Right i)) (UB, t) of
                                                         Left error -> (False, info ++ error)
-                                                        Right ws' -> bigStep n (info++curInfo ws "SolveMonoL") ws'
+                                                        Right ws' -> bigStep n (info++curInfo ws' "SolveMonoL") ws'
 
 bigStep n info (Sub t (TVar (Right i))  : ws)                                       -- 12
   | mono t                                          = case carryBackInWL (TVar (Right i)) t ws >>=
-                                                          updateBoundInWL (TVar (Right i)) (LB, t) of 
+                                                          updateBoundInWL (TVar (Right i)) (LB, t) of
                                                         Left error -> (False, info++error)
-                                                        Right ws' -> bigStep n (info++curInfo ws "SolveMonoR") ws'
+                                                        Right ws' -> bigStep n (info++curInfo ws' "SolveMonoR") ws'
 
-bigStep n info (Sub t1 (TIntersection t21 t22) : ws) = bigStep n (info ++ curInfo ws "SIntersection") (Sub t1 t21 : Sub t1 t22 : ws)
+bigStep n info (Sub t1 (TIntersection t21 t22) : ws) = bigStep n (info ++ curInfo ws' "SIntersection") ws'
+                                                          where ws' = Sub t1 t21 : Sub t1 t22 : ws
 bigStep n info (Sub (TIntersection t11 t12) t2 : ws) = case bigStep n info (Sub t11 t2 : ws) of
-                                                          (True, info) -> (True, info++curInfo ws "SIntersection")
-                                                          (False, info) -> bigStep n (info ++ curInfo ws "SIntersection") (Sub t12 t2 : ws)
+                                                          (True, info) -> (True, info++curInfo (Sub t11 t2 : ws) "SIntersection")
+                                                          (False, info) -> bigStep n (info ++ curInfo (Sub t12 t2 : ws) "SIntersection") (Sub t12 t2 : ws)
 
-bigStep n info (Sub (TUnion t11 t12) t2 : ws)        = bigStep n (info ++ curInfo ws "SUnion") (Sub t11 t2 : Sub t12 t2 : ws)
+bigStep n info (Sub (TUnion t11 t12) t2 : ws)        = bigStep n (info ++ curInfo ws' "SUnion") ws'
+                                                          where ws' = Sub t11 t2 : Sub t12 t2 : ws
 bigStep n info (Sub t1 (TUnion t21 t22) : ws)        = case bigStep n info (Sub t1 t21 : ws) of
-                                                          (True, info) -> (True, info++curInfo ws "SUnion")
-                                                          (False, s) -> bigStep n (info++curInfo ws "SUnion") (Sub t1 t22 : ws)
+                                                          (True, info) -> (True, info++curInfo (Sub t1 t21 : ws) "SUnion")
+                                                          (False, s) -> bigStep n (info++curInfo (Sub t1 t22 : ws) "SUnion") (Sub t1 t22 : ws)
 
 bigStep _ info _                                 = (False, info)
 
@@ -386,3 +400,13 @@ sizeSub (TForall g) a             = 2 + sizeSub (g TInt) a
 sizeSub a (TForall g)             = 2 + sizeSub a (g TInt)
 sizeSub _ _                       = 1
 
+wl1 = [Sub (TForall $ \t -> TArrow t t) (TArrow TInt TBool)]
+wl2 = [Sub (TForall $ \t -> TArrow t t) (TArrow TInt (TIntersection TBool TInt))]
+wl3 = [Sub (TForall $ \t -> TArrow t t) (TArrow (TIntersection TBool TInt) TInt)]
+
+chkAndShow wl =
+  do
+    print status
+    putStrLn info
+
+  where (status, info) = bigStep 0 "" wl
