@@ -23,6 +23,9 @@ Notation "` x" := (ld_t_var_f x)
 Notation "↑ n" := (ld_t_var_b n)
   (at level 0, n at level 0, no associativity) : ld_type_scope.
 
+(* Notation "e < n > ^^' e' " := (open_ld_type_wrt_ld_type_rec n e' e)
+  (at level 40, n at level 0, left associativity) : dk_type_scope.
+ *)
 Notation "[ t' /_ x ] t" :=
   (subst_ld_type t' x t)
     ( at level 49, t' at level 50, x at level 0
@@ -33,6 +36,7 @@ Notation "t ^` x" := (open_ld_type_wrt_ld_type t (ld_t_var_f x))
 
 Notation "t1 ^^ t2" := (open_ld_type_wrt_ld_type t1 t2)
   (at level 48, left associativity) : ld_type_scope.
+
 
 Declare Scope ld_context_scope.
 Delimit Scope ld_context_scope with ld_context.
@@ -50,8 +54,15 @@ Fixpoint ld_ctx_app (G1 G2 : ld_context) : ld_context :=
   | ld_ctx_nil => G1
   | G2', x => G1 ,, G2' , x
   end%ld_context
-
 where "G1 ,, G2" := (ld_ctx_app G1 G2) : ld_context_scope.
+
+
+Fixpoint ld_wl_app (Γ1 Γ2 : ld_worklist) : ld_worklist :=
+  match Γ2 with 
+  | ld_wl_nil => Γ1 
+  | ld_wl_cons_tv Γ2' x => ld_wl_cons_tv (ld_wl_app Γ1 Γ2') x
+  | ld_wl_cons_w Γ2' w => ld_wl_cons_w (ld_wl_app Γ1 Γ2') w
+  end.
 
 
 Open Scope ld_type_scope.

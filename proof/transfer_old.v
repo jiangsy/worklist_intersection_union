@@ -1,4 +1,4 @@
-Require Import Metalib.Metatheory.
+(* Require Import Metalib.Metatheory.
 
 Require Import algo.ott.
 Require Import decl.ott.
@@ -14,36 +14,22 @@ Declare Scope subst_set_scope.
 Delimit Scope subst_set_scope with subst.
 Bind Scope subst_set_scope with subst_set.
 
+Check binds.
+
 Notation "s1 ;; s2" := (app s2 s1)
   (at level 58, left associativity) : subst_set_scope.
 
 Notation "s ; x : t" := (cons (pair x (sse_ev t)) s)
   ( at level 58, x at level 0, t at level 52, left associativity) : subst_set_scope.
 
-Notation "s ; x" := (cons (pair x sse_tv) s)
-  ( at level 58, x at level 0, left associativity) : subst_set_scope.
-
-Notation "x : t ∈ s" := (binds x (sse_ev t) s)
-   (at level 58, t at level 52, no associativity) : type_scope.
-
-
-Fixpoint ss_to_ctx (s : subst_set) : ld_context := 
-  match s with 
-  | nil => ld_ctx_nil
-  | (cons (pair x sse_tv) s') => ld_ctx_cons (ss_to_ctx s') x
-  | (cons (pair x (sse_ev t)) s') => ss_to_ctx s'
-  end.
-
+Notation "x : A ∈ s" := (binds x A s)
+   (at level 65, A at level 52, no associativity) : type_scope.
 
 Inductive wf_ss : subst_set -> Prop :=
   | wf_ss_nil : wf_ss nil
-  | wf_ss_tv : forall x θ,
-      wf_ss θ -> x `notin` dom θ ->
-      wf_ss (θ; x)
-  | wf_ss_ev : forall x t Θ
-    , wf_ss Θ -> x `notin` dom Θ ->
-     ld_wf_mtype (ss_to_ctx Θ) t -> 
-     wf_ss (Θ; x : t)
+  | wf_ss_ex : forall x t Θ
+    , wf_ss Θ -> x `notin` dom Θ -> ld_mono_type t
+    -> wf_ss (Θ; x : t)
 .
 
 Lemma wf_uniq : forall Θ,
@@ -73,12 +59,12 @@ Proof.
 Qed.
 
 
-Inductive inst_ev : subst_set -> var -> la_typelist -> la_typelist -> Prop :=
-  | inst_ev_nil : forall θ x, inst_ev θ x la_tl_nil la_tl_nil
-  | inst_ev_lbs : forall θ x lb lbs ubs lb' t', inst_ev θ x lbs ubs -> 
-      inst_type θ lb lb' -> inst_type θ (la_t_evar x) t' -> ld_sub (ss_to_ctx θ) lb' t' ->inst_ev θ x (la_tl_cons lbs lb) ubs
-  | inst_ev_ubs : forall θ x lbs ub ubs ub' t', inst_ev θ x lbs ubs -> 
-      inst_type θ ub ub' -> inst_type θ (la_t_evar x) t' -> ld_sub (ss_to_ctx θ) t' ub' -> inst_ev θ x lbs (la_tl_cons ubs ub) 
+Inductive inst_ev : subst_set -> var -> la_typelist -> la_typelist -> ld_worklist -> Prop :=
+  | inst_ev_nil : forall θ x, inst_ev θ x la_tl_nil la_tl_nil ld_wl_nil
+  | inst_ev_lbs : forall θ x lb lbs wl ubs lb' t', inst_ev θ x lbs ubs wl -> 
+      inst_type θ lb lb' -> inst_type θ (la_t_evar x) t' -> inst_ev θ x (la_tl_cons lbs lb) ubs (ld_wl_cons_w wl (ld_w_sub lb' t'))
+  | inst_ev_ubs : forall θ x lbs wl ub ubs ub' t', inst_ev θ x lbs ubs wl -> 
+      inst_type θ ub ub' -> inst_type θ (la_t_evar x) t' -> inst_ev θ x lbs (la_tl_cons ubs ub) (ld_wl_cons_w wl (ld_w_sub t' ub'))
 .
 
 
@@ -95,14 +81,14 @@ Inductive inst_worklist : subst_set -> la_worklist -> ld_worklist -> subst_set -
   | inst_wl_tv : forall θ θ' x awl dwl, 
       inst_worklist θ awl dwl θ' -> 
       inst_worklist θ (la_wl_cons_tv awl x) (ld_wl_cons_tv dwl x) θ'
-  | inst_wl_ev : forall θ θ' t lbs ex ubs awl dwl, 
+  | inst_wl_ev : forall θ θ' t lbs ex ubs awl dwl' dwl, 
       inst_worklist θ awl dwl θ' -> 
       ld_mono_type t -> 
       ex `notin` dom θ' -> 
-      inst_ev (θ' ; ex : t) ex lbs ubs -> 
-      inst_worklist θ (la_wl_cons_ev awl lbs ex ubs) dwl (θ' ; ex : t)
+      inst_ev (θ' ; ex : t) ex lbs ubs dwl' -> 
+      inst_worklist θ (la_wl_cons_ev awl lbs ex ubs) (ld_wl_app dwl dwl')  (θ' ; ex : t)
 .
 
 
-Definition transfer (Γ : la_worklist) (Γ' : ld_worklist) : Prop :=
-  exists θ', inst_worklist nil Γ Γ' θ'.
+Definition transfer' (Γ : la_worklist) (Γ' : ld_worklist) : Prop :=
+  exists θ', inst_worklist nil Γ Γ' θ'. *)

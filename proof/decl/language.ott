@@ -28,6 +28,7 @@ formula :: formula_ ::=
   | judgement     ::   :: judgement
   | x ∉ G         :: M :: ctx_fresh {{ coq ([[x]] `notin` ld_ctx_dom [[G]]) }}
 
+
 substitutions
   single ld_type x :: subst
 
@@ -80,23 +81,6 @@ mono t1
 mono t2
 --------------- :: arrow
 mono t1 -> t2
-
-
-defns
-NotForallType :: '' ::=
-
-defn
-~∀ A :: :: ld_notforall_type :: 'ld_nf_'
-by
-
---------------- :: int
-~∀ int
-
---------------- :: var
-~∀ x
-
---------------- :: arrow
-~∀ t1 -> t2
 
 
 defns
@@ -200,7 +184,6 @@ G |- A2 <: B2
 ------------------- :: arrow
 G |- A1 -> A2 <: B1 -> B2
 
-~∀ B
 G |==> t
 G |- [ t / x ] A <: B
 ------------------- :: foralll

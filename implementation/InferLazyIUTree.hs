@@ -2,12 +2,7 @@
 {-# LANGUAGE LambdaCase, MultiWayIf #-}
 module InferLazyIUTree where
 
-import Data.List
-import Control.Monad (guard)
-
-import TestCase
-import InteractiveEval (back)
-import Data.Set.Unordered.Many (UMSet(unUMSet))
+import Data.List ( nub, tails, union )
 
 {- A lazy subtyping algorithm with union and intersection:
 
@@ -331,7 +326,7 @@ bigStep n info (Sub t1 (TUnion t21 t22) : ws)        = case bigStep n info (Sub 
                                                           (True, info) -> (True, info++curInfo (Sub t1 t21 : ws) "SUnion")
                                                           (False, s) -> bigStep n (info++curInfo (Sub t1 t22 : ws) "SUnion") (Sub t1 t22 : ws)
 
-bigStep _ info _                                 = (False, info)
+bigStep _ info _                                     = (False, info)
 
 
 size :: [Work] -> (Int,Int)
