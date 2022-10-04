@@ -127,7 +127,6 @@ Proof.
 Qed.
 
 
-
 Lemma ld_in_ctx_dom_weakenning : 
   forall G1 G2 G3 x, 
    x `notin` (ld_ctx_dom (G1,, G2,, G3)) -> x `notin` (ld_ctx_dom (G1,,G3)) .
@@ -404,8 +403,6 @@ Proof.
 Qed.
 
 
-Reserved Notation "G ⊢ t1 <: t2 | n"
-  (at level 65, t1 at next level, t2 at next level, no associativity).
 
 Fixpoint type_order (t : ld_type) : nat :=
   match t with
@@ -438,7 +435,8 @@ Proof.
   eapply open_mono_order_rec; auto.  
 Qed.
 
-
+Reserved Notation "G ⊢ t1 <: t2 | n"
+  (at level 65, t1 at next level, t2 at next level, no associativity).
 Inductive sized_ld_sub : ld_context -> ld_type -> ld_type -> nat -> Prop :=
   | sls_var : forall G x n,
     ⊢ G ->  ld_in_context x G -> G ⊢ (ld_t_var_f x) <: (ld_t_var_f x) | n
@@ -483,7 +481,7 @@ where "G ⊢ t1 <: t2 | n" := (sized_ld_sub G t1 t2 n).
 
 
 Lemma sized_ld_sub_to_ld_sub : forall G t1 t2 n,
-  G ⊢ t1 <: t2 | n -> (ld_sub G t1 t2).
+  G ⊢ t1 <: t2 | n -> G ⊢ t1 <: t2.
 Proof.
   intros. induction H; eauto.
 Qed.
@@ -527,15 +525,15 @@ Proof.
 Qed.
 
 
-Theorem ld_wf_type_is_wf_ctx : forall G A,
-  ld_wf_type G A -> ⊢ G.
+Lemma ld_wf_type_is_wf_ctx : forall G A,
+  G ⊢ A -> ⊢ G.
 Proof.
   intros. induction H; auto.
   inst_cofinites_with_new. dependent destruction H0.
   auto.
 Qed.
 
-Theorem context_cons_app_eq : forall G1 G2 x,
+Lemma context_cons_app_eq : forall G1 G2 x,
   G1, x ,, G2 = G1 ,, (ld_ctx_nil, x ,, G2).
 Proof.
   intros. induction G2; auto.
@@ -543,7 +541,7 @@ Proof.
 Qed.
 
 Theorem ld_wf_ctx_middle : forall G1 G2 x x',
-  x <> x' -> ld_wf_context (G1, x,, G2) -> ld_wf_context (G1, x',, G2) -> ld_wf_context (G1, x', x,, G2).
+  x <> x' -> ⊢ G1, x,, G2 -> ⊢ G1, x',, G2 -> ⊢ G1, x', x,, G2.
 Proof.
   intros. induction G2; simpl in *.
   - constructor. auto. simpl. apply notin_add_3. auto.
@@ -587,7 +585,7 @@ Proof.
     now apply ld_wf_type_subst_var.
   - simpl. apply sls_union_l; auto. 
   - simpl. eapply sls_foralll with (t:=[`x' /_ x] t). 
-    + destruct (x==x'); subst.
+    + destruct (x == x'); subst.
       * replace ([` x' /_ x'] t) with t; auto.
         now apply subst_same_eq.
       * apply ld_wf_mtype_equiv_ld_wf_type_and_mono in H. destruct H.
@@ -628,7 +626,7 @@ Hint Extern 1 (?x < ?y) => lia : trans.
 
 
 Lemma ld_sub_to_sized_ld_sub : forall G t1 t2,
-  (ld_sub G t1 t2) -> exists n', G ⊢ t1 <: t2 | n'.
+  G ⊢ t1 <: t2 -> exists n', G ⊢ t1 <: t2 | n'.
 Proof with eauto with trans.
   intros. induction H.
   + exists 0. econstructor; eauto.
@@ -667,7 +665,7 @@ Qed.
 
 Theorem sized_substitution : forall G1 G2 x A B t n,
   G1 , x  ,, G2 ⊢ A <: B | n ->
-  ld_wf_type G1 t -> ld_mono_type t ->
+  G1 ⊢ t -> ld_mono_type t ->
   exists n', G1 ,, G2 ⊢ [t /_ x] A <: [t /_ x] B | n'.
 Proof.
   intros.
@@ -759,7 +757,7 @@ Proof.
     apply sls_forallr with (L:=L); intros;
     inst_cofinites_with x; specialize (H0 A1 A2 (eq_refl _));
     intuition.
-Admitted.
+Qed.
 
 Theorem generalized_transitivity : forall t_order t_ssize G A B C n1 n2 ,
   type_order B < t_order ->
@@ -807,8 +805,12 @@ Proof with eauto with trans.
           eapply sls_intersection_r; auto...
       + apply ld_sub_intersection_l1; auto. eapply IHt_ssize; eauto... 
       + apply ld_sub_intersection_l2; auto. eapply IHt_ssize; eauto... 
-      +  admit. (* A \/ B <: C -> A <: C*)
-      + admit. (* A \/ B <: C -> B <: C*)
+      + simpl in H.
+        specialize (sized_sub_union_inv G B1 B2 C n2 H3). intros. destruct H4.
+        eapply IHt_ssize with (B:=B1) (n1:=n1) (n2:=n2); eauto...
+      + simpl in H.
+        specialize (sized_sub_union_inv G B1 B2 C n2 H3). intros. destruct H4.
+        eapply IHt_ssize with (B:=B2) (n1:=n0) (n2:=n2); eauto...
       + apply ld_sub_union_l. eapply IHt_ssize; eauto... eapply IHt_ssize; eauto...
       + eapply ld_sub_foralll with (t:=t). auto.
         eapply IHt_ssize with (B:=B); eauto...
@@ -848,11 +850,10 @@ Proof with eauto with trans.
           -- apply eq_sym. eauto... 
           -- rewrite subst_ld_type_fresh_eq; auto.
           -- econstructor; eauto.
-Admitted.
-
+Qed.
 
 Theorem transitivity : forall G A B C,
-  (ld_sub G A B) -> (ld_sub G B C) -> (ld_sub G A C).
+   G ⊢ A <: B -> G ⊢ B <: C -> G ⊢ A <: C.
 Proof.
   intros.
   apply ld_sub_to_sized_ld_sub in H. destruct H as [n1].

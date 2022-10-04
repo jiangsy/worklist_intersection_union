@@ -9,11 +9,11 @@ Notation "⊢ G" :=
 
 Notation "G ⊢ t" :=
   (ld_wf_type G t)
-    (at level 65, t at level 50, no associativity) : ld_type_scope.
+    (at level 65, no associativity) : ld_type_scope.
 
 Notation "G ⊢ t1 <: t2" :=
   (ld_sub G t1 t2)
-    (at level 65, t1 at level 50, t2 at level 50, no associativity) : ld_type_scope.
+    (at level 65, t1 at next level, no associativity) : ld_type_scope.
 
 Notation "x ∈ G" := (ld_in_context x G)
   (at level 65, no associativity) : type_ld_type_scopescope.

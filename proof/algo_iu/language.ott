@@ -316,19 +316,19 @@ ex notin wl
 ---------------------------------------------------- :: arrow_arrow
 |- wl |- A1 -> A2 <: B1 -> B2
 
-ex in wl
-mono (A -> B)
-+ { ex ∪ (A -> B) } wl -> wl'
-|- wl'
----------------------------------------------------- :: evar_arrow_mono
-|- wl |- ex <: A -> B
+% ex in wl
+% mono (A -> B)
+% + { ex ∪ (A -> B) } wl -> wl'
+% |- wl'
+% ---------------------------------------------------- :: evar_arrow_mono
+% |- wl |- ex <: A -> B
 
-ex in wl
-mono (A -> B)
-- { ex ∪ (A -> B) } wl -> wl'
-|- wl' 
----------------------------------------------------- :: arrow_evar_mono
-|- wl |- A -> B <: ex
+% ex in wl
+% mono (A -> B)
+% - { ex ∪ (A -> B) } wl -> wl'
+% |- wl' 
+% ---------------------------------------------------- :: arrow_evar_mono
+% |- wl |- A -> B <: ex
 
 ex in wl
 ex1 notin wl 

@@ -284,9 +284,6 @@ Proof.
 Qed.
 
 
-Reserved Notation "G ⊢ t1 <: t2 | n"
-  (at level 65, t1 at next level, t2 at next level, no associativity).
-
 Fixpoint type_order (t : ld_type) : nat :=
   match t with
   | ld_t_arrow A B => type_order A + type_order B
@@ -316,7 +313,8 @@ Proof.
   eapply open_mono_order_rec; auto.  
 Qed.
 
-
+Reserved Notation "G ⊢ t1 <: t2 | n"
+  (at level 65, t1 at next level, t2 at next level, no associativity).
 Inductive sized_ld_sub : ld_context -> ld_type -> ld_type -> nat -> Prop :=
   | sls_var : forall G x,
     ⊢ G ->  ld_in_context x G -> G ⊢ (ld_t_var_f x) <: (ld_t_var_f x) | 0
@@ -335,9 +333,8 @@ Inductive sized_ld_sub : ld_context -> ld_type -> ld_type -> nat -> Prop :=
     G ⊢ A <: (ld_t_forall B) | S n
 where "G ⊢ t1 <: t2 | n" := (sized_ld_sub G t1 t2 n).
 
-
 Lemma sized_ld_sub_to_ld_sub : forall G t1 t2 n,
-  G ⊢ t1 <: t2 | n -> (ld_sub G t1 t2).
+  G ⊢ t1 <: t2 | n -> G ⊢ t1 <: t2.
 Proof.
   intros. induction H; eauto.
 Qed.

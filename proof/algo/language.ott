@@ -84,7 +84,7 @@ Fixpoint evar_dom (wl : la_worklist) : atoms :=
 Fixpoint single_side_constraints_helper (t : la_type) (tl : la_typelist) : la_worklist := 
   match tl with
   | la_tl_nil => la_wl_nil
-  | la_tl_cons tl' t' => la_wl_cons_w (single_side_constraints_helper t' tl') (la_w_sub t t')
+  | la_tl_cons tl' t' => la_wl_cons_w (single_side_constraints_helper t tl') (la_w_sub t t')
   end
 .
 
@@ -364,19 +364,19 @@ ex notin wl
 ---------------------------------------------------- :: arrow_arrow
 |- wl |- A1 -> A2 <: B1 -> B2
 
-ex in wl
-mono (A -> B)
-+ { ex ∪ (A -> B) } wl -> wl'
-|- wl'
----------------------------------------------------- :: evar_arrow_mono
-|- wl |- ex <: A -> B
+% ex in wl
+% mono (A -> B)
+% + { ex ∪ (A -> B) } wl -> wl'
+% |- wl'
+% ---------------------------------------------------- :: evar_arrow_mono
+% |- wl |- ex <: A -> B
 
-ex in wl
-mono (A -> B)
-- { ex ∪ (A -> B) } wl -> wl'
-|- wl' 
----------------------------------------------------- :: arrow_evar_mono
-|- wl |- A -> B <: ex
+% ex in wl
+% mono (A -> B)
+% - { ex ∪ (A -> B) } wl -> wl'
+% |- wl' 
+% ---------------------------------------------------- :: arrow_evar_mono
+% |- wl |- A -> B <: ex
 
 ex in wl
 ex1 notin wl 
