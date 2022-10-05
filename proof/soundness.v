@@ -11,7 +11,7 @@ Require Import decl.properties.
   , lc_aexpr e'
   → x `notin` (fv_aexpr v' `union` fv_ss Θ) → Θ ⊩ v' ⇝ v
   → forall e0
-  , Θ ⊩ [v' /′ x] e' ⇝ e0
+  , Θ ⊩ [v' /ᵃ x] e' ⇝ e0
   → exists e, [v /' x] e = e0 ∧ Θ ⊩ e' ⇝ e.
 Proof.
 Admitted. *)

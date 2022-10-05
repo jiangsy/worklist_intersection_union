@@ -26,16 +26,16 @@ Notation "↑ n" := (ld_t_var_b n)
 (* Notation "e < n > ^^' e' " := (open_ld_type_wrt_ld_type_rec n e' e)
   (at level 40, n at level 0, left associativity) : dk_type_scope.
  *)
-Notation "[ t' /_ x ] t" :=
+Notation "[ t' /ᵈ x ] t" :=
   (subst_ld_type t' x t)
     ( at level 49, t' at level 50, x at level 0
-    , right associativity) : ld_type_scope.
+    , right associativity) : type_scope.
 
 Notation "t ^` x" := (open_ld_type_wrt_ld_type t (ld_t_var_f x))
-  (at level 48, left associativity) : ld_type_scope.
+  (at level 48, left associativity) : type_scope.
 
 Notation "t1 ^^ t2" := (open_ld_type_wrt_ld_type t1 t2)
-  (at level 48, left associativity) : ld_type_scope.
+  (at level 48, left associativity) : type_scope.
 
 
 Declare Scope ld_context_scope.

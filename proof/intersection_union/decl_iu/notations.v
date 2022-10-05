@@ -24,7 +24,7 @@ Notation "↑ n" := (ld_t_var_b n)
   (at level 0, n at level 0, no associativity) : ld_type_scope.
 
 
-Notation "[ t' /_ x ] t" :=
+Notation "[ t' /ᵈ x ] t" :=
   (subst_ld_type t' x t)
     ( at level 49, t' at level 50, x at level 0
     , right associativity) : ld_type_scope.

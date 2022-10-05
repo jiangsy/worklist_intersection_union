@@ -3,7 +3,8 @@ COQ_MAKEFILE := CoqMakefile
 
 OTT_FLAGS := -coq_lngen true -signal_parse_errors true
 
-SYSTEMS := algo decl decl_iu algo_iu
+SYSTEMS := algo decl
+IGNORE_DIRS := intersection_union
 OTT_OUTS   := $(addsuffix /ott.v,${SYSTEMS})
 LNGEN_OUTS := $(addsuffix /ln_inf.v,${SYSTEMS})
 
@@ -22,7 +23,7 @@ lngen : ${LNGEN_OUTS}
 
 # a hack to force makefile to detect source file changes
 .FILE_LIST : ${LNGEN_OUTS} FORCE
-	tree . -if | grep -E "v$$" | cut -c3- | sort -s > .FILE_LIST.tmp
+	tree . -if -I ${IGNORE_DIRS} | grep -E "v$$" | cut -c3- | sort -s > .FILE_LIST.tmp
 	diff $@ .FILE_LIST.tmp || cp .FILE_LIST.tmp $@
 	rm .FILE_LIST.tmp
 
