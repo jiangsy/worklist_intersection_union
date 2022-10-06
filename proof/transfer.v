@@ -3,9 +3,10 @@ Require Import Program.Tactics.
 Require Import Metalib.Metatheory.
 
 Require Import algo.ott.
-Require Import decl.ott.
 Require Import algo.notations.
+Require Import decl.ott.
 Require Import decl.notations.
+Require Import decl.properties.
 Require Import decl.ln_inf_extra.
 Require Import ln_utils.
 
@@ -68,15 +69,22 @@ Qed.
 Reserved Notation "θ ⫦ t ⇝ t'"
   (at level 65, t at next level, no associativity).
 Inductive inst_type : subst_set -> la_type -> ld_type -> Prop := 
-  | inst_t_tvar : forall θ x, wf_ss θ -> θ ⫦ (la_t_tvar_f x) ⇝ (ld_t_var_f x)
-  | inst_t_evar : forall θ x t, wf_ss θ -> x : t ∈ θ -> θ ⫦ (la_t_evar x) ⇝ t
-  | inst_t_int : forall θ, wf_ss θ -> θ ⫦ la_t_int ⇝ ld_t_int
+  | inst_t_tvar : forall θ x, 
+      wf_ss θ -> 
+      θ ⫦ (la_t_tvar_f x) ⇝ (ld_t_var_f x)
+  | inst_t_evar : forall θ x t, 
+      wf_ss θ -> 
+      x : t ∈ θ -> 
+      θ ⫦ (la_t_evar x) ⇝ t
+  | inst_t_int : forall θ, 
+      wf_ss θ -> 
+      θ ⫦ la_t_int ⇝ ld_t_int
   | inst_t_arrow : forall θ A' B' A B, 
       θ ⫦ A' ⇝ A -> θ ⫦ B' ⇝ B ->
       θ ⫦ (la_t_arrow A' B') ⇝ (ld_t_arrow A B)
   | inst_t_forall : forall θ L A' A,
       (forall x, x `notin` L -> 
-      θ ⫦ (open_la_type_wrt_la_type A' (la_t_tvar_f x)) ⇝ (open_ld_type_wrt_ld_type A (ld_t_var_f x))) ->
+        θ ⫦ (open_la_type_wrt_la_type A' (la_t_tvar_f x)) ⇝ (open_ld_type_wrt_ld_type A (ld_t_var_f x))) ->
       θ ⫦ (la_t_forall A') ⇝ (ld_t_forall A)
 where "θ ⫦ t ⇝ t'" := (inst_type θ t t').
 
@@ -89,10 +97,18 @@ Qed.
 
 Inductive inst_ev : subst_set -> var -> la_typelist -> la_typelist -> Prop :=
   | inst_ev_nil : forall θ x, inst_ev θ x la_tl_nil la_tl_nil
-  | inst_ev_lbs : forall θ x lb lbs ubs lb' t', inst_ev θ x lbs ubs -> 
-      inst_type θ lb lb' -> inst_type θ (la_t_evar x) t' -> ld_sub (ss_to_ctx θ) lb' t' -> inst_ev θ x (la_tl_cons lbs lb) ubs
-  | inst_ev_ubs : forall θ x lbs ub ubs ub' t', inst_ev θ x lbs ubs -> 
-      inst_type θ ub ub' -> inst_type θ (la_t_evar x) t' -> ld_sub (ss_to_ctx θ) t' ub' -> inst_ev θ x lbs (la_tl_cons ubs ub) 
+  | inst_ev_lbs : forall θ x lb lbs ubs lb' t', 
+      inst_ev θ x lbs ubs -> 
+      inst_type θ lb lb' -> 
+      inst_type θ (la_t_evar x) t' -> 
+      ld_sub (ss_to_ctx θ) lb' t' -> 
+      inst_ev θ x (la_tl_cons lbs lb) ubs
+  | inst_ev_ubs : forall θ x lbs ub ubs ub' t', 
+      inst_ev θ x lbs ubs -> 
+      inst_type θ ub ub' -> 
+      inst_type θ (la_t_evar x) t' -> 
+      ld_sub (ss_to_ctx θ) t' ub' -> 
+      inst_ev θ x lbs (la_tl_cons ubs ub) 
 .
 
 
@@ -119,6 +135,10 @@ Inductive inst_worklist : subst_set -> la_worklist -> ld_worklist -> subst_set -
 where "θ ⫦ Γᵃ ⇝ Γᵈ ⫣ θ'" := (inst_worklist θ Γᵃ Γᵈ θ').
 
 
+Hint Constructors inst_type : transfer.
+Hint Constructors inst_ev : transfer.
+Hint Constructors inst_worklist : transfer.
+
 Lemma notin_ss_notin_inst : forall x ex Θ A,
     ex : A ∈ Θ → x `notin` fv_ss Θ → x `notin` fv_ld_type A.
 Proof.
@@ -129,14 +149,6 @@ Proof.
     + simpl in H0; eauto.
 Admitted.
 
-
-Lemma ld_t_forall_eq_inj: forall A₁ A₂,
-  A₁ = A₂ -> ld_t_forall A₁ = ld_t_forall A₂.
-Proof.
-  intros.
-  induction H.
-  auto.
-Qed.
 
 Lemma inst_t_lc : forall θ Aᵃ Aᵈ, 
   θ ⫦ Aᵃ ⇝ Aᵈ -> 
@@ -149,12 +161,13 @@ Proof.
     + inversion H0.
     + destruct a. inversion H0.
       * inversion H1. subst. inversion H.
-        subst. admit.
+        subst. apply ld_wf_mtype_is_mtype in H7.
+        now apply ld_mono_is_ld_lc.
       * inversion H. apply IHθ; auto. auto.
   - split; inst_cofinites_by L.
     + apply lc_la_t_forall_exists with (x1:=x). intuition.
     + apply lc_ld_t_forall_exists with (x1:=x). intuition.
-Admitted.
+Qed.
 
 (* consult Alvin *)
 Lemma inst_A_wf_A: forall θ Aᵃ Aᵈ, 
@@ -164,12 +177,21 @@ Proof.
   dependent induction H.
 Admitted.
 
+Ltac inversion_eq :=
+  repeat
+    match goal with 
+        | H : ?a = ?b |-  _ => dependent destruction H
+      end.
+
 Lemma inst_A_det : forall θ Aᵃ A₁ᵈ,
-  uniq θ -> θ ⫦ Aᵃ ⇝ A₁ᵈ -> forall A₂ᵈ, θ ⫦ Aᵃ ⇝ A₂ᵈ -> A₁ᵈ = A₂ᵈ.
+  uniq θ -> 
+  θ ⫦ Aᵃ ⇝ A₁ᵈ -> 
+  forall A₂ᵈ, θ ⫦ Aᵃ ⇝ A₂ᵈ -> 
+    A₁ᵈ = A₂ᵈ.
 Proof.
   induction 2; (intros e₂ᵈ H2; dependent destruction H2; auto). 
   - specialize (binds_unique _ _ _ _ _ H1 H3).
-    intros. specialize (H4 H). inversion H4. auto.
+    intros. specialize (H4 H). inversion_eq. auto.
   - specialize (IHinst_type1 H _ H2_).
     specialize (IHinst_type2 H _ H2_0).
     subst. auto.
@@ -181,10 +203,12 @@ Qed.
 
 
 Lemma not_in_dom_not_in_fv_ss: forall x θ,
-  x `notin` dom θ -> x `notin` fv_ss θ.
+  x `notin` dom θ -> 
+  x `notin` fv_ss θ.
 Proof.
   induction θ; auto.
-  destruct a. destruct s; simpl; intros; apply notin_union; auto.
+  destruct a. destruct s; simpl; 
+  intros; apply notin_union; auto.
 Qed.
 
 
@@ -192,32 +216,27 @@ Lemma inst_e_rename : forall θ Aᵃ Aᵈ x x'
   , θ ⫦ Aᵃ ⇝ Aᵈ 
   -> x `notin` dom θ
   -> θ ⫦ [`′ x' /ᵃ x] Aᵃ ⇝ [` x' /ᵈ x] Aᵈ.
-Proof.
-  intros. induction H; simpl; auto.
-  - unfold eq_dec. destruct (EqDec_eq_of_X x0 x); constructor; auto.
-  - rewrite subst_ld_type_fresh_eq. constructor; auto.
+Proof with auto with transfer.
+  intros. induction H; simpl; auto...
+  - unfold eq_dec. destruct (EqDec_eq_of_X x0 x); auto...
+  - rewrite subst_ld_type_fresh_eq. auto...
     eapply notin_ss_notin_inst; eauto.
     now apply not_in_dom_not_in_fv_ss. 
-  - econstructor. auto.
-  - econstructor; auto.
   - eapply inst_t_forall with (L := L `union` singleton x). intros.
     rewrite_la_subst_open_var. rewrite_ld_subst_open_var. auto.
 Qed.
 
 
-Lemma inst_e_rev_subst' : forall tᵃ tᵈ x θ Aᵃ
-  , lc_la_type Aᵃ
-  -> x `notin` (fx_la_type tᵃ `union` fv_ss θ) 
-  -> θ ⫦ tᵃ ⇝ tᵈ
-  -> forall A'ᵈ
-  , θ ⫦ subst_la_type tᵃ x Aᵃ ⇝ A'ᵈ
-  -> exists Aᵈ, [tᵈ /ᵈ x] Aᵈ = A'ᵈ /\ θ ⫦ Aᵃ ⇝ Aᵈ.
-Proof.
+Lemma inst_e_rev_subst' : forall tᵃ tᵈ x θ Aᵃ,
+  lc_la_type Aᵃ -> 
+  x `notin` (fx_la_type tᵃ `union` fv_ss θ) -> 
+  θ ⫦ tᵃ ⇝ tᵈ -> 
+  forall A'ᵈ, θ ⫦ subst_la_type tᵃ x Aᵃ ⇝ A'ᵈ
+    -> exists Aᵈ, [tᵈ /ᵈ x] Aᵈ = A'ᵈ /\ θ ⫦ Aᵃ ⇝ Aᵈ.
+Proof with auto with transfer.
   intros * Hlc Hfv Hinstt.
   induction Hlc; intros * HinstA; simpl in *.
-  - inversion HinstA. exists ld_t_int. simpl. split.
-    + auto.
-    + constructor. auto.
+  - inversion HinstA. exists ld_t_int. simpl. split; auto...
   - specialize (inst_t_lc _ _ _ Hinstt). intros.
     dependent destruction HinstA.
     inst_cofinites_by (L `union` singleton x `union` fv_ld_type tᵈ `union`  fv_ld_type A `union` dom θ `union` fx_la_type t). 
@@ -230,13 +249,10 @@ Proof.
     + split.
       * f_equal. destruct_conjs. apply ld_type_open_r_close_l; auto. 
       * eapply inst_t_forall with (L:=L); intros.
-        rewrite (subst_la_type_intro x0).
-        rewrite (subst_ld_type_intro x0).
-        apply inst_e_rename.
+        rewrite (subst_la_type_intro x0) by auto.
+        rewrite (subst_ld_type_intro x0) by (apply close_ld_type_notin).
+        apply inst_e_rename; auto.
         rewrite open_ld_type_wrt_ld_type_close_ld_type_wrt_ld_type. intuition.
-        -- auto.
-        -- apply close_ld_type_notin.
-        -- auto.
     + intuition. 
     + auto.
     + auto.
@@ -244,12 +260,10 @@ Proof.
   - dependent destruction HinstA.
     specialize (IHHlc1 _ HinstA1). destruct IHHlc1 as [t₁ᵈ HinstA1inv].
     specialize (IHHlc2 _ HinstA2). destruct IHHlc2 as [t₂ᵈ HinstA2inv].
-    exists (ld_t_arrow t₁ᵈ t₂ᵈ). destruct_conjs. split.
-    + simpl. subst. auto.
-    + constructor; auto.
+    exists (ld_t_arrow t₁ᵈ t₂ᵈ). destruct_conjs. split; simpl; subst; auto...
   - exists (ld_t_var_f x5).
     destruct (x5 == x).  
-    + subst. simpl. destruct (x==x).
+    + subst. simpl. destruct (x == x).
       * split.
         -- assert (uniq θ) as Huniq by (apply wf_uniq; eapply inst_t_wf_ss; eauto).
            specialize (inst_A_det _ _ _ Huniq Hinstt). intros.
@@ -258,7 +272,7 @@ Proof.
       * contradiction.
     + simpl. unfold eq_dec. destruct (EqDec_eq_of_X x5 x).
       * contradiction.
-      * inversion HinstA; split; auto. constructor. eapply inst_t_wf_ss; eauto.
+      * inversion HinstA; split; auto... 
   - simpl in *. exists A'ᵈ. split.
     + rewrite subst_ld_type_fresh_eq. auto.
       inversion HinstA.
@@ -268,17 +282,17 @@ Qed.
 
 
 Lemma inst_e_rev_subst : forall A'ᵈ θ tᵃ tᵈ x Aᵃ,
+  lc_la_type Aᵃ ->
   x `notin` (fx_la_type tᵃ `union` fv_ss θ) -> 
   θ ⫦ tᵃ ⇝ tᵈ → θ ⫦ [tᵃ /ᵃ x] Aᵃ ⇝ A'ᵈ ->
   exists Aᵈ, [tᵈ /ᵈ x] Aᵈ = A'ᵈ ∧ θ ⫦ Aᵃ ⇝ Aᵈ.
 Proof.
   intros.  
-  assert (lc_la_type Aᵃ) by admit.
-  specialize (inst_e_rev_subst' _ _ _ _  _ H2 H H0 A'ᵈ).
+  specialize (inst_e_rev_subst' _ _ _ _  _ H H0 H1 A'ᵈ).
   intros.
-  specialize (H3 H1).
+  specialize (H3 H2).
   auto.
-Admitted.
+Qed.
 
 Definition transfer (Γ : la_worklist) (Γ' : ld_worklist) : Prop :=
   exists θ', inst_worklist nil Γ Γ' θ'.

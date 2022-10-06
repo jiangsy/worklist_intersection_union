@@ -26,4 +26,11 @@ Notation "`^ x" :=
   (la_t_evar x) (at level 0, x at level 0, no associativity) : la_type_scope.
 
 
+Declare Scope la_worklist_scope.
+Delimit Scope la_worklist_scope with la_worklist.
+Bind Scope la_worklist_scope with la_worklist.
+
+
+
 Open Scope la_type_scope.
+Open Scope la_worklist_scope.

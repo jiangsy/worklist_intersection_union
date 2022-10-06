@@ -23,9 +23,6 @@ Notation "` x" := (ld_t_var_f x)
 Notation "↑ n" := (ld_t_var_b n)
   (at level 0, n at level 0, no associativity) : ld_type_scope.
 
-(* Notation "e < n > ^^ᵈ' e' " := (open_ld_type_wrt_ld_type_rec n e' e)
-  (at level 40, n at level 0, left associativity) : dk_type_scope.
- *)
 Notation "[ t' /ᵈ x ] t" :=
   (subst_ld_type t' x t)
     ( at level 49, t' at level 50, x at level 0
@@ -48,7 +45,6 @@ Notation "G , x" :=
 
 Reserved Notation "G1 ,, G2"
   (at level 58, left associativity).
-
 Fixpoint ld_ctx_app (G1 G2 : ld_context) : ld_context :=
   match G2 with
   | ld_ctx_nil => G1
