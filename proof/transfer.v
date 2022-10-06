@@ -138,7 +138,25 @@ Proof.
   auto.
 Qed.
 
-(* Alvin *)
+Lemma inst_t_lc : forall θ Aᵃ Aᵈ, 
+  θ ⫦ Aᵃ ⇝ Aᵈ -> 
+  lc_la_type Aᵃ /\ lc_ld_type Aᵈ.
+Proof.
+  intros.
+  induction H; try (split; destruct_conjs; auto; fail).
+  - split. auto. 
+    induction θ.
+    + inversion H0.
+    + destruct a. inversion H0.
+      * inversion H1. subst. inversion H.
+        subst. admit.
+      * inversion H. apply IHθ; auto. auto.
+  - split; inst_cofinites_by L.
+    + apply lc_la_t_forall_exists with (x1:=x). intuition.
+    + apply lc_ld_t_forall_exists with (x1:=x). intuition.
+Admitted.
+
+(* consult Alvin *)
 Lemma inst_A_wf_A: forall θ Aᵃ Aᵈ, 
   θ ⫦ Aᵃ ⇝ Aᵈ -> ss_to_ctx θ ⊢ Aᵈ.
 Proof.
@@ -161,22 +179,31 @@ Proof.
     + subst. auto. 
 Qed.
 
-Locate "[".
 
-(* Ltac rewrite_subst_open_var :=
-  repeat
-    match goal with 
-      | _ : _ |-  context [ ([?e /ᵃ ?x] ?A) ^`′ ?x' ] => 
-        replace (` x') with ([e /ᵃ x] ^`′ x') by (apply subst_la_type_fresh_eq; auto)
-    end; repeat rewrite <- subst_la_type_open_la_type_wrt_la_type by auto. *)
+Lemma not_in_dom_not_in_fv_ss: forall x θ,
+  x `notin` dom θ -> x `notin` fv_ss θ.
+Proof.
+  induction θ; auto.
+  destruct a. destruct s; simpl; intros; apply notin_union; auto.
+Qed.
+
+
 Lemma inst_e_rename : forall θ Aᵃ Aᵈ x x'
   , θ ⫦ Aᵃ ⇝ Aᵈ 
   -> x `notin` dom θ
   -> θ ⫦ [`′ x' /ᵃ x] Aᵃ ⇝ [` x' /ᵈ x] Aᵈ.
 Proof.
   intros. induction H; simpl; auto.
-  - unfold eq_dec. destruct (EqDec_eq_of_X x0 x). 
-Admitted.
+  - unfold eq_dec. destruct (EqDec_eq_of_X x0 x); constructor; auto.
+  - rewrite subst_ld_type_fresh_eq. constructor; auto.
+    eapply notin_ss_notin_inst; eauto.
+    now apply not_in_dom_not_in_fv_ss. 
+  - econstructor. auto.
+  - econstructor; auto.
+  - eapply inst_t_forall with (L := L `union` singleton x). intros.
+    rewrite_la_subst_open_var. rewrite_ld_subst_open_var. auto.
+Qed.
+
 
 Lemma inst_e_rev_subst' : forall tᵃ tᵈ x θ Aᵃ
   , lc_la_type Aᵃ
@@ -191,8 +218,9 @@ Proof.
   - inversion HinstA. exists ld_t_int. simpl. split.
     + auto.
     + constructor. auto.
-  - dependent destruction HinstA.
-    inst_cofinites_by (L `union` singleton x `union` fv_ld_type tᵈ `union`  fv_ld_type A). 
+  - specialize (inst_t_lc _ _ _ Hinstt). intros.
+    dependent destruction HinstA.
+    inst_cofinites_by (L `union` singleton x `union` fv_ld_type tᵈ `union`  fv_ld_type A `union` dom θ `union` fx_la_type t). 
     replace (`′ x0) with ([tᵃ /ᵃ x] `′ x0) in H1 by (apply subst_la_type_fresh_eq; auto).
     rewrite <- subst_la_type_open_la_type_wrt_la_type in H1.
     specialize (H0 _ _ H1).
@@ -202,11 +230,17 @@ Proof.
     + split.
       * f_equal. destruct_conjs. apply ld_type_open_r_close_l; auto. 
       * eapply inst_t_forall with (L:=L); intros.
-
-    + admit. (* lc *)
+        rewrite (subst_la_type_intro x0).
+        rewrite (subst_ld_type_intro x0).
+        apply inst_e_rename.
+        rewrite open_ld_type_wrt_ld_type_close_ld_type_wrt_ld_type. intuition.
+        -- auto.
+        -- apply close_ld_type_notin.
+        -- auto.
+    + intuition. 
     + auto.
     + auto.
-    + admit. (* lc *)
+    + intuition.
   - dependent destruction HinstA.
     specialize (IHHlc1 _ HinstA1). destruct IHHlc1 as [t₁ᵈ HinstA1inv].
     specialize (IHHlc2 _ HinstA2). destruct IHHlc2 as [t₂ᵈ HinstA2inv].
@@ -226,18 +260,25 @@ Proof.
       * contradiction.
       * inversion HinstA; split; auto. constructor. eapply inst_t_wf_ss; eauto.
   - simpl in *. exists A'ᵈ. split.
-    + admit.
+    + rewrite subst_ld_type_fresh_eq. auto.
+      inversion HinstA.
+      eapply notin_ss_notin_inst; eauto.
     + auto.
-Admitted.
+Qed.
 
 
-Lemma inst_e_rev_subst : forall t' t x θ A'
-  , lc_la_type A'
-  -> x `notin` (fx_la_type t') -> θ ⫦ t' ⇝ t
-  -> forall e0
-  , θ ⫦ subst_la_type t' x A' ⇝ e0
-  -> exists A, [t /ᵈ x] A = e0 /\ θ ⫦ A' ⇝ A.
+Lemma inst_e_rev_subst : forall A'ᵈ θ tᵃ tᵈ x Aᵃ,
+  x `notin` (fx_la_type tᵃ `union` fv_ss θ) -> 
+  θ ⫦ tᵃ ⇝ tᵈ → θ ⫦ [tᵃ /ᵃ x] Aᵃ ⇝ A'ᵈ ->
+  exists Aᵈ, [tᵈ /ᵈ x] Aᵈ = A'ᵈ ∧ θ ⫦ Aᵃ ⇝ Aᵈ.
 Proof.
-
-
+  intros.  
+  assert (lc_la_type Aᵃ) by admit.
+  specialize (inst_e_rev_subst' _ _ _ _  _ H2 H H0 A'ᵈ).
+  intros.
+  specialize (H3 H1).
+  auto.
 Admitted.
+
+Definition transfer (Γ : la_worklist) (Γ' : ld_worklist) : Prop :=
+  exists θ', inst_worklist nil Γ Γ' θ'.

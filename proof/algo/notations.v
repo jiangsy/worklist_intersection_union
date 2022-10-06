@@ -12,15 +12,11 @@ Notation "`′ x" :=
 Notation "↑′ n" :=
   (la_t_tvar_b n) (at level 0, n at level 0) : la_type_scope.
 
-Notation "e ^`′ x" :=
+Notation "e ^ᵃ x" :=
   (open_la_type_wrt_la_type e (la_t_tvar_f x)) (at level 48, left associativity) : la_type_scope.
 
-Notation "e1 ^^′ e2" :=
+Notation "e1 ^^ᵃ e2" :=
   (open_la_type_wrt_la_type e1 e2) (at level 48, left associativity) : la_type_scope.
-
-(* Notation "[ v /^ x ] e" :=
-  (ex_subst_la_type v x e)
-    (at level 49, v at level 50, x at level 0, right associativity) : la_type_scope. *)
 
 Notation "[ t /ᵃ x ] A" :=
   (subst_la_type t x A)

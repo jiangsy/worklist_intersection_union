@@ -104,7 +104,7 @@ Proof.
         ++ generalize dependent dwl. induction tl; intros. 
           ** econstructor.
           ** dependent destruction H1. 
-              eapply inst_ev_ubs with (ub':=t2') (t':=t'); admit.
+              eapply inst_ev_ubs with (ub':=t2ᵈ) (t':=t'); admit.
         ++ admit. (* inst_weakening *)
         ++ econstructor; admit.
         ++ apply ld_sub_refl. admit.

@@ -23,7 +23,7 @@ Notation "` x" := (ld_t_var_f x)
 Notation "↑ n" := (ld_t_var_b n)
   (at level 0, n at level 0, no associativity) : ld_type_scope.
 
-(* Notation "e < n > ^^' e' " := (open_ld_type_wrt_ld_type_rec n e' e)
+(* Notation "e < n > ^^ᵈ' e' " := (open_ld_type_wrt_ld_type_rec n e' e)
   (at level 40, n at level 0, left associativity) : dk_type_scope.
  *)
 Notation "[ t' /ᵈ x ] t" :=
@@ -31,10 +31,10 @@ Notation "[ t' /ᵈ x ] t" :=
     ( at level 49, t' at level 50, x at level 0
     , right associativity) : type_scope.
 
-Notation "t ^` x" := (open_ld_type_wrt_ld_type t (ld_t_var_f x))
+Notation "t ^ᵈ x" := (open_ld_type_wrt_ld_type t (ld_t_var_f x))
   (at level 48, left associativity) : type_scope.
 
-Notation "t1 ^^ t2" := (open_ld_type_wrt_ld_type t1 t2)
+Notation "t1 ^^ᵈ t2" := (open_ld_type_wrt_ld_type t1 t2)
   (at level 48, left associativity) : type_scope.
 
 
