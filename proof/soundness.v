@@ -2,11 +2,13 @@ Require Import Program.Equality.
 
 Require Import algo.ott.
 Require Import algo.notations.
+Require Import algo.ln_inf_extra.
 Require Import decl.ott.
 Require Import decl.notations.
 Require Import decl.ln_inf.
-Require Import transfer.
+Require Import decl.ln_inf_extra.
 Require Import decl.properties.
+Require Import transfer.
 
 
 (* https://github.com/VinaLx/dependent-worklist-inference/blob/e55fe9e7ca6b5e0538313a8cf44a57469923ca02/src-lite/transfer/properties.v#L665 *)
@@ -22,42 +24,6 @@ Admitted. *)
 Lemma reorder: forall awl1 awl2 ex lbs ubs t m awl',
   reorder (la_wl_app (la_wl_cons_ev awl1 lbs ex ubs) awl2) ex t m la_wl_nil awl' -> 
   exists awl'1 awl'2, awl' = la_wl_app awl'1 awl'2.
-Admitted.
-
-Lemma inst_forall_inv: forall t' (θ: subst_set) ex t A, 
-  wf_ss θ 
-  -> inst_type (θ; ex : t) (open_la_type_wrt_la_type A (la_t_evar ex)) t' 
-  -> (exists A', inst_type θ (la_t_forall A) A').
-Proof.
-  intros. 
-  dependent induction H0. 
-  - dependent destruction A; try inversion x.
-    + exists (ld_t_forall (ld_t_var_b n)). 
-      econstructor. intros. destruct n; simpl.
-      * constructor. auto.
-      * unfold open_la_type_wrt_la_type. unfold open_ld_type_wrt_ld_type. simpl. admit.
-        (* not closed type  *)
-    + exists (ld_t_forall (ld_t_var_f x0)). econstructor. intros.
-      unfold open_la_type_wrt_la_type. unfold open_ld_type_wrt_ld_type. simpl. subst. econstructor. auto.
-  - dependent destruction A; try inversion x.
-    + destruct n; inversion x.
-      exists (ld_t_forall (ld_t_var_b 0)).
-      econstructor; intros. unfold open_la_type_wrt_la_type. unfold open_ld_type_wrt_ld_type.  simpl. econstructor. auto.
-    + subst. exists (ld_t_forall t0).
-      econstructor. intros. unfold open_la_type_wrt_la_type. unfold open_ld_type_wrt_ld_type.
-      assert (t0 = (open_ld_type_wrt_ld_type_rec 0 (ld_t_var_f x0) t0)) by admit.
-      simpl. rewrite <- H3. econstructor. subst; auto. 
-      (* need wf to ensure ex5 != ex*)
-      admit.
-  - dependent induction A; try inversion x.
-    + exists (ld_t_forall ld_t_int). admit.
-    + destruct n; inversion x.
-  - dependent destruction A; try dependent destruction x.
-    + admit. (* ** *)
-    + destruct n; inversion x. 
-  - dependent destruction A; try dependent destruction x.
-    + admit.
-    + destruct n; inversion x. 
 Admitted.
 
 
@@ -150,9 +116,18 @@ Proof.
       * admit. (* *ss_weakening *)
     + dependent destruction Hdwl_red. econstructor.
       * eapply ld_sub_foralll with (t:= tᵈ). admit.
-        replace (close_ld_type_wrt_ld_type ex5 t1'ᵈ ^^ᵈ tᵈ) with ([tᵈ /ᵈ ex5] close_ld_type_wrt_ld_type ex5 t1'ᵈ ^^ᵈ (`ᵈ ex5)) by admit.
+        replace (close_ld_type_wrt_ld_type ex5 t1'ᵈ ^^ᵈ tᵈ) with ([tᵈ /ᵈ ex5] close_ld_type_wrt_ld_type ex5 t1'ᵈ ^^ᵈ (`ᵈ ex5)).
         rewrite open_ld_type_wrt_ld_type_close_ld_type_wrt_ld_type. destruct Ht1'ᵈ.
         subst. auto.
+        simpl.
+        rewrite subst_ld_type_open_ld_type_wrt_ld_type.
+        simpl.
+        unfold eq_dec. destruct (EqDec_eq_of_X ex5 ex5).
+        -- rewrite subst_ld_type_fresh_eq. auto.
+           rewrite fv_ld_type_close_ld_type_wrt_ld_type.
+           auto.
+        -- contradiction.
+        -- admit.
       * auto.
     + admit. (* lc *)
     + admit. (* fv *)
