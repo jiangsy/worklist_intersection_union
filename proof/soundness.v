@@ -1,7 +1,10 @@
 Require Import Program.Equality.
 
 Require Import algo.ott.
+Require Import algo.notations.
 Require Import decl.ott.
+Require Import decl.notations.
+Require Import decl.ln_inf.
 Require Import transfer.
 Require Import decl.properties.
 
@@ -88,7 +91,7 @@ Proof.
     destruct tl.
     + simpl in *. exists dwl. split. 
       * unfold transfer in H1. destruct H1 as [θ'].
-        exists (cons (pair ex5 (sse_ev ld_t_int)) θ'). eapply inst_wl_ev; eauto.
+        exists (cons (pair ex5 (sse_ev ld_t_int)) θ'). eapply inst_wl_ev; eauto. 
         admit. (* * dom *)
         constructor.
       * auto.
@@ -127,19 +130,39 @@ Proof.
   - destruct IHla_worklist_reducible as [dwl [Hdwl_trans Hdwl_red]]. 
   (* **ex in wl -> ex : t in ss *)
   admit.
-  - (* forall_l *) destruct IHla_worklist_reducible as [dwl [Hdwl_trans Hdwl_red]].
+  - (* forall_l *) 
+    destruct IHla_worklist_reducible as [dwl [Hdwl_trans Hdwl_red]].
     unfold transfer in Hdwl_trans.
-    destruct Hdwl_trans as [θ Hθ]. inversion Hθ. 
-    dependent destruction H6. subst.
-    exists (ld_wl_cons_w dwl0 (ld_w_sub (ld_t_forall t1') t2')). (* fix this *) split.
-    + subst. unfold transfer. exists θ'0. econstructor; eauto.
-      * admit. 
+    destruct Hdwl_trans as [θ Hθ]. dependent destruction Hθ.
+    dependent destruction Hθ.
+    apply inst_subst in H5.
+    eapply inst_e_rev_subst with (tᵈ := tᵈ) in H5.
+    destruct H5 as [t1'ᵈ Ht1'ᵈ].
+    exists (ld_wl_cons_w Γᵈ (ld_w_sub (ld_t_forall (close_ld_type_wrt_ld_type ex5 t1'ᵈ)) t2ᵈ)). (* fix this *) split.
+    + unfold transfer. exists θ'. econstructor; eauto.
+      * eapply inst_t_forall. intros.
+        assert (open_la_type_wrt_la_type A (la_t_tvar_f x) = [(`ᵃ x) /ᵃ ex5] (open_la_type_wrt_la_type A (la_t_tvar_f ex5))) by admit.
+        assert (open_ld_type_wrt_ld_type (close_ld_type_wrt_ld_type ex5 t1'ᵈ) (ld_t_var_f x) = [(`ᵈ x) /ᵈ ex5] (open_ld_type_wrt_ld_type (close_ld_type_wrt_ld_type ex5 t1'ᵈ) (ld_t_var_f ex5))) by admit.
+        rewrite H7. rewrite H8.
+        apply inst_e_rename.
+        rewrite open_ld_type_wrt_ld_type_close_ld_type_wrt_ld_type. intuition. 
+        admit.
       * admit. (* *ss_weakening *)
-    + admit.
+    + dependent destruction Hdwl_red. econstructor.
+      * eapply ld_sub_foralll with (t:= tᵈ). admit.
+        replace (close_ld_type_wrt_ld_type ex5 t1'ᵈ ^^ᵈ tᵈ) with ([tᵈ /ᵈ ex5] close_ld_type_wrt_ld_type ex5 t1'ᵈ ^^ᵈ (`ᵈ ex5)) by admit.
+        rewrite open_ld_type_wrt_ld_type_close_ld_type_wrt_ld_type. destruct Ht1'ᵈ.
+        subst. auto.
+      * auto.
+    + admit. (* lc *)
+    + admit. (* fv *)
+    + admit. (* ld_to_la tᵈ ⇝ tᵈ *)
+    + admit. (* lc *)
+    + admit. (* fv *)
   - (* forall_r *) admit.
   - (* arrow *) destruct IHla_worklist_reducible as [dwl [Hdwl_trans Hdwl_red]].
     unfold transfer in Hdwl_trans.  destruct Hdwl_trans as [θ Hθ]. dependent destruction Hθ. dependent destruction Hθ.
-    exists (ld_wl_cons_w dwl (ld_w_sub (ld_t_arrow t2' t1'0) (ld_t_arrow t1' t2'0))). split.
+    exists (ld_wl_cons_w Γᵈ (ld_w_sub (ld_t_arrow t2ᵈ t1ᵈ0 ) (ld_t_arrow t1ᵈ t2ᵈ0) )). split.
     + unfold transfer. exists θ'. eapply inst_wl_sub; eauto.
       econstructor; eauto. econstructor; eauto.
     + admit.
@@ -150,7 +173,7 @@ Proof.
     dependent destruction Hθ.
     dependent destruction H4.
     dependent destruction H5.
-    exists (ld_wl_cons_w dwl
+    exists (ld_wl_cons_w Γᵈ
                   (ld_w_sub (ld_t_arrow A0 B0) (ld_t_arrow A1 B1))).
     split; auto.
     unfold transfer. exists θ. econstructor.
@@ -165,7 +188,7 @@ Proof.
     dependent destruction Hθ.
     dependent destruction H4.
     dependent destruction H5.
-    exists (ld_wl_cons_w dwl
+    exists (ld_wl_cons_w Γᵈ
                 (ld_w_sub (ld_t_arrow A0 B0) (ld_t_arrow A1 B1))).
     split; auto.
     unfold transfer. exists θ. econstructor.
@@ -177,8 +200,7 @@ Proof.
   - (* EVar L*)
     admit.
   - destruct IHla_worklist_reducible as [dwl [Hdwl_trans Hdwl_red]].
-    unfold transfer in Hdwl_trans.
-    destruct Hdwl_trans as [θ Hθ].
+  destruct Hdwl_trans as [θ Hθ].
     admit. 
   - admit.
 Admitted.

@@ -6,7 +6,7 @@ Delimit Scope la_type_scope with la_type.
 Bind Scope la_type_scope with la_type.
 
 
-Notation "`′ x" :=
+Notation "`ᵃ x" :=
   (la_t_tvar_f x) (at level 0, x at level 0, no associativity) : la_type_scope.
 
 Notation "↑′ n" :=

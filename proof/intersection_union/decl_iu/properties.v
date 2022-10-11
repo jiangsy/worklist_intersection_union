@@ -29,7 +29,7 @@ Tactic Notation "pick" "fresh" ident(x) "and" "apply" constr(H) "for" "weakening
   apply_fresh_base_fixed H gather_for_weakening x.
 
 Lemma subst_same_eq : forall A x,
-  A = [`x /ᵈ x] A.
+  A = [`ᵈ x /ᵈ x] A.
 Proof.
   intros.
   induction A; auto.
@@ -43,7 +43,7 @@ Qed.
 
 Lemma open_subst_eq : forall A x t, 
   x `notin` fv_ld_type A -> lc_ld_type t  ->
-    A ^^ᵈ t = [t /ᵈ x] A ^^ᵈ `x.
+    A ^^ᵈ t = [t /ᵈ x] A ^^ᵈ (`ᵈ x).
 Proof.
   intros.  
   rewrite subst_ld_type_open_ld_type_wrt_ld_type. simpl.
@@ -85,7 +85,7 @@ Proof.
     eapply ld_sub_union_r1; eauto.
     eapply ld_sub_union_r2; eauto.
   - eapply ld_sub_forallr with (L:=L `union` (ld_ctx_dom G)). intros. 
-    inst_cofinites_with x. eapply ld_sub_foralll with (t := `x); auto.
+    inst_cofinites_with x. eapply ld_sub_foralll with (t := `ᵈ x); auto.
     constructor.
     + eapply ld_sub_wf_ctx; eauto.
     + simpl. auto. 
@@ -228,7 +228,7 @@ Qed.
 
 
 Theorem ld_wf_type_subst_var: forall G1 G2 x x' A,
-  G1, x,, G2 ⊢ A ->  ⊢ G1, x',, G2 -> G1, x',, G2 ⊢ [` x' /ᵈ x] A.
+  G1, x,, G2 ⊢ A ->  ⊢ G1, x',, G2 -> G1, x',, G2 ⊢ [`ᵈ x' /ᵈ x] A.
 Proof.
   intros.
   dependent induction H; simpl; auto.
@@ -242,7 +242,7 @@ Proof.
   - eapply ld_wft_forall with (L:=L `union` (singleton x) `union` (ld_ctx_dom (G1, x',, G2))).
     intros. inst_cofinites_with x0.
     replace (G1, x',, G2, x0) with (G1, x',, (G2, x0)) by auto.
-    replace (([`x' /ᵈ x] t) ^ᵈ x0) with ([`x' /ᵈ x] t ^ᵈ x0).
+    replace (([`ᵈ x' /ᵈ x] t) ^ᵈ x0) with ([`ᵈ x' /ᵈ x] t ^ᵈ x0).
     apply H0; eauto.
     simpl. constructor; auto.
     rewrite subst_ld_type_open_ld_type_wrt_ld_type. simpl.
@@ -256,8 +256,8 @@ Qed.
 Ltac rewrite_subst_open_var :=
   repeat
     match goal with 
-      | _ : _ |-  context [ ([?e /ᵈ ?x] ?A) ^^ᵈ ` ?x' ] => 
-        replace (` x') with ([e /ᵈ x] `x') by (apply subst_ld_type_fresh_eq; auto)
+      | _ : _ |-  context [ ([?e /ᵈ ?x] ?A) ^^ᵈ `ᵈ ?x' ] => 
+        replace (`ᵈ x') with ([e /ᵈ x] `ᵈ x') by (apply subst_ld_type_fresh_eq; auto)
     end; repeat rewrite <- subst_ld_type_open_ld_type_wrt_ld_type by auto.
 
 
@@ -396,7 +396,7 @@ Proof.
   - simpl. eapply ld_sub_forallr with (L:=L `union` singleton x).
     intros. inst_cofinites_with x0.
     rewrite_subst_open_var.
-    replace  (([t /ᵈ x] B) ^^ᵈ ([t /ᵈ x] ` x0)) with ( [t /ᵈ x] B ^^ᵈ ` x0).
+    replace  (([t /ᵈ x] B) ^^ᵈ ([t /ᵈ x] `ᵈ x0)) with ( [t /ᵈ x] B ^^ᵈ `ᵈ x0).
     + replace (G1,, G2, x0 ) with (G1,, (G2, x0)) by auto. apply H0; auto.
     + rewrite subst_ld_type_open_ld_type_wrt_ld_type. reflexivity. simpl.
       replace (G1,, G2, x0 ) with (G1,, (G2, x0)) by auto. now apply ld_mono_is_ld_lc.
@@ -558,7 +558,7 @@ Qed.
 Theorem sized_var_substitution : forall G1 G2 x x' A B n,
   G1 , x  ,, G2 ⊢ A <: B | n ->
   ⊢ G1, x' ,, G2 ->
-  G1 , x' ,, G2 ⊢ [`x' /ᵈ x] A <: [`x' /ᵈ x] B | n.
+  G1 , x' ,, G2 ⊢ [`ᵈ x' /ᵈ x] A <: [`ᵈ x' /ᵈ x] B | n.
 Proof.
   intros.
   dependent induction H.
@@ -582,9 +582,9 @@ Proof.
   - simpl. apply sls_union_r2; auto. 
     now apply ld_wf_type_subst_var.
   - simpl. apply sls_union_l; auto. 
-  - simpl. eapply sls_foralll with (t:=[`x' /ᵈ x] t). 
+  - simpl. eapply sls_foralll with (t:=[`ᵈ x' /ᵈ x] t). 
     + destruct (x == x'); subst.
-      * replace ([` x' /ᵈ x'] t) with t; auto.
+      * replace ([`ᵈ x' /ᵈ x'] t) with t; auto.
         now apply subst_same_eq.
       * apply ld_wf_mtype_equiv_ld_wf_type_and_mono in H. destruct H.
         apply ld_wf_mtype_subst.
@@ -600,13 +600,13 @@ Proof.
                simpl. rewrite <- IHG2. auto.
         -- constructor. replace (G1, x') with (G1,x',,ld_ctx_nil) by auto. eapply ld_wf_ctx_weakening; eauto.
            constructor. 
-    + replace (([`x' /ᵈ x] A) ^^ᵈ ([`x' /ᵈ x] t)) with ([`x' /ᵈ x] A ^^ᵈ t).
+    + replace (([`ᵈ x' /ᵈ x] A) ^^ᵈ ([`ᵈ x' /ᵈ x] t)) with ([`ᵈ x' /ᵈ x] A ^^ᵈ t).
       * apply IHsized_ld_sub; auto.
       * rewrite subst_ld_type_open_ld_type_wrt_ld_type; auto. 
   - simpl. eapply sls_forallr with (L:=L `union` singleton x `union` ld_ctx_dom ( G1, x',, G2)).
     intros. inst_cofinites_with x0.
     rewrite_subst_open_var.
-    replace  (([`x' /ᵈ x] B) ^^ᵈ ([`x' /ᵈ x] ` x0)) with ( [`x' /ᵈ x] B ^^ᵈ ` x0).
+    replace  (([`ᵈ x' /ᵈ x] B) ^^ᵈ ([`ᵈ x' /ᵈ x] `ᵈ x0)) with ( [`ᵈ x' /ᵈ x] B ^^ᵈ `ᵈ x0).
     + replace (G1, x',, G2, x0 ) with (G1,x',, (G2, x0)) by auto. apply H0; auto.
       simpl. constructor; auto. 
     + rewrite subst_ld_type_open_ld_type_wrt_ld_type. reflexivity. simpl.
@@ -651,8 +651,8 @@ Proof with eauto with trans.
   + inst_cofinites_by (L `union` fv_ld_type A `union` fv_ld_type B). destruct H0 as [n].
     exists (S n). eapply sls_forallr with (L:=L `union` (ld_ctx_dom G)). intros.
     replace (G, x0) with (G, x0,,ld_ctx_nil) by auto.
-    replace A with ([`x0 /ᵈ x] A).
-    replace (B ^^ᵈ `x0) with ([`x0 /ᵈ x] B ^^ᵈ `x).
+    replace A with ([`ᵈ x0 /ᵈ x] A).
+    replace (B ^^ᵈ `ᵈ x0) with ([`ᵈ x0 /ᵈ x] B ^^ᵈ `ᵈ x).
     eapply  sized_var_substitution; eauto.
     * simpl. constructor; auto.
       apply ld_sub_wf_ctx in H. dependent destruction H. auto.
@@ -816,7 +816,7 @@ Proof with eauto with trans.
           eapply IHt_order with (B:=B ^^ᵈ t) (n1:=n1) (n2:=n0); eauto. simpl in H; eauto.
           rewrite (open_mono_order B t); eauto...
           replace G with (G ,, ld_ctx_nil) by auto.
-          replace (B ^^ᵈ t) with ([t /ᵈ x] B ^^ᵈ `x).
+          replace (B ^^ᵈ t) with ([t /ᵈ x] B ^^ᵈ `ᵈ x).
           replace A with ([t /ᵈ x] A).
           -- auto. 
           -- rewrite subst_ld_type_fresh_eq; auto.
@@ -830,8 +830,8 @@ Proof with eauto with trans.
           assert (⊢ G, x0). { constructor. dependent destruction H5;  auto. auto. }
           replace (G, x, x0) with (G ,, (ld_ctx_nil,  x) ,, (ld_ctx_nil, x0)) by auto.
           eapply sized_ld_sub_weakening; simpl.
-          replace A with ([`x0 /ᵈ x] A).
-          replace (B ^^ᵈ `x0) with ([`x0 /ᵈ x] B ^^ᵈ `x).
+          replace A with ([`ᵈ x0 /ᵈ x] A).
+          replace (B ^^ᵈ `ᵈ x0) with ([`ᵈ x0 /ᵈ x] B ^^ᵈ `ᵈ x).
           replace (G, x0) with (G, x0,, ld_ctx_nil) by auto.
           apply sized_var_substitution; auto.
           -- apply eq_sym. eauto... 

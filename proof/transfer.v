@@ -4,6 +4,7 @@ Require Import Metalib.Metatheory.
 
 Require Import algo.ott.
 Require Import algo.notations.
+Require Import algo.ln_inf_extra.
 Require Import decl.ott.
 Require Import decl.notations.
 Require Import decl.properties.
@@ -215,7 +216,7 @@ Qed.
 Lemma inst_e_rename : forall θ Aᵃ Aᵈ x x'
   , θ ⫦ Aᵃ ⇝ Aᵈ 
   -> x `notin` dom θ
-  -> θ ⫦ [`′ x' /ᵃ x] Aᵃ ⇝ [` x' /ᵈ x] Aᵈ.
+  -> θ ⫦ [`ᵃ x' /ᵃ x] Aᵃ ⇝ [`ᵈ x' /ᵈ x] Aᵈ.
 Proof with auto with transfer.
   intros. induction H; simpl; auto...
   - unfold eq_dec. destruct (EqDec_eq_of_X x0 x); auto...
@@ -231,7 +232,7 @@ Lemma inst_e_rev_subst' : forall tᵃ tᵈ x θ Aᵃ,
   lc_la_type Aᵃ -> 
   x `notin` (fx_la_type tᵃ `union` fv_ss θ) -> 
   θ ⫦ tᵃ ⇝ tᵈ -> 
-  forall A'ᵈ, θ ⫦ subst_la_type tᵃ x Aᵃ ⇝ A'ᵈ
+  forall A'ᵈ, θ ⫦ [tᵃ /ᵃ x] Aᵃ ⇝ A'ᵈ
     -> exists Aᵈ, [tᵈ /ᵈ x] Aᵈ = A'ᵈ /\ θ ⫦ Aᵃ ⇝ Aᵈ.
 Proof with auto with transfer.
   intros * Hlc Hfv Hinstt.
@@ -240,7 +241,7 @@ Proof with auto with transfer.
   - specialize (inst_t_lc _ _ _ Hinstt). intros.
     dependent destruction HinstA.
     inst_cofinites_by (L `union` singleton x `union` fv_ld_type tᵈ `union`  fv_ld_type A `union` dom θ `union` fx_la_type t). 
-    replace (`′ x0) with ([tᵃ /ᵃ x] `′ x0) in H1 by (apply subst_la_type_fresh_eq; auto).
+    replace (`ᵃ x0) with ([tᵃ /ᵃ x] (`ᵃ x0)) in H1 by (apply subst_la_type_fresh_eq; auto).
     rewrite <- subst_la_type_open_la_type_wrt_la_type in H1.
     specialize (H0 _ _ H1).
     destruct H0 as [A'ᵈ HinstA'ᵈ].
@@ -293,6 +294,93 @@ Proof.
   specialize (H3 H2).
   auto.
 Qed.
+
+Fixpoint ld_type_to_la_type (Aᵈ : ld_type) : la_type :=
+  match Aᵈ with 
+  | ld_t_int => la_t_int
+  | ld_t_forall A'ᵈ => la_t_forall (ld_type_to_la_type A'ᵈ)
+  | ld_t_arrow A₁ᵈ A₂ᵈ => la_t_arrow (ld_type_to_la_type A₁ᵈ) (ld_type_to_la_type A₂ᵈ)
+  | ld_t_var_b n => la_t_tvar_b n
+  | ld_t_var_f x => la_t_tvar_f x
+  end.
+
+Lemma ld_open_twice_swap : forall t x x0,   
+  lc_la_type t ->
+  (open_la_type_wrt_la_type_rec 1 `ᵃ x t ^ᵃ x0 = t ^ᵃ x0 ^ᵃ x).
+Proof.
+  intros * Hlc.
+  induction Hlc.
+  - simpl.
+    replace (la_t_int ^ᵃ x0) with la_t_int by auto.
+    replace (la_t_int ^ᵃ x) with la_t_int by auto.
+    auto.
+  - admit.
+  - simpl. 
+    replace (la_t_arrow t1 t2 ^ᵃ x0 ^ᵃ x) with (la_t_arrow (t1 ^ᵃ x0 ^ᵃ x) (t2 ^ᵃ x0 ^ᵃ x)) by auto.
+    replace (la_t_arrow (open_la_type_wrt_la_type_rec 1 `ᵃ x t1)
+    (open_la_type_wrt_la_type_rec 1 `ᵃ x t2) ^ᵃ x0) with (la_t_arrow (open_la_type_wrt_la_type_rec 1 `ᵃ x t1 ^ᵃ x0)
+    (open_la_type_wrt_la_type_rec 1 `ᵃ x t2 ^ᵃ x0) ) by auto.
+    rewrite IHHlc1. rewrite IHHlc2.
+    auto.
+  - simpl. replace (`ᵃ x5 ^ᵃ x0) with (`ᵃ x5) by auto.
+    replace (`ᵃ x5 ^ᵃ x) with (`ᵃ x5) by auto.
+    auto.
+Admitted.
+
+Lemma inst_subst : forall θ x tᵈ Aᵃ Aᵈ, 
+  lc_la_type Aᵃ ->
+  x `notin` (fx_la_type Aᵃ `union` fex_la_type Aᵃ)->
+  (θ; x : tᵈ) ⫦ (open_la_type_wrt_la_type Aᵃ (la_t_evar x)) ⇝ Aᵈ -> 
+  θ ⫦ [ld_type_to_la_type tᵈ /ᵃ x] (open_la_type_wrt_la_type Aᵃ (`ᵃ x)) ⇝ Aᵈ.
+Proof.
+  intros * Hlc Hfv Hinstopen.
+  generalize dependent Aᵈ.
+  dependent induction Hlc; simpl in *; intros.
+  - inversion Hinstopen. econstructor. admit. (* wf_ss *)
+  - dependent destruction Hinstopen.
+    eapply inst_t_forall with (L:=singleton x `union` fx_la_type t `union` fex_la_type t `union` L). intros.
+    assert ((x ∉ fx_la_type `ᵃ x0) /\ (x ∉ fex_la_type `ᵃ x0)).
+    + split; simpl.
+      * simpl. apply notin_union_1 in H2.
+        apply notin_singleton_1 in H2.
+        apply notin_singleton. auto.
+      * apply notin_empty. 
+    + destruct_conjs. 
+      specialize (notin_union_1 _ _ _ Hfv).
+      specialize (notin_union_2 _ _ _ Hfv). 
+      intros.
+      specialize (fx_la_type_open_la_type_notin _ _ (`ᵃ x0) H6 H3).
+      specialize (fex_la_type_open_la_type_notin _ _ (`ᵃ x0) H5 H4).
+      intros.
+      specialize (notin_union _ _ _ H8 H7). intros.
+      specialize (H0 x0 H9).
+      inst_cofinites_with x0.
+      rewrite la_type_subst_open_comm.
+      rewrite (ld_open_twice_swap t x x0).
+      all : admit.
+      (* specialize (H0 _ H1).
+      auto.
+      * admit. (* lc_type *)
+      * admit. (* lc_type *)
+      * admit. (* lc_type *)
+      * simpl. auto.  *)
+  - dependent destruction Hinstopen.
+    econstructor; auto.
+  - destruct (x5 == x).
+    + subst. apply notin_union_1 in Hfv.
+      apply notin_singleton_1 in Hfv. contradiction.
+    + dependent destruction Hinstopen.
+      constructor. admit.
+  - dependent destruction Hinstopen. 
+    econstructor.
+    + admit. (* wf_ss *)
+    + inversion H0. 
+      * dependent destruction H1.
+        apply notin_union_2 in Hfv. apply notin_singleton_1 in Hfv.
+        contradiction.
+      * auto.
+Admitted.
+
 
 Definition transfer (Γ : la_worklist) (Γ' : ld_worklist) : Prop :=
   exists θ', inst_worklist nil Γ Γ' θ'.

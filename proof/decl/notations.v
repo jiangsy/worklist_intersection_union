@@ -18,7 +18,7 @@ Notation "G ⊢ t1 <: t2" :=
 Notation "x ∈ G" := (ld_in_context x G)
   (at level 65, no associativity) : type_ld_type_scopescope.
 
-Notation "` x" := (ld_t_var_f x)
+Notation "`ᵈ x" := (ld_t_var_f x)
   (at level 0, x at level 0, no associativity) : ld_type_scope.
 Notation "↑ n" := (ld_t_var_b n)
   (at level 0, n at level 0, no associativity) : ld_type_scope.
