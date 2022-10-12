@@ -12,7 +12,7 @@ type, t, A, B :: 'la_type_' ::=
   | x             ::   :: tvar
   | ex            ::   :: extvar
   | ( t )         :: S :: paren {{ coq ([[t]]) }}
-  | [ t / x ] A   :: M :: susbt {{ coq (open_type_wrt_type [[x A]] [[t]]) }}
+  | [ t / x ] A   :: M :: subst {{ coq (open_type_wrt_type [[x A]] [[t]]) }}
 
 typelist, tl :: 'la_typelist_' ::= 
   | tnil   :: :: nil  

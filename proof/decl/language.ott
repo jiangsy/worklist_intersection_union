@@ -9,7 +9,7 @@ ld_type, t, A, B :: 'ld_t_' ::=
   | t1 -> t2      ::   :: arrow
   | x             ::   :: var
   | ( t )         :: S :: paren {{ coq [[t]] }} 
-  | [ t / x ] A   :: M :: susbt {{ coq (open_ld_type_wrt_ld_type [[x A]] [[t]]) }}
+  | [ t / x ] A   :: M :: subst {{ coq (open_ld_type_wrt_ld_type [[x A]] [[t]]) }}
 
 ld_work, w :: 'ld_w_' ::= 
   | t1 <: t2       :: :: sub

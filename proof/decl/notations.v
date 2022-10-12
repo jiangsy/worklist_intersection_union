@@ -28,6 +28,7 @@ Notation "[ t' /ᵈ x ] t" :=
     ( at level 49, t' at level 50, x at level 0
     , right associativity) : type_scope.
 
+
 Notation "t ^ᵈ x" := (open_ld_type_wrt_ld_type t (ld_t_var_f x))
   (at level 48, left associativity) : type_scope.
 

@@ -16,7 +16,7 @@ la_type, t, A, B :: 'la_t_' ::=
   | x             ::   :: tvar
   | ex            ::   :: evar
   | ( t )         :: S :: paren {{ coq ([[t]]) }}
-  | [ t / x ] A   :: M :: susbt {{ coq (open_la_type_wrt_la_type [[x A]] [[t]]) }}
+  | [ t / x ] A   :: M :: subst {{ coq (open_la_type_wrt_la_type [[x A]] [[t]]) }}
 
 la_mode, m :: 'la_m_' ::=
   | +                :: :: u

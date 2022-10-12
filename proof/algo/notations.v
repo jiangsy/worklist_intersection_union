@@ -22,6 +22,14 @@ Notation "[ t /ᵃ x ] A" :=
   (subst_la_type t x A)
     (at level 49, t at level 50, x at level 0, right associativity) : la_type_scope.
 
+Notation "[ t /ᵃ x ] A" :=
+  (subst_la_type t x A)
+    (at level 49, t at level 50, x at level 0, right associativity) : la_type_scope.
+
+Notation "[ t /^ᵃ x ] A" :=
+  (ex_subst_la_type t x A)
+    ( at level 49, t at level 50, x at level 0, right associativity) : la_type_scope.
+
 Notation "`^ x" :=
   (la_t_evar x) (at level 0, x at level 0, no associativity) : la_type_scope.
 

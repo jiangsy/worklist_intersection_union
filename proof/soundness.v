@@ -11,15 +11,6 @@ Require Import decl.properties.
 Require Import transfer.
 
 
-(* https://github.com/VinaLx/dependent-worklist-inference/blob/e55fe9e7ca6b5e0538313a8cf44a57469923ca02/src-lite/transfer/properties.v#L665 *)
-(* Lemma inst_e_rev_subst' : forall v' v x Θ e'
-  , lc_aexpr e'
-  → x `notin` (fv_aexpr v' `union` fv_ss Θ) → Θ ⊩ v' ⇝ v
-  → forall e0
-  , Θ ⊩ [v' /ᵃ x] e' ⇝ e0
-  → exists e, [v /' x] e = e0 ∧ Θ ⊩ e' ⇝ e.
-Proof.
-Admitted. *)
 
 Lemma reorder: forall awl1 awl2 ex lbs ubs t m awl',
   reorder (la_wl_app (la_wl_cons_ev awl1 lbs ex ubs) awl2) ex t m la_wl_nil awl' -> 
@@ -102,6 +93,7 @@ Proof.
     destruct Hdwl_trans as [θ Hθ]. dependent destruction Hθ.
     dependent destruction Hθ.
     apply inst_subst in H5.
+    replace ([ld_type_to_la_type tᵈ /^ᵃ ex5] A ^^ᵃ `^ ex5 ) with ([ld_type_to_la_type tᵈ /ᵃ ex5] A ^^ᵃ `ᵃex5 ) in H5 by admit.
     eapply inst_e_rev_subst with (tᵈ := tᵈ) in H5.
     destruct H5 as [t1'ᵈ Ht1'ᵈ].
     exists (ld_wl_cons_w Γᵈ (ld_w_sub (ld_t_forall (close_ld_type_wrt_ld_type ex5 t1'ᵈ)) t2ᵈ)). (* fix this *) split.

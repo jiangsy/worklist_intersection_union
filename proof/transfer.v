@@ -304,34 +304,12 @@ Fixpoint ld_type_to_la_type (Aᵈ : ld_type) : la_type :=
   | ld_t_var_f x => la_t_tvar_f x
   end.
 
-Lemma ld_open_twice_swap : forall t x x0,   
-  lc_la_type t ->
-  (open_la_type_wrt_la_type_rec 1 `ᵃ x t ^ᵃ x0 = t ^ᵃ x0 ^ᵃ x).
-Proof.
-  intros * Hlc.
-  induction Hlc.
-  - simpl.
-    replace (la_t_int ^ᵃ x0) with la_t_int by auto.
-    replace (la_t_int ^ᵃ x) with la_t_int by auto.
-    auto.
-  - admit.
-  - simpl. 
-    replace (la_t_arrow t1 t2 ^ᵃ x0 ^ᵃ x) with (la_t_arrow (t1 ^ᵃ x0 ^ᵃ x) (t2 ^ᵃ x0 ^ᵃ x)) by auto.
-    replace (la_t_arrow (open_la_type_wrt_la_type_rec 1 `ᵃ x t1)
-    (open_la_type_wrt_la_type_rec 1 `ᵃ x t2) ^ᵃ x0) with (la_t_arrow (open_la_type_wrt_la_type_rec 1 `ᵃ x t1 ^ᵃ x0)
-    (open_la_type_wrt_la_type_rec 1 `ᵃ x t2 ^ᵃ x0) ) by auto.
-    rewrite IHHlc1. rewrite IHHlc2.
-    auto.
-  - simpl. replace (`ᵃ x5 ^ᵃ x0) with (`ᵃ x5) by auto.
-    replace (`ᵃ x5 ^ᵃ x) with (`ᵃ x5) by auto.
-    auto.
-Admitted.
 
 Lemma inst_subst : forall θ x tᵈ Aᵃ Aᵈ, 
   lc_la_type Aᵃ ->
   x `notin` (fx_la_type Aᵃ `union` fex_la_type Aᵃ)->
-  (θ; x : tᵈ) ⫦ (open_la_type_wrt_la_type Aᵃ (la_t_evar x)) ⇝ Aᵈ -> 
-  θ ⫦ [ld_type_to_la_type tᵈ /ᵃ x] (open_la_type_wrt_la_type Aᵃ (`ᵃ x)) ⇝ Aᵈ.
+  (θ; x : tᵈ) ⫦ Aᵃ ⇝ Aᵈ -> 
+  θ ⫦ [ld_type_to_la_type tᵈ /^ᵃ x] Aᵃ ⇝ Aᵈ.
 Proof.
   intros * Hlc Hfv Hinstopen.
   generalize dependent Aᵈ.
@@ -355,15 +333,10 @@ Proof.
       specialize (notin_union _ _ _ H8 H7). intros.
       specialize (H0 x0 H9).
       inst_cofinites_with x0.
-      rewrite la_type_subst_open_comm.
-      rewrite (ld_open_twice_swap t x x0).
-      all : admit.
-      (* specialize (H0 _ H1).
+      rewrite la_type_ex_subst_open_comm.
+      apply H0. auto.
+      admit.
       auto.
-      * admit. (* lc_type *)
-      * admit. (* lc_type *)
-      * admit. (* lc_type *)
-      * simpl. auto.  *)
   - dependent destruction Hinstopen.
     econstructor; auto.
   - destruct (x5 == x).
@@ -372,13 +345,15 @@ Proof.
     + dependent destruction Hinstopen.
       constructor. admit.
   - dependent destruction Hinstopen. 
-    econstructor.
-    + admit. (* wf_ss *)
+    destruct (ex5 == x). 
+    + subst.
+      admit.
     + inversion H0. 
       * dependent destruction H1.
         apply notin_union_2 in Hfv. apply notin_singleton_1 in Hfv.
         contradiction.
-      * auto.
+      * econstructor; auto.      
+        dependent destruction H. auto.  
 Admitted.
 
 
