@@ -3,6 +3,7 @@ Require Import Program.Tactics.
 Require Import Lia.
 Require Import Metalib.Metatheory.
 
+Require Import decl.ln_inf_extra.
 Require Import decl.notations.
 Require Import ln_utils.
 
@@ -172,6 +173,15 @@ Proof.
 Qed.
 
 
+Theorem ld_in_context_exact: forall G1 G2 x,
+  ld_in_context x (G1, x,, G2).
+Proof.
+  intros. induction G2; auto.
+  + simpl. econstructor; eauto.
+  + simpl. apply ld_inc_there. auto.
+Qed.
+
+
 
 Theorem ld_in_context_other : forall G1 G2 x x', 
   x <> x' -> ld_in_context x (G1, x',,G2) -> ld_in_context x (G1,,G2).
@@ -232,10 +242,10 @@ Qed.
 
 
 Theorem substitution : forall G1 G2 x A B t,
-  G1 , x  ,, G2 ⊢ A <: B -> 
+  G1, x,, G2 ⊢ A <: B -> 
   G1 ⊢ t -> 
   ld_mono_type t -> 
-  G1 ,, G2 ⊢ [t /ᵈ x] A <: [t /ᵈ x] B.
+  G1,, G2 ⊢ [t /ᵈ x] A <: [t /ᵈ x] B.
 Proof.
   intros.
   dependent induction H.
@@ -265,32 +275,30 @@ Proof.
       replace (G1,, G2, x0 ) with (G1,, (G2, x0)) by auto. now apply ld_mono_is_ld_lc.
 Qed.
 
-(* Theorem ld_sub_strengthening: 
-  forall G1 G2 x t1 t2, 
-  G1, x,, G2 ⊢ t1 <: t2 -> 
-  x `notin` fv_ld_type t1 `union` fv_ld_type t2 ->
-  G1 ,, G2 ⊢ t1 <: t2. 
+
+Theorem ld_wf_type_rename: forall G1 G2 t x x',
+  G1, x,, G2 ⊢ t ->
+  ⊢ G1, x',, G2 ->
+  G1, x',, G2 ⊢ [`ᵈ x' /ᵈ x] t.
 Proof.
-  intros.
-  dependent induction H; try constructor; auto.
-  - admit. 
-  - admit.
-  - admit.
-  - eapply IHld_sub1; eauto.
-    simpl in H1. auto.
-  - eapply IHld_sub2; eauto.
-    simpl in H1. auto.
-  - eapply ld_sub_foralll with (t:=[ld_t_int /ᵈ x] t); auto.
-    + admit.
-    + eapply IHld_sub; eauto.
-      admit.
-  - eapply ld_sub_forallr. intros.
-    replace (G1,, G2, x0 ) with (G1,, (G2, x0)) by auto.
-    eapply H0; simpl; eauto. 
-Qed. *)
+  intros.  
+  dependent induction H; simpl; auto.
+  - destruct (x0 == x); simpl.
+    + econstructor. eauto.
+      apply ld_in_context_exact.
+    + apply ld_in_context_other in H0; auto.
+      econstructor. auto.
+      replace (G1, x',, G2) with (G1,, (ld_ctx_nil, x'),,G2) by auto.
+      apply ld_in_context_weakenning; auto.
+  - eapply ld_wft_forall with (L:=L `union` ld_ctx_dom (G1, x',, G2) `union` singleton x). 
+    intros.
+    rewrite ld_type_subst_open_comm; auto.
+    replace (G1, x',, G2, x0 ) with (G1, x',, (G2, x0)) by auto. 
+    apply H0; auto. simpl. econstructor; auto.
+Qed.
 
 
-Theorem rename : forall G1 G2 x x' A B,
+Theorem ld_sub_rename : forall G1 G2 x x' A B,
   G1 , x,, G2 ⊢ A <: B -> 
   ⊢ G1 , x',, G2 -> 
   G1, x',, G2 ⊢ [`ᵈ x' /ᵈ x] A <: [`ᵈ x' /ᵈ x] B.
@@ -299,20 +307,25 @@ Proof.
   dependent induction H; intros; simpl; auto.
   - destruct (x0 == x).
     + apply ld_sub_refl. econstructor. auto.
-      admit. 
-    + apply ld_sub_refl. admit.
+      apply ld_in_context_exact.
+    + apply ld_sub_refl.
+      apply ld_in_context_other in H0; auto.
+      econstructor; auto.
+      replace (G1, x',, G2) with (G1,, (ld_ctx_nil, x'),,G2) by auto.
+      apply ld_in_context_weakenning; auto.
   - eapply ld_sub_foralll with (t:=[`ᵈ x' /ᵈ x] t).
-    + admit.
+    + apply ld_wf_type_rename; auto.
     + apply ld_mono_subst; eauto.
     + rewrite <- subst_ld_type_open_ld_type_wrt_ld_type.
       eauto. econstructor.
   - eapply ld_sub_forallr with (L:=L `union` singleton x `union` ld_ctx_dom (G1, x',, G2)). intros.
     inst_cofinites_with x0.
-    replace ( ([`ᵈ x' /ᵈ x] B) ^ᵈ x0) with (([`ᵈ x' /ᵈ x] B ^ᵈ x0)).  
+    rewrite ld_type_subst_open_comm. 
     + replace (G1, x',, G2, x0) with (G1, x',, (G2, x0)) by auto. apply H0; auto.
       simpl. econstructor; eauto.
-    + admit.
-Admitted.
+    + econstructor.
+    + simpl. auto.
+Qed.
 
 
 Fixpoint type_order (t : ld_type) : nat :=

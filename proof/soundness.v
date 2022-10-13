@@ -30,7 +30,6 @@ Qed.
 Proof.
   induction tl. *)
 
-
 Lemma inst_ld_type_exists: forall θ t,
   exists t', inst_type θ t t'.
 Admitted.
@@ -128,7 +127,7 @@ Proof.
     + admit. (* lc *)
     + admit. (* fv *)
   - (* forall_r *)
-    inst_cofinites_by (L). 
+    inst_cofinites_by (L `union` fx_la_type B). 
     destruct H0 as [dwl [Hdwl_trans Hdwl_red]].
     unfold transfer in Hdwl_trans.
     destruct Hdwl_trans as [θ Hθ]. dependent destruction Hθ.
@@ -137,7 +136,17 @@ Proof.
     + unfold transfer.
       exists θ'. econstructor; eauto.
       eapply inst_t_forall with (L:=L). intros.
-      admit.
+      replace ( B ^ᵃ x0) with ([`ᵃ x0 /ᵃ x] (B ^ᵃ x)) by admit.
+      replace ( close_ld_type_wrt_ld_type x t2ᵈ ^ᵈ x0) with ( [`ᵈ x0 /ᵈ x] close_ld_type_wrt_ld_type x t2ᵈ ^ᵈ x).
+      apply inst_e_rename.
+      rewrite open_ld_type_wrt_ld_type_close_ld_type_wrt_ld_type. auto.
+      * admit. (** something related to Γ and dom θ **)
+      * rewrite subst_ld_type_open_ld_type_wrt_ld_type. simpl. 
+        destruct (x == x).
+        -- rewrite subst_ld_type_fresh_eq; auto.
+           rewrite fv_ld_type_close_ld_type_wrt_ld_type. auto.
+        -- contradiction.
+        -- econstructor.
     + dependent destruction Hdwl_red. 
       dependent destruction Hdwl_red. 
       econstructor.
@@ -145,12 +154,15 @@ Proof.
         intros.
         admit.
       * auto.
-  - (* arrow *) destruct IHla_worklist_reducible as [dwl [Hdwl_trans Hdwl_red]].
+  - (* arrow *) 
+    destruct IHla_worklist_reducible as [dwl [Hdwl_trans Hdwl_red]].
     unfold transfer in Hdwl_trans.  destruct Hdwl_trans as [θ Hθ]. dependent destruction Hθ. dependent destruction Hθ.
     exists (ld_wl_cons_w Γᵈ (ld_w_sub (ld_t_arrow t2ᵈ t1ᵈ0 ) (ld_t_arrow t1ᵈ t2ᵈ0) )). split.
     + unfold transfer. exists θ'. eapply inst_wl_sub; eauto.
       econstructor; eauto. econstructor; eauto.
-    + admit.
+    + dependent destruction Hdwl_red.
+      dependent destruction Hdwl_red.
+      econstructor; auto. 
   - (* -> R *)
     destruct IHla_worklist_reducible as [dwl [Hdwl_trans Hdwl_red]].
     unfold transfer in Hdwl_trans.
