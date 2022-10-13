@@ -56,7 +56,8 @@ Inductive wf_ss : subst_set -> Prop :=
       wf_ss (θ; x)
   | wf_ss_ev : forall ex t Θ
     , wf_ss Θ -> ex `notin` dom Θ ->
-     ld_wf_mtype (ss_to_ctx Θ) t -> 
+     ld_wf_type (ss_to_ctx Θ) t -> 
+     ld_mono_type t ->
      wf_ss (Θ; ex : t)
 .
 
@@ -162,8 +163,7 @@ Proof.
     + inversion H0.
     + destruct a. inversion H0.
       * inversion H1. subst. inversion H.
-        subst. apply ld_wf_mtype_is_mtype in H7.
-        now apply ld_mono_is_ld_lc.
+        subst. now apply ld_mono_is_ld_lc.
       * inversion H. apply IHθ; auto. auto.
   - split; inst_cofinites_by L.
     + apply lc_la_t_forall_exists with (x1:=x). intuition.

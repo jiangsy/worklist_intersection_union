@@ -142,28 +142,6 @@ G |=> forall x. t
 
 
 defns
-WellFormedMonoType :: '' ::=
-
-defn
-G |==> t  :: :: ld_wf_mtype :: 'ld_wfmt_'
-by
-
-|=> G
----------------- :: int
-G |==> int
-
-|=> G
-x in G 
----------------- :: var
-G |==> x
-
-G |==> t1
-G |==> t2 
----------------- :: arrow
-G |==> t1 -> t2
-
-
-defns
 DeclarativeSubtyping :: '' ::=
 
 defn
@@ -184,7 +162,8 @@ G |- A2 <: B2
 ------------------- :: arrow
 G |- A1 -> A2 <: B1 -> B2
 
-G |==> t
+G |=> t
+mono t
 G |- [ t / x ] A <: B
 ------------------- :: foralll
 G |- forall x. A <: B

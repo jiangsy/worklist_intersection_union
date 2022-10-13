@@ -51,13 +51,6 @@ Proof.
 Qed. 
 
 
-Lemma ld_wf_mtype_is_mtype : forall G t,
-  ld_wf_mtype G t -> ld_mono_type t.
-Proof.
-  intros.
-  induction H; auto.
-Qed.
-
 Theorem ld_sub_wf_ctx : forall G t1 t2, 
   G ⊢ t1 <: t2 -> ⊢ G.
 Proof.
@@ -161,15 +154,6 @@ Proof.
     + eapply ld_in_ctx_dom_weakenning. eauto.
 Qed.
   
-Theorem ld_wf_mtype_weakening : 
-  forall G1 G2 G3 t, 
-  ld_wf_mtype (G1 ,, G3) t -> ⊢ G1 ,, G2 ,, G3 ->
-  ld_wf_mtype (G1 ,, G2 ,, G3) t.
-Proof.
-  intros.
-  dependent induction H; eauto.
-  - econstructor; eauto. now apply ld_in_context_weakenning.
-Qed.
 
 
 Theorem ld_sub_weakening: 
@@ -181,11 +165,12 @@ Proof.
   dependent induction H; try constructor; auto.
   - eapply ld_in_context_weakenning. auto.
   - eapply ld_sub_foralll with (t:=t); auto.
-    eapply ld_wf_mtype_weakening; auto.
+    eapply ld_wf_type_weakening; eauto.
   - pick fresh x and apply ld_sub_forallr for weakening.
     replace (G1,, G2,, G3, x) with (G1,, G2,, (G3, x)) by auto.
     eapply H0; auto. constructor; auto.
 Qed.
+
 
 
 Theorem ld_in_context_other : forall G1 G2 x x', 
@@ -201,40 +186,35 @@ Proof.
     + constructor. auto. 
 Qed.
 
-Print ld_in_context_other.
 
-
-Theorem ld_wf_mtype_equiv_ld_wf_type_and_mono : forall G t,
-  ld_wf_mtype G t <-> G ⊢ t /\ ld_mono_type t.
-Proof.
-  intros. split; intros.
-  - dependent induction H; auto. 
-    split; intuition.
-  - inversion H. dependent induction H0; auto.
-    + dependent destruction H1. intuition.
-    + inversion H2. 
-Qed.
-
-
-Theorem ld_wf_mtype_subst :
-  forall G1 G2 x t t', 
-    ld_mono_type t' -> ld_wf_mtype (G1, x,, G2) t -> G1 ⊢ t' ->  ld_wf_mtype (G1,, G2) ([t' /ᵈ x] t).
+Theorem ld_wf_type_subst: forall G1 G2 x t t', 
+  ld_mono_type t -> G1, x,, G2 ⊢ t -> G1 ⊢ t' ->  G1,, G2 ⊢ ([t' /ᵈ x] t).
 Proof.
   intros.
   dependent induction H0.
   - simpl. econstructor. 
-    replace (G1, x,, G2) with (G1,,(ld_ctx_nil, x),,G2) in H0 by auto. eapply ld_wf_ctx_weakening; eauto.
+    replace (G1, x,, G2) with (G1,,(ld_ctx_nil, x),,G2) in H0 by auto. eapply ld_wf_ctx_weakening with (G2:= (ld_ctx_nil, x)). simpl.
+    auto.
   - simpl. destruct (x0 == x).
-    + apply ld_wf_mtype_equiv_ld_wf_type_and_mono. intuition.
-      replace (G1,,G2) with (G1,,G2,,ld_ctx_nil) by auto. eapply ld_wf_type_weakening. eauto.
-      simpl. replace (G1, x,, G2) with (G1,,(ld_ctx_nil, x),,G2) in H1 by auto. eapply ld_wf_ctx_weakening; eauto.
+    + replace (G1,,G2) with (G1,,G2,,ld_ctx_nil) by auto. eapply ld_wf_type_weakening. eauto.
+      simpl. replace (G1, x,, G2) with (G1,,(ld_ctx_nil, x),,G2) in H1 by auto. eapply ld_wf_ctx_weakening with (G2:= (ld_ctx_nil, x)). simpl; eauto.
     + constructor.
-      * replace (G1, x,, G2) with (G1,,(ld_ctx_nil, x),,G2) in H1 by auto. eapply ld_wf_ctx_weakening; eauto.
+      * replace (G1, x,, G2) with (G1,,(ld_ctx_nil, x),,G2) in H1 by auto. eapply ld_wf_ctx_weakening with (G2:= (ld_ctx_nil, x)). simpl; eauto.
       * eapply ld_in_context_other; eauto.    
-  - simpl. constructor.
-    + apply IHld_wf_mtype1; auto.
-    + apply IHld_wf_mtype2; auto.  
+  - simpl. inversion H. constructor; auto.
+  - inversion H. 
 Qed.
+
+
+Theorem ld_mono_subst :
+  forall x t t', 
+    ld_mono_type t -> ld_mono_type t' ->  ld_mono_type ([t' /ᵈ x] t).
+Proof.
+  intros.
+  dependent induction H; simpl; auto.
+  + destruct (x0 == x); auto.
+Qed.
+
 
 Ltac rewrite_subst_open_var :=
   repeat
@@ -271,7 +251,8 @@ Proof.
     replace (G1, x,, G2) with (G1 ,, (ld_ctx_nil, x),, G2) in * by auto. eapply ld_wf_ctx_weakening; eauto.
   - simpl. constructor; eauto.
   - simpl. eapply ld_sub_foralll with (t:=[t /ᵈ x] t0). 
-    + apply ld_wf_mtype_subst; auto.
+    + apply ld_wf_type_subst; eauto. 
+    + apply ld_mono_subst; eauto.
     + replace (([t /ᵈ x] A) ^^ᵈ ([t /ᵈ x] t0)) with ([t /ᵈ x] A ^^ᵈ t0).
       * apply IHld_sub; auto.
       * rewrite subst_ld_type_open_ld_type_wrt_ld_type; auto. now apply ld_mono_is_ld_lc.
@@ -283,6 +264,55 @@ Proof.
     + rewrite subst_ld_type_open_ld_type_wrt_ld_type. reflexivity. simpl.
       replace (G1,, G2, x0 ) with (G1,, (G2, x0)) by auto. now apply ld_mono_is_ld_lc.
 Qed.
+
+(* Theorem ld_sub_strengthening: 
+  forall G1 G2 x t1 t2, 
+  G1, x,, G2 ⊢ t1 <: t2 -> 
+  x `notin` fv_ld_type t1 `union` fv_ld_type t2 ->
+  G1 ,, G2 ⊢ t1 <: t2. 
+Proof.
+  intros.
+  dependent induction H; try constructor; auto.
+  - admit. 
+  - admit.
+  - admit.
+  - eapply IHld_sub1; eauto.
+    simpl in H1. auto.
+  - eapply IHld_sub2; eauto.
+    simpl in H1. auto.
+  - eapply ld_sub_foralll with (t:=[ld_t_int /ᵈ x] t); auto.
+    + admit.
+    + eapply IHld_sub; eauto.
+      admit.
+  - eapply ld_sub_forallr. intros.
+    replace (G1,, G2, x0 ) with (G1,, (G2, x0)) by auto.
+    eapply H0; simpl; eauto. 
+Qed. *)
+
+
+Theorem rename : forall G1 G2 x x' A B,
+  G1 , x,, G2 ⊢ A <: B -> 
+  ⊢ G1 , x',, G2 -> 
+  G1, x',, G2 ⊢ [`ᵈ x' /ᵈ x] A <: [`ᵈ x' /ᵈ x] B.
+Proof.
+  intros * H.
+  dependent induction H; intros; simpl; auto.
+  - destruct (x0 == x).
+    + apply ld_sub_refl. econstructor. auto.
+      admit. 
+    + apply ld_sub_refl. admit.
+  - eapply ld_sub_foralll with (t:=[`ᵈ x' /ᵈ x] t).
+    + admit.
+    + apply ld_mono_subst; eauto.
+    + rewrite <- subst_ld_type_open_ld_type_wrt_ld_type.
+      eauto. econstructor.
+  - eapply ld_sub_forallr with (L:=L `union` singleton x `union` ld_ctx_dom (G1, x',, G2)). intros.
+    inst_cofinites_with x0.
+    replace ( ([`ᵈ x' /ᵈ x] B) ^ᵈ x0) with (([`ᵈ x' /ᵈ x] B ^ᵈ x0)).  
+    + replace (G1, x',, G2, x0) with (G1, x',, (G2, x0)) by auto. apply H0; auto.
+      simpl. econstructor; eauto.
+    + admit.
+Admitted.
 
 
 Fixpoint type_order (t : ld_type) : nat :=
@@ -326,7 +356,8 @@ Inductive sized_ld_sub : ld_context -> ld_type -> ld_type -> nat -> Prop :=
     G ⊢ B <: D | n2 ->
     G ⊢ (ld_t_arrow A B) <: (ld_t_arrow C D) | S (n1 + n2)
   | sls_foralll : forall G A B t n,
-    ld_wf_mtype G t ->
+    ld_wf_type G t ->
+    ld_mono_type t ->
     G ⊢ (open_ld_type_wrt_ld_type A t) <: B | n ->
     G ⊢ (ld_t_forall A) <: B | S n
   | sls_forallr : forall L G A B n,
@@ -352,7 +383,7 @@ Proof.
   dependent induction H; try constructor; auto.
   - eapply ld_in_context_weakenning; auto.
   - eapply sls_foralll with (t:=t); auto.
-    eapply ld_wf_mtype_weakening; auto.
+    eapply ld_wf_type_weakening; auto.
   - eapply sls_forallr with (L:=L `union`  ld_ctx_dom (G1,, G2,, G3)). intros.
     inst_cofinites_with x. replace (G1,, G2,, G3, x ) with (G1,, G2,, (G3, x)) by auto.
     eapply H0; auto. simpl. constructor; auto.
@@ -422,20 +453,18 @@ Proof with auto with trans.
     + destruct (x==x'); subst.
       * replace ([`ᵈ x' /ᵈ x'] t) with t; auto.
         now apply subst_same_eq.
-      * apply ld_wf_mtype_equiv_ld_wf_type_and_mono in H. destruct H.
-        apply ld_wf_mtype_subst.
-        -- auto.
-        -- apply ld_wf_mtype_equiv_ld_wf_type_and_mono. split; auto.
-            replace (G1, x', x,, G2) with (G1,, (ld_ctx_nil, x'),, (ld_ctx_nil, x,, G2)).
-            apply ld_wf_type_weakening.
-            ++ simpl. rewrite <- context_cons_app_eq. auto. 
-            ++ simpl. clear IHsized_ld_sub. 
-               apply ld_wf_type_is_wf_ctx in H.
-               rewrite <- context_cons_app_eq. apply ld_wf_ctx_middle; auto. 
-            ++ clear. induction G2; auto.
-               simpl. rewrite <- IHG2. auto.
+      * apply ld_wf_type_subst; eauto.
+        -- replace (G1, x', x,, G2) with (G1,, (ld_ctx_nil, x'),, (ld_ctx_nil, x,, G2)).
+           apply ld_wf_type_weakening.
+           ++ simpl. rewrite <- context_cons_app_eq. auto. 
+           ++ simpl. clear IHsized_ld_sub. 
+              apply ld_wf_type_is_wf_ctx in H.
+              rewrite <- context_cons_app_eq. apply ld_wf_ctx_middle; auto. 
+           ++ clear. induction G2; auto.
+              simpl. rewrite <- IHG2. auto.
         -- constructor. replace (G1, x') with (G1,x',,ld_ctx_nil) by auto. eapply ld_wf_ctx_weakening; eauto.
            constructor. 
+    + apply ld_mono_subst; eauto.
     + replace (([`ᵈ x' /ᵈ x] A) ^^ᵈ ([`ᵈ x' /ᵈ x] t)) with ([`ᵈ x' /ᵈ x] A ^^ᵈ t).
       * apply IHsized_ld_sub; auto.
       * rewrite subst_ld_type_open_ld_type_wrt_ld_type; auto. 
@@ -453,7 +482,6 @@ Qed.
 Hint Resolve ld_sub_wf_ctx : trans.
 Hint Resolve sized_ld_sub_to_ld_sub : trans.
 Hint Resolve sized_ld_sub_weakening_cons : trans.
-Hint Resolve ld_wf_mtype_is_mtype : trans.
 Hint Resolve sized_ld_sub_weakening : trans.
 Hint Resolve open_subst_eq : trans.
 Hint Extern 1 (?x < ?y) => lia : trans.
@@ -510,12 +538,11 @@ Proof with eauto with trans.
         * eapply ld_sub_forallr with (L:=L `union` ld_ctx_dom G). 
           intros. inst_cofinites_with x.
           eapply IHt_ssize with (B:=ld_t_arrow C0 D) (n1:=S (n1 + n0)); eauto...
-      + eapply ld_sub_foralll with (t:=t). auto.
+      + eapply ld_sub_foralll with (t:=t); auto. 
         eapply IHt_ssize with (B:=B); eauto...
       + dependent destruction H2. 
         * inst_cofinites_by (L `union` fv_ld_type A `union` fv_ld_type B).
-          apply ld_wf_mtype_equiv_ld_wf_type_and_mono in H2. destruct H2.
-          specialize (sized_substitution G ld_ctx_nil x _ _ _ _ H1 H2 H4).
+          specialize (sized_substitution G ld_ctx_nil x _ _ _ _ H1 H2 H3).
           intros. destruct H5 as [n1 Hsub].
           eapply IHt_order with (B:=B ^^ᵈ t) (n1:=n1) (n2:=n0); eauto. simpl in H; eauto.
           rewrite (open_mono_order B t); eauto...

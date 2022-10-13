@@ -9,7 +9,7 @@ Require Import decl.ln_inf.
 Require Import decl.ln_inf_extra.
 Require Import decl.properties.
 Require Import transfer.
-
+Require Import ln_utils.
 
 
 Lemma reorder: forall awl1 awl2 ex lbs ubs t m awl',
@@ -108,6 +108,7 @@ Proof.
       * admit. (* *ss_weakening *)
     + dependent destruction Hdwl_red. econstructor.
       * eapply ld_sub_foralll with (t:= tᵈ). admit.
+        auto.
         replace (close_ld_type_wrt_ld_type ex5 t1'ᵈ ^^ᵈ tᵈ) with ([tᵈ /ᵈ ex5] close_ld_type_wrt_ld_type ex5 t1'ᵈ ^^ᵈ (`ᵈ ex5)).
         rewrite open_ld_type_wrt_ld_type_close_ld_type_wrt_ld_type. destruct Ht1'ᵈ.
         subst. auto.
@@ -126,7 +127,24 @@ Proof.
     + admit. (* ld_to_la tᵈ ⇝ tᵈ *)
     + admit. (* lc *)
     + admit. (* fv *)
-  - (* forall_r *) admit.
+  - (* forall_r *)
+    inst_cofinites_by (L). 
+    destruct H0 as [dwl [Hdwl_trans Hdwl_red]].
+    unfold transfer in Hdwl_trans.
+    destruct Hdwl_trans as [θ Hθ]. dependent destruction Hθ.
+    dependent destruction Hθ.
+    exists (ld_wl_cons_w Γᵈ (ld_w_sub t1ᵈ (ld_t_forall (close_ld_type_wrt_ld_type x t2ᵈ)))).  split.
+    + unfold transfer.
+      exists θ'. econstructor; eauto.
+      eapply inst_t_forall with (L:=L). intros.
+      admit.
+    + dependent destruction Hdwl_red. 
+      dependent destruction Hdwl_red. 
+      econstructor.
+      * eapply ld_sub_forallr with (L:=fv_ld_type t2ᵈ `union` fv_ld_type t1ᵈ).
+        intros.
+        admit.
+      * auto.
   - (* arrow *) destruct IHla_worklist_reducible as [dwl [Hdwl_trans Hdwl_red]].
     unfold transfer in Hdwl_trans.  destruct Hdwl_trans as [θ Hθ]. dependent destruction Hθ. dependent destruction Hθ.
     exists (ld_wl_cons_w Γᵈ (ld_w_sub (ld_t_arrow t2ᵈ t1ᵈ0 ) (ld_t_arrow t1ᵈ t2ᵈ0) )). split.
