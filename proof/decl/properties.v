@@ -101,7 +101,7 @@ Proof.
 Qed.
 
 
-Lemma ld_in_context_weakenning : 
+Lemma ld_in_context_weakening : 
   forall G1 G2 G3 x, 
     ld_in_context x (G1,,G3) -> ld_in_context x (G1,, G2,, G3).
 Proof.
@@ -137,7 +137,7 @@ Theorem ld_wf_type_weakening :
 Proof.
   intros.
   dependent induction H; auto.
-  - constructor. auto. eapply ld_in_context_weakenning. auto.
+  - constructor. auto. eapply ld_in_context_weakening. auto.
   - eapply ld_wft_forall with (L:=L `union`  ld_ctx_dom (G1,, G2,, G3)). intros.
     inst_cofinites_with x. replace (G1,, G2,, G3, x ) with (G1,, G2,, (G3, x)) by auto. apply H0; auto.
     simpl. econstructor; eauto.
@@ -164,7 +164,7 @@ Theorem ld_sub_weakening:
 Proof.
   intros.
   dependent induction H; try constructor; auto.
-  - eapply ld_in_context_weakenning. auto.
+  - eapply ld_in_context_weakening. auto.
   - eapply ld_sub_foralll with (t:=t); auto.
     eapply ld_wf_type_weakening; eauto.
   - pick fresh x and apply ld_sub_forallr for weakening.
@@ -258,21 +258,23 @@ Proof.
       * replace (G1, x,, G2) with (G1 ,, (ld_ctx_nil, x),, G2) in * by auto. eapply ld_wf_ctx_weakening; eauto.
       * eapply ld_in_context_other; eauto. 
   - simpl. constructor.
-    replace (G1, x,, G2) with (G1 ,, (ld_ctx_nil, x),, G2) in * by auto. eapply ld_wf_ctx_weakening; eauto.
+    replace (G1, x,, G2) with (G1 ,, (ld_ctx_nil, x),, G2) in * by auto. 
+    eapply ld_wf_ctx_weakening; eauto.
   - simpl. constructor; eauto.
   - simpl. eapply ld_sub_foralll with (t:=[t /ᵈ x] t0). 
     + apply ld_wf_type_subst; eauto. 
     + apply ld_mono_subst; eauto.
     + replace (([t /ᵈ x] A) ^^ᵈ ([t /ᵈ x] t0)) with ([t /ᵈ x] A ^^ᵈ t0).
       * apply IHld_sub; auto.
-      * rewrite subst_ld_type_open_ld_type_wrt_ld_type; auto. now apply ld_mono_is_ld_lc.
-  - simpl. eapply ld_sub_forallr with (L:=L `union` singleton x).
+      * rewrite subst_ld_type_open_ld_type_wrt_ld_type; auto. 
+        now apply ld_mono_is_ld_lc.
+  - simpl. 
+    pick fresh x and apply ld_sub_forallr for weakening.
     intros. inst_cofinites_with x0.
-    rewrite_subst_open_var.
-    replace  (([t /ᵈ x] B) ^^ᵈ ([t /ᵈ x] `ᵈ x0)) with ( [t /ᵈ x] B ^^ᵈ `ᵈ x0).
-    + replace (G1,, G2, x0 ) with (G1,, (G2, x0)) by auto. apply H0; auto.
-    + rewrite subst_ld_type_open_ld_type_wrt_ld_type. reflexivity. simpl.
-      replace (G1,, G2, x0 ) with (G1,, (G2, x0)) by auto. now apply ld_mono_is_ld_lc.
+    rewrite ld_type_subst_open_comm.
+    + replace (G1,, G2, x0) with (G1,, (G2, x0)) by auto. apply H0; auto.
+    + now apply ld_mono_is_ld_lc.
+    + auto.
 Qed.
 
 
@@ -289,8 +291,8 @@ Proof.
     + apply ld_in_context_other in H0; auto.
       econstructor. auto.
       replace (G1, x',, G2) with (G1,, (ld_ctx_nil, x'),,G2) by auto.
-      apply ld_in_context_weakenning; auto.
-  - eapply ld_wft_forall with (L:=L `union` ld_ctx_dom (G1, x',, G2) `union` singleton x). 
+      apply ld_in_context_weakening; auto.
+  - pick fresh x and apply ld_wft_forall for weakening.
     intros.
     rewrite ld_type_subst_open_comm; auto.
     replace (G1, x',, G2, x0 ) with (G1, x',, (G2, x0)) by auto. 
@@ -312,13 +314,13 @@ Proof.
       apply ld_in_context_other in H0; auto.
       econstructor; auto.
       replace (G1, x',, G2) with (G1,, (ld_ctx_nil, x'),,G2) by auto.
-      apply ld_in_context_weakenning; auto.
+      apply ld_in_context_weakening; auto.
   - eapply ld_sub_foralll with (t:=[`ᵈ x' /ᵈ x] t).
     + apply ld_wf_type_rename; auto.
     + apply ld_mono_subst; eauto.
     + rewrite <- subst_ld_type_open_ld_type_wrt_ld_type.
       eauto. econstructor.
-  - eapply ld_sub_forallr with (L:=L `union` singleton x `union` ld_ctx_dom (G1, x',, G2)). intros.
+  - pick fresh x and apply ld_sub_forallr for weakening. intros.
     inst_cofinites_with x0.
     rewrite ld_type_subst_open_comm. 
     + replace (G1, x',, G2, x0) with (G1, x',, (G2, x0)) by auto. apply H0; auto.
@@ -394,7 +396,7 @@ Lemma sized_ld_sub_weakening : forall G1 G2 G3 t1 t2 n,
 Proof.
   intros.
   dependent induction H; try constructor; auto.
-  - eapply ld_in_context_weakenning; auto.
+  - eapply ld_in_context_weakening; auto.
   - eapply sls_foralll with (t:=t); auto.
     eapply ld_wf_type_weakening; auto.
   - eapply sls_forallr with (L:=L `union`  ld_ctx_dom (G1,, G2,, G3)). intros.
@@ -461,7 +463,7 @@ Proof with auto with trans.
     + constructor.
       * auto.
       * eapply ld_in_context_other in H0; eauto.
-        replace (G1,x',,G2) with (G1,,(ld_ctx_nil, x'),,G2) by auto. apply ld_in_context_weakenning. auto.
+        replace (G1,x',,G2) with (G1,,(ld_ctx_nil, x'),,G2) by auto. apply ld_in_context_weakening. auto.
   - simpl. eapply sls_foralll with (t:=[`ᵈ x' /ᵈ x] t). 
     + destruct (x==x'); subst.
       * replace ([`ᵈ x' /ᵈ x'] t) with t; auto.

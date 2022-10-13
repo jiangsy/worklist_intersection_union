@@ -307,7 +307,7 @@ Fixpoint ld_type_to_la_type (Aᵈ : ld_type) : la_type :=
 
 Lemma inst_subst : forall θ x tᵈ Aᵃ Aᵈ, 
   lc_la_type Aᵃ ->
-  x `notin` (fx_la_type Aᵃ `union` fex_la_type Aᵃ)->
+  x `notin` (fx_la_type Aᵃ)->
   (θ; x : tᵈ) ⫦ Aᵃ ⇝ Aᵈ -> 
   θ ⫦ [ld_type_to_la_type tᵈ /^ᵃ x] Aᵃ ⇝ Aᵈ.
 Proof.
@@ -317,21 +317,12 @@ Proof.
   - inversion Hinstopen. econstructor. admit. (* wf_ss *)
   - dependent destruction Hinstopen.
     eapply inst_t_forall with (L:=singleton x `union` fx_la_type t `union` fex_la_type t `union` L). intros.
-    assert ((x ∉ fx_la_type `ᵃ x0) /\ (x ∉ fex_la_type `ᵃ x0)).
-    + split; simpl.
-      * simpl. apply notin_union_1 in H2.
-        apply notin_singleton_1 in H2.
-        apply notin_singleton. auto.
-      * apply notin_empty. 
-    + destruct_conjs. 
-      specialize (notin_union_1 _ _ _ Hfv).
-      specialize (notin_union_2 _ _ _ Hfv). 
+    + intros.
+      assert (x `notin` fx_la_type t) by auto.
+      assert (x `notin` fx_la_type `ᵃ x0) by auto.
+      specialize (fx_la_type_open_la_type_notin _ _ (`ᵃ x0) H3 H4).
       intros.
-      specialize (fx_la_type_open_la_type_notin _ _ (`ᵃ x0) H6 H3).
-      specialize (fex_la_type_open_la_type_notin _ _ (`ᵃ x0) H5 H4).
-      intros.
-      specialize (notin_union _ _ _ H8 H7). intros.
-      specialize (H0 x0 H9).
+      specialize (H0 x0 H5).
       inst_cofinites_with x0.
       rewrite la_type_ex_subst_open_comm.
       apply H0. auto.
@@ -340,8 +331,9 @@ Proof.
   - dependent destruction Hinstopen.
     econstructor; auto.
   - destruct (x5 == x).
-    + subst. apply notin_union_1 in Hfv.
-      apply notin_singleton_1 in Hfv. contradiction.
+    + subst.
+      apply notin_singleton_1 in Hfv. 
+      contradiction.
     + dependent destruction Hinstopen.
       constructor. admit.
   - dependent destruction Hinstopen. 
@@ -350,7 +342,6 @@ Proof.
       admit.
     + inversion H0. 
       * dependent destruction H1.
-        apply notin_union_2 in Hfv. apply notin_singleton_1 in Hfv.
         contradiction.
       * econstructor; auto.      
         dependent destruction H. auto.  

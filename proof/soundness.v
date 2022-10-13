@@ -92,7 +92,7 @@ Proof.
     destruct Hdwl_trans as [θ Hθ]. dependent destruction Hθ.
     dependent destruction Hθ.
     apply inst_subst in H5.
-    replace ([ld_type_to_la_type tᵈ /^ᵃ ex5] A ^^ᵃ `^ ex5 ) with ([ld_type_to_la_type tᵈ /ᵃ ex5] A ^^ᵃ `ᵃex5 ) in H5 by admit.
+    replace ([ld_type_to_la_type tᵈ /^ᵃ ex5] A ^^ᵃ `^ ex5 ) with ([ld_type_to_la_type tᵈ /ᵃ ex5] A ^^ᵃ `ᵃex5 ) in H5.
     eapply inst_e_rev_subst with (tᵈ := tᵈ) in H5.
     destruct H5 as [t1'ᵈ Ht1'ᵈ].
     exists (ld_wl_cons_w Γᵈ (ld_w_sub (ld_t_forall (close_ld_type_wrt_ld_type ex5 t1'ᵈ)) t2ᵈ)). (* fix this *) split.
@@ -106,7 +106,8 @@ Proof.
         admit.
       * admit. (* *ss_weakening *)
     + dependent destruction Hdwl_red. econstructor.
-      * eapply ld_sub_foralll with (t:= tᵈ). admit.
+      * eapply ld_sub_foralll with (t:= tᵈ). 
+        admit.
         auto.
         replace (close_ld_type_wrt_ld_type ex5 t1'ᵈ ^^ᵈ tᵈ) with ([tᵈ /ᵈ ex5] close_ld_type_wrt_ld_type ex5 t1'ᵈ ^^ᵈ (`ᵈ ex5)).
         rewrite open_ld_type_wrt_ld_type_close_ld_type_wrt_ld_type. destruct Ht1'ᵈ.
@@ -124,20 +125,22 @@ Proof.
     + admit. (* lc *)
     + admit. (* fv *)
     + admit. (* ld_to_la tᵈ ⇝ tᵈ *)
+    + admit. (* subst *)
     + admit. (* lc *)
     + admit. (* fv *)
+  
   - (* forall_r *)
-    inst_cofinites_by (L `union` fx_la_type B). 
+    inst_cofinites_by (L `union` fx_la_type B `union` fx_la_type A). 
     destruct H0 as [dwl [Hdwl_trans Hdwl_red]].
     unfold transfer in Hdwl_trans.
     destruct Hdwl_trans as [θ Hθ]. dependent destruction Hθ.
     dependent destruction Hθ.
     exists (ld_wl_cons_w Γᵈ (ld_w_sub t1ᵈ (ld_t_forall (close_ld_type_wrt_ld_type x t2ᵈ)))).  split.
     + unfold transfer.
-      exists θ'. econstructor; eauto.
+      exists θ'. econstructor; eauto. 
       eapply inst_t_forall with (L:=L). intros.
-      replace ( B ^ᵃ x0) with ([`ᵃ x0 /ᵃ x] (B ^ᵃ x)) by admit.
-      replace ( close_ld_type_wrt_ld_type x t2ᵈ ^ᵈ x0) with ( [`ᵈ x0 /ᵈ x] close_ld_type_wrt_ld_type x t2ᵈ ^ᵈ x).
+      replace (B ^ᵃ x0) with ([`ᵃ x0 /ᵃ x] (B ^ᵃ x)).
+      replace (close_ld_type_wrt_ld_type x t2ᵈ ^ᵈ x0) with ( [`ᵈ x0 /ᵈ x] close_ld_type_wrt_ld_type x t2ᵈ ^ᵈ x).
       apply inst_e_rename.
       rewrite open_ld_type_wrt_ld_type_close_ld_type_wrt_ld_type. auto.
       * admit. (** something related to Γ and dom θ **)
@@ -147,12 +150,30 @@ Proof.
            rewrite fv_ld_type_close_ld_type_wrt_ld_type. auto.
         -- contradiction.
         -- econstructor.
+      * rewrite subst_la_type_open_la_type_wrt_la_type. simpl.
+        unfold eq_dec. destruct ( EqDec_eq_of_X x x).
+        -- rewrite subst_la_type_fresh_eq; auto.
+        -- contradiction.
+        -- econstructor.
     + dependent destruction Hdwl_red. 
       dependent destruction Hdwl_red. 
       econstructor.
-      * eapply ld_sub_forallr with (L:=fv_ld_type t2ᵈ `union` fv_ld_type t1ᵈ).
+      * eapply ld_sub_forallr with (L:=fv_ld_type t2ᵈ `union` fv_ld_type t1ᵈ `union` ld_ctx_dom (ld_wl_to_ctx Γᵈ)). 
         intros.
-        admit.
+        replace ( close_ld_type_wrt_ld_type x t2ᵈ ^ᵈ x0) with ( [`ᵈ x0 /ᵈ x] close_ld_type_wrt_ld_type x t2ᵈ ^ᵈ x).
+        replace t1ᵈ with ([`ᵈ x0 /ᵈ x] t1ᵈ).
+        replace (ld_wl_to_ctx Γᵈ, x0 ) with (ld_wl_to_ctx Γᵈ, x0,, ld_ctx_nil) by auto.
+        apply ld_sub_rename.
+        rewrite open_ld_type_wrt_ld_type_close_ld_type_wrt_ld_type. auto.
+        -- simpl in *. inversion H3. constructor; auto.
+        -- rewrite subst_ld_type_fresh_eq; auto. 
+           admit. (* fv and fx between instantiation *)
+        -- rewrite subst_ld_type_open_ld_type_wrt_ld_type. simpl. 
+           destruct (x == x).
+           ++ rewrite subst_ld_type_fresh_eq; auto.
+              rewrite fv_ld_type_close_ld_type_wrt_ld_type. auto.
+           ++ contradiction.
+           ++ econstructor.
       * auto.
   - (* arrow *) 
     destruct IHla_worklist_reducible as [dwl [Hdwl_trans Hdwl_red]].
@@ -174,7 +195,7 @@ Proof.
                   (ld_w_sub (ld_t_arrow A0 B0) (ld_t_arrow A1 B1))).
     split; auto.
     unfold transfer. exists θ. econstructor.
-    + admit. (* reorder of awl does not change its instantiated awl *)
+    + admit. (* reorder of awl does not change its instantiated dwl *)
     + admit. (* ex still exists in the reordered awl, and should be instantiated to the same type *)
     + constructor; auto.
   - (* -> L *)
