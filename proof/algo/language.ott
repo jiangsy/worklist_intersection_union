@@ -15,9 +15,9 @@ la_type, t, A, B :: 'la_t_' ::=
   | [ t / x ] A   :: M :: subst {{ coq (open_la_type_wrt_la_type [[x A]] [[t]]) }}
 
 la_typelist, tl :: 'la_tl_' ::= 
-  | tnil    :: :: nil  
-  | tl , t  :: :: cons 
-
+  | tnil       ::   :: nil  
+  | tl , t     ::   :: cons 
+  | tl1 ++ tl2 :: M :: app  {{ coq (la_tl_app [[tl1]] [[tl2]])}}
 
 la_work, w :: 'la_w_' ::=
   | t1 <: t2         :: :: sub
@@ -33,7 +33,6 @@ la_worklist, wl :: 'la_wl_' ::=
   | wl |- w            ::   :: cons_w
   | wl1 ++ wl2         :: M :: app {{ coq (la_wl_app [[wl1]] [[wl2]]) }}
   | < tl >             :: M :: single_constraint {{ coq (single_side_constraints [[tl]]) }}
-  | < tl1 * tl2 >      :: M :: double_constraint {{ coq (double_side_constraints [[tl1]] [[tl2]])}}
 
 
 formula :: formula_ ::=
@@ -88,6 +87,13 @@ Fixpoint single_side_constraints_helper (t : la_type) (tl : la_typelist) : la_wo
   end
 .
 
+Fixpoint la_tl_app (tl1 tl2 : la_typelist) : la_typelist := 
+  match tl2 with 
+  | la_tl_nil => tl1
+  | la_tl_cons tl2' t => la_tl_cons (la_tl_app tl1 tl2') t
+  end
+.
+
 Definition single_side_constraints (tl : la_typelist) : la_worklist := 
   match tl with
   | la_tl_nil => la_wl_nil
@@ -95,19 +101,6 @@ Definition single_side_constraints (tl : la_typelist) : la_worklist :=
   end
 .
 
-Fixpoint double_side_constraints_helper (t : la_type) (tl : la_typelist) : la_worklist :=
-  match tl with 
-  | la_tl_nil => la_wl_nil
-  | la_tl_cons tl' t' => la_wl_cons_w (double_side_constraints_helper t tl') (la_w_sub t t')
-  end
-.
-
-Fixpoint double_side_constraints (tl1 tl2 : la_typelist) : la_worklist :=
-  match tl1 with 
-  | la_tl_nil => la_wl_nil
-  | la_tl_cons tl1' t1 => la_wl_app (double_side_constraints tl1' tl2) (double_side_constraints_helper t1 tl2)
-  end
-.
 
 Fixpoint la_wl_app_rev (wl1 wl2 : la_worklist) : la_worklist :=
   match wl2 with
@@ -322,18 +315,7 @@ x notin wl
 ---------------------------------------------------- :: tvar
 |- wl , x
 
-ex notin wl
-|- wl ++ < tl >
----------------------------------------------------- :: evar_nil_l
-|- wl , tnil ≤ ex ≤ tl
-
-|- wl ++ < tl' >
----------------------------------------------------- :: evar_nil_r
-|- wl , tl ≤ ex ≤ tnil
-
-tl != ∅
-tl' != ∅
-|- wl ++ < tl * tl' >
+|- wl ++ < tl ++ tl' >
 ---------------------------------------------------- :: evar
 |- wl , tl ≤ ex ≤ tl'
 

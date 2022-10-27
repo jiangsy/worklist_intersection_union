@@ -43,8 +43,8 @@ Proof.
     + econstructor; eauto. simpl. econstructor. 
       * now apply dwl_red_ctx_wf. 
       * admit.
-  - destruct IHla_worklist_reducible as [dwl Hdwl]. destruct Hdwl. 
-    destruct tl.
+  - destruct IHla_worklist_reducible as [dwl Hdwl]. destruct Hdwl. admit.
+    (* destruct tl.
     + simpl in *. exists dwl. split. 
       * unfold transfer in H1. destruct H1 as [θ'].
         exists (cons (pair ex5 (sse_ev ld_t_int)) θ'). eapply inst_wl_ev; eauto. 
@@ -67,12 +67,7 @@ Proof.
         ++ admit. (* inst_weakening *)
         ++ econstructor; admit.
         ++ apply ld_sub_refl. admit.
-      -- auto.
-  - admit. (* same as previous *)
-  - destruct IHla_worklist_reducible as [dwl Hdwl]. destruct Hdwl. 
-    destruct tl; destruct tl'.
-    + inversion H0. + inversion H. +inversion H0.
-    + clear H. clear H0. admit.
+      -- auto. *)
   - destruct IHla_worklist_reducible as [dwl [Hdwl_trans Hdwl_red]]. 
     exists (ld_wl_cons_w dwl (ld_w_sub ld_t_int ld_t_int)). split; auto. unfold transfer in *. 
     unfold transfer in Hdwl_trans. destruct Hdwl_trans as [θ Hθ]. 
