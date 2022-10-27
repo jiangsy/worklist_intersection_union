@@ -54,8 +54,9 @@ Inductive wf_ss : subst_set -> Prop :=
   | wf_ss_tv : forall x θ,
       wf_ss θ -> x `notin` dom θ ->
       wf_ss (θ; x)
-  | wf_ss_ev : forall ex t Θ
-    , wf_ss Θ -> ex `notin` dom Θ ->
+  | wf_ss_ev : forall ex t Θ, 
+     wf_ss Θ -> 
+     ex `notin` dom Θ ->
      ld_wf_type (ss_to_ctx Θ) t -> 
      ld_mono_type t ->
      wf_ss (Θ; ex : t)
@@ -141,16 +142,56 @@ Hint Constructors inst_type : transfer.
 Hint Constructors inst_ev : transfer.
 Hint Constructors inst_worklist : transfer.
 
-Lemma notin_ss_notin_inst : forall x ex Θ A,
-    ex : A ∈ Θ → x `notin` fv_ss Θ → x `notin` fv_ld_type A.
-Proof.
-  induction Θ; intros.
-  - inversion H.
-  - destruct a. destruct H.
-    + inversion H; subst; simpl in *; auto. admit.
-    + simpl in H0; eauto.
-Admitted.
 
+Lemma fv_ss_ld_ctx_dom: forall θ x,
+  x `notin` fv_ss θ -> x `notin` ld_ctx_dom (ss_to_ctx θ).
+Proof.
+  induction θ; simpl; intros; auto.
+  - destruct a; destruct s.
+    + simpl in *. auto.
+    + auto.
+Qed.
+
+
+Lemma notin_wf_t_notin_ss: forall t θ x,
+  ss_to_ctx θ ⊢ t -> x `notin` fv_ss θ -> x `notin` fv_ld_type t.
+Proof.
+  induction t; intros.
+  - auto.
+  - simpl. dependent destruction H.
+    inst_cofinites_by (L `union` singleton x).
+    eapply ld_wf_type_fv with (x:=x) in H.
+    rewrite fv_ld_type_open_ld_type_wrt_ld_type_lower.
+    eauto. simpl. auto.
+    apply notin_add; auto.
+    apply fv_ss_ld_ctx_dom. auto.
+  - simpl. dependent destruction H; apply notin_union; eauto.
+  - auto.
+  - dependent destruction H; auto.
+    clear H.
+    induction θ; auto.
+    + inversion H0.
+    + destruct a. destruct s; simpl in *.
+      inversion H0; subst; auto.
+      auto.
+Qed.
+
+Lemma notin_ss_notin_inst : forall θ x ex t,
+    wf_ss θ ->
+    ex : t ∈ θ -> 
+    x `notin` fv_ss θ ->
+    x `notin` fv_ld_type t.
+Proof.
+  intro θ.
+  induction θ; intros.
+  - inversion H0.
+  - inversion H0. destruct a; destruct s.
+    + inversion H2.
+    + inversion H2. subst. inversion H. subst. 
+      simpl in H1. eapply notin_wf_t_notin_ss; eauto.
+    + eapply IHθ; eauto. inversion H; auto.
+      destruct a; destruct s; simpl in *. auto. auto.
+Qed.
 
 Lemma inst_t_lc : forall θ Aᵃ Aᵈ, 
   θ ⫦ Aᵃ ⇝ Aᵈ -> 
@@ -170,13 +211,6 @@ Proof.
     + apply lc_ld_t_forall_exists with (x1:=x). intuition.
 Qed.
 
-(* consult Alvin *)
-Lemma inst_A_wf_A: forall θ Aᵃ Aᵈ, 
-  θ ⫦ Aᵃ ⇝ Aᵈ -> ss_to_ctx θ ⊢ Aᵈ.
-Proof.
-  intros.
-  dependent induction H.
-Admitted.
 
 Ltac inversion_eq :=
   repeat
@@ -281,6 +315,12 @@ Proof with auto with transfer.
     + auto.
 Qed.
 
+Lemma inst_wf : forall θ tᵃ tᵈ,
+  θ ⫦ tᵃ ⇝ tᵈ -> wf_ss θ.
+Proof.
+  intros. induction H; auto.
+  - inst_cofinites_by L. auto.
+Qed.
 
 Lemma inst_e_rev_subst : forall A'ᵈ θ tᵃ tᵈ x Aᵃ,
   lc_la_type Aᵃ ->
@@ -304,6 +344,84 @@ Fixpoint ld_type_to_la_type (Aᵈ : ld_type) : la_type :=
   | ld_t_var_f x => la_t_tvar_f x
   end.
 
+Lemma ld_type_to_la_type_open_open_expr_wrt_expr_distr_rec : forall e1 e2 n,
+ld_type_to_la_type (open_ld_type_wrt_ld_type_rec n e2 e1) = open_la_type_wrt_la_type_rec n (ld_type_to_la_type e2) (ld_type_to_la_type e1).
+Proof.
+  intros e1.
+  induction e1; simpl; intros; auto.
+  - rewrite IHe1. auto.
+  - rewrite IHe1_1. rewrite IHe1_2. auto.
+  - destruct (lt_eq_lt_dec n n0).
+    + destruct s; simpl. auto.
+      auto.
+    + simpl. auto.
+Qed.
+
+Lemma ld_type_to_la_type_open_open_expr_wrt_expr_distr : forall e1 e2,
+  ld_type_to_la_type (open_ld_type_wrt_ld_type e1 e2) = open_la_type_wrt_la_type
+  (ld_type_to_la_type e1)(ld_type_to_la_type e2) .
+Proof.
+  intros.
+  unfold open_la_type_wrt_la_type.
+  unfold open_ld_type_wrt_ld_type.
+  rewrite ld_type_to_la_type_open_open_expr_wrt_expr_distr_rec.
+  auto.
+Qed.
+
+Lemma inst_ld_type_to_la_type: forall θ Aᵈ,
+  lc_ld_type Aᵈ ->
+  wf_ss θ ->
+  θ ⫦ ld_type_to_la_type Aᵈ ⇝ Aᵈ.
+Proof.
+  intros * Hlc.
+  induction Hlc; simpl; try (constructor; auto; fail).
+  - intros.
+    eapply inst_t_forall with (L:=empty).
+    intros.
+    specialize (H0 x H1).
+    rewrite ld_type_to_la_type_open_open_expr_wrt_expr_distr in H0.
+    simpl in *.
+    eauto.
+Qed.
+
+
+Lemma ld_type_to_la_type_open_rec_distr: forall t1ᵈ t2ᵈ n, 
+  ld_type_to_la_type (open_ld_type_wrt_ld_type_rec n t2ᵈ t1ᵈ) = open_la_type_wrt_la_type_rec n (ld_type_to_la_type t2ᵈ) (ld_type_to_la_type t1ᵈ).
+Proof.
+  intro t1ᵈ; induction t1ᵈ; intros; auto.
+  - simpl. rewrite IHt1ᵈ.
+    auto.
+  - simpl. rewrite IHt1ᵈ1. rewrite IHt1ᵈ2. auto.
+  - simpl. destruct (lt_eq_lt_dec n n0); simpl; auto.
+    + destruct s; auto.
+Qed.
+
+
+Lemma ld_type_to_la_type_open_distr: forall t1ᵈ t2ᵈ , 
+  ld_type_to_la_type (open_ld_type_wrt_ld_type t1ᵈ t2ᵈ ) = open_la_type_wrt_la_type (ld_type_to_la_type t1ᵈ) (ld_type_to_la_type t2ᵈ).
+Proof.
+  intros. unfold open_ld_type_wrt_ld_type. unfold open_la_type_wrt_la_type.
+  rewrite ld_type_to_la_type_open_rec_distr. auto.
+Qed.
+
+Lemma ld_type_to_la_type_open_var_distr: forall t1ᵈ x , 
+  ld_type_to_la_type (t1ᵈ ^ᵈ x) = (ld_type_to_la_type t1ᵈ) ^ᵃ x.
+Proof.
+  intros. 
+  replace (`ᵃ x) with (ld_type_to_la_type (`ᵈ x)) by auto.
+  rewrite ld_type_to_la_type_open_distr.
+  auto.
+Qed.
+
+
+Lemma ld_type_to_la_type_keeps_lc: forall tᵈ,
+  lc_ld_type tᵈ -> lc_la_type (ld_type_to_la_type tᵈ).
+Proof.
+  intros. induction H; simpl; auto.
+  - econstructor. intros. simpl in *. simpl.
+    rewrite <- ld_type_to_la_type_open_var_distr.
+    auto.
+Qed.
 
 Lemma inst_subst : forall θ x tᵈ Aᵃ Aᵈ, 
   lc_la_type Aᵃ ->
@@ -314,20 +432,20 @@ Proof.
   intros * Hlc Hfv Hinstopen.
   generalize dependent Aᵈ.
   dependent induction Hlc; simpl in *; intros.
-  - inversion Hinstopen. econstructor. admit. (* wf_ss *)
+  - inversion Hinstopen. econstructor.
+    inversion H. auto.
   - dependent destruction Hinstopen.
     eapply inst_t_forall with (L:=singleton x `union` fx_la_type t `union` fex_la_type t `union` L). intros.
     + intros.
-      assert (x `notin` fx_la_type t) by auto.
-      assert (x `notin` fx_la_type `ᵃ x0) by auto.
-      specialize (fx_la_type_open_la_type_notin _ _ (`ᵃ x0) H3 H4).
-      intros.
-      specialize (H0 x0 H5).
-      inst_cofinites_with x0.
       rewrite la_type_ex_subst_open_comm.
-      apply H0. auto.
-      admit.
-      auto.
+      * eapply H0.
+        apply fx_la_type_open_la_type_notin; auto.
+        auto.
+      * inst_cofinites_with x0.
+        apply inst_wf in H1.
+        inversion H1.
+        apply ld_type_to_la_type_keeps_lc. apply ld_mono_is_ld_lc. auto.
+      * auto.
   - dependent destruction Hinstopen.
     econstructor; auto.
   - destruct (x5 == x).
@@ -335,17 +453,21 @@ Proof.
       apply notin_singleton_1 in Hfv. 
       contradiction.
     + dependent destruction Hinstopen.
-      constructor. admit.
+      constructor. inversion H. auto. 
   - dependent destruction Hinstopen. 
     destruct (ex5 == x). 
     + subst.
-      admit.
+      apply binds_unique with (a:=sse_ev tᵈ) in H0. inversion H0. subst. inversion H.
+      * apply inst_ld_type_to_la_type; auto. 
+        apply ld_mono_is_ld_lc. auto.
+      * constructor; auto.
+      * apply wf_uniq. auto.
     + inversion H0. 
       * dependent destruction H1.
         contradiction.
       * econstructor; auto.      
-        dependent destruction H. auto.  
-Admitted.
+        dependent destruction H. auto.
+Qed.
 
 
 Definition transfer (Γ : la_worklist) (Γ' : ld_worklist) : Prop :=

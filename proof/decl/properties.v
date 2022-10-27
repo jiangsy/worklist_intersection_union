@@ -130,6 +130,25 @@ Proof.
     + apply IHG3. apply notin_add_2 in H. auto.
 Qed.
 
+
+Lemma ld_wf_type_fv: forall G t x, 
+  G ⊢ t -> x `notin` ld_ctx_dom G -> x `notin` fv_ld_type t.
+Proof.
+  intros.
+  induction H; simpl in *; auto.
+  - induction G.
+    + inversion H1.
+    + inversion H1; subst.
+      * simpl in H0. auto.
+      * inversion H. simpl in H0. apply IHG; auto.
+  - inst_cofinites_by (L `union` singleton x).
+    assert (x ∉ add x0 (ld_ctx_dom G)) by auto.
+    specialize (H1 H2). 
+    simpl in H1.
+    rewrite fv_ld_type_open_ld_type_wrt_ld_type_lower.
+    eauto.
+Qed.
+
 Theorem ld_wf_type_weakening : 
   forall G1 G2 G3 t, 
   G1 ,, G3 ⊢ t -> ⊢ G1 ,, G2 ,, G3 -> 

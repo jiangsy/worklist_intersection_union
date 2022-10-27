@@ -118,6 +118,7 @@ Fixpoint la_wl_app_rev (wl1 wl2 : la_worklist) : la_worklist :=
   end
 .
 
+
 Inductive reorder : la_worklist -> var -> la_type -> la_mode -> la_worklist -> la_worklist -> Prop :=
   | re_add_ub : forall Γ x lbs ubs t Γ'
     , x `notin` fex_la_worklist Γ' `union` fex_la_type t
