@@ -91,8 +91,8 @@ Qed.
 Lemma ld_wl_red_mono_refl :  forall Γ t1 t2, 
   ld_mono_type t1 -> 
   ld_mono_type t2 -> 
-  ld_worklist_reducible (ld_wl_cons_w Γ (ld_w_sub t1 t2)) -> 
-  ld_worklist_reducible (ld_wl_cons_w Γ (ld_w_sub t2 t1)).
+  ld_worklist_reducible_del (ld_wl_cons_w Γ (ld_w_sub t1 t2)) -> 
+  ld_worklist_reducible_del (ld_wl_cons_w Γ (ld_w_sub t2 t1)).
 Proof.
   intros.
   dependent destruction H1.

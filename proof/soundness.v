@@ -34,7 +34,10 @@ Lemma inst_ld_type_exists: forall θ t,
   exists t', inst_type θ t t'.
 Admitted.
 
-Theorem soundness : forall Γ, la_worklist_reducible Γ -> exists Γ', transfer Γ Γ' /\ ld_worklist_reducible Γ'.
+
+Theorem soundness : forall Γ,
+  la_worklist_reducible Γ -> 
+  exists Γ', transfer Γ Γ' /\ ld_worklist_reducible Γ'.
 Proof.
   intros. induction H.
   - destruct IHla_worklist_reducible as [dwl Hdwl]. destruct Hdwl.
@@ -43,31 +46,17 @@ Proof.
     + econstructor; eauto. simpl. econstructor. 
       * now apply dwl_red_ctx_wf. 
       * admit.
-  - destruct IHla_worklist_reducible as [dwl Hdwl]. destruct Hdwl. admit.
-    (* destruct tl.
-    + simpl in *. exists dwl. split. 
-      * unfold transfer in H1. destruct H1 as [θ'].
-        exists (cons (pair ex5 (sse_ev ld_t_int)) θ'). eapply inst_wl_ev; eauto. 
-        admit. (* * dom *)
-        constructor.
-      * auto.
-    + simpl in *.
-      exists dwl. destruct H1 as [θ'].
-      specialize (inst_ld_type_exists θ' t). intros. destruct H3 as [t'].
-      split. unfold transfer.
-      exists (cons (pair ex5 (sse_ev t')) θ'). econstructor; auto.
-      -- admit.
-      -- admit.
-      -- admit.
-      -- eapply inst_ev_ubs with (ub':=t') (t':=t'). 
-        ++ generalize dependent dwl. induction tl; intros. 
-          ** econstructor.
-          ** dependent destruction H1. 
-              eapply inst_ev_ubs with (ub':=t2ᵈ) (t':=t'); admit.
-        ++ admit. (* inst_weakening *)
-        ++ econstructor; admit.
-        ++ apply ld_sub_refl. admit.
-      -- auto. *)
+  - destruct IHla_worklist_reducible as [dwl Hdwl]. destruct Hdwl.
+    unfold transfer in H0. destruct H0 as [θ'].
+    (* induction tl'.
+    + simpl in *. destruct tl.
+      * simpl in *. exists dwl. split. exists (θ'; ex5: ld_t_int). econstructor; auto. admit.
+      econstructor. auto.
+      * simpl in *. induction tl; admit.
+    + admit. *)
+    remember (la_tl_app tl tl'). destruct l.
+    + simpl in *. admit.
+    + simpl in *. admit.
   - destruct IHla_worklist_reducible as [dwl [Hdwl_trans Hdwl_red]]. 
     exists (ld_wl_cons_w dwl (ld_w_sub ld_t_int ld_t_int)). split; auto. unfold transfer in *. 
     unfold transfer in Hdwl_trans. destruct Hdwl_trans as [θ Hθ]. 
@@ -209,11 +198,29 @@ Proof.
     + constructor; auto.
     + admit.
   - (* EVar L*)
+    destruct IHla_worklist_reducible as [dwl [Hdwl_trans Hdwl_red]].
+    unfold transfer in Hdwl_trans.
+
+    destruct Hdwl_trans as [θ Hθ]. 
+    (* [t1] <: ^a <: [t2] -> inst t1 <: inst ^a <: inst t2 *)
+    (* exists (ld_wl_cons_w dwl  (inst_type ^a t) (inst ^b t)). split.
+    exists θ.
+    eapply inst_wl_sub.
+    econstructor. econstructor. *)
     admit.
   - (* EVar L*)
     admit.
+
+
   - destruct IHla_worklist_reducible as [dwl [Hdwl_trans Hdwl_red]].
   destruct Hdwl_trans as [θ Hθ].
+  exists dwl.
+  (* exists (la_wl_cons_w dwl (w t' ex5)). *)
+
+  (* (wl' [t, ...] <: ^x < [...] ⇝ dwl') ->
+      inst θ t <: inst θ ^x  
+  *)
+
     admit. 
   - admit.
 Admitted.

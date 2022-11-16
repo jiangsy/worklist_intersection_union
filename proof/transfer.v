@@ -114,6 +114,17 @@ Inductive inst_ev : subst_set -> var -> la_typelist -> la_typelist -> Prop :=
       inst_ev θ x lbs (la_tl_cons ubs ub) 
 .
 
+Inductive inst_ev' : subst_set -> var -> la_typelist -> Prop :=
+  | inst_ev_nil' : forall θ x, inst_ev' θ x la_tl_nil
+  | inst_ev_cons' : forall θ x tl t t' tᵈ, 
+      inst_ev' θ x tl -> 
+      inst_type θ t t' ->
+      inst_type θ (la_t_evar x) tᵈ ->
+      ld_sub (ss_to_ctx θ) t' tᵈ ->
+      ld_sub (ss_to_ctx θ) tᵈ t' ->
+      inst_ev' θ x (la_tl_cons tl t) 
+  .
+
 
 Reserved Notation "θ ⫦ Γᵃ ⇝ Γᵈ ⫣ θ'"
   (at level 65, Γᵃ at next level, Γᵈ at next level, no associativity).
@@ -468,6 +479,74 @@ Proof.
       * econstructor; auto.      
         dependent destruction H. auto.
 Qed.
+
+
+Lemma transfer_reorder: forall Γᵃ Γ'ᵈ θ' x t m Γ'ᵃ,
+  reorder Γᵃ x t m la_wl_nil Γ'ᵃ ->
+  inst_worklist nil Γ'ᵃ Γ'ᵈ θ' ->
+  exists Γᵈ θ, inst_worklist nil Γᵃ Γᵈ θ.
+Proof.
+  intros. 
+  generalize dependent θ'.
+  generalize dependent Γ'ᵈ.
+  induction H; intros.
+  - admit.
+  - admit.
+  - dependent destruction H1.
+    specialize (IHreorder Γᵈ θ' H1).
+    destruct IHreorder as [Γ'ᵈ [θ'']].  
+    exists (ld_wl_cons_tv Γ'ᵈ y), θ''.
+    constructor. auto.
+  - dependent destruction H1.
+    specialize (IHreorder _ _ H1).
+    destruct IHreorder as [Γ'ᵈ].
+    exists Γ'ᵈ.
+    econstructor; auto.
+  - dependent destruction H1.
+    specialize (IHreorder _ _ H1).
+    destruct IHreorder as [Γ'ᵈ].
+    exists Γ'ᵈ.
+    econstructor; eauto.
+  - dependent destruction H0.
+    admit.
+
+
+Lemma transfer_reorder: forall Γᵃ Γᵈ θ x t m Γ'ᵃ,
+  reorder Γᵃ x t m la_wl_nil Γ'ᵃ ->
+  inst_worklist nil Γᵃ Γᵈ θ -> 
+  exists Γ'ᵈ θ', inst_worklist nil Γ'ᵃ Γ'ᵈ θ'.
+Proof.
+  intros. 
+  generalize dependent θ.
+  generalize dependent Γᵈ.
+  induction H; intros.
+  - exists Γᵈ, θ. admit.
+  - admit.
+  - dependent destruction H1.
+    specialize (IHreorder Γᵈ θ' H1).
+    destruct IHreorder as [Γ'ᵈ [θ'']].  
+    exists (ld_wl_cons_tv Γ'ᵈ y), θ''.
+    econstructor. auto.
+  - dependent destruction H1.
+    specialize (IHreorder _ _ H1).
+    destruct IHreorder as [Γ'ᵈ [θ'']].
+    exists Γ'ᵈ, (θ''; y : tᵈ).
+    econstructor; auto.
+    + admit.
+    + admit.
+  - dependent destruction H1.
+    specialize (IHreorder _ _ H1).
+    destruct IHreorder as [Γ'ᵈ [θ'']].
+    exists Γ'ᵈ, (θ''; y : tᵈ).
+    econstructor; eauto.
+    + admit.
+    + admit.
+  - dependent destruction H0.
+
+
+
+
+Admitted.
 
 
 Definition transfer (Γ : la_worklist) (Γ' : ld_worklist) : Prop :=

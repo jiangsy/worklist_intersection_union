@@ -124,7 +124,7 @@ by
 
 |=> G
 ---------------- :: int
-G |=>  int
+G |=> int
 
 |=> G
 x in G 
@@ -174,10 +174,10 @@ G |- A <: forall x. B
 
 
 defns
-DeclarativeWorklistSubtyping :: '' ::=
+DeclarativeWorklistDelegateSubtyping :: '' ::=
 
 defn
-|- wl :: :: ld_worklist_reducible :: 'ld_wlred_'
+|- wl :: :: ld_worklist_reducible_del :: 'ld_wlred_del_'
 by
 
 -------------------- :: nil
@@ -195,3 +195,37 @@ by
 |- wl |- t1 <: t2 
 
 
+defns
+DeclarativeWorklistSubtyping :: '' ::=
+
+defn
+||- wl :: :: ld_worklist_reducible :: 'ld_wlred_'
+by
+
+-------------------- :: nil
+||- nil
+
+||- wl
+------------------- :: cons_tvar
+||- wl , x
+
+
+||- wl 
+---------------------- :: sub_int
+||- wl |- int <: int
+
+[| wl |] |=> t
+mono t
+||- wl |- [ t / x ] A <: B
+----------------------- :: sub_foralll
+||- wl |- A <: forall x. B
+
+
+||- wl , x |- A <: B
+------------------------ :: sub_forallr
+||- wl |- forall x. A <: B
+
+
+||- wl |- B1 <: B2 |- A2 <: A1
+-------------------------------- :: sub_arrow
+||- wl |- A1 -> B1 <: A2 -> B2
