@@ -69,6 +69,20 @@ Proof.
 Qed.
 
 
+Lemma wf_mono : forall θ x t, 
+  wf_ss θ -> x : t ∈ θ -> ld_mono_type t.
+Proof.
+  intros.
+  induction H.
+  - inversion H0.
+  - inversion H0.
+    inversion H2.
+    auto.
+  - inversion H0.
+    + dependent destruction H4. auto.
+    + auto.
+Qed.
+
 Reserved Notation "θ ⫦ t ⇝ t'"
   (at level 65, t at next level, no associativity).
 Inductive inst_type : subst_set -> la_type -> ld_type -> Prop := 
@@ -139,7 +153,7 @@ Inductive inst_worklist : subst_set -> la_worklist -> ld_worklist -> subst_set -
       θ ⫦ (la_wl_cons_w Γᵃ (la_w_sub t1ᵃ t2ᵃ)) ⇝ (ld_wl_cons_w Γᵈ (ld_w_sub t1ᵈ t2ᵈ)) ⫣ θ'
   | inst_wl_tv : forall θ θ' x Γᵃ Γᵈ, 
       θ ⫦ Γᵃ ⇝ Γᵈ ⫣ θ' -> 
-      θ ⫦ (la_wl_cons_tv Γᵃ x) ⇝ (ld_wl_cons_tv Γᵈ x) ⫣ θ'
+      θ ⫦ (la_wl_cons_tv Γᵃ x) ⇝ (ld_wl_cons_tv Γᵈ x) ⫣ (θ'; x)
   | inst_wl_ev : forall θ θ' tᵈ lbs ex ubs Γᵃ Γᵈ, 
       θ ⫦ Γᵃ ⇝ Γᵈ ⫣ θ' -> 
       ld_mono_type tᵈ -> 
@@ -481,7 +495,7 @@ Proof.
 Qed.
 
 
-Lemma transfer_reorder: forall Γᵃ Γ'ᵈ θ' x t m Γ'ᵃ,
+(* Lemma transfer_reorder: forall Γᵃ Γ'ᵈ θ' x t m Γ'ᵃ,
   reorder Γᵃ x t m la_wl_nil Γ'ᵃ ->
   inst_worklist nil Γ'ᵃ Γ'ᵈ θ' ->
   exists Γᵈ θ, inst_worklist nil Γᵃ Γᵈ θ.
@@ -501,17 +515,17 @@ Proof.
     specialize (IHreorder _ _ H1).
     destruct IHreorder as [Γ'ᵈ].
     exists Γ'ᵈ.
-    econstructor; auto.
+    econstructor; auto. admit.
   - dependent destruction H1.
     specialize (IHreorder _ _ H1).
     destruct IHreorder as [Γ'ᵈ].
     exists Γ'ᵈ.
-    econstructor; eauto.
+    econstructor; eauto. admit.
   - dependent destruction H0.
     admit.
+Admitted.
 
-
-Lemma transfer_reorder: forall Γᵃ Γᵈ θ x t m Γ'ᵃ,
+Lemma transfer_reorder': forall Γᵃ Γᵈ θ x t m Γ'ᵃ,
   reorder Γᵃ x t m la_wl_nil Γ'ᵃ ->
   inst_worklist nil Γᵃ Γᵈ θ -> 
   exists Γ'ᵈ θ', inst_worklist nil Γ'ᵃ Γ'ᵈ θ'.
@@ -542,11 +556,7 @@ Proof.
     + admit.
     + admit.
   - dependent destruction H0.
-
-
-
-
-Admitted.
+Admitted. *)
 
 
 Definition transfer (Γ : la_worklist) (Γ' : ld_worklist) : Prop :=

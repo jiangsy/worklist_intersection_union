@@ -214,16 +214,20 @@ by
 ---------------------- :: sub_int
 ||- wl |- int <: int
 
+||- wl 
+----------------------- :: sub_tvar
+||- wl |- x <: x
+
 [| wl |] |=> t
 mono t
 ||- wl |- [ t / x ] A <: B
 ----------------------- :: sub_foralll
-||- wl |- A <: forall x. B
+||- wl |- forall x. A <: B
 
 
 ||- wl , x |- A <: B
 ------------------------ :: sub_forallr
-||- wl |- forall x. A <: B
+||- wl |- A <: forall x. B
 
 
 ||- wl |- B1 <: B2 |- A2 <: A1

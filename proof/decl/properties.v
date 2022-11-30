@@ -614,3 +614,57 @@ Proof.
 Qed.
 
 Print Assumptions transitivity.
+
+Theorem soundness : forall Γᵈ,
+  ld_worklist_reducible Γᵈ -> ld_worklist_reducible_del Γᵈ.
+Proof.
+  intros. induction H; auto.
+  - econstructor; auto.
+    simpl. admit. 
+  - econstructor; eauto.
+    econstructor. admit.
+  - econstructor.
+    econstructor; auto.
+    + admit.
+    + admit.
+    + auto.
+  - econstructor.
+    + eapply ld_sub_foralll with (t:=t); auto.
+      inversion IHld_worklist_reducible; auto.
+    + inversion IHld_worklist_reducible. auto.
+  - econstructor.
+    + eapply ld_sub_forallr with (L:=L).
+      intros. inst_cofinites_with x.
+      inversion H0. simpl in *. auto.
+    + inst_cofinites_by L. inversion H0.
+      inversion H5. auto.
+  - econstructor.
+    + inversion IHld_worklist_reducible.
+      inversion H4.
+      econstructor.
+      * simpl in *. auto.
+      * auto.
+    + inversion IHld_worklist_reducible.
+      inversion H4.
+      auto.
+Admitted.
+  
+Theorem completness : forall Γᵈ,
+  ld_worklist_reducible_del Γᵈ -> ld_worklist_reducible Γᵈ.
+Proof.
+  intros. 
+  dependent induction H; auto.
+  - dependent induction H.
+    + constructor. auto.
+    + constructor. auto.
+    + constructor. 
+      (* weakening *)
+      admit.
+    + eapply ld_wlred_sub_foralll with (t:=t); auto.
+    + eapply ld_wlred_sub_forallr with (L:=L `union` (ld_ctx_dom (ld_wl_to_ctx wl))).
+      intros. inst_cofinites_with x.
+      apply H0; auto.
+      econstructor; auto.
+      * simpl. econstructor; auto. 
+        admit.
+Admitted. 
