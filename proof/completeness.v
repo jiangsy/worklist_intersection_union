@@ -62,8 +62,6 @@ Proof.
         -- econstructor. admit.
     (* last entry is another ex *)
     + econstructor.
-    
-    admit.
 
   (* ⊢ G, x <: x *)
   - unfold transfer in H0.  
