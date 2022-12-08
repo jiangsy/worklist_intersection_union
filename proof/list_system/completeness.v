@@ -6,6 +6,12 @@ Require Import decl.ott.
 Require Import transfer.
 Require Import ln_utils.
 
+
+(* totality of reorder *)
+(* https://github.com/Chen-PL/refactor-inference/blob/e218d35e1ec38e81037bfcaa7ca8028e95116d44/substwl.thm#L53 *)
+(* https://github.com/Chen-PL/refactor-inference/blob/e218d35e1ec38e81037bfcaa7ca8028e95116d44/substwl.thm#L146 *)
+
+
 Theorem completeness : forall Γᵈ Γᵃ, 
   ld_worklist_reducible Γᵈ -> 
   transfer Γᵃ Γᵈ -> 
@@ -23,22 +29,40 @@ Proof.
     + econstructor.
       assert (la_worklist_reducible Γᵃ).
       * auto.
-      * admit.
-
+      * remember (la_tl_app lbs ubs).
+        destruct l; simpl in *.
+        -- auto.
+        -- clear Heql. induction l; simpl in *.
+           ++ auto.
+           ++ dependent destruction H2.
+              assert (inst_ev (θ'; x : tᵈ) x (la_tl_cons l t) ).
+              ** dependent destruction H2. econstructor; eauto.
+              ** specialize (IHl H8). dependent destruction H2. dependent induction t.
+                 --- dependent induction t0.
+              
+                  +++ econstructor; auto.
+                  +++ admit. (* impossible *)
+                  +++ admit. (* impossible *)
+                  +++ inversion H2. inversion H12.
+                  +++ admit. (* impossible *)
+                  +++ dependent destruction H3. 
+                      econstructor; admit.
+                 --- admit.
+                 --- admit.
+                 --- admit.
+                 --- admit.
+                 --- admit.
   (* ⊢ G, x *)
   - unfold transfer in H0.
     destruct H0 as [θ].
     dependent induction H0.
     + econstructor.
-      -- admit.
+      -- admit. (* wf *)
       -- apply IHld_worklist_reducible.
       unfold transfer.
       exists θ'.
       auto.
-    + econstructor.
-      assert (la_worklist_reducible Γᵃ).
-      -- eapply IHinst_worklist; eauto.
-      -- admit.
+    + admit.
 
   (* ⊢ G, int <: int *)
   - unfold transfer in H0.
@@ -61,7 +85,7 @@ Proof.
         -- econstructor; admit.
         -- econstructor. admit.
     (* last entry is another ex *)
-    + econstructor.
+    + admit.
 
   (* ⊢ G, x <: x *)
   - unfold transfer in H0.  
@@ -74,7 +98,11 @@ Proof.
            ++ apply IHld_worklist_reducible.
               unfold transfer. exists θ.
               auto.
-        -- admit.
+        -- econstructor.
+           ++ admit.
+           ++ auto.
+           ++ admit.
+           ++ admit.
       * dependent destruction H3.
         -- admit.
         -- admit.

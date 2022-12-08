@@ -1,0 +1,363 @@
+
+metavar x, y, z ::= {{ repr-locally-nameless }}
+metavar ex, ey, ez ::= {{ coq var }}
+
+
+grammar
+
+la_type, t, A, B :: 'la_t_' ::= 
+  | int           ::   :: int
+  | ⊤             ::   :: top
+  | ⊥             ::   :: bot 
+  | forall x . t  ::   :: forall (+ bind x in t +) 
+  | t1 -> t2      ::   :: arrow 
+  | t1 ∧ t2       ::   :: intersection
+  | t1 ∨ t2       ::   :: union
+  | x             ::   :: tvar
+  | ex            ::   :: evar
+  | ( t )         :: S :: paren {{ coq ([[t]]) }}
+  | [ t / x ] A   :: M :: subst {{ coq (open_la_type_wrt_la_type [[x A]] [[t]]) }}
+
+la_mode, m :: 'la_m_' ::=
+  | +                :: :: u
+  | -                :: :: l
+
+la_work, w :: 'la_w_' ::=
+  | t1 <: t2         :: :: sub
+
+la_worklist, wl :: 'la_wl_' ::= 
+  | wnil               ::   :: nil 
+  | wl , x             ::   :: cons_tv
+  | wl , t1 ≤ ex ≤ t2  ::   :: cons_ev
+  | wl |- w            ::   :: cons_w
+  | wl1 ++ wl2         :: M :: app {{ coq (la_wl_app [[wl1]] [[wl2]]) }}
+
+formula :: formula_ ::=
+  | judgement               ::   :: judgement
+  | ex notin wl             :: M :: evar_fresh {{ coq ([[ex]] `notin` (evar_dom [[wl]])) }}
+  | x notin wl              :: M :: tvar_fresh {{ coq ([[x]] `notin` (tvar_dom [[wl]])) }}
+  | m { ex ∪ t } wl -> wl'  :: M :: reorder {{ coq (reorder [[wl]] [[ex]] [[t]] [[m]] la_wl_nil [[wl']]) }}
+
+substitutions
+  single la_type x :: subst
+  single la_type ex :: ex_subst
+
+
+freevars
+  la_type  x   :: fx
+  la_type  ex  :: fex
+
+
+embed {{ coq
+
+Fixpoint la_wl_app (wl1 wl2 : la_worklist) : la_worklist :=
+  match wl2 with
+  | la_wl_nil => wl1 
+  | la_wl_cons_tv wl2' x2 => la_wl_cons_tv (la_wl_app wl1 wl2') x2
+  | la_wl_cons_ev wl2' lb2 ex2 ub2 => la_wl_cons_ev (la_wl_app wl1 wl2') lb2 ex2 ub2
+  | la_wl_cons_w wl2' w2 => la_wl_cons_w (la_wl_app wl1 wl2') w2
+  end
+.
+
+Fixpoint tvar_dom (wl : la_worklist) : atoms :=
+  match wl with
+  | la_wl_nil => {}
+  | la_wl_cons_tv wl' x => add x (tvar_dom wl')
+  | la_wl_cons_ev wl' _ _ _ => tvar_dom wl'
+  | la_wl_cons_w wl' _ => tvar_dom wl'
+  end
+.
+
+Fixpoint evar_dom (wl : la_worklist) : atoms :=
+  match wl with
+  | la_wl_nil => {}
+  | la_wl_cons_ev wl' _ ex _ => add ex (evar_dom wl')
+  | la_wl_cons_w wl' _ => evar_dom wl'
+  | la_wl_cons_tv wl' _ => evar_dom wl'
+  end
+.
+
+Fixpoint la_wl_app_rev (wl1 wl2 : la_worklist) : la_worklist :=
+  match wl2 with
+  | la_wl_nil => wl1 
+  | la_wl_cons_ev wl2' lb2 ex2 ub2 => la_wl_app_rev (la_wl_cons_ev wl1 lb2 ex2 ub2) wl2'
+  | la_wl_cons_w wl2' w2 => la_wl_app_rev (la_wl_cons_w wl1 w2) wl2'
+  | la_wl_cons_tv wl2' x2 => la_wl_app_rev (la_wl_cons_tv wl1 x2) wl2'
+  end
+.
+
+Inductive reorder : la_worklist -> var -> la_type -> la_mode -> la_worklist -> la_worklist -> Prop :=
+  | re_add_ub : forall Γ x lb ub t Γ'
+    , x `notin` fex_la_worklist Γ' `union` fex_la_type t
+    -> reorder (la_wl_cons_ev Γ lb x ub) x t la_m_u la_wl_nil 
+    (la_wl_app_rev (la_wl_cons_ev Γ lb x (la_t_intersection ub t)) Γ')
+  | re_add_lb : forall Γ x lb ub t Γ'
+    , x `notin` fex_la_worklist Γ' `union` fex_la_type t
+    -> reorder (la_wl_cons_ev Γ lb x ub) x t la_m_l la_wl_nil 
+    (la_wl_app_rev (la_wl_cons_ev Γ (la_t_union lb t) x ub) Γ')
+  | re_x_stay : forall Γ1 Γ2 x y t m Γ'
+    , y `notin` fx_la_worklist Γ' `union` fx_la_type t
+    -> reorder Γ1 x t m Γ' Γ2
+    -> reorder (la_wl_cons_tv Γ1 y) x t m Γ' (la_wl_cons_tv Γ2 y)
+  | re_ex_stay : forall Γ1 Γ2 y lb ub x t m Γ'
+    , y `notin` fex_la_worklist Γ' `union` fex_la_type t
+    -> reorder Γ1 x t m Γ' Γ2
+    -> reorder (la_wl_cons_ev Γ1 lb y ub) x t m Γ' (la_wl_cons_ev Γ2 lb y ub)
+  | re_ex_move : forall Γ1 Γ2 y lb ub x t m Γ'
+    , x `notin` fex_la_type lb `union` fex_la_type ub
+    -> reorder Γ1 x t m (la_wl_cons_ev Γ' lb y ub) Γ2
+    -> reorder (la_wl_cons_ev Γ1 lb y ub) x t m Γ' (la_wl_cons_ev Γ2 lb y ub)
+  | re_sub_stay : forall Γ1 Γ2 t1 t2 x t m Γ' 
+    , reorder Γ1 x t m Γ' Γ2
+    -> reorder (la_wl_cons_w Γ1 (la_w_sub t1 t2)) x t m Γ' (la_wl_cons_w Γ2 (la_w_sub t1 t2))
+  .
+
+}}
+
+
+defns
+Monotype :: '' ::=
+
+defn
+mono t :: :: la_mono_type :: 'la_mono_'
+by
+
+----------------- :: tvar
+mono x
+
+----------------- :: evar
+mono ex
+
+----------------- :: int
+mono int
+
+mono t1
+mono t2
+----------------- :: arrow
+mono (t1 -> t2)
+
+
+defns
+NotForallType :: '' ::=
+
+defn
+~∀ A :: :: la_notforall_type :: 'la_nf_'
+by
+
+--------------- :: int
+~∀ int
+
+--------------- :: var
+~∀ x
+
+--------------- :: arrow
+~∀ t1 -> t2
+
+
+defns
+InWorklist :: '' ::=
+
+defn
+t in wl :: :: la_in_worklist :: 'la_inwl_'
+by
+
+---------------------------- :: tv_here
+x in wl , x
+
+x in wl
+---------------------------  :: tv_there_tv
+x in wl , y
+
+x in wl 
+--------------------------   :: tv_there_ev
+x in wl , t1 ≤ ex ≤ t2
+
+x in wl
+---------------------------- :: tv_there_w
+x in wl |- w
+
+---------------------------- :: ev_here
+ex in wl , t1 ≤ ex ≤ t2
+
+ex in wl 
+---------------------------- :: ev_there_tv
+ex in wl , x
+
+ex in wl 
+---------------------------- :: ev_there_ev
+ex in wl , t1 ≤ ey ≤ t2
+
+ex in wl
+---------------------------- :: ev_there_w
+ex in wl |- w
+
+
+defns
+WellFormedType :: '' ::=
+
+defn
+wl |=> t  :: :: la_wf_type :: 'la_wft_'
+by
+
+---------------- :: int
+wl |=>  int
+
+ex in wl
+----------------- :: evar
+wl |=> ex
+
+x in wl 
+---------------- :: tvar
+wl |=> x
+
+wl |=>  t1 
+wl |=>  t2 
+---------------- :: arrow
+wl |=>  t1 -> t2
+
+wl , x |=> t 
+----------------- :: forall 
+wl |=> forall x. t
+
+
+defns
+WellFormedMonoType :: '' ::=
+
+defn
+wl |==> t  :: :: la_wf_mtype :: 'la_wfmt_'
+by
+
+---------------- :: int
+wl |==> int
+
+x in wl 
+---------------- :: tvar
+wl |==> x
+
+ex in wl 
+---------------- :: evar
+wl |==> ex
+
+wl |==> t1
+wl |==> t2 
+---------------- :: arrow
+wl |==> t1 -> t2
+
+
+
+defns
+InScope :: '' ::=
+
+defn
+wl [ t1 ] [ t2 ] :: :: la_in_scope :: 'la_ins_'
+by
+
+ex1 in wl
+------------------------------------ :: ev_here
+wl , t1 ≤ ex2 ≤ t2 [ex1] [ex2]
+
+
+wl [ ex1 ] [ ex2 ]
+------------------------------------ :: tv_between
+wl , x [ ex1 ] [ ex2 ]
+
+
+wl [ ex1 ] [ ex2 ]
+------------------------------------ :: ev_between
+wl , t1 ≤ ex ≤ t2 [ ex1 ] [ ex2 ]
+
+
+wl [ ex1 ] [ ex2 ]
+------------------------------------ :: w_between
+wl |- w [ ex1 ] [ ex2 ]
+
+
+defns 
+AlgorithmeticSubtyping :: '' ::=
+
+defn 
+|- wl :: :: la_worklist_reducible :: 'la_wlred_'
+by
+
+x notin wl
+|- wl
+---------------------------------------------------- :: tvar
+|- wl , x
+
+ex notin wl
+|- wl |- t1 <: t2
+---------------------------------------------------- :: evar_nil_l
+|- wl , t1 ≤ ex ≤ t2
+
+|- wl
+---------------------------------------------------- :: int_int
+|- wl |- int <: int
+
+x in wl
+|- wl
+---------------------------------------------------- :: tvar_tvar
+|- wl |- x <: x
+
+ex in wl
+|- wl
+---------------------------------------------------- :: evar_evar
+|- wl |- ex <: ex
+
+~∀ B
+ex notin wl
+|- wl , ⊥ ≤ ex ≤ ⊤ |- [ ex / x ] A <: B
+---------------------------------------------------- :: forall_l
+|- wl |- forall x. A <: B
+
+|- wl , x |- A <: B
+---------------------------------------------------- :: forall_r
+|- wl |- A <: forall x. B
+
+|- wl |- A2 <: B2 |- B1 <: A1
+---------------------------------------------------- :: arrow_arrow
+|- wl |- A1 -> A2 <: B1 -> B2
+
+ex in wl
+ex1 notin wl 
+ex2 notin wl , ⊥ ≤ ex1 ≤ ⊤
++ { ex ∪ (ex1 -> ex2) } wl , ⊥ ≤ ex1 ≤ ⊤ , ⊥ ≤ ex2 ≤ ⊤ -> wl'
+|- wl' |- ex1 -> ex2 <: A -> B
+---------------------------------------------------- :: evar_arrow
+|- wl |- ex <: A -> B
+
+ex in wl
+ex1 notin wl 
+ex2 notin wl , ⊥ ≤ ex1 ≤ ⊤
+- { ex ∪ (ex1 -> ex2) } wl , ⊥ ≤ ex1 ≤ ⊤ , ⊥ ≤ ex2 ≤ ⊤ -> wl'
+|- wl' |- A -> B <: ex1 -> ex2 
+---------------------------------------------------- :: arrow_evar
+|- wl |- A -> B <: ex
+
+wl [ey] [ex]
++ { ex ∪ ey } wl -> wl'
+|- wl'
+---------------------------------------------------- :: evar_evar_l
+|- wl |- ex <: ey
+
+wl [ey] [ex]
+- { ex ∪ ey } wl -> wl'
+|- wl'
+---------------------------------------------------- :: evar_evar_r
+|- wl |- ey <: ex
+
+ex in wl
+mono t
+- { ex ∪ t } wl -> wl'
+|- wl'
+---------------------------------------------------- :: mono_evar
+|- wl |- t <: ex
+
+ex in wl
+mono t
++ { ex ∪ t } wl -> wl'
+|- wl'
+---------------------------------------------------- :: evar_mono
+|- wl |- ex <: t
+
+
+

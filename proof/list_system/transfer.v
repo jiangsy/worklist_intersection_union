@@ -105,38 +105,27 @@ Inductive inst_type : subst_set -> la_type -> ld_type -> Prop :=
       θ ⫦ (la_t_forall A') ⇝ (ld_t_forall A)
 where "θ ⫦ t ⇝ t'" := (inst_type θ t t').
 
-Lemma inst_t_wf_ss : forall θ t t',
-  θ ⫦ t ⇝ t' -> wf_ss θ.
+Lemma inst_t_wf_ss : forall θ tᵃ tᵈ,
+  θ ⫦ tᵃ ⇝ tᵈ -> wf_ss θ.
 Proof.
   induction 1; pick fresh x'; eauto.
 Qed.
 
 
-Inductive inst_ev : subst_set -> var -> la_typelist -> la_typelist -> Prop :=
-  | inst_ev_nil : forall θ x, inst_ev θ x la_tl_nil la_tl_nil
-  | inst_ev_lbs : forall θ x lb lbs ubs lb' t', 
-      inst_ev θ x lbs ubs -> 
-      inst_type θ lb lb' -> 
-      inst_type θ (la_t_evar x) t' -> 
-      ld_sub (ss_to_ctx θ) lb' t' -> 
-      inst_ev θ x (la_tl_cons lbs lb) ubs
-  | inst_ev_ubs : forall θ x lbs ub ubs ub' t', 
-      inst_ev θ x lbs ubs -> 
-      inst_type θ ub ub' -> 
-      inst_type θ (la_t_evar x) t' -> 
-      ld_sub (ss_to_ctx θ) t' ub' -> 
-      inst_ev θ x lbs (la_tl_cons ubs ub) 
-.
 
-Inductive inst_ev' : subst_set -> var -> la_typelist -> Prop :=
-  | inst_ev_nil' : forall θ x, inst_ev' θ x la_tl_nil
-  | inst_ev_cons' : forall θ x tl t t' tᵈ, 
-      inst_ev' θ x tl -> 
+
+Inductive inst_ev : subst_set -> var -> la_typelist -> Prop :=
+  | inst_ev_nil : forall θ x t, 
+    wf_ss θ ->
+    x : t ∈ θ -> 
+    inst_ev θ x la_tl_nil
+  | inst_ev_cons : forall θ x tl t t' tᵈ, 
+      inst_ev θ x tl -> 
       inst_type θ t t' ->
       inst_type θ (la_t_evar x) tᵈ ->
       ld_sub (ss_to_ctx θ) t' tᵈ ->
       ld_sub (ss_to_ctx θ) tᵈ t' ->
-      inst_ev' θ x (la_tl_cons tl t) 
+      inst_ev θ x (la_tl_cons tl t) 
   .
 
 
@@ -153,15 +142,24 @@ Inductive inst_worklist : subst_set -> la_worklist -> ld_worklist -> subst_set -
       θ ⫦ (la_wl_cons_w Γᵃ (la_w_sub t1ᵃ t2ᵃ)) ⇝ (ld_wl_cons_w Γᵈ (ld_w_sub t1ᵈ t2ᵈ)) ⫣ θ'
   | inst_wl_tv : forall θ θ' x Γᵃ Γᵈ, 
       θ ⫦ Γᵃ ⇝ Γᵈ ⫣ θ' -> 
+      x ∉ dom θ' ->
       θ ⫦ (la_wl_cons_tv Γᵃ x) ⇝ (ld_wl_cons_tv Γᵈ x) ⫣ (θ'; x)
   | inst_wl_ev : forall θ θ' tᵈ lbs ex ubs Γᵃ Γᵈ, 
       θ ⫦ Γᵃ ⇝ Γᵈ ⫣ θ' -> 
       ld_mono_type tᵈ -> 
+      ss_to_ctx θ' ⊢ tᵈ ->
       ex `notin` dom θ' -> 
-      inst_ev (θ' ; ex : tᵈ) ex lbs ubs -> 
+      inst_ev (θ' ; ex : tᵈ) ex (la_tl_app lbs ubs) -> 
       θ ⫦ (la_wl_cons_ev Γᵃ lbs ex ubs) ⇝ Γᵈ ⫣ (θ' ; ex : tᵈ)
 where "θ ⫦ Γᵃ ⇝ Γᵈ ⫣ θ'" := (inst_worklist θ Γᵃ Γᵈ θ').
 
+Lemma inst_wl_wf_ss : forall θ Γᵃ Γᵈ,
+  nil ⫦ Γᵃ ⇝ Γᵈ ⫣ θ -> wf_ss θ.
+Proof.
+  induction 1; eauto.
+  + econstructor; auto.
+  + econstructor; eauto.
+Qed.
 
 Hint Constructors inst_type : transfer.
 Hint Constructors inst_ev : transfer.

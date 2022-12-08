@@ -4,7 +4,7 @@ COQ_MAKEFILE := CoqMakefile
 OTT_FLAGS := -coq_lngen true -signal_parse_errors true
 
 SYSTEMS := algo decl
-IGNORE_DIRS := intersection_union
+IGNORE_DIRS := ""
 OTT_OUTS   := $(addsuffix /ott.v,${SYSTEMS})
 LNGEN_OUTS := $(addsuffix /ln_inf.v,${SYSTEMS})
 
