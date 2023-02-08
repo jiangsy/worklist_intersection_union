@@ -3,7 +3,7 @@ COQ_MAKEFILE := CoqMakefile
 
 OTT_FLAGS := -coq_lngen true -signal_parse_errors true
 
-SYSTEMS := algo decl
+SYSTEMS := decl
 IGNORE_DIRS := ""
 OTT_OUTS   := $(addsuffix /ott.v,${SYSTEMS})
 LNGEN_OUTS := $(addsuffix /ln_inf.v,${SYSTEMS})
@@ -13,6 +13,7 @@ LNGEN_OUTS := $(addsuffix /ln_inf.v,${SYSTEMS})
 %/ott.v : %/language.ott
 	ott -i $^ -o $@ ${OTT_FLAGS}
 	sed -e "/Ott.ott_list_core/d" -i "" $@
+	sed -e "/lc_dtyp[ ](dexp_tabs[ ](dbody_anno[ ]e[ ]T1))/d" -i "" $@ 
 
 ott : ${OTT_OUTS}
 

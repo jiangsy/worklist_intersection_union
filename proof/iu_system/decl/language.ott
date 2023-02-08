@@ -1,280 +1,454 @@
-metavar var, x, y, z ::= {{ repr-locally-nameless }}
-
+metavar typvar, X, Y, Z     ::= {{ repr-locally-nameless }}
+metavar stypvar, SX, SY, SZ ::= {{ coq var }}
+metavar expvar, x, y, z     ::= {{ repr-locally-nameless }}
 
 grammar
 
-ld_type, t, A, B :: 'ld_t_' ::= 
-  | int           ::   :: int
-  | forall x . t  ::   :: forall (+ bind x in t +)
-  | t1 -> t2      ::   :: arrow
-  | t1 ∧ t2       ::   :: intersection
-  | t1 ∨ t2       ::   :: union
-  | x             ::   :: var
-  | ( t )         :: S :: paren {{ coq [[t]] }} 
-  | [ t / x ] A   :: M :: subst {{ coq (open_ld_type_wrt_ld_type [[x A]] [[t]]) }}
+dtyp, T, S, U :: dtyp_ ::=
+  | UNIT           ::   :: unit
+  | TOP            ::   :: top
+  | BOT            ::   :: bot
+  | X              ::   :: var
+  | SX             ::   :: svar
+  | T1 -> T2       ::   :: arrow
+  | ∀ X . T        ::   :: all  (+ bind X in T +)
+  | T1 + T2        ::   :: union
+  | T1 * T2        ::   :: intersection
+  | ( T )          :: S :: paren {{ coq ([[T]]) }}
+  | { T2 / X } T1  :: M :: subst {{ coq (open_dtyp_wrt_dtyp [[X T1]] [[T2]]) }}
 
-ld_work, w :: 'ld_w_' ::= 
-  | t1 <: t2       :: :: sub
+dbody :: dbody_ ::= 
+  | e : T ::  :: anno
 
-ld_worklist, wl :: 'ld_wl_' ::= 
-  | nil            :: :: nil 
-  | wl , x         :: :: cons_tv
-  | wl |- w        :: :: cons_w
+dexp, e, f, g :: dexp_ ::=
+  | unit                                ::   :: unit 
+  | top                                 ::   :: top
+  | x                                   ::   :: var
+  | \ x . e                             ::   :: abs  (+ bind x in e +)
+  | e1 e2                               ::   :: app
+  | \ X . dbody                         ::   :: tabs (+ bind X in dbody +) 
+  | e @ T                               ::   :: tapp
+  | e : T                               ::   :: anno
+  | ( e )                               :: S :: paren  {{ coq ([[e]]) }}
+  | { e2 / x } e1                       :: M :: subst1 {{ coq (open_dexp_wrt_dexp [[x e1]] [[e2]]) }}
+  | { T2 / X } e1                       :: M :: subst2 {{ coq (open_dexp_wrt_dtyp [[X e1]] [[T2]]) }}
 
-ld_context, G :: 'ld_ctx_' ::=
-  | nil            ::   :: nil
-  | G , x          ::   :: cons
-  | [| wl |]       :: M :: wl {{ coq (ld_wl_to_ctx [[wl]]) }}
-
-formula :: formula_ ::=
-  | judgement     ::   :: judgement
-  | x ∉ G         :: M :: ctx_fresh {{ coq ([[x]] `notin` ld_ctx_dom [[G]]) }}
-
+binding, b :: dbind_ ::=
+  | : ▪  ::   :: tvar_empty
+  | : ~▪ ::   :: stvar_empty
+  | : T  ::   :: typ
 
 substitutions
-  single ld_type x :: subst
-
+  single T X  :: dsubst_tv_in
+  single T SX :: dsubst_stv_in
+  single e x  :: dsubst_v_in
 
 freevars
-  ld_type    x  :: fv
+  T X  :: ftv_in
+  T SX :: fstv_in
+  e x  :: fv_in
 
-embed {{ coq
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-Fixpoint ld_wl_app (wl1 wl2 : ld_worklist) : ld_worklist :=
-  match wl2 with
-  | ld_wl_nil => wl1 
-  | ld_wl_cons_w wl2' w2 => ld_wl_cons_w (ld_wl_app wl1 wl2') w2
-  | ld_wl_cons_tv wl2' x => ld_wl_cons_tv (ld_wl_app wl1 wl2') x
-  end
-.
+grammar
 
-Fixpoint ld_ctx_dom (G : ld_context) : atoms :=
-  match G with
-  | ld_ctx_nil => {}
-  | ld_ctx_cons G' x => add x (ld_ctx_dom G')
-  end
-.
+denv, E, F, G:: '' ::= {{ coq list (atom*binding) }}
+  | empty    ::   :: empty {{ coq nil }}
+  | E , x b  ::   :: cons1 {{ coq ([[x]]~[[b]] ++ [[E]])  }}
+  | E , X b  ::   :: cons2 {{ coq ([[X]]~[[b]] ++ [[E]])  }}
+  | E , SX b ::   :: cons3 {{ coq ([[SX]]~[[b]] ++ [[E]]) }}
 
-Fixpoint ld_wl_to_ctx (wl : ld_worklist) : ld_context := 
-  match wl with 
-  | ld_wl_nil                     => ld_ctx_nil
-  | ld_wl_cons_tv wl' x              => ld_ctx_cons (ld_wl_to_ctx wl') x 
-  | ld_wl_cons_w wl' _              => ld_wl_to_ctx wl'
-  end
-.
+dvalue, v :: dvalue_ ::=
+  | unit             ::   :: unit
+  | \ x . e          ::   :: abs  (+ bind x in e +)
+  | \ X . dbody      ::   :: tabs (+ bind X in dbody +)
+  | top              ::   :: top
+  | v : T            ::   :: anno
 
-}}
+formula :: formula_ ::=
+  | judgement        ::   :: judgement
+  | ( x b )  in E    ::   :: binds1 {{ coq binds ([[x]])  ([[b]]) ([[E]]) }}
+  | ( X b )  in E    ::   :: binds2 {{ coq binds ([[X]])  ([[b]]) ([[E]]) }}
+  | ( SX b ) in E    ::   :: binds3 {{ coq binds ([[SX]]) ([[b]]) ([[E]]) }}
+  | uniq E           ::   :: uniq   {{ coq uniq ([[E]]) }}
+  | x  `notin` dom E ::   :: fresh1 {{ coq ([[x]]  `notin` dom ([[E]])) }}
+  | X  `notin` dom E ::   :: fresh2 {{ coq ([[X]]  `notin` dom ([[E]])) }}
+  | SX `notin` dom E ::   :: fresh3 {{ coq ([[SX]] `notin` dom ([[E]])) }}
 
+subrules
+  v <:: e
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 defns
-Monotype :: '' ::=
+Jdwf_typ :: '' ::=
 
 defn
-mono A :: :: ld_mono_type :: 'ld_mono_'
-by
+E |- T :: :: dwf_typ :: 'dwf_typ_' by
 
---------------- :: int
-mono int
+--------- :: unit
+E |- UNIT 
 
---------------- :: var
-mono x
+--------- :: bot
+E |- BOT 
 
-mono t1
-mono t2
+--------- :: top
+E |- TOP
+
+(X : ▪) in E
+-------------- :: var
+E |- X
+
+(SX : ~▪) in E 
+-------------- :: stvar 
+E |- SX
+
+E |- T1
+E |- T2
+-------------- :: arrow
+E |- T1 -> T2
+
+E, X : ▪ |- T
+-------------------- :: all
+E |- ∀ X . T
+
+E |- T1
+E |- T2
+------------- :: union
+E |- T1 + T2
+
+E |- T1
+E |- T2 
+------------- :: intersection
+E |- T1 * T2
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+defns 
+Jdmono_typ :: '' ::= 
+
+defn 
+mono T :: :: dmono_typ :: 'dmono_typ_' by 
+
+--------------- :: unit
+mono UNIT
+
+--------------- :: tvar
+mono X
+
+mono T1
+mono T2
 --------------- :: arrow
-mono t1 -> t2
+mono T1 -> T2
 
-mono t1 
-mono t2 
+mono T1 
+mono T2 
 --------------- :: intersection
-mono t1 ∧ t2
+mono T1 * T2
 
-mono t1 
-mono t2 
+mono T1 
+mono T2 
 --------------- :: union
-mono t1 ∨ t2
+mono T1 + T2
 
 
-defns
-InContext :: '' ::=
-
-defn
-x in G :: :: ld_in_context :: 'ld_inc_'
-by
-
------------------- :: here
-x in G, x 
-
-x in G
------------------- :: there
-x in G, y 
-
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 defns
-WellFormedContext :: '' ::=
+Jdwf_env :: '' ::=
 
 defn
-|=> G :: :: ld_wf_context :: 'ld_wfc_'
-by
+|- E :: :: dwf_env :: 'dwf_env_' by
 
------------- :: nil
-|=> nil
+--------- :: empty
+|- empty
 
-|=> G
-x ∉ G
------------- :: cons
-|=> G , x
+|- E
+X `notin` dom E
+---------------- :: tvar
+|- E , X : ▪
 
+|- E
+SX `notin` dom E 
+---------------- :: stvar
+|- E , SX : ~▪
+
+|- E
+E |- T
+x `notin` dom E
+---------------- :: typ
+|- E , x : T
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 defns
-WellFormedType :: '' ::=
+Jdsub :: '' ::=
 
 defn
-G |=> t  :: :: ld_wf_type :: 'ld_wft_'
-by
+E |- T1 <: T2 :: :: dsub :: 'dsub_' by
 
-|=> G
----------------- :: int
-G |=>  int
+|- E
+E |- S
+-------------- :: top
+E |- S <: TOP
 
-|=> G
-x in G 
----------------- :: var
-G |=> x
+|- E 
+E |- T
+------------------- :: bot
+E |- BOT <: T
 
-G |=>  t1 
-G |=>  t2 
----------------- :: arrow
-G |=>  t1 -> t2
+|- E
+------------------- :: unit
+E |- UNIT <: UNIT
 
-G |=>  t1 
-G |=>  t2 
----------------- :: intersection
-G |=>  t1 ∧ t2
+|- E
+E |- X
+------------ :: refl_tvar
+E |- X <: X
 
-G |=>  t1 
-G |=>  t2 
----------------- :: union
-G |=>  t1 ∨ t2
+|- E 
+E |- SX 
+--------------- :: refl_stvar
+E |- SX <: SX 
 
-G , x |=> t 
------------------ :: forall 
-G |=> forall x. t
+E |- T1 <: S1
+E |- S2 <: T2
+-------------------------- :: arrow
+E |- S1 -> S2 <: T1 -> T2
 
+E , SX : ~▪ |- { SX / X } S <: { SX / X } T
+-------------------------------------------- :: forall
+E |- ∀ X. S <: ∀ X. T
+
+E |- T2
+mono T2
+E |- { T2 / X } S <: T1
+---------------------------- :: foralll
+E |- ∀ X . S <: T1
+
+E |- S <: T1
+E |- S <: T2
+------------------------ :: intersection_1
+E |- S <: T1 * T2
+
+E |- S1 <: T
+E |- S2
+------------------------ :: intersection_2
+E |- S1 * S2 <: T
+
+E |- S2 <: T
+E |- S1
+------------------------ :: intersection_3
+E |- S1 * S2 <: T
+
+E |- S <: T1
+E |- T2
+------------------------ :: union_1
+E |- S <: T1 + T2
+
+E |- S <: T2
+E |- T1
+------------------------ :: union_2
+E |- S <: T1 + T2
+
+E |- S1 <: T
+E |- S2 <: T
+------------------------ :: union_3
+E |- S1 + S2 <: T
 
 defns
-WellFormedMonoType :: '' ::=
+Jdneq_forall :: '' ::=
 
 defn
-G |==> t  :: :: ld_wf_mtype :: 'ld_wfmt_'
-by
+T ¬= ∀ :: :: dneq_forall :: 'dneq_forall' by
 
-|=> G
----------------- :: int
-G |==> int
+------------------------ :: unit
+UNIT ¬= ∀
 
-|=> G
-x in G 
----------------- :: var
-G |==> x
+------------------------ :: top
+TOP ¬= ∀
 
-G |==> t1
-G |==> t2 
----------------- :: arrow
-G |==> t1 -> t2
+------------------------ :: bot
+BOT ¬= ∀
 
-G |==> t1
-G |==> t2 
----------------- :: intersection
-G |==> t1 ∧ t2
+------------------------ :: var
+X ¬= ∀
 
-G |==> t1
-G |==> t2 
----------------- :: union
-G |==> t1 ∨ t2
+------------------------ :: svar
+SX ¬= ∀
 
+------------------------ :: arrow
+T1 -> T2 ¬= ∀
+
+------------------------ :: union
+T1 + T2 ¬= ∀
+
+------------------------ :: intersection
+T1 * T2 ¬= ∀
 
 defns
-DeclarativeSubtyping :: '' ::=
+Jdtyping :: '' ::=
+
+defn 
+E |- e => T :: :: d_infer :: 'dinf_' by 
+
+|- E
+(x : T) in E
+-------------- :: var
+E |- x => T
+
+E |- T
+E |- e <= T
+------------------ :: anno
+E |- (e : T) => T
+
+|- E
+--------------------------- :: unit
+E |- unit => UNIT
+
+E |- e => BOT
+--------------------------- :: bot
+E |- e @ T => BOT
+
+E, X : ▪ |- e : T1 <= T2
+-------------------------------- :: tabs
+E |- \ X . e : T1 => ∀ X . T2
+
+E |- e1 => ∀ X . T1
+E |- T2
+----------------------------- :: tapp 
+E |- e1 @ T2 => {T2 / X} T1
+
+% disable inferring mono types 
+% mono (T1 -> T2)
+% E |- T1 -> T2
+% E, x : T1 |- e <= T2
+% --------------------------- :: abs
+% E |- \ x . e => T1 -> T2
 
 defn
-G |- t1 <: t2 :: :: ld_sub :: 'ld_sub_'
-by
+E |- e <= T :: :: d_check :: 'dchk_' by
 
-|=> G
-x in G
-------------------- :: var
-G |- x <: x
+% use the following rule instead
+% TODO: check E |- e
+% |- E 
+% --------------------------- :: top
+% E |- e <= TOP
 
-|=> G
-------------------- :: int
-G |- int <: int
+E, x : BOT |- e <= TOP
+--------------------------- :: top_lambda
+E |- \ x . e <= TOP
 
-G |- B1 <: A1
-G |- A2 <: B2
-------------------- :: arrow
-G |- A1 -> A2 <: B1 -> B2
+E |- T1 -> T2
+E, x : T1 |- e <= T2
+--------------------------- :: abs
+E |- \ x . e <= T1 -> T2
 
-G |- A <: B1
-G |- A <: B2
-------------------- :: intersection_r
-G |- A <: B1 ∧ B2
+E |- e1 => T1
+E |- T1 ∘ e2 =>=> T2
+------------------------ :: app
+E |- e1 e2 <= T2
 
-G |- A1 <: B
-G |=> A2
-------------------- :: intersection_l1
-G |- A1 ∧ A2 <: B
+E |- e => S
+E |- S <: T
+---------------- :: sub
+E |- e <= T
 
-G |- A2 <: B
-G |=> A1
-------------------- :: intersection_l2
-G |- A1 ∧ A2 <: B
+defn 
+E |- T1 ∘ e =>=> T2 :: :: d_infer_app :: 'dinfapp_' by
 
-G |- A <: B1
-G |=> B2
------------------ :: union_r1
-G |- A <: B1 ∨ B2
+E |- e <= T1
+-------------------------------- :: arrow
+E |- ( T1 -> T2 ) ∘ e =>=> T2
 
-G |- A <: B2
-G |=> B1
------------------ :: union_r2
-G |- A <: B1 ∨ B2
+mono T3
+E |- T3 
+E |- { T3 / X } T1 ∘ e =>=> T2
+-------------------------------- :: forall
+E |- ( ∀ X . T1 ) ∘ e =>=> T2
 
-G |- A1 <: B
-G |- A2 <: B
------------------ :: union_l
-G |- A1 ∨ A2 <: B
+E |- e <= TOP
+-------------------------------- :: bot
+E |- BOT ∘ e =>=> BOT
 
-G |==> t
-G |- [ t / x ] A <: B
-------------------- :: foralll
-G |- forall x. A <: B
 
-G , x |- A <: B
--------------------------- :: forallr
-G |- A <: forall x. B
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% defns
+% Jneq_abs :: '' ::=
 
+% defn
+% e ¬= λ :: :: neq_abs :: 'neq_abs_' by
+
+% ------------ :: var
+% x ¬= λ
+
+% ---------------  :: app
+% ( e1 e2 ) ¬= λ
+
+% ------------------ :: tabs
+% \ X . e : T ¬= λ
+
+% --------------  :: tapp
+% e @ T ¬= λ
+
+% --------------- :: anno
+% e : T ¬= λ
+
+
+% defns
+% Jneq_tabs :: '' ::=
+
+% defn
+% e ¬= Λ :: :: neq_tabs :: 'neq_tabs_' by
+
+% ------------ :: var
+% x ¬= Λ
+
+% -----------------  :: app
+% ( e1 e2 ) ¬= Λ
+
+% ------------------ :: abs
+% \ x . e ¬= Λ
+
+% --------------  :: tapp
+% e @ T ¬= Λ
+
+% --------------- :: anno
+% e : T ¬= Λ
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 defns
-DeclarativeWorklistSubtyping :: '' ::=
+Jop :: '' ::=
 
 defn
-|- wl :: :: ld_worklist_reducible :: 'ld_wlred_'
-by
+e1 --> e2 :: :: red :: 'red_' by
 
--------------------- :: nil
-|- nil
+e1 --> e1'
+----------------- :: app_1
+e1 e2 --> e1' e2
 
-|=> [| wl , x|]
-|- wl
-------------------- :: cons_tvar
-|- wl , x
+e2 --> e2'
+----------------- :: app_2
+v1 e2 --> v1 e2'
 
+e1 --> e1'
+----------------------- :: tapp_1
+e1 @ T  --> e1' @ T 
 
-[| wl |] |- t1 <: t2
-|- wl
---------------------------- :: sub
-|- wl |- t1 <: t2 
+------------------------------- :: abs
+(\ x . e) v  --> {v / x} e
 
+------------------------------------------------------------- :: tabs
+(\ X . e : T1 ) @ T2 --> {T2 / X} (e : T1) 
 
+e --> e' 
+-------------------- :: anno
+e : T --> e' : T   
+
+% v ¬= λ 
+% -------------------- :: app_top
+% v e --> top
+
+% v ¬= Λ 
+% -------------------- :: app_top
+% v @ T --> top
