@@ -4,15 +4,17 @@ Require Import Lia.
 Require Import Metalib.Metatheory.
 
 Require Import decl.notations.
+Require Import decl.ln_inf_extra.
 Require Import ln_utils.
 
-Definition wf_dom : forall {Γ}, ⊢ Γ -> atoms.
+
+Definition wf_dom : forall {E}, ⊢ E -> atoms.
 Proof.
   intros.
-  set (x := ld_ctx_dom Γ). exact x.
+  set (x := dom E). exact x.
 Defined.
 
-Ltac gather_for_weakening :=
+(* Ltac gather_for_weakening :=
   let A := gather_atoms_with (fun x : atoms => x) in
   let B := gather_atoms_with (fun x : atom => singleton x) in
   let C := gather_atoms_with (fun x : ld_context => ld_ctx_dom x) in
@@ -26,22 +28,10 @@ Ltac apply_fresh_base_fixed H gather_vars atom_name :=
   pick fresh x excluding L and apply H.
 
 Tactic Notation "pick" "fresh" ident(x) "and" "apply" constr(H) "for" "weakening" :=
-  apply_fresh_base_fixed H gather_for_weakening x.
-
-Lemma subst_same_eq : forall A x,
-  A = [`ᵈ x /ᵈ x] A.
-Proof.
-  intros.
-  induction A; auto.
-  - simpl. rewrite <- IHA. auto.
-  - simpl. rewrite <- IHA1. rewrite <- IHA2. auto.
-  - simpl. rewrite <- IHA1. rewrite <- IHA2. auto.
-  - simpl. rewrite <- IHA1. rewrite <- IHA2. auto.
-  - simpl. destruct (x0==x); subst; auto. 
-Qed.
+  apply_fresh_base_fixed H gather_for_weakening x. *)
 
 
-Lemma open_subst_eq : forall A x t, 
+(* Lemma open_subst_eq : forall A x t, 
   x `notin` fv_ld_type A -> lc_ld_type t  ->
     A ^^ᵈ t = [t /ᵈ x] A ^^ᵈ (`ᵈ x).
 Proof.
@@ -50,49 +40,466 @@ Proof.
   rewrite eq_dec_refl.
   rewrite subst_ld_type_fresh_eq.
   all : auto.
+Qed.  *)
+
+Hint Constructors dwf_typ: core.
+Hint Constructors dwf_env: core.
+Hint Constructors dwf_typ_s: core.
+
+(* Lemma ftv_in_dtyp_stvar_fstv_in_dtyp : forall X T,
+  X `in` ftv_in_dtyp T ->
+  X `in` fstv_in_dtyp ({dtyp_svar X /ᵈ X} T).
+Proof.
+  intros.
+  induction T; auto.
+  - simpl. destruct (X0 == X).
+    + simpl. auto.
+    + simpl in H. 
+      specialize (notin_singleton_2 _ _ n). 
+      intros. contradiction.
+  - simpl. destruct (SX == X).
+    + subst. auto.
+    + simpl in H. 
+      apply notin_empty in H. contradiction.
+  - simpl in H.
+    destruct (AtomSetImpl.union_1 H).
+    + simpl. apply AtomSetImpl.union_2. auto.
+    + simpl. apply AtomSetImpl.union_3. auto.
+  - simpl in H.
+    destruct (AtomSetImpl.union_1 H).
+    + simpl. apply AtomSetImpl.union_2. auto.
+    + simpl. apply AtomSetImpl.union_3. auto.
+  - simpl in H.
+    destruct (AtomSetImpl.union_1 H).
+    + simpl. apply AtomSetImpl.union_2. auto.
+    + simpl. apply AtomSetImpl.union_3. auto.
+Qed.
+
+Lemma fstv_in_dtyp_subst_tv : forall SX X T T',
+  SX `in` fstv_in_dtyp T ->
+  SX `in` fstv_in_dtyp ({T' /ᵈ X} T).
+Proof.
+  intros.
+  induction T; auto.
+  - simpl. destruct (X0 == X).
+    + subst. simpl in *. apply notin_empty in H.  contradiction.
+    + simpl in H. 
+      apply notin_empty in H. contradiction.
+  - simpl in H.
+    destruct (AtomSetImpl.union_1 H).
+    + simpl. apply AtomSetImpl.union_2. auto.
+    + simpl. apply AtomSetImpl.union_3. auto.
+  - simpl in H.
+    destruct (AtomSetImpl.union_1 H).
+    + simpl. apply AtomSetImpl.union_2. auto.
+    + simpl. apply AtomSetImpl.union_3. auto.
+  - simpl in H.
+    destruct (AtomSetImpl.union_1 H).
+    + simpl. apply AtomSetImpl.union_2. auto.
+    + simpl. apply AtomSetImpl.union_3. auto.
+Qed.
+
+Lemma fstv_in_dtyp_tvar_ftv_in_dtyp : forall SX T,
+  SX `in` fstv_in_dtyp T ->
+  SX `in` ftv_in_dtyp ({dtyp_var_f SX /ₛᵈ SX} T).
+Proof.
+  intros.
+  induction T; auto.
+  - simpl in *. 
+    apply notin_empty in H. contradiction.
+  - simpl. destruct (SX0 == SX).
+    + subst. auto.
+    + simpl in H.
+      apply AtomSetImpl.singleton_1 in H.
+      subst. contradiction.
+  - simpl in H.
+    destruct (AtomSetImpl.union_1 H).
+    + simpl. apply AtomSetImpl.union_2. auto.
+    + simpl. apply AtomSetImpl.union_3. auto.
+  - simpl in H.
+    destruct (AtomSetImpl.union_1 H).
+    + simpl. apply AtomSetImpl.union_2. auto.
+    + simpl. apply AtomSetImpl.union_3. auto.
+  - simpl in H.
+    destruct (AtomSetImpl.union_1 H).
+    + simpl. apply AtomSetImpl.union_2. auto.
+    + simpl. apply AtomSetImpl.union_3. auto.
+Qed. *)
+
+(* Lemma fstv_in_dtyp_subst_tv : forall SX X T T',
+  SX `in` fstv_in_dtyp T ->
+  SX `in` fstv_in_dtyp ({T' /ᵈ X} T).
+Proof.
+  intros.
+  induction T; auto.
+  - simpl. destruct (X0 == X).
+    + subst. simpl in *. apply notin_empty in H.  contradiction.
+    + simpl in H. 
+      apply notin_empty in H. contradiction.
+  - simpl in H.
+    destruct (AtomSetImpl.union_1 H).
+    + simpl. apply AtomSetImpl.union_2. auto.
+    + simpl. apply AtomSetImpl.union_3. auto.
+  - simpl in H.
+    destruct (AtomSetImpl.union_1 H).
+    + simpl. apply AtomSetImpl.union_2. auto.
+    + simpl. apply AtomSetImpl.union_3. auto.
+  - simpl in H.
+    destruct (AtomSetImpl.union_1 H).
+    + simpl. apply AtomSetImpl.union_2. auto.
+    + simpl. apply AtomSetImpl.union_3. auto.
+Qed. *)
+
+Hint Constructors ds_in_s: core.
+Hint Constructors ds_in: core.
+
+Lemma ftv_sin_dtyp_stvar_fstv_sin_dtyp : forall X T,
+  ds_in X T ->
+  ds_in_s X ({dtyp_svar X /ᵈ X} T).
+Proof.
+  intros. induction H; simpl; auto.
+  - destruct (X == X).
+    + constructor.
+    + contradiction.
+  - apply dsins_arrow1; auto.
+    now apply dsubst_tv_in_dtyp_lc_dtyp.
+  - apply dsins_arrow2; auto.
+    now apply dsubst_tv_in_dtyp_lc_dtyp.
+  - apply dsins_all with (L:=L `union` singleton X). intros.
+    inst_cofinites_with Y. 
+    replace (({dtyp_svar X /ᵈ X} T) ^ᵈ Y) with ({dtyp_svar X /ᵈ X} T ^ᵈ Y).
+    auto.
+    rewrite dtyp_subst_open_comm; auto.
+Qed.
+
+Lemma fstv_sin_dtyp_subst_tv : forall SX X T T',
+  ds_in_s SX T ->
+  lc_dtyp T' ->
+  ds_in_s SX ({T' /ᵈ X} T).
+Proof.
+  intros.
+  induction H; simpl; auto.
+  - apply dsins_arrow1; auto.
+    now apply dsubst_tv_in_dtyp_lc_dtyp.
+  - apply dsins_arrow2; auto.
+    now apply dsubst_tv_in_dtyp_lc_dtyp.
+  - simpl in H. 
+    apply dsins_all with (L:=L `union` singleton X). intros.
+    rewrite dtyp_subst_open_comm; auto.
+Qed.
+
+
+Lemma ftv_sins_dtyp_tvar_fstv_sin_dtyp : forall SX T,
+  ds_in_s SX T ->
+  ds_in SX ({dtyp_var_f SX /ₛᵈ SX} T).
+Proof.
+  intros. induction H; simpl; auto.
+  - destruct (SX == SX).
+    + constructor.
+    + contradiction.
+  - apply dsin_arrow1; auto.
+    apply dsubst_stv_lc_dtyp; auto.
+  - apply dsin_arrow2; auto.
+    apply dsubst_stv_lc_dtyp; auto.
+  - apply dsin_all with (L:=L `union` singleton SX). intros.
+    inst_cofinites_with Y. 
+    replace (({dtyp_var_f SX /ₛᵈ SX} T) ^ᵈ Y) with ({dtyp_var_f SX /ₛᵈ SX} T ^ᵈ Y).
+    auto.
+    rewrite dsubst_stv_in_dtyp_open_comm; auto.
+Qed.
+
+Lemma fstv_sins_dtyp_subst_stv : forall SX X T T',
+  ds_in X T ->
+  lc_dtyp T' ->
+  ds_in X ({T' /ₛᵈ SX} T).
+Proof.
+  intros.
+  induction H; simpl; auto.
+  - apply dsin_arrow1; auto.
+    now apply dsubst_stv_lc_dtyp.
+  - apply dsin_arrow2; auto.
+    now apply dsubst_stv_lc_dtyp.
+  - simpl in H. 
+    apply dsin_all with (L:=L `union` singleton X). intros.
+    rewrite dsubst_stv_in_dtyp_open_comm; auto.
+Qed.
+
+Lemma dwf_typ_s_tvar_stvar : forall E F X T,
+  E ++ [(X, dbind_tvar_empty)] ++ F  ⊢ₛ T  -> 
+  map (dsubst_tv_in_binding (dtyp_svar X) X ) E ++ [(X, dbind_stvar_empty)] ++ F ⊢ₛ { dtyp_svar X /ᵈ X } T.
+Proof.
+  intros E F X T H.
+  dependent induction H; try solve [simpl; auto].
+  - simpl. unfold eq_dec. destruct (EqDec_eq_of_X X0 X).
+    + econstructor; auto.
+    + econstructor.
+      induction E.
+      * simpl in *. inversion H.
+        -- inversion H0. subst. contradiction.
+        -- auto.
+      * destruct a. inversion H.
+        -- inversion H0. subst. simpl. auto.
+        -- simpl. auto.
+  - simpl. constructor. 
+    induction E.
+    * simpl in *. inversion H.
+      -- inversion H0.
+      -- auto.
+    * destruct a. inversion H.
+      -- inversion H0. subst. simpl. auto.
+      -- simpl. auto.
+  - simpl. constructor.
+    + apply IHdwf_typ_s1; auto.
+    + apply IHdwf_typ_s2; auto.
+  - simpl. eapply dwftyps_all with (L:=L);
+    intros; inst_cofinites_with SX.
+    + replace  (({dtyp_svar X /ᵈ X} T) ^^ᵈ dtyp_svar SX) with ({dtyp_svar X /ᵈ X} T ^^ᵈ dtyp_svar SX).
+    apply fstv_sin_dtyp_subst_tv. auto.
+    auto.
+    rewrite dtyp_subst_open_comm; auto.
+    + replace (SX ~ dbind_stvar_empty ++
+    map (dsubst_tv_in_binding (dtyp_svar X) X) E ++ (X, dbind_stvar_empty) :: F
+    ) with (
+    map (dsubst_tv_in_binding (dtyp_svar X) X) (SX ~ dbind_stvar_empty ++ E) ++ (X, dbind_stvar_empty) :: F
+    ) by auto.
+    replace (({dtyp_svar X /ᵈ X} T) ^^ᵈ dtyp_svar SX) with 
+    ({dtyp_svar X /ᵈ X} T ^^ᵈ dtyp_svar SX).
+    apply H1. auto. 
+    rewrite dtyp_subst_open_comm; auto. 
+  - simpl. constructor.
+    + apply IHdwf_typ_s1; auto.
+    + apply IHdwf_typ_s2; auto.
+  - simpl. constructor.
+    + apply IHdwf_typ_s1; auto.
+    + apply IHdwf_typ_s2; auto.
+Qed.
+
+
+Lemma dwf_typ_stvar_tvar : forall E F SX T,
+  E ++ [(SX, dbind_stvar_empty)] ++ F  ⊢ T  -> 
+  map (dsubst_stv_in_binding (dtyp_var_f SX) SX ) E ++ [(SX, dbind_tvar_empty)] ++ F ⊢ { dtyp_var_f SX /ₛᵈ SX } T.
+Proof.
+  intros E F SX T H.
+  dependent induction H; try solve [simpl; auto].
+  - simpl. constructor. 
+    induction E.
+    * simpl in *. inversion H.
+      -- inversion H0.
+      -- auto.
+    * destruct a. inversion H.
+      -- inversion H0. subst. simpl. auto.
+      -- simpl. auto.
+  - simpl. unfold eq_dec. destruct (EqDec_eq_of_X SX0 SX).
+    + econstructor; auto.
+    + econstructor.
+      induction E.
+      * simpl in *. inversion H.
+        -- inversion H0. subst. contradiction.
+        -- auto.
+      * destruct a. inversion H.
+        -- inversion H0. subst. simpl. auto.
+        -- simpl. auto.
+  - simpl. constructor.
+    + apply IHdwf_typ1; auto.
+    + apply IHdwf_typ2; auto.
+  - simpl. eapply dwftyp_all with (L:=L);
+    intros; inst_cofinites_with X.
+    + replace  (({`ᵈ SX /ₛᵈ SX} T) ^ᵈ X) with ({`ᵈ SX /ₛᵈ SX} T ^ᵈ X).
+      apply fstv_sins_dtyp_subst_stv; auto.
+      rewrite dsubst_stv_in_dtyp_open_comm; auto.
+    + replace (X ~ dbind_tvar_empty ++
+    map (dsubst_stv_in_binding `ᵈ SX SX) E ++ (SX, dbind_tvar_empty) :: F) with (
+    map (dsubst_stv_in_binding `ᵈ SX SX) (X ~ dbind_tvar_empty ++ E) ++ (SX, dbind_tvar_empty) :: F) by auto.
+      replace (({`ᵈ SX /ₛᵈ SX} T) ^ᵈ X) with ({`ᵈ SX /ₛᵈ SX} T ^ᵈ X).
+      apply H1. auto. 
+      rewrite dsubst_stv_in_dtyp_open_comm; auto.
+  - simpl. constructor.
+    + apply IHdwf_typ1; auto.
+    + apply IHdwf_typ2; auto.
+  - simpl. constructor.
+    + apply IHdwf_typ1; auto.
+    + apply IHdwf_typ2; auto.
+Qed.
+
+
+Lemma dwf_typ_dwf_typ_s : forall E T, 
+  E ⊢ T -> E ⊢ₛ T.
+Proof.
+  intros.   
+  induction H; auto.
+  - eapply dwftyps_all with (L:= (L `union` ftv_in_dtyp T)); 
+    intros; inst_cofinites_with SX.  
+    + replace (T ^^ᵈ dtyp_svar SX) with ({dtyp_svar SX /ᵈ SX}T ^ᵈ SX).
+      now apply ftv_sin_dtyp_stvar_fstv_sin_dtyp.
+      rewrite dsubst_tv_in_dtyp_open_dtyp_wrt_dtyp; auto.
+      simpl. unfold eq_dec. destruct (EqDec_eq_of_X SX SX).
+      * rewrite dsubst_tv_in_dtyp_fresh_eq; auto.
+      * contradiction.
+    + replace (SX ~ dbind_tvar_empty ++ E) with (nil ++ SX ~ dbind_tvar_empty ++ E) in H1 by auto.
+    specialize (dwf_typ_s_tvar_stvar _ _ _ _ H1).
+      intros. rewrite dsubst_tv_in_dtyp_open_dtyp_wrt_dtyp in H3; auto. simpl in H3. unfold eq_dec in H3. destruct (EqDec_eq_of_X SX SX).
+      * rewrite dsubst_tv_in_dtyp_fresh_eq in H3; auto.
+      * contradiction.
+Qed.
+
+Lemma dwf_typ_s_dwf_typ : forall E T, 
+  E ⊢ₛ T -> E ⊢ T.
+Proof.
+  intros. induction H; auto.
+  - eapply dwftyp_all with (L:= (L `union` fstv_in_dtyp T)); 
+    intros; inst_cofinites_with X.  
+    + replace (T ^ᵈ X) with ({dtyp_var_f X /ₛᵈ X} T ^^ᵈ dtyp_svar X).
+      now apply ftv_sins_dtyp_tvar_fstv_sin_dtyp.
+      rewrite dsubst_stv_in_dtyp_open_dtyp_wrt_dtyp; auto.
+      simpl. unfold eq_dec. destruct (EqDec_eq_of_X X X).
+      * rewrite dsubst_stv_in_dtyp_fresh_eq; auto.
+      * contradiction.
+    + replace (X ~ dbind_stvar_empty ++ E) with (nil ++ X ~ dbind_stvar_empty ++ E) in H1 by auto.
+      specialize (dwf_typ_stvar_tvar _ _ _ _ H1). intros. 
+      rewrite dsubst_stv_in_dtyp_open_dtyp_wrt_dtyp in H3; auto. simpl in H3. unfold eq_dec in H3. destruct (EqDec_eq_of_X X X).
+      * rewrite dsubst_stv_in_dtyp_fresh_eq in H3; auto.
+      * contradiction.
+Qed.
+
+Hint Constructors dsub.
+Hint Resolve dwf_typ_dwf_typ_s : core.
+Hint Resolve dwf_typ_s_dwf_typ : core.
+
+Lemma dsub_dwft : forall E T1 T2,
+  E ⊢ T1 <: T2 -> E ⊢ T1 /\ E ⊢ T2.
+Proof.
+  intros.
+  induction H; intuition.
+Admitted.
+
+Hint Constructors dneq_union : Core.
+Hint Constructors dneq_intersection : Core.
+
+Lemma dwf_typ_dlc_type : forall E T,
+  E ⊢ T -> lc_dtyp T.
+Proof.
+  intros; induction H; auto.
+Qed.
+
+Lemma dwf_typ_s_dlc_type : forall E T,
+  E ⊢ₛ T -> lc_dtyp T.
+Proof.
+  intros.
+  eapply dwf_typ_dlc_type.
+  apply dwf_typ_s_dwf_typ.
+  eauto.
+Qed.
+
+Hint Resolve dwf_typ_s_dlc_type : core.
+
+Lemma dsub_refl' : forall E T, 
+  E ⊢ₛ T -> E ⊢ T <: T.
+Proof.
+  intros; dependent induction H; eauto.
+  - inst_cofinites_by L. eapply dsub_forall with (SX:=x); eauto.
+  - apply dsub_union3; auto.
+  - apply dsub_intersection1; auto.
 Qed. 
 
+(* Lemma dsub_refl' : forall E T, 
+  E ⊢ₛ T -> (E ⊢ T <: T /\ (forall T2, E ⊢ₛ T2 -> E ⊢ T <: dtyp_union T T2) /\ (forall T2, E ⊢ₛ T2 -> E ⊢ T <: dtyp_union T2 T)).
+Proof.
+  intros. dependent induction H; try solve [intuition].
+  - intuition. 
+    apply dsub_union1; auto.
+    econstructor; eauto.
+    apply dsub_union2; auto.
+    econstructor; eauto.
+  - admit.
+  - split. 
+    + apply dsub_union3.
+      destruct IHdwf_typ_s1. intuition.
+      destruct IHdwf_typ_s2. intuition.
+    + split; intros.
+      apply dsub_union3.
 
-Lemma ld_wf_mtype_is_mtype : forall G t,
-  ld_wf_mtype G t -> ld_mono_type t.
+    intuition.
+  
+   intro.
+  - induction. admit.
+  - split.
+    + apply dsub_union3. intuition. intuition.
+    
+
+   apply dsub_union3. 
+    + generalize dependent T2. 
+      dependent induction H; intros; auto;
+      try solve [dependent destruction H;
+                  apply dsub_union1; auto; constructor; eauto 3].
+      * apply dsub_union1; auto. constructor; eauto.
+      * clear IHdwf_typ_s1. clear IHdwf_typ_s2. clear IHdwf_typ_s3.
+        dependent induction IHdwf_typ_s0.
+        inversion H1.
+        inversion H1.
+        apply IHIHdwf_typ_s0_1; auto.
+      * admit.
+    + 
+
+    + dependent induction IHdwf_typ_s2; auto;
+      try solve [eapply dsub_union2; eauto 3].
+  - apply dsub_intersection1.
+    + dependent induction IHdwf_typ_s1; auto.
+      * eapply dsub_intersection2; eauto 3. admit.
+      * eapply dsub_intersection2; eauto 3. 
+        constructor.
+
+      try solve [eapply dsub_intersection2; eauto 3].
+    + dependent induction IHdwf_typ_s2; auto;
+    try solve [eapply dsub_union2; eauto 3].
+  econstructor.
+Admitted. *)
+
+Lemma dsub_refl : forall E T, 
+  E ⊢ T -> E ⊢ T <: T.
 Proof.
   intros.
-  induction H; auto.
+  apply dsub_refl'.
+  apply dwf_typ_dwf_typ_s.
+  auto.
 Qed.
 
-Theorem ld_sub_wf_ctx : forall G t1 t2, 
-  G ⊢ t1 <: t2 -> ⊢ G.
+
+Lemma dsub_union_inversion : forall E S1 S2 T, 
+  E ⊢ dtyp_union S1 S2 <: T -> 
+  E ⊢ S1 <: T /\ E ⊢ S2 <: T.
 Proof.
   intros.
-  induction H; auto.
-  - inst_cofinites_with_new.
-    dependent destruction H0; auto.
+  dependent induction H; auto.
+  - inversion H. split; econstructor; auto.
+  - specialize (IHdsub1 _ _ (eq_refl _)).
+    specialize (IHdsub2 _ _ (eq_refl _)).
+    destruct IHdsub1. destruct IHdsub2.
+    split; constructor; auto.
+  - specialize (IHdsub _ _ (eq_refl _)).
+    split; apply dsub_union1; intuition.
+  - specialize (IHdsub _ _ (eq_refl _)).
+    split; apply dsub_union2; intuition.
 Qed.
 
 
-Lemma ld_sub_refl :
-  forall G A, ld_wf_type G A -> ld_sub G A A.
+Lemma dsub_intersection_inversion : forall E S T1 T2, 
+  E ⊢ S <: dtyp_intersection T1 T2 -> 
+  E ⊢ S <: T1 /\ E ⊢ S <: T2.
 Proof.
   intros.
-  induction H.
-  - constructor. auto.
-  - constructor; auto.
-  - constructor; auto.
-  - eapply ld_sub_intersection_r.
-    eapply ld_sub_intersection_l1; eauto. 
-    eapply ld_sub_intersection_l2; eauto.
-  - eapply ld_sub_union_l.
-    eapply ld_sub_union_r1; eauto.
-    eapply ld_sub_union_r2; eauto.
-  - eapply ld_sub_forallr with (L:=L `union` (ld_ctx_dom G)). intros. 
-    inst_cofinites_with x. eapply ld_sub_foralll with (t := `ᵈ x); auto.
-    constructor.
-    + eapply ld_sub_wf_ctx; eauto.
-    + simpl. auto. 
+  dependent induction H; auto.
+  - inversion H. split; econstructor; auto.
+  - inversion H0.
+  - specialize (IHdsub _ _ (eq_refl _)).
+    split; apply dsub_intersection2; intuition.
+  - specialize (IHdsub _ _ (eq_refl _)).
+    split; apply dsub_intersection3; intuition.
+  - specialize (IHdsub1 _ _ (eq_refl _)).
+    specialize (IHdsub2 _ _ (eq_refl _)).
+    intuition.
 Qed.
 
-
-Lemma ld_in_context_exact : 
+(* Lemma ld_in_context_exact : 
   forall G1 G3 x, 
     ld_in_context x (G1,x,,G3).
 Proof.
@@ -350,10 +757,10 @@ Proof.
     * subst. contradiction.
     * auto.
     * now apply ld_mono_is_ld_lc.
-Qed.
+Qed. *)
 
 
-Theorem ld_union_sub_inv: forall G A1 A2 B,
+(* Theorem ld_union_sub_inv: forall G A1 A2 B,
   G ⊢ ld_t_union A1 A2 <: B -> G ⊢ A1 <: B /\ G ⊢ A2 <: B.
 Proof.
   intros.
@@ -368,11 +775,11 @@ Proof.
   - split; apply ld_sub_forallr with (L:=L); intros; 
     inst_cofinites_with x; 
     specialize (H0 A1 A2 (eq_refl _)); intuition.
-Qed.
+Qed. *)
 
 
 
-Theorem substitution : forall G1 G2 x A B t,
+(* Theorem substitution : forall G1 G2 x A B t,
   G1 , x  ,, G2 ⊢ A <: B ->
   G1 ⊢ t -> ld_mono_type t ->
   G1 ,, G2 ⊢ [t /ᵈ x] A <: [t /ᵈ x] B.
@@ -867,3 +1274,251 @@ Proof.
   apply ld_sub_to_sized_ld_sub in H0. destruct H0 as [n2].
   eapply generalized_transitivity; eauto.
 Qed.
+ *)
+
+Scheme dcheck_mut := Induction for dchk Sort Prop
+  with dinfer_mut := Induction for dinf Sort Prop
+  with dinferapp_mut := Induction for dinfapp Sort Prop.
+
+(* Theorem progress.  *)
+
+Lemma desub_same_dom : forall E E', 
+  desub E' E ->
+  dom E = dom E'.
+Proof.
+  intros. induction H; simpl; auto; rewrite IHdesub; auto.
+Qed.
+
+Lemma desub_same_tvar : forall E E' X, 
+  desub E' E ->
+  binds X dbind_tvar_empty E ->
+  binds X dbind_tvar_empty E'.
+Proof.
+  intros. induction H; simpl; intros; auto.
+  - inversion H0; auto.
+    + inversion H1; auto.
+  - inversion H0; auto.
+    + inversion H1; auto.
+  - inversion H0; auto.
+    inversion H2.
+Qed.
+
+Lemma desub_same_stvar : forall E E' SX, 
+  desub E' E ->
+  binds SX dbind_stvar_empty E ->
+  binds SX dbind_stvar_empty E'.
+Proof.
+  intros. induction H; simpl; intros; auto.
+  - inversion H0; auto.
+    + inversion H1; auto.
+  - inversion H0; auto.
+    + inversion H1; auto.
+  - inversion H0; auto.
+    inversion H2.
+Qed.
+
+
+Lemma desub_wf_typ : forall E T, 
+  E ⊢ T -> 
+  forall E', 
+    desub E' E ->
+    E' ⊢ T.
+Proof.
+  intros E T H. induction H; intros; auto.
+  - econstructor. 
+    eapply desub_same_tvar; eauto.
+  - econstructor.
+    eapply desub_same_stvar; eauto.
+  - eapply dwftyp_all with (L:=L).
+    + intros. inst_cofinites_with X. auto.
+    + intros. inst_cofinites_with X. eapply H1.
+      econstructor. auto.
+Qed.
+
+Hint Resolve desub_wf_typ : core.
+
+
+Theorem check_subsumtion : forall E e S,
+  E ⊢ e ⇐ S ->
+  forall  E' T, 
+    desub E' E ->
+    E ⊢ S <: T ->
+    E' ⊢ e ⇐ T
+with 
+infer_subsumption : forall E e T, 
+  E ⊢ e ⇒ T ->
+  forall E',
+    desub E' E ->
+    exists S, 
+      dsub E S T /\ E' ⊢ e ⇒ S
+with 
+inferapp_subsumtion : forall E T1 e T2,
+  E ⊢ T1 • e ⇒⇒ T2 ->
+  forall E' S1, 
+    desub E' E -> 
+    E ⊢ S1 <: T1 -> 
+    exists S2, 
+      E ⊢ S2 <: T2 /\ E' ⊢ S1 • e ⇒⇒ S2.
+Proof.
+  - intros E e S H.
+    induction H; auto; intros.
+    + dependent induction H2; auto.
+      * eapply dchk_top_abs with (L:=L `union` dom E). 
+        intros. inst_cofinites_with x.
+        apply H0; auto.
+        econstructor; auto.
+      * apply dchk_union1.
+        -- apply IHdsub; auto.
+        -- eapply desub_wf_typ; eauto.
+      * apply dchk_union2.
+        -- apply IHdsub; auto.
+        -- eapply desub_wf_typ; eauto.
+    + dependent induction H3. 
+      * apply dchk_top_abs with (L:=L `union` dom E). intros.
+      inst_cofinites_with x.
+      dependent destruction H3.
+      apply H1; auto.
+      econstructor; auto.
+      constructor.
+      admit. (* easy: weakening *)
+      * eapply dchk_abs with (L:=L).
+        -- admit.
+        -- intros. inst_cofinites_with x.  
+          apply H1. econstructor; eauto.
+          admit.
+      * apply dchk_intersection; eauto.
+      * apply dchk_union1; eauto. 
+      * apply dchk_union2; eauto.
+    + specialize (infer_subsumption _ _ _ H _ H1).
+      destruct infer_subsumption as [S1 [Hsub Hinf]].
+      specialize (inferapp_subsumtion _ _ _ _ H0 _ _ H1 Hsub).
+      destruct inferapp_subsumtion as [S2 [Hsub2 Hinfapp]].
+      eapply dchk_sub with (S:=S2).
+      eapply dinf_app with (T2:=S1); auto.
+      admit. (* easy *)
+    + admit.
+Admitted.
+
+
+
+
+
+Theorem check_subsumtion : forall E e S,
+  E ⊢ e ⇐ S ->
+  forall  E' T, 
+    desub E' E ->
+    E ⊢ S <: T ->
+    E' ⊢ e ⇐ T.
+Proof.
+  intros E e S H.
+  pattern E, e, S, H.
+  Print dcheck_mut.
+  eapply dcheck_mut with (d:=E) (d0:=e) (d1:=S) 
+    (P0 := fun E e T (pf : E ⊢ e ⇒ T) => 
+      forall E', desub E' E -> exists S, dsub E S T /\ E' ⊢ e ⇒ S)
+    (P1 := fun E T1 e T2 (pf : E ⊢ T1 • e ⇒⇒ T2 ) => 
+      forall E' S1, desub E' E -> E ⊢ S1 <: T1 -> exists S2, E ⊢ S2 <: T2 /\ E' ⊢ S1 • e ⇒⇒ S2); intros.
+
+  (* - dependent induction H2; auto.
+    + eapply dchk_top_abs with (L:=L `union` dom E0). intros.
+      inst_cofinites_with x.
+      apply H0; auto.
+      econstructor; auto.
+    + apply dchk_union1.
+      * apply IHdsub; auto.
+      * eapply desub_wf_typ; eauto.
+    + apply dchk_union2.
+      * apply IHdsub; auto.
+      * eapply desub_wf_typ; eauto.
+  - dependent induction H2. 
+    + eapply dchk_top_abs with (L:=L `union` dom E0). intros.
+      inst_cofinites_with x.
+      dependent destruction H2.
+      apply H0; auto.
+      econstructor; auto.
+      constructor.
+      admit. (* easy: weakening *)
+    + eapply dchk_abs with (L:=L).
+      * admit.
+      * intros. inst_cofinites_with x.  
+        apply H0. econstructor; eauto.
+        admit.
+    + apply dchk_intersection; eauto.
+    + apply dchk_union1; eauto. 
+    + apply dchk_union2; eauto. *)
+  - specialize (H0 _ H2).
+    destruct H0 as [S1 [Hsub Hinf]].
+    specialize (H1 _ _ H2 Hsub).
+    destruct H1 as [S2 [Hsub2 Hinfapp]].
+    eapply dchk_sub with (S:=S2).
+    eapply dinf_app with (T2:=S1); auto.
+    admit. (* easy *)
+  - dependent destruction H2. 
+    +
+  
+   admit.
+  - specialize (H0 _ H1).
+    destruct H0 as [S1 [Hsub Hinf]].
+    eapply dchk_sub; eauto. 
+    admit. (* easy : transitivity *)
+  - assert (E0 ⊢ T <: T0 \/ E0 ⊢ S0 <: T0) by admit.
+    inversion H4.
+    + apply H1; eauto.
+    + apply H0; eauto.
+  - assert (E0 ⊢ T <: T0 /\ E0 ⊢ S0 <: T0) by admit.
+    destruct H3.
+    apply H0; auto.
+  - assert (E0 ⊢ T <: T0 /\ E0 ⊢ S0 <: T0) by admit.
+    destruct H3.
+    apply H0; auto.
+  
+  (* P0 *)
+  - admit. (* easy *)
+  - exists T. split.
+    + eapply dsub_refl. auto.
+    + econstructor. 
+      admit. (* easy *)
+      apply H0; auto. 
+      apply dsub_refl; auto.
+  - exists dtyp_unit.
+    split; auto.
+    constructor. auto.
+    admit. (* easy *)
+  - specialize (H0 _ H1).
+    destruct H0 as [S1 [Hsub Hinf]].
+    exists S1. split; auto.
+    admit.
+  - specialize (H0 _ H2).
+    destruct H0 as [S1 [Hsub Hinf]].
+    specialize (H1 _ _ H2 Hsub).
+    destruct H1 as [S2 [Hsub1 Hinfapp]].
+    exists S2. split; auto.
+    econstructor; eauto.
+
+  - exists (dtyp_all T2). split.
+    admit.
+    econstructor. intros. eapply H0. eauto.
+    admit.
+    admit.
+  - specialize (H0 _ H1).
+    destruct H0 as [S1 [Hsub Hinf]].
+    dependent induction Hsub; admit.
+  (* P1 *)
+  - dependent induction H2.
+    + exists dtyp_bot.
+      dependent destruction H2.
+      split; auto.
+    + admit.
+    + admit.
+    + admit.
+    + admit.
+    + admit.
+  - dependent induction H2.
+    + exists dtyp_bot.
+      
+      admit.
+  admit.
+  - admit.
+Admitted.
+    
+  

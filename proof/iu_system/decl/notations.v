@@ -1,7 +1,9 @@
 Require Export Coq.Unicode.Utf8.
 
 Require Export decl.ott.
+Require Export decl.ott_extra.
 Require Export decl.ln_inf.
+
 
 Notation "⊢ E" :=
   (dwf_env E)
@@ -11,14 +13,25 @@ Notation "E ⊢ T" :=
   (dwf_typ E T)
     (at level 65, no associativity) : type_scope.
 
+Notation "E ⊢ₛ T" :=
+  (dwf_typ_s E T)
+    (at level 65, no associativity) : type_scope.
+
 Notation "E ⊢ S <: T" :=
   (dsub E S T)
     (at level 65, S at next level, no associativity) : type_scope.
 
-Notation "E ⊢ e <= T" :=
-    (d_check E e T) 
-      (at level 65, e at next level, no associativity) : 
-      type_scope.
+Notation "E ⊢ e ⇐ T" :=
+    (dchk E e T) 
+      (at level 65, e at next level, no associativity) : type_scope.
+
+Notation "E ⊢ e ⇒ T" := 
+    (dinf E e T) 
+      (at level 65, e at next level, no associativity) : type_scope.
+
+Notation "E ⊢ T1 • e ⇒⇒ T2" :=
+    (dinfapp E T1 e T2) 
+      (at level 65, T1 at next level, e at next level, no associativity) : type_scope.
 
 Notation "X ∈ E" := (binds X (dbind_tvar_empty))
   (at level 65, no associativity) : type_scope.
@@ -32,9 +45,14 @@ Notation "`ᵈ X" := (dtyp_var_f X)
 Notation "↑ n" := (dtyp_var_b n)
   (at level 0, n at level 0, no associativity) : type_scope.
 
-Notation "[ T' /ᵈ X ] T" :=
+Notation "{ T' /ᵈ X } T" :=
   (dsubst_tv_in_dtyp T' X T)
     ( at level 49, T' at level 50, X at level 0
+    , right associativity) : type_scope.
+
+Notation "{ T' /ₛᵈ SX } T" :=
+  (dsubst_stv_in_dtyp T' SX T)
+    ( at level 49, T' at level 50, SX at level 0
     , right associativity) : type_scope.
 
 Notation "T ^ᵈ X" := (open_dtyp_wrt_dtyp T (dtyp_var_f X))
@@ -43,6 +61,10 @@ Notation "T ^ᵈ X" := (open_dtyp_wrt_dtyp T (dtyp_var_f X))
 Notation "T1 ^^ᵈ T2" := (open_dtyp_wrt_dtyp T1 T2)
   (at level 48, left associativity) : type_scope.
 
+
+Notation "e ⟼ e'" := 
+  (dexp_red e e')
+    (at level 65, no associativity).
 
 (* Declare Scope decl_context_scope.
 Delimit Scope decl_context_scope with decl_context.
