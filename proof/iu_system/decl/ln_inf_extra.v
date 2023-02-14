@@ -14,6 +14,36 @@ Proof.
   - simpl. rewrite <- IHT1. rewrite <- IHT2. auto.
 Qed.
 
+(* Lemma n_lt_n_false : forall n,
+  n < n -> False.
+Admitted.
+
+Ltac lt_refl_contra :=
+  match goal with 
+  | H : ?n < ?n |- _ =>
+    apply n_lt_n_false in H; contradiction
+  end. *)
+
+Lemma open_dtyp_wrt_dtyp_rec_comm : forall S1 S2 T n1 n2,
+  n1 <> n2 ->
+  lc_dtyp S1 ->
+  lc_dtyp S2 ->
+  open_dtyp_wrt_dtyp_rec n1 S1 (open_dtyp_wrt_dtyp_rec n2 S2 T) = open_dtyp_wrt_dtyp_rec n2 S2 (open_dtyp_wrt_dtyp_rec n1 S1 T).
+Proof.
+  induction T; intros; simpl in *; auto; try solve [f_equal; auto].
+  - destruct (lt_eq_lt_dec n n2 ); destruct (lt_eq_lt_dec n n1); simpl.
+    + admit.
+    + destruct s; simpl.
+      * destruct (lt_eq_lt_dec n n1).
+        -- destruct s. 
+          ++ admit.
+          ++ admit.
+        -- admit.
+      * subst. destruct (lt_eq_lt_dec (n2 - 1) n2).
+        -- destruct s.
+          ++ simpl.
+Admitted.
+
 Lemma dtyp_subst_open_comm : forall X T1 T2 T3,
   lc_dtyp T2 -> 
   X `notin` ftv_in_dtyp T3 -> 
@@ -23,6 +53,8 @@ Proof.
   rewrite dsubst_tv_in_dtyp_open_dtyp_wrt_dtyp; auto.
   rewrite (dsubst_tv_in_dtyp_fresh_eq T3); auto.
 Qed.
+
+
 
 
 Lemma dtyp_open_r_close_l : forall T1 T2 X
