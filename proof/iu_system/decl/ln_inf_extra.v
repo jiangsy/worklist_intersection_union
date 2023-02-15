@@ -55,8 +55,6 @@ Proof.
 Qed.
 
 
-
-
 Lemma dtyp_open_r_close_l : forall T1 T2 X
   , X `notin` ftv_in_dtyp T2
   -> T1 = open_dtyp_wrt_dtyp T2 `ᵈ X -> close_dtyp_wrt_dtyp X T1 = T2.

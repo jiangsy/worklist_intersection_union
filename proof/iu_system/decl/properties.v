@@ -175,6 +175,46 @@ Proof.
     rewrite dtyp_subst_open_comm; auto.
 Qed.
 
+Lemma sin_in : forall X T, 
+  ds_in X T ->
+  X `in` ftv_in_dtyp T.
+Proof.
+  intros. induction H; simpl; auto.
+  - inst_cofinites_by (L `union` singleton X).
+    rewrite ftv_in_dtyp_open_dtyp_wrt_dtyp_upper in H0.
+    apply AtomSetImpl.union_1 in H0; inversion H0; auto.
+    + simpl in H1. apply AtomSetImpl.singleton_1 in H1.
+      apply notin_union_2 in Fr. subst.
+      apply notin_singleton_1 in Fr. contradiction.
+Qed.
+
+Lemma lc_dtyp_subst : forall T X S,
+  lc_dtyp ({S /ᵈ X} T) ->
+  lc_dtyp S ->
+  lc_dtyp T.
+Proof.
+  intros.
+  dependent induction H; auto.
+  - destruct T; try solve [inversion x]; auto.
+  - destruct T; try solve [inversion x]; auto.
+  - destruct T; try solve [inversion x]; auto.
+  - destruct T; try solve [inversion x]; auto.
+  - destruct T; try solve [inversion x]; auto.
+  - destruct T; try solve [inversion x]; auto.
+    inversion x; eauto.
+  - destruct T; try solve [inversion x]; auto.
+    inversion x. 
+    inst_cofinites_by (singleton X).
+    eapply lc_dtyp_all_exists with (X1:=x0). intros.
+    specialize (H0 x0 (T ^ᵈ x0) X S). apply H0.
+    subst. rewrite <- dtyp_subst_open_comm; auto.
+    auto.
+  - destruct T; try solve [inversion x]; auto.
+    inversion x; eauto.
+  - destruct T; try solve [inversion x]; auto.
+    inversion x; eauto.
+Qed.
+
 Lemma ftv_sin_dtyp_subst : forall X Y T S,
   lc_dtyp S ->
   X `notin` ftv_in_dtyp S ->
@@ -185,41 +225,56 @@ Proof.
   intros. dependent induction H2; simpl; auto.
   - destruct T; simpl; try solve [inversion x].
     inversion x. destruct (X0 == Y).
-    + subst. simpl in H0. admit.
+    + subst. simpl in *. 
+      apply notin_singleton_1 in H0. contradiction.
     + inversion H3. auto.
   - destruct T; simpl; try solve [inversion x].
     simpl in *. destruct (X0 == Y); subst.
-    + eapply IHds_in with (S:=T1) (Y:=Y); admit.
+    + dependent destruction H.
+      simpl in H0.
+      eapply IHds_in with (S:=T1) (Y:=Y); auto. 
+      simpl. unfold eq_dec. destruct (EqDec_eq_of_X Y Y); auto.
+      contradiction. 
     + inversion x.
     + apply dsin_arrow1; inversion x; eauto.
-      admit.
+      subst.
+      eapply lc_dtyp_subst; eauto.
   - destruct T; simpl; try solve [inversion x].
-  simpl in *. destruct (X0 == Y); subst.
-    + eapply IHds_in with (S:=T1) (Y:=Y); admit.
+    simpl in *. destruct (X0 == Y); subst.
+    + dependent destruction H.
+      simpl in H0. eapply IHds_in with (S:=T2) (Y:=Y); auto.
+      simpl. unfold eq_dec. destruct (EqDec_eq_of_X Y Y); auto.
+      contradiction. 
     + inversion x.
     + apply dsin_arrow2; inversion x; eauto.
-      admit.
+      subst. eapply lc_dtyp_subst; eauto.
   - destruct T; simpl; try solve [inversion x].
   simpl in *. destruct (X0 == Y); subst.
-    + admit.
+    + assert (ds_in X (dtyp_all T0)).
+      * eapply dsin_all with (L:=L). intros. inst_cofinites_with Y0.
+        auto.
+      * apply sin_in in H4. contradiction.
     + inversion x.
-    + apply dsin_all with (L:=L); intros; inst_cofinites_with Y0. auto.
-     inversion x. admit.
+    + apply dsin_all with (L:=L `union` singleton Y); intros; inst_cofinites_with Y0. auto.
+     inversion x. rewrite H6 in H3. 
+    eapply H2; eauto. subst. rewrite dtyp_subst_open_comm; auto.
   - destruct T; simpl; try solve [inversion x].
   simpl in *. destruct (X0 == Y); subst.
-    + admit.
+    + assert (ds_in X (dtyp_union T1 T2)) by auto.
+      apply sin_in in H2. contradiction.
     + inversion x.
     + inversion x. apply dsin_union.
       * eapply IHds_in1 with (S:=S) (Y:=Y); eauto.
       * eapply IHds_in2 with (S:=S) (Y:=Y); eauto.
   - destruct T; simpl; try solve [inversion x].
     simpl in *. destruct (X0 == Y); subst.
-    + admit.
+    + assert (ds_in X (dtyp_intersection T1 T2)) by auto.
+      apply sin_in in H2. contradiction.
     + inversion x.
     + inversion x. apply dsin_intersection.
       * eapply IHds_in1 with (S:=S) (Y:=Y); eauto.
       * eapply IHds_in2 with (S:=S) (Y:=Y); eauto.
-Admitted.
+Qed.
 
 Lemma fstv_sin_dtyp_subst_tv : forall SX X T T',
   ds_in_s SX T ->
@@ -571,8 +626,7 @@ Proof.
     intuition.
 Qed.
 
-Lemma dwf_typ_weakening : 
-  forall E1 E2 E3 T, 
+Lemma dwf_typ_weakening : forall E1 E2 E3 T, 
   E1 ++ E3 ⊢ T ->
   E1 ++ E2 ++ E3 ⊢ T.
 Proof.
@@ -585,21 +639,18 @@ Proof.
     eapply H1; eauto.
 Qed.
 
-(* Lemma open_dtyp_wrt_dtyp_rec_comm : forall S1 S2 T n1 n2,
-  n1 <> n2 ->
-  lc_dtyp S1 ->
-  lc_dtyp S2 ->
-  open_dtyp_wrt_dtyp_rec n1 S1 (open_dtyp_wrt_dtyp_rec n2 S2 T) =  open_dtyp_wrt_dtyp_rec n2 S2 (open_dtyp_wrt_dtyp_rec n1 S1 T).
+Corollary dwf_typ_weakening_cons : forall E X b T,
+  E ⊢ T ->
+  ((X ~ b) ++ E) ⊢ T.
 Proof.
-  induction T; intros; simpl in *; auto; try solve [f_equal; auto].
-  - destruct (lt_eq_lt_dec n n1).
-    + destruct s.
-      * destruct (lt_eq_lt_dec n 0 ).
-        -- destruct s. admit. subst. simpl.
-        
-Admitted. *)
+  intros.
+  replace (X ~ b ++ E) with (nil ++ X ~ b ++ E) by auto.
+  now apply dwf_typ_weakening.
+Qed.
+  
 
-Lemma dwft_strengthen : forall F E x T b,
+
+Lemma dwf_typ_strengthening : forall F E x T b,
     E ++ x ~ b ++ F ⊢ T ->
     x \notin ftv_in_dtyp T ->
     x \notin fstv_in_dtyp T -> 
@@ -613,10 +664,14 @@ Proof.
       auto.
     + destruct a. inversion H.
       * dependent destruction H2. auto.
-      * simpl.
-        replace ((a, b0) :: E ++ F) with (nil ++ [(a, b0)] ++ (E ++ F)) by auto.
-      apply dwf_typ_weakening. auto. 
-  - admit.
+      * simpl. apply dwf_typ_weakening_cons; auto.
+  - induction E.
+    + inversion H. dependent destruction H2.
+      * admit.
+      * auto.
+    + destruct a. inversion H.
+      * dependent destruction H2. auto.
+      * simpl. apply dwf_typ_weakening_cons; auto.
   - simpl in *. constructor.
     + apply notin_union_1 in H1.
       eauto.
@@ -684,6 +739,7 @@ Proof.
     subst. auto. inversion x.
     + inversion x. eauto.
 Qed.
+
 
 (* Lemma wft_all_inversion : forall E S T,
   dmono_typ T ->
@@ -1670,7 +1726,7 @@ Proof.
   - intros. induction H; eauto.
     + econstructor; eauto.
       inst_cofinites_by (L `union` dom E `union` ftv_in_dtyp T2 `union` fstv_in_dtyp T2).
-      replace E with (nil ++ E) by auto. eapply dwft_strengthen; eauto.
+      replace E with (nil ++ E) by auto. eapply dwf_typ_strengthening; eauto.
     + specialize (dinfapp_dwf_typ _ _ _ _ H0). intuition.
     + eapply dsub_dwft; eauto.
   - intros; induction H; eauto.
@@ -1701,10 +1757,7 @@ Hint Constructors dinfapp : core.
 Fixpoint dexp_size (e : dexp) : nat :=
   0.
 
-Inductive dtyping_mode :=
-| dtypingmode_inf 
-| dtypingmode_chk
-| dtypingmode_infapp (t : dtyp).
+
 
 Definition dmode_size (mode : dtyping_mode) : nat := 
   match mode with 
@@ -1712,79 +1765,6 @@ Definition dmode_size (mode : dtyping_mode) : nat :=
   | dtypingmode_chk => 1
   | dtypingmode_infapp _ => 0
   end.
-
-Inductive dtyping : denv -> dexp -> dtyping_mode -> dtyp -> Prop :=
-| dtyping_infvar : forall (E:denv) (x:expvar) (T:dtyp),
-    dwf_env E ->
-    binds ( x )  ( (dbind_typ T) ) ( E )  ->
-    dtyping E (dexp_var_f x) dtypingmode_inf T
-| dtyping_infanno : forall (E:denv) (e:dexp) (T:dtyp),
-    dwf_typ E T ->
-    dtyping E e dtypingmode_chk T ->
-    dtyping E  ( (dexp_anno e T) )  dtypingmode_inf T
-| dtypinginf_unit : forall (E:denv),
-    dwf_env E ->
-    dtyping E dexp_unit dtypingmode_inf dtyp_unit
-| dtyping_infapp : forall (E:denv) (e1 e2:dexp) (T1 T2:dtyp),
-    dtyping E e1 dtypingmode_inf T2 ->
-    dtyping E e2 (dtypingmode_infapp T2) T1 ->
-    dtyping E  ( (dexp_app e1 e2) ) dtypingmode_inf T1
-| dtyping_inftabs : forall (L:vars) (E:denv) (e:dexp) (T1 T2:dtyp),
-dwf_typ E (dtyp_all T2) ->
-    ( forall X , X \notin  L  -> dtyping  ( X ~ dbind_tvar_empty  ++  E ) (dexp_anno  ( open_dexp_wrt_dtyp e (dtyp_var_f X) )  ( open_dtyp_wrt_dtyp T1 (dtyp_var_f X) ) ) dtypingmode_chk ( open_dtyp_wrt_dtyp T2 (dtyp_var_f X) )  )  ->
-    dtyping E (dexp_tabs (dbody_anno e T1)) dtypingmode_inf (dtyp_all T2)
-| dtyping_inftappbot : forall (E:denv) (e:dexp) (T:dtyp),
-    dwf_typ E T ->
-    dtyping E e dtypingmode_inf dtyp_bot ->
-    dtyping E (dexp_tapp e T) dtypingmode_inf dtyp_bot
-| dtyping_inftappall : forall (E:denv) (e1:dexp) (T2 T1:dtyp),
-    dwf_typ E T2 ->
-    dtyping E e1 dtypingmode_inf (dtyp_all T1) ->
-    dtyping E (dexp_tapp e1 T2) dtypingmode_inf (open_dtyp_wrt_dtyp  T1 T2 ) 
-| dtyping_chkabstop : forall (L:vars) (E:denv) (e:dexp),
-    ( forall x , x \notin  L  -> dchk  ( x ~ (dbind_typ dtyp_bot)  ++  E )   ( open_dexp_wrt_dexp e (dexp_var_f x) )  dtyp_top )  ->
-    dtyping E (dexp_abs e) dtypingmode_chk dtyp_top
-| dtyping_chkabs : forall (L:vars) (E:denv) (e:dexp) (T1 T2:dtyp),
-    dwf_typ E T1 ->
-    ( forall x , x \notin  L  -> dchk  ( x ~ (dbind_typ T1)  ++  E )   ( open_dexp_wrt_dexp e (dexp_var_f x) )  T2 )  ->
-    dtyping E (dexp_abs e) dtypingmode_chk (dtyp_arrow T1 T2)
-| dtyping_chkapp : forall (E:denv) (e1 e2:dexp) (T2 T1:dtyp),
-    dtyping E e1 dtypingmode_inf T1 ->
-    dtyping E e2 (dtypingmode_infapp T1) T2 ->
-    dtyping E (dexp_app e1 e2) dtypingmode_chk T2
-| dtyping_chkall : forall (L:vars) (E:denv) (e:dexp) (T:dtyp),
-    dwf_typ E (dtyp_all T) ->
-    ( forall X , X \notin  L  -> dtyping  ( X ~ dbind_tvar_empty  ++  E )  e  dtypingmode_chk ( open_dtyp_wrt_dtyp T (dtyp_var_f X) )  )  ->
-    dtyping E e dtypingmode_chk (dtyp_all T)
-| dtyping_chksub : forall (E:denv) (e:dexp) (T S:dtyp),
-    dtyping E e dtypingmode_inf S ->
-    dsub E S T ->
-    dtyping E e dtypingmode_chk T
-| dtyping_chkintersection : forall (E:denv) (e:dexp) (S T:dtyp),
-    dtyping E e dtypingmode_chk S ->
-    dtyping E e dtypingmode_chk T ->
-    dtyping E e dtypingmode_chk (dtyp_intersection S T)
-| dtyping_chkunion1 : forall (E:denv) (e:dexp) (S T:dtyp),
-    dtyping E e dtypingmode_chk S ->
-    dwf_typ E T ->
-    dtyping E e dtypingmode_chk (dtyp_union S T)
-| dtyping_chkunion2 : forall (E:denv) (e:dexp) (S T:dtyp),
-    dtyping E e dtypingmode_chk T ->
-    dwf_typ E S ->
-    dtyping E e dtypingmode_chk (dtyp_union S T)
-| dtyping_infapparrow : forall (E:denv) (T1 T2:dtyp) (e:dexp),
-    dwf_typ E T2 ->
-    dtyping E e dtypingmode_chk T1 ->
-    dtyping E e ( dtypingmode_infapp ( (dtyp_arrow T1 T2) ) ) T2
-| dtyping_infappall : forall (E:denv) (T1:dtyp) (e:dexp) (T2 T3:dtyp),
-    dmono_typ T3 ->
-    dwf_typ E T3 ->
-    dwf_typ E (dtyp_all T1) ->
-    dtyping E e ( dtypingmode_infapp (open_dtyp_wrt_dtyp  T1   T3 ) )T2 ->
-    dtyping E e ( dtypingmode_infapp ( (dtyp_all T1) ) ) T2
-| dtyping_infappbot : forall (E:denv) (e:dexp),
-    dtyping E e dtypingmode_chk dtyp_top ->
-    dtyping E e ( dtypingmode_infapp dtyp_bot ) dtyp_bot.
 
 
 
@@ -1799,11 +1779,13 @@ Theorem dchk_dinf_dinfapp_subsumption : forall n m E E' e T mode,
     | dtypingmode_infapp T1 => forall S1, E ⊢ S1 <: T1 -> exists S2, E ⊢ S2 <: T /\ dtyping E' e (dtypingmode_infapp S1) S2
     end.
 Proof.
-  intros n m.
-  induction n; induction m. intros.
-  - split; admit.
-  -
-
+  intro n; induction n; intro m; induction m; intros.
+  - admit.
+  - admit.
+  - admit.
+  - destruct mode; simpl in *.
+    + specialize (IHm IHn). 
+Admitted.
 
 Theorem dchk_subsumption : forall e n,
   dexp_size e < n -> 
