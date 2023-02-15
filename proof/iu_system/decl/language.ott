@@ -69,15 +69,22 @@ dcont, c :: 'dcont_' ::=
   | Done                :: :: done
   | _ • e =>=> c        :: :: app
   | _ ∘ T =>=> c        :: :: tapp
-  | _ <: A              :: :: sub
+  | _ <: T              :: :: sub
 
 dwork, w :: 'dwork_' ::=
   | e => c              ::   :: infer
   | e <= T              ::   :: check
-  | T • e =>=> c        ::   :: inferapp
-  | T1 ∘ T2 =>=> c      ::   :: typeapp
+  | T • e =>=> c        ::   :: infapp
+  | T1 ∘ T2 =>=> c      ::   :: inftapp
   | T1 <: T2            ::   :: sub
   | c $ T               ::   :: apply
+
+dworklist, W :: 'dworklist_' ::=
+  | empty      ::   :: empty
+  | W , x b    ::   :: consvar 
+  | W , X b    ::   :: constvar 
+  | W , SX b   ::   :: consstvar
+  | W , w      ::   :: conswork
 
 formula :: formula_ ::=
   | judgement        ::   :: judgement

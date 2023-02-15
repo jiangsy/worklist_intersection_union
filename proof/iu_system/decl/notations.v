@@ -66,6 +66,24 @@ Notation "e ⟼ e'" :=
   (dexp_red e e')
     (at level 65, no associativity).
 
+
+Declare Scope dworklist_scope.
+Delimit Scope dworklist_scope with dworklist.
+Bind Scope dworklist_scope with dworklist.
+
+
+Notation " x ~ T ; W " :=
+  (dworklist_consvar W x (dbind_typ T))
+      (at level 58, T at next level, right associativity) : dworklist_scope.
+    
+Notation " X ~ ▪ ; W " :=
+  (dworklist_constvar W X dbind_tvar_empty)
+      (at level 58, right associativity) : dworklist_scope.
+
+Notation " SX ~ ~▪ ; W " :=
+  (dworklist_consstvar W SX dbind_stvar_empty)
+      (at level 58, right associativity) : dworklist_scope.
+
 (* Declare Scope decl_context_scope.
 Delimit Scope decl_context_scope with decl_context.
 Bind Scope decl_context_scope with decl_context.

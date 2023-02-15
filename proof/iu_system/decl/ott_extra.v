@@ -4,6 +4,35 @@ Require Import List.
 
 Require Import decl.ott.
 
+
+Fixpoint ftv_sin_dtyp (T:dtyp) : vars :=
+  match T with
+  | dtyp_unit => {}
+  | dtyp_top => {}
+  | dtyp_bot => {}
+  | (dtyp_var_b nat) => {}
+  | (dtyp_var_f X) => {{X}}
+  | (dtyp_svar SX) => {}
+  | (dtyp_arrow T1 T2) => (ftv_sin_dtyp T1) \u (ftv_sin_dtyp T2)
+  | (dtyp_all T) => (ftv_sin_dtyp T)
+  | (dtyp_union T1 T2) => AtomSetImpl.inter (ftv_sin_dtyp T1) (ftv_sin_dtyp T2)
+  | (dtyp_intersection T1 T2) => AtomSetImpl.inter (ftv_sin_dtyp T1) (ftv_sin_dtyp T2)
+end.
+
+Fixpoint fstv_sin_dtyp (T:dtyp) : vars :=
+  match T with
+  | dtyp_unit => {}
+  | dtyp_top => {}
+  | dtyp_bot => {}
+  | (dtyp_var_b nat) => {}
+  | (dtyp_var_f X) => {}
+  | (dtyp_svar SX) => {{SX}}
+  | (dtyp_arrow T1 T2) => (fstv_sin_dtyp T1) \u (fstv_sin_dtyp T2)
+  | (dtyp_all T1) => (fstv_sin_dtyp T1)
+  | (dtyp_union T1 T2) =>  AtomSetImpl.inter (fstv_sin_dtyp T1)  (fstv_sin_dtyp T2)
+  | (dtyp_intersection T1 T2) => AtomSetImpl.inter (fstv_sin_dtyp T1) (fstv_sin_dtyp T2)
+end.
+
 (* defns Jdwf_typ_s *)
 Inductive dwf_typ_s : denv -> dtyp -> Prop :=    (* defn dwf_typ_s *)
  | dwftyps_unit : forall (E:denv),
@@ -246,7 +275,18 @@ dwf_typ E (dtyp_all T2) ->
     dtyping E e ( dtypingmode_infapp ( (dtyp_all T1) ) ) T2
 | dtyping_infappbot : forall (E:denv) (e:dexp),
     dtyping E e dtypingmode_chk dtyp_top ->
-    dtyping E e ( dtypingmode_infapp dtyp_bot ) dtyp_bot.
+    dtyping E e ( dtypingmode_infapp dtyp_bot ) dtyp_bot
+| dtyping_infappintersection1 : forall (E:denv) (e:dexp) (S1 S2 T:dtyp),
+    dtyping E e ( dtypingmode_infapp S1 ) T ->
+    dtyping E e ( dtypingmode_infapp (dtyp_intersection S1 S2) ) T
+| dtyping_infappintersection2 : forall (E:denv) (e:dexp) (S1 S2 T:dtyp),
+    dtyping E e ( dtypingmode_infapp S2 ) T ->
+    dtyping E e ( dtypingmode_infapp (dtyp_intersection S1 S2) ) T 
+| dtyping_infappunion : forall (E:denv) (e:dexp) (S1 S2 T:dtyp),
+    dtyping E e ( dtypingmode_infapp S1 ) T ->
+    dtyping E e ( dtypingmode_infapp S2 ) T ->
+    dtyping E e ( dtypingmode_infapp (dtyp_union S1 S2) ) T
+    .
 
 
 Inductive desub : denv -> denv -> Prop := 
