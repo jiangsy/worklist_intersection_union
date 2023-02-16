@@ -122,6 +122,70 @@ Inductive dsub : denv -> dtyp -> dtyp -> Prop :=    (* defn dsub *)
      dsub E S2 T ->
      dsub E (dtyp_union S1 S2) T.
 
+(* defns Jdsub_nonoverlap *)
+Inductive dsub_no : denv -> dtyp -> dtyp -> Prop :=    (* defn dsub_no *)
+ | dsubno_top : forall (E:denv) (S:dtyp),
+     dwf_typ E S ->
+     dsub_no E S dtyp_top
+ | dsubno_bot : forall (E:denv) (T:dtyp),
+     dwf_typ E T ->
+     dsub_no E dtyp_bot T
+ | dsubno_unit : forall (E:denv),
+     dsub_no E dtyp_unit dtyp_unit
+ | dsubno_tvar : forall (E:denv) (X:typvar),
+     dwf_typ E (dtyp_var_f X) ->
+     dsub_no E (dtyp_var_f X) (dtyp_var_f X)
+ | dsubno_stvar : forall (E:denv) (SX:stypvar),
+     dwf_typ E (dtyp_svar SX) ->
+     dsub_no E (dtyp_svar SX) (dtyp_svar SX)
+ | dsubno_arrow : forall (E:denv) (S1 S2 T1 T2:dtyp),
+     dsub_no E T1 S1 ->
+     dsub_no E S2 T2 ->
+     dsub_no E (dtyp_arrow S1 S2) (dtyp_arrow T1 T2)
+ | dsubno_all : forall (L:vars) (E:denv) (S T:dtyp),
+    ( forall SX , SX \notin L -> ds_in_s SX  (open_dtyp_wrt_dtyp  S   (dtyp_svar SX) ) ) ->
+    ( forall SX , SX \notin L -> ds_in_s SX  (open_dtyp_wrt_dtyp  T   (dtyp_svar SX) ) ) ->
+    ( forall SX , SX \notin L -> dsub_no  ( SX ~ dbind_stvar_empty  ++  E )   (open_dtyp_wrt_dtyp  S   (dtyp_svar SX) )   (open_dtyp_wrt_dtyp  T   (dtyp_svar SX) ) ) ->
+    dsub_no E (dtyp_all S) (dtyp_all T)
+ | dsubno_alll : forall (L:vars) (E:denv) (S T1 T2:dtyp),
+     dneq_all T1 ->
+     dneq_intersection T1 ->
+     dneq_union T1 ->
+      ~ ( T1  = dtyp_top)  ->
+      ( forall X , X \notin L -> ds_in X  (open_dtyp_wrt_dtyp  S   (dtyp_var_f X) ) ) ->
+     dwf_typ E T2 ->
+     dmono_typ T2 ->
+     dsub_no E  (open_dtyp_wrt_dtyp  S   T2 )  T1 ->
+     dsub_no E (dtyp_all S) T1
+ | dsubno_intersection1 : forall (E:denv) (S T1 T2:dtyp),
+     dsub_no E S T1 ->
+     dsub_no E S T2 ->
+     dsub_no E S (dtyp_intersection T1 T2)
+ | dsubno_intersection2 : forall (E:denv) (S1 S2 T:dtyp),
+     dneq_intersection T ->
+     dsub_no E S1 T ->
+     dwf_typ E S2 ->
+     dsub_no E (dtyp_intersection S1 S2) T
+ | dsubno_intersection3 : forall (E:denv) (S1 S2 T:dtyp),
+     dneq_intersection T ->
+     dsub_no E S2 T ->
+     dwf_typ E S1 ->
+     dsub_no E (dtyp_intersection S1 S2) T
+ | dsubno_union1 : forall (E:denv) (S T1 T2:dtyp),
+     dneq_union S ->
+     dsub_no E S T1 ->
+     dwf_typ E T2 ->
+     dsub_no E S (dtyp_union T1 T2)
+ | dsubno_union2 : forall (E:denv) (S T1 T2:dtyp),
+     dneq_union S ->
+     dsub_no E S T2 ->
+     dwf_typ E T1 ->
+     dsub_no E S (dtyp_union T1 T2)
+ | dsubno_union3 : forall (E:denv) (S1 S2 T:dtyp),
+     dsub_no E S1 T ->
+     dsub_no E S2 T ->
+     dsub_no E (dtyp_union S1 S2) T.
+
 
 (* defns Jdtyping *)
 Inductive dinf : denv -> dexp -> dtyp -> Prop :=    (* defn dinf *)

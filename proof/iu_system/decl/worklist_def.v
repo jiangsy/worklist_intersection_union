@@ -21,6 +21,7 @@ Fixpoint to_denv (Γ : dworklist) : denv :=
   | dworklist_consvar Γ1' x b => x ~ b ++ to_denv Γ1'
   end.
 
+(* TODO : check *)
 Inductive apply_dcont : dcont -> dtyp -> dworklist -> Prop :=
   | applydcont_done : forall T,  
       apply_dcont dcont_done T dworklist_empty
@@ -32,6 +33,7 @@ Inductive apply_dcont : dcont -> dtyp -> dworklist -> Prop :=
       apply_dcont (dcont_sub S) T (dworklist_conswork dworklist_empty (dwork_sub T S))
 .
 
+(* TODO : check *)
 (* decl worklist delegated reduction, corresponds to Jimmy's dc *)
 Inductive dwl_del_red : dworklist -> Prop :=
   | dwldelred_empty : dwl_del_red dworklist_empty
