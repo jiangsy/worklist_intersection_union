@@ -4,7 +4,7 @@ Require Import Lia.
 Require Import Metalib.Metatheory.
 
 Require Import decl.notations.
-Require Import decl.ott_extra.
+Require Import decl.extra_def.
 Require Import decl.ln_inf_extra.
 Require Import ln_utils.
 

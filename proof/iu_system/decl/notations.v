@@ -1,7 +1,7 @@
 Require Export Coq.Unicode.Utf8.
 
-Require Export decl.ott.
-Require Export decl.ott_extra.
+Require Export decl.ott_def.
+Require Export decl.extra_def.
 Require Export decl.ln_inf.
 
 

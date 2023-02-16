@@ -13,6 +13,7 @@ test/
 *.aux
 .lia.cache
 **/ott.v
+**/ott_def.v
 **/ln_inf.v
 .FILE_LIST
 
