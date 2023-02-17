@@ -4,8 +4,7 @@ Require Import Lia.
 Require Import Metalib.Metatheory.
 
 Require Import decl.notations.
-Require Import decl.extra_def.
-Require Import decl.ln_inf_extra.
+Require Import decl.prop_ln_extra.
 Require Import ln_utils.
 
 
@@ -15,35 +14,28 @@ Proof.
   set (x := dom E). exact x.
 Defined.
 
-(* Ltac gather_for_weakening :=
-  let A := gather_atoms_with (fun x : atoms => x) in
-  let B := gather_atoms_with (fun x : atom => singleton x) in
-  let C := gather_atoms_with (fun x : denv => dom x) in
-  let D := gather_atoms_with wf_dom in
-  constr:(A `union` B `union` C `union` D).
 
-Ltac apply_fresh_base_fixed H gather_vars atom_name :=
+Ltac gather_atoms ::=
+  let A := gather_atoms_with (fun x : vars => x) in
+  let B := gather_atoms_with (fun x : var => {{ x }}) in
+  let C := gather_atoms_with (fun x : denv => dom x) in
+  let D1 := gather_atoms_with (fun x => ftv_in_dtyp x) in
+  let D2 := gather_atoms_with (fun x => fstv_in_dtyp x) in
+  (* let D3 := gather_atoms_with (fun x => fv_typ_in_binding x) in *)
+  (* let D4 := gather_atoms_with (fun x => fv_exp_in_exp x) in *)
+  constr:(A \u B \u C \u D1 \u D2).
+
+(* Ltac apply_fresh_base_fixed H gather_vars atom_name :=
   let L := gather_vars in
   let L := beautify_fset L in
   let x := fresh atom_name in
-  pick fresh x excluding L and apply H. *)
+  pick fresh x excluding L and apply H. *) 
 
 (* 
 
 Tactic Notation "pick" "fresh" ident(x) "and" "apply" constr(H) "for" "weakening" :=
   apply_fresh_base_fixed H gather_for_weakening x. *)
 
-
-(* Lemma open_subst_eq : forall A x t, 
-  x `notin` fv_ld_type A -> lc_ld_type t  ->
-    A ^^ᵈ t = [t /ᵈ x] A ^^ᵈ (`ᵈ x).
-Proof.
-  intros.  
-  rewrite subst_ld_type_open_ld_type_wrt_ld_type. simpl.
-  rewrite eq_dec_refl.
-  rewrite subst_ld_type_fresh_eq.
-  all : auto.
-Qed.  *)
 
 Hint Constructors dwf_typ: core.
 Hint Constructors dwf_env: core.
@@ -473,14 +465,14 @@ Proof.
   dependent induction H; auto.
   - induction E.
     + inversion H. dependent destruction H2.
-      admit.
+      simpl in H0. apply notin_singleton_1 in H0. contradiction.
       auto.
     + destruct a. inversion H.
       * dependent destruction H2. auto.
       * simpl. apply dwf_typ_weakening_cons; auto.
   - induction E.
     + inversion H. dependent destruction H2.
-      * admit.
+      * simpl in H1. apply notin_singleton_1 in H1. contradiction.
       * auto.
     + destruct a. inversion H.
       * dependent destruction H2. auto.
@@ -491,10 +483,14 @@ Proof.
     + apply notin_union_2 in H1.
       eauto.
   - simpl in *.
-    apply dwftyp_all with (L:=L); intros; inst_cofinites_with X.
+    apply dwftyp_all with (L:=L `union` singleton x); intros; inst_cofinites_with X.
     + auto. 
     + replace (X ~ dbind_tvar_empty ++ E ++ F) with ((X ~ dbind_tvar_empty ++ E)++ F) by auto. eapply H1 with (x:=x) (b:=b); auto.
-Admitted.
+    rewrite ftv_in_dtyp_open_dtyp_wrt_dtyp_upper; auto.
+    rewrite fstv_in_dtyp_open_dtyp_wrt_dtyp_upper; auto. 
+  - simpl in *. eauto.
+  - simpl in *. eauto.
+Qed.
 
 Lemma dwf_typ_open_inv : forall E T S X,
   lc_dtyp S ->
@@ -1579,11 +1575,18 @@ Definition dmode_size (mode : dtyping_mode) : nat :=
   | dtypingmode_infapp _ => 0
   end.
 
+Definition dmode_type_size (mode : dtyping_mode) : nat := 
+  match mode with 
+  | dtypingmode_inf => 0
+  | dtypingmode_chk => 0
+  | dtypingmode_infapp T =>  dtyp_size T
+  end.
 
 
-Theorem dchk_dinf_dinfapp_subsumption : forall n m E E' e T mode,
-  dexp_size e < n ->
-  dmode_size mode < m -> 
+Theorem dchk_dinf_dinfapp_subsumption : forall n1 n2 n3 E E' e T mode,
+  dexp_size e < n1 ->
+  dmode_size mode < n2 -> 
+  dtyp_size T + dmode_type_size m < n3 ->
   dtyping E e mode T ->
   desub E' E ->
     match mode with 
@@ -1592,7 +1595,7 @@ Theorem dchk_dinf_dinfapp_subsumption : forall n m E E' e T mode,
     | dtypingmode_infapp T1 => forall S1, E ⊢ S1 <: T1 -> exists S2, E ⊢ S2 <: T /\ dtyping E' e (dtypingmode_infapp S1) S2
     end.
 Proof.
-  intro n; induction n; intro m; induction m; intros.
+  intro n; induction n; intro n1; induction n2; intro n3; induction n3. intros.
   - admit.
   - admit.
   - admit.
@@ -1600,7 +1603,7 @@ Proof.
     + specialize (IHm IHn). 
 Admitted.
 
-Theorem dchk_subsumption : forall e n,
+(* Theorem dchk_subsumption : forall e n,
   dexp_size e < n -> 
   forall E S,
     E ⊢ e ⇐ S ->
@@ -1780,3 +1783,4 @@ Proof.
       * admit. (* TODO : check rule *)  
       * admit. (* TODO : check rule *)  
 Admitted.
+ *)
