@@ -2,7 +2,7 @@
 Require Export Metalib.Metatheory.
 
 Require Import decl.notations.
-Require Import algo.notations.
+(* Require Import algo.notations. *)
 
 
 Notation "x ∉ L" := (x `notin` L)
@@ -42,7 +42,7 @@ Ltac inst_cofinites_by F :=
   pick fresh x for L; inst_cofinites_with x.
 
 
-Ltac rewrite_la_subst_open_var :=
+(* Ltac rewrite_la_subst_open_var :=
   repeat
     match goal with 
       | _ : _ |-  context [ ([?e /ᵃ ?x] ?A) ^ᵃ ?x' ] => 
@@ -55,4 +55,4 @@ Ltac rewrite_ld_subst_open_var :=
     match goal with 
       | _ : _ |-  context [ ([?e /ᵈ ?x] ?A) ^ᵈ ?x' ] => 
         replace (`ᵈ x') with ([ e /ᵈ x ] `ᵈ x') by (apply subst_ld_type_fresh_eq; auto)
-    end; repeat rewrite <- subst_ld_type_open_ld_type_wrt_ld_type by auto.
+    end; repeat rewrite <- subst_ld_type_open_ld_type_wrt_ld_type by auto. *)
