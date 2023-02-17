@@ -1,7 +1,7 @@
 Require Import Coq.Program.Equality.
 
 Require Import ln_utils.
-Require Import decl.ln_inf.
+Require Import decl.prop_ln.
 Require Export decl.notations.
 
 

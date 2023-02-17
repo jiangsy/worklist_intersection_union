@@ -190,7 +190,7 @@ Inductive dsub : denv -> dtyp -> dtyp -> Prop :=    (* defn dsub *)
 
 
 (* defns Jdtyping *)
-Inductive dinf : denv -> dexp -> dtyp -> Prop :=    (* defn dinf *)
+(* Inductive dinf : denv -> dexp -> dtyp -> Prop :=    (* defn dinf *)
  | dinf_var : forall (E:denv) (x:expvar) (T:dtyp),
      dwf_env E ->
       binds ( x )  ( (dbind_typ T) ) ( E )  ->
@@ -263,7 +263,7 @@ with dinfapp : denv -> dtyp -> dexp -> dtyp -> Prop :=    (* defn dinfapp *)
      dinfapp E  ( (dtyp_all T1) )  e T2
  | dinfapp_bot : forall (E:denv) (e:dexp),
      dchk E e dtyp_top ->
-     dinfapp E dtyp_bot e dtyp_bot.
+     dinfapp E dtyp_bot e dtyp_bot. *)
 
 Inductive dtyping_mode :=
     | dtypingmode_inf 
@@ -299,16 +299,12 @@ dwf_typ E (dtyp_all T2) ->
     dtyping E e1 dtypingmode_inf (dtyp_all T1) ->
     dtyping E (dexp_tapp e1 T2) dtypingmode_inf (open_dtyp_wrt_dtyp  T1 T2 ) 
 | dtyping_chkabstop : forall (L:vars) (E:denv) (e:dexp),
-    ( forall x , x \notin  L  -> dchk  ( x ~ (dbind_typ dtyp_bot)  ++  E )   ( open_dexp_wrt_dexp e (dexp_var_f x) )  dtyp_top )  ->
+    ( forall x , x \notin  L  -> dtyping  ( x ~ (dbind_typ dtyp_bot)  ++  E )   ( open_dexp_wrt_dexp e (dexp_var_f x) ) dtypingmode_chk dtyp_top )  ->
     dtyping E (dexp_abs e) dtypingmode_chk dtyp_top
 | dtyping_chkabs : forall (L:vars) (E:denv) (e:dexp) (T1 T2:dtyp),
     dwf_typ E T1 ->
-    ( forall x , x \notin  L  -> dchk  ( x ~ (dbind_typ T1)  ++  E )   ( open_dexp_wrt_dexp e (dexp_var_f x) )  T2 )  ->
+    ( forall x , x \notin  L  -> dtyping  ( x ~ (dbind_typ T1)  ++  E )  ( open_dexp_wrt_dexp e (dexp_var_f x) ) dtypingmode_chk T2 )  ->
     dtyping E (dexp_abs e) dtypingmode_chk (dtyp_arrow T1 T2)
-| dtyping_chkapp : forall (E:denv) (e1 e2:dexp) (T2 T1:dtyp),
-    dtyping E e1 dtypingmode_inf T1 ->
-    dtyping E e2 (dtypingmode_infapp T1) T2 ->
-    dtyping E (dexp_app e1 e2) dtypingmode_chk T2
 | dtyping_chkall : forall (L:vars) (E:denv) (e:dexp) (T:dtyp),
     dwf_typ E (dtyp_all T) ->
     ( forall X , X \notin  L  -> dtyping  ( X ~ dbind_tvar_empty  ++  E )  e  dtypingmode_chk ( open_dtyp_wrt_dtyp T (dtyp_var_f X) )  )  ->
