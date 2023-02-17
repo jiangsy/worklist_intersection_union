@@ -67,23 +67,26 @@ Proof.
     specialize (IHdtyping2 H1). 
     inversion IHdtyping1.
     + inversion IHdtyping2.
-      * admit.
-      * destruct H3 as [e2']. right. exists (dexp_app e1 e2'). apply dexpred_app2; auto. rewrite H2. constructor. admit. (* easy : lc *)
+      * admit. (* medium : inversion lemma of app *)
+      * destruct H3 as [e2']. right. exists (dexp_app e1 e2'). 
+        apply dexpred_app2; auto. 
+        rewrite H2. constructor. admit. (* easy : lc *)
     + right. destruct H2 as [e1'].
-      exists (dexp_app e1' e2). constructor; auto.
+      exists (dexp_app e1' e2). 
+      constructor; auto.
       admit. (* easy : lc *)
   (* e => BOT *)
   - specialize (IHdtyping H1). inversion IHdtyping.
     + destruct e; try solve [inversion H2; inversion H0].
       * dependent destruction H0. inversion H3.
-        right. exists e. constructor.
+        right. exists (dexp_anno e dtyp_bot).  constructor.
         rewrite H5. constructor.
         admit. admit. (* easy : lc *)
     + right. destruct H2 as [e']. eauto.
   (* e @ T *)
   - specialize (IHdtyping H1).
     inversion IHdtyping.
-    + admit.
+    + admit. (* medium : inversion lemma of tapp *)
     + right. destruct H2 as [e1']. eauto.
   (* e => ∀ X . T *)
   - inst_cofinites_by L.
