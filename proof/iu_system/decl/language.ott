@@ -63,7 +63,7 @@ dvalue, v :: dvalue_ ::=
   | \ x . e          ::   :: abs  (+ bind x in e +)
   | \ X . dbody      ::   :: tabs (+ bind X in dbody +)
   | top              ::   :: top
-  | v : T            ::   :: anno
+  % | v : T            ::   :: anno
 
 dcont, c :: 'dcont_' ::=
   | Done                :: :: done
@@ -534,9 +534,8 @@ e1 @ T  --> e1' @ T
 ------------------------------------------------------------- :: tabs
 (\ X . e : T1 ) @ T2 --> {T2 / X} (e : T1) 
 
-e --> e' 
 -------------------- :: anno
-e : T --> e' : T   
+e : T --> e
 
 % v ¬= λ 
 % -------------------- :: app_top
