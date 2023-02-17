@@ -91,7 +91,7 @@ Inductive dsub : denv -> dtyp -> dtyp -> Prop :=    (* defn dsub *)
  | dsub_alll : forall (L:vars) (E:denv) (S T1 T2:dtyp),
      dneq_all T1 ->
      dneq_intersection T1 ->
-     dneq_union T1 ->
+     dneq_union T1 -> 
      ( forall X , X \notin L -> ds_in X  (open_dtyp_wrt_dtyp  S   (dtyp_var_f X) ) ) ->
      dwf_typ E T2 ->
      dmono_typ T2 ->
@@ -122,8 +122,10 @@ Inductive dsub : denv -> dtyp -> dtyp -> Prop :=    (* defn dsub *)
      dsub E S2 T ->
      dsub E (dtyp_union S1 S2) T.
 
+
+(* a non-overlapping version is not needed? *)
 (* defns Jdsub_nonoverlap *)
-Inductive dsub_no : denv -> dtyp -> dtyp -> Prop :=    (* defn dsub_no *)
+(* Inductive dsub_no : denv -> dtyp -> dtyp -> Prop :=    (* defn dsub_no *)
  | dsubno_top : forall (E:denv) (S:dtyp),
      dwf_typ E S ->
      dsub_no E S dtyp_top
@@ -184,7 +186,7 @@ Inductive dsub_no : denv -> dtyp -> dtyp -> Prop :=    (* defn dsub_no *)
  | dsubno_union3 : forall (E:denv) (S1 S2 T:dtyp),
      dsub_no E S1 T ->
      dsub_no E S2 T ->
-     dsub_no E (dtyp_union S1 S2) T.
+     dsub_no E (dtyp_union S1 S2) T. *)
 
 
 (* defns Jdtyping *)
