@@ -5,20 +5,21 @@ OTT_FLAGS := -coq_lngen true -signal_parse_errors true
 
 SYSTEMS := decl
 IGNORE_DIRS := ""
-OTT_OUTS   := $(addsuffix /ott.v,${SYSTEMS})
-LNGEN_OUTS := $(addsuffix /ln_inf.v,${SYSTEMS})
+OTT_OUTS   := $(addsuffix /def_ott.v,${SYSTEMS})
+LNGEN_OUTS := $(addsuffix /prop_ln.v,${SYSTEMS})
 
 .PHONY: ott lngen coq clean
 
-%/ott.v : %/language.ott
+%/def_ott.v : %/language.ott
 	ott -i $^ -o $@ ${OTT_FLAGS}
 	sed -e "/Ott.ott_list_core/d" -i "" $@
 	sed -e "/lc_dtyp[ ](dexp_tabs[ ](dbody_anno[ ]e[ ]T1))/d" -i "" $@ 
 
 ott : ${OTT_OUTS}
 
-%/ln_inf.v : %/ott.v
+%/prop_ln.v : %/def_ott.v
 	lngen --coq $@ --coq-ott $*.ott $*/language.ott
+	sed -e "s/.ott./.def_ott./" -i "" $@ 
 
 lngen : ${LNGEN_OUTS}
 
@@ -38,4 +39,4 @@ coq : ${COQ_MAKEFILE}
 
 clean :
 	${MAKE} -f ${COQ_MAKEFILE} clean
-	rm */ln_inf.v */ott.v ${COQ_MAKEFILE} ${COQ_MAKEFILE}.conf .FILE_LIST
+	rm */prop_ln.v */ott_def.v ${COQ_MAKEFILE} ${COQ_MAKEFILE}.conf .FILE_LIST

@@ -549,7 +549,6 @@ Proof.
     + inversion x. eauto.
 Qed.
 
-
 (* Lemma wft_all_inversion : forall E S T,
   dmono_typ T ->
   E ⊢ T ->
