@@ -21,7 +21,7 @@ Notation "E ⊢ S <: T" :=
   (dsub E S T)
     (at level 65, S at next level, no associativity) : type_scope.
 
-Notation "E ⊢ e ⇐ T" :=
+(* Notation "E ⊢ e ⇐ T" :=
     (dchk E e T) 
       (at level 65, e at next level, no associativity) : type_scope.
 
@@ -31,7 +31,7 @@ Notation "E ⊢ e ⇒ T" :=
 
 Notation "E ⊢ T1 • e ⇒⇒ T2" :=
     (dinfapp E T1 e T2) 
-      (at level 65, T1 at next level, e at next level, no associativity) : type_scope.
+      (at level 65, T1 at next level, e at next level, no associativity) : type_scope. *)
 
 Notation "X ∈ E" := (binds X (dbind_tvar_empty))
   (at level 65, no associativity) : type_scope.
