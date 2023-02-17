@@ -15,5 +15,6 @@ test/
 **/ott.v
 **/ott_def.v
 **/ln_inf.v
+**/prop_ln.v
 .FILE_LIST
 
