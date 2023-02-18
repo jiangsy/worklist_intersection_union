@@ -2,6 +2,7 @@ Require Import Coq.Program.Equality.
 
 Require Import decl.notations.
 Require Import decl.prop_basic.
+Require Import ln_utils.
 
 Hint Constructors dsub : sub.
 
@@ -123,13 +124,16 @@ Proof.
   intros. induction H; eauto.
 Qed.
 
-Lemma dsub_sized_wrt_dub_complete : forall E S T,
-  E ⊢ S <: T -> exists n, dsub_sized E S T n.
+Check S.
+
+Lemma dsub_sized_wrt_dub_complete : forall E T1 T2,
+  E ⊢ T1 <: T2 -> exists n, dsub_sized E T1 T2 n.
 Proof with eauto with sub.
   intros. induction H; eauto...
   - destruct IHdsub1 as [n1]. destruct IHdsub2 as [n2].
     eauto...
-  - admit.
+  - inst_cofinites_by L. destruct H2 as [n].
+    exists (nat.S n).
   - destruct IHdsub as [n]. eauto...
   - destruct IHdsub1 as [n1]. destruct IHdsub2 as [n2].
   eauto...
