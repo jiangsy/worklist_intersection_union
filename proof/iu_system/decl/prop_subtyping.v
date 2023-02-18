@@ -3,14 +3,12 @@ Require Import Coq.Program.Equality.
 Require Import decl.notations.
 Require Import decl.prop_basic.
 
-Hint Constructors dsub : core.
+Hint Constructors dsub : sub.
 
 Lemma dsub_refl' : forall E T, 
   E ⊢ₛ T -> E ⊢ T <: T.
-Proof.
-  intros; dependent induction H; eauto.
-  - apply dsub_union3; auto.
-  - apply dsub_intersection1; auto.
+Proof with auto with sub.
+  intros; dependent induction H; eauto...
 Qed. 
 
 
@@ -27,37 +25,132 @@ Qed.
 Lemma dsub_union_inversion : forall E S1 S2 T, 
   E ⊢ dtyp_union S1 S2 <: T -> 
   E ⊢ S1 <: T /\ E ⊢ S2 <: T.
-Proof.
+Proof with auto with sub.
   intros.
-  dependent induction H; auto.
+  dependent induction H; auto...
   - inversion H. split; econstructor; auto.
   - specialize (IHdsub1 _ _ (eq_refl _)).
     specialize (IHdsub2 _ _ (eq_refl _)).
     destruct IHdsub1. destruct IHdsub2.
-    split; constructor; auto.
+    intuition.
   - specialize (IHdsub _ _ (eq_refl _)).
-    split; apply dsub_union1; intuition.
+    intuition.
   - specialize (IHdsub _ _ (eq_refl _)).
-    split; apply dsub_union2; intuition.
+    intuition.
 Qed.
 
 
 Lemma dsub_intersection_inversion : forall E S T1 T2, 
   E ⊢ S <: dtyp_intersection T1 T2 -> 
   E ⊢ S <: T1 /\ E ⊢ S <: T2.
-Proof.
+Proof with auto with sub.
   intros.
-  dependent induction H; auto.
-  - inversion H. split; econstructor; auto.
+  dependent induction H; auto...
+  - inversion H. auto.
   - inversion H0.
   - specialize (IHdsub _ _ (eq_refl _)).
-    split; apply dsub_intersection2; intuition.
+    intuition.
   - specialize (IHdsub _ _ (eq_refl _)).
-    split; apply dsub_intersection3; intuition.
+    intuition.
   - specialize (IHdsub1 _ _ (eq_refl _)).
     specialize (IHdsub2 _ _ (eq_refl _)).
     intuition.
 Qed.
+
+Inductive dsub_sized : denv -> dtyp -> dtyp -> nat -> Prop :=   
+ | dsubsized_top : forall (E:denv) (S:dtyp) (n:nat),
+     dwf_typ E S ->
+     dsub_sized E S dtyp_top n
+ | dsubsized_bot : forall (E:denv) (T:dtyp) (n:nat),
+     dwf_typ E T ->
+     dsub_sized E dtyp_bot T n
+ | dsubsized_unit : forall (E:denv) (n:nat),
+     dsub_sized E dtyp_unit dtyp_unit n
+ | dsubsized_tvar : forall (E:denv) (X:typvar) (n:nat),
+     dwf_typ E (dtyp_var_f X) ->
+     dsub_sized E (dtyp_var_f X) (dtyp_var_f X) n
+ | dsubsized_stvar : forall (E:denv) (SX:stypvar) (n:nat),
+     dwf_typ E (dtyp_svar SX) ->
+     dsub_sized E (dtyp_svar SX) (dtyp_svar SX) n
+ | dsubsized_arrow : forall (E:denv) (S1 S2 T1 T2:dtyp) (n1 n2:nat),
+     dsub_sized E T1 S1 n1 ->
+     dsub_sized E S2 T2 n2 ->
+     dsub_sized E (dtyp_arrow S1 S2) (dtyp_arrow T1 T2) (S (n1 + n2))
+ | dsubsized_all : forall (L:vars) (E:denv) (S1 T:dtyp) (n:nat),
+     ( forall SX , SX \notin L -> ds_in_s SX  (open_dtyp_wrt_dtyp  S1   (dtyp_svar SX) ) ) ->
+     ( forall SX , SX \notin L -> ds_in_s SX  (open_dtyp_wrt_dtyp  T   (dtyp_svar SX) ) ) ->
+     ( forall SX , SX \notin L -> dsub_sized  ( SX ~ dbind_stvar_empty  ++  E )   (open_dtyp_wrt_dtyp  S1   (dtyp_svar SX) )   (open_dtyp_wrt_dtyp  T   (dtyp_svar SX) ) n) ->
+     dsub_sized E (dtyp_all S1) (dtyp_all T) (S n)
+ | dsubsized_alll : forall (L:vars) (E:denv) (S1 T1 T2:dtyp) (n:nat),
+     dneq_all T1 ->
+     dneq_intersection T1 ->
+     dneq_union T1 -> 
+     ( forall X , X \notin L -> ds_in X  (open_dtyp_wrt_dtyp  S1   (dtyp_var_f X) ) ) ->
+     dwf_typ E T2 ->
+     dmono_typ T2 ->
+     dsub_sized E  (open_dtyp_wrt_dtyp  S1   T2 )  T1 n ->
+     dsub_sized E (dtyp_all S1) T1 (S n)
+ | dsubsized_intersection1 : forall (E:denv) (S1 T1 T2:dtyp) (n1 n2:nat),
+     dsub_sized E S1 T1 n1 ->
+     dsub_sized E S1 T2 n2 ->
+     dsub_sized E S1 (dtyp_intersection T1 T2) (S (n1 + n2))
+ | dsubsized_intersection2 : forall (E:denv) (S1 S2 T:dtyp) (n:nat),
+     dsub_sized E S1 T n ->
+     dwf_typ E S2 ->
+     dsub_sized E (dtyp_intersection S1 S2) T (S n)
+ | dsubsized_intersection3 : forall (E:denv) (S1 S2 T:dtyp) (n:nat),
+     dsub_sized E S2 T n ->
+     dwf_typ E S1 ->
+     dsub_sized E (dtyp_intersection S1 S2) T (S n)
+ | dsubsized_union1 : forall (E:denv) (S1 T1 T2:dtyp) (n:nat),
+     dsub_sized E S1 T1 n ->
+     dwf_typ E T2 ->
+     dsub_sized E S1 (dtyp_union T1 T2) (S n)
+ | dsubsized_union2 : forall (E:denv) (S1 T1 T2:dtyp) (n:nat),
+     dsub_sized E S1 T2 n ->
+     dwf_typ E T1 ->
+     dsub_sized E S1 (dtyp_union T1 T2) (S n)
+ | dsubsized_union3 : forall (E:denv) (S1 S2 T:dtyp) (n1 n2:nat),
+     dsub_sized E S1 T n1 ->
+     dsub_sized E S2 T n2 ->
+     dsub_sized E (dtyp_union S1 S2) T (S (n1 + n2)).
+
+Hint Constructors dsub_sized : sub.
+
+Theorem dsub_sized_wrt_dub_sound : forall E S T n,
+  dsub_sized E S T n -> E ⊢ S <: T.
+Proof.
+  intros. induction H; eauto.
+Qed.
+
+Lemma dsub_sized_wrt_dub_complete : forall E S T,
+  E ⊢ S <: T -> exists n, dsub_sized E S T n.
+Proof with eauto with sub.
+  intros. induction H; eauto...
+  - destruct IHdsub1 as [n1]. destruct IHdsub2 as [n2].
+    eauto...
+  - admit.
+  - destruct IHdsub as [n]. eauto...
+  - destruct IHdsub1 as [n1]. destruct IHdsub2 as [n2].
+  eauto...
+  - destruct IHdsub as [n]. eauto...
+  - destruct IHdsub as [n]. eauto...
+  - destruct IHdsub as [n]. eauto...
+  - destruct IHdsub as [n]. eauto...
+  - destruct IHdsub1 as [n1]. destruct IHdsub2 as [n2].
+  eauto...
+Admitted.
+
+
+
+Fixpoint dtyp_order (T : dtyp) : nat :=
+  match T with
+  | dtyp_arrow T1 T2 => dtyp_order T1 + dtyp_order T2
+  | dtyp_all T1 => S (dtyp_order T1)
+  | dtyp_intersection T1 T2 => dtyp_order T1 + dtyp_order T2
+  | dtyp_union T1 T2 => dtyp_order T1 + dtyp_order T2
+  | _ => 0
+  end.
 
 (* Theorem substitution : forall G1 G2 x A B t,
   G1 , x  ,, G2 ⊢ A <: B ->
@@ -111,14 +204,6 @@ Qed.
 
 
 
-Fixpoint type_order (t : ld_type) : nat :=
-  match t with
-  | ld_t_arrow A B => type_order A + type_order B
-  | ld_t_forall A  => S (type_order A)
-  | ld_t_intersection A B => type_order A + type_order B
-  | ld_t_union A B => type_order A + type_order B
-  | _ => 0
-  end.
 
 Lemma mono_type_order : forall t,
   ld_mono_type t -> type_order t = 0.
@@ -186,14 +271,6 @@ Proof.
   apply sized_ld_sub_to_ld_sub in H. apply ld_sub_wf_ctx in H. auto.
 Qed.
 
-
-Lemma ld_wf_type_is_wf_ctx : forall G A,
-  G ⊢ A -> ⊢ G.
-Proof.
-  intros. induction H; auto.
-  inst_cofinites_with_new. dependent destruction H0.
-  auto.
-Qed.
 
 Lemma context_cons_app_eq : forall G1 G2 x,
   G1, x ,, G2 = G1 ,, (ld_ctx_nil, x ,, G2).
@@ -503,12 +580,22 @@ Proof with eauto with trans.
           -- econstructor; eauto.
 Qed.
 
-Theorem transitivity : forall G A B C,
-   G ⊢ A <: B -> G ⊢ B <: C -> G ⊢ A <: C.
-Proof.
-  intros.
-  apply ld_sub_to_sized_ld_sub in H. destruct H as [n1].
-  apply ld_sub_to_sized_ld_sub in H0. destruct H0 as [n2].
-  eapply generalized_transitivity; eauto.
-Qed.
+
  *)
+
+Lemma transitivity' : forall n_dtyp_order n_dsub_size E R S T n1 n2 ,
+  dtyp_order S < n_dtyp_order ->
+  n1 + n2 < n_dsub_size -> 
+  dsub_sized E R S n1 -> dsub_sized E S T n2 -> E ⊢ R <: T.
+Proof.
+Admitted.
+
+
+Theorem transitivity : forall E R S T,
+   E ⊢ R <: S -> E ⊢ S <: T -> E ⊢ R <: T.
+Proof.
+  intros E R S T Hrs Hst.
+  apply dsub_sized_wrt_dub_complete in Hrs. destruct Hrs as [n1].
+  apply dsub_sized_wrt_dub_complete in Hst. destruct Hst as [n2].
+  eapply transitivity'; eauto.
+Qed.

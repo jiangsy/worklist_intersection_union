@@ -380,7 +380,7 @@ Fixpoint dtyp_order (t : dtyp) : nat :=
   
 (* 
 
-Reserved Notation "G ⊢ t1 <: t2 | (n, m)"
+Reserved Notation "G ⊢ t1 <: t2 | n "
 (at level 65, t1 at next level, t2 at next level, no associativity).
 Inductive sized_ld_sub : ld_context -> ld_type -> ld_type -> nat -> Prop :=
 | sls_var : forall G x n,
