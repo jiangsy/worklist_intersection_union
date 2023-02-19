@@ -1,0 +1,580 @@
+metavar typvar, X, Y, Z     ::= {{ repr-locally-nameless }}
+metavar stypvar, SX, SY, SZ ::= {{ coq var }}
+metavar etypvar, EX, EY, EZ ::= {{ coq var }}
+metavar expvar, x, y, z     ::= {{ repr-locally-nameless }}
+
+grammar
+
+a_typ, T, S, U :: a_typ_ ::=
+  | UNIT           ::   :: unit
+  | TOP            ::   :: top
+  | BOT            ::   :: bot
+  | X              ::   :: tvar
+  | SX             ::   :: stvar
+  | EX             ::   :: etvar
+  | T1 -> T2       ::   :: arrow
+  | ∀ X . T        ::   :: all  (+ bind X in T +)
+  | T1 + T2        ::   :: union
+  | T1 * T2        ::   :: intersection
+  | ( T )          :: S :: paren {{ coq ([[T]]) }}
+  | { T2 / X } T1  :: M :: subst {{ coq (open_a_typ_wrt_a_typ [[X T1]] [[T2]]) }}
+
+a_body :: a_body_ ::= 
+  | e : T ::  :: anno
+
+a_exp, e, f, g :: a_exp_ ::=
+  | unit                                ::   :: unit 
+  | top                                 ::   :: top
+  | x                                   ::   :: var
+  | \ x . e                             ::   :: abs  (+ bind x in e +)
+  | e1 e2                               ::   :: app
+  | \ X . a_body                         ::   :: tabs (+ bind X in a_body +) 
+  | e @ T                               ::   :: tapp
+  | e : T                               ::   :: anno
+  | ( e )                               :: S :: paren  {{ coq ([[e]]) }}
+  | { e2 / x } e1                       :: M :: subst1 {{ coq (open_a_exp_wrt_a_exp [[x e1]] [[e2]]) }}
+  | { T2 / X } e1                       :: M :: subst2 {{ coq (open_a_exp_wrt_a_typ [[X e1]] [[T2]]) }}
+
+
+a_binding, b :: a_bind_ ::=
+  | : ▪        ::   :: tvarempty
+  | : ~▪       ::   :: stvarempty
+  | : T        ::   :: typ
+  | : T1 < T2  ::   :: bound
+
+substitutions
+  single T X  :: subst_typ_in
+  single T SX :: subst_styp_in
+  single T EX :: subst_etyp_in
+  single e x  :: subst_exp_in
+
+freevars
+  T X  :: ftv_typ_in
+  T SX :: fstv_typ_in
+  T EX :: fetv_typ_in
+  e x  :: fv_exp_in
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+grammar
+
+a_env, E, F, G:: '' ::= {{ coq list (atom*a_binding) }}
+  | empty    ::   :: empty {{ coq nil }}
+  | E , x b  ::   :: cons1 {{ coq ([[x]]~[[b]] ++ [[E]])  }}
+  | E , X b  ::   :: cons2 {{ coq ([[X]]~[[b]] ++ [[E]])  }}
+  | E , SX b ::   :: cons3 {{ coq ([[SX]]~[[b]] ++ [[E]]) }}
+  | E , EX b ::   :: cons4 {{ coq ([[EX]]~[[b]] ++ [[E]]) }}
+  | ⌊ W ⌋    :: M :: dwlenv {{ coq ( awl_to_aenv [[W]] )}}
+
+a_cont, c :: 'a_cont_' ::=
+  | Done                :: :: done
+  | _ • e =>=> c        :: :: app
+  | _ ∘ T =>=> c        :: :: tapp
+  | _ <: T              :: :: sub
+
+a_work, w :: 'a_work_' ::=
+  | e => c              ::   :: infer
+  | e <= T              ::   :: check
+  | T • e =>=> c        ::   :: infapp
+  | T1 ∘ T2 =>=> c      ::   :: inftapp
+  | T1 <: T2            ::   :: sub
+  | c $ T               ::   :: apply
+
+a_worklist, W  :: 'a_wl_' ::=
+  | empty    ::   :: empty 
+  | W , x b  ::   :: consvar 
+  | W , X b  ::   :: constvar
+  | W , SX b ::   :: consstvar 
+  | W , EX b ::   :: consetvar
+  | W , w    ::   :: consw
+
+formula :: formula_ ::=
+  | judgement        ::   :: judgement
+  | ( x b )  in E    ::   :: binds1 {{ coq binds ([[x]])  ([[b]]) ([[E]]) }}
+  | ( X b )  in E    ::   :: binds2 {{ coq binds ([[X]])  ([[b]]) ([[E]]) }}
+  | ( SX b ) in E    ::   :: binds3 {{ coq binds ([[SX]]) ([[b]]) ([[E]]) }}
+  | ( EX b ) in E    ::   :: binds4 {{ coq binds ([[EX]]) ([[b]]) ([[E]]) }}
+  | x  `notin` E     ::   :: fresh1 {{ coq ([[x]]  `notin` dom ([[E]])) }}
+  | X  `notin` E     ::   :: fresh2 {{ coq ([[X]]  `notin` dom ([[E]])) }}
+  | SX `notin` E     ::   :: fresh3 {{ coq ([[SX]] `notin` dom ([[E]])) }}
+  | EX `notin` E     ::   :: fresh4 {{ coq ([[EX]] `notin` dom ([[E]])) }}
+  | T ¬= TOP         ::   :: neqtop  {{ coq ~ ([[T]] = a_typ_top)}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%∥%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+embed {{ coq
+
+Definition mono_intersection (T1 T2 : a_typ) : a_typ :=
+  match T2 with
+  | TOP => T1 
+  | _ => a_typ_intersection T1 T2
+  end.
+
+Definition mono_union (T1 T2 : a_typ) : a_typ :=
+  match T2 with
+  | BOT => T1 
+  | _ => a_typ_union T1 T2
+  end.
+
+Fixpoint awl_to_aenv (Γ : a_worklist) : a_env :=
+  match Γ with 
+  | a_wl_empty => nil
+  | a_wl_consw Γ1' _ => awl_to_aenv Γ1'
+  | a_wl_constvar Γ1' X b => X ~ b ++ awl_to_aenv Γ1'
+  | a_wl_consstvar Γ1' SX b => SX ~ b ++ awl_to_aenv Γ1'
+  | a_wl_consetvar Γ1' EX b => EX ~ b ++ awl_to_aenv Γ1'
+  | a_wl_consvar Γ1' x b => x ~ b ++ awl_to_aenv Γ1'
+  end.
+
+
+  (*
+  Reserved Notation " Γ₁ ‖ E ⊢⁺ x T ⊣ Γ₂ ++ Γ₃ "
+    (at level 65, E at level 60, x at level 0, T at level 50
+    , Γ₂ at level 58, no associativity)
+  Inductive reorder 
+    : aworklist ->  list (atom*abinding) -> var -> atyp -> aworklist -> aworklist -> Prop :=
+    | re_stop : forall Γ₁ E X b T
+    , x `notin` fetv_typ_in T
+    -> Γ₁ , X b ‖ E ⊢⁺ x T
+
+  Inductive reorder : worklist -> var -> typ -> mode -> algo_worklist -> algo_worklist -> Prop :=
+    | re_add_ub : forall Γ x lb ub t Γ'
+      , x `notin` dom Γ' `union` fevar_algo_type t
+      -> reorder (algo_wl_cons_ev Γ lb x ub) x t algo_m_u algo_wl_nil 
+      (algo_wl_app_rev (algo_wl_cons_ev Γ lb x (algo_t_intersection ub t)) Γ')
+    | re_add_lb : forall Γ x lb ub t Γ'
+      , x `notin` dom Γ' `union` fevar_algo_type t
+      -> reorder (algo_wl_cons_ev Γ lb x ub) x t algo_m_l algo_wl_nil 
+      (algo_wl_app_rev (algo_wl_cons_ev Γ (algo_t_union lb t) x ub) Γ')
+    | re_tvar_stay : forall Γ1 Γ2 x y t m Γ'
+      , y `notin` dom Γ' `union` ftvar_algo_type t
+      -> reorder Γ1 x t m Γ' Γ2
+      -> reorder (algo_wl_cons_tv Γ1 y) x t m Γ' (algo_wl_cons_tv Γ2 y)
+    | re_evar_stay : forall Γ1 Γ2 y lb ub x t m Γ'
+      , y `notin` fevar_algo_worklist Γ' `union` fevar_algo_type t
+      -> reorder Γ1 x t m Γ' Γ2
+      -> reorder (algo_wl_cons_ev Γ1 lb y ub) x t m Γ' (algo_wl_cons_ev Γ2 lb y ub)
+    | re_evar_move : forall Γ1 Γ2 y lb ub x t m Γ'
+      , x `notin` fevar_algo_type lb `union` fevar_algo_type ub
+      -> reorder Γ1 x t m (algo_wl_cons_ev Γ' lb y ub) Γ2
+      -> reorder (algo_wl_cons_ev Γ1 lb y ub) x t m Γ' (algo_wl_cons_ev Γ2 lb y ub)
+    | re_work_stay : forall Γ1 Γ2 t1 t2 x t m Γ' 
+      , reorder Γ1 x t m Γ' Γ2
+      -> reorder (algo_wl_cons_w Γ1 (algo_w_sub t1 t2)) x t m Γ' (algo_wl_cons_w Γ2 (algo_w_sub t1 t2))
+    .
+
+    *)
+
+}}
+
+
+defns
+Jawf_typ :: '' ::=
+
+defn
+W |- T :: :: wf_typ :: 'awf_typ_' by
+
+--------- :: unit
+W |- UNIT 
+
+--------- :: bot
+W |- BOT 
+
+--------- :: top
+W |- TOP
+
+(X : ▪) in ⌊ W ⌋
+--------------------- :: tvar
+W |- X
+
+(SX : ~▪) in ⌊ W ⌋
+--------------------- :: stvar 
+W |- SX
+
+(EX : S < T) in ⌊ W ⌋
+--------------------- :: etvar 
+W |- EX
+
+W |- T1
+W |- T2
+-------------- :: arrow
+W |- T1 -> T2
+
+W , X : ▪ |- T
+-------------------- :: all
+W |- ∀ X . T
+
+W |- T1
+W |- T2
+------------- :: union
+W |- T1 + T2
+
+W |- T1
+W |- T2 
+------------- :: intersection
+W |- T1 * T2
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+defns 
+Jastrong_mono_typ :: '' ::= 
+
+defn 
+smono T :: :: a_smono_typ :: 'a_smtyp_' by 
+
+--------------- :: unit
+smono UNIT
+
+--------------- :: tvar
+smono X
+
+--------------- :: evar
+smono EX
+
+smono T1
+smono T2
+--------------- :: arrow
+smono T1 -> T2
+
+defns
+Jatyp_neq_all :: '' ::=
+
+defn
+T ¬= ∀ :: :: a_typ_neq_all :: 'a_typneqall_' by
+
+------------------------ :: unit
+UNIT ¬= ∀
+
+------------------------ :: top
+TOP ¬= ∀
+
+------------------------ :: bot
+BOT ¬= ∀
+
+------------------------ :: tvar
+X ¬= ∀
+
+------------------------ :: stvar
+SX ¬= ∀
+
+------------------------ :: etvar
+EX ¬= ∀
+
+------------------------ :: arrow
+T1 -> T2 ¬= ∀
+
+------------------------ :: union
+T1 + T2 ¬= ∀
+
+------------------------ :: intersection
+T1 * T2 ¬= ∀
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+defns
+Jatyp_neq_intersection :: '' ::=
+
+defn
+T ¬= * :: :: a_typ_neq_intersection :: 'a_typneqinter_' by
+
+------------------------ :: unit
+UNIT ¬= *
+
+------------------------ :: top
+TOP ¬= * 
+
+------------------------ :: bot
+BOT ¬= *
+
+------------------------ :: tvar
+X ¬= *
+
+------------------------ :: stvar
+SX ¬= *
+
+------------------------ :: etvar
+EX ¬= *
+
+------------------------ :: arrow
+T1 -> T2 ¬= *
+
+------------------------ :: all
+∀ X . T ¬= *
+
+------------------------ :: union
+T1 + T2 ¬= *
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+defns
+Jatyp_neq_union :: '' ::=
+
+defn
+T ¬= + :: :: a_typ_neq_union :: 'a_typnequnion_' by
+
+------------------------ :: unit
+UNIT ¬= +
+
+------------------------ :: top
+TOP ¬= +
+
+------------------------ :: bot
+BOT ¬= +
+
+------------------------ :: tvar
+X ¬= +
+
+------------------------ :: stvar
+SX ¬= +
+
+------------------------ :: etvar
+EX ¬= +
+
+------------------------ :: arrow
+T1 -> T2 ¬= +
+
+------------------------ :: all
+∀ X . T ¬= +
+
+------------------------ :: intersection
+T1 * T2 ¬= +
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+defns
+Jaetvars_in_worklist :: '' ::=
+
+defn 
+W [EX1] [EX2] :: :: a_evs_in_wl :: 'a_evsinwl_' by 
+
+( EX1 : S1 < T1 ) in ⌊ W ⌋ 
+-------------------------------- :: in
+W , EX2 : S2 < T2 [EX1] [EX2] 
+
+W [EX1] [EX2] 
+-------------------------------- :: extraetvar
+W , EX b [EX1] [EX2] 
+
+W [EX1] [EX2] 
+-------------------------------- :: extratvar
+W , X b [EX1] [EX2] 
+
+W [EX1] [EX2] 
+-------------------------------- :: extrastvar
+W , SX b [EX1] [EX2] 
+
+W [EX1] [EX2] 
+-------------------------------- :: extravar
+W , x b [EX1] [EX2] 
+
+W [EX1] [EX2] 
+-------------------------------- :: extraw
+W , w [EX1] [EX2] 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% defns
+% Jawf_worklist :: '' ::=
+
+% defn
+% |- W :: :: awf_worklist :: 'a_wfwl_' by
+
+% --------- :: empty
+% |- empty
+
+% |- W
+% X `notin` dom W
+% ---------------- :: tvar
+% |- W , X : ▪
+
+% |- W
+% SX `notin` dom W 
+% ---------------- :: stvar
+% |- W , SX : ~▪
+
+% |- W
+% W |- S 
+% W |- T
+% EX `notin` dom W
+% ------------------- :: evar
+% |- W , EX : S < T
+
+% |- W
+% W |- T
+% x `notin` dom W
+% ---------------- :: typ
+% |- W , x : T
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+defns
+Jaworklist_reduction :: '' ::=
+
+defn
+|= W :: :: awl_red :: 'a_wlred_' by
+
+|= W
+W |- S
+------------------ :: subtop
+|= W , S <: TOP
+
+|= W
+W |- T
+------------------- :: subbot
+|= W , BOT <: T
+
+|= W
+------------------- :: subunit
+|= W , UNIT <: UNIT
+
+|= W
+W |- X
+------------ :: subtvar
+|= W , X <: X
+
+|= W 
+W |- SX 
+--------------- :: substvar
+|= W , SX <: SX 
+
+|= W 
+W |- EX
+--------------- :: subevar
+|= W , EX <: EX 
+
+|= W , T1 <: S1 , S2 <: T2
+-------------------------- :: subarrow
+|= W , S1 -> S2 <: T1 -> T2
+
+|= W , SX : ~▪ , { SX / X } S <: { SX / X } T
+-------------------------------------------- :: suball
+|= W , ∀ X . S <: ∀ X . T
+
+T ¬= +
+T ¬= *
+T ¬= ∀
+|= W , EX : BOT < TOP , {EX / X} S <: T 
+--------------------------------------- :: suballl
+|= W , ∀ X . S <: T
+
+|= W , S <: T1, S <: T2
+------------------------ :: subintersection1
+|= W , S <: T1 * T2
+
+W |- S2
+|= W , S1 <: T
+------------------------ :: subintersection2
+|= W , S1 * S2 <: T
+
+W |- S1
+|= W , S2 <: T
+------------------------ :: subintersection3
+|= W , S1 * S2 <: T
+
+W |- T2
+|= W , S <: T1
+------------------------ :: subunion1
+|= W , S <: T1 + T2
+
+W |- T1
+|= W , S <: T2
+------------------------ :: subunion2
+|= W , S <: T1 + T2
+
+|= W , S1 <: T , S2 <: T
+------------------------ :: subunion3
+|= W , S1 + S2 <: T
+
+% e ¬= λ
+T ¬= TOP
+T ¬= ∀
+|= W , e => _ <: T
+------------------------ :: chksub
+|= W , e <= T
+
+|= W , X : ▪ , e <= T 
+------------------------- :: chkall
+|= W , e <= ∀ X . T    
+
+|= W , x : S , e <= T
+--------------------------- :: chkabsarrow
+|= W , \ x . e <= S -> T    
+
+% | [EX1 -> EX2 / EX] W , x : EX1 , e <= EX2
+% ----------------------------------------------- :: chkabsevar
+% |- W , \ x . e <= EX  
+
+|= W , x : BOT , e <= TOP 
+---------------------------  :: chkabstop
+|= W , \ x . e <= TOP
+
+|= W , e <= T1 , e <= T2
+---------------------------  :: chkintersection
+|= W , e <= T1 * T2 
+
+W |- T2 
+|= W , e <= T1 
+---------------------------  :: chkunion1
+|= W , e <= T1 + T2 
+
+W |- T1
+|= W , e <= T2
+---------------------------  :: chkunion2
+|= W , e <= T1 + T2 
+
+(x : T) in ⌊ W ⌋ 
+|= W , c $ T
+-------------------------- :: infvar
+|= W , x => c
+
+|= W , c $ T , e <= T
+-------------------------- :: infanno
+|= W , (e : T) => c
+
+|= W , c $ (∀ X . T) , X : ▪ , e <= T
+------------------------------------- :: inftabs
+|= W , \ X . e : T => c
+
+|= W , c $ UNIT
+------------------------------------- :: infunit
+|= W , unit => c
+
+|= W , e1 => _ • e2 =>=> c 
+------------------------------------- :: infapp
+|= W , (e1 e2) => c
+
+|= W , e => _ ∘ T =>=> c
+------------------------------------- :: inftapp
+|= W , e @ T => c
+
+|= W , c $ {T2 / X} T1
+------------------------------------- :: inftappall
+|= W , ∀ X . T1 ∘ T2 =>=> c
+
+|= W , c $ BOT
+------------------------------------- :: inftappbot
+|= W , BOT ∘ T =>=> c
+
+|= W , c $ T2 , e <= T1
+------------------------------------- :: infapparrow
+|= W , T1 -> T2 • e =>=> c
+
+% |= W , EX : BOT < TOP , {EX / X} T • e =>=> c
+% -------------------------------------------------- :: infappall
+% |= W , ∀ X . T • e =>=> c
+
+|= W , c $ BOT
+-------------------------------------------------- :: infappbot
+|= W , BOT • e =>=> c
+
+|= W , T1 • e =>=> c
+-------------------------------------------------- :: infappinter1
+|= W , T1 * T2 • e =>=> c
+
+|= W , T2 • e =>=> c
+-------------------------------------------------- :: infappinter2
+|= W , T1 * T2 • e =>=> c
+
+|= W , T1 • e =>=> c , T2 • e =>=> c
+-------------------------------------------------- :: infappunion
+|= W , T1 + T2 • e =>=> c
