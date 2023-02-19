@@ -13,7 +13,7 @@ LNGEN_OUTS := $(addsuffix /prop_ln.v,${SYSTEMS})
 %/def_ott.v : %/language.ott
 	ott -i $^ -o $@ ${OTT_FLAGS}
 	sed -e "/Ott.ott_list_core/d" -i "" $@
-	sed -e "/lc_dtyp[ ](dexp_tabs[ ](dbody_anno[ ]e[ ]T1))/d" -i "" $@ 
+	sed -e "/lc_dtyp[ ](dexp_tabs[ ](dbody_anno/d" -i "" $@ 
 
 ott : ${OTT_OUTS}
 

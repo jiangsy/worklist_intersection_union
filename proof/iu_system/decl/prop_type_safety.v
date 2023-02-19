@@ -345,7 +345,14 @@ Proof with eauto with type_safety.
       replace (open_dexp_wrt_dtyp (dexp_anno e T1) T2) with 
               (dexp_anno (open_dexp_wrt_dtyp e T2) (open_dtyp_wrt_dtyp T1 T2)) by auto.
       econstructor.
-      admit.
+      * dependent destruction H0.
+        inst_cofinites_by (L0 `union` ftv_in_dtyp T1).
+        replace (T1 ^^ᵈ T2) with ({T2 /ᵈ x} T1 ^ᵈ x).
+        assert (x ~ dbind_tvar_empty ++ E ⊢ {T2 /ᵈ x} T1 ^ᵈ x). {
+          apply 
+
+        }
+       admit.
       admit.
     + inversion H0.
   - eauto...
