@@ -324,3 +324,25 @@ Proof.
   simpl. unfold eq_dec. destruct (EqDec_eq_of_X SX SX ); auto.
   - contradiction.
 Qed.
+
+Lemma ftv_sin_dtyp_subst_inv : forall X Y T S,
+  lc_dtyp S ->
+  X <> Y ->
+  ds_in X T -> 
+  ds_in X ({S /ᵈ Y} T).
+Proof.
+  intros.
+  induction H1; try solve [simpl; eauto].
+  - simpl. destruct (X == Y).
+    + subst. contradiction.
+    + auto.
+  - simpl. apply dsin_arrow1; auto.
+    apply dsubst_tv_in_dtyp_lc_dtyp; auto.
+  - simpl. apply dsin_arrow2; auto.
+    apply dsubst_tv_in_dtyp_lc_dtyp; auto.
+  - simpl. eapply dsin_all with (L:=L `union` singleton Y).
+    intros. inst_cofinites_with Y0.
+    rewrite dtyp_subst_open_comm; auto.
+Qed.
+
+  

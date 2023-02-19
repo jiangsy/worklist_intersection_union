@@ -124,7 +124,7 @@ Proof.
   intros. induction H; eauto.
 Qed.
 
-Check S.
+Definition Snat := S.
 
 Lemma dsub_sized_wrt_dub_complete : forall E T1 T2,
   E ⊢ T1 <: T2 -> exists n, dsub_sized E T1 T2 n.
@@ -133,7 +133,10 @@ Proof with eauto with sub.
   - destruct IHdsub1 as [n1]. destruct IHdsub2 as [n2].
     eauto...
   - inst_cofinites_by L. destruct H2 as [n].
-    exists (nat.S n).
+    exists (Snat n). eapply dsubsized_all with (L:=L); intros.
+    + admit.
+    + admit.
+    + admit.
   - destruct IHdsub as [n]. eauto...
   - destruct IHdsub1 as [n1]. destruct IHdsub2 as [n2].
   eauto...

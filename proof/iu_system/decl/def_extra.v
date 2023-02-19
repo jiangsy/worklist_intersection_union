@@ -286,10 +286,10 @@ Inductive dtyping : denv -> dexp -> dtyping_mode -> dtyp -> Prop :=
     dtyping E e1 dtypingmode_inf T2 ->
     dtyping E e2 (dtypingmode_infapp T2) T1 ->
     dtyping E  ( (dexp_app e1 e2) ) dtypingmode_inf T1
-| dtyping_inftabs : forall (L:vars) (E:denv) (e:dexp) (T1 T2:dtyp),
-dwf_typ E (dtyp_all T2) ->
-    ( forall X , X \notin  L  -> dtyping  ( X ~ dbind_tvar_empty  ++  E ) (dexp_anno  ( open_dexp_wrt_dtyp e (dtyp_var_f X) )  ( open_dtyp_wrt_dtyp T1 (dtyp_var_f X) ) ) dtypingmode_chk ( open_dtyp_wrt_dtyp T2 (dtyp_var_f X) )  )  ->
-    dtyping E (dexp_tabs (dbody_anno e T1)) dtypingmode_inf (dtyp_all T2)
+| dtyping_inftabs : forall (L:vars) (E:denv) (e:dexp) (T:dtyp),
+dwf_typ E (dtyp_all T) ->
+    ( forall X , X \notin  L  -> dtyping  ( X ~ dbind_tvar_empty  ++  E ) (dexp_anno  ( open_dexp_wrt_dtyp e (dtyp_var_f X) )  ( open_dtyp_wrt_dtyp T (dtyp_var_f X) ) ) dtypingmode_chk ( open_dtyp_wrt_dtyp T (dtyp_var_f X) )  )  ->
+    dtyping E (dexp_tabs (dbody_anno e T)) dtypingmode_inf (dtyp_all T)
 | dtyping_inftappbot : forall (E:denv) (e:dexp) (T:dtyp),
     dwf_typ E T ->
     dtyping E e dtypingmode_inf dtyp_bot ->

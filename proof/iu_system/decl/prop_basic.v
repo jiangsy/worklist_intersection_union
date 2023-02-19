@@ -297,10 +297,6 @@ Hint Constructors dneq_union : Core.
 Hint Constructors dneq_intersection : Core.
 
 
-
-
-
-
 Lemma dwf_typ_open_inv : forall E T S X,
   lc_dtyp S ->
   E ⊢ {S /ᵈ X} T ->
@@ -357,3 +353,59 @@ Proof.
     subst. auto. inversion x.
     + inversion x. eauto.
 Qed.
+
+
+Hint Constructors dwf_typ: core.
+Hint Constructors dwf_env: core.
+Hint Constructors dwf_typ_s: core.
+
+
+
+Lemma dwf_typ_weakening : forall E1 E2 E3 T, 
+  E1 ++ E3 ⊢ T ->
+  E1 ++ E2 ++ E3 ⊢ T.
+Proof.
+  intros.
+  dependent induction H; auto.
+  - eapply dwftyp_all with (L:=L `union` dom (E1 ++ E2 ++ E3));
+    intros; inst_cofinites_with X.
+    + auto.
+    + replace (X ~ dbind_tvar_empty ++ E1 ++ E2 ++ E3) with ((X ~ dbind_tvar_empty ++ E1) ++ E2 ++ E3) by auto.
+    eapply H1; eauto.
+Qed.
+
+Corollary dwf_typ_weakening_cons : forall E X b T,
+  E ⊢ T ->
+  ((X ~ b) ++ E) ⊢ T.
+Proof.
+  intros.
+  replace (X ~ b ++ E) with (nil ++ X ~ b ++ E) by auto.
+  now apply dwf_typ_weakening.
+Qed.
+  
+
+Lemma dwf_typ_lc_dtyp : forall E T,
+  E ⊢ T -> lc_dtyp T.
+Proof.
+  intros. induction H; eauto.
+Qed.
+
+Lemma wft_all_open_wfdtyp_wft : forall E X T1 T2,
+  E ⊢ T1 ->
+  E ⊢ T2 ->
+  E ⊢ {T2 /ᵈ X} T1.
+Proof.
+  intros E X T1 T2 Hwft1.
+  generalize dependent T2.
+  dependent induction Hwft1; intros; try solve [simpl; eauto].
+  - simpl. destruct (X0 == X); auto.
+  - simpl. apply dwftyp_all with (L:=L `union` singleton X); intros.
+    inst_cofinites_with X0.
+    + rewrite dtyp_subst_open_comm; eauto.
+      apply ftv_sin_dtyp_subst_inv; auto.
+      eapply dwf_typ_lc_dtyp; eauto.
+    + rewrite dtyp_subst_open_comm; eauto.
+      eapply H1; auto.
+      apply dwf_typ_weakening_cons; eauto.
+Qed.
+

@@ -12,14 +12,11 @@ Require Import Coq.Program.Equality.
 
 
 Require Import decl.notations.
+Require Import decl.prop_basic.
 Require Import ln_utils.
 
 Hint Constructors dexp_red : core.
 
-Lemma dwf_typ_lc_dtyp : forall E T,
-  E ⊢ T -> lc_dtyp T.
-Proof.
-Admitted.
 
 Hint Resolve dwf_typ_lc_dtyp : core.
 
@@ -200,11 +197,7 @@ inversion IHdtyping.
   admit.
 - admit. (* impossible *)
 - inst_cofinites_by L.
-assert (dtypingmode_chk = dtypingmode_chk ∨ dtypingmode_chk = dtypingmode_inf) by auto.
-  assert (empty_var_dom (x ~ dbind_tvar_empty ++ E)) by admit.
-  assert (is_dvalue_of_dexp (dexp_anno (open_dexp_wrt_dtyp e `ᵈ x) (T1 ^ᵈ x)) =
-  true) by admit.
-  specialize (H1 H2 H3 H4 L T2). admit.
+assert (dtypingmode_chk = dtypingmode_chk ∨ dtypingmode_chk = dtypingmode_inf) by auto. admit.
 - admit. (* impossible *)
 - admit. (* impossible *)
 Admitted. 
@@ -331,6 +324,9 @@ Qed.
 
 Hint Constructors dtyping : type_safety.
 
+(* E |- e <= T 
+[t2 / x] E |- [t2 / x] e <= [t2 / x] T *)
+
 Definition preservation : forall E e e' m T,
   dtyping E e m T -> 
   dexp_red e e' -> 
@@ -345,7 +341,12 @@ Proof with eauto with type_safety.
     + inversion H0.
   - dependent destruction Hred.
     + eauto...
-    + admit.
+    + dependent destruction H0. 
+      replace (open_dexp_wrt_dtyp (dexp_anno e T1) T2) with 
+              (dexp_anno (open_dexp_wrt_dtyp e T2) (open_dtyp_wrt_dtyp T1 T2)) by auto.
+      econstructor.
+      admit.
+      admit.
     + inversion H0.
   - eauto...
   - eauto...
