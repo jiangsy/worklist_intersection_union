@@ -105,13 +105,13 @@ embed {{ coq
 
 Definition mono_intersection (T1 T2 : a_typ) : a_typ :=
   match T2 with
-  | TOP => T1 
+  | a_typ_top => T1 
   | _ => a_typ_intersection T1 T2
   end.
 
 Definition mono_union (T1 T2 : a_typ) : a_typ :=
   match T2 with
-  | BOT => T1 
+  | a_typ_bot => T1 
   | _ => a_typ_union T1 T2
   end.
 
@@ -125,13 +125,17 @@ Fixpoint awl_to_aenv (Γ : a_worklist) : a_env :=
   | a_wl_consvar Γ1' x b => x ~ b ++ awl_to_aenv Γ1'
   end.
 
+Inductive a_mode_addbound :=
+  | a_mab_upper 
+  | a_mab_lower
+  | a_mab_both.
 
   (*
   Reserved Notation " Γ₁ ‖ E ⊢⁺ x T ⊣ Γ₂ ++ Γ₃ "
     (at level 65, E at level 60, x at level 0, T at level 50
     , Γ₂ at level 58, no associativity)
-  Inductive reorder 
-    : aworklist ->  list (atom*abinding) -> var -> atyp -> aworklist -> aworklist -> Prop :=
+  Inductive add_to_bound_and_reorder
+    : aworklist ->  list (atom*a_binding) -> var -> a_typ -> a_mode_addbound -> a_worklist -> a_worklist -> Prop :=
     | re_stop : forall Γ₁ E X b T
     , x `notin` fetv_typ_in T
     -> Γ₁ , X b ‖ E ⊢⁺ x T
