@@ -1,6 +1,7 @@
 - finish algo rules
 - check apply_cont, wfj for cont?
-
+- uniq E 
+- reorder def/use
 - check non overlapping
 - update reduction rules
 - finish subsumption

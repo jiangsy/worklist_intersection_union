@@ -349,11 +349,13 @@ Proof with eauto with type_safety.
         inst_cofinites_by (L0 `union` ftv_in_dtyp T1).
         replace (T1 ^^ᵈ T2) with ({T2 /ᵈ x} T1 ^ᵈ x).
         assert (x ~ dbind_tvar_empty ++ E ⊢ {T2 /ᵈ x} T1 ^ᵈ x). {
-          apply 
-
+          apply wft_all_open_wfdtyp_wft; eauto.
+          apply dwf_typ_weakening_cons. auto.
         }
-       admit.
-      admit.
+        admit.
+        simpl. admit. 
+      * admit. (* subsumption of chk *)
+
     + inversion H0.
   - eauto...
   - eauto...
@@ -367,5 +369,3 @@ Proof with eauto with type_safety.
   - eauto...
   - eauto...
 Admitted.
-
-
