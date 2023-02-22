@@ -270,6 +270,15 @@ Inductive dtyping_mode :=
     | dtypingmode_chk
     | dtypingmode_infapp (t : dtyp).
 
+Check dsubst_tv_in_dtyp.
+
+Definition dsubst_tv_in_dtypingmode (T1:dtyp) (X:typvar) (m:dtyping_mode):=
+    match m with 
+    | dtypingmode_chk => dtypingmode_chk
+    | dtypingmode_inf => dtypingmode_inf
+    | dtypingmode_infapp T2 => dtypingmode_infapp (dsubst_tv_in_dtyp T1 X T2)
+    end.
+
 Inductive dtyping : denv -> dexp -> dtyping_mode -> dtyp -> Prop :=
 | dtyping_infvar : forall (E:denv) (x:expvar) (T:dtyp),
     dwf_env E ->
@@ -376,50 +385,3 @@ Fixpoint dtyp_order (t : dtyp) : nat :=
   | dtyp_union A B => dtyp_order A + dtyp_order B
   | _ => 0
   end.
-
-  
-(* 
-
-Reserved Notation "G ⊢ t1 <: t2 | n "
-(at level 65, t1 at next level, t2 at next level, no associativity).
-Inductive sized_ld_sub : ld_context -> ld_type -> ld_type -> nat -> Prop :=
-| sls_var : forall G x n,
-    ⊢ G ->  ld_in_context x G -> G ⊢ (ld_t_var_f x) <: (ld_t_var_f x) | n
-| sls_int : forall G n,
-    ⊢ G -> G ⊢ ld_t_int <: ld_t_int | n
-| sls_arrow : forall G A B C D n1 n2,
-    G ⊢ C <: A | n1 ->
-    G ⊢ B <: D | n2 ->
-    G ⊢ (ld_t_arrow A B) <: (ld_t_arrow C D) | S (n1 + n2)
-| sls_intersection_r : forall G A B1 B2 n1 n2,
-    G ⊢ A <: B1 | n1 ->
-    G ⊢ A <: B2 | n2 -> 
-    G ⊢ A <: (ld_t_intersection B1 B2) | S (n1 + n2)
-| sls_intersection_l1 : forall G A1 A2 B n1,
-    G ⊢ A1 <: B | n1 ->
-    ld_wf_type G A2 -> 
-    G ⊢ (ld_t_intersection A1 A2) <: B | S n1
-| sls_intersection_l2 : forall G A1 A2 B n2,
-    G ⊢ A2 <: B | n2 ->
-    ld_wf_type G A1 -> 
-    G ⊢ (ld_t_intersection A1 A2) <: B | S n2
-| sls_union_r1 : forall G A B1 B2 n1,
-    G ⊢ A <: B1 | n1 ->
-    ld_wf_type G B2 ->
-    G ⊢ A <: (ld_t_union B1 B2) | S n1
-| sls_union_r2 : forall G A B1 B2 n2,
-    G ⊢ A <: B2 | n2 ->
-    ld_wf_type G B1 ->
-    G ⊢ A <: (ld_t_union B1 B2) | S n2
-| sls_union_l : forall G A1 A2 B n1 n2,
-    G ⊢ A1 <: B | n1 ->
-    G ⊢ A2 <: B | n2 ->
-    G ⊢ (ld_t_union A1 A2) <: B | S ( n1 + n2)
-| sls_foralll : forall G A B t n,
-    ld_wf_mtype G t ->
-    G ⊢ (open_ld_type_wrt_ld_type A t) <: B | n ->
-    G ⊢ (ld_t_forall A) <: B | S n
-| sls_forallr : forall L G A B n,
-    (forall x, x \notin L -> (ld_ctx_cons G x) ⊢ A <: (open_ld_type_wrt_ld_type B (ld_t_var_f x)) | n) ->
-    G ⊢ A <: (ld_t_forall B) | S n
-where "G ⊢ t1 <: t2 | n" := (sized_ld_sub G t1 t2 n). *)

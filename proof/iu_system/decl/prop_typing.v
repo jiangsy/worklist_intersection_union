@@ -227,9 +227,9 @@ Proof.
   induction H; try solve [intuition].
   - split; eapply dwftyp_all with (L:=L `union` fstv_in_dtyp S `union` fstv_in_dtyp T); intros; inst_cofinites_with X.
     + eapply fstv_open_tvar; auto.
-    + apply dwf_typ_tvar_stvar_cons; intuition.
+    + apply d_wf_typ_subst_tvar_stvar_cons; intuition.
     + eapply fstv_open_tvar; auto.
-    + apply dwf_typ_tvar_stvar_cons; intuition.
+    + apply d_wf_typ_subst_tvar_stvar_cons; intuition.
   - split; try solve [intuition].
     + eapply dwftyp_all with (L:=L `union` ftv_in_dtyp S). 
       * intros. inst_cofinites_with X. auto.
@@ -506,19 +506,35 @@ Proof.
 Qed. *)
 
 
+Inductive d_subenv : denv -> denv -> Prop := 
+| d_subenv_empty: d_subenv nil nil  
+| d_subenv_tvar : forall E1 E2 X, 
+    d_subenv E1 E2 -> 
+    d_subenv (X ~ dbind_tvar_empty  ++  E1) 
+        (X ~ dbind_tvar_empty  ++  E2)
+| d_subenv_stvar : forall E1 E2 SX, 
+    d_subenv E1 E2 -> 
+    d_subenv (SX ~ dbind_stvar_empty  ++  E1) 
+        (SX ~ dbind_stvar_empty  ++  E2)
+| d_subenv_var : forall E1 E2 x S T,
+    d_subenv E1 E2 ->
+    dsub E2 S T ->
+    d_subenv (x ~ dbind_typ S ++ E1) 
+        (x ~ dbind_typ T ++ E2)        
+.
 
 
 (* Theorem progress.  *)
 
-Lemma desub_same_dom : forall E E', 
-  desub E' E ->
+Lemma d_subenv_same_dom : forall E E', 
+  d_subenv E' E ->
   dom E = dom E'.
 Proof.
-  intros. induction H; simpl; auto; rewrite IHdesub; auto.
+  intros. induction H; simpl; auto; rewrite IHd_subenv; auto.
 Qed.
 
-Lemma desub_same_tvar : forall E E' X, 
-  desub E' E ->
+Lemma d_subenv_same_tvar : forall E E' X, 
+  d_subenv E' E ->
   binds X dbind_tvar_empty E ->
   binds X dbind_tvar_empty E'.
 Proof.
@@ -531,8 +547,8 @@ Proof.
     inversion H2.
 Qed.
 
-Lemma desub_same_stvar : forall E E' SX, 
-  desub E' E ->
+Lemma d_subenv_same_stvar : forall E E' SX, 
+  d_subenv E' E ->
   binds SX dbind_stvar_empty E ->
   binds SX dbind_stvar_empty E'.
 Proof.
@@ -546,17 +562,17 @@ Proof.
 Qed.
 
 
-Lemma desub_wf_typ : forall E T, 
+Lemma d_subenv_wf_typ : forall E T, 
   E ⊢ T -> 
   forall E', 
-    desub E' E ->
+    d_subenv E' E ->
     E' ⊢ T.
 Proof.
   intros E T H. induction H; intros; auto.
   - econstructor. 
-    eapply desub_same_tvar; eauto.
+    eapply d_subenv_same_tvar; eauto.
   - econstructor.
-    eapply desub_same_stvar; eauto.
+    eapply d_subenv_same_stvar; eauto.
   - eapply dwftyp_all with (L:=L).
     + intros. inst_cofinites_with X. auto.
     + intros. inst_cofinites_with X. eapply H1.
@@ -564,29 +580,29 @@ Proof.
 Qed.
 
 
-Lemma desub_wf_env : forall E, 
+Lemma d_subenv_wf_env : forall E, 
   ⊢ E -> 
   forall E', 
-    desub E' E ->
+    d_subenv E' E ->
     ⊢ E'.
 Proof.
   intros E H. induction H; intros.
   - inversion H. auto.
   - dependent destruction H1.
     econstructor; auto. 
-    erewrite <- desub_same_dom; auto.
+    erewrite <- d_subenv_same_dom; auto.
   - dependent destruction H1.
     econstructor; auto. 
-    erewrite <- desub_same_dom; auto.
+    erewrite <- d_subenv_same_dom; auto.
   - dependent destruction H2.
     econstructor; auto.
     + apply dsub_dwft in H3; destruct H3.
-      eapply desub_wf_typ; eauto.
-    + erewrite <- desub_same_dom; auto.
+      eapply d_subenv_wf_typ; eauto.
+    + erewrite <- d_subenv_same_dom; auto.
 Qed.
 
-Hint Resolve desub_wf_typ : core.
-Hint Resolve desub_wf_env : core.
+Hint Resolve d_subenv_wf_typ : core.
+Hint Resolve d_subenv_wf_env : core.
 
 
 Lemma dwf_env_binds_dwf_typ : forall E x T,
@@ -601,50 +617,61 @@ Lemma dwft_subst : forall E X T1 T2,
   E ⊢ T1 ^^ᵈ T2.
 Admitted.
 
+Hint Constructors dtyping : core.
 
-(* Theorem dchk_dwf_typ : forall E e T,
-  E ⊢ e ⇐ T ->
-  E ⊢ T
-with 
-dinf_dwf_typ : forall E e T, 
-  E ⊢ e ⇒ T ->
-  E ⊢ T
-with 
-dinfapp_dwf_typ : forall E T1 e T2,
-  E ⊢ T1 • e ⇒⇒ T2 ->
-  E ⊢ T1 /\ E ⊢ T2.
+Lemma d_wft_typ_subst : forall E X F T1 T2,
+  F ++ X ~ dbind_tvar_empty ++ E ⊢ T1 ->
+  E ⊢ T2 ->
+  map (dsubst_tv_in_binding T2 X) F  ++ E ⊢ {T2 /ᵈ X} T1.
 Proof.
-  - intros. induction H; eauto.
-    + econstructor; eauto.
-      inst_cofinites_by (L `union` dom E `union` ftv_in_dtyp T2 `union` fstv_in_dtyp T2).
-      replace E with (nil ++ E) by auto. eapply dwf_typ_strengthening; eauto.
-    + specialize (dinfapp_dwf_typ _ _ _ _ H0). intuition.
-    + eapply dsub_dwft; eauto.
-  - intros; induction H; eauto.
-    + eapply dwf_env_binds_dwf_typ with (x:=x); auto. 
-    + specialize (dinfapp_dwf_typ _ _ _ _ H0). intuition.
-    + dependent destruction IHdinf.
-      inst_cofinites_by L.
-      eapply dwft_subst; eauto.
-  - intros; induction H; eauto.
-    + intuition.
-Qed. *)
+Admitted.
+
+Lemma d_wf_env_subst_tvar_typ : forall E X F T1,
+  ⊢ F ++ X ~ dbind_tvar_empty ++ E ->
+  E ⊢ T1 ->
+  ⊢ (map (dsubst_tv_in_binding T1 X) F ++ E).
+Proof.
+Admitted.
 
 
-(* Hint Constructors dinf : core.
-Hint Constructors dchk : core.
-Hint Constructors dinfapp : core. *)
+Hint Resolve d_wft_typ_subst : typing.
+Hint Resolve d_wf_env_subst_tvar_typ : typing.
 
+Theorem chkinffinapp_subst: forall E F X e m T1 T2,
+  dtyping (F ++ X ~ dbind_tvar_empty ++ E) e m T1 ->
+  E ⊢ T2 ->
+  dmono_typ T2 ->
+  dtyping (map (dsubst_tv_in_binding T2 X) F  ++ E) (dsubst_tv_in_dexp T2 X e) (dsubst_tv_in_dtypingmode T2 X m) ({T2 /ᵈ X} T1).
+Proof with auto with typing.
+  intros.
+  generalize dependent T2.
+  dependent induction H; intros; try solve [simpl in *; eauto 5 with typing].
+  - admit.
+  - simpl in *. eapply dtyping_inftabs with (L:=L `union` singleton X).
+    admit.
+    intros. inst_cofinites_with X0. 
+    (* rewrite dtyp_subst_open_comm; auto. *)
+    + specialize (H1 E (X0 ~ dbind_tvar_empty ++ F) X (JMeq_refl _) T2 H2 H3).
+      Check dsubst_tv_in_dexp_open_dexp_wrt_dtyp.
+      assert (lc_dtyp T2) by admit.
+      specialize (dsubst_tv_in_dexp_open_dexp_wrt_dtyp e T2 (dtyp_var_f X0) X H5).
+      intros. simpl in H6. unfold eq_dec in H6.
+      destruct (EqDec_eq_of_X X0 X) in H6.
+      * subst. apply notin_union_2 in H4. apply notin_singleton_1 in H4.
+        contradiction.
+      * rewrite <- H6. rewrite dtyp_subst_open_comm; auto.
+  - simpl in *. rewrite dsubst_tv_in_dtyp_open_dtyp_wrt_dtyp.
+    apply dtyping_inftappall; auto... admit.
+  - simpl. apply dtyping_chkabstop with (L:=L).
+    intros X1 HnotinL. inst_cofinites_by L. admit.
+  - simpl in *. admit.
+  - simpl in *. admit.
+  - simpl in *. 
+    apply dtyping_chksub with (S:=({T2 /ᵈ X} S)); eauto.
+    admit.
+  - admit.
+Admitted.
 
-
-(* Theorem dchk_dinf_dinfapp_typ_subst : forall e T mode n m,
-  dexp_size e < n ->
-  dtyping_mode_size mode < m ->
-  typing e T mode ->
-    match m with
-    | inf => ...
-    | chk => ...
-    |  *)
 Fixpoint dexp_size (e : dexp) : nat :=
   0.
 
@@ -671,7 +698,7 @@ Theorem dchk_dinf_dinfapp_subsumption : forall n1 n2 n3 E E' e T mode,
   dmode_size mode < n2 -> 
   dtyp_size T + dmode_type_size mode < n3 ->
   dtyping E e mode T ->
-  desub E' E ->
+  d_subenv E' E ->
     match mode with 
     | dtypingmode_chk => forall S, E ⊢ T <: S -> dtyping E' e dtypingmode_chk S
     | dtypingmode_inf => exists S, E ⊢ S <: T /\ dtyping E' e dtypingmode_inf S
@@ -689,7 +716,7 @@ Admitted.
   forall E S,
     E ⊢ e ⇐ S ->
     forall  E' T, 
-      desub E' E ->
+      d_subenv E' E ->
       E ⊢ S <: T ->
       E' ⊢ e ⇐ T
 with 
@@ -698,7 +725,7 @@ dinf_subsumption : forall e n,
   forall E T, 
     E ⊢ e ⇒ T ->
     forall E',
-      desub E' E ->
+      d_subenv E' E ->
       exists S, 
         dsub E S T /\ E' ⊢ e ⇒ S
 with 
@@ -708,7 +735,7 @@ dinfapp_subsumption : forall e n,
     E ⊢ T1 • e ⇒⇒ T2 ->
     (exists T, E ⊢ e ⇐ T) /\
     forall E' S1, 
-      desub E' E -> 
+      d_subenv E' E -> 
       E ⊢ S1 <: T1 -> 
       exists S2, 
         E ⊢ S2 <: T2 /\ E' ⊢ S1 • e ⇒⇒ S2.
@@ -719,14 +746,14 @@ Proof.
 Theorem dchk_subsumption : forall E e S,
   E ⊢ e ⇐ S ->
   forall  E' T, 
-    desub E' E ->
+    d_subenv E' E ->
     E ⊢ S <: T ->
     E' ⊢ e ⇐ T
 with 
 dinf_subsumption : forall E e T, 
   E ⊢ e ⇒ T ->
   forall E',
-    desub E' E ->
+    d_subenv E' E ->
     exists S, 
       dsub E S T /\ E' ⊢ e ⇒ S
 with 
@@ -734,7 +761,7 @@ dinfapp_subsumption : forall E T1 e T2,
   E ⊢ T1 • e ⇒⇒ T2 ->
   (exists T, E ⊢ e ⇐ T) /\
   forall E' S1, 
-    desub E' E -> 
+    d_subenv E' E -> 
     E ⊢ S1 <: T1 -> 
     exists S2, 
       E ⊢ S2 <: T2 /\ E' ⊢ S1 • e ⇒⇒ S2.
@@ -801,7 +828,7 @@ Proof.
     + exists T. split; auto.
       * apply dsub_refl; auto.
       * apply dinf_anno.
-        eapply desub_wf_typ; eauto.
+        eapply d_subenv_wf_typ; eauto.
         eapply dchk_subsumption; eauto.
         apply dsub_refl; auto.
     + eauto.

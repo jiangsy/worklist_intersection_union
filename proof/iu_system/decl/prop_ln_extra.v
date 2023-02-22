@@ -68,7 +68,7 @@ Lemma close_dtyp_notin_rec : forall X e n,
 Proof.
   intros until e.
   induction e; simpl; intros; auto.
-  - destruct (lt_ge_dec n n0); auto.
+  - destruct (lt_dec n n0); auto.
   - unfold eq_dec. destruct EqDec_eq_of_X; auto.
 Qed.
 
@@ -344,5 +344,3 @@ Proof.
     intros. inst_cofinites_with Y0.
     rewrite dtyp_subst_open_comm; auto.
 Qed.
-
-  

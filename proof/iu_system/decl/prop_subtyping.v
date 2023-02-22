@@ -58,6 +58,39 @@ Proof with auto with sub.
     intuition.
 Qed.
 
+
+Theorem dsub_unit_all_false: forall E T,
+  E ⊢ dtyp_all T ->
+  E ⊢ dtyp_unit <: dtyp_all T ->
+  False.
+Proof.
+  intros. dependent induction H0.
+Qed.
+
+Theorem dsub_top_all_false: forall E T,
+  E ⊢ dtyp_all T ->
+  E ⊢ dtyp_top <: dtyp_all T ->
+  False.
+Proof.
+  intros. dependent induction H0.
+Qed.
+
+Theorem dsub_top_fv_false: forall E X T,
+  ds_in X T ->
+  E ⊢ dtyp_top <: T ->
+  False.
+Proof.
+  intros. dependent induction H0; try solve [inversion H; eauto].
+Qed.
+
+Theorem dsub_unit_fv_false: forall E X T,
+  ds_in X T ->
+  E ⊢ dtyp_unit <: T ->
+  False.
+Proof.
+  intros. dependent induction H0; try solve [inversion H; eauto].
+Qed.
+
 Inductive dsub_sized : denv -> dtyp -> dtyp -> nat -> Prop :=   
  | dsubsized_top : forall (E:denv) (S:dtyp) (n:nat),
      dwf_typ E S ->

@@ -13,6 +13,7 @@ Require Import Coq.Program.Equality.
 
 Require Import decl.notations.
 Require Import decl.prop_basic.
+Require Import decl.prop_subtyping.
 Require Import ln_utils.
 
 Hint Constructors dexp_red : core.
@@ -57,50 +58,18 @@ Proof.
     + inversion H0. 
 Qed.
 
-(* Theorem typing_all_inversion : forall E e m T,
-  dtyping E e m (dtyp_all T) ->
-  empty_var_dom E ->
-  is_dvalue_of_dexp e = true ->
-  (exists e1 T, e = dexp_tabs (dbody_anno e1 T)) \/ (exists e1 T, e = dexp_anno (dexp_tabs (dbody_anno e1 T)) (dtyp_all T)).
-Proof.
-  intros.
-  dependent induction H.
-  - admit.
-  - admit.
-  - inversion H2.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - eauto. 
-Admitted. *)
-
-
-Theorem typing_all_inversion1 : forall E e T,
-  dtyping E e dtypingmode_inf (dtyp_all T) ->
-  empty_var_dom E ->
-  is_dvalue_of_dexp e = true ->
-  exists e1 T, e = dexp_tabs (dbody_anno e1 T).
-Proof.
-  intros.
-  dependent induction H; try solve [inversion H2].
-  - admit. (* impossible *)
-Admitted.
-
-
 Theorem typing_all_inversion : forall E e T,
   dtyping E e dtypingmode_inf (dtyp_all T) ->
   empty_var_dom E ->
-  is_dvalue_of_dexp e = true ->
-  (exists e1 T, e = dexp_tabs (dbody_anno e1 T)) \/ (exists e1 T, e = dexp_anno (dexp_tabs (dbody_anno e1 T)) (dtyp_all T)).
+  d_isval e ->
+  (exists e1 T1, e = dexp_tabs (dbody_anno e1 T1)) \/ (exists e1 T1, e = dexp_anno (dexp_abs e1) (dtyp_all T1)).
 Proof.
   intros.
-  dependent induction H; try solve [inversion H2].
-  - admit.
-  -
-Admitted.
+  dependent induction H; try solve [inversion H2]; eauto.
+  - dependent destruction H2; eauto.
+Qed.
 
-Fixpoint anno_nfold (n:nat) (e:dexp) (T T1:dtyp) :=
+(* Fixpoint anno_nfold (n:nat) (e:dexp) (T T1:dtyp) :=
   match n with
   | 0 =>  (dexp_tabs (dbody_anno e T)) 
   | S n' => dexp_anno (anno_nfold n' e T T1) (dtyp_all T1)
@@ -266,78 +235,111 @@ Proof.
     + right. destruct H1 as [e1']. eauto.
   (* e => ∀ X . T *)
   - admit.
-Admitted. *)
+Admitted. *) *)
 
 
 Theorem progress' : forall E e m T,
   dtyping E e m T ->
   empty_var_dom E ->
-  is_dvalue_of_dexp e = true \/ exists e', dexp_red e e'.
+  d_isval e \/ exists e', dexp_red e e'.
 Proof.
   intros. dependent induction H; intros; auto.
   - exfalso; eapply bind_var_var_dom_not_empty; eauto.
   - specialize (IHdtyping H1).
     inversion IHdtyping.
-    + left. auto.
+    + admit.
     + right. destruct H2 as [e']. eauto.
   (* e1 e2 *)
   - specialize (IHdtyping1 H1). 
     specialize (IHdtyping2 H1). 
     inversion IHdtyping1.
     + inversion IHdtyping2.
-      * admit. (* medium : inversion lemma of app *)
+      * dependent destruction H2.
+        -- dependent destruction H. inversion H0.
+        -- dependent destruction H.
+        -- dependent destruction H.
+        -- right. exists (dexp_app e e2). admit.
+        -- admit.
       * destruct H3 as [e2']. right. exists (dexp_app e1 e2'). 
         apply dexpred_app2; auto. 
-        rewrite H2. constructor. admit. (* easy : lc *)
     + right. destruct H2 as [e1'].
       exists (dexp_app e1' e2). 
       constructor; auto.
       admit. (* easy : lc *)
+  - left; admit. (* easy : lc *)
   (* e => BOT *)
   - specialize (IHdtyping H1). inversion IHdtyping.
+  
     + destruct e; try solve [inversion H2; inversion H0].
-      * dependent destruction H0. inversion H3.
-        right. exists (dexp_anno e dtyp_bot).  constructor.
-        rewrite H5. constructor.
-        admit. admit. (* easy : lc *)
+      * dependent destruction H0. dependent destruction H3.
+        right. exists (dexp_anno (dexp_abs e0) dtyp_bot).  
+        apply dexpred_tappbot; auto.
+        admit. (* easy : lc *)
     + right. destruct H2 as [e']. eauto.
   (* e @ T *)
   - specialize (IHdtyping H1).
     inversion IHdtyping.
-    + inversion IHdtyping.
-      * right. admit.
-      * destruct H3 as [e']. eauto.
-    + right. destruct H2 as [e1']. eauto.
+    + specialize (typing_all_inversion _ _ _ H0 H1 H2).
+      intros. inversion H3.
+      * destruct H4 as [e3 [T3]]. rewrite H4.
+        right. exists (dexp_anno (open_dexp_wrt_dtyp e3 T2) (open_dtyp_wrt_dtyp T3 T2)).
+        econstructor; admit. (* easy : lc *)
+      * destruct H4 as [e3 [T3]]. rewrite H4.
+        right. exists (dexp_anno (dexp_abs e3) (open_dtyp_wrt_dtyp T3 T2)).
+        econstructor; admit. (* easy : lc *)
+    + destruct H2 as [e']. eauto.
   (* e => ∀ X . T *)
-  - inst_cofinites_by L.
-    apply H1. simpl. auto.
+  - left. econstructor. admit. (* easy : lc *)
 Admitted.
-
 
 
 Theorem progress : forall e m T,
   dtyping nil e m T ->
-  is_dvalue_of_dexp e = true \/ exists e', dexp_red e e'.
+  d_isval e \/ exists e', dexp_red e e'.
 Proof.
   intros. eapply progress'; eauto.
 Qed.
 
 Hint Constructors dtyping : type_safety.
 
+Lemma check_top_false : forall E T,
+  dtyping E dexp_top dtypingmode_chk T -> E ⊢ dtyp_top <: T.
+Proof.
+  intros; dependent induction H; eauto...
+  - inversion H. inst_cofinites_by (L `union` L0). 
+    exfalso. eapply dsub_top_fv_false; eauto.
+  - dependent destruction H; auto.
+Qed.
+
+Lemma check_unit_false : forall E T,
+  dtyping E dexp_unit dtypingmode_chk T -> E ⊢ dtyp_unit <: T.
+Proof.
+  intros; dependent induction H; eauto...
+  - inversion H. inst_cofinites_by (L `union` L0). 
+    exfalso. eapply dsub_unit_fv_false; eauto.
+  - dependent destruction H; auto.
+Qed.
+
 (* E |- e <= T 
 [t2 / x] E |- [t2 / x] e <= [t2 / x] T *)
-
-Definition preservation : forall E e e' m T,
+Theorem preservation : forall E e e' m T,
   dtyping E e m T -> 
   dexp_red e e' -> 
   dtyping E e' m T.
 Proof with eauto with type_safety.
   intros. generalize dependent e'.
-  induction H; intros e' Hred; try solve [inversion Hred].
+  induction H; intros e' Hred; try solve [inversion Hred]; eauto...
   - dependent destruction Hred; eauto...
+    + dependent destruction H3.
+      * admit.
+      * admit.
+      * inversion H2.
+      * admit.
+      * dependent destruction H0; admit.
   - dependent destruction Hred; eauto...
-    + inversion H.
+    inversion H. admit.
   - dependent destruction Hred; eauto...
+    + inversion H0.
     + inversion H0.
   - dependent destruction Hred.
     + eauto...
@@ -354,18 +356,8 @@ Proof with eauto with type_safety.
         }
         admit.
         simpl. admit. 
-      * admit. (* subsumption of chk *)
-
+      * inst_cofinites_by L. admit.
+    + dependent destruction H0. eapply dtyping_infanno.
+      admit. admit.
     + inversion H0.
-  - eauto...
-  - eauto...
-  - eauto...
-  - eauto...
-  - eauto...
-  - eauto...
-  - eauto...
-  - eauto...
-  - eauto...
-  - eauto...
-  - eauto...
 Admitted.

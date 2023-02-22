@@ -4,7 +4,7 @@ metavar etypvar, EX, EY, EZ ::= {{ coq var }}
 metavar expvar, x, y, z     ::= {{ repr-locally-nameless }}
 
 grammar
-
+ 
 a_typ, T, S, U :: a_typ_ ::=
   | UNIT           ::   :: unit
   | TOP            ::   :: top

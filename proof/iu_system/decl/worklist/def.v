@@ -115,7 +115,7 @@ Inductive d_wl_red : dworklist -> Prop :=    (* defn d_wl_red *)
      d_wl_red (dworklist_conswork (dworklist_conswork Γ (dwork_sub S1 T1)) (dwork_sub S2 T1)) ->
      d_wl_red (dworklist_conswork Γ (dwork_sub (dtyp_union S1 S2) T1))
  | d_wlred_chksub : forall (Γ:dworklist) (e:dexp) (T1:dtyp),
-     dneq_abs e ->
+     d_neq_abs e ->
       ~ ( T1  = dtyp_top)  ->
      dneq_all T1 ->
      dneq_intersection T1 ->

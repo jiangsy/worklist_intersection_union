@@ -33,10 +33,10 @@ Notation "E ⊢ T1 • e ⇒⇒ T2" :=
     (dinfapp E T1 e T2) 
       (at level 65, T1 at next level, e at next level, no associativity) : type_scope. *)
 
-Notation "X ∈ E" := (binds X (dbind_tvar_empty))
+Notation "X ∈ E" := (binds X (dbind_tvar_empty) E)
   (at level 65, no associativity) : type_scope.
 
-Notation "~ X ∈ E" := (binds X (dbind_stvar_empty))
+Notation "~ X ∈ E" := (binds X (dbind_stvar_empty) E)
   (at level 65, no associativity) : type_scope.
 
 

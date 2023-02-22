@@ -11,7 +11,6 @@ dtyp, T, S, U :: dtyp_ ::=
   | X              ::   :: var
   | SX             ::   :: svar
   | T1 -> T2       ::   :: arrow
-  | ∀ X . T        ::   :: all  (+ bind X in T +)
   | T1 + T2        ::   :: union
   | T1 * T2        ::   :: intersection
   | ( T )          :: S :: paren {{ coq ([[T]]) }}
@@ -28,7 +27,6 @@ dexp, e, f, g :: dexp_ ::=
   | e1 e2                               ::   :: app
   | \ X . dbody                         ::   :: tabs (+ bind X in dbody +) 
   | e @ T                               ::   :: tapp
-  | e : T                               ::   :: anno
   | ( e )                               :: S :: paren  {{ coq ([[e]]) }}
   | { e2 / x } e1                       :: M :: subst1 {{ coq (open_dexp_wrt_dexp [[x e1]] [[e2]]) }}
   | { T2 / X } e1                       :: M :: subst2 {{ coq (open_dexp_wrt_dtyp [[X e1]] [[T2]]) }}
@@ -468,8 +466,8 @@ mono T2
 mono T1 + T2
 
 
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 defns
 Jdexp_red :: '' ::=
 
@@ -515,6 +513,7 @@ e1 ¬= λ
 is_v e1
 ------------------------------ :: deanno
 (e1 : T1) --> e1
+
 
 % ((/\ a. \ x . x : a -> a) : (∀ a . a -> a) /\ (Int -> Int)) : ∀ a. a -> a =>  ∀ a. a -> a
 % ((/\ a. \ x . x : a -> a) : (∀ a . a -> a) /\ (Int -> Int)) : ∀ a. a -> a @ Bool ¬=> Bool -> Bool

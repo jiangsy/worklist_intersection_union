@@ -119,7 +119,7 @@ Qed. *)
 
 
 
-Lemma dwf_typ_s_tvar_stvar : forall E F X T,
+Lemma d_wf_typ_subst_tvar_stvar : forall E F X T,
   E ++ [(X, dbind_tvar_empty)] ++ F  ⊢ₛ T  -> 
   map (dsubst_tv_in_binding (dtyp_svar X) X ) E ++ [(X, dbind_stvar_empty)] ++ F ⊢ₛ { dtyp_svar X /ᵈ X } T.
 Proof.
@@ -170,7 +170,7 @@ Proof.
 Qed.
 
 
-Lemma dwf_typ_stvar_tvar : forall E F SX T,
+Lemma d_wf_typ_subst_stvar_tvar : forall E F SX T,
   E ++ [(SX, dbind_stvar_empty)] ++ F  ⊢ T  -> 
   map (dsubst_stv_in_binding (dtyp_var_f SX) SX ) E ++ [(SX, dbind_tvar_empty)] ++ F ⊢ { dtyp_var_f SX /ₛᵈ SX } T.
 Proof.
@@ -216,14 +216,14 @@ Proof.
     + apply IHdwf_typ2; auto.
 Qed.
 
-Corollary dwf_typ_stvar_tvar_cons : forall E X T,
+Corollary d_wf_typ_subst_stvar_tvar_cons : forall E X T,
   X `notin` ftv_in_dtyp T ->
   X ~ dbind_tvar_empty ++ E ⊢ₛ T ^ᵈ X ->
   X ~ dbind_stvar_empty ++ E ⊢ₛ T ^^ᵈ dtyp_svar X.
 Proof.
   intros.
   replace (X ~ dbind_tvar_empty ++ E) with (nil ++ X ~ dbind_tvar_empty ++ E) in H0 by auto.
-  specialize (dwf_typ_s_tvar_stvar _ _ _ _ H0).
+  specialize (d_wf_typ_subst_tvar_stvar _ _ _ _ H0).
   intros.
   rewrite dsubst_tv_in_dtyp_open_dtyp_wrt_dtyp in H1.
   simpl in H1.
@@ -233,14 +233,14 @@ Proof.
   - auto.
 Qed.
 
-Corollary dwf_typ_tvar_stvar_cons : forall E SX T,
+Corollary d_wf_typ_subst_tvar_stvar_cons : forall E SX T,
   SX `notin` fstv_in_dtyp T ->
   SX ~ dbind_stvar_empty ++ E ⊢ T ^^ᵈ dtyp_svar SX ->
   SX ~ dbind_tvar_empty ++ E ⊢ T ^ᵈ SX.
 Proof.
   intros.
   replace (SX ~ dbind_stvar_empty ++ E) with (nil ++ SX ~ dbind_stvar_empty ++ E) in H0 by auto.
-  specialize (dwf_typ_stvar_tvar _ _ _ _ H0). intros. 
+  specialize (d_wf_typ_subst_stvar_tvar _ _ _ _ H0). intros. 
   rewrite dsubst_stv_in_dtyp_open_dtyp_wrt_dtyp in H1; auto. simpl in H1. unfold eq_dec in H1. destruct (EqDec_eq_of_X SX SX).
   - rewrite dsubst_stv_in_dtyp_fresh_eq in H1; auto.
   - contradiction.
@@ -259,7 +259,7 @@ Proof.
       simpl. unfold eq_dec. destruct (EqDec_eq_of_X SX SX).
       * rewrite dsubst_tv_in_dtyp_fresh_eq; auto.
       * contradiction.
-    + apply dwf_typ_stvar_tvar_cons; auto.  
+    + apply d_wf_typ_subst_stvar_tvar_cons; auto.  
 Qed.
 
 Lemma dwf_typ_s_dwf_typ : forall E T, 
@@ -269,7 +269,7 @@ Proof.
   - eapply dwftyp_all with (L:= (L `union` fstv_in_dtyp T)); 
     intros; inst_cofinites_with X.  
     + eapply fstv_open_tvar; auto. 
-    + eapply dwf_typ_tvar_stvar_cons; auto.
+    + eapply d_wf_typ_subst_tvar_stvar_cons; auto.
 Qed.
 
 Hint Constructors dsub : core.
