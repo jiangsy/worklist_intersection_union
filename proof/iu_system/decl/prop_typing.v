@@ -6,6 +6,7 @@ Require Import Metalib.Metatheory.
 Require Import decl.notations.
 Require Import decl.prop_ln_extra.
 Require Import decl.prop_basic.
+Require Import decl.prop_subtyping.
 Require Import ln_utils.
 
 
@@ -601,41 +602,13 @@ Proof.
     + erewrite <- d_subenv_same_dom; auto.
 Qed.
 
-Hint Resolve d_subenv_wf_typ : core.
-Hint Resolve d_subenv_wf_env : core.
-
-
-Lemma dwf_env_binds_dwf_typ : forall E x T,
-  ⊢ E ->
-  binds x (dbind_typ T) E ->
-  E ⊢ T.
-Admitted.
-
-Lemma dwft_subst : forall E X T1 T2,
-  X ~ dbind_tvar_empty ++ E ⊢ T1 ^ᵈ X ->
-  E ⊢ T2 ->
-  E ⊢ T1 ^^ᵈ T2.
-Admitted.
-
-Hint Constructors dtyping : core.
-
-Lemma d_wft_typ_subst : forall E X F T1 T2,
-  F ++ X ~ dbind_tvar_empty ++ E ⊢ T1 ->
-  E ⊢ T2 ->
-  map (dsubst_tv_in_binding T2 X) F  ++ E ⊢ {T2 /ᵈ X} T1.
-Proof.
-Admitted.
-
-Lemma d_wf_env_subst_tvar_typ : forall E X F T1,
-  ⊢ F ++ X ~ dbind_tvar_empty ++ E ->
-  E ⊢ T1 ->
-  ⊢ (map (dsubst_tv_in_binding T1 X) F ++ E).
-Proof.
-Admitted.
-
-
+Hint Resolve d_subenv_wf_typ : typing.
+Hint Resolve d_subenv_wf_env : typing.
 Hint Resolve d_wft_typ_subst : typing.
 Hint Resolve d_wf_env_subst_tvar_typ : typing.
+Hint Resolve bind_typ_subst : typing. 
+Hint Resolve dwf_typ_dlc_type : typing.
+
 
 Theorem chkinffinapp_subst: forall E F X e m T1 T2,
   dtyping (F ++ X ~ dbind_tvar_empty ++ E) e m T1 ->
@@ -646,31 +619,50 @@ Proof with auto with typing.
   intros.
   generalize dependent T2.
   dependent induction H; intros; try solve [simpl in *; eauto 5 with typing].
-  - admit.
   - simpl in *. eapply dtyping_inftabs with (L:=L `union` singleton X).
-    admit.
-    intros. inst_cofinites_with X0. 
-    (* rewrite dtyp_subst_open_comm; auto. *)
-    + specialize (H1 E (X0 ~ dbind_tvar_empty ++ F) X (JMeq_refl _) T2 H2 H3).
-      Check dsubst_tv_in_dexp_open_dexp_wrt_dtyp.
-      assert (lc_dtyp T2) by admit.
-      specialize (dsubst_tv_in_dexp_open_dexp_wrt_dtyp e T2 (dtyp_var_f X0) X H5).
-      intros. simpl in H6. unfold eq_dec in H6.
-      destruct (EqDec_eq_of_X X0 X) in H6.
+    + replace (dtyp_all ({T2 /ᵈ X} T)) with ({T2 /ᵈ X}  dtyp_all T) by auto.
+      auto... 
+    + intros. specialize (notin_union_1 _ _ _ H4). intros.
+      specialize (H1 _ H5 E (X0 ~ dbind_tvar_empty ++ F) X (JMeq_refl _) T2 H2 H3).
+      assert (lc_dtyp T2) by eauto...
+      specialize (dsubst_tv_in_dexp_open_dexp_wrt_dtyp e T2 (dtyp_var_f X0) X H6).
+      intros. simpl in H7. unfold eq_dec in H7.
+      destruct (EqDec_eq_of_X X0 X) in H7.
       * subst. apply notin_union_2 in H4. apply notin_singleton_1 in H4.
         contradiction.
-      * rewrite <- H6. rewrite dtyp_subst_open_comm; auto.
-  - simpl in *. rewrite dsubst_tv_in_dtyp_open_dtyp_wrt_dtyp.
-    apply dtyping_inftappall; auto... admit.
-  - simpl. apply dtyping_chkabstop with (L:=L).
-    intros X1 HnotinL. inst_cofinites_by L. admit.
-  - simpl in *. admit.
-  - simpl in *. admit.
+      * rewrite <- H7. rewrite dtyp_subst_open_comm; auto.
+  - simpl in *. rewrite dsubst_tv_in_dtyp_open_dtyp_wrt_dtyp; eauto...
+  - simpl in *. apply dtyping_chkabstop with (L:=L).
+    intros x Hfr. inst_cofinites_with x.
+    replace (dexp_var_f x) with (dsubst_tv_in_dexp T2 X (dexp_var_f x)) by auto.
+    rewrite <-  dsubst_tv_in_dexp_open_dexp_wrt_dexp. 
+    replace (x ~ dbind_typ dtyp_bot ++ map (dsubst_tv_in_binding T2 X) F ++ E) with 
+    ((map (dsubst_tv_in_binding T2 X) (x ~ dbind_typ dtyp_bot ++ F)) ++ E) by auto. 
+    auto...
+  - simpl in *. eapply dtyping_chkabs with (L:=L); eauto...
+    intros X1 Hfr.
+    inst_cofinites_with X1.
+    specialize (H1 E ((X1, dbind_typ T1) :: F ) X (JMeq_refl _) T0 H2 H3).
+    replace (dexp_var_f X1) with (dsubst_tv_in_dexp T0 X (dexp_var_f X1)) by (simpl; auto).
+    rewrite <- dsubst_tv_in_dexp_open_dexp_wrt_dexp; eauto...
+  - simpl in *. eapply dtyping_chkall with (L:=L `union` singleton X); eauto...
+    + replace (dtyp_all ({T2 /ᵈ X} T)) with ({T2 /ᵈ X} dtyp_all T) by auto. 
+      auto...
+    + intros. inst_cofinites_with X0.
+      rewrite dtyp_subst_open_comm; eauto...
+      replace (X0 ~ dbind_tvar_empty ++ map (dsubst_tv_in_binding T2 X) F ++ E) with 
+      (map (dsubst_tv_in_binding T2 X) (X0 ~ dbind_tvar_empty ++ F) ++ E) by auto.
+      auto.
   - simpl in *. 
     apply dtyping_chksub with (S:=({T2 /ᵈ X} S)); eauto.
-    admit.
-  - admit.
-Admitted.
+    eapply d_sub_subst_mono; eauto.
+  - simpl in *. eapply dtyping_infappall with (T3:={T0 /ᵈ X} T3); eauto...
+    + apply d_mono_typ_subst_mono_mono; auto.
+    + replace (dtyp_all ({T0 /ᵈ X} T1)) with ({T0 /ᵈ X} dtyp_all T1) by auto.
+      auto...
+    + rewrite <- dsubst_tv_in_dtyp_open_dtyp_wrt_dtyp; eauto...
+Qed.
+
 
 Fixpoint dexp_size (e : dexp) : nat :=
   0.

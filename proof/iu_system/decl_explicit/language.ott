@@ -23,7 +23,7 @@ dexp, e, f, g :: dexp_ ::=
   | unit                                ::   :: unit 
   | top                                 ::   :: top
   | x                                   ::   :: var
-  | \ x . e                             ::   :: abs  (+ bind x in e +)
+  | \ x : T . e                         ::   :: abs  (+ bind x in e +)
   | e1 e2                               ::   :: app
   | \ X . dbody                         ::   :: tabs (+ bind X in dbody +) 
   | e @ T                               ::   :: tapp

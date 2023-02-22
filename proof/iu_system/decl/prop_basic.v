@@ -382,7 +382,50 @@ Proof.
   replace (X ~ b ++ E) with (nil ++ X ~ b ++ E) by auto.
   now apply dwf_typ_weakening.
 Qed.
-  
+
+Lemma dwf_env_binds_dwf_typ : forall E x T,
+  ⊢ E ->
+  binds x (dbind_typ T) E ->
+  E ⊢ T.
+Admitted.
+
+Lemma dwft_subst : forall E X T1 T2,
+  X ~ dbind_tvar_empty ++ E ⊢ T1 ^ᵈ X ->
+  E ⊢ T2 ->
+  E ⊢ T1 ^^ᵈ T2.
+Admitted.
+
+Hint Constructors dtyping : core.
+
+Lemma d_wft_typ_subst : forall E X F T1 T2,
+  F ++ X ~ dbind_tvar_empty ++ E ⊢ T1 ->
+  E ⊢ T2 ->
+  map (dsubst_tv_in_binding T2 X) F  ++ E ⊢ {T2 /ᵈ X} T1.
+Proof.
+Admitted.
+
+Lemma d_wf_env_subst_tvar_typ : forall E X F T1,
+  ⊢ F ++ X ~ dbind_tvar_empty ++ E ->
+  E ⊢ T1 ->
+  ⊢ (map (dsubst_tv_in_binding T1 X) F ++ E).
+Proof.
+Admitted.
+
+Lemma d_new_tv_notin_wf_typ : forall X E T1,
+  ⊢ (X, dbind_tvar_empty) :: E ->
+  E ⊢ T1 ->
+  X `notin` ftv_in_dtyp T1.
+Proof.
+  intros; induction H0; auto.
+  - simpl. destruct (X0 == X).
+    + subst. dependent destruction H.
+      simpl in *. exfalso.
+      eapply binds_dom_contradiction; eauto.
+    + apply notin_singleton; auto.
+  - simpl. inst_cofinites_by L.
+    admit.
+Admitted.
+    
 
 Lemma dwf_typ_lc_dtyp : forall E T,
   E ⊢ T -> lc_dtyp T.
@@ -409,3 +452,34 @@ Proof.
       apply dwf_typ_weakening_cons; eauto.
 Qed.
 
+Lemma bind_typ_subst : forall F X E x T1 T2,
+  ⊢ F ++ (X, dbind_tvar_empty) :: E ->
+  binds x (dbind_typ T1) (F ++ (X, dbind_tvar_empty) :: E) ->
+  E ⊢ T2 ->
+  binds x (dbind_typ ({T2 /ᵈ X} T1)) (map (dsubst_tv_in_binding T2 X) F ++ E).
+Proof.
+  intros. induction F; simpl in *; auto.
+  - inversion H0.
+    + inversion H2.
+    + assert (E ⊢ T1) by admit.
+      rewrite dsubst_tv_in_dtyp_fresh_eq; auto.
+      eapply d_new_tv_notin_wf_typ; eauto.
+  - destruct a. inversion H0.
+    + inversion H2. auto.
+    + apply binds_cons_3.
+      admit.
+Admitted.
+
+
+Lemma d_mono_typ_subst_mono_mono : forall T1 T2 X,
+  dmono_typ T1 ->
+  dmono_typ T2 ->
+  dmono_typ ({T2 /ᵈ X} T1).
+Proof.
+  intros. induction T1; try solve [simpl; eauto].
+  - simpl. destruct (X0 == X); auto.
+  - simpl. dependent destruction H. auto. 
+  - inversion H.
+  - simpl. dependent destruction H. auto.
+  - simpl. dependent destruction H. auto.
+Qed.
