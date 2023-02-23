@@ -221,29 +221,7 @@ Proof.
       apply IHT1.
     appl *)
 
-Lemma dsub_dwft : forall E T1 T2,
-  E ⊢ T1 <: T2 -> E ⊢ T1 /\ E ⊢ T2.
-Proof.
-  intros.
-  induction H; try solve [intuition].
-  - split; eapply dwftyp_all with (L:=L `union` fstv_in_dtyp S `union` fstv_in_dtyp T); intros; inst_cofinites_with X.
-    + eapply fstv_open_tvar; auto.
-    + apply d_wf_typ_subst_tvar_stvar_cons; intuition.
-    + eapply fstv_open_tvar; auto.
-    + apply d_wf_typ_subst_tvar_stvar_cons; intuition.
-  - split; try solve [intuition].
-    + eapply dwftyp_all with (L:=L `union` ftv_in_dtyp S). 
-      * intros. inst_cofinites_with X. auto.
-      * intros. inst_cofinites_with X.
-        destruct IHdsub. 
-        eapply dwf_typ_open_inv with (X:=X) (S:=T2); auto.
-        eapply dwf_typ_dlc_type; eauto.
-        -- replace (X ~ dbind_tvar_empty ++ E) with (nil ++ X ~ dbind_tvar_empty ++ E) by auto. apply dwf_typ_weakening. simpl. rewrite  dsubst_tv_in_dtyp_open_dtyp_wrt_dtyp.
-          ++ simpl. unfold eq_dec. destruct ( EqDec_eq_of_X X X ).
-            ** rewrite dsubst_tv_in_dtyp_fresh_eq; auto.
-            ** contradiction.
-          ++ eapply dwf_typ_dlc_type; eauto.
-Qed.
+
 
 (* Theorem dwf_type_subst_var: forall G1 G2 x x' A,
   G1, x,, G2 ⊢ A ->  ⊢ G1, x',, G2 -> G1, x',, G2 ⊢ [`ᵈ x' /ᵈ x] A.
