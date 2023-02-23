@@ -14,6 +14,7 @@ Require Import ln_utils.
 
 Inductive ss_entry := 
   | sse_tv 
+  | sse_tvar
   | sse_ev (t : ld_type).
 
 Definition subst_set := list (var * ss_entry).

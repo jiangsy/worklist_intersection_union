@@ -18,7 +18,7 @@ Notation "E ⊢ₛ T" :=
     (at level 65, no associativity) : type_scope.
 
 Notation "E ⊢ S <: T" :=
-  (dsub E S T)
+  (d_sub E S T)
     (at level 65, S at next level, no associativity) : type_scope.
 
 (* Notation "E ⊢ e ⇐ T" :=
@@ -46,12 +46,12 @@ Notation "↑ n" := (dtyp_var_b n)
   (at level 0, n at level 0, no associativity) : type_scope.
 
 Notation "{ T' /ᵈ X } T" :=
-  (dsubst_tv_in_dtyp T' X T)
+  (d_subst_tv_in_dtyp T' X T)
     ( at level 49, T' at level 50, X at level 0
     , right associativity) : type_scope.
 
 Notation "{ T' /ₛᵈ SX } T" :=
-  (dsubst_stv_in_dtyp T' SX T)
+  (d_subst_stv_in_dtyp T' SX T)
     ( at level 49, T' at level 50, SX at level 0
     , right associativity) : type_scope.
 

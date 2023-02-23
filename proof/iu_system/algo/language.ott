@@ -42,10 +42,10 @@ a_binding, b :: a_bind_ ::=
   | : T1 < T2  ::   :: bound
 
 substitutions
-  single T X  :: subst_typ_in
-  single T SX :: subst_styp_in
-  single T EX :: subst_etyp_in
-  single e x  :: subst_exp_in
+  single T X  :: a_subst_tv_in
+  single T SX :: a_subst_stv_in
+  single T EX :: a_subst_etv_in
+  single e x  :: a_subst_v_in
 
 freevars
   T X  :: ftv_in

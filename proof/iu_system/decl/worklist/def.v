@@ -30,15 +30,15 @@ Inductive apply_dcont : dcont -> dtyp -> dworklist -> Prop :=
 Inductive dwl_del_red : dworklist -> Prop :=
   | dwldelred_empty : dwl_del_red dworklist_empty
   | dwldelred_inf : forall Γ e T1 c,
-      dtyping (dwl_to_denv Γ) e dtypingmode_inf T1 ->
+      d_typing (dwl_to_denv Γ) e d_typingmode_inf T1 ->
       dwl_del_red (dworklist_conswork Γ (dwork_apply c T1)) ->
       dwl_del_red (dworklist_conswork Γ (dwork_infer e c))
   | dwldelred_chk : forall Γ e T1,
-      dtyping (dwl_to_denv Γ) e dtypingmode_chk T1 ->
+      d_typing (dwl_to_denv Γ) e d_typingmode_chk T1 ->
       dwl_del_red Γ ->
       dwl_del_red (dworklist_conswork Γ (dwork_check e T1))
   | dwldelred_infapp : forall Γ e T1 T2 c,
-      dtyping (dwl_to_denv Γ) e (dtypingmode_infapp T1) T2 ->
+      d_typing (dwl_to_denv Γ) e (d_typingmode_infapp T1) T2 ->
       dwl_del_red (dworklist_conswork Γ (dwork_apply c T1)) ->
       dwl_del_red (dworklist_conswork Γ (dwork_infapp T2 e c))
   | dwldelred_inftappall : forall Γ T1 T2 c,
@@ -48,7 +48,7 @@ Inductive dwl_del_red : dworklist -> Prop :=
       dwl_del_red (dworklist_conswork Γ (dwork_apply c dtyp_bot)) -> 
       dwl_del_red (dworklist_conswork Γ (dwork_inftapp dtyp_bot T1 c))
   | dwldelred_sub : forall Γ S1 T1,
-      dsub (dwl_to_denv Γ) S1 T1 ->
+      d_sub (dwl_to_denv Γ) S1 T1 ->
       dwl_del_red Γ ->
       dwl_del_red (dworklist_conswork Γ (dwork_sub S1 T1))
   | dwldelred_applycont : forall Γ c T1 Γ',

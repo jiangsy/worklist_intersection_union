@@ -37,8 +37,8 @@ binding, b :: dbind_ ::=
   | : T  ::   :: typ
 
 substitutions
-  single T X  :: dsubst_tv_in
-  single T SX :: dsubst_stv_in
+  single T X  :: d_subst_tv_in
+  single T SX :: d_subst_stv_in
   single e x  :: dsubst_v_in
 
 freevars

@@ -10,11 +10,11 @@ Require Import decl.prop_subtyping.
 
 Require Import ln_utils.
 
-Hint Constructors dsub : nonoverlapping.
+Hint Constructors d_sub : nonoverlapping.
 Hint Constructors d_sub_no : nonoverlapping.
 
-Theorem d_sub_no_sound_wrt_dsub : forall E S1 T1,
-    d_sub_no E S1 T1 -> dsub E S1 T1.
+Theorem d_sub_no_sound_wrt_d_sub : forall E S1 T1,
+    d_sub_no E S1 T1 -> d_sub E S1 T1.
 Proof with auto with nonoverlapping.
     intros; induction H; eauto...
 Qed.
@@ -229,9 +229,9 @@ Hint Resolve dsub_dwft : core.
 Hint Resolve is_intersection_rec_dec : nonoverlapping.
 
 
-Theorem d_sub_no_complete_wrt_dsub : forall n E S1 T1,
+(* Theorem d_sub_no_complete_wrt_d_sub : forall n E S1 T1,
     d_typ_order S1 + d_typ_order T1 < n ->
-    dsub E S1 T1 -> d_sub_no E S1 T1.
+    d_sub E S1 T1 -> d_sub_no E S1 T1.
 Proof with auto with nonoverlapping.   
   intro n. induction n; intros E S1 T1 Hord Hsub. 
   - inversion Hord.
@@ -261,10 +261,10 @@ Proof with auto with nonoverlapping.
       apply IHHsub2; lia.
     + clear IHHsub. 
       assert (is_intersection_rec T \/ ~ (is_intersection_rec T)). {
-        apply is_intersection_rec_dec. eapply dwf_typ_dlc_type. eapply dsub_dwft; eauto.
+        apply is_intersection_rec_dec. eapply dwf_typ_dlc_type. eapply d_sub_dwft; eauto.
       }
       inversion H0.
-      induction H1; auto; simpl in Hord; specialize (dsub_intersection_inversion _ _ _ _ Hsub); intro Hintsub; destruct Hintsub.
+      induction H1; auto; simpl in Hord; specialize (d_sub_intersection_inversion _ _ _ _ Hsub); intro Hintsub; destruct Hintsub.
       * apply d_subno_intersection1; apply d_subno_intersection2; auto.
         apply IHn. lia. auto.  apply IHn. lia. auto.
       * apply d_subno_intersection1; eauto...
@@ -278,15 +278,15 @@ Proof with auto with nonoverlapping.
         apply IHis_intersection_rec2; auto. lia.
       * apply d_subno_intersection2; eauto.
         apply not_intersection_rec_neq_intersection; eauto.
-        eapply dwf_typ_dlc_type; eapply dsub_dwft; eauto.
+        eapply dwf_typ_dlc_type; eapply d_sub_dwft; eauto.
         apply IHn; auto. lia.
     (*  *)
     + clear IHHsub. 
       assert (is_intersection_rec T \/ ~ (is_intersection_rec T)). {
-        apply is_intersection_rec_dec. eapply dwf_typ_dlc_type. eapply dsub_dwft; eauto.
+        apply is_intersection_rec_dec. eapply dwf_typ_dlc_type. eapply d_sub_dwft; eauto.
       }
       inversion H0.
-      induction H1; auto; simpl in Hord; specialize (dsub_intersection_inversion _ _ _ _ Hsub); intro Hintsub; destruct Hintsub.
+      induction H1; auto; simpl in Hord; specialize (d_sub_intersection_inversion _ _ _ _ Hsub); intro Hintsub; destruct Hintsub.
       * apply d_subno_intersection1; apply d_subno_intersection3; auto.
         apply IHn. lia. auto.  apply IHn. lia. auto.
       * apply d_subno_intersection1; eauto...
@@ -300,8 +300,8 @@ Proof with auto with nonoverlapping.
         apply IHis_intersection_rec2; auto. lia.
       * apply d_subno_intersection3; eauto.
         apply not_intersection_rec_neq_intersection; eauto.
-        eapply dwf_typ_dlc_type; eapply dsub_dwft; eauto.
+        eapply dwf_typ_dlc_type; eapply d_sub_dwft; eauto.
         apply IHn; auto. lia.
     + admit.
     + admit.
-Admitted.
+Admitted. *)

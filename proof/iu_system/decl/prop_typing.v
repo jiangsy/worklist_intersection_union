@@ -4,7 +4,6 @@ Require Import Lia.
 Require Import Metalib.Metatheory.
 
 Require Import decl.notations.
-Require Import decl.prop_ln_extra.
 Require Import decl.prop_basic.
 Require Import decl.prop_subtyping.
 Require Import ln_utils.
@@ -497,7 +496,7 @@ Inductive d_subenv : denv -> denv -> Prop :=
         (SX ~ dbind_stvar_empty  ++  E2)
 | d_subenv_var : forall E1 E2 x S T,
     d_subenv E1 E2 ->
-    dsub E2 S T ->
+    d_sub E2 S T ->
     d_subenv (x ~ dbind_typ S ++ E1) 
         (x ~ dbind_typ T ++ E2)        
 .
@@ -589,56 +588,56 @@ Hint Resolve dwf_typ_dlc_type : typing.
 
 
 Theorem chkinffinapp_subst: forall E F X e m T1 T2,
-  dtyping (F ++ X ~ dbind_tvar_empty ++ E) e m T1 ->
+  d_typing (F ++ X ~ dbind_tvar_empty ++ E) e m T1 ->
   E ⊢ T2 ->
   dmono_typ T2 ->
-  dtyping (map (dsubst_tv_in_binding T2 X) F  ++ E) (dsubst_tv_in_dexp T2 X e) (dsubst_tv_in_dtypingmode T2 X m) ({T2 /ᵈ X} T1).
+  d_typing (map (d_subst_tv_in_binding T2 X) F  ++ E) (d_subst_tv_in_dexp T2 X e) (d_subst_tv_in_typingmode T2 X m) ({T2 /ᵈ X} T1).
 Proof with auto with typing.
   intros.
   generalize dependent T2.
   dependent induction H; intros; try solve [simpl in *; eauto 5 with typing].
-  - simpl in *. eapply dtyping_inftabs with (L:=L `union` singleton X).
-    + replace (dtyp_all ({T2 /ᵈ X} T)) with ({T2 /ᵈ X}  dtyp_all T) by auto.
+  - simpl in *. eapply d_typing_inftabs with (L:=L `union` singleton X).
+    + replace (dtyp_all ({T2 /ᵈ X} T1)) with ({T2 /ᵈ X}  dtyp_all T1) by auto.
       auto... 
     + intros. specialize (notin_union_1 _ _ _ H4). intros.
       specialize (H1 _ H5 E (X0 ~ dbind_tvar_empty ++ F) X (JMeq_refl _) T2 H2 H3).
       assert (lc_dtyp T2) by eauto...
-      specialize (dsubst_tv_in_dexp_open_dexp_wrt_dtyp e T2 (dtyp_var_f X0) X H6).
+      specialize (d_subst_tv_in_dexp_open_dexp_wrt_dtyp e T2 (dtyp_var_f X0) X H6).
       intros. simpl in H7. unfold eq_dec in H7.
       destruct (EqDec_eq_of_X X0 X) in H7.
       * subst. apply notin_union_2 in H4. apply notin_singleton_1 in H4.
         contradiction.
       * rewrite <- H7. rewrite dtyp_subst_open_comm; auto.
-  - simpl in *. rewrite dsubst_tv_in_dtyp_open_dtyp_wrt_dtyp; eauto...
-  - simpl in *. apply dtyping_chkabstop with (L:=L).
+  - simpl in *. rewrite d_subst_tv_in_dtyp_open_dtyp_wrt_dtyp; eauto...
+  - simpl in *. apply d_typing_chkabstop with (L:=L).
     intros x Hfr. inst_cofinites_with x.
-    replace (dexp_var_f x) with (dsubst_tv_in_dexp T2 X (dexp_var_f x)) by auto.
-    rewrite <-  dsubst_tv_in_dexp_open_dexp_wrt_dexp. 
-    replace (x ~ dbind_typ dtyp_bot ++ map (dsubst_tv_in_binding T2 X) F ++ E) with 
-    ((map (dsubst_tv_in_binding T2 X) (x ~ dbind_typ dtyp_bot ++ F)) ++ E) by auto. 
+    replace (dexp_var_f x) with (d_subst_tv_in_dexp T2 X (dexp_var_f x)) by auto.
+    rewrite <-  d_subst_tv_in_dexp_open_dexp_wrt_dexp. 
+    replace (x ~ dbind_typ dtyp_bot ++ map (d_subst_tv_in_binding T2 X) F ++ E) with 
+    ((map (d_subst_tv_in_binding T2 X) (x ~ dbind_typ dtyp_bot ++ F)) ++ E) by auto. 
     auto...
-  - simpl in *. eapply dtyping_chkabs with (L:=L); eauto...
+  - simpl in *. eapply d_typing_chkabs with (L:=L); eauto...
     intros X1 Hfr.
     inst_cofinites_with X1.
     specialize (H1 E ((X1, dbind_typ T1) :: F ) X (JMeq_refl _) T0 H2 H3).
-    replace (dexp_var_f X1) with (dsubst_tv_in_dexp T0 X (dexp_var_f X1)) by (simpl; auto).
-    rewrite <- dsubst_tv_in_dexp_open_dexp_wrt_dexp; eauto...
-  - simpl in *. eapply dtyping_chkall with (L:=L `union` singleton X); eauto...
-    + replace (dtyp_all ({T2 /ᵈ X} T)) with ({T2 /ᵈ X} dtyp_all T) by auto. 
+    replace (dexp_var_f X1) with (d_subst_tv_in_dexp T0 X (dexp_var_f X1)) by (simpl; auto).
+    rewrite <- d_subst_tv_in_dexp_open_dexp_wrt_dexp; eauto...
+  - simpl in *. eapply d_typing_chkall with (L:=L `union` singleton X); eauto...
+    + replace (dtyp_all ({T2 /ᵈ X} T1)) with ({T2 /ᵈ X} dtyp_all T1) by auto. 
       auto...
     + intros. inst_cofinites_with X0.
       rewrite dtyp_subst_open_comm; eauto...
-      replace (X0 ~ dbind_tvar_empty ++ map (dsubst_tv_in_binding T2 X) F ++ E) with 
-      (map (dsubst_tv_in_binding T2 X) (X0 ~ dbind_tvar_empty ++ F) ++ E) by auto.
+      replace (X0 ~ dbind_tvar_empty ++ map (d_subst_tv_in_binding T2 X) F ++ E) with 
+      (map (d_subst_tv_in_binding T2 X) (X0 ~ dbind_tvar_empty ++ F) ++ E) by auto.
       auto.
   - simpl in *. 
-    apply dtyping_chksub with (S:=({T2 /ᵈ X} S)); eauto.
+    apply d_typing_chksub with (S1:=({T2 /ᵈ X} S1)); eauto.
     eapply d_sub_subst_mono; eauto.
-  - simpl in *. eapply dtyping_infappall with (T3:={T0 /ᵈ X} T3); eauto...
+  - simpl in *. eapply d_typing_infappall with (T3:={T0 /ᵈ X} T3); eauto...
     + apply d_mono_typ_subst_mono_mono; auto.
     + replace (dtyp_all ({T0 /ᵈ X} T1)) with ({T0 /ᵈ X} dtyp_all T1) by auto.
       auto...
-    + rewrite <- dsubst_tv_in_dtyp_open_dtyp_wrt_dtyp; eauto...
+    + rewrite <- d_subst_tv_in_dtyp_open_dtyp_wrt_dtyp; eauto...
 Qed.
 
 
@@ -648,18 +647,18 @@ Fixpoint dexp_size (e : dexp) : nat :=
 Fixpoint dtyp_size (T : dtyp) : nat :=
   0.
 
-Definition dmode_size (mode : dtyping_mode) : nat := 
+Definition dmode_size (mode : d_typing_mode) : nat := 
   match mode with 
-  | dtypingmode_inf => 2
-  | dtypingmode_chk => 1
-  | dtypingmode_infapp _ => 0
+  | d_typingmode_inf => 2
+  | d_typingmode_chk => 1
+  | d_typingmode_infapp _ => 0
   end.
 
-Definition dmode_type_size (mode : dtyping_mode) : nat := 
+Definition dmode_type_size (mode : d_typing_mode) : nat := 
   match mode with 
-  | dtypingmode_inf => 0
-  | dtypingmode_chk => 0
-  | dtypingmode_infapp T =>  dtyp_size T
+  | d_typingmode_inf => 0
+  | d_typingmode_chk => 0
+  | d_typingmode_infapp T =>  dtyp_size T
   end.
 
 
@@ -667,12 +666,12 @@ Theorem dchk_dinf_dinfapp_subsumption : forall n1 n2 n3 E E' e T mode,
   dexp_size e < n1 ->
   dmode_size mode < n2 -> 
   dtyp_size T + dmode_type_size mode < n3 ->
-  dtyping E e mode T ->
+  d_typing E e mode T ->
   d_subenv E' E ->
     match mode with 
-    | dtypingmode_chk => forall S, E ⊢ T <: S -> dtyping E' e dtypingmode_chk S
-    | dtypingmode_inf => exists S, E ⊢ S <: T /\ dtyping E' e dtypingmode_inf S
-    | dtypingmode_infapp T1 => forall S1, E ⊢ S1 <: T1 -> exists S2, E ⊢ S2 <: T /\ dtyping E' e (dtypingmode_infapp S1) S2
+    | d_typingmode_chk => forall S, E ⊢ T <: S -> d_typing E' e d_typingmode_chk S
+    | d_typingmode_inf => exists S, E ⊢ S <: T /\ d_typing E' e d_typingmode_inf S
+    | d_typingmode_infapp T1 => forall S1, E ⊢ S1 <: T1 -> exists S2, E ⊢ S2 <: T /\ d_typing E' e (d_typingmode_infapp S1) S2
     end.
 Proof.
   intro n1; induction n1; intro n2; induction n2; intro n3; induction n3. intros.
