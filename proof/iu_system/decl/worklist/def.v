@@ -85,8 +85,6 @@ Inductive d_wl_red : dworklist -> Prop :=    (* defn d_wl_red *)
      ( forall SX , SX `notin` L -> d_wl_red (dworklist_conswork (dworklist_consstvar Γ SX dbind_stvar_empty) (dwork_sub  (open_dtyp_wrt_dtyp  S1   (dtyp_svar SX) )   (open_dtyp_wrt_dtyp  T1   (dtyp_svar SX) ) ))) ->
      d_wl_red (dworklist_conswork Γ (dwork_sub (dtyp_all S1) (dtyp_all T1)))    
  | d_wlred_suballl : forall (Γ:dworklist) (S1 T1 T2:dtyp),
-     dneq_union T1 ->
-     dneq_intersection T1 ->
      dneq_all T1 ->
      dmono_typ T2 ->
      dwf_typ  ( dwl_to_denv  Γ  )  T2 ->
@@ -196,5 +194,3 @@ Inductive d_wl_red : dworklist -> Prop :=    (* defn d_wl_red *)
      d_wl_red (dwl_app Γ' Γ) ->
      d_wl_red (dworklist_conswork Γ (dwork_apply c T1))   
     .
-
-

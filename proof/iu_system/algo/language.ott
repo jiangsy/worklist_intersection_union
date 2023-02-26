@@ -63,7 +63,7 @@ a_env, E, F, G:: '' ::= {{ coq list (atom*a_binding) }}
   | E , X b  ::   :: cons2 {{ coq ([[X]]~[[b]] ++ [[E]])  }}
   | E , SX b ::   :: cons3 {{ coq ([[SX]]~[[b]] ++ [[E]]) }}
   | E , EX b ::   :: cons4 {{ coq ([[EX]]~[[b]] ++ [[E]]) }}
-  | ⌊ W ⌋    :: M :: dwlenv {{ coq ( a_wl_to_env [[W]] )}}
+  | ⌊ W ⌋    :: M :: wlenv {{ coq ( a_wl_to_env [[W]] )}}
 
 a_cont, c :: 'a_cont_' ::=
   | Done                :: :: done
@@ -271,6 +271,40 @@ SX ∈ₛ T2
 SX ∈ₛ T1 * T2
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+defns
+Ja_etvar_strong_in :: '' ::=
+
+defn
+EX ∈ₛ T :: :: a_etvar_strongin :: 'a_etvarsin_' by
+
+------------------------ :: var
+EX ∈ₛ EX
+
+EX ∈ₛ T1
+------------------------ :: arrow1
+EX ∈ₛ T1 -> T2 
+
+EX ∈ₛ T2
+------------------------ :: arrow2
+EX ∈ₛ T1 -> T2 
+
+EX ∈ₛ T
+------------------------ :: all
+EX ∈ₛ ∀ Y . T
+
+EX ∈ₛ T1
+EX ∈ₛ T2
+------------------------ :: union
+EX ∈ₛ T1 + T2
+
+EX ∈ₛ T1
+EX ∈ₛ T2
+------------------------ :: intersection
+EX ∈ₛ T1 * T2
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 
 defns
 Jawf_typ :: '' ::=

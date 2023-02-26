@@ -1,66 +1,68 @@
 Require Import Coq.Program.Equality.
 Require Import Program.Tactics.
 Require Import Metalib.Metatheory.
+Require Import List.
 
-Require Import algo.ott.
-Require Import algo.notations.
-Require Import algo.ln_inf_extra.
-Require Import decl.ott.
+Require Import decl.def_ott.
 Require Import decl.notations.
-Require Import decl.properties.
-Require Import decl.ln_inf_extra.
+Require Import algo.def_ott.
 Require Import ln_utils.
 
 
 Inductive ss_entry := 
-  | sse_tv 
-  | sse_tvar
-  | sse_ev (t : ld_type).
+  | sse_tvar 
+  | sse_stvar
+  | sse_etvar (T : dtyp).
 
-Definition subst_set := list (var * ss_entry).
+Definition subst_set := list (atom * ss_entry).
 
-Declare Scope subst_set_scope.
-Delimit Scope subst_set_scope with subst.
-Bind Scope subst_set_scope with subst_set.
+(* Declare Scope subst_set_scope.
+Delimit Scope subst_set_scope with subst_set.
+Bind Scope subst_set_scope with subst_set. *)
 
-Notation "s1 ;; s2" := (app s2 s1)
+
+
+(* Notation "s1 ;; s2" := (app s2 s1)
   (at level 58, left associativity) : subst_set_scope.
 
-Notation "s ; ex : t" := (cons (pair ex (sse_ev t)) s)
-  (at level 58, ex at next level, t at next level, left associativity) : type_scope.
+Notation " X ; s " := (cons (pair X sse_tvar) s)
+  (at level 57, right associativity) : subst_set_scope.
 
-Notation "s ; x" := (cons (pair x sse_tv) s)
-  (at level 58, x at next level, left associativity) : type_scope.
+Notation " ` SX ; s" := (cons (pair SX sse_stvar) s)
+  (at level 57, right associativity) : subst_set_scope.
 
-Notation "x : t ∈ s" := (binds x (sse_ev t) s)
-  (at level 58, t at next level, no associativity) : type_scope.
+Notation "EX : T ; s" := (cons (pair EX (sse_etvar T))s)
+  (at level 57, T at next level, right associativity) : subst_set_scope.
 
+Notation "X : T ∈ s" := (binds X (sse_etvar T) s)
+  (at level 57, T at next level, no associativity) : subst_set_scope. *)
 
-Fixpoint fv_ss (θ : subst_set) : atoms :=
-  match θ with
-  | nil => {}
-  | θ' ; ex : t => fv_ss θ' `union` singleton ex
-  | θ' ; x => fv_ss θ' `union` singleton x
-  end.
+Print denv.
 
-Fixpoint ss_to_ctx (θ : subst_set) : ld_context := 
+Fixpoint ss_to_denv (θ : list (atom * ss_entry)) : denv := 
   match θ with 
-  | nil => ld_ctx_nil
-  | θ' ; x => ld_ctx_cons (ss_to_ctx θ') x
-  | θ' ; ex : t => ss_to_ctx θ'
+  | nil => nil
+  | (X , sse_tvar) :: θ' => (X ~ dbind_tvar_empty) ++ ss_to_denv θ'
+  | (SX , sse_stvar) :: θ' => (SX ~ dbind_stvar_empty) ++ ss_to_denv θ'
+  | (X , sse_etvar T) :: θ' => ss_to_denv θ'
   end.
 
 Inductive wf_ss : subst_set -> Prop :=
-  | wf_ss_nil : wf_ss nil
-  | wf_ss_tv : forall x θ,
-      wf_ss θ -> x `notin` dom θ ->
-      wf_ss (θ; x)
-  | wf_ss_ev : forall ex t Θ, 
-     wf_ss Θ -> 
-     ex `notin` dom Θ ->
-     ld_wf_type (ss_to_ctx Θ) t -> 
-     ld_mono_type t ->
-     wf_ss (Θ; ex : t)
+  | wfss_nil : wf_ss nil
+  | wfss_tvar : forall θ X,
+      wf_ss θ -> 
+      X `notin` dom θ ->
+      wf_ss ((X , sse_tvar) :: θ)
+  | wf_ss_stvar : forall θ SX,
+      wf_ss θ ->
+      SX `notin` dom θ ->
+      wf_ss ((SX, sse_stvar) :: θ)
+  | wf_ss_ev : forall θ EX T, 
+     wf_ss θ  -> 
+     EX `notin` dom θ  ->
+     (ss_to_denv θ) ⊢ T -> 
+     dmono_typ T ->
+     wf_ss ((EX , sse_etvar T) :: θ)
 .
 
 Lemma wf_uniq : forall Θ,
@@ -70,20 +72,63 @@ Proof.
 Qed.
 
 
-Lemma wf_mono : forall θ x t, 
-  wf_ss θ -> x : t ∈ θ -> ld_mono_type t.
+Lemma wf_mono : forall θ X T, 
+  wf_ss θ -> binds X (sse_etvar T) θ -> dmono_typ T.
 Proof.
-  intros.
-  induction H.
+  intros. induction H.
   - inversion H0.
   - inversion H0.
     inversion H2.
     auto.
   - inversion H0.
-    + dependent destruction H4. auto.
+    + inversion H2.
     + auto.
+  - inversion H0; auto.
+    dependent destruction H4. auto.
 Qed.
 
+Inductive inst_typ : subst_set -> a_typ -> dtyp -> Prop := 
+  | insttyp_tvar : forall θ X, 
+      wf_ss θ -> 
+      inst_typ θ (a_typ_tvar_f X) (dtyp_var_f X)
+  | insttyp_stvar : forall θ SX, 
+      wf_ss θ -> 
+      inst_typ θ (a_typ_stvar SX) (dtyp_svar SX)
+  | insttyp_etvar : forall θ EX T,
+      wf_ss θ ->
+      binds EX (sse_etvar T) θ ->
+      inst_typ θ (a_typ_etvar EX) T
+  | instyp_unit : forall θ,
+      wf_ss θ ->
+      inst_typ θ a_typ_unit dtyp_unit
+  | instyp_bot : forall θ,
+      wf_ss θ ->
+      inst_typ θ a_typ_bot dtyp_bot
+  | instyp_top : forall θ,
+      wf_ss θ ->
+      inst_typ θ a_typ_top dtyp_top
+  | instyp_arrow : forall θ T1ᵃ T1ᵈ T2ᵃ T2ᵈ,
+      inst_typ θ T1ᵃ T1ᵈ ->
+      inst_typ θ T2ᵃ T2ᵈ ->
+      inst_typ θ (a_typ_arrow T1ᵃ T2ᵃ) (dtyp_arrow T1ᵈ T2ᵈ)
+  | instyp_all : forall θ L T1ᵃ T1ᵈ,
+      (forall X, X `notin` L -> 
+        inst_typ θ (open_a_typ_wrt_a_typ T1ᵃ (a_typ_tvar_f X)) (open_dtyp_wrt_dtyp T1ᵈ (dtyp_var_f X))
+      ) ->
+      inst_typ θ (a_typ_all T1ᵃ) (dtyp_all T1ᵈ)
+  | instyp_intersection : forall θ T1ᵃ T1ᵈ T2ᵃ T2ᵈ,
+      inst_typ θ T1ᵃ T1ᵈ ->
+      inst_typ θ T2ᵃ T2ᵈ ->
+      inst_typ θ (a_typ_intersection T1ᵃ T2ᵃ) (dtyp_intersection T1ᵈ T2ᵈ)
+  | instyp_union : forall θ T1ᵃ T1ᵈ T2ᵃ T2ᵈ,
+      inst_typ θ T1ᵃ T1ᵈ ->
+      inst_typ θ T2ᵃ T2ᵈ ->
+      inst_typ θ (a_typ_union T1ᵃ T2ᵃ) (dtyp_union T1ᵈ T2ᵈ)
+  . 
+
+
+
+(* 
 Reserved Notation "θ ⫦ t ⇝ t'"
   (at level 65, t at next level, no associativity).
 Inductive inst_type : subst_set -> la_type -> ld_type -> Prop := 
@@ -119,7 +164,7 @@ Lemma inst_t_wf_ss : forall θ t t',
   θ ⫦ t ⇝ t' -> wf_ss θ.
 Proof.
   induction 1; pick fresh x'; eauto.
-Qed.
+Qed. *)
 
 
 Reserved Notation "θ ⫦ Γᵃ ⇝ Γᵈ ⫣ θ'"
@@ -142,6 +187,8 @@ Inductive inst_worklist : subst_set -> la_worklist -> ld_worklist -> subst_set -
       θ ⫦ ubᵃ ⇝ ubᵈ ->
       θ ⫦ (la_wl_cons_ev Γᵃ lbᵃ ex ubᵃ) ⇝ (ld_wl_cons_w Γᵈ (ld_w_sub lbᵈ ubᵈ)) ⫣ (θ' ; ex : lbᵈ)
 where "θ ⫦ Γᵃ ⇝ Γᵈ ⫣ θ'" := (inst_worklist θ Γᵃ Γᵈ θ').
+
+Inductive inst_cont : subst_set -> a_cont -> d_cont -> Prop.
 
 
 Hint Constructors inst_type : transfer.
