@@ -515,17 +515,3 @@ e1 ¬= λ
 is_v e1
 ------------------------------ :: deanno
 (e1 : T1) --> e1
-
-% ((/\ a. \ x . x : a -> a) : (∀ a . a -> a) /\ (Int -> Int)) : ∀ a. a -> a =>  ∀ a. a -> a
-% ((/\ a. \ x . x : a -> a) : (∀ a . a -> a) /\ (Int -> Int)) : ∀ a. a -> a @ Bool ¬=> Bool -> Bool
-% (1) ban nested annotation
-% (2) ban subtyping relation to ensure only forall or bot <: forall (intersection3, union3 )
-% (3)
-%     v1 @ T --> e1'
-%     ----------------------------- :: tappanno
-%     (v1 : T1) @ T  --> e1'  
-
-% % the following rule should be fine w/o union and intersection
-% v1 @ T -> e1'
-% ------------------------------------------ :: tappanno 
-% (v1 : ∀ X . T) @ T1  --> e1' : {T1 / X} T 

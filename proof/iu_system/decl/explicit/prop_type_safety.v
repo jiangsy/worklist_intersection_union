@@ -212,6 +212,15 @@ Proof.
   - dependent destruction H0; auto.
 Qed.
 
+Lemma check_inf_sub : forall E e T1 T2,
+  d_typing_exptapp E e d_typingmode_inf T1 -> 
+  d_typing_exptapp E e d_typingmode_chk T2 -> E ⊢ T1 <: T2.
+Proof.
+  intros; dependent induction H; eauto...
+  - admit.
+  - admit.
+Admitted.
+
  (* E |- e <= T 
  [t2 / x] E |- [t2 / x] e <= [t2 / x] T *)
 Theorem preservation : forall E e e' m T,
@@ -324,7 +333,13 @@ Proof with eauto with type_safety.
       destruct IHd_typing_exptapp as [T1' [Hinf Hsub]].
       (* ((\ x : x) : ∀ a . a -> a /\ int -> int : ∀ a . a -> a) @ bool *)
       admit. (* hard : problems of rules *)
-    + dependent destruction H0. admit. (* hard : stability of subtyping (poly) *)
+    + dependent destruction H0.
+      exists (T1 ^^ᵈ T2). split. 
+      econstructor; fold open_dexp_wrt_dtyp_rec.
+      admit.
+      admit.
+       admit.
+      (* hard : stability of subtyping (poly) *)
     + dependent destruction H0. exists (T1 ^^ᵈ T2).
       * split. econstructor; eauto. 
         inversion H1. 
