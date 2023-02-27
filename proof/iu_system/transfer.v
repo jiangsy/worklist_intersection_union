@@ -126,46 +126,88 @@ Inductive inst_typ : subst_set -> a_typ -> dtyp -> Prop :=
       inst_typ θ (a_typ_union T1ᵃ T2ᵃ) (dtyp_union T1ᵈ T2ᵈ)
   . 
 
-
-
-(* 
-Reserved Notation "θ ⫦ t ⇝ t'"
-  (at level 65, t at next level, no associativity).
-Inductive inst_type : subst_set -> la_type -> ld_type -> Prop := 
-  | inst_t_tvar : forall θ x, 
-      wf_ss θ -> 
-      θ ⫦ (la_t_tvar_f x) ⇝ (ld_t_var_f x)
-  | inst_t_evar : forall θ x tᵈ, 
-      wf_ss θ -> 
-      x : tᵈ ∈ θ -> 
-      θ ⫦ (la_t_evar x) ⇝ tᵈ
-  | inst_t_int : forall θ, 
-      wf_ss θ -> 
-      θ ⫦ la_t_int ⇝ ld_t_int
-  | inst_t_arrow : forall θ Aᵃ Bᵃ Aᵈ Bᵈ, 
-      θ ⫦ Aᵃ ⇝ Aᵈ -> 
-      θ ⫦ Bᵃ ⇝ Bᵈ ->
-      θ ⫦ (la_t_arrow Aᵃ Bᵃ) ⇝ (ld_t_arrow Aᵈ Bᵈ)
-  | inst_t_intersection : forall θ Aᵃ Bᵃ Aᵈ Bᵈ,
-      θ ⫦ Aᵃ ⇝ Aᵈ -> 
-      θ ⫦ Bᵃ ⇝ Bᵈ ->
-      θ ⫦ (la_t_intersection Aᵃ Bᵃ) ⇝ (ld_t_intersection Aᵈ Bᵈ)
-  | inst_t_union : forall θ Aᵃ Bᵃ Aᵈ Bᵈ,
-      θ ⫦ Aᵃ ⇝ Aᵈ -> 
-      θ ⫦ Bᵃ ⇝ Bᵈ ->
-      θ ⫦ (la_t_union Aᵃ Bᵃ) ⇝ (ld_t_union Aᵈ Bᵈ)
-  | inst_t_forall : forall θ L A' A,
+Inductive inst_exp : subst_set -> a_exp -> dexp -> Prop :=
+  | inste_unit : forall θ,
+      inst_exp θ a_exp_unit dexp_unit
+  | inste_top : forall θ,
+      inst_exp θ a_exp_top dexp_top
+  | inste_abs : forall L θ eᵃ eᵈ,
       (forall x, x `notin` L -> 
-        θ ⫦ (open_la_type_wrt_la_type A' (la_t_tvar_f x)) ⇝ (open_ld_type_wrt_ld_type A (ld_t_var_f x))) ->
-      θ ⫦ (la_t_forall A') ⇝ (ld_t_forall A)
-where "θ ⫦ t ⇝ t'" := (inst_type θ t t').
+        inst_exp θ (open_a_exp_wrt_a_exp eᵃ (a_exp_var_f x))
+                   (open_dexp_wrt_dexp eᵈ (dexp_var_f x))
+        ) ->
+      inst_exp θ (a_exp_abs eᵃ) (dexp_abs eᵈ)
+  | inste_app : forall θ e1ᵃ e2ᵃ e1ᵈ e2ᵈ,
+      inst_exp θ e1ᵃ e1ᵈ ->
+      inst_exp θ e2ᵃ e2ᵈ ->
+      inst_exp θ (a_exp_app e1ᵃ e2ᵃ) (dexp_app e1ᵈ e2ᵈ)
+  | inste_tabs : forall L θ bᵃ bᵈ,
+      (forall X, X \notin L -> 
+        inst_body θ (open_a_body_wrt_a_typ bᵃ (a_typ_tvar_f X))
+                    (open_dbody_wrt_dtyp bᵈ (dtyp_var_f X))
+      ) ->
+      inst_exp θ (a_exp_tabs bᵃ) (dexp_tabs bᵈ)
+  | inste_tapp : forall θ eᵃ eᵈ Tᵃ Tᵈ,
+      inst_exp θ eᵃ eᵈ ->
+      inst_typ θ Tᵃ Tᵈ ->
+      inst_exp θ (a_exp_tapp eᵃ Tᵃ) (dexp_tapp eᵈ Tᵈ)
+  | inste_anno : forall θ eᵃ eᵈ Tᵃ Tᵈ, 
+      inst_exp θ eᵃ eᵈ ->
+      inst_typ θ Tᵃ Tᵈ ->
+      inst_exp θ (a_exp_anno eᵃ Tᵃ) (dexp_anno eᵈ Tᵈ) 
+with inst_body : subst_set -> a_body -> dbody -> Prop :=
+  | inst_bodyanno : forall θ eᵃ eᵈ Tᵃ Tᵈ,
+      inst_exp θ eᵃ eᵈ ->
+      inst_typ θ Tᵃ Tᵈ ->
+      inst_body θ (a_body_anno eᵃ Tᵃ) (dbody_anno eᵈ Tᵈ)
+.
 
-Lemma inst_t_wf_ss : forall θ t t',
-  θ ⫦ t ⇝ t' -> wf_ss θ.
-Proof.
-  induction 1; pick fresh x'; eauto.
-Qed. *)
+Inductive inst_cont : subst_set -> a_cont -> dcont -> Prop :=
+  | instc_done : forall θ,
+    wf_ss θ -> 
+    inst_cont θ a_cont_done dcont_done
+  | instc_app : forall θ eᵃ eᵈ cᵃ cᵈ,
+    inst_exp θ eᵃ eᵈ ->
+    inst_cont θ cᵃ cᵈ ->
+    inst_cont θ (a_cont_app eᵃ cᵃ) (dcont_app eᵈ cᵈ)
+  | instc_tapp : forall θ Tᵃ Tᵈ cᵃ cᵈ,
+    inst_typ θ Tᵃ Tᵈ ->
+    inst_cont θ cᵃ cᵈ ->
+    inst_cont θ (a_cont_tapp Tᵃ cᵃ) (dcont_tapp Tᵈ cᵈ)
+  | inst_sub : forall θ Tᵃ Tᵈ,
+    inst_typ θ Tᵃ Tᵈ ->
+    inst_cont θ (a_cont_sub Tᵃ) (dcont_sub Tᵈ)
+.
 
+
+Inductive inst_work : subst_set -> a_work -> dwork -> Prop :=
+  | instw_inf : forall Θ eᵃ eᵈ cᵃ cᵈ,
+      inst_exp Θ eᵃ eᵈ ->
+      inst_cont Θ cᵃ cᵈ ->
+      inst_work Θ (a_work_infer eᵃ cᵃ) (dwork_infer eᵈ cᵈ)
+  | instw_chk : forall Θ eᵃ eᵈ Tᵃ Tᵈ,
+      inst_exp Θ eᵃ eᵈ ->
+      inst_typ Θ Tᵃ Tᵈ ->
+      inst_work Θ (a_work_check eᵃ Tᵃ) (dwork_check eᵈ Tᵈ)
+  | instw_infapp : forall Θ Tᵃ Tᵈ eᵃ eᵈ cᵃ cᵈ,
+      inst_typ Θ Tᵃ Tᵈ ->
+      inst_exp Θ eᵃ eᵈ ->
+      inst_cont Θ cᵃ cᵈ ->
+      inst_work Θ (a_work_infapp Tᵃ eᵃ cᵃ) (dwork_infapp Tᵈ eᵈ cᵈ)
+  | instw_inftapp : forall Θ T1ᵃ T1ᵈ T2ᵃ T2ᵈ cᵃ cᵈ,
+      inst_typ Θ T1ᵃ T1ᵈ ->
+      inst_typ Θ T2ᵃ T2ᵈ ->
+      inst_cont Θ cᵃ cᵈ ->
+      inst_work Θ (a_work_inftapp T1ᵃ T2ᵃ cᵃ) (dwork_inftapp T1ᵈ T2ᵈ cᵈ)
+  | instw_sub : forall θ S1ᵃ S1ᵈ T1ᵃ T1ᵈ,
+      inst_typ θ S1ᵃ S1ᵈ ->
+      inst_typ θ T1ᵃ T1ᵈ ->
+      inst_work θ (a_work_sub S1ᵃ T1ᵃ) (dwork_sub S1ᵈ T1ᵈ)
+  | instw_apply : forall θ cᵃ cᵈ Tᵃ Tᵈ,
+      inst_cont θ cᵃ cᵈ ->
+      inst_typ θ Tᵃ Tᵈ ->
+      inst_work θ (a_work_apply cᵃ Tᵃ) (dwork_apply cᵈ Tᵈ)
+.
 
 Reserved Notation "θ ⫦ Γᵃ ⇝ Γᵈ ⫣ θ'"
   (at level 65, Γᵃ at next level, Γᵈ at next level, no associativity).
@@ -187,8 +229,6 @@ Inductive inst_worklist : subst_set -> la_worklist -> ld_worklist -> subst_set -
       θ ⫦ ubᵃ ⇝ ubᵈ ->
       θ ⫦ (la_wl_cons_ev Γᵃ lbᵃ ex ubᵃ) ⇝ (ld_wl_cons_w Γᵈ (ld_w_sub lbᵈ ubᵈ)) ⫣ (θ' ; ex : lbᵈ)
 where "θ ⫦ Γᵃ ⇝ Γᵈ ⫣ θ'" := (inst_worklist θ Γᵃ Γᵈ θ').
-
-Inductive inst_cont : subst_set -> a_cont -> d_cont -> Prop.
 
 
 Hint Constructors inst_type : transfer.

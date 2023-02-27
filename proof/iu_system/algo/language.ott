@@ -28,7 +28,7 @@ a_exp, e, f, g :: a_exp_ ::=
   | x                                   ::   :: var
   | \ x . e                             ::   :: abs  (+ bind x in e +)
   | e1 e2                               ::   :: app
-  | \ X . a_body                         ::   :: tabs (+ bind X in a_body +) 
+  | \ X . a_body                        ::   :: tabs (+ bind X in a_body +) 
   | e @ T                               ::   :: tapp
   | e : T                               ::   :: anno
   | ( e )                               :: S :: paren  {{ coq ([[e]]) }}
