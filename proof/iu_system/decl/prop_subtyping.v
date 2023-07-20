@@ -23,9 +23,13 @@ Proof.
 Qed.
 
 
-Lemma dsub_union_inversion : forall E S1 S2 T, 
-  E ⊢ dtyp_union S1 S2 <: T -> 
-  E ⊢ S1 <: T /\ E ⊢ S2 <: T.
+(* forall a. forall b. b -> a <: forall a. a -> int *)
+(* is a counter example *)
+
+
+Lemma dsub_union_inversion : forall E S1 S2 T1, 
+  E ⊢ dtyp_union S1 S2 <: T1 -> 
+  E ⊢ S1 <: T1 /\ E ⊢ S2 <: T1.
 Proof with auto with sub.
   intros.
   dependent induction H; auto...
@@ -47,14 +51,18 @@ Qed.
 Proof with auto with sub.
   intros.
   dependent induction H; auto...
-  - inversion H. auto.
-  - inversion H0.
-  - specialize (IHdsub _ _ (eq_refl _)).
+  - inversion H. split; econstructor; auto.
+  - specialize (IHd_sub _ _ (eq_refl _)).
+    inversion IHd_sub. 
+    split; eapply dsub_open_mono_inversion; eauto.
+  - specialize (IHd_sub _ _ (eq_refl _)).
     intuition.
-  - specialize (IHdsub _ _ (eq_refl _)).
+  - specialize (IHd_sub _ _ (eq_refl _)).
     intuition.
-  - specialize (IHdsub1 _ _ (eq_refl _)).
-    specialize (IHdsub2 _ _ (eq_refl _)).
+  - specialize (IHd_sub1 _ _ (eq_refl _)).
+    specialize (IHd_sub2 _ _ (eq_refl _)).
+    inversion IHd_sub1.    
+    destruct IHd_sub2.
     intuition.
 Qed. *)
 
@@ -105,6 +113,87 @@ Hint Resolve dwf_typ_lc_dtyp : subtyping.
 Hint Resolve dsub_refl : subtyping.
 Hint Resolve d_wft_typ_subst : subtyping.
 
+(* forall x.  *)
+
+(* Inductive d_sub_tvar_ind : typvar -> dtyp -> Prop := 
+| d_subtvarind_refl : forall X, d_sub_tvar_ind X (dtyp_var_f X)
+| d_subtvarind_bot : forall X, d_sub_tvar_ind X dtyp_bot
+| d_subtvarind_union : forall X T1 T2, 
+    d_sub_tvar_ind X T1 -> 
+    d_sub_tvar_ind X T1 -> 
+    d_sub_tvar_ind X (dtyp_union T1 T2)
+| d_subtvarind_intersection1 : forall X T1 T2, 
+    d_sub_tvar_ind X T1 -> 
+    d_sub_tvar_ind X (dtyp_intersection T1 T2)
+| d_subtvarind_intersection2 : forall X T1 T2, 
+    d_sub_tvar_ind X T2 -> 
+    d_sub_tvar_ind X (dtyp_intersection T1 T2)
+| d_subvarind_all : forall X T1,
+    d_sub_tvar_ind X T1 ->
+    ds_in X T1 ->
+    d_sub_tvar_ind X (dtyp_all (close_dtyp_wrt_dtyp X T1)). *)
+
+(* Inductive d_sub_tvar_ind : typvar -> dtyp -> Prop := 
+| d_subtvarind_refl : forall X, d_sub_tvar_ind X (dtyp_var_f X)
+| d_subtvarind_bot : forall X, d_sub_tvar_ind X dtyp_bot
+| d_subtvarind_union : forall X T1 T2, 
+    d_sub_tvar_ind X T1 -> 
+    d_sub_tvar_ind X T1 -> 
+    d_sub_tvar_ind X (dtyp_union T1 T2)
+| d_subtvarind_intersection1 : forall X T1 T2, 
+    d_sub_tvar_ind X T1 -> 
+    d_sub_tvar_ind X (dtyp_intersection T1 T2)
+| d_subtvarind_intersection2 : forall X T1 T2, 
+    d_sub_tvar_ind X T2 -> 
+    d_sub_tvar_ind X (dtyp_intersection T1 T2)
+| d_subvarind_all : forall X T1,
+    d_sub_tvar_ind X (open_dtyp_wrt_dtyp T1 (dtyp_var_f X)) ->
+    d_sub_tvar_ind X (dtyp_all T1). *)
+
+
+Inductive d_sub_tvar_ind : typvar -> dtyp -> Prop := 
+| d_subtvarind_refl : forall X, d_sub_tvar_ind X (dtyp_var_f X)
+| d_subtvarind_bot : forall X, d_sub_tvar_ind X dtyp_bot
+| d_subtvarind_union : forall X T1 T2, 
+    d_sub_tvar_ind X T1 -> 
+    d_sub_tvar_ind X T1 -> 
+    d_sub_tvar_ind X (dtyp_union T1 T2)
+| d_subtvarind_intersection1 : forall X T1 T2, 
+    d_sub_tvar_ind X T1 -> 
+    d_sub_tvar_ind X (dtyp_intersection T1 T2)
+| d_subtvarind_intersection2 : forall X T1 T2, 
+    d_sub_tvar_ind X T2 -> 
+    d_sub_tvar_ind X (dtyp_intersection T1 T2).
+
+Lemma dsin_no_L : forall L T1, 
+  (forall X : atom, X `notin` L ->  ds_in X (T1 ^ᵈ X)) <-> (forall X, ds_in X (T1 ^ᵈ X)).
+Proof.
+  intros. split; intros.
+  - inst_cofinites_by (L `union` ftv_in_dtyp T1).
+    admit.
+  - specialize (H X). apply H.
+Admitted.
+
+(* Lemma d_sub_all_tvar_inv : forall E T1 X,
+E ⊢ (dtyp_all T1) <: dtyp_var_f X -> (forall S1, E ⊢ T1 ^^ᵈ S1 <: `ᵈ X ->  d_sub_tvar_ind X (T1 ^^ᵈ S1)).
+Proof.
+intros. dependent induction H.
+    *)
+
+(* Lemma d_sub_all_tvar_inv : forall E T1 X L,
+  E ⊢ (dtyp_all T1) <: dtyp_var_f X -> (forall X, X `notin` L -> d_sub_tvar_ind X (T1 ^ᵈ X)).
+Proof.
+  intros. inversion H.
+Admitted. *)
+
+Lemma d_sub_all_tvar_inv : forall E S1 T1 X ,
+  E ⊢ (S1 ^^ᵈ T1) <: dtyp_var_f X -> dmono_typ T1 -> ds_in X (S1 ^ᵈ X) -> d_sub_tvar_ind X (S1 ^ᵈ X).
+Proof.
+  intros. dependent induction H.
+  - inversion H. 
+Admitted. 
+
+
 
 Theorem  d_sub_subst_mono : forall E X F S1 T1 T2,
   F ++ (X ~ dbind_tvar_empty) ++ E ⊢ S1 <: T1 ->
@@ -124,6 +213,71 @@ Proof with eauto with subtyping.
       replace (SX ~ dbind_stvar_empty ++ map (d_subst_tv_in_binding T2 X) F ++ E) with 
       (map (d_subst_tv_in_binding T2 X) (SX ~ dbind_stvar_empty ++ F) ++ E) by auto.
       eapply H2; auto...
+  - destruct T1 eqn:HeqT. 
+    + eapply d_sub_alll with (L:=L `union` singleton X) (T2:={T2 /ᵈ X} T0); auto...
+      * intros. inst_cofinites_with X0. rewrite dtyp_subst_open_comm; auto...
+        apply ftv_sin_dtyp_subst_inv; auto...
+      * apply d_mono_typ_subst_mono_mono; auto.
+      * rewrite <- d_subst_tv_in_dtyp_open_dtyp_wrt_dtyp; eauto...
+    + eapply d_sub_alll with (L:=L `union` singleton X) (T2:={T2 /ᵈ X} T0); auto...
+      * intros. inst_cofinites_with X0. rewrite dtyp_subst_open_comm; auto...
+        apply ftv_sin_dtyp_subst_inv; auto...
+      * apply d_mono_typ_subst_mono_mono; auto.
+      * rewrite <- d_subst_tv_in_dtyp_open_dtyp_wrt_dtyp; eauto...
+    + eapply d_sub_alll with (L:=L `union` singleton X) (T2:={T2 /ᵈ X} T0); auto...
+      * intros. inst_cofinites_with X0. rewrite dtyp_subst_open_comm; auto...
+        apply ftv_sin_dtyp_subst_inv; auto...
+      * apply d_mono_typ_subst_mono_mono; auto.
+      * rewrite <- d_subst_tv_in_dtyp_open_dtyp_wrt_dtyp; eauto...
+    + apply dsub_dwft in H5 as Hwft. destruct Hwft as [HwftS HwftT]. inversion HwftT.
+    + simpl. unfold eq_dec. destruct EqDec_eq_of_X. simpl.
+      * apply d_sub_all_tvar_inv in H5; auto.
+        --
+      * eapply d_sub_alll with (L:=L `union` singleton X) (T2:={T2 /ᵈ X} T0); auto...
+        -- intros. inst_cofinites_with X0. rewrite dtyp_subst_open_comm; auto...
+           apply ftv_sin_dtyp_subst_inv; auto...
+        -- apply d_mono_typ_subst_mono_mono; auto.
+        -- rewrite <- d_subst_tv_in_dtyp_open_dtyp_wrt_dtyp. eauto...  
+           replace (`ᵈ X0) with ({T2 /ᵈ X} `ᵈ X0); auto. simpl. admit. auto...
+    + eapply d_sub_alll with (L:=L `union` singleton X) (T2:={T2 /ᵈ X} T0); auto...
+      * intros. inst_cofinites_with X0. rewrite dtyp_subst_open_comm; auto...
+        apply ftv_sin_dtyp_subst_inv; auto...
+      * apply d_mono_typ_subst_mono_mono; auto.
+      * rewrite <- d_subst_tv_in_dtyp_open_dtyp_wrt_dtyp; eauto...  
+    + apply dsub_dwft in H5 as Hwft. destruct Hwft as [HwftS HwftT]. inversion HwftT.
+      eapply d_sub_alll with (L:=L `union` singleton X) (T2:={T2 /ᵈ X} T0); auto...
+      * simpl. constructor; eapply dwf_typ_dlc_type; eauto; eapply wft_all_open_wfdtyp_wft; eauto...
+        admit. admit.
+      * admit.
+      * admit.
+      * intros. inst_cofinites_with X0. rewrite dtyp_subst_open_comm; auto...
+        apply ftv_sin_dtyp_subst_inv; auto...
+      * apply d_mono_typ_subst_mono_mono; auto.
+      * rewrite <- d_subst_tv_in_dtyp_open_dtyp_wrt_dtyp; eauto...  
+    + inversion H. 
+    + inversion H1.
+    + inversion H0.
+Admitted.
+
+
+(* Theorem  d_sub_subst : forall E SX F S1 T1 T2,
+  F ++ (SX ~ dbind_stvar_empty) ++ E ⊢ S1 <: T1 ->
+  E ⊢ T2 -> 
+  map (d_subst_tv_in_binding T2 SX) F ++ E ⊢ {T2 /ᵈ SX} S1 <: {T2 /ᵈ SX} T1.
+Proof with eauto with subtyping.
+  intros. dependent induction H; try solve [simpl in *; eauto with subtyping].
+  - simpl. constructor. apply d_wft_typ_subst.
+  - eapply dsub_refl. auto...
+  - eapply dsub_refl. auto...
+  - simpl. eapply d_sub_all with (L:=L); intros SX Hfr; inst_cofinites_with SX.
+    + rewrite dtyp_subst_open_comm; auto...
+      apply fstv_sin_dtyp_subst_tv; auto...
+    + rewrite dtyp_subst_open_comm; auto...
+      apply fstv_sin_dtyp_subst_tv; auto...
+    + inst_cofinites_with SX. repeat rewrite dtyp_subst_open_comm; eauto...
+      replace (SX ~ dbind_stvar_empty ++ map (d_subst_tv_in_binding T2 X) F ++ E) with 
+      (map (d_subst_tv_in_binding T2 X) (SX ~ dbind_stvar_empty ++ F) ++ E) by auto.
+      eapply H2; auto...
   - simpl. eapply d_sub_alll with (L:=L `union` singleton X) (T2:={T2 /ᵈ X} T0); eauto...
     + eapply d_neq_all_subst_neq_all; eauto...
       eapply dwf_typ_dlc_type. eapply dsub_dwft. eauto.
@@ -131,7 +285,7 @@ Proof with eauto with subtyping.
       apply ftv_sin_dtyp_subst_inv; auto...
     + apply d_mono_typ_subst_mono_mono; auto.
     + rewrite <- d_subst_tv_in_dtyp_open_dtyp_wrt_dtyp; eauto...
-Qed.
+Qed. *)
 
 Fixpoint d_typ_order (T : dtyp) : nat :=
     match T with 
@@ -648,19 +802,19 @@ Qed.
 
  *)
 
-Lemma transitivity' : forall n_dtyp_order n_dsub_size E R S T n1 n2 ,
-  dtyp_order S < n_dtyp_order ->
+Lemma sub_transitivity' : forall n_dtyp_order n_dsub_size E R1 S1 T1 n1 n2 ,
+  dtyp_order S1 < n_dtyp_order ->
   n1 + n2 < n_dsub_size -> 
-  dsub_sized E R S n1 -> dsub_sized E S T n2 -> E ⊢ R <: T.
+  dsub_sized E R1 S1 n1 -> dsub_sized E S1 T1 n2 -> E ⊢ R1 <: T1.
 Proof.
 Admitted.
 
 
-Theorem transitivity : forall E R S T,
-   E ⊢ R <: S -> E ⊢ S <: T -> E ⊢ R <: T.
+Theorem sub_transitivity : forall E R1 S1 T1,
+   E ⊢ R1 <: S1 -> E ⊢ S1 <: T1 -> E ⊢ R1 <: T1.
 Proof.
-  intros E R S T Hrs Hst.
+  intros E R1 S1 T1 Hrs Hst.
   apply dsub_sized_wrt_dub_complete in Hrs. destruct Hrs as [n1].
   apply dsub_sized_wrt_dub_complete in Hst. destruct Hst as [n2].
-  eapply transitivity'; eauto.
+  eapply sub_transitivity'; eauto.
 Qed.

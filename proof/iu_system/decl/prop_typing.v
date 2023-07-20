@@ -579,6 +579,45 @@ Proof.
     + erewrite <- d_subenv_same_dom; auto.
 Qed.
 
+Lemma denvsub_sub: forall E S1 T1, 
+  E ⊢ S1 <: T1 -> forall E', d_subenv E' E -> E' ⊢ S1 <: T1.
+Proof.
+  intros E S1 T1 Hsub.
+  induction Hsub.
+  - econstructor. eapply d_subenv_wf_typ; eauto.
+  - econstructor. eapply d_subenv_wf_typ; eauto.
+  - econstructor.
+  - econstructor. eapply d_subenv_wf_typ; eauto.
+  - econstructor. eapply d_subenv_wf_typ; eauto.
+  - econstructor; auto.
+  - intros. econstructor; auto.
+    intros. inst_cofinites_with SX. 
+    specialize (H2 (SX ~ dbind_stvar_empty ++ E')).
+    assert (d_subenv (SX ~ dbind_stvar_empty ++ E') (SX ~ dbind_stvar_empty ++ E)). {
+      constructor. auto. }
+    specialize (H2 H5).
+    auto.
+  - intros. eapply d_sub_alll with (T2:=T2); auto.
+    eapply d_subenv_wf_typ; eauto.
+  - intros. 
+    apply d_sub_intersection1; auto.
+  - intros.
+    apply d_sub_intersection2; auto.
+    eapply d_subenv_wf_typ; eauto.
+  - intros.
+    apply d_sub_intersection3; auto.
+    eapply d_subenv_wf_typ; eauto.
+  - intros.
+    apply d_sub_union1; auto.
+    eapply d_subenv_wf_typ; eauto.
+  - intros.
+    apply d_sub_union2; auto.
+    eapply d_subenv_wf_typ; eauto.
+  - intros.
+    apply d_sub_union3; auto.
+Qed.
+
+
 Hint Resolve d_subenv_wf_typ : typing.
 Hint Resolve d_subenv_wf_env : typing.
 Hint Resolve d_wft_typ_subst : typing.
@@ -587,7 +626,7 @@ Hint Resolve bind_typ_subst : typing.
 Hint Resolve dwf_typ_dlc_type : typing.
 
 
-Theorem chkinffinapp_subst: forall E F X e m T1 T2,
+(* Theorem chkinffinapp_subst: forall E F X e m T1 T2,
   d_typing (F ++ X ~ dbind_tvar_empty ++ E) e m T1 ->
   E ⊢ T2 ->
   dmono_typ T2 ->
@@ -638,46 +677,348 @@ Proof with auto with typing.
     + replace (dtyp_all ({T0 /ᵈ X} T1)) with ({T0 /ᵈ X} dtyp_all T1) by auto.
       auto...
     + rewrite <- d_subst_tv_in_dtyp_open_dtyp_wrt_dtyp; eauto...
-Qed.
-
-
-Fixpoint dexp_size (e : dexp) : nat :=
-  0.
-
-Fixpoint dtyp_size (T : dtyp) : nat :=
-  0.
+Qed. *)
 
 Definition dmode_size (mode : d_typing_mode) : nat := 
   match mode with 
-  | d_typingmode_inf => 2
-  | d_typingmode_chk => 1
-  | d_typingmode_infapp _ => 0
-  end.
-
-Definition dmode_type_size (mode : d_typing_mode) : nat := 
-  match mode with 
   | d_typingmode_inf => 0
-  | d_typingmode_chk => 0
-  | d_typingmode_infapp T =>  dtyp_size T
+  | d_typingmode_chk => 1
   end.
 
 
-Theorem dchk_dinf_dinfapp_subsumption : forall n1 n2 n3 E E' e T mode,
+Fixpoint dexp_size (e:dexp) : nat :=
+  match e with 
+  | dexp_unit => 1
+  | dexp_top => 1
+  | dexp_var_f _ => 1
+  | dexp_var_b _ => 1
+  | dexp_abs e1 => 1 + dexp_size e1
+  | dexp_app e1 e2 => dexp_size e1 + dexp_size e2 
+  | dexp_anno e1 _ => 1 + dexp_size e1
+  | dexp_tapp e1 _ => 1 + dexp_size e1
+  | dexp_tabs (dbody_anno e1 T) => 1 + dexp_size e1
+  end.
+
+
+Fixpoint dtyp_size (T:dtyp) : nat :=
+  match T with 
+  | dtyp_intersection T1 T2 => dtyp_size T1 + dtyp_size T2 + 1
+  | dtyp_union T1 T2 => dtyp_size T1 + dtyp_size T2 + 1
+  | _ => 0
+  end.
+  
+
+Inductive ord_i : dtyp -> Prop :=
+| ord_i_var : forall X, ord_i (dtyp_var_f X)
+| ord_i_svar : forall SX, ord_i (dtyp_svar SX)
+| ord_i_top : ord_i dtyp_top
+| ord_i_bot : ord_i dtyp_bot
+| ord_i_unit : ord_i dtyp_unit
+| ord_i_arr : forall T1 T2, ord_i (dtyp_arrow T1 T2)
+| ord_i_union : forall T1 T2, 
+    ord_i T1 -> ord_i T2 -> ord_i (dtyp_union T1 T2)
+| ord_i_all : forall T1, ord_i (dtyp_all T1)
+.
+
+Inductive split_i : dtyp -> dtyp -> dtyp -> Prop :=
+| spliti_i : forall T1 T2, split_i (dtyp_intersection T1 T2) T1 T2
+| spliti_ul : forall T1 T2 T3 T4,
+    split_i T1 T3 T4 -> split_i (dtyp_union T1 T2) (dtyp_union T3 T2) (dtyp_union T4 T2)
+| spliti_ur : forall T1 T2 T3 T4,
+    split_i T2 T3 T4 -> split_i (dtyp_union T1 T2) (dtyp_union T1 T3) (dtyp_union T1 T4).
+
+Definition splittable_i (T1: dtyp) := exists T2 T3, split_i T1 T2 T3.
+
+Inductive ordi_wf2 : dtyp -> Prop :=
+| ordiwf_ordi : forall T, ord_i T -> ordi_wf2 T
+| ordiwf_intersection : forall T1 T2, ordi_wf2 T1 -> ordi_wf2 T2 -> ordi_wf2 (dtyp_intersection T1 T2)
+| ordiwf_union : forall T1 T2, ordi_wf2 T1 -> ordi_wf2 T2 -> splittable_i (dtyp_union T1 T2) -> ordi_wf2 (dtyp_union T1 T2)
+.
+
+
+Inductive ordi_wf : dtyp -> Prop :=
+| ordiwf2_ordi : forall T, ord_i T -> ordi_wf T
+| ordiwf2_intersection : forall T1 T2, ordi_wf T1 -> ordi_wf T2 -> ordi_wf (dtyp_intersection T1 T2)
+| ordiwf2_unionl : forall T1 T2 T3 T4, split_i T1 T3 T4 -> ordi_wf (dtyp_union T3 T2) -> ordi_wf (dtyp_union T4 T2) -> 
+    ordi_wf (dtyp_union T1 T2)
+| ordiwf2_unionr : forall T1 T2 T3 T4, split_i T2 T3 T4 -> ordi_wf (dtyp_union T1 T4) -> ordi_wf (dtyp_union T1 T3) -> 
+    ordi_wf (dtyp_union T1 T2)
+.
+
+Hint Constructors ord_i : ordi.
+Hint Constructors ordi_wf : ordi.
+
+Lemma ordi_dec : forall E T, E ⊢ T -> ord_i T \/ ~ ord_i T.
+Proof with auto with ordi.
+  intros. induction H; intuition...
+  - right. intros. inversion H3; auto.
+  - right. intros. inversion H3; auto.
+  - right. intros. inversion H3; auto.
+  - right. intros. inversion H3.
+  - right. intros. inversion H3.
+  - right. intros. inversion H3.
+  - right. intros. inversion H3.
+Qed.
+
+Lemma d_wft_ordi_wft : forall E T, E ⊢ T -> ordi_wf T.
+Proof with auto with ordi.
+  intros. induction H; auto...
+  apply ordi_dec in H.
+  apply ordi_dec in H0.
+  inversion H. inversion H0.
+  - auto...
+  -
+Admitted.
+  
+
+
+(* Inductive ordi_wf : dtyp -> Prop :=
+| ordiwf2_ordi : forall T, ord_i T -> ordi_wf T
+| ordiwf2_intersection : forall T1 T2, ordi_wf T1 -> ordi_wf T2 -> ordi_wf (dtyp_intersection T1 T2)
+| ordiwf2_union : forall T1 T2 T3, ordi_wf (dtyp_union T1 T3) -> ordi_wf (dtyp_union T2 T3) -> 
+    ord_i T3 ->
+    ordi_wf (dtyp_union (dtyp_intersection T1 T2) T3)
+. *)
+
+(* spl A B C
+| spl A1 & A2 A1 A2
+| spl A1 B C -> spl (A1 | A2)  (B | A2) (C | A2)
+| ord A1 -> spl A2 B C -> spl (A1 | A2)  (A1 | B) (A1 | C)
+
+splitabl ex *)
+(* 
+WF 
+ORD A -> WF A 
+WF A1 -> WF A2 -> SPL(A1|A2) -> WF (A1 | A2)
+WF A1 -> WF A2 -> WF (A1&A2) *)
+
+(* (A /\ B) <: (C \/ D) *)
+ (* A = A1 & A2
+ B & C <:A -> B &C<:A1 /\ B&C <: A2  *)
+
+
+
+Lemma d_sub_ord_inv : forall E T1 T2 T3, 
+  ord_i T3 -> 
+  E ⊢ (dtyp_intersection T1 T2) <: T3 ->
+  E ⊢ T1 <: T3 \/ E ⊢ T2 <: T3.
+Proof.
+  intros. dependent induction H0.
+  - left. inversion H0.
+    eauto.
+  - inversion H.
+  - auto.
+  - auto.
+  - dependent destruction H.
+    specialize (IHd_sub _ _ H (eq_refl _)).
+    inversion IHd_sub.
+    + left. auto.
+    + right. auto.
+  - dependent destruction H.
+    specialize (IHd_sub _ _ H2 (eq_refl _)).
+    inversion IHd_sub.
+    + left. auto.
+    + right. auto.
+Qed.
+
+
+Inductive ord_i2 : dtyp -> Prop :=
+| ord_i2_var : forall X, ord_i2 (dtyp_var_f X)
+| ord_i2_svar : forall SX, ord_i2 (dtyp_svar SX)
+| ord_i2_top : ord_i2 dtyp_top
+| ord_i2_bot : ord_i2 dtyp_bot
+| ord_i2_unit : ord_i2 dtyp_unit
+| ord_i2_arr : forall T1 T2, ord_i2 (dtyp_arrow T1 T2)
+| ord_i2_union : forall T1 T2, ord_i2 (dtyp_union T1 T2)
+| ord_i2_all : forall T1, ord_i2 (dtyp_all T1)
+.
+
+Lemma d_sub_ord2_inv : forall E T1 T2 T3, 
+  ord_i2 T3 -> 
+  E ⊢ (dtyp_intersection T1 T2) <: T3 ->
+  E ⊢ T1 <: T3 \/ E ⊢ T2 <: T3.
+Proof.
+  intros. dependent induction H0.
+  - left. inversion H0.
+    eauto.
+  - inversion H.
+  - auto.
+  - auto.
+  - dependent destruction H.
+    inversion IHd_sub.
+    + left. auto.
+    + right. auto.
+  - dependent destruction H.
+    specialize (IHd_sub _ _ H2 (eq_refl _)).
+    inversion IHd_sub.
+    + left. auto.
+    + right. auto.
+Qed.
+
+
+
+Lemma d_check_inf_sub : forall E e T1 T2,
+  d_typing E e d_typingmode_inf T1 ->
+  d_typing E e d_typingmode_chk T2 ->
+  E ⊢ T1 <: T2.
+Proof.
+  intros. generalize dependent H0.
+  dependent induction H; intros.
+Admitted.
+
+
+(* e => (int | bool)
+e <= string
+e <= (int & string) | bool *)
+
+(* (int | bool  *)
+
+
+Lemma d_check_split_i : forall E e T1 T2 T3, 
+  split_i T1 T2 T3 ->
+  d_typing E e d_typingmode_chk T2 ->
+  d_typing E e d_typingmode_chk T3 ->
+  d_typing E e d_typingmode_chk T1.
+Proof.
+  intros E e T1 T2 T3 Hsplit. induction Hsplit; intros Hchk2 Hchk3.
+  - eauto.
+  (* add more constraint in chk sub *)
+  - dependent destruction Hchk2.
+    + dependent destruction Hchk3.
+      * admit.
+      * admit.
+      * eapply d_typing_chkunion2; auto. admit.
+    + dependent destruction Hchk3.
+      * admit.
+      * eapply d_typing_chkunion1; auto.
+      * eapply d_typing_chkunion2; auto. admit.
+    + eapply d_typing_chkunion2; auto. admit.
+  - admit.
+Admitted.
+
+
+Theorem d_infabs : forall E T1 T2 T3 S1, d_infabs E T1 T2 T3 -> E ⊢ S1 <:T1 ->
+  exists S2, d_inftapp E S1 T2 S2.
+Proof.
+Admitted.
+
+
+Theorem d_inftapp : forall E T1 T2 T3 S1, d_inftapp E T1 T2 T3 -> E ⊢ S1 <:T1 ->
+  exists S2, d_inftapp E S1 T2 S2.
+Proof.
+Admitted.
+
+Theorem dchk_dinf_subsumption : forall n1 n2 n3 E E' e T1 mode,
   dexp_size e < n1 ->
-  dmode_size mode < n2 -> 
-  dtyp_size T + dmode_type_size mode < n3 ->
-  d_typing E e mode T ->
+  dmode_size mode < n2 ->
+  dtyp_size T1 < n3 -> 
+  d_typing E e mode T1 ->
   d_subenv E' E ->
     match mode with 
-    | d_typingmode_chk => forall S, E ⊢ T <: S -> d_typing E' e d_typingmode_chk S
-    | d_typingmode_inf => exists S, E ⊢ S <: T /\ d_typing E' e d_typingmode_inf S
-    | d_typingmode_infapp T1 => forall S1, E ⊢ S1 <: T1 -> exists S2, E ⊢ S2 <: T /\ d_typing E' e (d_typingmode_infapp S1) S2
+    | d_typingmode_chk => forall S1, E ⊢ T1 <: S1 -> d_typing E' e d_typingmode_chk S1
+    | d_typingmode_inf => exists S1, E ⊢ S1 <: T1 /\ d_typing E' e d_typingmode_inf S1
     end.
 Proof.
-  intro n1; induction n1; intro n2; induction n2; intro n3; induction n3. intros.
-  - admit.
-  - admit.
-  - admit.
+  intro n1; induction n1; intro n2; induction n2; intros n3; induction n3; intros.
+  - inversion H.
+  - inversion H.
+  - inversion H. 
+  - inversion H.
+  - inversion H0.
+  - inversion H0.
+  - inversion H1.
+  - destruct mode.
+    (* e => A *)
+    + dependent destruction H2.
+      * admit. (* trivial *)
+      (* e : A => A *)
+      * exists T1. split; auto. apply dsub_refl; auto.
+        econstructor. eapply d_subenv_wf_typ; eauto.
+        simpl in H.
+        assert (dexp_size e < n1) by lia.
+        assert (dmode_size d_typingmode_chk < S (dmode_size d_typingmode_chk)) by lia.
+        assert (dtyp_size T1  < S (dtyp_size T1)) by lia.
+        specialize (IHn1 _ _ _ _ _ _ _ H5 H6 H7 H3 H4).
+        simpl in IHn1.
+        assert (E ⊢ T1 <: T1) by (eapply dsub_refl; eauto).
+        specialize (IHn1 _ H8).
+        auto.
+      (* () => 1 *)
+      * exists dtyp_unit. split; auto.
+        econstructor. eapply d_subenv_wf_env; eauto.
+      (* e1 e2 => A *)
+      * admit.
+      (* /\ a. e : A => forall a. A *)
+      * admit.
+      * admit.
+    (* e <= *)
+    + dependent destruction H2.
+      (* \x. e <= Top *)
+      * intros. 
+        dependent induction H4.
+        -- admit.
+        -- specialize (IHd_sub1 H2 H3 (eq_refl _)).
+           specialize (IHd_sub2 H2 H3 (eq_refl _)).
+           eapply d_typing_chkintersection; auto.
+        -- specialize (IHd_sub H2 H3 (eq_refl _)).
+           eapply d_typing_chkunion1; auto.
+           eapply d_subenv_wf_typ; eauto.
+        -- specialize (IHd_sub H2 H3 (eq_refl _)).
+           eapply d_typing_chkunion2; auto.
+           eapply d_subenv_wf_typ; eauto.
+      (* \x. e <= T1 -> T2 *)
+      * intros. admit.
+      (* e <= forall a. A *) (* ignore for now *)
+      * intros. admit.
+      * intros.
+        simpl in H0. assert (dmode_size d_typingmode_inf < n2) by (simpl; lia).
+        assert (dtyp_size S1 < S (dtyp_size S1)) by lia.
+        specialize (IHn2 _ _ _ _ _ _ H H6 H7 H2 H4).
+        simpl in IHn2.
+        destruct IHn2 as [S2 [Hsub Hinf]].
+        apply d_typing_chksub with (S1 := S2); auto.
+        apply sub_transitivity with (S1 := T1); auto.
+        eapply denvsub_sub; eauto. apply sub_transitivity with (S1 := S1); auto.
+        eapply denvsub_sub; eauto.
+      * intros. assert (ordi_wf S0). admit.
+        induction H4.
+        -- simpl in H1.
+           specialize (d_sub_ord_inv _ _ _ _ H4 H2). intros Hsub_or.
+           inversion Hsub_or.
+           ++ assert (dtyp_size S1 < n3) by lia.
+              specialize (IHn3 _ _ _ _ _ H H0 H6 H2_ H3) as IHn3S.
+              simpl in IHn3S. auto.
+           ++ assert (dtyp_size T1 < n3) by lia.
+              specialize (IHn3 _ _ _ _ _ H H0 H6 H2_0 H3) as IHn3T.
+              simpl in IHn3T. auto.
+        -- specialize (dsub_intersection_inversion _ _ _ _ H2).
+           intros. intuition.
+        -- assert (E ⊢ dtyp_intersection S1 T1 <: dtyp_union T3 T2) as Hsub1 by admit .
+           assert (E ⊢ dtyp_intersection S1 T1 <: dtyp_union T4 T2) as Hsub2 by admit.
+           specialize (IHordi_wf_1 Hsub1).
+           specialize (IHordi_wf_2 Hsub2).
+           eapply d_check_split_i with (T2:=dtyp_union T3 T2) (T3:=dtyp_union T4 T2); eauto.
+           econstructor; eauto.
+        -- assert (E ⊢ dtyp_intersection S1 T1 <: dtyp_union T0 T4) as Hsub1 by admit .
+           assert (E ⊢ dtyp_intersection S1 T1 <: dtyp_union T0 T3) as Hsub2 by admit.
+            specialize (IHordi_wf_1 Hsub1).
+            specialize (IHordi_wf_2 Hsub2).
+            eapply d_check_split_i with (T2:=dtyp_union T0 T3) (T3:=dtyp_union T0 T4); eauto.
+            econstructor; eauto.
+      * intros.
+        simpl in H1.
+        assert (dtyp_size S1 < n3) by lia.
+        specialize (IHn3 _ _ _ _ _ H H0 H6 H2 H4).
+        simpl in IHn3.
+        specialize (dsub_union_inversion _ _ _ _ H5). intros. inversion H7.
+        apply IHn3. auto.
+      * intros.
+        simpl in H1.
+        assert (dtyp_size T1 < n3) by lia.
+        specialize (IHn3 _ _ _ _ _ H H0 H6 H2 H4).
+        simpl in IHn3.
+        specialize (dsub_union_inversion _ _ _ _ H5). intros. inversion H7.
+        apply IHn3. auto.
 Admitted.
 
 (* Theorem dchk_subsumption : forall e n,

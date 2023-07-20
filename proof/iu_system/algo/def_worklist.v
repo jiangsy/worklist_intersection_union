@@ -356,3 +356,16 @@ Inductive a_wl_red' : a_worklist -> Prop :=    (* defn a_wl_red' *)
   | a_wlred_infappunion' : forall (W:a_worklist) (T1 T2:a_typ) (e:a_exp) (c:a_cont),
       a_wl_red' (a_wl_consw (a_wl_consw W (a_work_infapp T1 e c)) (a_work_infapp T2 e c)) ->
       a_wl_red' (a_wl_consw W (a_work_infapp (a_typ_union T1 T2) e c)).
+  (* | a_wlred_chkabsevar' : forall (L:vars) (W:a_worklist) (e:a_exp) (EX EX1 EX2:etypvar) (W2 W3:a_worklist) (E:a_env),
+      EX1 \notin dom (a_wl_to_env W) ->
+      EX2 \notin ( dom (a_wl_to_env W) `union` singleton EX1) ->
+      (a_add_to_bound_and_reorder  (a_wl_consetvar (a_wl_consetvar W EX1 (a_bind_bound a_typ_bot a_typ_top)) EX2 (a_bind_bound a_typ_bot a_typ_top))   E   EX   (a_typ_arrow (a_typ_etvar EX1) (a_typ_etvar EX2))  a_modeab_both  W2   W3 )  ->
+      ( forall x , x \notin  L  -> a_wl_red' (a_wl_consw (a_wl_consvar  (  ( a_wl_app  W3   W2  )  )  x (a_bind_typ (a_typ_etvar EX1))) (a_work_check  ( open_a_exp_wrt_a_exp e (a_exp_var_f x) )  (a_typ_etvar EX2))) )  ->
+      a_wl_red' (a_wl_consw W (a_work_check (a_exp_abs e) (a_typ_etvar EX)))
+  | a_wlred_chkabsevar' : forall (L L1 L2:vars) (W:a_worklist) (e:a_exp) (EX:etypvar) (E:a_env),
+      (forall EX1 , EX1 \notin L1 -> forall EX2 , EX2 \notin L2 -> exists W2 W3, 
+      (a_add_to_bound_and_reorder  (a_wl_consetvar (a_wl_consetvar W EX1 (a_bind_bound a_typ_bot a_typ_top)) EX2 (a_bind_bound a_typ_bot a_typ_top))   E   EX   (a_typ_arrow (a_typ_etvar EX1) (a_typ_etvar EX2))  a_modeab_both  W2   W3 )  /\
+      ( forall x , x \notin  L  -> a_wl_red' (a_wl_consw (a_wl_consvar  (  ( a_wl_app  W3   W2  )  )  x (a_bind_typ (a_typ_etvar EX1))) (a_work_check  ( open_a_exp_wrt_a_exp e (a_exp_var_f x) )  (a_typ_etvar EX2))) ) ) ->
+      a_wl_red' (a_wl_consw W (a_work_check (a_exp_abs e) (a_typ_etvar EX)))
+
+       *)

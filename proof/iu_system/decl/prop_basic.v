@@ -709,15 +709,15 @@ Hint Constructors dwf_typ_s: core.
 
 
 Lemma dwf_typ_weakening : forall E1 E2 E3 T, 
-  E1 ++ E3 ⊢ T ->
-  E1 ++ E2 ++ E3 ⊢ T.
+  E3 ++ E1 ⊢ T ->
+  E3 ++ E2 ++ E1 ⊢ T.
 Proof.
   intros.
   dependent induction H; auto.
-  - eapply dwftyp_all with (L:=L `union` dom (E1 ++ E2 ++ E3));
+  - eapply dwftyp_all with (L:=L `union` dom (E3 ++ E2 ++ E1));
     intros; inst_cofinites_with X.
     + auto.
-    + replace (X ~ dbind_tvar_empty ++ E1 ++ E2 ++ E3) with ((X ~ dbind_tvar_empty ++ E1) ++ E2 ++ E3) by auto.
+    + replace (X ~ dbind_tvar_empty ++ E3 ++ E2 ++ E1) with ((X ~ dbind_tvar_empty ++ E3) ++ E2 ++ E1) by auto.
     eapply H1; eauto.
 Qed.
 
