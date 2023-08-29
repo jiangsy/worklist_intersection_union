@@ -292,7 +292,7 @@ Proof with auto with transfer.
       * f_equal. destruct_conjs. apply ld_type_open_r_close_l; auto. 
       * eapply inst_t_forall with (L:=L); intros.
         rewrite (subst_la_type_intro x0) by auto.
-        rewrite (subst_ld_type_intro x0) by (apply close_ld_type_notin).
+        rewrite (subst_ld_type_intro x0) by (apply close_dtyp_notin).
         apply inst_e_rename; auto.
         rewrite open_ld_type_wrt_ld_type_close_ld_type_wrt_ld_type. intuition.
     + intuition. 

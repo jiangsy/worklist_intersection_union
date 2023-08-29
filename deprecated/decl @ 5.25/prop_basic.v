@@ -79,8 +79,8 @@ Proof.
 Qed.
 
 
-Lemma close_dtyp_notin : forall X T,
-    X `notin` ftv_in_dtyp (close_dtyp_wrt_dtyp X T).
+Lemma close_ld_type_notin : forall X e,
+    X `notin` ftv_in_dtyp (close_dtyp_wrt_dtyp X e).
 Proof.
   intros. apply close_dtyp_notin_rec.
 Qed.
@@ -709,15 +709,15 @@ Hint Constructors dwf_typ_s: core.
 
 
 Lemma dwf_typ_weakening : forall E1 E2 E3 T, 
-  E3 ++ E1 ⊢ T ->
-  E3 ++ E2 ++ E1 ⊢ T.
+  E1 ++ E3 ⊢ T ->
+  E1 ++ E2 ++ E3 ⊢ T.
 Proof.
   intros.
   dependent induction H; auto.
-  - eapply dwftyp_all with (L:=L `union` dom (E3 ++ E2 ++ E1));
+  - eapply dwftyp_all with (L:=L `union` dom (E1 ++ E2 ++ E3));
     intros; inst_cofinites_with X.
     + auto.
-    + replace (X ~ dbind_tvar_empty ++ E3 ++ E2 ++ E1) with ((X ~ dbind_tvar_empty ++ E3) ++ E2 ++ E1) by auto.
+    + replace (X ~ dbind_tvar_empty ++ E1 ++ E2 ++ E3) with ((X ~ dbind_tvar_empty ++ E1) ++ E2 ++ E3) by auto.
     eapply H1; eauto.
 Qed.
 
@@ -805,8 +805,6 @@ Proof.
   - eapply dneqall_intersection; 
     apply d_subst_tv_in_dtyp_lc_dtyp; eauto...
 Qed.
-
-
 
 Lemma wft_all_open_wfdtyp_wft : forall E X T1 T2,
   E ⊢ T1 ->
