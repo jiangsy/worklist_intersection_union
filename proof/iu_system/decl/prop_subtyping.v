@@ -187,8 +187,10 @@ Proof.
   rewrite dtyp_subst_open_comm.
   - apply d_sub_tvar_open_inv_subst; auto.
   - auto.
-  - admit.
-Admitted.
+  - simpl. apply notin_union_2 in H1.
+    apply notin_singleton_1' in H1. 
+    apply notin_singleton. auto.
+Qed.
 
 Lemma dsin_no_L : forall L T1, 
   (forall X : atom, X `notin` L ->  ds_in X (T1 ^ᵈ X)) <-> (forall X, ds_in X (T1 ^ᵈ X)).
@@ -327,17 +329,22 @@ Qed.
 Theorem d_sub_tvar_ind_open_subst : forall E X T1 T2,
   d_sub_tvar_open_inv X T1 ->
   dmono_typ T2 ->
+  E ⊢ T1 ->
+  E ⊢ T2 ->
   E ⊢ ({T2 /ᵈ X} T1) <: T2.
 Proof.
   intros. induction H.
-  - simpl. constructor. admit.
-  - simpl. admit.
-  - simpl. constructor; auto. 
   - simpl. constructor; auto.
-    admit.
-  - simpl. apply d_sub_intersection3; auto.
-    admit.
-Admitted.
+  - simpl. unfold eq_dec.
+    destruct (EqDec_eq_of_X X X). 
+    apply dsub_refl; auto.
+    contradiction.
+  - simpl. dependent destruction H1. constructor; auto. 
+  - simpl. dependent destruction H1. constructor; auto.
+    apply wft_all_open_wfdtyp_wft; auto. 
+  - simpl. dependent destruction H1. apply d_sub_intersection3; auto.
+    apply wft_all_open_wfdtyp_wft; auto.
+Qed.
 
 
 Theorem d_sub_tvar_ind_sub_all : forall E T1 T2,
@@ -376,7 +383,8 @@ Theorem  d_sub_subst_mono : forall E X F S1 T1 T2,
   dmono_typ T2 ->
   map (d_subst_tv_in_binding T2 X) F ++ E ⊢ {T2 /ᵈ X} S1 <: {T2 /ᵈ X} T1.
 Proof with eauto with subtyping.
-  intros. dependent induction H; try solve [simpl in *; eauto with subtyping].
+  intros. 
+  dependent induction H; try solve [simpl in *; eauto with subtyping].
   - eapply dsub_refl. auto...
   - eapply dsub_refl. auto...
   - simpl. eapply d_sub_all with (L:=L); intros SX Hfr; inst_cofinites_with SX.
@@ -405,44 +413,18 @@ Proof with eauto with subtyping.
       * apply d_mono_typ_subst_mono_mono; auto.
       * rewrite <- d_subst_tv_in_dtyp_open_dtyp_wrt_dtyp; eauto...
     + apply dsub_dwft in H5 as Hwft. destruct Hwft as [HwftS HwftT]. inversion HwftT.
-    + simpl. unfold eq_dec. destruct EqDec_eq_of_X. simpl.
-      * subst. 
-        assert (ds_in X (S1 ^ᵈ X)) by admit.
-        assert (type_size (S1 ^^ᵈ T0) < S (type_size (S1 ^^ᵈ T0))) by lia.
-        Print d_sub_all_tvar_inv.
-        specialize (d_sub_all_tvar_inv (S (type_size (S1 ^^ᵈ T0))) _ _ _ _ _ L H9 H5 H4 H2). intros.
-        apply dmono_typ_ordiu_complete in H7.
-        induction H7.
-        -- eapply d_sub_alll with (L:=L `union` singleton X) (T2:={T1 /ᵈ X} T0); auto...
-           ++ admit.
-           ++ admit.
-           ++ admit.
-           ++ intros. inst_cofinites_with X0. rewrite dtyp_subst_open_comm; auto...
-              apply ftv_sin_dtyp_subst_inv; auto...
-           ++ apply d_mono_typ_subst_mono_mono; auto. admit.
-           ++ rewrite <- d_subst_tv_in_dtyp_open_dtyp_wrt_dtyp; eauto...
-              replace T1 with ({T1 /ᵈ X} `ᵈ X) at 3.  apply IHd_sub; auto.
-            admit. admit.
-        -- admit.
-        -- apply d_sub_intersection1.
-           ++
-        (* --
-        apply dmono_typ_ordiu_complete in H7.
-        induction H7.
-        -- eapply d_sub_alll with (L:=L `union` singleton X) (T2:={T2 /ᵈ X} T0); auto...
-           ++ admit.
-           ++ admit.
-           ++ admit.
-           ++ intros. inst_cofinites_with X0. rewrite dtyp_subst_open_comm; auto...
-              apply ftv_sin_dtyp_subst_inv; auto...
-           ++ apply d_mono_typ_subst_mono_mono; auto. admit.
-           ++ rewrite <- d_subst_tv_in_dtyp_open_dtyp_wrt_dtyp; eauto...
-              replace T2 with ({T2 /ᵈ X0} `ᵈ X0) at 3. rewrite <- e. apply IHd_sub; auto.
-              admit. admit. admit.
-        -- admit.
-        -- apply d_sub_intersection1.
-           ++
-        -- admit. *) 
+    + simpl.
+      specialize (dsub_dwft _ _ _ H5) as Hwft. destruct Hwft.
+      apply d_sub_tvar_ind_sub_all.
+      -- admit.
+      -- replace (dtyp_all ({T2 /ᵈ X} S1)) with ({T2 /ᵈ X} (dtyp_all S1)) by auto. 
+         apply d_wft_typ_subst; auto. 
+         eapply dwftyp_all with (L:=L `union` ftv_in_dtyp S1).
+         auto. intros.
+         eapply dwf_typ_open_inv with (X:=X1) (S:=T0); auto.
+      -- unfold eq_dec. destruct (EqDec_eq_of_X X0 X); auto. 
+      -- replace (if X0 == X then T2 else `ᵈ X0) with ( {T2 /ᵈ X} `ᵈ X0) by auto.
+         apply d_wft_typ_subst; auto.
       * eapply d_sub_alll with (L:=L `union` singleton X) (T2:={T2 /ᵈ X} T0); auto...
         -- intros. inst_cofinites_with X0. rewrite dtyp_subst_open_comm; auto...
            apply ftv_sin_dtyp_subst_inv; auto...
