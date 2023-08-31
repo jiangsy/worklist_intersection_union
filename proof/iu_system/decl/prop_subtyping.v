@@ -116,7 +116,6 @@ Hint Resolve d_wft_typ_subst : subtyping.
 
 
 Inductive d_sub_tvar_open_inv : typvar -> dtyp -> Prop := 
-| d__stoi__bot : forall X, d_sub_tvar_open_inv X dtyp_bot
 | d__stoi__refl : forall X, d_sub_tvar_open_inv X (dtyp_var_f X)
 | d__stoi__union : forall X T1 T2, 
     d_sub_tvar_open_inv X T1 -> 
@@ -135,7 +134,6 @@ Lemma d_sub_tvar_open_inv_subst : forall X1 X2 S1 T1,
   d_sub_tvar_open_inv X1 ({S1 /ᵈ X2} T1).
 Proof.
   intros. induction H.
-  - simpl. constructor.
   - simpl. destruct (X == X2).
     + subst. contradiction.
     + constructor.
@@ -166,7 +164,35 @@ Fixpoint d_typ_size (T : dtyp) :=
   | dtyp_union T1 T2 => 1 + d_typ_size T1 + d_typ_size T2
   | _ => 0
   end.
-    
+
+
+Theorem d_sub_tvar_inv_nested_all_false: forall L1 L2 L3 T1 S1,
+  (∀ X : atom, X ∉ L1 → d_sub_tvar_open_inv X (open_dtyp_wrt_dtyp_rec 1 S1 T1 ^ᵈ X)) ->
+  (∀ X : atom, X ∉ L2 → ds_in X (dtyp_all (open_dtyp_wrt_dtyp_rec 1 `ᵈ X T1))) ->
+  (∀ X : atom, X ∉ L3 → ds_in X (open_dtyp_wrt_dtyp_rec 1 S1 T1 ^ᵈ X)) ->
+  False.
+Proof.
+  intros. induction T1; simpl in *.
+  - admit.
+  - admit.
+  - admit.
+  - destruct ( lt_eq_lt_dec n 1 ).
+    + destruct s. simpl in *. destruct n; simpl in *.
+      * admit.
+      * admit.
+      * admit.
+    + destruct (n - 1). 
+      * unfold open_dtyp_wrt_dtyp in *. simpl in *. admit.
+      * unfold open_dtyp_wrt_dtyp in *. simpl in *. admit.
+  - admit.
+  - admit.
+  - inst_cofinites_by L1. inversion H.
+  - inst_cofinites_by L1. inversion H.
+  - admit.
+  - admit.
+Admitted.
+     
+
 Theorem d_sub_tvar_ind_open_inv_complete: forall n1 n2 E S1 T1 X L,
     d_typ_order (T1 ^^ᵈ S1) < n1 ->
     d_typ_size (T1 ^^ᵈ S1) < n2 ->
@@ -196,7 +222,20 @@ Theorem d_sub_tvar_ind_open_inv_complete: forall n1 n2 E S1 T1 X L,
           -- destruct n. simpl in *.
              ++ eapply d__sti__all with (L:=L). intros. constructor.
              ++ unfold open_dtyp_wrt_dtyp in Heq. simpl in Heq. inversion Heq.
-          -- admit.
+          -- unfold open_dtyp_wrt_dtyp in Heq. simpl in Heq. 
+             (* S0 *)
+             assert (d_typ_order ((open_dtyp_wrt_dtyp_rec 1 S1 T1) ^^ᵈ T2) < n1) by admit.
+             assert (d_typ_size ((open_dtyp_wrt_dtyp_rec 1 S1 T1) ^^ᵈ T2) < 
+                     S (d_typ_size ((open_dtyp_wrt_dtyp_rec 1 S1 T1) ^^ᵈ T2))) by lia.
+             assert ( E ⊢ (open_dtyp_wrt_dtyp_rec 1 S1 T1) ^^ᵈ T2 <: `ᵈ X).
+             { inversion Heq. subst. auto. }
+             assert ( ∀ X : atom, X ∉ L0 → ds_in X ((open_dtyp_wrt_dtyp_rec 1 S1 T1) ^ᵈ X)). 
+             { inversion Heq. subst. auto. }
+             specialize (IHn1 _ E _ _ _ _ H2 H3 H10 H11 H6).
+             unfold open_dtyp_wrt_dtyp in H8. simpl in H8.
+             dependent destruction IHn1.
+             specialize (d_sub_tvar_inv_nested_all_false _ _ _ _ _ H H8 H12).
+             intros. inversion H13.
         * rename H3 into Hdsin. rename H4 into Hmono. destruct T1; simpl in *; try solve [inversion Heq].
           -- destruct n. simpl in *.
              ++ eapply d__sti__all with (L:=L). intros. constructor.
@@ -280,7 +319,7 @@ Theorem d_sub_tvar_ind_open_inv_complete: forall n1 n2 E S1 T1 X L,
               eapply d__sti__all with (L:=L `union` L0 `union` L1). intros.
               replace (dtyp_union T1_1 T1_2 ^ᵈ X0) with (dtyp_union (T1_1 ^ᵈ X0) (T1_2 ^ᵈ X0)) by auto.
               econstructor; eauto.
-  Admitted. 
+Admitted.
 
 
 Lemma d_sub_tvar_inv_subst: forall T1 X S1,
