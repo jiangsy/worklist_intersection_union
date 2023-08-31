@@ -170,26 +170,74 @@ Theorem d_sub_tvar_inv_nested_all_false: forall L1 L2 L3 T1 S1,
   (∀ X : atom, X ∉ L1 → d_sub_tvar_open_inv X (open_dtyp_wrt_dtyp_rec 1 S1 T1 ^ᵈ X)) ->
   (∀ X : atom, X ∉ L2 → ds_in X (dtyp_all (open_dtyp_wrt_dtyp_rec 1 `ᵈ X T1))) ->
   (∀ X : atom, X ∉ L3 → ds_in X (open_dtyp_wrt_dtyp_rec 1 S1 T1 ^ᵈ X)) ->
+  lc_dtyp S1 ->
   False.
 Proof.
   intros. induction T1; simpl in *.
-  - admit.
-  - admit.
-  - admit.
+  - inst_cofinites_by L3. inversion H1.
+  - inst_cofinites_by L3. inversion H1.
+  - inst_cofinites_by L3. inversion H1.
   - destruct ( lt_eq_lt_dec n 1 ).
     + destruct s. simpl in *. destruct n; simpl in *.
-      * admit.
-      * admit.
-      * admit.
+      * inst_cofinites_by L2. dependent destruction H0.
+        inst_cofinites_by (L `union` singleton X). 
+        dependent destruction H0.
+        apply notin_union_2 in Fr0. apply notin_singleton_1 in Fr0. contradiction.
+      * inst_cofinites_by L3.
+        inversion H1.
+      * inst_cofinites_by (L3 `union` ftv_in_dtyp S1).
+        rewrite open_dtyp_wrt_dtyp_lc_dtyp in H1; auto.
+        apply sin_in in H1. apply notin_union_2 in Fr. contradiction.
     + destruct (n - 1). 
-      * unfold open_dtyp_wrt_dtyp in *. simpl in *. admit.
-      * unfold open_dtyp_wrt_dtyp in *. simpl in *. admit.
-  - admit.
-  - admit.
+      * unfold open_dtyp_wrt_dtyp in *. simpl in *.
+        inst_cofinites_by L2. dependent destruction H0.
+        inst_cofinites_by (L `union` singleton X). 
+        dependent destruction H0.
+        apply notin_union_2 in Fr0. apply notin_singleton_1 in Fr0. contradiction.
+      * unfold open_dtyp_wrt_dtyp in *. simpl in *.
+        inst_cofinites_by L3. inversion H1.
+  - inst_cofinites_by (L3 `union` singleton X).
+    dependent destruction H1. apply notin_union_2 in Fr. apply notin_singleton_1 in Fr. contradiction.
+  - inst_cofinites_by L3. inversion H1.
   - inst_cofinites_by L1. inversion H.
   - inst_cofinites_by L1. inversion H.
-  - admit.
-  - admit.
+  - assert (∀ X : atom, X ∉ L1 → d_sub_tvar_open_inv X (open_dtyp_wrt_dtyp_rec 1 S1 T1_1 ^ᵈ X)). {
+      intros. inst_cofinites_with X. inversion H; auto.
+    }
+    assert (∀ X : atom, X ∉ L2 → ds_in X (dtyp_all (open_dtyp_wrt_dtyp_rec 1 `ᵈ X T1_1))).
+    { intros. inst_cofinites_with X. dependent destruction H0. 
+      eapply dsin_all with (L:=L). intros. inst_cofinites_with Y. 
+      inversion H0. auto.
+    }
+    assert  (∀ X : atom, X ∉ L3 → ds_in X (open_dtyp_wrt_dtyp_rec 1 S1 T1_1 ^ᵈ X)). 
+    { intros. inst_cofinites_with X. inversion H1; auto.
+    }
+    auto.
+  - assert ((∀ X : atom, X ∉ L1 → d_sub_tvar_open_inv X (open_dtyp_wrt_dtyp_rec 1 S1 T1_1 ^ᵈ X)) \/ 
+            (∀ X : atom, X ∉ L1 → d_sub_tvar_open_inv X (open_dtyp_wrt_dtyp_rec 1 S1 T1_2 ^ᵈ X))). {
+    intros. (* change this *)inst_cofinites_by L1. dependent destruction H.
+    - left. intros. inst_cofinites_with X. admit.
+    - admit.
+    }
+    inversion H3.
+    + assert (∀ X : atom, X ∉ L2 → ds_in X (dtyp_all (open_dtyp_wrt_dtyp_rec 1 `ᵈ X T1_1))).
+      { intros. inst_cofinites_with X. dependent destruction H0. 
+        eapply dsin_all with (L:=L). intros. inst_cofinites_with Y. 
+        inversion H0. auto.
+      }
+      assert  (∀ X : atom, X ∉ L3 → ds_in X (open_dtyp_wrt_dtyp_rec 1 S1 T1_1 ^ᵈ X)). 
+      { intros. inst_cofinites_with X. inversion H1; auto.
+      }
+      auto.
+    + assert (∀ X : atom, X ∉ L2 → ds_in X (dtyp_all (open_dtyp_wrt_dtyp_rec 1 `ᵈ X T1_2))).
+      { intros. inst_cofinites_with X. dependent destruction H0. 
+        eapply dsin_all with (L:=L). intros. inst_cofinites_with Y. 
+        inversion H0. auto.
+      }
+      assert  (∀ X : atom, X ∉ L3 → ds_in X (open_dtyp_wrt_dtyp_rec 1 S1 T1_2 ^ᵈ X)). 
+      { intros. inst_cofinites_with X. inversion H1; auto.
+      }
+      auto.
 Admitted.
      
 
