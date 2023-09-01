@@ -142,6 +142,21 @@ Proof.
   - simpl. eapply d__stoi__intersection2. eauto.
 Qed.
 
+
+Lemma d_sub_tvar_open_inv_subst_var : forall X1 X2 T1,
+  d_sub_tvar_open_inv X1 T1 ->
+  d_sub_tvar_open_inv X2 ({`ᵈ X2 /ᵈ X1} T1).
+Proof.
+  intros. induction H.
+  - simpl. destruct (X == X).
+    + constructor.
+    + contradiction.
+  - simpl. econstructor; eauto.
+  - simpl. econstructor; eauto.
+  - simpl. eapply d__stoi__intersection2. eauto.
+Qed.
+
+
 Inductive d_sub_tvar_inv : dtyp -> Prop := 
 | d__sti__all : forall L T, 
     (forall X, X `notin` L -> d_sub_tvar_open_inv X (T ^ᵈ X)) ->
@@ -166,10 +181,39 @@ Fixpoint d_typ_size (T : dtyp) :=
   end.
 
 
+Lemma dmono_type_order_0 : forall T,
+  dmono_typ T -> d_typ_order T = 0.
+Proof.
+  intros; induction H; simpl; auto.
+  - rewrite IHdmono_typ1. rewrite IHdmono_typ2. auto.
+  - rewrite IHdmono_typ1. rewrite IHdmono_typ2. auto.
+  - rewrite IHdmono_typ1. rewrite IHdmono_typ2. auto.
+Qed.
+
+Lemma d_open_rec_mono_same_order : forall T1 T2 n,
+  dmono_typ T2 ->
+  d_typ_order (open_dtyp_wrt_dtyp_rec n T2 T1) = d_typ_order T1.
+Proof.
+  induction T1; simpl; intros; auto.
+  - destruct (lt_eq_lt_dec n n0).
+    + destruct s; auto. apply dmono_type_order_0; auto.
+    + auto.
+Qed.
+
+
+Lemma d_open_mono_same_order : forall T1 T2,
+  dmono_typ T2 ->
+  d_typ_order (T1 ^^ᵈ T2) = d_typ_order T1.
+Proof.
+  intros. unfold open_dtyp_wrt_dtyp. apply d_open_rec_mono_same_order; auto.
+Qed.
+
+
+
 Theorem d_sub_tvar_inv_nested_all_false: forall L1 L2 L3 T1 S1,
-  (∀ X : atom, X ∉ L1 → d_sub_tvar_open_inv X (open_dtyp_wrt_dtyp_rec 1 S1 T1 ^ᵈ X)) ->
-  (∀ X : atom, X ∉ L2 → ds_in X (dtyp_all (open_dtyp_wrt_dtyp_rec 1 `ᵈ X T1))) ->
-  (∀ X : atom, X ∉ L3 → ds_in X (open_dtyp_wrt_dtyp_rec 1 S1 T1 ^ᵈ X)) ->
+  (forall X : atom, X `notin` L1 -> d_sub_tvar_open_inv X (open_dtyp_wrt_dtyp_rec 1 S1 T1 ^ᵈ X)) ->
+  (forall X : atom, X `notin` L2 -> ds_in X (dtyp_all (open_dtyp_wrt_dtyp_rec 1 `ᵈ X T1))) ->
+  (forall X : atom, X `notin` L3 -> ds_in X (open_dtyp_wrt_dtyp_rec 1 S1 T1 ^ᵈ X)) ->
   lc_dtyp S1 ->
   False.
 Proof.
@@ -201,44 +245,60 @@ Proof.
   - inst_cofinites_by L3. inversion H1.
   - inst_cofinites_by L1. inversion H.
   - inst_cofinites_by L1. inversion H.
-  - assert (∀ X : atom, X ∉ L1 → d_sub_tvar_open_inv X (open_dtyp_wrt_dtyp_rec 1 S1 T1_1 ^ᵈ X)). {
+  - assert (forall X : atom, X `notin` L1 -> d_sub_tvar_open_inv X (open_dtyp_wrt_dtyp_rec 1 S1 T1_1 ^ᵈ X)). {
       intros. inst_cofinites_with X. inversion H; auto.
     }
-    assert (∀ X : atom, X ∉ L2 → ds_in X (dtyp_all (open_dtyp_wrt_dtyp_rec 1 `ᵈ X T1_1))).
+    assert (forall X : atom, X `notin` L2 -> ds_in X (dtyp_all (open_dtyp_wrt_dtyp_rec 1 `ᵈ X T1_1))).
     { intros. inst_cofinites_with X. dependent destruction H0. 
       eapply dsin_all with (L:=L). intros. inst_cofinites_with Y. 
       inversion H0. auto.
     }
-    assert  (∀ X : atom, X ∉ L3 → ds_in X (open_dtyp_wrt_dtyp_rec 1 S1 T1_1 ^ᵈ X)). 
+    assert  (forall X : atom, X `notin` L3 -> ds_in X (open_dtyp_wrt_dtyp_rec 1 S1 T1_1 ^ᵈ X)). 
     { intros. inst_cofinites_with X. inversion H1; auto.
     }
     auto.
-  - assert ((∀ X : atom, X ∉ L1 → d_sub_tvar_open_inv X (open_dtyp_wrt_dtyp_rec 1 S1 T1_1 ^ᵈ X)) \/ 
-            (∀ X : atom, X ∉ L1 → d_sub_tvar_open_inv X (open_dtyp_wrt_dtyp_rec 1 S1 T1_2 ^ᵈ X))). {
-    intros. (* change this *)inst_cofinites_by L1. dependent destruction H.
-    - left. intros. inst_cofinites_with X. admit.
-    - admit.
+  - assert ((forall X : atom, X `notin` L1 -> d_sub_tvar_open_inv X (open_dtyp_wrt_dtyp_rec 1 S1 T1_1 ^ᵈ X)) \/ 
+            (forall X : atom, X `notin` L1 -> d_sub_tvar_open_inv X (open_dtyp_wrt_dtyp_rec 1 S1 T1_2 ^ᵈ X))). 
+    {
+      intros.
+      inst_cofinites_by (L1 `union` ftv_in_dtyp (open_dtyp_wrt_dtyp_rec 1 S1 T1_1) `union` 
+                                    ftv_in_dtyp (open_dtyp_wrt_dtyp_rec 1 S1 T1_2)).
+      dependent destruction H.
+      - left. intros. inst_cofinites_with X.
+        assert (d_sub_tvar_open_inv x (open_dtyp_wrt_dtyp_rec 1 S1 T1_1 ^ᵈ x)) by auto.
+        replace (open_dtyp_wrt_dtyp_rec 1 S1 T1_1 ^ᵈ X) with ({`ᵈ X /ᵈ x}(open_dtyp_wrt_dtyp_rec 1 S1 T1_1 ^ᵈ x)).
+        now apply d_sub_tvar_open_inv_subst_var.
+        rewrite d_subst_tv_in_dtyp_open_dtyp_wrt_dtyp; auto.
+        rewrite (d_subst_tv_in_dtyp_fresh_eq); auto. simpl. 
+        unfold eq_dec. destruct (EqDec_eq_of_X x x); auto. contradiction.
+      - right. intros. inst_cofinites_with X.
+        assert (d_sub_tvar_open_inv x (open_dtyp_wrt_dtyp_rec 1 S1 T1_2 ^ᵈ x)) by auto.
+        replace (open_dtyp_wrt_dtyp_rec 1 S1 T1_2 ^ᵈ X) with ({`ᵈ X /ᵈ x}(open_dtyp_wrt_dtyp_rec 1 S1 T1_2 ^ᵈ x)).
+        now apply d_sub_tvar_open_inv_subst_var.
+        rewrite d_subst_tv_in_dtyp_open_dtyp_wrt_dtyp; auto.
+        rewrite (d_subst_tv_in_dtyp_fresh_eq); auto. simpl. 
+        unfold eq_dec. destruct (EqDec_eq_of_X x x); auto. contradiction.
     }
     inversion H3.
-    + assert (∀ X : atom, X ∉ L2 → ds_in X (dtyp_all (open_dtyp_wrt_dtyp_rec 1 `ᵈ X T1_1))).
+    + assert (forall X : atom, X `notin` L2 -> ds_in X (dtyp_all (open_dtyp_wrt_dtyp_rec 1 `ᵈ X T1_1))).
       { intros. inst_cofinites_with X. dependent destruction H0. 
         eapply dsin_all with (L:=L). intros. inst_cofinites_with Y. 
         inversion H0. auto.
       }
-      assert  (∀ X : atom, X ∉ L3 → ds_in X (open_dtyp_wrt_dtyp_rec 1 S1 T1_1 ^ᵈ X)). 
+      assert  (forall X, X `notin` L3 -> ds_in X (open_dtyp_wrt_dtyp_rec 1 S1 T1_1 ^ᵈ X)). 
       { intros. inst_cofinites_with X. inversion H1; auto.
       }
       auto.
-    + assert (∀ X : atom, X ∉ L2 → ds_in X (dtyp_all (open_dtyp_wrt_dtyp_rec 1 `ᵈ X T1_2))).
+    + assert (forall X, X `notin` L2 -> ds_in X (dtyp_all (open_dtyp_wrt_dtyp_rec 1 `ᵈ X T1_2))).
       { intros. inst_cofinites_with X. dependent destruction H0. 
         eapply dsin_all with (L:=L). intros. inst_cofinites_with Y. 
         inversion H0. auto.
       }
-      assert  (∀ X : atom, X ∉ L3 → ds_in X (open_dtyp_wrt_dtyp_rec 1 S1 T1_2 ^ᵈ X)). 
+      assert  (forall X, X `notin` L3 -> ds_in X (open_dtyp_wrt_dtyp_rec 1 S1 T1_2 ^ᵈ X)). 
       { intros. inst_cofinites_with X. inversion H1; auto.
       }
       auto.
-Admitted.
+Qed.
      
 
 Theorem d_sub_tvar_ind_open_inv_complete: forall n1 n2 E S1 T1 X L,
@@ -272,17 +332,20 @@ Theorem d_sub_tvar_ind_open_inv_complete: forall n1 n2 E S1 T1 X L,
              ++ unfold open_dtyp_wrt_dtyp in Heq. simpl in Heq. inversion Heq.
           -- unfold open_dtyp_wrt_dtyp in Heq. simpl in Heq. 
              (* S0 *)
-             assert (d_typ_order ((open_dtyp_wrt_dtyp_rec 1 S1 T1) ^^ᵈ T2) < n1) by admit.
+             assert (d_typ_order ((open_dtyp_wrt_dtyp_rec 1 S1 T1) ^^ᵈ T2) < n1). {
+               rewrite d_open_mono_same_order. lia. auto.
+             }
              assert (d_typ_size ((open_dtyp_wrt_dtyp_rec 1 S1 T1) ^^ᵈ T2) < 
                      S (d_typ_size ((open_dtyp_wrt_dtyp_rec 1 S1 T1) ^^ᵈ T2))) by lia.
              assert ( E ⊢ (open_dtyp_wrt_dtyp_rec 1 S1 T1) ^^ᵈ T2 <: `ᵈ X).
              { inversion Heq. subst. auto. }
-             assert ( ∀ X : atom, X ∉ L0 → ds_in X ((open_dtyp_wrt_dtyp_rec 1 S1 T1) ^ᵈ X)). 
+             assert ( forall X : atom, X `notin` L0 -> ds_in X ((open_dtyp_wrt_dtyp_rec 1 S1 T1) ^ᵈ X)). 
              { inversion Heq. subst. auto. }
              specialize (IHn1 _ E _ _ _ _ H2 H3 H10 H11 H6).
              unfold open_dtyp_wrt_dtyp in H8. simpl in H8.
              dependent destruction IHn1.
-             specialize (d_sub_tvar_inv_nested_all_false _ _ _ _ _ H H8 H12).
+             apply d_mono_typ_lc in H9.
+             specialize (d_sub_tvar_inv_nested_all_false _ _ _ _ _ H H8 H12 H9).
              intros. inversion H13.
         * rename H3 into Hdsin. rename H4 into Hmono. destruct T1; simpl in *; try solve [inversion Heq].
           -- destruct n. simpl in *.
@@ -296,7 +359,7 @@ Theorem d_sub_tvar_ind_open_inv_complete: forall n1 n2 E S1 T1 X L,
              assert (d_typ_order (T1_1 ^^ᵈ S1) < S n1). {
                unfold open_dtyp_wrt_dtyp. lia.
              }
-             assert (forall X, X ∉ L → ds_in X (T1_1 ^ᵈ X)). {
+             assert (forall X, X `notin` L -> ds_in X (T1_1 ^ᵈ X)). {
                intros. inst_cofinites_with X0.
                replace (dtyp_intersection T1_1 T1_2 ^ᵈ X0) with (dtyp_intersection (T1_1 ^ᵈ X0) (T1_2 ^ᵈ X0)) in Hdsin by auto.
                dependent destruction Hdsin.
@@ -319,7 +382,7 @@ Theorem d_sub_tvar_ind_open_inv_complete: forall n1 n2 E S1 T1 X L,
              assert (d_typ_order (T1_2 ^^ᵈ S1) < S n1). {
                 unfold open_dtyp_wrt_dtyp. lia.
              }
-             assert (forall X, X ∉ L → ds_in X (T1_2 ^ᵈ X)). {
+             assert (forall X, X `notin` L -> ds_in X (T1_2 ^ᵈ X)). {
               intros. inst_cofinites_with X0.
               replace (dtyp_intersection T1_1 T1_2 ^ᵈ X0) with (dtyp_intersection (T1_1 ^ᵈ X0) (T1_2 ^ᵈ X0)) in Hdsin by auto.
               dependent destruction Hdsin.
@@ -342,7 +405,7 @@ Theorem d_sub_tvar_ind_open_inv_complete: forall n1 n2 E S1 T1 X L,
               assert (d_typ_order (T1_1 ^^ᵈ S1) < S n1). {
                   unfold open_dtyp_wrt_dtyp. lia.
               }
-              assert (forall X, X ∉ L → ds_in X (T1_1 ^ᵈ X)). {
+              assert (forall X, X `notin` L -> ds_in X (T1_1 ^ᵈ X)). {
                 intros. inst_cofinites_with X0.
                 replace (dtyp_union T1_1 T1_2 ^ᵈ X0) with (dtyp_union (T1_1 ^ᵈ X0) (T1_2 ^ᵈ X0)) in Hdsin by auto.
                 dependent destruction Hdsin.
@@ -354,7 +417,7 @@ Theorem d_sub_tvar_ind_open_inv_complete: forall n1 n2 E S1 T1 X L,
               assert (d_typ_order (T1_2 ^^ᵈ S1) < S n1). {
                   unfold open_dtyp_wrt_dtyp. lia.
               }
-              assert (forall X, X ∉ L → ds_in X (T1_2 ^ᵈ X)). {
+              assert (forall X, X `notin` L -> ds_in X (T1_2 ^ᵈ X)). {
                 intros. inst_cofinites_with X0.
                 replace (dtyp_union T1_1 T1_2 ^ᵈ X0) with (dtyp_union (T1_1 ^ᵈ X0) (T1_2 ^ᵈ X0)) in Hdsin by auto.
                 dependent destruction Hdsin.
@@ -367,7 +430,7 @@ Theorem d_sub_tvar_ind_open_inv_complete: forall n1 n2 E S1 T1 X L,
               eapply d__sti__all with (L:=L `union` L0 `union` L1). intros.
               replace (dtyp_union T1_1 T1_2 ^ᵈ X0) with (dtyp_union (T1_1 ^ᵈ X0) (T1_2 ^ᵈ X0)) by auto.
               econstructor; eauto.
-Admitted.
+Qed.
 
 
 Lemma d_sub_tvar_inv_subst: forall T1 X S1,
@@ -603,26 +666,6 @@ Proof with eauto with subtyping.
     + rewrite <- d_subst_tv_in_dtyp_open_dtyp_wrt_dtyp; eauto...
 Qed. *)
 
-
-
-Lemma dmono_type_order_0 : forall T,
-  dmono_typ T -> d_typ_order T = 0.
-Proof.
-  intros; induction H; simpl; auto.
-  - rewrite IHdmono_typ1. rewrite IHdmono_typ2. auto.
-  - rewrite IHdmono_typ1. rewrite IHdmono_typ2. auto.
-  - rewrite IHdmono_typ1. rewrite IHdmono_typ2. auto.
-Qed.
-
-Lemma d_open_rec_mono_same_order : forall T1 T2 n,
-  dmono_typ T2 ->
-  d_typ_order (open_dtyp_wrt_dtyp_rec n T2 T1) = d_typ_order T1.
-Proof.
-  induction T1; simpl; intros; auto.
-  - destruct (lt_eq_lt_dec n n0).
-    + destruct s; auto. apply dmono_type_order_0; auto.
-    + auto.
-Qed.
 
 
 Inductive dsub_sized : denv -> dtyp -> dtyp -> nat -> Prop :=   
