@@ -1161,7 +1161,15 @@ Proof with auto with trans.
         -- auto.
     + simpl in *. dependent destruction H2...
       (* forall a. A < 1 < C *)
-      * dependent destruction H8; admit.
+      * assert (E ⊢ T1) by admit.  
+        apply d_wft_ord_complete in H2. induction H2.
+        -- dependent destruction H8; auto...
+           ++ econstructor. admit.
+           ++ eapply d_sub_alll with (T2:=T2); auto. admit.
+           ++ inversion H2.
+           ++ inversion H9.
+           ++ inversion H9.
+        dependent destruction H8。
       (* forall a. A < top < C *)
       * dependent destruction H8; admit.
       (* forall a. A < bot < C *)
