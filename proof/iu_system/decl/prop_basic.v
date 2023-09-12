@@ -732,7 +732,7 @@ Qed.
 
 Lemma dwf_env_binds_dwf_typ : forall E x T,
   ⊢ E ->
-  binds x (dbind_typ T) E ->
+  x ~ T ∈ E ->
   E ⊢ T.
 Admitted.
 
