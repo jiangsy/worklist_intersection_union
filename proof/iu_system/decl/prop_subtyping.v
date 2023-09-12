@@ -622,7 +622,7 @@ Proof with eauto with subtyping.
          apply d_wft_typ_subst; auto. 
          eapply dwftyp_all with (L:=L `union` ftv_in_dtyp S1).
          auto. 
-         ++ intros. eapply dwf_typ_open_inv with (X:=X1) (S:=T0); auto.
+         ++ intros. eapply dwf_typ_open_inv with (X:=X1) (S1:=T0); auto.
             rewrite d_subst_tv_in_dtyp_open_dtyp_wrt_dtyp; auto.
             simpl. rewrite (d_subst_tv_in_dtyp_fresh_eq); auto.
             unfold eq_dec. destruct (EqDec_eq_of_X X1 X1); auto.
