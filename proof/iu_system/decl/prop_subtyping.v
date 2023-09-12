@@ -990,55 +990,8 @@ Hint Resolve open_subst_eq : trans.
 Hint Extern 1 (?x < ?y) => lia : trans.
 
 
-Theorem sized_substitution : forall G1 G2 x A B t n,
-  G1 , x  ,, G2 ⊢ A <: B | n ->
-  G1 ⊢ t -> ld_mono_type t ->
-  exists n', G1 ,, G2 ⊢ [t /ᵈ x] A <: [t /ᵈ x] B | n'.
-Proof.
-  intros.
-  apply sized_ld_sub_to_ld_sub in H.
-  apply substitution with (t:=t) in H; auto.
-  apply ld_sub_to_sized_ld_sub in H. auto.
-Qed.
 
-Lemma nat_split: forall n n1 n2, n >= S (n1 + n2) -> 
-  exists n1' n2', n = S (n1' + n2') /\ n1' >= n1 /\ n2' >= n2.
-Proof.
-  intros. induction H.
-  - exists n1, n2. split; lia.
-  - destruct IHle as [n1' [n2' Hn1n2]].
-    exists (S n1'), n2'. split; lia.
-Qed.
 
-Lemma nat_suc: forall n n1, n >= S n1 -> 
-  exists n1', n = S n1' /\ n1' >= n1.
-Proof.
-  intros. induction H.
-  - exists n1. split; lia.
-  - destruct IHle as [n1' [n2' Hn1n2]].
-    exists (S n1'). split; lia.
-Qed.
-
-Lemma sized_sub_union_inv: forall G A1 A2 B n,
-  G ⊢ (ld_t_union A1 A2) <: B | n -> G ⊢ A1 <: B | n /\ G ⊢ A2 <: B | n.
-Proof.
-  intros.
-  dependent induction H.
-  - specialize (IHsized_ld_sub1 A1 A2 (eq_refl _)).
-    specialize (IHsized_ld_sub2 A1 A2 (eq_refl _)).
-    split; econstructor; intuition.
-  - specialize (IHsized_ld_sub A1 A2 (eq_refl _)).
-    split; constructor; intuition.
-  - specialize (IHsized_ld_sub A1 A2 (eq_refl _)).
-    split; apply sls_union_r2; intuition.
-  - split.
-    apply size_sub_more with (n:=n1); auto. lia.
-    apply size_sub_more with (n:=n2); auto. lia.
-  - split; intros;
-    apply sls_forallr with (L:=L); intros;
-    inst_cofinites_with x; specialize (H0 A1 A2 (eq_refl _));
-    intuition.
-Qed.
 
  *)
 
@@ -1148,6 +1101,18 @@ Qed.
 
 
 
+Theorem d_sub_size_subst_stvar : forall E F SX S1 T1 T2 n,
+  F ++ (SX ~ dbind_stvar_empty) ++ E ⊢ S1 <: T1 | n ->
+  E ⊢ T2 -> 
+  dmono_typ T2 ->
+  exists n', map (d_subst_stv_in_binding T2 SX) F ++ E ⊢ {T2 /ₛᵈ SX} S1 <: {T2 /ₛᵈ SX} T1 | n'.
+Proof.
+  intros.
+  apply d_sub_size_sound in H.
+  apply d_sub_subst_stvar with (T2:=T2) in H; auto.
+  apply d_sub_size_complete in H. auto.
+Qed.
+
 
 Lemma d_sub_sized_transitivity : forall n_dtyp_order n_dsub_size E R1 S1 T1 n1 n2 ,
   dtyp_order S1 < n_dtyp_order ->
@@ -1218,12 +1183,23 @@ Proof with auto with trans.
         eapply IHn_dsub_size with (S1:=dtyp_arrow T0 T2) (n1:=S(n1+n0)); eauto...  
         auto.
     + simpl in *. dependent destruction H4.
-      * econstructor. admit.
+      * econstructor. 
+        admit. (*wft*)
       * eapply d_sub_all with (L:=L `union` L0); auto.
         intros. inst_cofinites_with SX.
         eapply IHn_dtyp_order with (S1:= T0 ^^ᵈ dtyp_svar SX); eauto...
-        -- admit.
-      * admit.
+        -- admit. (* order *)
+      * eapply d_sub_alll with (T2:=T2); eauto.
+        admit. (* ds_in *)
+        inst_cofinites_by (L `union` fstv_in_dtyp S1 `union` fstv_in_dtyp T0).
+        replace (S1 ^^ᵈ T2) with ({T2 /ₛᵈ x} S1 ^^ᵈ dtyp_svar x) by admit.
+        replace E with (map (d_subst_stv_in_binding T2 x) nil ++ E) by auto.
+        specialize (d_sub_size_subst_stvar E nil x (S1 ^^ᵈ dtyp_svar x) (T0 ^^ᵈ dtyp_svar x) T2 n H3 H8 H9).
+        intros. destruct H11 as [n' Hsub].
+        eapply IHn_dtyp_order with (S1:=T0 ^^ᵈ T2) (n1:=n'); eauto...
+        admit. (*order*)
+        replace (T0 ^^ᵈ T2) with ({T2 /ₛᵈ x} T0 ^^ᵈ dtyp_svar x) by admit.
+        eauto.
       * eapply d_sub_intersection1.
         -- eapply IHn_dsub_size with (S1:=dtyp_all T0) (n1:=S n) (n2:=n1); eauto...
            econstructor; eauto.
@@ -1237,7 +1213,21 @@ Proof with auto with trans.
         -- eapply IHn_dsub_size with (S1:=dtyp_all T0) (n1:=S n) (n2:=n0); eauto...
            econstructor; eauto.
         -- auto.
-    + admit.
+    + simpl in *. dependent destruction H2...
+      (* forall a. A < 1 < C *)
+      * admit.
+      (* forall a. A < top < C *)
+      * admit.
+      (* forall a. A < bot < C *)
+      * admit.
+      (* forall a. A < X < C *)
+      * admit.
+      (* forall a. A < SX < C *)
+      * admit.
+      (* forall a. A < B1 -> B2 < C *)
+      * admit.
+      * inversion H1.
+      * inversion H4.
     + simpl in *. dependent destruction H2...
       * econstructor. apply d_sub_size_sound in H1_. apply dsub_dwft in H1_.
         intuition.
