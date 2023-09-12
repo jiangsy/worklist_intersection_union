@@ -58,6 +58,8 @@ Proof.
   rewrite (d_subst_tv_in_dtyp_fresh_eq T3); auto.
 Qed.
 
+
+
 Lemma dtyp_subst_open_var : forall X T1 T2,
   lc_dtyp T2 -> 
   X `notin` ftv_in_dtyp T1 -> 
@@ -757,6 +759,13 @@ Lemma d_wft_typ_subst : forall E X F T1 T2,
   F ++ X ~ dbind_tvar_empty ++ E ⊢ T1 ->
   E ⊢ T2 ->
   map (d_subst_tv_in_binding T2 X) F  ++ E ⊢ {T2 /ᵈ X} T1.
+Proof.
+Admitted.
+
+Lemma d_wft_typ_subst_stvar : forall E SX F T1 T2,
+  F ++ SX ~ dbind_stvar_empty ++ E ⊢ T1 ->
+  E ⊢ T2 ->
+  map (d_subst_stv_in_binding T2 SX) F  ++ E ⊢ {T2 /ₛᵈ SX} T1.
 Proof.
 Admitted.
 
