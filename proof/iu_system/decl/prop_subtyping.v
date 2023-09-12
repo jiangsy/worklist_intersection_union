@@ -1161,25 +1161,105 @@ Proof with auto with trans.
         -- auto.
     + simpl in *. dependent destruction H2...
       (* forall a. A < 1 < C *)
-      * assert (E ⊢ T1) by admit.  
-        apply d_wft_ord_complete in H2. induction H2.
+      * apply d_sub_size_sound in H8 as Hdsub.
+        apply dsub_dwft in Hdsub. inversion Hdsub.
+        apply d_wft_ord_complete in H9. clear Hdsub. induction H9.
         -- dependent destruction H8; auto...
            ++ econstructor. admit.
            ++ eapply d_sub_alll with (T2:=T2); auto. admit.
-           ++ inversion H2.
            ++ inversion H9.
-           ++ inversion H9.
-        dependent destruction H8。
+           ++ inversion H10.
+           ++ inversion H10.
+        -- dependent destruction H8; auto...
+           apply d_sub_size_more with (n':=S(n1+n2)) in H8_.
+           apply d_sub_size_more with (n':=S(n1+n2)) in H8_0.
+           specialize (IHd_wft_ord1 H8_).
+           specialize (IHd_wft_ord2 H8_0).
+           auto... lia. lia.
+        -- dependent destruction H8; auto...
+           ++ apply d_sub_size_more with (n':=S n0) in H8.
+              specialize (IHd_wft_ord1 H8). auto. lia.
+           ++ apply d_sub_size_more with (n':=S n0) in H8.
+              specialize (IHd_wft_ord2 H8). auto. lia.
       (* forall a. A < top < C *)
-      * dependent destruction H8; admit.
+      * apply d_sub_size_sound in H8 as Hdsub.
+        apply dsub_dwft in Hdsub. inversion Hdsub.
+        apply d_wft_ord_complete in H9. clear Hdsub. induction H9.
+        -- dependent destruction H8; auto...
+           ++ econstructor. admit.
+           ++ inversion H9.
+           ++ inversion H10.
+           ++ inversion H10.
+        -- dependent destruction H8; auto...
+           apply d_sub_size_more with (n':=S(n1+n2)) in H8_.
+           apply d_sub_size_more with (n':=S(n1+n2)) in H8_0.
+           specialize (IHd_wft_ord1 H8_).
+           specialize (IHd_wft_ord2 H8_0).
+           auto... lia. lia.
+        -- dependent destruction H8; auto...
+           ++ apply d_sub_size_more with (n':=S n0) in H8.
+              specialize (IHd_wft_ord1 H8). auto. lia.
+           ++ apply d_sub_size_more with (n':=S n0) in H8.
+              specialize (IHd_wft_ord2 H8). auto. lia.
       (* forall a. A < bot < C *)
-      * admit. (* impossible *)
+      * apply d_sub_size_sound in H8 as Hdsub.
+        apply dsub_dwft in Hdsub. inversion Hdsub.
+        apply d_wft_ord_complete in H9. clear Hdsub. induction H9.
+        -- dependent destruction H8; auto...
+          ++ econstructor. admit.
+          ++ admit.
+          ++ inversion H9.
+          ++ inversion H10.
+          ++ inversion H10.
+        -- admit.
+      -- dependent destruction H8; auto...
+         ++ admit.
+         ++ admit.
+         ++ admit.
       (* forall a. A < X < C *)
-      * dependent destruction H8; admit.
+      * apply d_sub_size_sound in H8 as Hdsub.
+        apply dsub_dwft in Hdsub. inversion Hdsub.
+        apply d_wft_ord_complete in H9. clear Hdsub. induction H9.
+        -- dependent destruction H8; auto...
+           ++ econstructor. admit.
+           ++ admit.
+           ++ inversion H9.
+           ++ inversion H10.
+           ++ inversion H10.
+        -- dependent destruction H8; auto...
+           apply d_sub_size_more with (n':=S(n1+n2)) in H8_.
+           apply d_sub_size_more with (n':=S(n1+n2)) in H8_0.
+           specialize (IHd_wft_ord1 H8_).
+           specialize (IHd_wft_ord2 H8_0).
+           auto... lia. lia.
+        -- dependent destruction H8; auto...
+           ++ apply d_sub_size_more with (n':=S n0) in H8.
+              specialize (IHd_wft_ord1 H8). auto. lia.
+           ++ apply d_sub_size_more with (n':=S n0) in H8.
+              specialize (IHd_wft_ord2 H8). auto. lia.
       (* forall a. A < SX < C *)
-      * dependent destruction H8; admit.
+      * admit.
       (* forall a. A < B1 -> B2 < C *)
-      * dependent destruction H9; admit.
+      * apply d_sub_size_sound in H9 as Hdsub.
+        apply dsub_dwft in Hdsub. inversion Hdsub.
+        apply d_wft_ord_complete in H11. clear Hdsub. induction H11.
+        -- dependent destruction H9; auto...
+          ++ econstructor. admit.
+          ++ admit.
+          ++ inversion H11.
+          ++ inversion H12.
+          ++ inversion H12.
+        -- dependent destruction H9; auto...
+          apply d_sub_size_more with (n':=S(n1+n2)) in H9_.
+          apply d_sub_size_more with (n':=S(n1+n2)) in H9_0.
+          specialize (IHd_wft_ord1 H9_).
+          specialize (IHd_wft_ord2 H9_0).
+          auto... lia. lia.
+        -- dependent destruction H9; auto...
+          ++ apply d_sub_size_more with (n':=S n0) in H9.
+              specialize (IHd_wft_ord1 H9). auto. lia.
+          ++ apply d_sub_size_more with (n':=S n0) in H9.
+              specialize (IHd_wft_ord2 H9). auto. lia.
       * inversion H1.
       * inversion H4.
     + simpl in *. dependent destruction H2...
