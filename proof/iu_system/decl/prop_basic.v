@@ -58,6 +58,18 @@ Proof.
   rewrite (d_subst_tv_in_dtyp_fresh_eq T3); auto.
 Qed.
 
+Lemma dtyp_subst_open_var : forall X T1 T2,
+  lc_dtyp T2 -> 
+  X `notin` ftv_in_dtyp T1 -> 
+  {T2 /ᵈ X} T1 ^ᵈ X = T1 ^^ᵈ T2.
+Proof.
+  intros.
+  rewrite d_subst_tv_in_dtyp_open_dtyp_wrt_dtyp; auto.
+  rewrite (d_subst_tv_in_dtyp_fresh_eq T1); auto.
+  simpl. unfold eq_dec.
+  - destruct (EqDec_eq_of_X X X); auto.
+    contradiction.
+Qed.
 
 Lemma dtyp_open_r_close_l : forall T1 T2 X
   , X `notin` ftv_in_dtyp T2
@@ -356,9 +368,6 @@ Lemma d_mono_typ_lc : forall T,
 Proof.
   intros; induction H; auto.
 Qed.
-
-
-  
 
 (* Lemma ftv_in_dtyp_stvar_fstv_in_dtyp : forall X T,
   X `in` ftv_in_dtyp T ->
@@ -772,7 +781,8 @@ Proof.
   - simpl. inst_cofinites_by L.
     admit.
 Admitted.
-    
+
+
 
 Lemma dwf_typ_lc_dtyp : forall E T,
   E ⊢ T -> lc_dtyp T.

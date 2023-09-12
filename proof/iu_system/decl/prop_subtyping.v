@@ -525,6 +525,15 @@ Proof.
 Qed.
 
 
+Theorem  d_sub_strenthening: forall E F G S1 T1,
+  F ++ G ++ E ⊢ S1 <: T1 ->
+  F ++ E ⊢ S1 ->
+  F ++ E ⊢ T1 ->
+  F ++ E ⊢ S1 <: T1.
+Proof.
+Admitted.
+
+
 Theorem d_sub_tvar_ind_sub_all : forall E T1 T2,
   d_sub_tvar_inv (dtyp_all T1) ->
   E ⊢ dtyp_all T1 ->
@@ -549,15 +558,22 @@ Proof.
       rewrite d_subst_tv_in_dtyp_open_dtyp_wrt_dtyp in H; auto.
       rewrite d_subst_tv_in_dtyp_fresh_eq in H; auto.
       simpl in H. destruct eq_dec in H. auto.
-      (* d_sub_strenthening *)
-      admit.
-      contradiction.
-      auto.
-      inst_cofinites_with x; auto.
-      apply dwf_typ_weakening_cons; auto.
+      * eapply d_sub_strenthening with (F := nil); eauto.
+        replace ((x, dbind_tvar_empty) :: E) with (nil ++ ((x, dbind_tvar_empty)::nil) ++  E) in H.
+        eapply H. auto.
+        auto.
+        replace (T1 ^^ᵈ T0) with ({T0 /ᵈ x} (T1 ^ᵈ x)).
+        replace nil with (map (d_subst_tv_in_binding T0 x) nil) by auto.
+        apply d_wft_typ_subst; auto.
+        apply dtyp_subst_open_var; auto.
+       * contradiction.
+       * auto.
+       * inst_cofinites_with x; auto.
+       * apply dwf_typ_weakening_cons; auto.
   - inversion H1. inversion H2. auto.
   - inversion H1. inversion H2. auto.
-Admitted.
+Qed.
+
 
 Theorem  d_sub_subst_mono : forall E X F S1 T1 T2,
   F ++ (X ~ dbind_tvar_empty) ++ E ⊢ S1 <: T1 ->
