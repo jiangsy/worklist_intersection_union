@@ -313,10 +313,10 @@ Proof.
     rewrite d_subst_stv_in_dtyp_open_comm; auto.
 Qed.
 
-Lemma fstv_sins_dtyp_subst_stv : forall SX X T T',
-  ds_in X T ->
-  lc_dtyp T' ->
-  ds_in X ({T' /ₛᵈ SX} T).
+Lemma fstv_sins_dtyp_subst_stv : forall SX X T1 T2,
+  ds_in X T1 ->
+  lc_dtyp T2 ->
+  ds_in X ({T2 /ₛᵈ SX} T1).
 Proof.
   intros.
   induction H; simpl; auto.
@@ -343,11 +343,11 @@ Proof.
   - contradiction.
 Qed.
 
-Lemma ftv_sin_dtyp_subst_inv : forall X Y T S,
-  lc_dtyp S ->
+Lemma ftv_sin_dtyp_subst_inv : forall X Y T1 S1,
+  lc_dtyp S1 ->
   X <> Y ->
-  ds_in X T -> 
-  ds_in X ({S /ᵈ Y} T).
+  ds_in X T1 -> 
+  ds_in X ({S1 /ᵈ Y} T1).
 Proof.
   intros.
   induction H1; try solve [simpl; eauto].
@@ -846,14 +846,16 @@ Proof.
   intros. induction F; simpl in *; auto.
   - inversion H0.
     + inversion H2.
-    + assert (E ⊢ T1) by admit.
+    + assert (E ⊢ T1).
+      { eapply dwf_env_binds_dwf_typ; eauto. inversion H. auto. }
       rewrite d_subst_tv_in_dtyp_fresh_eq; auto.
       eapply d_new_tv_notin_wf_typ; eauto.
   - destruct a. inversion H0.
     + inversion H2. auto.
     + apply binds_cons_3.
-      admit.
-Admitted.
+      apply IHF; auto.
+      inversion H; auto.
+Qed.
 
 
 Lemma d_mono_typ_subst_mono_mono : forall T1 T2 X,

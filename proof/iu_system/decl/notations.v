@@ -17,9 +17,9 @@ Notation "E ⊢ₛ T" :=
   (dwf_typ_s E T)
     (at level 65, no associativity) : type_scope.
 
-Notation "E ⊢ S <: T" :=
-  (d_sub E S T)
-    (at level 65, S at next level, no associativity) : type_scope.
+Notation "E ⊢ S1 <: T1" :=
+  (d_sub E S1 T1)
+    (at level 65, S1 at next level, no associativity) : type_scope.
 
 (* Notation "E ⊢ e ⇐ T" :=
     (dchk E e T) 
