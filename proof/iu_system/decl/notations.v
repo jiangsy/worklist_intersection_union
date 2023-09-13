@@ -17,9 +17,9 @@ Notation "E ⊢ₛ T" :=
   (dwf_typ_s E T)
     (at level 65, no associativity) : type_scope.
 
-Notation "E ⊢ S <: T" :=
-  (d_sub E S T)
-    (at level 65, S at next level, no associativity) : type_scope.
+Notation "E ⊢ S1 <: T1" :=
+  (d_sub E S1 T1)
+    (at level 65, S1 at next level, no associativity) : type_scope.
 
 (* Notation "E ⊢ e ⇐ T" :=
     (dchk E e T) 
@@ -33,12 +33,14 @@ Notation "E ⊢ T1 • e ⇒⇒ T2" :=
     (dinfapp E T1 e T2) 
       (at level 65, T1 at next level, e at next level, no associativity) : type_scope. *)
 
-Notation "X ∈ E" := (binds X (dbind_tvar_empty) E)
-  (at level 65, no associativity) : type_scope.
+Notation "X ~ ▫ ∈ E" := (binds X (dbind_tvar_empty) E)
+  (at level 50, no associativity) : type_scope.
 
-Notation "~ X ∈ E" := (binds X (dbind_stvar_empty) E)
-  (at level 65, no associativity) : type_scope.
+Notation "SX ~ ▪ ∈ E" := (binds SX (dbind_stvar_empty) E)
+  (at level 50, no associativity) : type_scope.
 
+Notation "x ~ T ∈ E" := (binds x (dbind_typ T) E)
+  (at level 50, T at next level, no associativity) : type_scope.
 
 Notation "`ᵈ X" := (dtyp_var_f X)
   (at level 0, X at level 0, no associativity) : type_scope.
@@ -65,7 +67,6 @@ Notation "T1 ^^ᵈ T2" := (open_dtyp_wrt_dtyp T1 T2)
 Notation "e ⟼ e'" := 
   (dexp_red e e')
     (at level 65, no associativity).
-
 
 Declare Scope dworklist_scope.
 Delimit Scope dworklist_scope with dworklist.

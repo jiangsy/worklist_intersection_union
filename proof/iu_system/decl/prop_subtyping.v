@@ -24,10 +24,6 @@ Proof.
 Qed.
 
 
-(* forall a. forall b. b -> a <: forall a. a -> int *)
-(* is a counter example *)
-
-
 Lemma dsub_union_inversion : forall E S1 S2 T1, 
   E ⊢ dtyp_union S1 S2 <: T1 -> 
   E ⊢ S1 <: T1 /\ E ⊢ S2 <: T1.
@@ -113,6 +109,7 @@ Fixpoint dtyp_order (T : dtyp) : nat :=
 Hint Resolve dwf_typ_lc_dtyp : subtyping.
 Hint Resolve dsub_refl : subtyping.
 Hint Resolve d_wft_typ_subst : subtyping.
+Hint Resolve d_wft_typ_subst_stvar : subtyping.
 
 
 Inductive d_sub_tvar_open_inv : typvar -> dtyp -> Prop := 
@@ -449,64 +446,64 @@ Proof.
 Qed.
 
 
-Inductive ord_mono_iu : dtyp -> Prop :=
-| ordmonoiu_var : forall X, ord_mono_iu (dtyp_var_f X)
-| ordmonoiu_unit : ord_mono_iu dtyp_unit
-| ordmonoiu_arr : forall T1 T2, 
+Inductive d_ord_mono : dtyp -> Prop :=
+| d__ordmono__tvar : forall X, d_ord_mono (dtyp_var_f X)
+| d__ordmono__unit : d_ord_mono dtyp_unit
+| d__ordmono__arr : forall T1 T2, 
     dmono_typ T1 -> 
     dmono_typ T2 -> 
-    ord_mono_iu (dtyp_arrow T1 T2)
+    d_ord_mono (dtyp_arrow T1 T2)
 .
 
-Lemma ord_mono_iu_neq_intersection: forall T1,
-  ord_mono_iu T1 ->
+Lemma d_ord_mono_neq_intersection: forall T1,
+  d_ord_mono T1 ->
   dneq_intersection T1.
 Proof.
   intros. induction H; auto.
 Qed.
 
-Lemma ord_mono_iu_neq_union: forall T1,
-  ord_mono_iu T1 ->
+Lemma d_ord_mono_neq_union: forall T1,
+  d_ord_mono T1 ->
   dneq_union T1.
 Proof.
   intros. induction H; auto.
 Qed.
 
-Inductive dmono_typ_ordiu : dtyp -> Prop :=
-| dmonoord_base : forall T1, 
-    ord_mono_iu T1 ->
-    dmono_typ_ordiu T1
-| dmonoord_union : forall T1 T2, 
-    dmono_typ_ordiu T1 ->
-    dmono_typ_ordiu T2 -> 
-    dmono_typ_ordiu (dtyp_union T1 T2)
-| dmonoord_inter : forall T1 T2, 
-    dmono_typ_ordiu T1 ->
-    dmono_typ_ordiu T2 -> 
-    dmono_typ_ordiu (dtyp_intersection T1 T2).
+Inductive d_mono_ordiu : dtyp -> Prop :=
+| d__monoord__base : forall T1, 
+    d_ord_mono T1 ->
+    d_mono_ordiu T1
+| d__monoord__union : forall T1 T2, 
+    d_mono_ordiu T1 ->
+    d_mono_ordiu T2 -> 
+    d_mono_ordiu (dtyp_union T1 T2)
+| d__monoord__inter : forall T1 T2, 
+    d_mono_ordiu T1 ->
+    d_mono_ordiu T2 -> 
+    d_mono_ordiu (dtyp_intersection T1 T2).
 
 
-Lemma dmono_typ_ordiu_complete : forall T1, 
-  dmono_typ T1 -> dmono_typ_ordiu T1.
+Lemma d_mono_ordiu_complete : forall T1, 
+  dmono_typ T1 -> d_mono_ordiu T1.
 Proof.
   intros. induction H; try solve [constructor; constructor].
-  - apply dmonoord_base. apply ordmonoiu_arr; auto.
-  - apply dmonoord_inter; auto.
-  - apply dmonoord_union; auto.
+  - apply d__monoord__base. apply d__ordmono__arr; auto.
+  - apply d__monoord__inter; auto.
+  - apply d__monoord__union; auto.
 Qed.
 
 
-Lemma ord_mono_iu_sound: forall T1,
-  ord_mono_iu T1 -> dmono_typ T1.
+Lemma d_ord_mono_sound: forall T1,
+  d_ord_mono T1 -> dmono_typ T1.
 Proof.
   intros. induction H; auto.
 Qed.
 
-Lemma dmono_typ_ordiu_sound : forall T1,
-  dmono_typ_ordiu T1 -> dmono_typ T1.
+Lemma d_mono_ordiu_sound : forall T1,
+  d_mono_ordiu T1 -> dmono_typ T1.
 Proof.
   intros. induction H; auto.
-  - apply ord_mono_iu_sound. auto.
+  - apply d_ord_mono_sound. auto.
 Qed.
 
 Theorem d_sub_tvar_ind_open_subst : forall E X T1 T2,
@@ -517,7 +514,6 @@ Theorem d_sub_tvar_ind_open_subst : forall E X T1 T2,
   E ⊢ ({T2 /ᵈ X} T1) <: T2.
 Proof.
   intros. induction H.
-  - simpl. constructor; auto.
   - simpl. unfold eq_dec.
     destruct (EqDec_eq_of_X X X). 
     apply dsub_refl; auto.
@@ -530,6 +526,15 @@ Proof.
 Qed.
 
 
+Theorem  d_sub_strenthening: forall E F G S1 T1,
+  F ++ G ++ E ⊢ S1 <: T1 ->
+  F ++ E ⊢ S1 ->
+  F ++ E ⊢ T1 ->
+  F ++ E ⊢ S1 <: T1.
+Proof.
+Admitted.
+
+
 Theorem d_sub_tvar_ind_sub_all : forall E T1 T2,
   d_sub_tvar_inv (dtyp_all T1) ->
   E ⊢ dtyp_all T1 ->
@@ -538,14 +543,14 @@ Theorem d_sub_tvar_ind_sub_all : forall E T1 T2,
   E ⊢ dtyp_all T1 <: T2.
 Proof.
   intros. 
-  specialize (dmono_typ_ordiu_complete _ H1). intros.
+  specialize (d_mono_ordiu_complete _ H1). intros.
   induction H3.
   - dependent destruction H0. 
     dependent destruction H.
     eapply d_sub_alll with (L:=L `union` L0) (T2:=T0).
     + now apply d_mono_typ_neq_all.
-    + now apply ord_mono_iu_neq_intersection.
-    + now apply ord_mono_iu_neq_union.
+    + now apply d_ord_mono_neq_intersection.
+    + now apply d_ord_mono_neq_union.
     + auto. 
     + auto.
     + auto.
@@ -554,15 +559,22 @@ Proof.
       rewrite d_subst_tv_in_dtyp_open_dtyp_wrt_dtyp in H; auto.
       rewrite d_subst_tv_in_dtyp_fresh_eq in H; auto.
       simpl in H. destruct eq_dec in H. auto.
-      (* d_sub_strenthening *)
-      admit.
-      contradiction.
-      auto.
-      inst_cofinites_with x; auto.
-      apply dwf_typ_weakening_cons; auto.
+      * eapply d_sub_strenthening with (F := nil); eauto.
+        replace ((x, dbind_tvar_empty) :: E) with (nil ++ ((x, dbind_tvar_empty)::nil) ++  E) in H.
+        eapply H. auto.
+        auto.
+        replace (T1 ^^ᵈ T0) with ({T0 /ᵈ x} (T1 ^ᵈ x)).
+        replace nil with (map (d_subst_tv_in_binding T0 x) nil) by auto.
+        apply d_wft_typ_subst; auto.
+        apply dtyp_subst_open_var; auto.
+       * contradiction.
+       * auto.
+       * inst_cofinites_with x; auto.
+       * apply dwf_typ_weakening_cons; auto.
   - inversion H1. inversion H2. auto.
   - inversion H1. inversion H2. auto.
-Admitted.
+Qed.
+
 
 Theorem  d_sub_subst_mono : forall E X F S1 T1 T2,
   F ++ (X ~ dbind_tvar_empty) ++ E ⊢ S1 <: T1 ->
@@ -610,7 +622,7 @@ Proof with eauto with subtyping.
          apply d_wft_typ_subst; auto. 
          eapply dwftyp_all with (L:=L `union` ftv_in_dtyp S1).
          auto. 
-         ++ intros. eapply dwf_typ_open_inv with (X:=X1) (S:=T0); auto.
+         ++ intros. eapply dwf_typ_open_inv with (X:=X1) (S1:=T0); auto.
             rewrite d_subst_tv_in_dtyp_open_dtyp_wrt_dtyp; auto.
             simpl. rewrite (d_subst_tv_in_dtyp_fresh_eq); auto.
             unfold eq_dec. destruct (EqDec_eq_of_X X1 X1); auto.
@@ -638,141 +650,107 @@ Proof with eauto with subtyping.
     + inversion H0.
 Qed.
 
-(* Theorem  d_sub_subst : forall E SX F S1 T1 T2,
+Theorem d_sub_subst_stvar : forall E SX F S1 T1 T2,
   F ++ (SX ~ dbind_stvar_empty) ++ E ⊢ S1 <: T1 ->
   E ⊢ T2 -> 
-  map (d_subst_tv_in_binding T2 SX) F ++ E ⊢ {T2 /ᵈ SX} S1 <: {T2 /ᵈ SX} T1.
+  map (d_subst_stv_in_binding T2 SX) F ++ E ⊢ {T2 /ₛᵈ SX} S1 <: {T2 /ₛᵈ SX} T1.
 Proof with eauto with subtyping.
   intros. dependent induction H; try solve [simpl in *; eauto with subtyping].
-  - simpl. constructor. apply d_wft_typ_subst. admit. auto.
-  - simpl. auto... admit.
-  - eapply dsub_refl. auto...
-  - eapply dsub_refl. auto...
-  - simpl. eapply d_sub_all with (L:=L); intros SX Hfr; inst_cofinites_with SX.
-    + rewrite dtyp_subst_open_comm; auto...
-      apply fstv_sin_dtyp_subst_tv; auto...
-    + rewrite dtyp_subst_open_comm; auto...
-      apply fstv_sin_dtyp_subst_tv; auto...
-    + inst_cofinites_with SX. repeat rewrite dtyp_subst_open_comm; eauto...
-      replace (SX ~ dbind_stvar_empty ++ map (d_subst_tv_in_binding T2 X) F ++ E) with 
-      (map (d_subst_tv_in_binding T2 X) (SX ~ dbind_stvar_empty ++ F) ++ E) by auto.
+  - simpl. constructor. 
+    admit. (*wft*)
+  - simpl. destruct (SX0 == SX); apply dsub_refl.
+    + admit. (*wft*)
+    + admit. (*wft*)
+  - simpl. eapply d_sub_all with (L:=L `union` singleton SX); intros SX1 Hfr; inst_cofinites_with SX1.
+    + admit.
+    + admit.
+    + inst_cofinites_with SX1. repeat rewrite d_subst_stv_in_dtyp_open_comm; eauto...
+      replace (SX1 ~ dbind_stvar_empty ++ map (d_subst_stv_in_binding T2 SX) F ++ E) with 
+      (map (d_subst_stv_in_binding T2 SX) (SX1 ~ dbind_stvar_empty ++ F) ++ E) by auto.
       eapply H2; auto...
-  - simpl. eapply d_sub_alll with (L:=L `union` singleton X) (T2:={T2 /ᵈ X} T0); eauto...
-    + eapply d_neq_all_subst_neq_all; eauto...
-      eapply dwf_typ_dlc_type. eapply dsub_dwft. eauto.
-    + intros. inst_cofinites_with X0. rewrite dtyp_subst_open_comm; auto...
-      apply ftv_sin_dtyp_subst_inv; auto...
-    + apply d_mono_typ_subst_mono_mono; auto.
-    + rewrite <- d_subst_tv_in_dtyp_open_dtyp_wrt_dtyp; eauto...
-Qed. *)
+  (* @chen *)
+  - admit.
+Admitted.
 
-
-
-Inductive dsub_sized : denv -> dtyp -> dtyp -> nat -> Prop :=   
- | dsubsized_top : forall (E:denv) (S:dtyp) (n:nat),
-     dwf_typ E S ->
-     dsub_sized E S dtyp_top n
- | dsubsized_bot : forall (E:denv) (T:dtyp) (n:nat),
+Inductive d_sub_sized : denv -> dtyp -> dtyp -> nat -> Prop :=   
+ | d__subs__top : forall (E:denv) (S1:dtyp) (n:nat),
+     dwf_typ E S1 ->
+     d_sub_sized E S1 dtyp_top n
+ | d__subs__bot : forall (E:denv) (T:dtyp) (n:nat),
      dwf_typ E T ->
-     dsub_sized E dtyp_bot T n
- | dsubsized_unit : forall (E:denv) (n:nat),
-     dsub_sized E dtyp_unit dtyp_unit n
- | dsubsized_tvar : forall (E:denv) (X:typvar) (n:nat),
+     d_sub_sized E dtyp_bot T n
+ | d__subs__unit : forall (E:denv) (n:nat),
+     d_sub_sized E dtyp_unit dtyp_unit n
+ | d__subs__tvar : forall (E:denv) (X:typvar) (n:nat),
      dwf_typ E (dtyp_var_f X) ->
-     dsub_sized E (dtyp_var_f X) (dtyp_var_f X) n
- | dsubsized_stvar : forall (E:denv) (SX:stypvar) (n:nat),
+     d_sub_sized E (dtyp_var_f X) (dtyp_var_f X) n
+ | d__subs__stvar : forall (E:denv) (SX:stypvar) (n:nat),
      dwf_typ E (dtyp_svar SX) ->
-     dsub_sized E (dtyp_svar SX) (dtyp_svar SX) n
- | dsubsized_arrow : forall (E:denv) (S1 S2 T1 T2:dtyp) (n1 n2:nat),
-     dsub_sized E T1 S1 n1 ->
-     dsub_sized E S2 T2 n2 ->
-     dsub_sized E (dtyp_arrow S1 S2) (dtyp_arrow T1 T2) (S (n1 + n2))
- | dsubsized_all : forall (L:vars) (E:denv) (S1 T:dtyp) (n:nat),
+     d_sub_sized E (dtyp_svar SX) (dtyp_svar SX) n
+ | d__subs__arrow : forall (E:denv) (S1 S2 T1 T2:dtyp) (n1 n2:nat),
+     d_sub_sized E T1 S1 n1 ->
+     d_sub_sized E S2 T2 n2 ->
+     d_sub_sized E (dtyp_arrow S1 S2) (dtyp_arrow T1 T2) (S (n1 + n2))
+ | d__subs__all : forall (L:vars) (E:denv) (S1 T1:dtyp) (n:nat),
      ( forall SX , SX \notin L -> ds_in_s SX  (open_dtyp_wrt_dtyp  S1   (dtyp_svar SX) ) ) ->
-     ( forall SX , SX \notin L -> ds_in_s SX  (open_dtyp_wrt_dtyp  T   (dtyp_svar SX) ) ) ->
-     ( forall SX , SX \notin L -> dsub_sized  ( SX ~ dbind_stvar_empty  ++  E )   (open_dtyp_wrt_dtyp  S1   (dtyp_svar SX) )   (open_dtyp_wrt_dtyp  T   (dtyp_svar SX) ) n) ->
-     dsub_sized E (dtyp_all S1) (dtyp_all T) (S n)
- | dsubsized_alll : forall (L:vars) (E:denv) (S1 T1 T2:dtyp) (n:nat),
+     ( forall SX , SX \notin L -> ds_in_s SX  (open_dtyp_wrt_dtyp  T1   (dtyp_svar SX) ) ) ->
+     ( forall SX , SX \notin L -> d_sub_sized  ( SX ~ dbind_stvar_empty  ++  E )   (open_dtyp_wrt_dtyp  S1   (dtyp_svar SX) )   (open_dtyp_wrt_dtyp  T1  (dtyp_svar SX) ) n) ->
+     d_sub_sized E (dtyp_all S1) (dtyp_all T1) (S n)
+ | d__subs__alll : forall (L:vars) (E:denv) (S1 T1 T2:dtyp) (n:nat),
      dneq_all T1 ->
+     dneq_intersection T1 ->
+     dneq_union T1 -> 
      ( forall X , X \notin L -> ds_in X  (open_dtyp_wrt_dtyp  S1   (dtyp_var_f X) ) ) ->
      dwf_typ E T2 ->
      dmono_typ T2 ->
-     dsub_sized E  (open_dtyp_wrt_dtyp  S1   T2 )  T1 n ->
-     dsub_sized E (dtyp_all S1) T1 (S n)
- | dsubsized_intersection1 : forall (E:denv) (S1 T1 T2:dtyp) (n1 n2:nat),
-     dsub_sized E S1 T1 n1 ->
-     dsub_sized E S1 T2 n2 ->
-     dsub_sized E S1 (dtyp_intersection T1 T2) (S (n1 + n2))
- | dsubsized_intersection2 : forall (E:denv) (S1 S2 T:dtyp) (n:nat),
-     dsub_sized E S1 T n ->
+     d_sub_sized E  (open_dtyp_wrt_dtyp  S1   T2 )  T1 n ->
+     d_sub_sized E (dtyp_all S1) T1 (S n)
+ | d__subs__intersection1 : forall (E:denv) (S1 T1 T2:dtyp) (n1 n2:nat),
+     d_sub_sized E S1 T1 n1 ->
+     d_sub_sized E S1 T2 n2 ->
+     d_sub_sized E S1 (dtyp_intersection T1 T2) (S (n1 + n2))
+ | d__subs__intersection2 : forall (E:denv) (S1 S2 T:dtyp) (n:nat),
+     d_sub_sized E S1 T n ->
      dwf_typ E S2 ->
-     dsub_sized E (dtyp_intersection S1 S2) T (S n)
- | dsubsized_intersection3 : forall (E:denv) (S1 S2 T:dtyp) (n:nat),
-     dsub_sized E S2 T n ->
+     d_sub_sized E (dtyp_intersection S1 S2) T (S n)
+ | d__subs__intersection3 : forall (E:denv) (S1 S2 T:dtyp) (n:nat),
+     d_sub_sized E S2 T n ->
      dwf_typ E S1 ->
-     dsub_sized E (dtyp_intersection S1 S2) T (S n)
- | dsubsized_union1 : forall (E:denv) (S1 T1 T2:dtyp) (n:nat),
-     dsub_sized E S1 T1 n ->
+     d_sub_sized E (dtyp_intersection S1 S2) T (S n)
+ | d__subs__union1 : forall (E:denv) (S1 T1 T2:dtyp) (n:nat),
+     d_sub_sized E S1 T1 n ->
      dwf_typ E T2 ->
-     dsub_sized E S1 (dtyp_union T1 T2) (S n)
- | dsubsized_union2 : forall (E:denv) (S1 T1 T2:dtyp) (n:nat),
-     dsub_sized E S1 T2 n ->
+     d_sub_sized E S1 (dtyp_union T1 T2) (S n)
+ | d__subs__union2 : forall (E:denv) (S1 T1 T2:dtyp) (n:nat),
+     d_sub_sized E S1 T2 n ->
      dwf_typ E T1 ->
-     dsub_sized E S1 (dtyp_union T1 T2) (S n)
- | dsubsized_union3 : forall (E:denv) (S1 S2 T:dtyp) (n1 n2:nat),
-     dsub_sized E S1 T n1 ->
-     dsub_sized E S2 T n2 ->
-     dsub_sized E (dtyp_union S1 S2) T (S (n1 + n2)).
+     d_sub_sized E S1 (dtyp_union T1 T2) (S n)
+ | d__subs__union3 : forall (E:denv) (S1 S2 T:dtyp) (n1 n2:nat),
+     d_sub_sized E S1 T n1 ->
+     d_sub_sized E S2 T n2 ->
+     d_sub_sized E (dtyp_union S1 S2) T (S (n1 + n2)).
 
-
-Theorem dsub_sized_wrt_dsub_sound : forall E S1 T1 n,
-  dsub_sized E S1 T1 n -> E ⊢ S1 <: T1.
+Notation "E ⊢ S1 <: T1 | n" :=
+  (d_sub_sized E S1 T1 n)
+    (at level 65, S1 at next level, T1 at next level, no associativity) : type_scope.
+      
+Theorem d_sub_size_sound : forall E S1 T1 n,
+    E ⊢ S1 <: T1 | n -> E ⊢ S1 <: T1.
 Proof.
   intros. induction H; eauto.
 Qed.
 
-Hint Constructors dsub_sized : sub.
+Hint Constructors d_sub_sized : sub.
 
-Lemma dsub_sized_subst : forall F SX1 E S1 T1 n SX2 ,
-  dsub_sized (F ++ (SX1 ~ dbind_stvar_empty) ++ E) S1 T1 n ->
-  dsub_sized (map (d_subst_stv_in_binding (dtyp_svar SX2) SX1) F ++ (SX2 ~ dbind_tvar_empty) ++ E) 
-    (d_subst_stv_in_dtyp (dtyp_svar SX2) SX1 S1)  (d_subst_stv_in_dtyp (dtyp_svar SX2) SX1 T1) n.
-Proof with eauto with sub.
-  intros. dependent induction H; try solve [simpl; eauto with sub].
-  - simpl. constructor. admit.
-  - simpl. constructor. admit.
-  - simpl. constructor. admit.
-  - admit.
-  - simpl. constructor.
-    + eapply IHdsub_sized1; auto.
-    + eapply IHdsub_sized2; auto.
-  - admit.
-  - admit.
-  - simpl. constructor.
-    + eapply IHdsub_sized1; auto.
-    + eapply IHdsub_sized2; auto.
-  - simpl. apply dsubsized_intersection2.
-    + eapply IHdsub_sized; auto.
-    + admit.
-  - simpl. apply dsubsized_intersection3.
-    + eapply IHdsub_sized; auto.
-    + admit.
-Admitted.
-
-(* Theorem sized_var_substitution : forall G1 G2 x x' A B n,
-  G1 , x  ,, G2 ⊢ A <: B | n ->
-  ⊢ G1, x' ,, G2 ->
-  G1 , x' ,, G2 ⊢ [`ᵈ x' /ᵈ x] A <: [`ᵈ x' /ᵈ x] B | n. *)
-
-
-Lemma dsub_sized_wrt_dub_complete : forall E T1 T2,
-  E ⊢ T1 <: T2 -> exists n, dsub_sized E T1 T2 n.
+Lemma d_sub_size_complete : forall E T1 T2,
+  E ⊢ T1 <: T2 -> exists n, E ⊢ T1 <: T2 | n.
 Proof with eauto with sub.
   intros. induction H; eauto...
   - destruct IHd_sub1 as [n1]. destruct IHd_sub2 as [n2].
     eauto...
-  - inst_cofinites_by L. destruct H2 as [n].
-    exists (S n). eapply dsubsized_all with (L:=L); intros.
+  - inst_cofinites_by (L `union` fstv_in_dtyp S1 `union` fstv_in_dtyp S1). 
+    destruct H2 as [n].
+    exists (S n). eapply d__subs__all with (L:=L `union` fstv_in_dtyp S1 `union` fstv_in_dtyp S1); intros.
     + admit.
     + admit.
     + admit.
@@ -784,30 +762,75 @@ Proof with eauto with sub.
   - destruct IHd_sub as [n]. eauto...
   - destruct IHd_sub as [n]. eauto...
   - destruct IHd_sub1 as [n1]. destruct IHd_sub2 as [n2].
-  eauto...
+    eauto...
 Admitted.
 
 
+Lemma d_sub_sized_weakening: forall E F G S1 T1 n,
+  F ++ G ++ E ⊢ S1 <: T1 | n ->
+  F ++ E ⊢ S1 <: T1 | n.
+Proof.
+  intros. dependent induction H; auto... 
+Admitted.
+
+Hint Constructors d_sub_sized : trans.
+
+
+Lemma nat_suc: forall n n1, n >= S n1 -> 
+  exists n1', n = S n1' /\ n1' >= n1.
+Proof.
+  intros. induction H.
+  - exists n1. split; lia.
+  - destruct IHle as [n1' [n2' Hn1n2]].
+    exists (S n1'). split; lia.
+Qed.
+
+Lemma nat_split: forall n n1 n2, n >= S (n1 + n2) -> 
+  exists n1' n2', n = S (n1' + n2') /\ n1' >= n1 /\ n2' >= n2.
+Proof.
+  intros. induction H.
+  - exists n1, n2. split; lia.
+  - destruct IHle as [n1' [n2' Hn1n2]].
+    exists (S n1'), n2'. split; lia.
+Qed.
+
+
+Lemma d_sub_size_more: forall E S1 T1 n,
+  E ⊢ S1 <: T1 | n -> forall n', n' >= n -> E ⊢ S1 <: T1 | n'.
+Proof with auto with trans.
+  intros E S1 T1 n H.
+  dependent induction H; intros; auto...
+  - apply nat_split in H1. 
+    destruct H1 as [n1' [n2' [Heq [Hgtn1 Hgtn2]]]].
+    rewrite Heq. eauto...
+  - apply nat_suc in H3.
+    destruct H3 as [n1' [Heq Hgtn1]].
+    rewrite Heq. econstructor; eauto...
+  - apply nat_suc in H6.
+    destruct H6 as [n1' [Heq Hgtn1]].
+    rewrite Heq. econstructor; eauto...
+  - apply nat_split in H1. 
+    destruct H1 as [n1' [n2' [Heq [Hgtn1 Hgtn2]]]].
+    rewrite Heq. eauto...
+  - apply nat_suc in H1.
+    destruct H1 as [n1' [Heq Hgtn1]].
+    rewrite Heq. eauto...
+  - apply nat_suc in H1.
+    destruct H1 as [n1' [Heq Hgtn1]].
+    rewrite Heq. eauto...
+  - apply nat_suc in H1.
+    destruct H1 as [n1' [Heq Hgtn1]].
+    rewrite Heq. eauto...
+  - apply nat_suc in H1.
+    destruct H1 as [n1' [Heq Hgtn1]].
+    rewrite Heq. eauto...
+  - apply nat_split in H1. 
+    destruct H1 as [n1' [n2' [Heq [Hgtn1 Hgtn2]]]].
+    rewrite Heq. eauto... 
+Qed.
+
+
 (* 
-
-
-Lemma open_mono_order : forall A t,
-  ld_mono_type t -> type_order (A ^^ᵈ t) = type_order A.
-Proof.
-  intros.
-  eapply open_mono_order_rec; auto.  
-Qed.
-
-
-
-Hint Constructors sized_ld_sub: trans.
-
-Lemma sized_ld_sub_to_ld_sub : forall G t1 t2 n,
-  G ⊢ t1 <: t2 | n -> G ⊢ t1 <: t2.
-Proof.
-  intros. induction H; eauto.
-Qed.
-
 
 Lemma sized_ld_sub_weakening : forall G1 G2 G3 t1 t2 n,
   G1 ,, G3 ⊢ t1 <: t2 | n -> ⊢ G1 ,, G2 ,, G3 ->
@@ -934,231 +957,367 @@ Hint Resolve sized_ld_sub_weakening : trans.
 Hint Resolve open_subst_eq : trans.
 Hint Extern 1 (?x < ?y) => lia : trans.
 
-
-Lemma ld_sub_to_sized_ld_sub : forall G t1 t2,
-  G ⊢ t1 <: t2 -> exists n', G ⊢ t1 <: t2 | n'.
-Proof with eauto with trans.
-  intros. induction H.
-  + exists 0. econstructor; eauto.
-  + exists 0. econstructor; eauto.
-  + destruct IHld_sub1 as [n1].
-    destruct IHld_sub2 as [n2].
-    exists (S (n1 + n2)). econstructor; eauto.
-  + destruct IHld_sub1 as [n1].
-    destruct IHld_sub2 as [n2].
-    exists (S (n1 + n2)). econstructor; eauto.
-  + destruct IHld_sub as [n].
-    exists (S n). econstructor; eauto.
-  + destruct IHld_sub as [n].
-    exists (S n). eapply sls_intersection_l2; eauto.
-  + destruct IHld_sub as [n].
-    exists (S n). eapply sls_union_r1; eauto.
-  + destruct IHld_sub as [n].
-    exists (S n). eapply sls_union_r2; eauto.
-  + destruct IHld_sub1 as [n1].
-    destruct IHld_sub2 as [n2].
-    exists (S (n1 + n2)). eapply sls_union_l; eauto.
-  + destruct IHld_sub as [n].
-    exists (S n). econstructor; eauto.
-  + inst_cofinites_by (L `union` fv_ld_type A `union` fv_ld_type B). destruct H0 as [n].
-    exists (S n). eapply sls_forallr with (L:=L `union` (ld_ctx_dom G)). intros.
-    replace (G, x0) with (G, x0,,ld_ctx_nil) by auto.
-    replace A with ([`ᵈ x0 /ᵈ x] A).
-    replace (B ^^ᵈ `ᵈ x0) with ([`ᵈ x0 /ᵈ x] B ^^ᵈ `ᵈ x).
-    eapply  sized_var_substitution; eauto.
-    * simpl. constructor; auto.
-      apply ld_sub_wf_ctx in H. dependent destruction H. auto.
-    * apply eq_sym. eauto...
-    * rewrite subst_ld_type_fresh_eq; auto.
-Qed.
-
-
-Theorem sized_substitution : forall G1 G2 x A B t n,
-  G1 , x  ,, G2 ⊢ A <: B | n ->
-  G1 ⊢ t -> ld_mono_type t ->
-  exists n', G1 ,, G2 ⊢ [t /ᵈ x] A <: [t /ᵈ x] B | n'.
-Proof.
-  intros.
-  apply sized_ld_sub_to_ld_sub in H.
-  apply substitution with (t:=t) in H; auto.
-  apply ld_sub_to_sized_ld_sub in H. auto.
-Qed.
-
-Lemma nat_split: forall n n1 n2, n >= S (n1 + n2) -> 
-  exists n1' n2', n = S (n1' + n2') /\ n1' >= n1 /\ n2' >= n2.
-Proof.
-  intros. induction H.
-  - exists n1, n2. split; lia.
-  - destruct IHle as [n1' [n2' Hn1n2]].
-    exists (S n1'), n2'. split; lia.
-Qed.
-
-Lemma nat_suc: forall n n1, n >= S n1 -> 
-  exists n1', n = S n1' /\ n1' >= n1.
-Proof.
-  intros. induction H.
-  - exists n1. split; lia.
-  - destruct IHle as [n1' [n2' Hn1n2]].
-    exists (S n1'). split; lia.
-Qed.
-
-Lemma size_sub_more: forall G A B n,
-  G ⊢ A <: B | n -> forall n', n' >= n -> G ⊢ A <: B | n'.
-Proof.
-  intros G A B n H.
-  dependent induction H; intros.
-  - econstructor; auto.
-  - econstructor; auto.
-  - specialize (nat_split n' n1 n2 H1). 
-    intros Hn'. destruct Hn' as [n1' [n2' Hn1n2]].
-    inversion Hn1n2. subst.
-    econstructor; intuition.
-  - specialize (nat_split n' n1 n2 H1). 
-    intros Hn'. destruct Hn' as [n1' [n2' Hn1n2]].
-    inversion Hn1n2. subst.
-    econstructor; intuition.
-  - specialize (nat_suc n' n1 H1).
-    intros Hn'. destruct Hn' as [n1' Hn1].
-    inversion Hn1. subst.
-    apply sls_intersection_l1; auto.
-  - specialize (nat_suc n' n2 H1).
-    intros Hn'. destruct Hn' as [n2' Hn2].
-    inversion Hn2. subst.
-    apply sls_intersection_l2; auto.
-  - specialize (nat_suc n' n1 H1).
-    intros Hn'. destruct Hn' as [n1' Hn1].
-    inversion Hn1. subst.
-    apply sls_union_r1; auto.
-  - specialize (nat_suc n' n2 H1).
-    intros Hn'. destruct Hn' as [n2' Hn2].
-    inversion Hn2. subst.
-    apply sls_union_r2; auto.
-  -  specialize (nat_split n' n1 n2 H1). 
-    intros Hn'. destruct Hn' as [n1' [n2' Hn1n2]].
-    inversion Hn1n2. subst.
-    econstructor; intuition.
-  - specialize (nat_suc n' n H1).
-    intros Hn'. destruct Hn' as [n1 Hn1].
-    inversion Hn1. subst.
-    econstructor; auto. auto.
-  - specialize (nat_suc n' n H1).
-    intros Hn'. destruct Hn' as [n1 Hn1].
-    inversion Hn1. subst.
-    econstructor; auto. 
-Qed.
-
-
-Lemma sized_sub_union_inv: forall G A1 A2 B n,
-  G ⊢ (ld_t_union A1 A2) <: B | n -> G ⊢ A1 <: B | n /\ G ⊢ A2 <: B | n.
-Proof.
-  intros.
-  dependent induction H.
-  - specialize (IHsized_ld_sub1 A1 A2 (eq_refl _)).
-    specialize (IHsized_ld_sub2 A1 A2 (eq_refl _)).
-    split; econstructor; intuition.
-  - specialize (IHsized_ld_sub A1 A2 (eq_refl _)).
-    split; constructor; intuition.
-  - specialize (IHsized_ld_sub A1 A2 (eq_refl _)).
-    split; apply sls_union_r2; intuition.
-  - split.
-    apply size_sub_more with (n:=n1); auto. lia.
-    apply size_sub_more with (n:=n2); auto. lia.
-  - split; intros;
-    apply sls_forallr with (L:=L); intros;
-    inst_cofinites_with x; specialize (H0 A1 A2 (eq_refl _));
-    intuition.
-Qed.
-
-Theorem generalized_transitivity : forall t_order t_ssize G A B C n1 n2 ,
-  type_order B < t_order ->
-  n1 + n2 < t_ssize -> 
-  (G ⊢ A <: B | n1) -> (G ⊢ B <: C | n2) -> (ld_sub G A C).
-Proof with eauto with trans.
-  induction t_order; induction t_ssize; intros.
-  - inversion H. 
-  - inversion H. 
-  - dependent destruction H1; inversion H0.
-  - dependent destruction H1...
-      + dependent destruction H2. 
-        * simpl in H. econstructor. 
-          eapply IHt_ssize with (B:=C0); eauto...
-          eapply IHt_ssize with (B:=D); eauto...
-        * simpl in *. econstructor. 
-          -- eapply IHt_ssize with (B:=ld_t_arrow C0 D) (n1 := S (n1 + n0)); eauto...
-          -- eapply IHt_ssize with (B:=ld_t_arrow C0 D) (n1 := S (n1 + n0)); eauto...
-        * simpl. eapply ld_sub_union_r1; auto.
-          eapply IHt_ssize with  (B:=ld_t_arrow C0 D) (n1 := S (n1 + n0)); eauto...
-        * simpl. eapply ld_sub_union_r2; auto.
-          eapply IHt_ssize with  (B:=ld_t_arrow C0 D) (n1 := S (n1 + n0)); eauto...
-        * eapply ld_sub_forallr with (L:=L `union` ld_ctx_dom G). 
-          intros. inst_cofinites_with x.
-          eapply IHt_ssize with (B:=ld_t_arrow C0 D) (n1:=S (n1 + n0)); eauto...
-      + simpl in H. dependent destruction H2.
-        * apply ld_sub_intersection_r. eapply IHt_ssize with (B:=ld_t_intersection B1 B2 ) (n1:=S (n1 + n0)); eauto...
-          eapply IHt_ssize with (B:=ld_t_intersection B1 B2 ) (n1:=S (n1 + n0)); eauto...
-        * eapply IHt_ssize with (B:=B1); eauto...
-        * eapply IHt_ssize with (B:=B2); eauto...
-        * eapply ld_sub_union_r1; auto. eapply IHt_ssize with (B:=ld_t_intersection B1 B2 ) (n1:=S (n1 + n0)); eauto...
-        * eapply ld_sub_union_r2; auto. eapply IHt_ssize with (B:=ld_t_intersection B1 B2 ) (n1:=S (n1 + n0)); eauto...
-        * eapply ld_sub_forallr with (L:=L `union` ld_ctx_dom G).
-          intros.
-          eapply IHt_ssize with (B:=ld_t_intersection B1 B2) (n1:=S(n1 + n0)) (n2:=n); eauto...
-      + apply ld_sub_intersection_l1; auto. eapply IHt_ssize; eauto... 
-      + apply ld_sub_intersection_l2; auto. eapply IHt_ssize; eauto... 
-      + simpl in H.
-        specialize (sized_sub_union_inv G B1 B2 C n2 H3). intros. destruct H4.
-        eapply IHt_ssize with (B:=B1) (n1:=n1) (n2:=n2); eauto...
-      + simpl in H.
-        specialize (sized_sub_union_inv G B1 B2 C n2 H3). intros. destruct H4.
-        eapply IHt_ssize with (B:=B2) (n1:=n0) (n2:=n2); eauto...
-      + apply ld_sub_union_l. eapply IHt_ssize; eauto... eapply IHt_ssize; eauto...
-      + eapply ld_sub_foralll with (t:=t). auto.
-        eapply IHt_ssize with (B:=B); eauto...
-      + dependent destruction H2. 
-        * apply ld_sub_intersection_r. eapply IHt_ssize with (B:=ld_t_forall B) (n1:=S n); eauto...
-          eapply IHt_ssize with (B:=ld_t_forall B) (n1:=S n); eauto...
-        * apply ld_sub_union_r1. eapply IHt_ssize with (B:=ld_t_forall B) (n1:=S n); eauto...
-          auto.
-        * apply ld_sub_union_r2. eapply IHt_ssize with (B:=ld_t_forall B) (n1:=S n); eauto...
-          auto.
-        * inst_cofinites_by (L `union` fv_ld_type A `union` fv_ld_type B).
-          apply ld_wf_mtype_equiv_ld_wf_type_and_mono in H2. destruct H2.
-          specialize (sized_substitution G ld_ctx_nil x _ _ _ _ H1 H2 H4).
-          intros. destruct H5 as [n1 Hsub].
-          eapply IHt_order with (B:=B ^^ᵈ t) (n1:=n1) (n2:=n0); eauto. simpl in H; eauto.
-          rewrite (open_mono_order B t); eauto...
-          replace G with (G ,, ld_ctx_nil) by auto.
-          replace (B ^^ᵈ t) with ([t /ᵈ x] B ^^ᵈ `ᵈ x).
-          replace A with ([t /ᵈ x] A).
-          -- auto. 
-          -- rewrite subst_ld_type_fresh_eq; auto.
-          -- apply eq_sym. eapply open_subst_eq; auto.
-             apply ld_mono_is_ld_lc. auto. 
-        * apply ld_sub_forallr with (L:=L `union` L0 `union` fv_ld_type B `union` fv_ld_type A).
-          intros. inst_cofinites_with x.
-          eapply IHt_ssize with (B:=ld_t_forall B) (n1:=S n) (n2:=n0); auto... 
-          eapply sls_forallr with (L:= (ld_ctx_dom G) `union` singleton x). intros.
-          assert (⊢ G, x). { auto... } 
-          assert (⊢ G, x0). { constructor. dependent destruction H5;  auto. auto. }
-          replace (G, x, x0) with (G ,, (ld_ctx_nil,  x) ,, (ld_ctx_nil, x0)) by auto.
-          eapply sized_ld_sub_weakening; simpl.
-          replace A with ([`ᵈ x0 /ᵈ x] A).
-          replace (B ^^ᵈ `ᵈ x0) with ([`ᵈ x0 /ᵈ x] B ^^ᵈ `ᵈ x).
-          replace (G, x0) with (G, x0,, ld_ctx_nil) by auto.
-          apply sized_var_substitution; auto.
-          -- apply eq_sym. eauto... 
-          -- rewrite subst_ld_type_fresh_eq; auto.
-          -- econstructor; eauto.
-Qed.
-
-
  *)
 
-Lemma sub_transitivity' : forall n_dtyp_order n_dsub_size E R1 S1 T1 n1 n2 ,
+Hint Constructors d_sub : trans.
+Hint Extern 1 (?x < ?y) => lia : trans.
+
+
+Lemma d_sub_size_union_inv: forall E S1 S2 T1 n,
+  E ⊢ (dtyp_union S1 S2) <: T1 | n -> E ⊢ S1 <: T1 | n /\ E ⊢ S2 <: T1 | n.
+Proof with auto with trans.
+  intros.
+  dependent induction H.
+  - inversion H. split; auto...
+  - specialize (IHd_sub_sized1 S1 S2 (eq_refl _)).
+    specialize (IHd_sub_sized2 S1 S2 (eq_refl _)).
+    split; constructor; intuition.
+  - specialize (IHd_sub_sized S1 S2 (eq_refl _)).
+    split; apply d__subs__union1; intuition.
+  - specialize (IHd_sub_sized S1 S2 (eq_refl _)).
+    split; apply d__subs__union2; intuition.
+  - split. 
+    eapply d_sub_size_more; eauto. lia. 
+    eapply d_sub_size_more; eauto. lia. 
+Qed.
+
+
+
+Theorem d_sub_size_subst_stvar : forall E F SX S1 T1 T2 n,
+  F ++ (SX ~ dbind_stvar_empty) ++ E ⊢ S1 <: T1 | n ->
+  E ⊢ T2 -> 
+  dmono_typ T2 ->
+  exists n', map (d_subst_stv_in_binding T2 SX) F ++ E ⊢ {T2 /ₛᵈ SX} S1 <: {T2 /ₛᵈ SX} T1 | n'.
+Proof.
+  intros.
+  apply d_sub_size_sound in H.
+  apply d_sub_subst_stvar with (T2:=T2) in H; auto.
+  apply d_sub_size_complete in H. auto.
+Qed.
+
+Inductive d_ord : dtyp -> Prop :=
+| d__ord__tvar : forall X, d_ord (dtyp_var_f X)
+| d__ord__stvar : forall SX, d_ord (dtyp_svar SX)
+| d__ord__bot : d_ord dtyp_bot
+| d__ord__top : d_ord dtyp_top
+| d__ord__unit : d_ord dtyp_unit
+| d__ord__arr : forall T1 T2, 
+    d_ord (dtyp_arrow T1 T2)
+| d__ord__all : forall T,
+    d_ord (dtyp_all T)
+.
+
+Inductive d_wft_ord : dtyp -> Prop :=
+| d__wftord__base : forall T, d_ord T -> d_wft_ord T
+| d__wftord__intersection: forall T1 T2,
+    d_wft_ord T1 ->
+    d_wft_ord T2 ->
+    d_wft_ord (dtyp_intersection T1 T2)
+| d__wftord__union: forall T1 T2,
+    d_wft_ord T1 ->
+    d_wft_ord T2 ->
+    d_wft_ord (dtyp_union T1 T2)
+.
+
+Hint Constructors d_ord : wf.
+Hint Constructors d_wft_ord : wf.
+
+Lemma d_wft_ord_complete: forall E T, 
+  E ⊢ T -> d_wft_ord T.
+Proof with auto with wf.
+  intros. induction H; eauto...
+Qed.
+
+Theorem d_sub_mono_bot_false : forall E T1, 
+  dmono_typ T1 ->
+  E ⊢ T1 <: dtyp_bot ->
+  False.
+Proof.
+  intros. induction H; try solve [(dependent destruction H0); auto].
+Qed.
+
+
+
+Theorem d_sub_open_mono_bot_false: forall n1 n2 E S1 T1 L,
+    d_typ_order (T1 ^^ᵈ S1) < n1 ->
+    d_typ_size (T1 ^^ᵈ S1) < n2 ->
+    E ⊢ T1 ^^ᵈ S1 <: dtyp_bot ->
+    (forall X, X `notin` L -> ds_in X (T1 ^ᵈ X)) ->
+    dmono_typ S1 ->
+    False.
+Proof.
+  intro n1. induction n1.
+  - intros. inversion H.
+  - intros n2. induction n2.
+    + intros. inversion H0.
+    + intros. dependent destruction H1; rename x into Heq. 
+      * destruct T1; simpl in *; try solve [inversion Heq].
+        -- admit.
+        -- admit.
+      * destruct T1; simpl in *; try solve [inversion Heq].
+        -- admit.
+        -- inversion Heq. admit.
+      * destruct T1; simpl in *; try solve [inversion Heq].
+        -- destruct n.
+           ++ unfold open_dtyp_wrt_dtyp in Heq. simpl in Heq.
+              subst. dependent destruction H4.
+              eapply d_sub_mono_bot_false with (T1:=S0); eauto.
+           ++ admit.
+        -- admit.
+      * admit.
+      * destruct T1; simpl in *; try solve [inversion Heq].
+        -- admit.
+        -- admit.
+Admitted.
+
+
+Theorem d_sub_open_mono_stvar_false: forall n1 n2 E S1 T1 SX L,
+    d_typ_order (T1 ^^ᵈ S1) < n1 ->
+    d_typ_size (T1 ^^ᵈ S1) < n2 ->
+    E ⊢ T1 ^^ᵈ S1 <: dtyp_svar SX ->
+    (forall X, X `notin` L -> ds_in X (T1 ^ᵈ X)) ->
+    dmono_typ S1 ->
+    False.
+Proof.
+  intro n1. induction n1.
+  - intros. inversion H.
+  - intros n2. induction n2;
+    admit.
+Admitted.
+          
+          
+Lemma d_sub_sized_transitivity : forall n_dtyp_order n_dsub_size E R1 S1 T1 n1 n2 ,
   dtyp_order S1 < n_dtyp_order ->
   n1 + n2 < n_dsub_size -> 
-  dsub_sized E R1 S1 n1 -> dsub_sized E S1 T1 n2 -> E ⊢ R1 <: T1.
-Proof.
+  d_sub_sized E R1 S1 n1 -> d_sub_sized E S1 T1 n2 -> E ⊢ R1 <: T1.
+Proof with auto with trans.
+  induction n_dtyp_order; induction n_dsub_size; intros.
+  - inversion H.
+  - inversion H.
+  - inversion H0.
+  - dependent destruction H1...
+    + dependent destruction H2...
+      * econstructor.
+        eapply IHn_dsub_size with (S1:=dtyp_top) (n1:=n2); eauto...
+        eapply IHn_dsub_size with (S1:=dtyp_top) (n1:=n1); eauto... 
+      * simpl in H. eapply d_sub_union1. 
+        eapply IHn_dsub_size with (S1:=dtyp_top) (n1:=n); eauto...
+        auto.
+      * simpl in H. eapply d_sub_union2. 
+        eapply IHn_dsub_size with (S1:=dtyp_top) (n1:=n); eauto...
+        auto.
+    + apply d_sub_size_sound in H2.  
+      apply dsub_dwft in H2. 
+      eapply d_sub_bot. intuition.
+    + dependent destruction H2...  
+      * econstructor.
+        eapply IHn_dsub_size with (S1:=dtyp_unit) (n1:=n2); eauto...
+        eapply IHn_dsub_size with (S1:=dtyp_unit) (n1:=n1); eauto... 
+      * simpl in H. eapply d_sub_union1. 
+        eapply IHn_dsub_size with (S1:=dtyp_unit) (n1:=n); eauto...
+        auto.
+      * simpl in H. eapply d_sub_union2. 
+        eapply IHn_dsub_size with (S1:=dtyp_unit) (n1:=n); eauto...
+        auto.
+    + dependent destruction H2...  
+      * econstructor.
+        eapply IHn_dsub_size with (S1:=`ᵈ X) (n1:=n2); eauto...
+        eapply IHn_dsub_size with (S1:=`ᵈ X) (n1:=n1); eauto... 
+      * simpl in H. eapply d_sub_union1. 
+        eapply IHn_dsub_size with (S1:=`ᵈ X) (n1:=n); eauto...
+        auto.
+      * simpl in H. eapply d_sub_union2. 
+        eapply IHn_dsub_size with (S1:=`ᵈ X) (n1:=n); eauto...
+        auto.
+    + dependent destruction H2...  
+      * econstructor.
+        eapply IHn_dsub_size with (S1:=dtyp_svar SX) (n1:=n2); eauto...
+        eapply IHn_dsub_size with (S1:=dtyp_svar SX) (n1:=n1); eauto... 
+      * simpl in H. eapply d_sub_union1. 
+        eapply IHn_dsub_size with (S1:=dtyp_svar SX) (n1:=n); eauto...
+        auto.
+      * simpl in H. eapply d_sub_union2. 
+        eapply IHn_dsub_size with (S1:=dtyp_svar SX) (n1:=n); eauto...
+        auto.
+    + simpl in *. dependent destruction H2...  
+      * econstructor. apply d_sub_size_sound in H1_. apply d_sub_size_sound in H1_0.
+        apply dsub_dwft in H1_. apply dsub_dwft in H1_0. econstructor; intuition.
+      * econstructor.
+        eapply IHn_dsub_size with (S1:=T0); eauto...
+        eapply IHn_dsub_size with (S1:=T2); eauto...
+      * econstructor.
+        eapply IHn_dsub_size with (S1:=dtyp_arrow T0 T2) (n1:=S(n1+n0)); eauto...  
+        eapply IHn_dsub_size with (S1:=dtyp_arrow T0 T2) (n1:=S(n1+n0)); eauto...  
+      * apply d_sub_union1.
+        eapply IHn_dsub_size with (S1:=dtyp_arrow T0 T2) (n1:=S(n1+n0)); eauto...  
+        auto.
+      * apply d_sub_union2.
+        eapply IHn_dsub_size with (S1:=dtyp_arrow T0 T2) (n1:=S(n1+n0)); eauto...  
+        auto.
+    + simpl in *. dependent destruction H4.
+      * econstructor. 
+        admit. (*wft*)
+      * eapply d_sub_all with (L:=L `union` L0); auto.
+        intros. inst_cofinites_with SX.
+        eapply IHn_dtyp_order with (S1:= T0 ^^ᵈ dtyp_svar SX); eauto...
+        -- admit. (* order *)
+      * eapply d_sub_alll with (T2:=T2); eauto.
+        admit. (* ds_in *)
+        inst_cofinites_by (L `union` fstv_in_dtyp S1 `union` fstv_in_dtyp T0).
+        replace (S1 ^^ᵈ T2) with ({T2 /ₛᵈ x} S1 ^^ᵈ dtyp_svar x) by admit.
+        replace E with (map (d_subst_stv_in_binding T2 x) nil ++ E) by auto.
+        specialize (d_sub_size_subst_stvar E nil x (S1 ^^ᵈ dtyp_svar x) (T0 ^^ᵈ dtyp_svar x) T2 n H3 H8 H9).
+        intros. destruct H11 as [n' Hsub].
+        eapply IHn_dtyp_order with (S1:=T0 ^^ᵈ T2) (n1:=n'); eauto...
+        admit. (*order*)
+        replace (T0 ^^ᵈ T2) with ({T2 /ₛᵈ x} T0 ^^ᵈ dtyp_svar x) by admit.
+        eauto.
+      * eapply d_sub_intersection1.
+        -- eapply IHn_dsub_size with (S1:=dtyp_all T0) (n1:=S n) (n2:=n1); eauto...
+           econstructor; eauto.
+        -- eapply IHn_dsub_size with (S1:=dtyp_all T0) (n1:=S n) (n2:=n2); eauto...
+           econstructor; eauto.
+      * eapply d_sub_union1.
+        -- eapply IHn_dsub_size with (S1:=dtyp_all T0) (n1:=S n) (n2:=n0); eauto...
+           econstructor; eauto.
+        -- auto.
+      * eapply d_sub_union2.
+        -- eapply IHn_dsub_size with (S1:=dtyp_all T0) (n1:=S n) (n2:=n0); eauto...
+           econstructor; eauto.
+        -- auto.
+    + simpl in *. dependent destruction H2...
+      (* forall a. A < 1 < C *)
+      * apply d_sub_size_sound in H8 as Hdsub.
+        apply dsub_dwft in Hdsub. inversion Hdsub.
+        apply d_wft_ord_complete in H9. clear Hdsub. induction H9.
+        -- dependent destruction H8; auto...
+           ++ econstructor. admit.
+           ++ eapply d_sub_alll with (T2:=T2); auto. admit.
+           ++ inversion H9.
+           ++ inversion H10.
+           ++ inversion H10.
+        -- dependent destruction H8; auto...
+           apply d_sub_size_more with (n':=S(n1+n2)) in H8_.
+           apply d_sub_size_more with (n':=S(n1+n2)) in H8_0.
+           specialize (IHd_wft_ord1 H8_).
+           specialize (IHd_wft_ord2 H8_0).
+           auto... lia. lia.
+        -- dependent destruction H8; auto...
+           ++ apply d_sub_size_more with (n':=S n0) in H8.
+              specialize (IHd_wft_ord1 H8). auto. lia.
+           ++ apply d_sub_size_more with (n':=S n0) in H8.
+              specialize (IHd_wft_ord2 H8). auto. lia.
+      (* forall a. A < top < C *)
+      * apply d_sub_size_sound in H8 as Hdsub.
+        apply dsub_dwft in Hdsub. inversion Hdsub.
+        apply d_wft_ord_complete in H9. clear Hdsub. induction H9.
+        -- dependent destruction H8; auto...
+           ++ econstructor. admit.
+           ++ inversion H9.
+           ++ inversion H10.
+           ++ inversion H10.
+        -- dependent destruction H8; auto...
+           apply d_sub_size_more with (n':=S(n1+n2)) in H8_.
+           apply d_sub_size_more with (n':=S(n1+n2)) in H8_0.
+           specialize (IHd_wft_ord1 H8_).
+           specialize (IHd_wft_ord2 H8_0).
+           auto... lia. lia.
+        -- dependent destruction H8; auto...
+           ++ apply d_sub_size_more with (n':=S n0) in H8.
+              specialize (IHd_wft_ord1 H8). auto. lia.
+           ++ apply d_sub_size_more with (n':=S n0) in H8.
+              specialize (IHd_wft_ord2 H8). auto. lia.
+      (* forall a. A < bot < C *)
+      * apply d_sub_size_sound in H8 as Hdsub.
+        apply dsub_dwft in Hdsub. inversion Hdsub.
+        apply d_wft_ord_complete in H9. clear Hdsub. induction H9.
+        -- dependent destruction H8; auto...
+          ++ econstructor. admit.
+          ++ admit.
+          ++ inversion H9.
+          ++ inversion H10.
+          ++ inversion H10.
+        -- admit.
+        -- dependent destruction H8; auto...
+          ++ admit.
+          ++ admit.
+          ++ admit.
+      (* forall a. A < X < C *)
+      * apply d_sub_size_sound in H8 as Hdsub.
+        apply dsub_dwft in Hdsub. inversion Hdsub.
+        apply d_wft_ord_complete in H9. clear Hdsub. induction H9.
+        -- dependent destruction H8; auto...
+           ++ econstructor. admit.
+           ++ eapply d_sub_alll with (T2:=T2); eauto...
+              apply d_sub_size_sound in H7. auto.
+           ++ inversion H9.
+           ++ inversion H10.
+           ++ inversion H10.
+        -- dependent destruction H8; auto...
+           apply d_sub_size_more with (n':=S(n1+n2)) in H8_.
+           apply d_sub_size_more with (n':=S(n1+n2)) in H8_0.
+           specialize (IHd_wft_ord1 H8_).
+           specialize (IHd_wft_ord2 H8_0).
+           auto... lia. lia.
+        -- dependent destruction H8; auto...
+           ++ apply d_sub_size_more with (n':=S n0) in H8.
+              specialize (IHd_wft_ord1 H8). auto. lia.
+           ++ apply d_sub_size_more with (n':=S n0) in H8.
+              specialize (IHd_wft_ord2 H8). auto. lia.
+      (* forall a. A < SX < C *)
+      * admit.
+      (* forall a. A < B1 -> B2 < C *)
+      * apply d_sub_size_sound in H9 as Hdsub.
+        apply dsub_dwft in Hdsub. inversion Hdsub.
+        apply d_wft_ord_complete in H11. clear Hdsub. induction H11.
+        -- dependent destruction H9; auto...
+          ++ econstructor. admit.
+          ++ eapply d_sub_alll with (T2:=T2); eauto...
+             admit. admit. admit.
+             eapply IHn_dsub_size with (S1:=dtyp_arrow T0 T3) (n2:=S(n1+n2)); eauto...
+          ++ inversion H11.
+          ++ inversion H12.
+          ++ inversion H12.
+        -- dependent destruction H9; auto...
+          apply d_sub_size_more with (n':=S(n1+n2)) in H9_.
+          apply d_sub_size_more with (n':=S(n1+n2)) in H9_0.
+          specialize (IHd_wft_ord1 H9_).
+          specialize (IHd_wft_ord2 H9_0).
+          auto... lia. lia.
+        -- dependent destruction H9; auto...
+          ++ apply d_sub_size_more with (n':=S n0) in H9.
+              specialize (IHd_wft_ord1 H9). auto. lia.
+          ++ apply d_sub_size_more with (n':=S n0) in H9.
+              specialize (IHd_wft_ord2 H9). auto. lia.
+      * inversion H1.
+      * inversion H4.
+    + simpl in *. dependent destruction H2...
+      * econstructor. apply d_sub_size_sound in H1_. apply dsub_dwft in H1_.
+        intuition.
+      * econstructor.
+        eapply IHn_dsub_size with (S1:=dtyp_intersection T0 T2) (n1:=S(n1+n0)); eauto...
+        eapply IHn_dsub_size with (S1:=dtyp_intersection T0 T2) (n1:=S(n1+n0)); eauto...
+      * eapply IHn_dsub_size with (S1:=T0); eauto...
+      * eapply IHn_dsub_size with (S1:=T2); eauto...
+      * apply d_sub_union1. 
+        eapply IHn_dsub_size with (S1:=dtyp_intersection T0 T2) (n1:=S(n1+n0)); eauto...
+        auto.
+      * apply d_sub_union2. 
+        eapply IHn_dsub_size with (S1:=dtyp_intersection T0 T2) (n1:=S(n1+n0)); eauto...
+        auto.
+    + simpl in H. apply d_sub_intersection2.
+      * eapply IHn_dsub_size with (S1:=T) (n1:=n); eauto...
+      * auto.
+    + simpl in H. apply d_sub_intersection3.
+      * eapply IHn_dsub_size with (S1:=T) (n1:=n); eauto...
+      * auto.
+    + simpl in H. apply d_sub_size_union_inv in H3.  
+      eapply IHn_dsub_size with (S1:=T0) (n2:=n2); eauto... intuition.
+    + simpl in H. apply d_sub_size_union_inv in H3.  
+      eapply IHn_dsub_size with (S1:=T2) (n2:=n2); eauto... intuition.
+    + simpl in H. econstructor.
+      * eapply IHn_dsub_size with (S1:=T) (n1:=n1); eauto...
+      * eapply IHn_dsub_size with (S1:=T) (n1:=n0); eauto...
 Admitted.
 
 
@@ -1166,7 +1325,7 @@ Theorem sub_transitivity : forall E R1 S1 T1,
    E ⊢ R1 <: S1 -> E ⊢ S1 <: T1 -> E ⊢ R1 <: T1.
 Proof.
   intros E R1 S1 T1 Hrs Hst.
-  apply dsub_sized_wrt_dub_complete in Hrs. destruct Hrs as [n1].
-  apply dsub_sized_wrt_dub_complete in Hst. destruct Hst as [n2].
-  eapply sub_transitivity'; eauto.
+  apply d_sub_size_complete in Hrs. destruct Hrs as [n1].
+  apply d_sub_size_complete in Hst. destruct Hst as [n2].
+  eapply d_sub_sized_transitivity; eauto.
 Qed.

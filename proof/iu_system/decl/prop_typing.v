@@ -822,40 +822,6 @@ Proof.
 Qed.
 
 
-Inductive ord_i2 : dtyp -> Prop :=
-| ord_i2_var : forall X, ord_i2 (dtyp_var_f X)
-| ord_i2_svar : forall SX, ord_i2 (dtyp_svar SX)
-| ord_i2_top : ord_i2 dtyp_top
-| ord_i2_bot : ord_i2 dtyp_bot
-| ord_i2_unit : ord_i2 dtyp_unit
-| ord_i2_arr : forall T1 T2, ord_i2 (dtyp_arrow T1 T2)
-| ord_i2_union : forall T1 T2, ord_i2 (dtyp_union T1 T2)
-| ord_i2_all : forall T1, ord_i2 (dtyp_all T1)
-.
-
-Lemma d_sub_ord2_inv : forall E T1 T2 T3, 
-  ord_i2 T3 -> 
-  E ⊢ (dtyp_intersection T1 T2) <: T3 ->
-  E ⊢ T1 <: T3 \/ E ⊢ T2 <: T3.
-Proof.
-  intros. dependent induction H0.
-  - left. inversion H0.
-    eauto.
-  - inversion H.
-  - auto.
-  - auto.
-  - dependent destruction H.
-    inversion IHd_sub.
-    + left. auto.
-    + right. auto.
-  - dependent destruction H.
-    specialize (IHd_sub _ _ H2 (eq_refl _)).
-    inversion IHd_sub.
-    + left. auto.
-    + right. auto.
-Qed.
-
-
 
 Lemma d_check_inf_sub : forall E e T1 T2,
   d_typing E e d_typingmode_inf T1 ->
@@ -897,7 +863,7 @@ Proof.
 Admitted.
 
 
-Theorem d_infabs : forall E T1 T2 T3 S1, d_infabs E T1 T2 T3 -> E ⊢ S1 <:T1 ->
+Theorem d_infabs : forall E T1 T2 S1, d_infabs E T1 T2 -> E ⊢ S1 <:T1 ->
   exists S2, d_inftapp E S1 T2 S2.
 Proof.
 Admitted.
