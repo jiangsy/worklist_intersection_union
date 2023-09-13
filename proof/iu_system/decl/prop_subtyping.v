@@ -544,6 +544,7 @@ Proof.
   - forwards~: IHHS1.
     inverts~ HWT. inverts~ HWS.
     forwards~: IHHS2.
+    now inversion HWS.
     inverts~ HWS. inverts~ HWT.
   - admit.
   - forwards~: IHHS.
@@ -554,17 +555,18 @@ Admitted.
 
 
 Theorem d_sub_tvar_ind_sub_all : forall E T1 T2,
+  ⊢ E ->
   d_sub_tvar_inv (dtyp_all T1) ->
   E ⊢ dtyp_all T1 ->
   dmono_typ T2 ->
   E ⊢ T2 ->
   E ⊢ dtyp_all T1 <: T2.
 Proof.
-  intros. 
-  specialize (d_mono_ordiu_complete _ H1). intros.
-  induction H3.
-  - dependent destruction H0. 
-    dependent destruction H.
+  intros * Hwfenv H Hwft Hmono Hwft2. 
+  specialize (d_mono_ordiu_complete _ Hmono). intros.
+  induction H0.
+  - dependent destruction H. 
+    dependent destruction Hwft.
     eapply d_sub_alll with (L:=L `union` L0) (T2:=T0).
     + now apply d_mono_typ_neq_all.
     + now apply d_ord_mono_neq_intersection.
@@ -578,22 +580,15 @@ Proof.
       rewrite d_subst_tv_in_dtyp_fresh_eq in H; auto.
       simpl in H. destruct eq_dec in H. auto.
       contradiction.
-      * admit.
+      * simpl. constructor; auto.
       * auto.
       * auto.
-      (* * eapply d_sub_strenthening with (F := nil); eauto.
-        replace ((X, dbind_tvar_empty) :: E) with (nil ++ ((X, dbind_tvar_empty)::nil) ++  E) in H.
-        eapply H. auto.
-        auto.
-        replace (T1 ^^ᵈ T0) with ({T0 /ᵈ X} (T1 ^ᵈ X)).
-        replace nil with (map (d_subst_tv_in_binding T0 X) nil) by auto.
-        apply d_wft_typ_subst; auto.
-        apply dtyp_subst_open_var; auto. *)
-       * auto.
+      * auto.
+  - inversion Hmono. inversion Hwft2. auto.
+  - inversion Hmono. inversion Hwft2. auto.
+Qed.
 
-  - inversion H1. inversion H2. auto.
-  - inversion H1. inversion H2. auto.
-Admitted.
+
 
 
 Theorem  d_sub_subst_mono : forall E X F S1 T1 T2,
@@ -607,7 +602,7 @@ Proof with eauto with subtyping.
   dependent induction Hsub; try solve [simpl in *; eauto with subtyping].
   - eapply dsub_refl. auto...
   - eapply dsub_refl. auto...
-  - simpl. eapply d_sub_all with (L:=L `union` singleton X `union` dom E); intros SX Hfr; inst_cofinites_with SX.
+  - simpl. eapply d_sub_all with (L:=L `union` singleton X `union` dom E `union` dom F); intros SX Hfr; inst_cofinites_with SX.
     + rewrite dtyp_subst_open_comm; auto...
       apply fstv_sin_dtyp_subst_tv; auto...
     + rewrite dtyp_subst_open_comm; auto...
@@ -615,7 +610,7 @@ Proof with eauto with subtyping.
     + inst_cofinites_with SX. repeat rewrite dtyp_subst_open_comm; eauto...
       replace (SX ~ dbind_stvar_empty ++ map (d_subst_tv_in_binding T2 X) F ++ E) with 
       (map (d_subst_tv_in_binding T2 X) (SX ~ dbind_stvar_empty ++ F) ++ E) by auto.
-      eapply H2; auto... simpl. constructor; eauto. admit. 
+      eapply H2; auto... simpl. constructor; eauto. 
   - destruct T1 eqn:HeqT. 
     + eapply d_sub_alll with (L:=L `union` singleton X) (T2:={T2 /ᵈ X} T0); auto...
       * intros. inst_cofinites_with X0. rewrite dtyp_subst_open_comm; auto...
@@ -637,18 +632,19 @@ Proof with eauto with subtyping.
     + simpl.
       apply d_sub_dwft in Hsub as Hwft1. destruct Hwft1.
       apply d_sub_tvar_ind_sub_all.
+      -- eapply d_wf_env_subst_tvar_typ; auto.
       -- replace (dtyp_all ({T2 /ᵈ X} S1)) with ({T2 /ᵈ X} (dtyp_all S1)) by auto.
          apply d_sub_tvar_inv_subst. eapply d_sub_tvar_ind_open_inv_complete; eauto.
          eapply dwf_typ_lc_dtyp; eauto.
       -- replace (dtyp_all ({T2 /ᵈ X} S1)) with ({T2 /ᵈ X} (dtyp_all S1)) by auto. 
          apply d_wft_typ_subst; auto. 
-         eapply dwftyp_all with (L:=L `union` ftv_in_dtyp S1).
-         auto. 
+         inst_cofinites_for dwftyp_all.
+         ++ auto. 
          ++ intros. eapply dwf_typ_open_inv with (X:=X1) (S1:=T0); auto.
             rewrite d_subst_tv_in_dtyp_open_dtyp_wrt_dtyp; auto.
             simpl. rewrite (d_subst_tv_in_dtyp_fresh_eq); auto.
             unfold eq_dec. destruct (EqDec_eq_of_X X1 X1); auto.
-            ** apply dwf_typ_weakening_cons; auto. admit.
+            ** apply dwf_typ_weakening_cons; auto. 
             ** contradiction.
       -- unfold eq_dec. destruct (EqDec_eq_of_X X0 X); auto. 
       -- replace (if X0 == X then T2 else `ᵈ X0) with ( {T2 /ᵈ X} `ᵈ X0) by auto.
