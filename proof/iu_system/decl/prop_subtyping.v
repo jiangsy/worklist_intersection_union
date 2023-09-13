@@ -832,29 +832,6 @@ Qed.
 
 (* 
 
-Lemma sized_ld_sub_weakening : forall G1 G2 G3 t1 t2 n,
-  G1 ,, G3 ⊢ t1 <: t2 | n -> ⊢ G1 ,, G2 ,, G3 ->
-  G1 ,, G2 ,, G3 ⊢ t1 <: t2 | n.
-Proof with auto with trans.
-  intros.
-  dependent induction H; auto...
-  - constructor; auto. eapply ld_in_context_weakenning; auto.
-  - eapply sls_intersection_l1. eapply IHsized_ld_sub; auto.
-    eapply ld_wf_type_weakening; auto.
-  - eapply sls_intersection_l2. eapply IHsized_ld_sub; auto.
-    eapply ld_wf_type_weakening; auto.
-  - eapply sls_union_r1. eapply IHsized_ld_sub; auto.
-    eapply ld_wf_type_weakening; auto.
-  - eapply sls_union_r2. eapply IHsized_ld_sub; auto.
-    eapply ld_wf_type_weakening; auto.
-  - eapply sls_foralll with (t:=t); auto.
-    eapply ld_wf_mtype_weakening; auto.
-  - eapply sls_forallr with (L:=L `union`  ld_ctx_dom (G1,, G2,, G3)). intros.
-    inst_cofinites_with x. replace (G1,, G2,, G3, x ) with (G1,, G2,, (G3, x)) by auto.
-    eapply H0; auto. simpl. constructor; auto.
-Qed.
-
-
 Corollary sized_ld_sub_weakening_cons : forall G x t1 t2 n,
   G ⊢ t1 <: t2 | n -> x `notin` ld_ctx_dom G -> G , x ⊢ t1 <: t2 | n.
 Proof.
@@ -947,15 +924,6 @@ Proof.
     + rewrite subst_ld_type_open_ld_type_wrt_ld_type. reflexivity. simpl.
       replace (G1,, G2, x0 ) with (G1,, (G2, x0)) by auto. now apply ld_mono_is_ld_lc.
 Qed.
-
-
-Hint Resolve ld_sub_wf_ctx : trans.
-Hint Resolve sized_ld_sub_to_ld_sub : trans.
-Hint Resolve sized_ld_sub_weakening_cons : trans.
-Hint Resolve ld_wf_mtype_is_mtype : trans.
-Hint Resolve sized_ld_sub_weakening : trans.
-Hint Resolve open_subst_eq : trans.
-Hint Extern 1 (?x < ?y) => lia : trans.
 
  *)
 
@@ -1163,14 +1131,14 @@ Proof with auto with trans.
         -- admit. (* order *)
       * eapply d_sub_alll with (T2:=T2); eauto.
         admit. (* ds_in *)
-        inst_cofinites_by (L `union` fstv_in_dtyp S1 `union` fstv_in_dtyp T0).
-        replace (S1 ^^ᵈ T2) with ({T2 /ₛᵈ x} S1 ^^ᵈ dtyp_svar x) by admit.
-        replace E with (map (d_subst_stv_in_binding T2 x) nil ++ E) by auto.
-        specialize (d_sub_size_subst_stvar E nil x (S1 ^^ᵈ dtyp_svar x) (T0 ^^ᵈ dtyp_svar x) T2 n H3 H8 H9).
+        inst_cofinites_by (L `union` fstv_in_dtyp S1 `union` fstv_in_dtyp T0) use_name SX.
+        replace (S1 ^^ᵈ T2) with ({T2 /ₛᵈ SX} S1 ^^ᵈ dtyp_svar SX) by admit.
+        replace E with (map (d_subst_stv_in_binding T2 SX) nil ++ E) by auto.
+        specialize (d_sub_size_subst_stvar E nil SX (S1 ^^ᵈ dtyp_svar SX) (T0 ^^ᵈ dtyp_svar SX) T2 n H3 H8 H9).
         intros. destruct H11 as [n' Hsub].
         eapply IHn_dtyp_order with (S1:=T0 ^^ᵈ T2) (n1:=n'); eauto...
         admit. (*order*)
-        replace (T0 ^^ᵈ T2) with ({T2 /ₛᵈ x} T0 ^^ᵈ dtyp_svar x) by admit.
+        replace (T0 ^^ᵈ T2) with ({T2 /ₛᵈ SX} T0 ^^ᵈ dtyp_svar SX) by admit.
         eauto.
       * eapply d_sub_intersection1.
         -- eapply IHn_dsub_size with (S1:=dtyp_all T0) (n1:=S n) (n2:=n1); eauto...
@@ -1192,7 +1160,8 @@ Proof with auto with trans.
         apply d_wft_ord_complete in H9. clear Hdsub. induction H9.
         -- dependent destruction H8; auto...
            ++ econstructor. admit.
-           ++ eapply d_sub_alll with (T2:=T2); auto. admit.
+           ++ eapply d_sub_alll with (T2:=T2); auto. 
+              eapply d_sub_size_sound; eauto.
            ++ inversion H9.
            ++ inversion H10.
            ++ inversion H10.

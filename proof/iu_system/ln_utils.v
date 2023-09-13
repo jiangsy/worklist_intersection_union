@@ -40,6 +40,11 @@ Ltac inst_cofinites_by F :=
   let L := F in
   let x := fresh "x" in
   pick fresh x for L; inst_cofinites_with x.
+  
+Tactic Notation "inst_cofinites_by" constr(F) :=
+  let x := fresh "x" in let L:=F in pick fresh x for L; inst_cofinites_with x.
+Tactic Notation "inst_cofinites_by" constr(L) "use_name" ident(x) := 
+  pick fresh x for L; inst_cofinites_with x.
 
 
 (* Ltac rewrite_la_subst_open_var :=
