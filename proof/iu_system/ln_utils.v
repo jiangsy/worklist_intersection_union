@@ -43,8 +43,8 @@ Ltac inst_cofinites_by F :=
   
 Tactic Notation "inst_cofinites_by" constr(F) :=
   let x := fresh "x" in let L:=F in pick fresh x for L; inst_cofinites_with x.
-Tactic Notation "inst_cofinites_by" constr(L) "use_name" ident(x) := 
-  pick fresh x for L; inst_cofinites_with x.
+Tactic Notation "inst_cofinites_by" constr(L) "using_name" ident(x) := 
+  let x := fresh x in pick fresh x for L; inst_cofinites_with x.
 
 
 
@@ -68,17 +68,17 @@ Ltac gather_atoms ::=
 Tactic Notation "inst_cofinites_for" constr(H) := 
   let L1 := gather_atoms in
   let L1 := beautify_fset L1 in
-  pick fresh x for L1; apply H with (L:=L1).
+  apply H with (L:=L1).
 
 Tactic Notation "inst_cofinites_for" constr(H) ident(name)":="constr(Args1) := 
   let L1 := gather_atoms in
   let L1 := beautify_fset L1 in
-  pick fresh x for L1; apply H with (L:=L1) (name:=Args1).
+  apply H with (L:=L1) (name:=Args1).
 
 Tactic Notation "inst_cofinites_for" constr(H) ident(argname1)":="constr(arg1) "," ident(argname2) ":=" constr(arg2):= 
   let L1 := gather_atoms in
   let L1 := beautify_fset L1 in
-  pick fresh x for L1; apply H with (L:=L1) (argname1:=arg1) (argname2:=arg2).
+  apply H with (L:=L1) (argname1:=arg1) (argname2:=arg2).
 
 (* 
 

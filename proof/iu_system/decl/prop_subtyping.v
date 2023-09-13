@@ -574,7 +574,7 @@ Proof.
     + auto. 
     + auto.
     + auto.
-    + inst_cofinites_by (L `union` L0 `union` ftv_in_dtyp T1 `union` dom E) use_name X.
+    + inst_cofinites_by (L `union` L0 `union` ftv_in_dtyp T1 `union` dom E) using_name X.
       apply d_sub_tvar_ind_open_subst with (E:= E) (T2:=T0) (F:=nil) in H.
       rewrite d_subst_tv_in_dtyp_open_dtyp_wrt_dtyp in H; auto.
       rewrite d_subst_tv_in_dtyp_fresh_eq in H; auto.
@@ -690,7 +690,9 @@ Proof with eauto with subtyping.
       (map (d_subst_stv_in_binding T2 SX) (SX1 ~ dbind_stvar_empty ++ F) ++ E) by auto.
       eapply H2; auto...
   (* @chen *)
-  - admit.
+  - assert (E ⊢ T1) by admit.
+    destruct T1; simpl in *.
+    + inst_cofinites_for d_sub_alll T2:=(T0); auto.
 Admitted.
 
 Inductive d_sub_sized : denv -> dtyp -> dtyp -> nat -> Prop :=   
@@ -1053,7 +1055,7 @@ Proof.
     + intros. inversion H0.
     + intros. dependent destruction H1; rename x into Heq. 
       * destruct T1; simpl in *; try solve [inversion Heq].
-        -- inst_cofinites_by L use_name X. inversion H2.
+        -- inst_cofinites_by L using_name X. inversion H2.
         -- destruct n.
            ++ unfold open_dtyp_wrt_dtyp in Heq. simpl in *. 
               subst. inversion H3.
@@ -1065,7 +1067,7 @@ Proof.
             subst. inversion H3.
           ++ unfold open_dtyp_wrt_dtyp in Heq. simpl in *. 
             inversion Heq.
-        -- inst_cofinites_by L use_name X. inversion H2.
+        -- inst_cofinites_by L using_name X. inversion H2.
       * destruct T1; simpl in *; try solve [inversion Heq].
         -- destruct n.
           ++ unfold open_dtyp_wrt_dtyp in Heq. simpl in Heq.
@@ -1186,7 +1188,7 @@ Proof with auto with trans.
         -- admit.
       * eapply d_sub_alll with (T2:=T2); eauto.
         admit. (* ds_in *)
-        inst_cofinites_by (L `union` fstv_in_dtyp S1 `union` fstv_in_dtyp T0) use_name SX.
+        inst_cofinites_by (L `union` fstv_in_dtyp S1 `union` fstv_in_dtyp T0) using_name SX.
         replace (S1 ^^ᵈ T2) with ({T2 /ₛᵈ SX} S1 ^^ᵈ dtyp_svar SX) by admit.
         replace E with (map (d_subst_stv_in_binding T2 SX) nil ++ E) by auto.
         specialize (d_sub_size_subst_stvar E nil SX (S1 ^^ᵈ dtyp_svar SX) (T0 ^^ᵈ dtyp_svar SX) T2 n H1 H6 H7).

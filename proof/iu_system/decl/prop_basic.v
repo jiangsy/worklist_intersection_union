@@ -803,6 +803,7 @@ Lemma d_wf_env_subst_tvar_typ : forall E X F T1,
 Proof.
 Admitted.
 
+
 Lemma d_new_tv_notin_wf_typ : forall X E T1,
   ⊢ (X, dbind_tvar_empty) :: E ->
   E ⊢ T1 ->
@@ -814,9 +815,15 @@ Proof.
       simpl in *. exfalso.
       eapply binds_dom_contradiction; eauto.
     + apply notin_singleton; auto.
-  - simpl. inst_cofinites_by L.
-    admit.
-Admitted.
+  - simpl. inst_cofinites_by (L `union` singleton X `union` dom E) using_name X.
+    assert (⊢ (X, dbind_tvar_empty) :: X0 ~ dbind_tvar_empty ++ E). 
+    constructor; auto.
+    + constructor; auto. dependent destruction H; auto.
+    + simpl. apply notin_add_3; auto.
+      dependent destruction H; auto.
+    + specialize (H2 H3). 
+      rewrite ftv_in_dtyp_open_dtyp_wrt_dtyp_lower; auto.
+Qed.
 
 Lemma dwf_typ_lc_dtyp : forall E T,
   E ⊢ T -> lc_dtyp T.
