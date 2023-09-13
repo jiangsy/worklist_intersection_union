@@ -876,15 +876,16 @@ Qed.
 
 
 Theorem d_sub_size_subst_stvar : forall E F SX S1 T1 T2 n,
+⊢ F ++ SX ~ dbind_stvar_empty ++ E ->
   F ++ (SX ~ dbind_stvar_empty) ++ E ⊢ S1 <: T1 | n ->
   E ⊢ T2 -> 
   dmono_typ T2 ->
   exists n', map (d_subst_stv_in_binding T2 SX) F ++ E ⊢ {T2 /ₛᵈ SX} S1 <: {T2 /ₛᵈ SX} T1 | n'.
 Proof.
   intros.
-  apply d_sub_size_sound in H.
-  apply d_sub_subst_stvar with (T2:=T2) in H; auto.
-  apply d_sub_size_complete in H. auto.
+  apply d_sub_size_sound in H0.
+  apply d_sub_subst_stvar with (T2:=T2) in H0; auto.
+  apply d_sub_size_complete in H0. auto.
 Qed.
 
 Inductive d_ord : dtyp -> Prop :=
@@ -1121,7 +1122,8 @@ Proof with auto with trans.
         inst_cofinites_by (L `union` fstv_in_dtyp S1 `union` fstv_in_dtyp T0) using_name SX.
         replace (S1 ^^ᵈ T2) with ({T2 /ₛᵈ SX} S1 ^^ᵈ dtyp_svar SX) by admit.
         replace E with (map (d_subst_stv_in_binding T2 SX) nil ++ E) by auto.
-        specialize (d_sub_size_subst_stvar E nil SX (S1 ^^ᵈ dtyp_svar SX) (T0 ^^ᵈ dtyp_svar SX) T2 n H1 H6 H7).
+        assert (⊢ nil ++ SX ~ dbind_stvar_empty ++ E) as Hwfenv1 by admit. 
+        specialize (d_sub_size_subst_stvar E nil SX (S1 ^^ᵈ dtyp_svar SX) (T0 ^^ᵈ dtyp_svar SX) T2 n Hwfenv1 H1 H6 H7).
         intros. destruct H8 as [n' Hsub].
         eapply IHn_dtyp_order with (S1:=T0 ^^ᵈ T2) (n1:=n'); eauto...
         admit. (*order*)
