@@ -12,9 +12,5 @@ test/
 *.glob
 *.aux
 .lia.cache
-**/ott.v
-**/def_ott.v
-**/ln_inf.v
-**/prop_ln.v
 .FILE_LIST
 

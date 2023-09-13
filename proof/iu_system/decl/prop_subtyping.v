@@ -843,30 +843,6 @@ Proof.
 Qed.
 
 
-Lemma context_cons_app_eq : forall G1 G2 x,
-  G1, x ,, G2 = G1 ,, (ld_ctx_nil, x ,, G2).
-Proof.
-  intros. induction G2; auto.
-  simpl. rewrite IHG2. auto.
-Qed.
-
-Theorem ld_wf_ctx_middle : forall G1 G2 x x',
-  x <> x' -> ⊢ G1, x,, G2 -> ⊢ G1, x',, G2 -> ⊢ G1, x', x,, G2.
-Proof.
-  intros. induction G2; simpl in *.
-  - constructor. auto. simpl. apply notin_add_3. auto.
-    dependent destruction H0. auto.
-  - dependent destruction H0. dependent destruction H2. constructor. auto.
-    clear H0. clear H2. clear IHG2.
-    induction G2; simpl in *.
-    + apply notin_add_3. specialize (notin_add_1 _ _ _ H1). auto.
-      apply notin_add_3. specialize (notin_add_1 _ _ _ H1). auto.  specialize (notin_add_1 _ _ _ H3). auto.
-    + apply notin_add_3.
-      apply notin_add_1 in H1. auto.
-      apply notin_add_2 in H1. apply notin_add_2 in H3. auto.
-Qed.
-
-
 Theorem sized_var_substitution : forall G1 G2 x x' A B n,
   G1 , x  ,, G2 ⊢ A <: B | n ->
   ⊢ G1, x' ,, G2 ->
