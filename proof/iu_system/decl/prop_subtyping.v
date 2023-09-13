@@ -1,5 +1,6 @@
 Require Import Coq.Program.Equality.
 Require Import Lia.
+Require Import LibTactics.
 
 Require Import decl.notations.
 Require Import decl.prop_basic.
