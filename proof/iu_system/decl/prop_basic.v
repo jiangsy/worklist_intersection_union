@@ -16,7 +16,7 @@ Lemma subst_same_tvar_eq : forall T X,
 Proof.
   intros.
   induction T; auto; simpl.
-  - destruct (X0==X); subst; auto. 
+  - destruct (X0==X); subst; auto.
   - simpl. rewrite <- IHT1. rewrite <- IHT2. auto.
   - simpl. rewrite <- IHT. auto.
   - simpl. rewrite <- IHT1. rewrite <- IHT2. auto.
@@ -49,8 +49,8 @@ Proof.
 Qed.
 
 Lemma dtyp_subst_open_comm : forall X T1 T2 T3,
-  lc_dtyp T2 -> 
-  X `notin` ftv_in_dtyp T3 -> 
+  lc_dtyp T2 ->
+  X `notin` ftv_in_dtyp T3 ->
   ({T2 /ᵈ X} T1) ^^ᵈ T3 = {T2 /ᵈ X} T1 ^^ᵈ T3.
 Proof.
   intros.
@@ -61,8 +61,8 @@ Qed.
 
 
 Lemma dtyp_subst_open_var : forall X T1 T2,
-  lc_dtyp T2 -> 
-  X `notin` ftv_in_dtyp T1 -> 
+  lc_dtyp T2 ->
+  X `notin` ftv_in_dtyp T1 ->
   {T2 /ᵈ X} T1 ^ᵈ X = T1 ^^ᵈ T2.
 Proof.
   intros.
@@ -118,7 +118,7 @@ forall T3 T1 T2 SX,
   d_subst_stv_in_dtyp T1 SX (open_dtyp_wrt_dtyp T3 T2) = open_dtyp_wrt_dtyp (d_subst_stv_in_dtyp T1 SX T3) (d_subst_stv_in_dtyp T1 SX T2).
 Proof.
   unfold open_dtyp_wrt_dtyp; default_simp.
-  apply d_subst_stv_in_dtyp_open_dtyp_wrt_dtyp_rec_mutual. 
+  apply d_subst_stv_in_dtyp_open_dtyp_wrt_dtyp_rec_mutual.
   auto.
 Qed.
 
@@ -132,8 +132,8 @@ Proof.
 Qed.
 
 Lemma d_subst_stv_in_dtyp_open_comm : forall SX T3 T1 T2,
-  lc_dtyp T3 -> 
-  SX `notin` fstv_in_dtyp T2 -> 
+  lc_dtyp T3 ->
+  SX `notin` fstv_in_dtyp T2 ->
   ({T3 /ₛᵈ SX} T1) ^^ᵈ T2 = {T3 /ₛᵈ SX} T1 ^^ᵈ T2.
 Proof.
   intros.
@@ -151,7 +151,7 @@ Proof.
   intros. induction H; simpl; auto.
   - destruct (SX0 == SX); auto.
   - eapply lc_dtyp_all. intros.
-    replace (({T2 /ₛᵈ SX} T) ^ᵈ X) with ({T2 /ₛᵈ SX} T ^ᵈ X); auto. 
+    replace (({T2 /ₛᵈ SX} T) ^ᵈ X) with ({T2 /ₛᵈ SX} T ^ᵈ X); auto.
     rewrite d_subst_stv_in_dtyp_open_comm; auto.
 Qed.
 
@@ -172,13 +172,13 @@ Proof.
   - apply dsins_arrow2; auto.
     now apply d_subst_tv_in_dtyp_lc_dtyp.
   - apply dsins_all with (L:=L `union` singleton X). intros.
-    inst_cofinites_with Y. 
+    inst_cofinites_with Y.
     replace (({dtyp_svar X /ᵈ X} T) ^ᵈ Y) with ({dtyp_svar X /ᵈ X} T ^ᵈ Y).
     auto.
     rewrite dtyp_subst_open_comm; auto.
 Qed.
 
-Lemma sin_in : forall X T, 
+Lemma sin_in : forall X T,
   ds_in X T ->
   X `in` ftv_in_dtyp T.
 Proof.
@@ -206,7 +206,7 @@ Proof.
   - destruct T; try solve [inversion x]; auto.
     inversion x; eauto.
   - destruct T; try solve [inversion x]; auto.
-    inversion x. 
+    inversion x.
     inst_cofinites_by (singleton X).
     eapply lc_dtyp_all_exists with (X1:=x0). intros.
     specialize (H0 x0 (T ^ᵈ x0) X S). apply H0.
@@ -228,16 +228,16 @@ Proof.
   intros. dependent induction H2; simpl; auto.
   - destruct T; simpl; try solve [inversion x].
     inversion x. destruct (X0 == Y).
-    + subst. simpl in *. 
+    + subst. simpl in *.
       apply notin_singleton_1 in H0. contradiction.
     + inversion H3. auto.
   - destruct T; simpl; try solve [inversion x].
     simpl in *. destruct (X0 == Y); subst.
     + dependent destruction H.
       simpl in H0.
-      eapply IHds_in with (S:=T1) (Y:=Y); auto. 
+      eapply IHds_in with (S:=T1) (Y:=Y); auto.
       simpl. unfold eq_dec. destruct (EqDec_eq_of_X Y Y); auto.
-      contradiction. 
+      contradiction.
     + inversion x.
     + apply dsin_arrow1; inversion x; eauto.
       subst.
@@ -247,7 +247,7 @@ Proof.
     + dependent destruction H.
       simpl in H0. eapply IHds_in with (S:=T2) (Y:=Y); auto.
       simpl. unfold eq_dec. destruct (EqDec_eq_of_X Y Y); auto.
-      contradiction. 
+      contradiction.
     + inversion x.
     + apply dsin_arrow2; inversion x; eauto.
       subst. eapply lc_dtyp_subst; eauto.
@@ -259,7 +259,7 @@ Proof.
       * apply sin_in in H4. contradiction.
     + inversion x.
     + apply dsin_all with (L:=L `union` singleton Y); intros; inst_cofinites_with Y0. auto.
-     inversion x. rewrite H6 in H3. 
+     inversion x. rewrite H6 in H3.
     eapply H2; eauto. subst. rewrite dtyp_subst_open_comm; auto.
   - destruct T; simpl; try solve [inversion x].
   simpl in *. destruct (X0 == Y); subst.
@@ -290,7 +290,7 @@ Proof.
     now apply d_subst_tv_in_dtyp_lc_dtyp.
   - apply dsins_arrow2; auto.
     now apply d_subst_tv_in_dtyp_lc_dtyp.
-  - simpl in H. 
+  - simpl in H.
     apply dsins_all with (L:=L `union` singleton X). intros.
     rewrite dtyp_subst_open_comm; auto.
 Qed.
@@ -309,7 +309,7 @@ Proof.
   - apply dsin_arrow2; auto.
     apply dsubst_stv_lc_dtyp; auto.
   - apply dsin_all with (L:=L `union` singleton SX). intros.
-    inst_cofinites_with Y. 
+    inst_cofinites_with Y.
     replace (({dtyp_var_f SX /ₛᵈ SX} T) ^ᵈ Y) with ({dtyp_var_f SX /ₛᵈ SX} T ^ᵈ Y).
     auto.
     rewrite d_subst_stv_in_dtyp_open_comm; auto.
@@ -326,7 +326,7 @@ Proof.
     now apply dsubst_stv_lc_dtyp.
   - apply dsin_arrow2; auto.
     now apply dsubst_stv_lc_dtyp.
-  - simpl in H. 
+  - simpl in H.
     apply dsin_all with (L:=L `union` singleton X). intros.
     rewrite d_subst_stv_in_dtyp_open_comm; auto.
 Qed.
@@ -348,7 +348,7 @@ Qed.
 Lemma ftv_sin_dtyp_subst_inv : forall X Y T1 S1,
   lc_dtyp S1 ->
   X <> Y ->
-  ds_in X T1 -> 
+  ds_in X T1 ->
   ds_in X ({S1 /ᵈ Y} T1).
 Proof.
   intros.
@@ -365,7 +365,7 @@ Proof.
     rewrite dtyp_subst_open_comm; auto.
 Qed.
 
-Lemma d_mono_typ_lc : forall T, 
+Lemma d_mono_typ_lc : forall T,
   dmono_typ T -> lc_dtyp T.
 Proof.
   intros; induction H; auto.
@@ -379,12 +379,12 @@ Proof.
   induction T; auto.
   - simpl. destruct (X0 == X).
     + simpl. auto.
-    + simpl in H. 
-      specialize (notin_singleton_2 _ _ n). 
+    + simpl in H.
+      specialize (notin_singleton_2 _ _ n).
       intros. contradiction.
   - simpl. destruct (SX == X).
     + subst. auto.
-    + simpl in H. 
+    + simpl in H.
       apply notin_empty in H. contradiction.
   - simpl in H.
     destruct (AtomSetImpl.union_1 H).
@@ -408,7 +408,7 @@ Proof.
   induction T; auto.
   - simpl. destruct (X0 == X).
     + subst. simpl in *. apply notin_empty in H.  contradiction.
-    + simpl in H. 
+    + simpl in H.
       apply notin_empty in H. contradiction.
   - simpl in H.
     destruct (AtomSetImpl.union_1 H).
@@ -430,7 +430,7 @@ Lemma fstv_in_dtyp_tvar_ftv_in_dtyp : forall SX T,
 Proof.
   intros.
   induction T; auto.
-  - simpl in *. 
+  - simpl in *.
     apply notin_empty in H. contradiction.
   - simpl. destruct (SX0 == SX).
     + subst. auto.
@@ -459,7 +459,7 @@ Proof.
   induction T; auto.
   - simpl. destruct (X0 == X).
     + subst. simpl in *. apply notin_empty in H.  contradiction.
-    + simpl in H. 
+    + simpl in H.
       apply notin_empty in H. contradiction.
   - simpl in H.
     destruct (AtomSetImpl.union_1 H).
@@ -478,7 +478,7 @@ Qed. *)
 
 
 Lemma d_wf_typ_subst_tvar_stvar : forall E F X T,
-  E ++ [(X, dbind_tvar_empty)] ++ F  ⊢ₛ T  -> 
+  E ++ [(X, dbind_tvar_empty)] ++ F  ⊢ₛ T  ->
   map (d_subst_tv_in_binding (dtyp_svar X) X ) E ++ [(X, dbind_stvar_empty)] ++ F ⊢ₛ { dtyp_svar X /ᵈ X } T.
 Proof.
   intros E F X T H.
@@ -493,7 +493,7 @@ Proof.
       * destruct a. inversion H.
         -- inversion H0. subst. simpl. auto.
         -- simpl. auto.
-  - simpl. constructor. 
+  - simpl. constructor.
     induction E.
     * simpl in *. inversion H.
       -- inversion H0.
@@ -515,10 +515,10 @@ Proof.
     ) with (
     map (d_subst_tv_in_binding (dtyp_svar X) X) (SX ~ dbind_stvar_empty ++ E) ++ (X, dbind_stvar_empty) :: F
     ) by auto.
-    replace (({dtyp_svar X /ᵈ X} T1) ^^ᵈ dtyp_svar SX) with 
+    replace (({dtyp_svar X /ᵈ X} T1) ^^ᵈ dtyp_svar SX) with
     ({dtyp_svar X /ᵈ X} T1 ^^ᵈ dtyp_svar SX).
-    apply H1. auto. 
-    rewrite dtyp_subst_open_comm; auto. 
+    apply H1. auto.
+    rewrite dtyp_subst_open_comm; auto.
   - simpl. constructor.
     + apply IHdwf_typ_s1; auto.
     + apply IHdwf_typ_s2; auto.
@@ -529,12 +529,12 @@ Qed.
 
 
 Lemma d_wf_typ_subst_stvar_tvar : forall E F SX T,
-  E ++ [(SX, dbind_stvar_empty)] ++ F  ⊢ T  -> 
+  E ++ [(SX, dbind_stvar_empty)] ++ F  ⊢ T  ->
   map (d_subst_stv_in_binding (dtyp_var_f SX) SX ) E ++ [(SX, dbind_tvar_empty)] ++ F ⊢ { dtyp_var_f SX /ₛᵈ SX } T.
 Proof.
   intros E F SX T H.
   dependent induction H; try solve [simpl; auto].
-  - simpl. constructor. 
+  - simpl. constructor.
     induction E.
     * simpl in *. inversion H.
       -- inversion H0.
@@ -564,7 +564,7 @@ Proof.
     map (d_subst_stv_in_binding `ᵈ SX SX) E ++ (SX, dbind_tvar_empty) :: F) with (
     map (d_subst_stv_in_binding `ᵈ SX SX) (X ~ dbind_tvar_empty ++ E) ++ (SX, dbind_tvar_empty) :: F) by auto.
       replace (({`ᵈ SX /ₛᵈ SX} T) ^ᵈ X) with ({`ᵈ SX /ₛᵈ SX} T ^ᵈ X).
-      apply H1. auto. 
+      apply H1. auto.
       rewrite d_subst_stv_in_dtyp_open_comm; auto.
   - simpl. constructor.
     + apply IHdwf_typ1; auto.
@@ -598,35 +598,35 @@ Corollary d_wf_typ_subst_tvar_stvar_cons : forall E SX T,
 Proof.
   intros.
   replace (SX ~ dbind_stvar_empty ++ E) with (nil ++ SX ~ dbind_stvar_empty ++ E) in H0 by auto.
-  specialize (d_wf_typ_subst_stvar_tvar _ _ _ _ H0). intros. 
+  specialize (d_wf_typ_subst_stvar_tvar _ _ _ _ H0). intros.
   rewrite d_subst_stv_in_dtyp_open_dtyp_wrt_dtyp in H1; auto. simpl in H1. unfold eq_dec in H1. destruct (EqDec_eq_of_X SX SX).
   - rewrite d_subst_stv_in_dtyp_fresh_eq in H1; auto.
   - contradiction.
 Qed.
 
-Lemma dwf_typ_dwf_typ_s : forall E T, 
+Lemma dwf_typ_dwf_typ_s : forall E T,
   E ⊢ T -> E ⊢ₛ T.
 Proof.
-  intros.   
+  intros.
   induction H; auto.
-  - eapply dwftyps_all with (L:= (L `union` ftv_in_dtyp T)); 
-    intros; inst_cofinites_with SX.  
+  - eapply dwftyps_all with (L:= (L `union` ftv_in_dtyp T));
+    intros; inst_cofinites_with SX.
     + replace (T ^^ᵈ dtyp_svar SX) with ({dtyp_svar SX /ᵈ SX}T ^ᵈ SX).
       now apply ftv_sin_dtyp_stvar_fstv_sin_dtyp.
       rewrite d_subst_tv_in_dtyp_open_dtyp_wrt_dtyp; auto.
       simpl. unfold eq_dec. destruct (EqDec_eq_of_X SX SX).
       * rewrite d_subst_tv_in_dtyp_fresh_eq; auto.
       * contradiction.
-    + apply d_wf_typ_subst_stvar_tvar_cons; auto.  
+    + apply d_wf_typ_subst_stvar_tvar_cons; auto.
 Qed.
 
-Lemma dwf_typ_s_dwf_typ : forall E T, 
+Lemma dwf_typ_s_dwf_typ : forall E T,
   E ⊢ₛ T -> E ⊢ T.
 Proof.
   intros. induction H; auto.
-  - eapply dwftyp_all with (L:= (L `union` fstv_in_dtyp T1)); 
-    intros; inst_cofinites_with X.  
-    + eapply fstv_open_tvar; auto. 
+  - eapply dwftyp_all with (L:= (L `union` fstv_in_dtyp T1));
+    intros; inst_cofinites_with X.
+    + eapply fstv_open_tvar; auto.
     + eapply d_wf_typ_subst_tvar_stvar_cons; auto.
 Qed.
 
@@ -684,7 +684,7 @@ Proof.
   - destruct T1; simpl in *; try solve [inversion x].
     + destruct (X0 == X) in x; subst.
       auto.
-      inversion x. 
+      inversion x.
     + inversion x. subst. auto.
   - destruct T1; simpl in *; try solve [inversion x].
       destruct (X0 == X) in x.
@@ -695,7 +695,7 @@ Proof.
     + subst. auto.
     + inversion x.
     + inversion x.
-      eapply dwftyp_all with (L:=L `union` singleton X `union` ftv_in_dtyp S1); intros; 
+      eapply dwftyp_all with (L:=L `union` singleton X `union` ftv_in_dtyp S1); intros;
       inst_cofinites_with X0.
       * rewrite H5 in H2.
         rewrite dtyp_subst_open_comm in H2; auto.
@@ -719,7 +719,7 @@ Hint Constructors dwf_typ_s: core.
 
 
 
-Lemma dwf_typ_weakening : forall E1 E2 E3 T, 
+Lemma dwf_typ_weakening : forall E1 E2 E3 T,
   E3 ++ E1 ⊢ T ->
   uniq (E3 ++ E2 ++ E1) ->
   E3 ++ E2 ++ E1 ⊢ T.
@@ -744,10 +744,20 @@ Proof.
   apply dwf_typ_weakening; auto.
 Qed.
 
+Corollary dwf_typ_weaken_head: forall E1 E2 T,
+  E1 ⊢ T ->
+  uniq (E2 ++ E1) ->
+  E2 ++ E1 ⊢ T.
+Proof.
+  intros.
+  rewrite_env (nil++E2++E1).
+  applys* dwf_typ_weakening.
+Qed.
+
 Lemma d_wf_env_uniq: forall E,
   ⊢ E -> uniq E.
 Proof.
-  intros. 
+  intros.
   induction H; auto.
 Qed.
 
@@ -759,19 +769,19 @@ Lemma dwf_env_binds_dwf_typ : forall E x T,
   x ~ T ∈ E ->
   E ⊢ T.
 Proof.
-  intros. 
+  intros.
   dependent induction H.
   - inversion H0.
   - simpl in H1. inversion H1.
     + inversion H2.
-    + auto. 
+    + auto.
   - inversion H1.
     + inversion H2.
     + auto.
   - inversion H2.
     + dependent destruction H3. auto.
-    + simpl in *. apply IHdwf_env in H3. 
-      apply dwf_typ_weakening_cons; auto. 
+    + simpl in *. apply IHdwf_env in H3.
+      apply dwf_typ_weakening_cons; auto.
 Qed.
 
 (* Lemma dwft_subst : forall E X T1 T2,
@@ -791,7 +801,7 @@ Proof.
 Admitted.
 
 Lemma d_wft_typ_subst_stvar : forall E SX F T1 T2,
-  ⊢ F ++ SX ~ dbind_stvar_empty ++ E -> 
+  ⊢ F ++ SX ~ dbind_stvar_empty ++ E ->
   F ++ SX ~ dbind_stvar_empty ++ E ⊢ T1 ->
   E ⊢ T2 ->
   map (d_subst_stv_in_binding T2 SX) F  ++ E ⊢ {T2 /ₛᵈ SX} T1.
@@ -818,12 +828,12 @@ Proof.
       eapply binds_dom_contradiction; eauto.
     + apply notin_singleton; auto.
   - simpl. inst_cofinites_by (L `union` singleton X `union` dom E) using_name X.
-    assert (⊢ (X, dbind_tvar_empty) :: X0 ~ dbind_tvar_empty ++ E). 
+    assert (⊢ (X, dbind_tvar_empty) :: X0 ~ dbind_tvar_empty ++ E).
     constructor; auto.
     + constructor; auto. dependent destruction H; auto.
     + simpl. apply notin_add_3; auto.
       dependent destruction H; auto.
-    + specialize (H2 H3). 
+    + specialize (H2 H3).
       rewrite ftv_in_dtyp_open_dtyp_wrt_dtyp_lower; auto.
 Qed.
 
@@ -835,7 +845,7 @@ Qed.
 
 Hint Resolve d_mono_typ_lc : core.
 
-Lemma d_mono_typ_neq_all : forall T, 
+Lemma d_mono_typ_neq_all : forall T,
   dmono_typ T -> dneq_all T.
 Proof.
   intros; induction H; auto...
@@ -849,19 +859,19 @@ Lemma d_neq_all_subst_neq_all : forall T1 X T2,
 Proof.
   intros. induction H; simpl; eauto...
   - destruct (X0 == X); auto.
-    apply d_mono_typ_neq_all; auto. 
-  - eapply dneqall_arrow; 
+    apply d_mono_typ_neq_all; auto.
+  - eapply dneqall_arrow;
     apply d_subst_tv_in_dtyp_lc_dtyp; eauto...
   - inversion H1.
-  - eapply dneqall_union; 
+  - eapply dneqall_union;
     apply d_subst_tv_in_dtyp_lc_dtyp; eauto...
-  - eapply dneqall_intersection; 
+  - eapply dneqall_intersection;
     apply d_subst_tv_in_dtyp_lc_dtyp; eauto...
 Qed.
 
 
 (* Lemma wft_all_open_wfdtyp_wft : forall E X T1 T2,
-  ⊢ E -> 
+  ⊢ E ->
   E ⊢ T1 ->
   E ⊢ T2 ->
   E ⊢ {T2 /ᵈ X} T1.
@@ -909,7 +919,7 @@ Lemma d_mono_typ_subst_mono_mono : forall T1 T2 X,
 Proof.
   intros. induction T1; try solve [simpl; eauto].
   - simpl. destruct (X0 == X); auto.
-  - simpl. dependent destruction H. auto. 
+  - simpl. dependent destruction H. auto.
   - inversion H.
   - simpl. dependent destruction H. auto.
   - simpl. dependent destruction H. auto.
@@ -927,25 +937,25 @@ Proof.
     + eapply fstv_open_tvar; auto.
     + apply d_wf_typ_subst_tvar_stvar_cons. intuition. admit.
   - split; try solve [intuition].
-    + eapply dwftyp_all with (L:=L `union` ftv_in_dtyp S1 `union` dom E). 
+    + eapply dwftyp_all with (L:=L `union` ftv_in_dtyp S1 `union` dom E).
       * intros. inst_cofinites_with X. auto.
       * intros. inst_cofinites_with X.
-        destruct IHd_sub. auto. 
+        destruct IHd_sub. auto.
         eapply dwf_typ_open_inv with (X:=X) (S1:=T2); auto.
-        -- replace (X ~ dbind_tvar_empty ++ E) with (nil ++ X ~ dbind_tvar_empty ++ E) by auto. 
+        -- replace (X ~ dbind_tvar_empty ++ E) with (nil ++ X ~ dbind_tvar_empty ++ E) by auto.
            apply dwf_typ_weakening. simpl. rewrite  d_subst_tv_in_dtyp_open_dtyp_wrt_dtyp.
            ++ simpl. unfold eq_dec. destruct ( EqDec_eq_of_X X X ).
               ** rewrite d_subst_tv_in_dtyp_fresh_eq; auto.
               ** contradiction.
            ++ eapply dwf_typ_dlc_type; eauto.
-           ++ auto. 
+           ++ auto.
 Admitted.
 
 
 Lemma dwf_typ_strengthening : forall F E x T b,
     E ++ x ~ b ++ F ⊢ T ->
     x \notin ftv_in_dtyp T ->
-    x \notin fstv_in_dtyp T -> 
+    x \notin fstv_in_dtyp T ->
     E ++ F ⊢ T.
 Proof.
   intros.
@@ -971,10 +981,10 @@ Proof.
       eauto.
   - simpl in *.
     apply dwftyp_all with (L:=L `union` singleton x); intros; inst_cofinites_with X.
-    + auto. 
+    + auto.
     + replace (X ~ dbind_tvar_empty ++ E ++ F) with ((X ~ dbind_tvar_empty ++ E)++ F) by auto. eapply H1 with (x:=x) (b:=b); auto.
     rewrite ftv_in_dtyp_open_dtyp_wrt_dtyp_upper; auto.
-    rewrite fstv_in_dtyp_open_dtyp_wrt_dtyp_upper; auto. 
+    rewrite fstv_in_dtyp_open_dtyp_wrt_dtyp_upper; auto.
   - simpl in *. eauto.
   - simpl in *. eauto.
 Qed.
