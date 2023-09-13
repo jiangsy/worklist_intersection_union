@@ -508,36 +508,28 @@ Proof.
 Qed.
 
 
-Theorem d_sub_tvar_ind_open_subst' : forall E F X T1 T2,
+Theorem d_sub_tvar_ind_open_subst : forall E F X T1 T2,
   ⊢ F ++ (X ~ dbind_tvar_empty) ++ E ->
   d_sub_tvar_open_inv X T1 ->
   dmono_typ T2 ->
   (X ~ dbind_tvar_empty) ++ E ⊢ T1 ->
   E ⊢ T2 ->
   map (d_subst_tv_in_binding T2 X) F ++ E ⊢ ({T2 /ᵈ X} T1) <: T2.
-Proof.
-Admitted.
-
-(* Theorem d_sub_tvar_ind_open_subst : forall E X T1 T2,
-  ⊢ E ->
-  d_sub_tvar_open_inv X T1 ->
-  dmono_typ T2 ->
-  E ⊢ T1 ->
-  E ⊢ T2 ->
-  E ⊢ ({T2 /ᵈ X} T1) <: T2.
-Proof.
-  intros E X T1 T2 Hwf_env H. induction H; intros.
-  - simpl. unfold eq_dec.
-    destruct (EqDec_eq_of_X X X). 
-    apply dsub_refl; auto.
-    contradiction.
+Proof with auto with subtyping.
+  intros * Hwfenv H. induction H; intros.
+  - simpl. destruct (X == X).
+    + apply dsub_refl; auto...
+      replace T2 with ({T2 /ᵈ X} `ᵈ X) at 2. 
+      apply d_wft_typ_subst; auto.
+      simpl. destruct (X == X); auto. contradiction.
+    + contradiction.
   - simpl. dependent destruction H2. constructor; auto. 
   - simpl. dependent destruction H1. constructor; auto.
-    apply wft_all_open_wfdtyp_wft; auto. 
+    apply d_wft_typ_subst; auto.
+    admit.  
   - simpl. dependent destruction H1. apply d_sub_intersection3; auto.
-    apply wft_all_open_wfdtyp_wft; auto.
-Qed. *)
-
+    apply d_wft_typ_subst; auto. admit.
+Admitted.
 
 Theorem  d_sub_strenthening: forall E F G S1 T1,
   F ++ G ++ E ⊢ S1 <: T1 ->
@@ -581,7 +573,7 @@ Proof.
     + auto.
     + auto.
     + inst_cofinites_by (L `union` L0 `union` ftv_in_dtyp T1 `union` dom E) use_name X.
-      apply d_sub_tvar_ind_open_subst' with (E:= E) (T2:=T0) (F:=nil) in H.
+      apply d_sub_tvar_ind_open_subst with (E:= E) (T2:=T0) (F:=nil) in H.
       rewrite d_subst_tv_in_dtyp_open_dtyp_wrt_dtyp in H; auto.
       rewrite d_subst_tv_in_dtyp_fresh_eq in H; auto.
       simpl in H. destruct eq_dec in H. auto.
