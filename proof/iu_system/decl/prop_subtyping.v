@@ -682,7 +682,9 @@ Proof with eauto with subtyping.
   intros. dependent induction H; try solve [simpl in *; eauto with subtyping].
   - simpl. constructor. 
     admit. (*wft*)
-  - simpl. destruct (SX0 == SX); apply dsub_refl.
+  - simpl. constructor. admit.
+  - simpl. constructor. admit.
+  - destruct (SX0 == SX); apply dsub_refl.
     + admit. (*wft*)
     + admit. (*wft*)
   - simpl. eapply d_sub_all with (L:=L `union` singleton SX); intros SX1 Hfr; inst_cofinites_with SX1.
@@ -790,12 +792,6 @@ Proof with eauto with sub.
 Admitted.
 
 
-Lemma d_sub_sized_strengthening: forall E F G S1 T1 n,
-  F ++ G ++ E ⊢ S1 <: T1 | n ->
-  F ++ E ⊢ S1 <: T1 | n.
-Proof.
-  intros. dependent induction H; auto... 
-Admitted.
 
 Hint Constructors d_sub_sized : trans.
 

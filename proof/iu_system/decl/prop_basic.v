@@ -781,6 +781,7 @@ Admitted.
 Hint Constructors d_typing : core.
 
 Lemma d_wft_typ_subst : forall E X F T1 T2,
+  ⊢ F ++ X ~ dbind_tvar_empty ++ E ->
   F ++ X ~ dbind_tvar_empty ++ E ⊢ T1 ->
   E ⊢ T2 ->
   map (d_subst_tv_in_binding T2 X) F  ++ E ⊢ {T2 /ᵈ X} T1.
@@ -788,6 +789,7 @@ Proof.
 Admitted.
 
 Lemma d_wft_typ_subst_stvar : forall E SX F T1 T2,
+  ⊢ F ++ SX ~ dbind_stvar_empty ++ E -> 
   F ++ SX ~ dbind_stvar_empty ++ E ⊢ T1 ->
   E ⊢ T2 ->
   map (d_subst_stv_in_binding T2 SX) F  ++ E ⊢ {T2 /ₛᵈ SX} T1.
@@ -815,8 +817,6 @@ Proof.
   - simpl. inst_cofinites_by L.
     admit.
 Admitted.
-
-
 
 Lemma dwf_typ_lc_dtyp : forall E T,
   E ⊢ T -> lc_dtyp T.
@@ -851,8 +851,7 @@ Proof.
 Qed.
 
 
-
-Lemma wft_all_open_wfdtyp_wft : forall E X T1 T2,
+(* Lemma wft_all_open_wfdtyp_wft : forall E X T1 T2,
   ⊢ E -> 
   E ⊢ T1 ->
   E ⊢ T2 ->
@@ -870,7 +869,8 @@ Proof.
     + rewrite dtyp_subst_open_comm; eauto.
       eapply H1; auto.
       apply dwf_typ_weakening_cons; eauto.
-Qed.
+Qed. *)
+
 
 Lemma bind_typ_subst : forall F X E x T1 T2,
   ⊢ F ++ (X, dbind_tvar_empty) :: E ->
