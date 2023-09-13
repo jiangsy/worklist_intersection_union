@@ -225,7 +225,7 @@ Proof.
 Qed.
 
 Hint Resolve dwf_typ_dlc_type : core.
-Hint Resolve dsub_dwft : core.
+Hint Resolve d_sub_dwft : core.
 Hint Resolve is_intersection_rec_dec : nonoverlapping.
 
 
