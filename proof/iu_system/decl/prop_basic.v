@@ -745,7 +745,20 @@ Lemma dwf_env_binds_dwf_typ : forall E x T,
   ⊢ E ->
   x ~ T ∈ E ->
   E ⊢ T.
-Admitted.
+Proof.
+  intros. 
+  dependent induction H.
+  - inversion H0.
+  - simpl in H1. inversion H1.
+    + inversion H2.
+    + apply IHdwf_env in H2. apply dwf_typ_weakening_cons. auto.
+  - inversion H1.
+    + inversion H2.
+    + simpl in H2. apply IHdwf_env in H2. apply dwf_typ_weakening_cons. auto.
+  - inversion H2.
+    + dependent destruction H3. apply dwf_typ_weakening_cons. auto.
+    + simpl in *. apply IHdwf_env in H3. apply dwf_typ_weakening_cons. auto. 
+Qed.
 
 Lemma dwft_subst : forall E X T1 T2,
   X ~ dbind_tvar_empty ++ E ⊢ T1 ^ᵈ X ->
