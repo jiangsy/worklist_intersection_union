@@ -538,13 +538,26 @@ Proof.
 Qed. *)
 
 
-(* Theorem  d_sub_strenthening: forall E F G S1 T1,
+Theorem  d_sub_strenthening: forall E F G S1 T1,
   F ++ G ++ E ⊢ S1 <: T1 ->
   F ++ E ⊢ S1 ->
   F ++ E ⊢ T1 ->
   F ++ E ⊢ S1 <: T1.
 Proof.
-Admitted. *)
+  introv HS HWS HWT.
+  remember (F++G++E) as E'.
+  induction HS.
+  all: auto.
+  - forwards~: IHHS1.
+    inverts~ HWT. inverts~ HWS.
+    forwards~: IHHS2.
+    inverts~ HWS. inverts~ HWT.
+  - admit.
+  - forwards~: IHHS.
+    inverts~ HWS. pick fresh y. applys dwft_subst y H8. solve_notin.
+    (* wf for newly introduced mono type T2*)
+    admit.
+Admitted.
 
 
 Theorem d_sub_tvar_ind_sub_all : forall E T1 T2,
@@ -584,6 +597,7 @@ Proof.
         apply d_wft_typ_subst; auto.
         apply dtyp_subst_open_var; auto. *)
        * auto.
+
   - inversion H1. inversion H2. auto.
   - inversion H1. inversion H2. auto.
 Admitted.
