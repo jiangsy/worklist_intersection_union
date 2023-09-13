@@ -506,7 +506,18 @@ Proof.
   - apply d_ord_mono_sound. auto.
 Qed.
 
-Theorem d_sub_tvar_ind_open_subst : forall E X T1 T2,
+
+Theorem d_sub_tvar_ind_open_subst' : forall E F X T1 T2,
+  ⊢ F ++ (X ~ dbind_tvar_empty) ++ E ->
+  d_sub_tvar_open_inv X T1 ->
+  dmono_typ T2 ->
+  (X ~ dbind_tvar_empty) ++ E ⊢ T1 ->
+  E ⊢ T2 ->
+  map (d_subst_tv_in_binding T2 X) F ++ E ⊢ ({T2 /ᵈ X} T1) <: T2.
+Proof.
+Admitted.
+
+(* Theorem d_sub_tvar_ind_open_subst : forall E X T1 T2,
   ⊢ E ->
   d_sub_tvar_open_inv X T1 ->
   dmono_typ T2 ->
@@ -524,16 +535,16 @@ Proof.
     apply wft_all_open_wfdtyp_wft; auto. 
   - simpl. dependent destruction H1. apply d_sub_intersection3; auto.
     apply wft_all_open_wfdtyp_wft; auto.
-Qed.
+Qed. *)
 
 
-Theorem  d_sub_strenthening: forall E F G S1 T1,
+(* Theorem  d_sub_strenthening: forall E F G S1 T1,
   F ++ G ++ E ⊢ S1 <: T1 ->
   F ++ E ⊢ S1 ->
   F ++ E ⊢ T1 ->
   F ++ E ⊢ S1 <: T1.
 Proof.
-Admitted.
+Admitted. *)
 
 
 Theorem d_sub_tvar_ind_sub_all : forall E T1 T2,
@@ -556,23 +567,23 @@ Proof.
     + auto.
     + auto.
     + inst_cofinites_by (L `union` L0 `union` ftv_in_dtyp T1 `union` dom E) use_name X.
-      apply d_sub_tvar_ind_open_subst with (E:= (X ~ dbind_tvar_empty) ++ E) (T2:=T0) in H.
+      apply d_sub_tvar_ind_open_subst' with (E:= E) (T2:=T0) (F:=nil) in H.
       rewrite d_subst_tv_in_dtyp_open_dtyp_wrt_dtyp in H; auto.
       rewrite d_subst_tv_in_dtyp_fresh_eq in H; auto.
       simpl in H. destruct eq_dec in H. auto.
-      * eapply d_sub_strenthening with (F := nil); eauto.
+      contradiction.
+      * admit.
+      * auto.
+      * auto.
+      (* * eapply d_sub_strenthening with (F := nil); eauto.
         replace ((X, dbind_tvar_empty) :: E) with (nil ++ ((X, dbind_tvar_empty)::nil) ++  E) in H.
         eapply H. auto.
         auto.
         replace (T1 ^^ᵈ T0) with ({T0 /ᵈ X} (T1 ^ᵈ X)).
         replace nil with (map (d_subst_tv_in_binding T0 X) nil) by auto.
         apply d_wft_typ_subst; auto.
-        apply dtyp_subst_open_var; auto.
-       * contradiction.
-       * admit.
+        apply dtyp_subst_open_var; auto. *)
        * auto.
-       * inst_cofinites_with X; auto.
-       * apply dwf_typ_weakening_cons; auto. admit.
   - inversion H1. inversion H2. auto.
   - inversion H1. inversion H2. auto.
 Admitted.
