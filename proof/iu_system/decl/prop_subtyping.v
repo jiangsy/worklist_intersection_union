@@ -507,18 +507,19 @@ Proof.
 Qed.
 
 Theorem d_sub_tvar_ind_open_subst : forall E X T1 T2,
+  ⊢ E ->
   d_sub_tvar_open_inv X T1 ->
   dmono_typ T2 ->
   E ⊢ T1 ->
   E ⊢ T2 ->
   E ⊢ ({T2 /ᵈ X} T1) <: T2.
 Proof.
-  intros. induction H.
+  intros E X T1 T2 Hwf_env H. induction H; intros.
   - simpl. unfold eq_dec.
     destruct (EqDec_eq_of_X X X). 
     apply dsub_refl; auto.
     contradiction.
-  - simpl. dependent destruction H1. constructor; auto. 
+  - simpl. dependent destruction H2. constructor; auto. 
   - simpl. dependent destruction H1. constructor; auto.
     apply wft_all_open_wfdtyp_wft; auto. 
   - simpl. dependent destruction H1. apply d_sub_intersection3; auto.
@@ -554,26 +555,27 @@ Proof.
     + auto. 
     + auto.
     + auto.
-    + inst_cofinites_by (L `union` L0 `union` ftv_in_dtyp T1).
-      apply d_sub_tvar_ind_open_subst with (E:= (x ~ dbind_tvar_empty) ++ E) (T2:=T0) in H.
+    + inst_cofinites_by (L `union` L0 `union` ftv_in_dtyp T1 `union` dom E) use_name X.
+      apply d_sub_tvar_ind_open_subst with (E:= (X ~ dbind_tvar_empty) ++ E) (T2:=T0) in H.
       rewrite d_subst_tv_in_dtyp_open_dtyp_wrt_dtyp in H; auto.
       rewrite d_subst_tv_in_dtyp_fresh_eq in H; auto.
       simpl in H. destruct eq_dec in H. auto.
       * eapply d_sub_strenthening with (F := nil); eauto.
-        replace ((x, dbind_tvar_empty) :: E) with (nil ++ ((x, dbind_tvar_empty)::nil) ++  E) in H.
+        replace ((X, dbind_tvar_empty) :: E) with (nil ++ ((X, dbind_tvar_empty)::nil) ++  E) in H.
         eapply H. auto.
         auto.
-        replace (T1 ^^ᵈ T0) with ({T0 /ᵈ x} (T1 ^ᵈ x)).
-        replace nil with (map (d_subst_tv_in_binding T0 x) nil) by auto.
+        replace (T1 ^^ᵈ T0) with ({T0 /ᵈ X} (T1 ^ᵈ X)).
+        replace nil with (map (d_subst_tv_in_binding T0 X) nil) by auto.
         apply d_wft_typ_subst; auto.
         apply dtyp_subst_open_var; auto.
        * contradiction.
+       * admit.
        * auto.
-       * inst_cofinites_with x; auto.
-       * apply dwf_typ_weakening_cons; auto.
+       * inst_cofinites_with X; auto.
+       * apply dwf_typ_weakening_cons; auto. admit.
   - inversion H1. inversion H2. auto.
   - inversion H1. inversion H2. auto.
-Qed.
+Admitted.
 
 
 Theorem  d_sub_subst_mono : forall E X F S1 T1 T2,
@@ -611,7 +613,7 @@ Proof with eauto with subtyping.
         apply ftv_sin_dtyp_subst_inv; auto...
       * apply d_mono_typ_subst_mono_mono; auto.
       * rewrite <- d_subst_tv_in_dtyp_open_dtyp_wrt_dtyp; eauto...
-    + apply dsub_dwft in H5 as Hwft. destruct Hwft as [HwftS HwftT]. inversion HwftT.
+    + apply d_sub_dwft in H5 as Hwft. destruct Hwft as [HwftS HwftT]. inversion HwftT.
     + simpl.
       specialize (dsub_dwft _ _ _ H5) as Hwft. destruct Hwft.
       apply d_sub_tvar_ind_sub_all.
@@ -766,7 +768,7 @@ Proof with eauto with sub.
 Admitted.
 
 
-Lemma d_sub_sized_weakening: forall E F G S1 T1 n,
+Lemma d_sub_sized_strengthening: forall E F G S1 T1 n,
   F ++ G ++ E ⊢ S1 <: T1 | n ->
   F ++ E ⊢ S1 <: T1 | n.
 Proof.
