@@ -526,12 +526,14 @@ Proof with auto with subtyping.
   - simpl. dependent destruction H2. constructor; auto. 
   - simpl. dependent destruction H1. constructor; auto.
     apply d_wft_typ_subst; auto.
-    admit.  
+    apply dwf_typ_weakening with (E3:=nil); auto.
   - simpl. dependent destruction H1. apply d_sub_intersection3; auto.
-    apply d_wft_typ_subst; auto. admit.
-Admitted.
+    apply d_wft_typ_subst; auto.
+    apply dwf_typ_weakening with (E3:=nil); auto.
+Qed.
 
-Theorem  d_sub_strenthening: forall E F G S1 T1,
+
+(* Theorem  d_sub_strenthening: forall E F G S1 T1,
   F ++ G ++ E ⊢ S1 <: T1 ->
   F ++ E ⊢ S1 ->
   F ++ E ⊢ T1 ->
@@ -551,7 +553,7 @@ Proof.
     inverts~ HWS. pick fresh y. applys dwft_subst y H8. solve_notin.
     (* wf for newly introduced mono type T2*)
     admit.
-Admitted.
+Admitted. *)
 
 
 Theorem d_sub_tvar_ind_sub_all : forall E T1 T2,
@@ -669,31 +671,33 @@ Proof with eauto with subtyping.
 Qed.
 
 
+Hint Resolve d_wft_typ_subst_stvar : subtyping.
+
 Theorem d_sub_subst_stvar : forall E SX F S1 T1 T2,
+  ⊢ F ++ (SX ~ dbind_stvar_empty) ++ E ->
   F ++ (SX ~ dbind_stvar_empty) ++ E ⊢ S1 <: T1 ->
   E ⊢ T2 -> 
   map (d_subst_stv_in_binding T2 SX) F ++ E ⊢ {T2 /ₛᵈ SX} S1 <: {T2 /ₛᵈ SX} T1.
 Proof with eauto with subtyping.
-  intros. dependent induction H; try solve [simpl in *; eauto with subtyping].
-  - simpl. constructor. 
-    admit. (*wft*)
-  - simpl. constructor. admit.
-  - simpl. constructor. admit.
+  intros. dependent induction H0; try solve [simpl in *; eauto with subtyping].
+  - simpl. admit.
   - destruct (SX0 == SX); apply dsub_refl.
     + admit. (*wft*)
     + admit. (*wft*)
-  - simpl. eapply d_sub_all with (L:=L `union` singleton SX); intros SX1 Hfr; inst_cofinites_with SX1.
+  - simpl. inst_cofinites_for d_sub_all; intros SX1 Hfr; inst_cofinites_with SX1.
     + admit.
     + admit.
     + inst_cofinites_with SX1. repeat rewrite d_subst_stv_in_dtyp_open_comm; eauto...
       replace (SX1 ~ dbind_stvar_empty ++ map (d_subst_stv_in_binding T2 SX) F ++ E) with 
       (map (d_subst_stv_in_binding T2 SX) (SX1 ~ dbind_stvar_empty ++ F) ++ E) by auto.
       eapply H2; auto...
+      simpl. constructor. auto. auto.
   (* @chen *)
   - assert (E ⊢ T1) by admit.
     destruct T1; simpl in *.
-    + inst_cofinites_for d_sub_alll T2:=(T0); auto.
+    + inst_cofinites_for d_sub_alll T2:=(T0).
 Admitted.
+
 
 Inductive d_sub_sized : denv -> dtyp -> dtyp -> nat -> Prop :=   
  | d__subs__top : forall (E:denv) (S1:dtyp) (n:nat),
@@ -846,79 +850,6 @@ Proof with auto with trans.
     rewrite Heq. eauto... 
 Qed.
 
-
-(* 
-
-Corollary sized_ld_sub_weakening_cons : forall G x t1 t2 n,
-  G ⊢ t1 <: t2 | n -> x `notin` ld_ctx_dom G -> G , x ⊢ t1 <: t2 | n.
-Proof.
-  intros.
-  replace (G , x) with (G ,, (ld_ctx_cons ld_ctx_nil x) ,, ld_ctx_nil) by auto.
-  eapply sized_ld_sub_weakening; auto.
-  simpl. constructor; auto.
-  apply sized_ld_sub_to_ld_sub in H. apply ld_sub_wf_ctx in H. auto.
-Qed.
-
-
-Theorem sized_var_substitution : forall G1 G2 x x' A B n,
-  G1 , x  ,, G2 ⊢ A <: B | n ->
-  ⊢ G1, x' ,, G2 ->
-  G1 , x' ,, G2 ⊢ [`ᵈ x' /ᵈ x] A <: [`ᵈ x' /ᵈ x] B | n.
-Proof.
-  intros.
-  dependent induction H.
-  - simpl. destruct (x0 == x). 
-    + subst. constructor; auto. clear H1. clear H0. clear H. induction G2.
-      * simpl. constructor.
-      * simpl. constructor. eauto.
-    + constructor.
-      * auto.
-      * eapply ld_in_context_other in H0; eauto.
-        replace (G1,x',,G2) with (G1,,(ld_ctx_nil, x'),,G2) by auto. apply ld_in_context_weakenning. auto.
-  - simpl. constructor. auto. 
-  - simpl. constructor; eauto.
-  - simpl. constructor; eauto.
-  - simpl. apply sls_intersection_l1; auto.
-    now apply ld_wf_type_subst_var.
-  - simpl. apply sls_intersection_l2; auto. 
-    now apply ld_wf_type_subst_var.
-  - simpl. apply sls_union_r1; auto. 
-    now apply ld_wf_type_subst_var.
-  - simpl. apply sls_union_r2; auto. 
-    now apply ld_wf_type_subst_var.
-  - simpl. apply sls_union_l; auto. 
-  - simpl. eapply sls_foralll with (t:=[`ᵈ x' /ᵈ x] t). 
-    + destruct (x == x'); subst.
-      * replace ([`ᵈ x' /ᵈ x'] t) with t; auto.
-        now apply subst_same_eq.
-      * apply ld_wf_mtype_equiv_ld_wf_type_and_mono in H. destruct H.
-        apply ld_wf_mtype_subst.
-        -- auto.
-        -- apply ld_wf_mtype_equiv_ld_wf_type_and_mono. split; auto.
-            replace (G1, x', x,, G2) with (G1,, (ld_ctx_nil, x'),, (ld_ctx_nil, x,, G2)).
-            apply ld_wf_type_weakening.
-            ++ simpl. rewrite <- context_cons_app_eq. auto. 
-            ++ simpl. clear IHsized_ld_sub. 
-               apply ld_wf_type_is_wf_ctx in H.
-               rewrite <- context_cons_app_eq. apply ld_wf_ctx_middle; auto. 
-            ++ clear. induction G2; auto.
-               simpl. rewrite <- IHG2. auto.
-        -- constructor. replace (G1, x') with (G1,x',,ld_ctx_nil) by auto. eapply ld_wf_ctx_weakening; eauto.
-           constructor. 
-    + replace (([`ᵈ x' /ᵈ x] A) ^^ᵈ ([`ᵈ x' /ᵈ x] t)) with ([`ᵈ x' /ᵈ x] A ^^ᵈ t).
-      * apply IHsized_ld_sub; auto.
-      * rewrite subst_ld_type_open_ld_type_wrt_ld_type; auto. 
-  - simpl. eapply sls_forallr with (L:=L `union` singleton x `union` ld_ctx_dom ( G1, x',, G2)).
-    intros. inst_cofinites_with x0.
-    rewrite_subst_open_var.
-    replace  (([`ᵈ x' /ᵈ x] B) ^^ᵈ ([`ᵈ x' /ᵈ x] `ᵈ x0)) with ( [`ᵈ x' /ᵈ x] B ^^ᵈ `ᵈ x0).
-    + replace (G1, x',, G2, x0 ) with (G1,x',, (G2, x0)) by auto. apply H0; auto.
-      simpl. constructor; auto. 
-    + rewrite subst_ld_type_open_ld_type_wrt_ld_type. reflexivity. simpl.
-      replace (G1,, G2, x0 ) with (G1,, (G2, x0)) by auto. now apply ld_mono_is_ld_lc.
-Qed.
-
- *)
 
 Hint Constructors d_sub : trans.
 Hint Extern 1 (?x < ?y) => lia : trans.
@@ -1181,11 +1112,10 @@ Proof with auto with trans.
     + simpl in *. dependent destruction Hsub2...
       * econstructor. 
         admit. (*wft*)
-      * eapply d_sub_all with (L:=L `union` L0); auto.
+      * eapply d_sub_all with (L:=L `union` L0 `union` dom E); auto.
         intros. inst_cofinites_with SX.
         eapply IHn_dtyp_order with (S1:= T0 ^^ᵈ dtyp_svar SX); eauto...
         -- admit. (* order *)
-        -- admit.
       * eapply d_sub_alll with (T2:=T2); eauto.
         admit. (* ds_in *)
         inst_cofinites_by (L `union` fstv_in_dtyp S1 `union` fstv_in_dtyp T0) using_name SX.
@@ -1285,6 +1215,8 @@ Proof with auto with trans.
         -- dependent destruction Hsub2; auto...
            ++ econstructor. admit.
            ++ eapply d_sub_alll with (T2:=T2); eauto...
+              assert (E ⊢ T1) by admit. assert (E ⊢ T4) by admit.
+              constructor; eauto... apply dwf_typ_lc_dtyp.
               admit. admit. admit.
              eapply IHn_dsub_size with (S1:=dtyp_arrow T0 T3) (n2:=S(n1+n2)); eauto...
           ++ inversion H6.

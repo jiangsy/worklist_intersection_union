@@ -752,6 +752,7 @@ Proof.
 Qed.
 
 Hint Resolve d_wf_env_uniq : core.
+Hint Resolve dwf_typ_weakening_cons : core.
 
 Lemma dwf_env_binds_dwf_typ : forall E x T,
   ⊢ E ->
@@ -763,20 +764,21 @@ Proof.
   - inversion H0.
   - simpl in H1. inversion H1.
     + inversion H2.
-    + apply IHdwf_env in H2. apply dwf_typ_weakening_cons; auto.
+    + auto. 
   - inversion H1.
     + inversion H2.
-    + simpl in H2. apply IHdwf_env in H2. apply dwf_typ_weakening_cons; auto.
+    + auto.
   - inversion H2.
-    + dependent destruction H3. apply dwf_typ_weakening_cons; auto.
-    + simpl in *. apply IHdwf_env in H3. apply dwf_typ_weakening_cons; auto. 
+    + dependent destruction H3. auto.
+    + simpl in *. apply IHdwf_env in H3. 
+      apply dwf_typ_weakening_cons; auto. 
 Qed.
 
-Lemma dwft_subst : forall E X T1 T2,
+(* Lemma dwft_subst : forall E X T1 T2,
   X ~ dbind_tvar_empty ++ E ⊢ T1 ^ᵈ X ->
   E ⊢ T2 ->
   E ⊢ T1 ^^ᵈ T2.
-Admitted.
+Admitted. *)
 
 Hint Constructors d_typing : core.
 
@@ -938,3 +940,41 @@ Proof.
            ++ eapply dwf_typ_dlc_type; eauto.
            ++ auto. 
 Admitted.
+
+
+Lemma dwf_typ_strengthening : forall F E x T b,
+    E ++ x ~ b ++ F ⊢ T ->
+    x \notin ftv_in_dtyp T ->
+    x \notin fstv_in_dtyp T -> 
+    E ++ F ⊢ T.
+Proof.
+  intros.
+  dependent induction H; auto.
+  - induction E.
+    + inversion H. dependent destruction H2.
+      simpl in H0. apply notin_singleton_1 in H0. contradiction.
+      auto.
+    + destruct a. inversion H.
+      * dependent destruction H2. auto.
+      * simpl. apply dwf_typ_weakening_cons; auto.
+  - induction E.
+    + inversion H. dependent destruction H2.
+      * simpl in H1. apply notin_singleton_1 in H1. contradiction.
+      * auto.
+    + destruct a. inversion H.
+      * dependent destruction H2. auto.
+      * simpl. apply dwf_typ_weakening_cons; auto.
+  - simpl in *. constructor.
+    + apply notin_union_1 in H1.
+      eauto.
+    + apply notin_union_2 in H1.
+      eauto.
+  - simpl in *.
+    apply dwftyp_all with (L:=L `union` singleton x); intros; inst_cofinites_with X.
+    + auto. 
+    + replace (X ~ dbind_tvar_empty ++ E ++ F) with ((X ~ dbind_tvar_empty ++ E)++ F) by auto. eapply H1 with (x:=x) (b:=b); auto.
+    rewrite ftv_in_dtyp_open_dtyp_wrt_dtyp_upper; auto.
+    rewrite fstv_in_dtyp_open_dtyp_wrt_dtyp_upper; auto. 
+  - simpl in *. eauto.
+  - simpl in *. eauto.
+Qed.
