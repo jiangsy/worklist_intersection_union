@@ -1216,8 +1216,8 @@ Proof with auto with trans.
            ++ econstructor. admit.
            ++ eapply d_sub_alll with (T2:=T2); eauto...
               assert (E ⊢ T1) by admit. assert (E ⊢ T4) by admit.
-              constructor; eauto... apply dwf_typ_lc_dtyp.
-              admit. admit. admit.
+              constructor; eauto... 
+              admit. admit.
              eapply IHn_dsub_size with (S1:=dtyp_arrow T0 T3) (n2:=S(n1+n2)); eauto...
           ++ inversion H6.
           ++ inversion H7.
