@@ -957,17 +957,16 @@ Proof.
            ++ assert (dtyp_size T1 < n3) by lia.
               specialize (IHn3 _ _ _ _ _ H H0 H6 H2_0 H3) as IHn3T.
               simpl in IHn3T. auto.
-        -- specialize (dsub_intersection_inversion _ _ _ _ H2).
-           intros. intuition.
+        -- admit.
         -- assert (E ⊢ dtyp_intersection S1 T1 <: dtyp_union T3 T2) as Hsub1 by admit .
            assert (E ⊢ dtyp_intersection S1 T1 <: dtyp_union T4 T2) as Hsub2 by admit.
-           specialize (IHordi_wf_1 Hsub1).
-           specialize (IHordi_wf_2 Hsub2).
+           specialize (IHordi_wf1 Hsub1).
+           specialize (IHordi_wf2 Hsub2).
            eapply d_check_split_i with (T2:=dtyp_union T3 T2) (T3:=dtyp_union T4 T2); eauto.
            econstructor; eauto.
         -- assert (E ⊢ dtyp_intersection S1 T1 <: dtyp_union T0 T4) as Hsub1 by admit .
            assert (E ⊢ dtyp_intersection S1 T1 <: dtyp_union T0 T3) as Hsub2 by admit.
-            specialize (IHordi_wf_1 Hsub1).
+            specialize (IHordi_wf1 Hsub1).
             specialize (IHordi_wf_2 Hsub2).
             eapply d_check_split_i with (T2:=dtyp_union T0 T3) (T3:=dtyp_union T0 T4); eauto.
             econstructor; eauto.
