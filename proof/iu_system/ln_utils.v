@@ -70,6 +70,16 @@ Tactic Notation "inst_cofinites_for" constr(H) :=
   let L1 := beautify_fset L1 in
   pick fresh x for L1; apply H with (L:=L1).
 
+Tactic Notation "inst_cofinites_for" constr(H) ident(name)":="constr(Args1) := 
+  let L1 := gather_atoms in
+  let L1 := beautify_fset L1 in
+  pick fresh x for L1; apply H with (L:=L1) (name:=Args1).
+
+Tactic Notation "inst_cofinites_for" constr(H) ident(argname1)":="constr(arg1) "," ident(argname2) ":=" constr(arg2):= 
+  let L1 := gather_atoms in
+  let L1 := beautify_fset L1 in
+  pick fresh x for L1; apply H with (L:=L1) (argname1:=arg1) (argname2:=arg2).
+
 (* 
 
 Tactic Notation "pick" "fresh" ident(x) "and" "apply" constr(H) "for" "weakening" :=

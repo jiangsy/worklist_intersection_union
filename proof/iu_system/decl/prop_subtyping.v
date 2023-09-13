@@ -589,8 +589,6 @@ Proof.
 Qed.
 
 
-
-
 Theorem  d_sub_subst_mono : forall E X F S1 T1 T2,
   ⊢ F ++ (X ~ dbind_tvar_empty) ++ E ->
   F ++ (X ~ dbind_tvar_empty) ++ E ⊢ S1 <: T1 ->
@@ -650,11 +648,11 @@ Proof with eauto with subtyping.
       -- replace (if X0 == X then T2 else `ᵈ X0) with ( {T2 /ᵈ X} `ᵈ X0) by auto.
          apply d_wft_typ_subst; auto.
       -- auto.
-    + eapply d_sub_alll with (L:=L `union` singleton X) (T2:={T2 /ᵈ X} T0); auto...
-      * intros. inst_cofinites_with X0. rewrite dtyp_subst_open_comm; auto...
-        apply ftv_sin_dtyp_subst_inv; auto...
-      * apply d_mono_typ_subst_mono_mono; auto.
-      * rewrite <- d_subst_tv_in_dtyp_open_dtyp_wrt_dtyp; eauto...  
+         + inst_cofinites_for d_sub_alll T2:=({T2 /ᵈ X} T0); auto... 
+          * intros. inst_cofinites_with X0. rewrite dtyp_subst_open_comm; auto...
+            apply ftv_sin_dtyp_subst_inv; auto...
+          * apply d_mono_typ_subst_mono_mono; auto.
+          * rewrite <- d_subst_tv_in_dtyp_open_dtyp_wrt_dtyp; eauto...  
     + apply d_sub_dwft in Hsub as Hwft1. destruct Hwft1 as [HwftS HwftT]. inversion HwftT.
       eapply d_sub_alll with (L:=L `union` singleton X) (T2:={T2 /ᵈ X} T0); eauto...
       * apply d_neq_all_subst_neq_all; auto...
@@ -668,7 +666,8 @@ Proof with eauto with subtyping.
     + inversion H. 
     + inversion H1.
     + inversion H0.
-Admitted.
+Qed.
+
 
 Theorem d_sub_subst_stvar : forall E SX F S1 T1 T2,
   F ++ (SX ~ dbind_stvar_empty) ++ E ⊢ S1 <: T1 ->
