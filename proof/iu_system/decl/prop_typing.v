@@ -378,7 +378,7 @@ Proof with auto with typing.
       * exists dtyp_unit. split; auto.
         econstructor. eapply d_subenv_wf_env; eauto.
       (* e1 e2 => A *)
-      * admit. (* @shengyi:todo *** *)
+      * admit. (* d_infabs_subsumption @shengyi:todo *** *)
       (* /\ a. e : A => forall a. A *)
       * exists (dtyp_all T1); split.
         -- eapply dsub_refl; auto.
@@ -388,7 +388,7 @@ Proof with auto with typing.
            admit. (* maybe some minor problem with exp_size def ** *)
            admit. (* wft * *)
       (* e @T *)
-      * admit. (* @shengyi:todo *** *)
+      * admit. (* d_inftapp_subsumption @shengyi:todo *** *)
     (* e <= *)
     + dependent destruction H2.
       (* \x. e <= Top *)
@@ -404,13 +404,18 @@ Proof with auto with typing.
         assert (d_wft_ord S1). admit. (* trivial * *)
         induction H6.
         -- dependent destruction H5.
-           ++ admit.
+           ++ inst_cofinites_for d_typing_chkabstop. intros.
+              inst_cofinites_with x.
+              refine (IHn1 _ _ _ _ _ _ _ _ _ _ H3 _ _ _); eauto...
+              admit. (* exp_size ** *)
+              admit. (* sub_weakening *)
            ++ inst_cofinites_for d_typing_chkabs.
               admit. intros. inst_cofinites_with x.
               refine (IHn1 _ _ _ _ _ _ _ _ _ _ H3 _ _ _); eauto...
               admit. (* exp_size ** *)
               admit. (* sub_weakening *)
            ++ inversion H6.
+           ++ inversion H7.
            ++ inversion H7.
         -- dependent destruction H5; auto... 
         -- dependent destruction H5; auto... 
