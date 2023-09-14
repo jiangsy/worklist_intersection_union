@@ -43,16 +43,14 @@ Proof with auto with sub.
 Qed.
 
 
-(* Lemma dsub_intersection_inversion : forall E S1 T1 T2, 
+Lemma dsub_intersection_inversion : forall E S1 T1 T2, 
   E ⊢ S1 <: dtyp_intersection T1 T2 -> 
   E ⊢ S1 <: T1 /\ E ⊢ S1 <: T2.
 Proof with auto with sub.
   intros.
   dependent induction H; auto...
   - inversion H. split; econstructor; auto.
-  - specialize (IHd_sub _ _ (eq_refl _)).
-    inversion IHd_sub. 
-    split; eapply dsub_open_mono_inversion; eauto.
+  - inversion H0.
   - specialize (IHd_sub _ _ (eq_refl _)).
     intuition.
   - specialize (IHd_sub _ _ (eq_refl _)).
@@ -62,7 +60,7 @@ Proof with auto with sub.
     inversion IHd_sub1.    
     destruct IHd_sub2.
     intuition.
-Qed. *)
+Qed.
 
 
 Theorem dsub_unit_all_false: forall E T,

@@ -420,7 +420,7 @@ Proof with auto with typing.
         -- eapply d_typing_inftabs with (L:=L); auto...
            intros. inst_cofinites_with X.
            refine (IHn1 _ _ _ _ _ _ _ _ _ _ H3 _ _ _); eauto...
-           admit. (* maybe some minor problem with exp_size def *)
+           admit. (* maybe some minor problem with exp_size def ** *)
            admit. (* wft * *)
       (* e @T *)
       * admit.
@@ -436,14 +436,13 @@ Proof with auto with typing.
            admit. (* exp_size  ** *)
       (* \x. e <= T1 -> T2 *)
       * intros. 
-        dependent destruction H5.
-        -- admit.
-        -- admit.
-        -- admit.
-        -- admit.
-        -- admit.
-      (* e <= forall a. A *) (* ignore for now *)
-      * intros. admit.
+        assert (d_wft_ord S1). admit. (* trivial * *)
+        induction H6.
+        -- dependent destruction H5; admit.
+        -- dependent destruction H5; auto... 
+        -- dependent destruction H5; auto... 
+      (* e <= forall a. A *) 
+      * admit. (* ignore for now *** *)
       (* e <= A *)
       * intros.
         simpl in H0. assert (dmode_size d_typingmode_inf < n2) by (simpl; lia).
@@ -460,20 +459,12 @@ Proof with auto with typing.
       * intros. assert (d_wft_ord S0). 
         admit. (* trivial * *)
         induction H4.
-        -- dependent destruction H2.
-           ++ simpl in H1. 
-              assert (dtyp_size S1 < n3) by lia.
-              specialize (IHn3 _ _ _ _ _ H H0 H5 H2_ H3). simpl in IHn3.
-              apply IHn3. constructor. admit.
+        -- dependent destruction H2; simpl in H1.
+           ++ refine (IHn3 _ _ _ _ _ _ _ _ H2_ _ _ _); eauto...
+              admit.
            ++ inversion H4.
-           ++ simpl in H1. 
-              assert (dtyp_size S1 < n3) by lia.
-              specialize (IHn3 _ _ _ _ _ H H0 H6 H2_ H3). simpl in IHn3.
-              apply IHn3. auto.
-           ++ simpl in H1. 
-              assert (dtyp_size T1 < n3) by lia.
-              specialize (IHn3 _ _ _ _ _ H H0 H6 H2_0 H3). simpl in IHn3.
-              apply IHn3. auto.
+           ++ refine (IHn3 _ _ _ _ _ _ _ _ H2_ _ _ _); eauto...
+           ++ refine (IHn3 _ _ _ _ _ _ _ _ H2_0 _ _ _); eauto...
            ++ inversion H5.
            ++ inversion H5.
         -- simpl in H1. dependent destruction H2; auto...
@@ -484,18 +475,10 @@ Proof with auto with typing.
            ++ refine (IHn3 _ _ _ _ _ _ _ _ H2_0 _ _ _); eauto...  
            ++ eauto... 
            ++ eauto... 
-      * intros.
-        simpl in H1.
-        assert (dtyp_size S1 < n3) by lia.
-        specialize (IHn3 _ _ _ _ _ H H0 H6 H2 H4).
-        simpl in IHn3.
-        specialize (dsub_union_inversion _ _ _ _ H5). intros. inversion H7.
-        apply IHn3. auto.
-      * intros.
-        simpl in H1.
-        assert (dtyp_size T1 < n3) by lia.
-        specialize (IHn3 _ _ _ _ _ H H0 H6 H2 H4).
-        simpl in IHn3.
-        specialize (dsub_union_inversion _ _ _ _ H5). intros. inversion H7.
-        apply IHn3. auto.
+      * intros. simpl in H1.
+        refine (IHn3 _ _ _ _ _ _ _ _ H2 _ _ _); eauto...
+        specialize (dsub_union_inversion _ _ _ _ H5). intros. intuition.
+      * intros. simpl in H1.
+        refine (IHn3 _ _ _ _ _ _ _ _ H2 _ _ _); eauto...
+        specialize (dsub_union_inversion _ _ _ _ H5). intros. intuition.
 Admitted.
