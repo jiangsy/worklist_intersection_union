@@ -356,7 +356,7 @@ Admitted.
 
 
 (* @shengyi:todo *** *)
-Theorem d_inftapp_subsumption : forall E T1 T2 T3 S1, 
+Theorem d_inftapp_subsumption_same_env : forall E T1 T2 T3 S1, 
   E ⊢ T1 ○ T2 ⇒⇒ T3 -> 
   E ⊢ S1 <: T1 ->
   exists S3, E ⊢ S3 <: T3 /\ E ⊢ S1 ○ T2 ⇒⇒ S3.
@@ -371,7 +371,8 @@ Proof with auto with typing.
       * exists C1; intuition...
       * destruct H3 as [C2 Hc2]. destruct Hc1.
         exists (dtyp_intersection C1 C2); split.
-        -- constructor; auto. admit.
+        -- constructor; auto. 
+           admit. (* wft ★★ *)
         -- apply d_inftapp_intersection3; auto.
     + specialize (d_inftapp_total _ _ _ H1 H). intros.
       specialize (IHd_sub H (eq_refl _)). destruct IHd_sub as [C1 Hc1].
@@ -387,12 +388,17 @@ Proof with auto with typing.
       intuition... intuition...
   - intros. dependent induction H1.
     + exists dtyp_bot. split.
-      econstructor. admit.
+      econstructor. admit. (* wft ★ *)
       econstructor. auto.
     + exists (S1 ^^ᵈ T2). split; auto...
-      admit.
+      pick fresh SX. inst_cofinites_with SX.
+      replace (S1 ^^ᵈ T2) with ({T2 /ₛᵈ SX} S1 ^^ᵈ dtyp_svar SX) by admit. (* ★ *)
+      replace (T1 ^^ᵈ T2) with ({T2 /ₛᵈ SX} T1 ^^ᵈ dtyp_svar SX) by admit. (* ★ *)
+      rewrite_env ((map (d_subst_stv_in_binding T2 SX) nil) ++ E).
+      apply d_sub_subst_stvar; auto. 
+      admit. (* add |- E ★ *)
       econstructor; auto.
-      admit.
+      admit. (* wft ★ *)
     + inversion H6.
     + specialize (IHd_sub _ H H0 (eq_refl _)).
       destruct IHd_sub as [C1 Hc1].
@@ -401,7 +407,9 @@ Proof with auto with typing.
       -- exists C1; intuition...
       -- destruct H4 as [C2 Hc2]. 
          exists (dtyp_intersection C1 C2). split.
-         constructor; intuition... admit. admit.
+         constructor; intuition... 
+         admit. (* wft ★★ *) 
+         admit. (* wft ★★ *) 
          apply d_inftapp_intersection3; intuition...
     + specialize (IHd_sub _ H H0 (eq_refl _)).
       destruct IHd_sub as [C1 Hc1].
@@ -410,12 +418,14 @@ Proof with auto with typing.
       -- exists C1; intuition...
       -- destruct H4 as [C2 Hc2]. 
         exists (dtyp_intersection C2 C1). split.
-        apply d_sub_intersection3; intuition... admit. admit.
+        apply d_sub_intersection3; intuition... 
+        admit. (* wft ★★ *) 
+        admit. (* wft ★★ *) 
         apply d_inftapp_intersection3; intuition...
 Admitted.
 
 
-Corollary d_inftapp_subsumption_: forall E E' A1 A2 B1 C1,
+Corollary d_inftapp_subsumption: forall E E' A1 A2 B1 C1,
   E ⊢ A1 ○ B1 ⇒⇒ C1 -> 
   E ⊢ A2 <: A1 ->
   d_subenv E' E -> 
@@ -517,7 +527,7 @@ Proof with auto with typing.
       * simpl in H.
         eapply IHn1 in H3; eauto...
         destruct H3 as [A1 [Hsuba1 Hinfa1]].
-        eapply d_inftapp_subsumption_ in H4; eauto.
+        eapply d_inftapp_subsumption in H4; eauto.
         destruct H4 as [C2 Hc2].
         exists C2. intuition... 
         econstructor; eauto...
