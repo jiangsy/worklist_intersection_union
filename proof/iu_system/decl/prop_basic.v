@@ -820,14 +820,16 @@ Proof with simpl in *; eauto using d_wf_env_strenthening_head.
       intuition eauto.
     + inverts~ H. inverts H0.
     + pick fresh Y and apply dwftyp_all. inst_cofinites_with Y.
-      case_eq (Y==X); intros; subst.
-      * false. solve_notin.
       * rewrite d_subst_tv_in_dtyp_open_dtyp_wrt_dtyp_var...
         applys* ftv_sin_dtyp_subst_inv.
-      * rewrite d_subst_tv_in_dtyp_open_dtyp_wrt_dtyp_var... applys* H1.
-        ** inverts* HE. repeat econstructor...
-        ** Search (_::_~=_::_).
-           simpl.
+      * inst_cofinites_with Y.
+      assert (⊢ (Y, dbind_tvar_empty) :: (X, dbind_tvar_empty) :: E). admit.
+      assert ((Y, dbind_tvar_empty) :: (X, dbind_tvar_empty) :: E ~=
+      (Y, dbind_tvar_empty) :: (X, dbind_tvar_empty) :: E) by auto.
+      assert ((X, dbind_tvar_empty) :: E ⊢ T2) by admit.
+      specialize (H1 Y ((X, dbind_tvar_empty) :: E) H2 H3 H4).
+      rewrite d_subst_tv_in_dtyp_open_dtyp_wrt_dtyp_var; auto...
+      admit.
   - destruct a. destruct b...
     + forwards: HE. forwards*: IHF...
 Admitted.
