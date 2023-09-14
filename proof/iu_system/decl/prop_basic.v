@@ -12,6 +12,18 @@ Hint Constructors dwf_env: core.
 Hint Constructors dwf_typ_s: core.
 
 
+Ltac solve_by_inverts n :=
+  match goal with | H : ?T |- _ =>
+  match type of T with Prop =>
+    solve [
+      inversion H;
+      match n with S (S (?n')) => subst; solve_by_inverts (S n') end ]
+  end end.
+
+Ltac solve_by_invert :=
+  solve_by_inverts 1.
+
+
 Lemma subst_same_tvar_eq : forall T X,
   T = {`ᵈ X /ᵈ X} T.
 Proof.
@@ -827,32 +839,18 @@ Lemma d_wft_typ_subst : forall E X F T1 T2,
   F ++ X ~ dbind_tvar_empty ++ E ⊢ T1 ->
   E ⊢ T2 ->
   map (d_subst_tv_in_binding T2 X) F  ++ E ⊢ {T2 /ᵈ X} T1.
-Proof with simpl in *; eauto using d_wf_env_strenthening_head.
-  (* intros * HE HT1 HT2. *)
-  (* induction F... *)
-  (* - inductions HT1... *)
-  (*   + case_if... *)
-  (*     inverts~ H. inverts H0. *)
-  (*     intuition eauto. *)
-  (*   + inverts~ H. inverts H0. *)
-  (*   + pick fresh Y and apply dwftyp_all. inst_cofinites_with Y. *)
-  (*     case_eq (Y==X); intros; subst. *)
-  (*     * false. solve_notin. *)
-  (*     * rewrite d_subst_tv_in_dtyp_open_dtyp_wrt_dtyp_var... *)
-  (*       applys* ftv_sin_dtyp_subst_inv. *)
-  (*     * rewrite d_subst_tv_in_dtyp_open_dtyp_wrt_dtyp_var... *)
-  (*       admit. *)
-  (* (*       forwards*: H1 X. *) *)
-  (* (*       ** inverts* HE. repeat econstructor... *) *)
-  (* (*       ** Search (_::_~=_::_). *) *)
-  (* (*          simpl. *) *)
-  (* (* - destruct a. destruct b... *) *)
+Proof with simpl in *; try solve_by_invert; eauto using uniq_app_1, uniq_app_2.
   intros * Hwfenv Hwft1 Hwft2.
-  inductions Hwft1; intros; try solve [simpl; auto].
+  inductions Hwft1; intros; forwards: d_wf_env_uniq Hwfenv; try solve [simpl; auto]...
   - destruct (X0 == X).
-    + subst. simpl. admit.
-    + admit.
-  - simpl. admit.
+    + subst. simpl. applys* dwf_typ_weaken_head.
+      solve_uniq.
+    + forwards* [?|?]: binds_app_1 H.
+      * forwards: binds_map_2 (d_subst_tv_in_binding T2 X) H1...
+      * apply binds_cons_iff in H1. iauto.
+  - econstructor.
+    forwards* [?|?]: binds_app_1 H. forwards*: binds_map_2 (d_subst_tv_in_binding T2 X) H1.
+    forwards* [(?&?&?)|?]: binds_cons_uniq_1 H1...
   - simpl. inst_cofinites_for dwftyp_all; intros; inst_cofinites_with X0.
     + rewrite d_subst_tv_in_dtyp_open_dtyp_wrt_dtyp_var...
       applys* ftv_sin_dtyp_subst_inv.
@@ -860,7 +858,8 @@ Proof with simpl in *; eauto using d_wf_env_strenthening_head.
       replace ((X0, dbind_tvar_empty) :: map (d_subst_tv_in_binding T2 X) F ++ E)
       with (map (d_subst_tv_in_binding T2 X) ((X0, dbind_tvar_empty) :: F) ++ E) by auto.
       apply H1; auto...
-Admitted.
+      econstructor...
+Qed.
 
 
 Lemma d_wft_typ_subst_stvar : forall E SX F T1 T2,
@@ -868,8 +867,28 @@ Lemma d_wft_typ_subst_stvar : forall E SX F T1 T2,
   F ++ SX ~ dbind_stvar_empty ++ E ⊢ T1 ->
   E ⊢ T2 ->
   map (d_subst_stv_in_binding T2 SX) F  ++ E ⊢ {T2 /ₛᵈ SX} T1.
-Proof.
-Admitted.
+Proof with simpl in *; try solve_by_invert; eauto using uniq_app_1, uniq_app_2, binds_app_1, binds_app_2.
+  intros * Hwfenv Hwft1 Hwft2.
+  inductions Hwft1; intros; forwards: d_wf_env_uniq Hwfenv; try solve [simpl; auto]...
+  - forwards* [?|?]: binds_app_1 H...
+    * forwards: binds_map_2 (d_subst_stv_in_binding T2 SX) H1...
+    * apply binds_cons_iff in H1. destruct H1...
+        ** inverts* H1...
+  - destruct (SX0 == SX); subst...
+    + subst. simpl. applys* dwf_typ_weaken_head.
+      solve_uniq.
+    + forwards* [?|?]: binds_app_1 H.
+      * forwards: binds_map_2 (d_subst_stv_in_binding T2 SX) H1...
+      * apply binds_cons_iff in H1. iauto.
+  - simpl. inst_cofinites_for dwftyp_all; intros; inst_cofinites_with X.
+    + rewrite d_subst_stv_in_dtyp_open_comm...
+      applys fstv_sins_dtyp_subst_stv...
+    + rewrite d_subst_stv_in_dtyp_open_comm...
+      replace ((X, dbind_tvar_empty) :: map (d_subst_stv_in_binding T2 SX) F ++ E)
+      with (map (d_subst_stv_in_binding T2 SX) ((X, dbind_tvar_empty) :: F) ++ E) by auto.
+      apply H1; auto...
+      econstructor...
+Qed.
 
 
 Lemma d_new_tv_notin_wf_typ : forall X E T1,
