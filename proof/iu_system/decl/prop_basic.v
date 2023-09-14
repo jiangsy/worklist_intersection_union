@@ -819,8 +819,15 @@ Proof with simpl in *; eauto using d_wf_env_strenthening_head.
       inverts~ H. inverts H0.
       intuition eauto.
     + inverts~ H. inverts H0.
-    + econstructor; intros; inst_cofinites_with X0.
-      admit. admit.
+    + pick fresh Y and apply dwftyp_all. inst_cofinites_with Y.
+      case_eq (Y==X); intros; subst.
+      * false. solve_notin.
+      * rewrite d_subst_tv_in_dtyp_open_dtyp_wrt_dtyp_var...
+        applys* ftv_sin_dtyp_subst_inv.
+      * rewrite d_subst_tv_in_dtyp_open_dtyp_wrt_dtyp_var... applys* H1.
+        ** inverts* HE. repeat econstructor...
+        ** Search (_::_~=_::_).
+           simpl.
   - destruct a. destruct b...
     + forwards: HE. forwards*: IHF...
 Admitted.
