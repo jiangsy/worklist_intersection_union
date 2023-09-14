@@ -994,11 +994,6 @@ Proof.
   - simpl in *. eauto.
 Admitted.
 
-
-Create HintDb FalseHd.
-
-Hint Resolve nil_cons List.app_cons_not_nil nil_neq_one_mid : FalseHd.
-
 (* Properties of d_wf_env *)
 Lemma d_wf_env_subst_tvar_typ : forall E X F T1,
   ⊢ F ++ X ~ dbind_tvar_empty ++ E ->
