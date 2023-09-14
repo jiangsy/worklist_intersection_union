@@ -157,13 +157,6 @@ Inductive d_infabs : denv -> dtyp -> dtyp -> Prop :=
     | d_typingmode_chk
     | d_typingmode_infapp (T1 : dtyp).
 
-Definition d_subst_tv_in_typingmode (T1:dtyp) (X:typvar) (m:d_typing_mode):=
-    match m with 
-    | d_typingmode_chk => d_typingmode_chk
-    | d_typingmode_inf => d_typingmode_inf
-    | d_typingmode_infapp T2 => d_typingmode_infapp (d_subst_tv_in_dtyp T1 X T2)
-    end.
-
 Inductive d_typing : denv -> dexp -> d_typing_mode -> dtyp -> Prop :=
 | d_typing_infvar : forall (E:denv) (x:expvar) (T1:dtyp),
     dwf_env E ->

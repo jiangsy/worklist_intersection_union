@@ -2,6 +2,8 @@ Require Import Coq.Program.Equality.
 Require Import Program.Tactics.
 Require Import Lia.
 Require Import Metalib.Metatheory.
+Require Import LibTactics.
+
 
 Require Import decl.notations.
 Require Import decl.prop_basic.
@@ -44,96 +46,6 @@ Proof.
 Qed.
   
 
-
-
-
-
-(* Lemma dwf_typ_open_inv : forall E T S1 S2 n,
-  E ⊢ S1 ->
-  E ⊢ S2 ->
-  E ⊢ open_dtyp_wrt_dtyp_rec n S2 T ->
-  E ⊢ open_dtyp_wrt_dtyp_rec n S1 T.
-Proof.
-  intros. 
-  dependent induction H1; auto.
-  - destruct T; simpl in *; try solve [inversion x].
-    + econstructor.
-    + destruct (lt_eq_lt_dec n0 n).
-      * destruct s; auto. inversion x.
-      * inversion x.
-  - destruct T; simpl in *; try solve [inversion x].
-    + econstructor.
-    + destruct (lt_eq_lt_dec n0 n).
-      * destruct s; auto. inversion x.
-      * inversion x.
-  - destruct T; simpl in *; try solve [inversion x].
-    + econstructor.
-    + destruct (lt_eq_lt_dec n0 n).
-      * destruct s; auto. inversion x.
-      * inversion x.
-  - destruct T; simpl in *; try solve [inversion x].
-    + destruct (lt_eq_lt_dec n0 n).
-      * destruct s; auto. inversion x.
-      * inversion x.
-    + inversion x. subst. auto.
-  - destruct T; simpl in *; try solve [inversion x].
-    + destruct (lt_eq_lt_dec n0 n).
-      * destruct s; auto. inversion x.
-      * inversion x.
-    + inversion x. subst. auto.
-  - destruct T; simpl in *; try solve [inversion x].
-    + destruct (lt_eq_lt_dec n0 n).
-      * destruct s; auto. inversion x.
-      * inversion x.
-    + inversion x. econstructor; eauto.
-  - destruct T; simpl in *; try solve [inversion x].
-    + destruct (lt_eq_lt_dec n0 n).
-      * destruct s; auto. inversion x.
-      * inversion x.
-    + inversion x.
-      eapply dwftyp_all with (L:=L); intros; inst_cofinites_with X.
-      * admit.
-      * replace (open_dtyp_wrt_dtyp_rec (S n) S1 T ^ᵈ X) with (open_dtyp_wrt_dtyp_rec (S n) S1 (T ^ᵈ X)).
-
-        apply H1 with (S2:=S2); eauto.
-        admit.
-        admit.
-Admitted. *)
-
-(* Theorem dwf_typ_subst_inversion : forall E X T1, 
-  E ⊢ T1 ->
-  forall T2 T3, T1 = {T2 /ᵈ X} T3 ->
-    E ⊢ T3.
-Proof.
-  intros. dependent induction H; auto.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  -
-
-  + admit.
-  + simpl in *. 
-    dependent destruction H; eauto.
-  + simpl in *.
-    apply IHT1.
-    dependent destruction H.
-    apply dwftyp_all with (L:=L); intros.
-    * admit.
-    * inst_cofinites_with X0.
-      apply IHT1.
-    appl *)
-
-
-
-(* Theorem dwf_type_subst_var: forall G1 G2 x x' A,
-  G1, x,, G2 ⊢ A ->  ⊢ G1, x',, G2 -> G1, x',, G2 ⊢ [`ᵈ x' /ᵈ x] A.
-Proof.Theorem ld_wf_type_subst_var: forall G1 G2 x x' A,
-G1, x,, G2 ⊢ A ->  ⊢ G1, x',, G2 -> G1, x',, G2 ⊢ [`ᵈ x' /ᵈ x] A.
-Proof. *)
-
-
 Lemma mono_type_order : forall T,
   dmono_typ T -> dtyp_order T = 0.
 Proof.
@@ -141,31 +53,7 @@ Proof.
 Qed. 
 
 
-(* Lemma ld_in_context_exact : 
-  forall G1 G3 x, 
-    ld_in_context x (G1,x,,G3).
-Proof.
-  intros.
-  induction G3.
-  - simpl. econstructor.
-  - simpl. apply ld_inc_there.
-    auto.
-Qed.
-
-Lemma ld_in_context_weakenning : 
-  forall G1 G2 G3 x, 
-    ld_in_context x (G1,,G3) -> ld_in_context x (G1,, G2,, G3).
-Proof.
-  intros.
-  induction G3.
-  - induction G2.
-    + auto.
-    + simpl in *. auto.
-  - simpl in *.  dependent destruction H.
-    + apply ld_inc_here.
-    + apply ld_inc_there. auto.
-Qed.
-
+(* 
 
 Theorem ld_sub_weakening: 
   forall G1 G2 G3 t1 t2, 
@@ -201,48 +89,6 @@ Proof.
 Qed.
 
 
-Theorem ld_wf_mtype_equiv_ld_wf_type_and_mono : forall G t,
-  ld_wf_mtype G t <-> G ⊢ t /\ ld_mono_type t.
-Proof.
-  intros. split; intros.
-  - dependent induction H; auto. 
-    split; intuition.
-    + split. constructor; intuition. constructor; intuition.
-    + split. constructor; intuition. constructor; intuition.
-  - inversion H. dependent induction H0; auto.
-    + dependent destruction H1. intuition.
-    + inversion H1. constructor; intuition.
-    + destruct H. inversion H0. constructor; intuition. 
-    + inversion H2.
-Qed.
-
-
-Theorem ld_wf_type_subst_var: forall G1 G2 x x' A,
-  G1, x,, G2 ⊢ A ->  ⊢ G1, x',, G2 -> G1, x',, G2 ⊢ [`ᵈ x' /ᵈ x] A.
-Proof.
-  intros.
-  dependent induction H; simpl; auto.
-  - destruct (x0 == x); subst.
-    + constructor. auto. 
-      now apply ld_in_context_exact.
-    + constructor; auto.
-      apply ld_in_context_other in H0.
-      apply ld_in_context_weakenning_single; auto.
-      auto.
-  - eapply ld_wft_forall with (L:=L `union` (singleton x) `union` (ld_ctx_dom (G1, x',, G2))).
-    intros. inst_cofinites_with x0.
-    replace (G1, x',, G2, x0) with (G1, x',, (G2, x0)) by auto.
-    replace (([`ᵈ x' /ᵈ x] t) ^ᵈ x0) with ([`ᵈ x' /ᵈ x] t ^ᵈ x0).
-    apply H0; eauto.
-    simpl. constructor; auto.
-    rewrite subst_ld_type_open_ld_type_wrt_ld_type. simpl.
-    apply notin_union_2 in H2. apply notin_union_1 in H2.
-    apply notin_singleton_1' in H2.  unfold not in H2. 
-    + destruct (x0 == x); auto.
-      * subst. contradiction.
-    + auto.
-Qed.
-
 Ltac rewrite_subst_open_var :=
   repeat
     match goal with 
@@ -271,8 +117,6 @@ Inductive d_subenv : denv -> denv -> Prop :=
 .
 
 
-(* Theorem progress.  *)
-
 Lemma d_subenv_same_dom : forall E E', 
   d_subenv E' E ->
   dom E = dom E'.
@@ -293,6 +137,24 @@ Proof.
   - inversion H0; auto.
     inversion H2.
 Qed.
+
+
+Lemma d_subenv_same_var : forall E E' T1 x, 
+  d_subenv E' E ->
+  x ~ T1 ∈ E ->
+  exists S1, x ~ S1 ∈ E' /\ E ⊢ S1 <: T1.
+Proof.
+  intros. induction H; simpl; intros; auto.
+  - inversion H0; auto.
+  - inversion H0; auto.
+    + inversion H1.
+    + specialize (IHd_subenv H1).
+      admit.
+  - inversion H0; auto.
+    + inversion H1.
+    + specialize (IHd_subenv H1).
+      admit.
+Admitted.
 
 Lemma d_subenv_same_stvar : forall E E' SX, 
   d_subenv E' E ->
@@ -387,6 +249,7 @@ Proof.
 Qed.
 
 
+Hint Constructors d_typing : typing.
 Hint Resolve d_subenv_wf_typ : typing.
 Hint Resolve d_subenv_wf_env : typing.
 Hint Resolve d_wft_typ_subst : typing.
@@ -395,13 +258,13 @@ Hint Resolve bind_typ_subst : typing.
 Hint Resolve dwf_typ_dlc_type : typing.
 
 
-(* Theorem chkinffinapp_subst: forall E F X e m T1 T2,
+Theorem d_chkinf_subst_mono: forall E F X e m T1 T2,
   d_typing (F ++ X ~ dbind_tvar_empty ++ E) e m T1 ->
   E ⊢ T2 ->
   dmono_typ T2 ->
-  d_typing (map (d_subst_tv_in_binding T2 X) F  ++ E) (d_subst_tv_in_dexp T2 X e) (d_subst_tv_in_typingmode T2 X m) ({T2 /ᵈ X} T1).
+  d_typing (map (d_subst_tv_in_binding T2 X) F  ++ E) (d_subst_tv_in_dexp T2 X e) m ({T2 /ᵈ X} T1).
 Proof with auto with typing.
-  intros.
+  (* intros.
   generalize dependent T2.
   dependent induction H; intros; try solve [simpl in *; eauto 5 with typing].
   - simpl in *. eapply d_typing_inftabs with (L:=L `union` singleton X).
@@ -445,8 +308,9 @@ Proof with auto with typing.
     + apply d_mono_typ_subst_mono_mono; auto.
     + replace (dtyp_all ({T0 /ᵈ X} T1)) with ({T0 /ᵈ X} dtyp_all T1) by auto.
       auto...
-    + rewrite <- d_subst_tv_in_dtyp_open_dtyp_wrt_dtyp; eauto...
-Qed. *)
+    + rewrite <- d_subst_tv_in_dtyp_open_dtyp_wrt_dtyp; eauto... *)
+Admitted.
+
 
 Definition dmode_size (mode : d_typing_mode) : nat := 
   match mode with 
@@ -498,7 +362,7 @@ Theorem dchk_dinf_subsumption : forall n1 n2 n3 E E' e T1 mode,
     | d_typingmode_chk => forall S1, E ⊢ T1 <: S1 -> d_typing E' e d_typingmode_chk S1
     | d_typingmode_inf => exists S1, E ⊢ S1 <: T1 /\ d_typing E' e d_typingmode_inf S1
     end.
-Proof.
+Proof with auto with typing.
   intro n1; induction n1; intro n2; induction n2; intros n3; induction n3; intros.
   - inversion H.
   - inversion H.
@@ -510,7 +374,10 @@ Proof.
   - destruct mode.
     (* e => A *)
     + dependent destruction H2.
-      * admit. (* trivial *)
+      * eapply d_subenv_same_var in H3; eauto. 
+        destruct H3 as [S1 [Hbind Hsub]]. exists S1; intuition.
+        constructor. auto...
+        admit. auto.         
       (* e : A => A *)
       * exists T1. split; auto. apply dsub_refl; auto.
         econstructor. eapply d_subenv_wf_typ; eauto.
@@ -530,13 +397,24 @@ Proof.
       * admit.
       (* /\ a. e : A => forall a. A *)
       * admit.
+      (* e @T *)
       * admit.
     (* e <= *)
     + dependent destruction H2.
       (* \x. e <= Top *)
       * intros. 
         dependent induction H4.
-        -- admit.
+        -- eapply d_typing_chkabstop with (L:=L). intros.
+           inst_cofinites_with x.
+           simpl in H.
+           assert (dexp_size (open_dexp_wrt_dexp e (dexp_var_f x)) < n1)  as Hexpsize by admit.
+           assert ((dmode_size d_typingmode_chk) < S (dmode_size d_typingmode_chk)) by lia.
+           assert ((dtyp_size dtyp_top) < S (dtyp_size dtyp_top)) by lia.
+           assert (d_subenv (x ~ dbind_typ dtyp_bot ++ E')
+           (x ~ dbind_typ dtyp_bot ++ E)) by admit.
+           specialize (IHn1 (S (dmode_size d_typingmode_chk)) 
+            (S (dtyp_size dtyp_top)) (x ~ dbind_typ dtyp_bot ++ E) (x ~ dbind_typ dtyp_bot ++ E') (open_dexp_wrt_dexp e (dexp_var_f x)) dtyp_top d_typingmode_chk Hexpsize H6 H7 H2 H8).
+            simpl in IHn1. auto.
         -- specialize (IHd_sub1 H2 H3 (eq_refl _)).
            specialize (IHd_sub2 H2 H3 (eq_refl _)).
            eapply d_typing_chkintersection; auto.
