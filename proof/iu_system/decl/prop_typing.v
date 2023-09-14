@@ -23,34 +23,6 @@ Hint Constructors dwf_env: core.
 Hint Constructors dwf_typ_s: core.
 
 
-Lemma dwf_typ_weakening : forall E1 E2 E3 T, 
-  E1 ++ E3 ⊢ T ->
-  E1 ++ E2 ++ E3 ⊢ T.
-Proof.
-  intros.
-  dependent induction H; auto.
-  - eapply dwftyp_all with (L:=L `union` dom (E1 ++ E2 ++ E3));
-    intros; inst_cofinites_with X.
-    + auto.
-    + replace (X ~ dbind_tvar_empty ++ E1 ++ E2 ++ E3) with ((X ~ dbind_tvar_empty ++ E1) ++ E2 ++ E3) by auto.
-    eapply H1; eauto.
-Qed.
-
-Corollary dwf_typ_weakening_cons : forall E X b T,
-  E ⊢ T ->
-  ((X ~ b) ++ E) ⊢ T.
-Proof.
-  intros.
-  replace (X ~ b ++ E) with (nil ++ X ~ b ++ E) by auto.
-  now apply dwf_typ_weakening.
-Qed.
-  
-
-Lemma mono_type_order : forall T,
-  dmono_typ T -> dtyp_order T = 0.
-Proof.
-  intros. induction H; simpl; auto; lia.
-Qed. 
 
 
 (* 
@@ -401,14 +373,8 @@ Proof with auto with typing.
       * exists T1. split; auto. apply dsub_refl; auto.
         econstructor. eapply d_subenv_wf_typ; eauto.
         simpl in H.
-        assert (dexp_size e < n1) by lia.
-        assert (dmode_size d_typingmode_chk < S (dmode_size d_typingmode_chk)) by lia.
-        assert (dtyp_size T1  < S (dtyp_size T1)) by lia.
-        specialize (IHn1 _ _ _ _ _ _ _ H5 H6 H7 H3 H4).
-        simpl in IHn1.
-        assert (E ⊢ T1 <: T1) by (eapply dsub_refl; eauto).
-        specialize (IHn1 _ H8).
-        auto.
+        refine (IHn1 _ _ _ _ _ _ _ _ _ _ H3 _ _ _); eauto...
+        apply dsub_refl; auto.
       (* () => 1 *)
       * exists dtyp_unit. split; auto.
         econstructor. eapply d_subenv_wf_env; eauto.
@@ -460,8 +426,7 @@ Proof with auto with typing.
         admit. (* trivial * *)
         induction H4.
         -- dependent destruction H2; simpl in H1.
-           ++ refine (IHn3 _ _ _ _ _ _ _ _ H2_ _ _ _); eauto...
-              admit.
+           ++ dependent destruction H2. refine (IHn3 _ _ _ _ _ _ _ _ H2_ _ _ _); eauto...
            ++ inversion H4.
            ++ refine (IHn3 _ _ _ _ _ _ _ _ H2_ _ _ _); eauto...
            ++ refine (IHn3 _ _ _ _ _ _ _ _ H2_0 _ _ _); eauto...
@@ -481,4 +446,12 @@ Proof with auto with typing.
       * intros. simpl in H1.
         refine (IHn3 _ _ _ _ _ _ _ _ H2 _ _ _); eauto...
         specialize (dsub_union_inversion _ _ _ _ H5). intros. intuition.
+Admitted.
+
+
+Corollary dchk_subsumption : forall E e T1 S1,  
+  d_typing E e d_typingmode_chk T1 ->
+  E ⊢ T1 <: S1 -> 
+  d_typing E e d_typingmode_chk S1.
+Proof.
 Admitted.
