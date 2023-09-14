@@ -166,72 +166,6 @@ Proof.
     + apply ld_inc_there. auto.
 Qed.
 
-Corollary ld_in_context_weakenning_single: 
-  forall G1 G3 x x', 
-    ld_in_context x (G1,,G3) -> ld_in_context x (G1, x',, G3).
-Proof.
-  intros.
-  replace (G1, x',, G3) with (G1,, (ld_ctx_nil, x'),,G3) by auto.
-  apply ld_in_context_weakenning. auto.
-Qed.
-
-
-Lemma ld_in_ctx_dom_weakenning : 
-  forall G1 G2 G3 x, 
-   x `notin` (ld_ctx_dom (G1,, G2,, G3)) -> x `notin` (ld_ctx_dom (G1,,G3)) .
-Proof.
-  intros.
-  induction G3.
-  - induction G2.
-    + auto.
-    + simpl in *. auto.
-  - simpl in *. apply notin_add_3.
-    + apply notin_add_1 in H. auto.
-    + apply IHG3. apply notin_add_2 in H. auto.
-Qed.
-
-
-
-Lemma ld_wf_type_fv: forall G t x, 
-  G ⊢ t -> x `notin` ld_ctx_dom G -> x `notin` fv_ld_type t.
-Proof.
-  intros.
-  induction H; simpl in *; auto.
-  - induction G.
-    + inversion H1.
-    + inversion H1; subst.
-      * simpl in H0. auto.
-      * inversion H. simpl in H0. apply IHG; auto.
-  - inst_cofinites_by (L `union` singleton x).
-    assert (x ∉ add x0 (ld_ctx_dom G)) by auto.
-    specialize (H1 H2). 
-    simpl in H1.
-    rewrite fv_ld_type_open_ld_type_wrt_ld_type_lower.
-    eauto.
-Qed.
-
-
-Theorem ld_wf_ctx_weakening : forall G3 G1 G2,
-  ⊢ G1 ,, G2 ,, G3 -> ⊢ G1 ,, G3.
-Proof.
-  induction G3; intros.
-  - induction G2; auto.
-    + simpl in *. apply IHG2. dependent destruction H. auto.
-  - simpl in *. dependent destruction H. econstructor. 
-    + eapply IHG3. eauto.
-    + eapply ld_in_ctx_dom_weakenning. eauto.
-Qed.
-  
-Theorem ld_wf_mtype_weakening : 
-  forall G1 G2 G3 t, 
-  ld_wf_mtype (G1 ,, G3) t -> ⊢ G1 ,, G2 ,, G3 ->
-  ld_wf_mtype (G1 ,, G2 ,, G3) t.
-Proof.
-  intros.
-  dependent induction H; eauto.
-  - econstructor; eauto. now apply ld_in_context_weakenning.
-Qed.
-
 
 Theorem ld_sub_weakening: 
   forall G1 G2 G3 t1 t2, 
@@ -316,77 +250,7 @@ Ltac rewrite_subst_open_var :=
         replace (`ᵈ x') with ([e /ᵈ x] `ᵈ x') by (apply subst_ld_type_fresh_eq; auto)
     end; repeat rewrite <- subst_ld_type_open_ld_type_wrt_ld_type by auto.
 
-
-
-Theorem ld_wf_mtype_subst :
-  forall G1 G2 x t t', 
-    ld_mono_type t' -> ld_wf_mtype (G1, x,, G2) t -> G1 ⊢ t' ->  ld_wf_mtype (G1,, G2) ([t' /ᵈ x] t).
-Proof.
-  intros.
-  dependent induction H0.
-  - simpl. econstructor. 
-    replace (G1, x,, G2) with (G1,,(ld_ctx_nil, x),,G2) in H0 by auto. eapply ld_wf_ctx_weakening; eauto.
-  - simpl. destruct (x0 == x).
-    + apply ld_wf_mtype_equiv_ld_wf_type_and_mono. intuition.
-      replace (G1,,G2) with (G1,,G2,,ld_ctx_nil) by auto. eapply ld_wf_type_weakening. eauto.
-      simpl.  replace (G1, x,, G2) with (G1,,(ld_ctx_nil, x),,G2) in H1 by auto. eapply ld_wf_ctx_weakening; eauto.
-    + constructor.
-      * replace (G1, x,, G2) with (G1,,(ld_ctx_nil, x),,G2) in H1 by auto. eapply ld_wf_ctx_weakening; eauto.
-      * eapply ld_in_context_other; eauto.    
-  - simpl. constructor.
-    + apply IHld_wf_mtype1; auto.
-    + apply IHld_wf_mtype2; auto.  
-  - simpl. constructor.
-    + apply IHld_wf_mtype1; auto.
-    + apply IHld_wf_mtype2; auto.
-  - simpl. constructor.
-    + apply IHld_wf_mtype1; auto.
-    + apply IHld_wf_mtype2; auto.
-Qed.
-
-
-
-Theorem ld_mono_is_ld_lc : forall t, 
-  ld_mono_type t -> lc_ld_type t.
-Proof.
-  intros. induction H; auto.
-Qed.
-
-Theorem ld_wf_type_subst :
-  forall G1 G2 x t t', 
-    ld_mono_type t' -> ld_wf_type (G1, x,, G2) t -> G1 ⊢ t' ->  ld_wf_type (G1,, G2) ([t' /ᵈ x] t).
-Proof.
-  intros.
-  dependent induction H0.
-  - simpl. econstructor. 
-    replace (G1, x,, G2) with (G1,,(ld_ctx_nil, x),,G2) in H0 by auto. eapply ld_wf_ctx_weakening; eauto.
-  - simpl. destruct (x0 == x).
-    + replace (G1,,G2) with (G1,,G2,,ld_ctx_nil) by auto. eapply ld_wf_type_weakening. eauto.
-      simpl.  replace (G1, x,, G2) with (G1,,(ld_ctx_nil, x),,G2) in H1 by auto. eapply ld_wf_ctx_weakening; eauto.
-    + constructor.
-      * replace (G1, x,, G2) with (G1,,(ld_ctx_nil, x),,G2) in H1 by auto. eapply ld_wf_ctx_weakening; eauto.
-      * eapply ld_in_context_other; eauto.    
-  - simpl. constructor.
-    + apply IHld_wf_type1; auto.
-    + apply IHld_wf_type2; auto.  
-  - simpl. constructor.
-    + apply IHld_wf_type1; auto.
-    + apply IHld_wf_type2; auto.
-  - simpl. constructor.
-    + apply IHld_wf_type1; auto.
-    + apply IHld_wf_type2; auto.
-  - replace ([t' /ᵈ x] ld_t_forall t) with (ld_t_forall ([t' /ᵈ x] t)) by auto.
-    eapply ld_wft_forall with (L:=L `union` singleton x). intros. 
-    replace (([t' /ᵈ x] t) ^ᵈ x0) with ([t' /ᵈ x] t ^ᵈ x0).
-    replace (G1,, G2, x0) with (G1,, (G2, x0)) by auto. eapply H0; eauto.
-    + rewrite subst_ld_type_open_ld_type_wrt_ld_type. 
-    simpl. apply notin_union_2 in H3.
-    apply notin_singleton_1' in H3.  unfold not in H3. 
-    destruct (x0 == x).
-    * subst. contradiction.
-    * auto.
-    * now apply ld_mono_is_ld_lc.
-Qed. *)
+*)
 
 
 Inductive d_subenv : denv -> denv -> Prop := 
@@ -613,70 +477,6 @@ Fixpoint dtyp_size (T:dtyp) : nat :=
   end.
   
 
-Inductive ord_i : dtyp -> Prop :=
-| ord_i_var : forall X, ord_i (dtyp_var_f X)
-| ord_i_svar : forall SX, ord_i (dtyp_svar SX)
-| ord_i_top : ord_i dtyp_top
-| ord_i_bot : ord_i dtyp_bot
-| ord_i_unit : ord_i dtyp_unit
-| ord_i_arr : forall T1 T2, ord_i (dtyp_arrow T1 T2)
-| ord_i_union : forall T1 T2, 
-    ord_i T1 -> ord_i T2 -> ord_i (dtyp_union T1 T2)
-| ord_i_all : forall T1, ord_i (dtyp_all T1)
-.
-
-Inductive split_i : dtyp -> dtyp -> dtyp -> Prop :=
-| spliti_i : forall T1 T2, split_i (dtyp_intersection T1 T2) T1 T2
-| spliti_ul : forall T1 T2 T3 T4,
-    split_i T1 T3 T4 -> split_i (dtyp_union T1 T2) (dtyp_union T3 T2) (dtyp_union T4 T2)
-| spliti_ur : forall T1 T2 T3 T4,
-    split_i T2 T3 T4 -> split_i (dtyp_union T1 T2) (dtyp_union T1 T3) (dtyp_union T1 T4).
-
-Definition splittable_i (T1: dtyp) := exists T2 T3, split_i T1 T2 T3.
-
-Inductive ordi_wf2 : dtyp -> Prop :=
-| ordiwf_ordi : forall T, ord_i T -> ordi_wf2 T
-| ordiwf_intersection : forall T1 T2, ordi_wf2 T1 -> ordi_wf2 T2 -> ordi_wf2 (dtyp_intersection T1 T2)
-| ordiwf_union : forall T1 T2, ordi_wf2 T1 -> ordi_wf2 T2 -> splittable_i (dtyp_union T1 T2) -> ordi_wf2 (dtyp_union T1 T2)
-.
-
-
-Inductive ordi_wf : dtyp -> Prop :=
-| ordiwf2_ordi : forall T, ord_i T -> ordi_wf T
-| ordiwf2_intersection : forall T1 T2, ordi_wf T1 -> ordi_wf T2 -> ordi_wf (dtyp_intersection T1 T2)
-| ordiwf2_unionl : forall T1 T2 T3 T4, split_i T1 T3 T4 -> ordi_wf (dtyp_union T3 T2) -> ordi_wf (dtyp_union T4 T2) -> 
-    ordi_wf (dtyp_union T1 T2)
-| ordiwf2_unionr : forall T1 T2 T3 T4, split_i T2 T3 T4 -> ordi_wf (dtyp_union T1 T4) -> ordi_wf (dtyp_union T1 T3) -> 
-    ordi_wf (dtyp_union T1 T2)
-.
-
-Hint Constructors ord_i : ordi.
-Hint Constructors ordi_wf : ordi.
-
-Lemma ordi_dec : forall E T, E ⊢ T -> ord_i T \/ ~ ord_i T.
-Proof with auto with ordi.
-  intros. induction H; intuition...
-  - right. intros. inversion H3; auto.
-  - right. intros. inversion H3; auto.
-  - right. intros. inversion H3; auto.
-  - right. intros. inversion H3.
-  - right. intros. inversion H3.
-  - right. intros. inversion H3.
-  - right. intros. inversion H3.
-Qed.
-
-Lemma d_wft_ordi_wft : forall E T, E ⊢ T -> ordi_wf T.
-Proof with auto with ordi.
-  intros. induction H; auto...
-  apply ordi_dec in H.
-  apply ordi_dec in H0.
-  inversion H. inversion H0.
-  - auto...
-  -
-Admitted.
-  
-
-
 (* Inductive ordi_wf : dtyp -> Prop :=
 | ordiwf2_ordi : forall T, ord_i T -> ordi_wf T
 | ordiwf2_intersection : forall T1 T2, ordi_wf T1 -> ordi_wf T2 -> ordi_wf (dtyp_intersection T1 T2)
@@ -702,40 +502,14 @@ WF A1 -> WF A2 -> WF (A1&A2) *)
  B & C <:A -> B &C<:A1 /\ B&C <: A2  *)
 
 
-
-Lemma d_sub_ord_inv : forall E T1 T2 T3, 
-  ord_i T3 -> 
-  E ⊢ (dtyp_intersection T1 T2) <: T3 ->
-  E ⊢ T1 <: T3 \/ E ⊢ T2 <: T3.
-Proof.
-  intros. dependent induction H0.
-  - left. inversion H0.
-    eauto.
-  - inversion H.
-  - auto.
-  - auto.
-  - dependent destruction H.
-    specialize (IHd_sub _ _ H (eq_refl _)).
-    inversion IHd_sub.
-    + left. auto.
-    + right. auto.
-  - dependent destruction H.
-    specialize (IHd_sub _ _ H2 (eq_refl _)).
-    inversion IHd_sub.
-    + left. auto.
-    + right. auto.
-Qed.
-
-
-
-Lemma d_check_inf_sub : forall E e T1 T2,
+(* Lemma d_check_inf_sub : forall E e T1 T2,
   d_typing E e d_typingmode_inf T1 ->
   d_typing E e d_typingmode_chk T2 ->
   E ⊢ T1 <: T2.
 Proof.
   intros. generalize dependent H0.
   dependent induction H; intros.
-Admitted.
+Admitted. *)
 
 
 (* e => (int | bool)
@@ -745,7 +519,7 @@ e <= (int & string) | bool *)
 (* (int | bool  *)
 
 
-Lemma d_check_split_i : forall E e T1 T2 T3, 
+(* Lemma d_check_split_i : forall E e T1 T2 T3, 
   split_i T1 T2 T3 ->
   d_typing E e d_typingmode_chk T2 ->
   d_typing E e d_typingmode_chk T3 ->
@@ -765,16 +539,16 @@ Proof.
       * eapply d_typing_chkunion2; auto. admit.
     + eapply d_typing_chkunion2; auto. admit.
   - admit.
-Admitted.
+Admitted. *)
 
 
-Theorem d_infabs : forall E T1 T2 S1, d_infabs E T1 T2 -> E ⊢ S1 <:T1 ->
+Theorem d_infabs_subsumption : forall E T1 T2 S1, d_infabs E T1 T2 -> E ⊢ S1 <:T1 ->
   exists S2, d_inftapp E S1 T2 S2.
 Proof.
 Admitted.
 
 
-Theorem d_inftapp : forall E T1 T2 T3 S1, d_inftapp E T1 T2 T3 -> E ⊢ S1 <:T1 ->
+Theorem d_inftapp_subsumption : forall E T1 T2 T3 S1, d_inftapp E T1 T2 T3 -> E ⊢ S1 <:T1 ->
   exists S2, d_inftapp E S1 T2 S2.
 Proof.
 Admitted.
@@ -843,7 +617,8 @@ Proof.
         -- admit.
         -- admit.
         -- admit.
-        -- adm
+        -- admit.
+        -- admit.
       (* e <= forall a. A *) (* ignore for now *)
       * intros. admit.
       * intros.
@@ -856,30 +631,33 @@ Proof.
         apply sub_transitivity with (S1 := T1); auto. admit.
         eapply denvsub_sub; eauto. apply sub_transitivity with (S1 := S1); auto. admit.
         eapply denvsub_sub; eauto.
-      * intros. assert (ordi_wf S0). admit.
+      * intros. assert (d_wft_ord S0). admit.
         induction H4.
-        -- simpl in H1.
-           specialize (d_sub_ord_inv _ _ _ _ H4 H2). intros Hsub_or.
-           inversion Hsub_or.
-           ++ assert (dtyp_size S1 < n3) by lia.
-              specialize (IHn3 _ _ _ _ _ H H0 H6 H2_ H3) as IHn3S.
-              simpl in IHn3S. auto.
-           ++ assert (dtyp_size T1 < n3) by lia.
-              specialize (IHn3 _ _ _ _ _ H H0 H6 H2_0 H3) as IHn3T.
-              simpl in IHn3T. auto.
-        -- admit.
-        -- assert (E ⊢ dtyp_intersection S1 T1 <: dtyp_union T3 T2) as Hsub1 by admit .
-           assert (E ⊢ dtyp_intersection S1 T1 <: dtyp_union T4 T2) as Hsub2 by admit.
-           specialize (IHordi_wf1 Hsub1).
-           specialize (IHordi_wf2 Hsub2).
-           eapply d_check_split_i with (T2:=dtyp_union T3 T2) (T3:=dtyp_union T4 T2); eauto.
-           econstructor; eauto.
-        -- assert (E ⊢ dtyp_intersection S1 T1 <: dtyp_union T0 T4) as Hsub1 by admit .
-           assert (E ⊢ dtyp_intersection S1 T1 <: dtyp_union T0 T3) as Hsub2 by admit.
-            specialize (IHordi_wf1 Hsub1).
-            specialize (IHordi_wf2 Hsub2).
-            eapply d_check_split_i with (T2:=dtyp_union T0 T3) (T3:=dtyp_union T0 T4); eauto.
-            econstructor; eauto.
+        -- dependent destruction H2.
+           ++ simpl in H1. 
+              assert (dtyp_size S1 < n3) by lia.
+              specialize (IHn3 _ _ _ _ _ H H0 H5 H2_ H3). simpl in IHn3.
+              apply IHn3. constructor. admit.
+           ++ inversion H4.
+           ++ simpl in H1. 
+              assert (dtyp_size S1 < n3) by lia.
+              specialize (IHn3 _ _ _ _ _ H H0 H6 H2_ H3). simpl in IHn3.
+              apply IHn3. auto.
+           ++ simpl in H1. 
+              assert (dtyp_size T1 < n3) by lia.
+              specialize (IHn3 _ _ _ _ _ H H0 H6 H2_0 H3). simpl in IHn3.
+              apply IHn3. auto.
+           ++ inversion H5.
+           ++ inversion H5.
+        -- dependent destruction H2.
+           ++ auto.
+           ++ admit.
+           ++ admit.
+        -- dependent destruction H2.
+           ++ admit.
+           ++ admit.
+           ++ constructor; auto. admit.
+           ++ admit.
       * intros.
         simpl in H1.
         assert (dtyp_size S1 < n3) by lia.

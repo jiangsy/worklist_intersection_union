@@ -218,42 +218,42 @@ Proof.
     inversion x; eauto.
 Qed.
 
-Lemma ftv_sin_dtyp_subst : forall X Y T S,
-  lc_dtyp S ->
-  X `notin` ftv_in_dtyp S ->
+Lemma ftv_sin_dtyp_subst : forall X Y T1 S1,
+  lc_dtyp S1 ->
+  X `notin` ftv_in_dtyp S1 ->
   X <> Y ->
-  ds_in X ({S /ᵈ Y} T) ->
-  ds_in X T.
+  ds_in X ({S1 /ᵈ Y} T1) ->
+  ds_in X T1.
 Proof.
   intros. dependent induction H2; simpl; auto.
-  - destruct T; simpl; try solve [inversion x].
+  - destruct T1; simpl; try solve [inversion x].
     inversion x. destruct (X0 == Y).
     + subst. simpl in *.
       apply notin_singleton_1 in H0. contradiction.
     + inversion H3. auto.
-  - destruct T; simpl; try solve [inversion x].
+  - destruct T1; simpl; try solve [inversion x].
     simpl in *. destruct (X0 == Y); subst.
     + dependent destruction H.
       simpl in H0.
-      eapply IHds_in with (S:=T1) (Y:=Y); auto.
+      eapply IHds_in with (S1:=T0) (Y:=Y); auto.
       simpl. unfold eq_dec. destruct (EqDec_eq_of_X Y Y); auto.
       contradiction.
     + inversion x.
     + apply dsin_arrow1; inversion x; eauto.
       subst.
       eapply lc_dtyp_subst; eauto.
-  - destruct T; simpl; try solve [inversion x].
+  - destruct T1; simpl; try solve [inversion x].
     simpl in *. destruct (X0 == Y); subst.
     + dependent destruction H.
-      simpl in H0. eapply IHds_in with (S:=T2) (Y:=Y); auto.
+      simpl in H0. eapply IHds_in with (S1:=T2) (Y:=Y); auto.
       simpl. unfold eq_dec. destruct (EqDec_eq_of_X Y Y); auto.
       contradiction.
     + inversion x.
     + apply dsin_arrow2; inversion x; eauto.
       subst. eapply lc_dtyp_subst; eauto.
-  - destruct T; simpl; try solve [inversion x].
+  - destruct T1; simpl; try solve [inversion x].
   simpl in *. destruct (X0 == Y); subst.
-    + assert (ds_in X (dtyp_all T0)).
+    + assert (ds_in X (dtyp_all T)).
       * eapply dsin_all with (L:=L). intros. inst_cofinites_with Y0.
         auto.
       * apply sin_in in H4. contradiction.
@@ -261,22 +261,22 @@ Proof.
     + apply dsin_all with (L:=L `union` singleton Y); intros; inst_cofinites_with Y0. auto.
      inversion x. rewrite H6 in H3.
     eapply H2; eauto. subst. rewrite dtyp_subst_open_comm; auto.
-  - destruct T; simpl; try solve [inversion x].
+  - destruct T1; simpl; try solve [inversion x].
   simpl in *. destruct (X0 == Y); subst.
-    + assert (ds_in X (dtyp_union T1 T2)) by auto.
+    + assert (ds_in X (dtyp_union T0 T2)) by auto.
       apply sin_in in H2. contradiction.
     + inversion x.
     + inversion x. apply dsin_union.
-      * eapply IHds_in1 with (S:=S) (Y:=Y); eauto.
-      * eapply IHds_in2 with (S:=S) (Y:=Y); eauto.
-  - destruct T; simpl; try solve [inversion x].
+      * eapply IHds_in1 with (S1:=S1) (Y:=Y); eauto.
+      * eapply IHds_in2 with (S1:=S1) (Y:=Y); eauto.
+  - destruct T1; simpl; try solve [inversion x].
     simpl in *. destruct (X0 == Y); subst.
-    + assert (ds_in X (dtyp_intersection T1 T2)) by auto.
+    + assert (ds_in X (dtyp_intersection T0 T2)) by auto.
       apply sin_in in H2. contradiction.
     + inversion x.
     + inversion x. apply dsin_intersection.
-      * eapply IHds_in1 with (S:=S) (Y:=Y); eauto.
-      * eapply IHds_in2 with (S:=S) (Y:=Y); eauto.
+      * eapply IHds_in1 with (S1:=S1) (Y:=Y); eauto.
+      * eapply IHds_in2 with (S1:=S1) (Y:=Y); eauto.
 Qed.
 
 Lemma fstv_sin_dtyp_subst_tv : forall SX X T T',
