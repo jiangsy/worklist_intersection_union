@@ -1014,7 +1014,7 @@ Lemma dwf_typ_strengthening : forall F E x T b,
     x \notin ftv_in_dtyp T ->
     x \notin fstv_in_dtyp T ->
     E ++ F ⊢ T.
-Proof.
+Proof with eauto.
   intros * Hwfenv H. intros.
   dependent induction H; auto.
   - induction E.
@@ -1023,29 +1023,33 @@ Proof.
       auto.
     + destruct a. inversion H.
       * dependent destruction H2. auto.
-      * simpl. apply dwf_typ_weakening_cons. apply IHE; auto. admit. admit.
+      * simpl. apply dwf_typ_weakening_cons. apply IHE; auto.
+        rewrite_env ((a, b0) :: (E ++ x ~ b ++ F)) in Hwfenv. applys* d_wf_env_strenthening_head.
+        forwards: d_wf_env_uniq Hwfenv. solve_uniq.
   - induction E.
     + inversion H. dependent destruction H2.
       * simpl in H1. apply notin_singleton_1 in H1. contradiction.
       * auto.
     + destruct a. inversion H.
       * dependent destruction H2. auto.
-      * simpl. apply dwf_typ_weakening_cons; auto. apply IHE; auto. admit. admit.
+      * simpl. apply dwf_typ_weakening_cons; auto. apply IHE; auto.
+        rewrite_env ((a, b0) :: (E ++ x ~ b ++ F)) in Hwfenv. applys* d_wf_env_strenthening_head.
+        forwards: d_wf_env_uniq Hwfenv. solve_uniq.
   - simpl in *. constructor.
     + apply notin_union_1 in H1.
       eauto.
     + apply notin_union_2 in H1.
       eauto.
   - simpl in *.
-    apply dwftyp_all with (L:=L `union` singleton x); intros; inst_cofinites_with X.
+    apply dwftyp_all with (L:=L `union` singleton x `union` dom E `union` dom F); intros; inst_cofinites_with X.
     + auto.
     + replace (X ~ dbind_tvar_empty ++ E ++ F) with ((X ~ dbind_tvar_empty ++ E)++ F) by auto. eapply H1 with (x:=x) (b:=b); auto.
-    admit.
-    rewrite ftv_in_dtyp_open_dtyp_wrt_dtyp_upper; auto.
-    rewrite fstv_in_dtyp_open_dtyp_wrt_dtyp_upper; auto.
+      * rewrite_env (X ~ dbind_tvar_empty ++ (E ++ (x, b) :: F)). econstructor...
+      * rewrite ftv_in_dtyp_open_dtyp_wrt_dtyp_upper; auto.
+      * rewrite fstv_in_dtyp_open_dtyp_wrt_dtyp_upper; auto.
   - simpl in *. eauto.
   - simpl in *. eauto.
-Admitted.
+Qed.
 
 (* Properties of d_wf_env *)
 Lemma d_wf_env_subst_tvar_typ : forall E X F T1,
