@@ -171,13 +171,27 @@ Proof.
 Qed.
 
 
-Lemma d_subenv_wf_typ : forall E T, 
+(* Lemma d_subenv_wf_typ : forall E T, 
   E ⊢ T -> 
   forall E', 
     d_subenv E' E ->
     E' ⊢ T.
 Proof.
   intros E T H. induction H; intros; auto.
+  - econstructor. 
+    eapply d_subenv_same_tvar; eauto.
+  - econstructor.
+    eapply d_subenv_same_stvar; eauto.
+  - eapply dwftyp_all with (L:=L).
+    + intros. inst_cofinites_with X. auto.
+    + intros. inst_cofinites_with X. eapply H1.
+      econstructor. auto.
+Qed. *)
+
+Lemma d_subenv_wf_typ : forall E E' T, 
+  E ⊢ T -> d_subenv E' E -> E' ⊢ T.
+Proof.
+  intros * H. generalize dependent E'. induction H; intros; auto.
   - econstructor. 
     eapply d_subenv_same_tvar; eauto.
   - econstructor.
@@ -249,6 +263,7 @@ Proof.
 Qed.
 
 
+Hint Constructors d_subenv: typing.
 Hint Constructors d_typing : typing.
 Hint Resolve d_subenv_wf_typ : typing.
 Hint Resolve d_subenv_wf_env : typing.
@@ -352,6 +367,8 @@ Theorem d_inftapp_subsumption : forall E T1 T2 T3 S1, d_inftapp E T1 T2 T3 -> E 
 Proof.
 Admitted.
 
+Hint Extern 1 (_ ⊢ _) => eapply d_subenv_wf_typ; eauto : typing.
+
 Theorem dchk_dinf_subsumption : forall n1 n2 n3 E E' e T1 mode,
   dexp_size e < n1 ->
   dmode_size mode < n2 ->
@@ -403,27 +420,12 @@ Proof with auto with typing.
     + dependent destruction H2.
       (* \x. e <= Top *)
       * intros. 
-        dependent induction H4.
+        dependent induction H4; eauto...
         -- eapply d_typing_chkabstop with (L:=L). intros.
            inst_cofinites_with x.
            simpl in H.
-           assert (dexp_size (open_dexp_wrt_dexp e (dexp_var_f x)) < n1)  as Hexpsize by admit.
-           assert ((dmode_size d_typingmode_chk) < S (dmode_size d_typingmode_chk)) by lia.
-           assert ((dtyp_size dtyp_top) < S (dtyp_size dtyp_top)) by lia.
-           assert (d_subenv (x ~ dbind_typ dtyp_bot ++ E')
-           (x ~ dbind_typ dtyp_bot ++ E)) by admit.
-           specialize (IHn1 (S (dmode_size d_typingmode_chk)) 
-            (S (dtyp_size dtyp_top)) (x ~ dbind_typ dtyp_bot ++ E) (x ~ dbind_typ dtyp_bot ++ E') (open_dexp_wrt_dexp e (dexp_var_f x)) dtyp_top d_typingmode_chk Hexpsize H6 H7 H2 H8).
-            simpl in IHn1. auto.
-        -- specialize (IHd_sub1 H2 H3 (eq_refl _)).
-           specialize (IHd_sub2 H2 H3 (eq_refl _)).
-           eapply d_typing_chkintersection; auto.
-        -- specialize (IHd_sub H2 H3 (eq_refl _)).
-           eapply d_typing_chkunion1; auto.
-           eapply d_subenv_wf_typ; eauto.
-        -- specialize (IHd_sub H2 H3 (eq_refl _)).
-           eapply d_typing_chkunion2; auto.
-           eapply d_subenv_wf_typ; eauto.
+           refine (IHn1 _ _ _ _ _ _ _ _ _ _ H2 _ _ _); eauto...
+           admit.
       (* \x. e <= T1 -> T2 *)
       * intros. 
         dependent destruction H5.
@@ -434,6 +436,7 @@ Proof with auto with typing.
         -- admit.
       (* e <= forall a. A *) (* ignore for now *)
       * intros. admit.
+      (* e <= A *)
       * intros.
         simpl in H0. assert (dmode_size d_typingmode_inf < n2) by (simpl; lia).
         assert (dtyp_size S1 < S (dtyp_size S1)) by lia.

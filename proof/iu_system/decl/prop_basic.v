@@ -632,8 +632,8 @@ Proof.
 Qed.
 
 Hint Constructors d_sub : core.
-Hint Resolve dwf_typ_dwf_typ_s : core.
-Hint Resolve dwf_typ_s_dwf_typ : core.
+Hint Immediate dwf_typ_dwf_typ_s : core.
+Hint Immediate dwf_typ_s_dwf_typ : core.
 
 Lemma dwf_typ_dlc_type : forall E T,
   E ⊢ T -> lc_dtyp T.
