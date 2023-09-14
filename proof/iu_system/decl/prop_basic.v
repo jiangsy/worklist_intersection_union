@@ -762,6 +762,19 @@ Proof.
   induction H; auto.
 Qed.
 
+Lemma d_wf_env_strenthening : forall E X F,
+  ⊢ F ++ X ~ dbind_tvar_empty ++ E ->
+  ⊢ F ++ E.
+Abort.
+(* Wrong Lemma F = (y : X) *)
+
+Lemma d_wf_env_strenthening_head : forall a E,
+    ⊢ a :: E -> ⊢ E.
+Proof with auto.
+  intros * H.
+  inverts* H.
+Qed.
+
 Hint Resolve d_wf_env_uniq : core.
 Hint Resolve dwf_typ_weakening_cons : core.
 
@@ -798,7 +811,18 @@ Lemma d_wft_typ_subst : forall E X F T1 T2,
   F ++ X ~ dbind_tvar_empty ++ E ⊢ T1 ->
   E ⊢ T2 ->
   map (d_subst_tv_in_binding T2 X) F  ++ E ⊢ {T2 /ᵈ X} T1.
-Proof.
+Proof with simpl in *; eauto using d_wf_env_strenthening_head.
+  intros * HE HT1 HT2.
+  induction F...
+  - inductions HT1...
+    + case_if...
+      inverts~ H. inverts H0.
+      intuition eauto.
+    + inverts~ H. inverts H0.
+    + econstructor; intros; inst_cofinites_with X0.
+      admit. admit.
+  - destruct a. destruct b...
+    + forwards: HE. forwards*: IHF...
 Admitted.
 
 Lemma d_wft_typ_subst_stvar : forall E SX F T1 T2,
@@ -806,13 +830,6 @@ Lemma d_wft_typ_subst_stvar : forall E SX F T1 T2,
   F ++ SX ~ dbind_stvar_empty ++ E ⊢ T1 ->
   E ⊢ T2 ->
   map (d_subst_stv_in_binding T2 SX) F  ++ E ⊢ {T2 /ₛᵈ SX} T1.
-Proof.
-Admitted.
-
-Lemma d_wf_env_subst_tvar_typ : forall E X F T1,
-  ⊢ F ++ X ~ dbind_tvar_empty ++ E ->
-  E ⊢ T1 ->
-  ⊢ (map (d_subst_tv_in_binding T1 X) F ++ E).
 Proof.
 Admitted.
 
@@ -929,14 +946,16 @@ Qed.
 
 Lemma d_sub_dwft : forall E T1 T2,
   ⊢ E -> E ⊢ T1 <: T2 -> E ⊢ T1 /\ E ⊢ T2.
-Proof.
+Proof with auto.
   intros.
   induction H0; try solve [intuition].
-  - split; eapply dwftyp_all with (L:=L `union` fstv_in_dtyp S1 `union` fstv_in_dtyp T1); intros; inst_cofinites_with X.
+  - split; eapply dwftyp_all with (L:=L `union` fstv_in_dtyp S1 `union` fstv_in_dtyp T1 `union` dom E); intros; inst_cofinites_with X.
     + eapply fstv_open_tvar; auto.
-    + apply d_wf_typ_subst_tvar_stvar_cons. intuition. admit.
+    + apply d_wf_typ_subst_tvar_stvar_cons. intuition.
+      forwards*: H3. econstructor...
     + eapply fstv_open_tvar; auto.
-    + apply d_wf_typ_subst_tvar_stvar_cons. intuition. admit.
+    + applys* d_wf_typ_subst_tvar_stvar_cons. intuition.
+      forwards*: H3. econstructor...
   - split; try solve [intuition].
     + eapply dwftyp_all with (L:=L `union` ftv_in_dtyp S1 `union` dom E).
       * intros. inst_cofinites_with X. auto.
@@ -950,7 +969,7 @@ Proof.
               ** contradiction.
            ++ eapply dwf_typ_dlc_type; eauto.
            ++ auto.
-Admitted.
+Qed.
 
 
 Lemma dwf_typ_strengthening : forall F E x T b,
@@ -991,3 +1010,29 @@ Proof.
   - simpl in *. eauto.
   - simpl in *. eauto.
 Admitted.
+
+
+Create HintDb FalseHd.
+
+Hint Resolve nil_cons List.app_cons_not_nil nil_neq_one_mid : FalseHd.
+
+(* Properties of d_wf_env *)
+Lemma d_wf_env_subst_tvar_typ : forall E X F T1,
+  ⊢ F ++ X ~ dbind_tvar_empty ++ E ->
+  E ⊢ T1 ->
+  ⊢ (map (d_subst_tv_in_binding T1 X) F ++ E).
+Proof with eauto using d_wft_typ_subst.
+  intros * HE HT.
+  induction F; intros; simpl.
+  - inverts~ HE.
+  - destruct a. rewrite_env ((a, b) :: (F ++ X ~ dbind_tvar_empty ++ E)) in HE.
+    forwards HE': d_wf_env_strenthening_head HE.
+    forwards~ IH: IHF.
+    rewrite_env ([(a, d_subst_tv_in_binding T1 X b)]
+                   ++ (map (d_subst_tv_in_binding T1 X) F ++ E)).
+    forwards: d_wf_env_uniq HE.
+    inverts H. destruct b...
+    + econstructor...
+      applys d_wft_typ_subst...
+      inverts~ HE.
+Qed.
