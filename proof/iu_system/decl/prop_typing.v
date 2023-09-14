@@ -518,11 +518,11 @@ Proof with auto with typing.
       (* /\ a. e : A => forall a. A *)
       * exists (dtyp_all T1); split.
         -- eapply dsub_refl; auto.
-        -- simpl in H. eapply d_typing_inftabs with (L:=L `union` dom E); auto...
+        -- dependent destruction H. pick fresh X and apply d_typing_inftabs. auto...
            intros. inst_cofinites_with X.
-           refine (IHn1 _ _ _ _ _ _ _ _ _ _ _ H0 _ _ _); eauto...
+           refine (IHn1 _ _ _ _ _ _ _ _ _ _ _ H1 _ _ _); eauto...
            simpl. rewrite <- d_exp_size_open_dtyp; lia.
-           apply dsub_refl. admit. (* wft * *)
+           apply dsub_refl. dependent destruction H; auto.
       (* e @T *)
       * eapply IHn1 in Hty; eauto...
         destruct Hty as [A1 [Hsuba1 Hinfa1]].
@@ -547,12 +547,12 @@ Proof with auto with typing.
         assert (d_wft_ord S1) as Hwford. admit. (* trivial * *)
         induction Hwford.
         -- dependent destruction H1.
-           ++ inst_cofinites_for d_typing_chkabstop. intros.
+           ++ dependent destruction H1.
+              inst_cofinites_for d_typing_chkabstop. intros.
               inst_cofinites_with x.
               refine (IHn1 _ _ _ _ _ _ _ _ _ _ _ H0 _ _ _); eauto...
               eauto...
               rewrite <- d_exp_size_open_var. lia.
-              admit. (* sub_weakening ★ *)
            ++ inst_cofinites_for d_typing_chkabs.
               admit. intros. inst_cofinites_with x.
               refine (IHn1 _ _ _ _ _ _ _ _ _ _ _ H0 _ _ _); eauto...
