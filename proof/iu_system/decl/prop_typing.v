@@ -21,6 +21,7 @@ Defined.
 Hint Constructors dwf_typ: core.
 Hint Constructors dwf_env: core.
 Hint Constructors dwf_typ_s: core.
+Hint Constructors d_typing : typing.
 
 
 (* 
@@ -86,6 +87,15 @@ Inductive d_subenv : denv -> denv -> Prop :=
         (x ~ dbind_typ T1 ++ E2)        
 .
 
+Hint Constructors d_subenv: typing.
+
+Lemma d_subenv_refl: forall E,
+  ⊢ E -> d_subenv E E.
+Proof with auto with typing.
+  intros. induction H; auto...
+  econstructor; auto.
+  apply dsub_refl; auto.
+Qed.
 
 Lemma d_subenv_same_dom : forall E E', 
   d_subenv E' E ->
@@ -140,23 +150,6 @@ Proof.
     inversion H2.
 Qed.
 
-
-(* Lemma d_subenv_wf_typ : forall E T, 
-  E ⊢ T -> 
-  forall E', 
-    d_subenv E' E ->
-    E' ⊢ T.
-Proof.
-  intros E T H. induction H; intros; auto.
-  - econstructor. 
-    eapply d_subenv_same_tvar; eauto.
-  - econstructor.
-    eapply d_subenv_same_stvar; eauto.
-  - eapply dwftyp_all with (L:=L).
-    + intros. inst_cofinites_with X. auto.
-    + intros. inst_cofinites_with X. eapply H1.
-      econstructor. auto.
-Qed. *)
 
 Lemma d_subenv_wf_typ : forall E E' T, 
   E ⊢ T -> d_subenv E' E -> E' ⊢ T.
@@ -232,9 +225,6 @@ Proof.
     apply d_sub_union3; auto.
 Qed.
 
-
-Hint Constructors d_subenv: typing.
-Hint Constructors d_typing : typing.
 Hint Resolve d_subenv_wf_typ : typing.
 Hint Resolve d_subenv_wf_env : typing.
 Hint Resolve d_wft_typ_subst : typing.
@@ -477,8 +467,6 @@ Qed.
 
 
 
-Hint Extern 2 (_ < _) => rewrite d_exp_size_open_var; lia : typing.
-
 Theorem d_chk_inf_subsumption : forall n1 n2 n3 E E' e T1 mode,
   dexp_size e < n1 ->
   dmode_size mode < n2 ->
@@ -607,8 +595,12 @@ Admitted.
 
 
 Corollary d_chk_subsumption : forall E e T1 S1,  
+  ⊢ E ->
   E ⊢ e ⇐ S1 -> 
   E ⊢ S1 <: T1 -> 
   E ⊢ e ⇐ T1.
 Proof.
-Admitted.
+  intros.
+  refine (d_chk_inf_subsumption _ _ _ _ _ _ _ _ _ _ _ H0 _ _ _); eauto.
+  now apply d_subenv_refl.
+Qed.
