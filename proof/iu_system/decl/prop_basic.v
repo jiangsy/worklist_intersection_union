@@ -806,33 +806,28 @@ Admitted. *)
 
 Hint Constructors d_typing : core.
 
+
 Lemma d_wft_typ_subst : forall E X F T1 T2,
   ⊢ F ++ X ~ dbind_tvar_empty ++ E ->
   F ++ X ~ dbind_tvar_empty ++ E ⊢ T1 ->
   E ⊢ T2 ->
   map (d_subst_tv_in_binding T2 X) F  ++ E ⊢ {T2 /ᵈ X} T1.
 Proof with simpl in *; eauto using d_wf_env_strenthening_head.
-  intros * HE HT1 HT2.
-  induction F...
-  - inductions HT1...
-    + case_if...
-      inverts~ H. inverts H0.
-      intuition eauto.
-    + inverts~ H. inverts H0.
-    + pick fresh Y and apply dwftyp_all. inst_cofinites_with Y.
-      * rewrite d_subst_tv_in_dtyp_open_dtyp_wrt_dtyp_var...
-        applys* ftv_sin_dtyp_subst_inv.
-      * inst_cofinites_with Y.
-      assert (⊢ (Y, dbind_tvar_empty) :: (X, dbind_tvar_empty) :: E). admit.
-      assert ((Y, dbind_tvar_empty) :: (X, dbind_tvar_empty) :: E ~=
-      (Y, dbind_tvar_empty) :: (X, dbind_tvar_empty) :: E) by auto.
-      assert ((X, dbind_tvar_empty) :: E ⊢ T2) by admit.
-      specialize (H1 Y ((X, dbind_tvar_empty) :: E) H2 H3 H4).
-      rewrite d_subst_tv_in_dtyp_open_dtyp_wrt_dtyp_var; auto...
-      admit.
-  - destruct a. destruct b...
-    + forwards: HE. forwards*: IHF...
+  intros * Hwfenv Hwft1 Hwft2.
+  inductions Hwft1; intros; try solve [simpl; auto].
+  - destruct (X0 == X).
+    + subst. simpl. admit.
+    + admit.
+  - simpl. admit.
+  - simpl. inst_cofinites_for dwftyp_all; intros; inst_cofinites_with X0.
+    + rewrite d_subst_tv_in_dtyp_open_dtyp_wrt_dtyp_var...
+      applys* ftv_sin_dtyp_subst_inv. 
+    + rewrite d_subst_tv_in_dtyp_open_dtyp_wrt_dtyp_var...
+      replace ((X0, dbind_tvar_empty) :: map (d_subst_tv_in_binding T2 X) F ++ E)
+      with (map (d_subst_tv_in_binding T2 X) ((X0, dbind_tvar_empty) :: F) ++ E) by auto.
+      apply H1; auto...
 Admitted.
+
 
 Lemma d_wft_typ_subst_stvar : forall E SX F T1 T2,
   ⊢ F ++ SX ~ dbind_stvar_empty ++ E ->
