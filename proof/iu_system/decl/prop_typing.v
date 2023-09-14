@@ -21,6 +21,7 @@ Defined.
 Hint Constructors dwf_typ: core.
 Hint Constructors dwf_env: core.
 Hint Constructors dwf_typ_s: core.
+Hint Constructors d_typing : typing.
 
 
 (* 
@@ -86,6 +87,15 @@ Inductive d_subenv : denv -> denv -> Prop :=
         (x ~ dbind_typ T1 ++ E2)        
 .
 
+Hint Constructors d_subenv: typing.
+
+Lemma d_subenv_refl: forall E,
+  ⊢ E -> d_subenv E E.
+Proof with auto with typing.
+  intros. induction H; auto...
+  econstructor; auto.
+  apply dsub_refl; auto.
+Qed.
 
 Lemma d_subenv_same_dom : forall E E', 
   d_subenv E' E ->
@@ -140,23 +150,6 @@ Proof.
     inversion H2.
 Qed.
 
-
-(* Lemma d_subenv_wf_typ : forall E T, 
-  E ⊢ T -> 
-  forall E', 
-    d_subenv E' E ->
-    E' ⊢ T.
-Proof.
-  intros E T H. induction H; intros; auto.
-  - econstructor. 
-    eapply d_subenv_same_tvar; eauto.
-  - econstructor.
-    eapply d_subenv_same_stvar; eauto.
-  - eapply dwftyp_all with (L:=L).
-    + intros. inst_cofinites_with X. auto.
-    + intros. inst_cofinites_with X. eapply H1.
-      econstructor. auto.
-Qed. *)
 
 Lemma d_subenv_wf_typ : forall E E' T, 
   E ⊢ T -> d_subenv E' E -> E' ⊢ T.
@@ -232,9 +225,6 @@ Proof.
     apply d_sub_union3; auto.
 Qed.
 
-
-Hint Constructors d_subenv: typing.
-Hint Constructors d_typing : typing.
 Hint Resolve d_subenv_wf_typ : typing.
 Hint Resolve d_subenv_wf_env : typing.
 Hint Resolve d_wft_typ_subst : typing.
@@ -366,7 +356,7 @@ Admitted.
 
 
 (* @shengyi:todo *** *)
-Theorem d_inftapp_subsumption : forall E T1 T2 T3 S1, 
+Theorem d_inftapp_subsumption_same_env : forall E T1 T2 T3 S1, 
   E ⊢ T1 ○ T2 ⇒⇒ T3 -> 
   E ⊢ S1 <: T1 ->
   exists S3, E ⊢ S3 <: T3 /\ E ⊢ S1 ○ T2 ⇒⇒ S3.
@@ -381,7 +371,8 @@ Proof with auto with typing.
       * exists C1; intuition...
       * destruct H3 as [C2 Hc2]. destruct Hc1.
         exists (dtyp_intersection C1 C2); split.
-        -- constructor; auto. admit.
+        -- constructor; auto. 
+           admit. (* wft ★★ *)
         -- apply d_inftapp_intersection3; auto.
     + specialize (d_inftapp_total _ _ _ H1 H). intros.
       specialize (IHd_sub H (eq_refl _)). destruct IHd_sub as [C1 Hc1].
@@ -397,12 +388,17 @@ Proof with auto with typing.
       intuition... intuition...
   - intros. dependent induction H1.
     + exists dtyp_bot. split.
-      econstructor. admit.
+      econstructor. admit. (* wft ★ *)
       econstructor. auto.
     + exists (S1 ^^ᵈ T2). split; auto...
-      admit.
+      pick fresh SX. inst_cofinites_with SX.
+      replace (S1 ^^ᵈ T2) with ({T2 /ₛᵈ SX} S1 ^^ᵈ dtyp_svar SX) by admit. (* ★ *)
+      replace (T1 ^^ᵈ T2) with ({T2 /ₛᵈ SX} T1 ^^ᵈ dtyp_svar SX) by admit. (* ★ *)
+      rewrite_env ((map (d_subst_stv_in_binding T2 SX) nil) ++ E).
+      apply d_sub_subst_stvar; auto. 
+      admit. (* add |- E ★ *)
       econstructor; auto.
-      admit.
+      admit. (* wft ★ *)
     + inversion H6.
     + specialize (IHd_sub _ H H0 (eq_refl _)).
       destruct IHd_sub as [C1 Hc1].
@@ -411,7 +407,9 @@ Proof with auto with typing.
       -- exists C1; intuition...
       -- destruct H4 as [C2 Hc2]. 
          exists (dtyp_intersection C1 C2). split.
-         constructor; intuition... admit. admit.
+         constructor; intuition... 
+         admit. (* wft ★★ *) 
+         admit. (* wft ★★ *) 
          apply d_inftapp_intersection3; intuition...
     + specialize (IHd_sub _ H H0 (eq_refl _)).
       destruct IHd_sub as [C1 Hc1].
@@ -420,12 +418,14 @@ Proof with auto with typing.
       -- exists C1; intuition...
       -- destruct H4 as [C2 Hc2]. 
         exists (dtyp_intersection C2 C1). split.
-        apply d_sub_intersection3; intuition... admit. admit.
+        apply d_sub_intersection3; intuition... 
+        admit. (* wft ★★ *) 
+        admit. (* wft ★★ *) 
         apply d_inftapp_intersection3; intuition...
 Admitted.
 
 
-Corollary d_inftapp_subsumption_: forall E E' A1 A2 B1 C1,
+Corollary d_inftapp_subsumption: forall E E' A1 A2 B1 C1,
   E ⊢ A1 ○ B1 ⇒⇒ C1 -> 
   E ⊢ A2 <: A1 ->
   d_subenv E' E -> 
@@ -456,6 +456,26 @@ Proof.
   intros. unfold open_dexp_wrt_dexp.
   apply d_exp_size_open_var_rec.
 Qed.
+
+
+Lemma d_exp_size_open_dtyp_rec : forall e T n, 
+  dexp_size e = dexp_size (open_dexp_wrt_dtyp_rec n T e)
+with d_body_size_open_dtyp_rec: forall b T n,
+  d_body_size b = d_body_size (open_dbody_wrt_dtyp_rec n T b).
+Proof.
+  - intros. generalize dependent n. induction e; simpl; auto.
+  - intros. generalize dependent n. induction b; simpl; auto.
+Qed.
+
+
+Lemma d_exp_size_open_dtyp: forall e T,
+  dexp_size e = dexp_size (open_dexp_wrt_dtyp e T).
+Proof.
+  intros. unfold open_dexp_wrt_dexp.
+  apply d_exp_size_open_dtyp_rec.
+Qed.
+
+
 
 Theorem d_chk_inf_subsumption : forall n1 n2 n3 E E' e T1 mode,
   dexp_size e < n1 ->
@@ -498,16 +518,16 @@ Proof with auto with typing.
       (* /\ a. e : A => forall a. A *)
       * exists (dtyp_all T1); split.
         -- eapply dsub_refl; auto.
-        -- eapply d_typing_inftabs with (L:=L); auto...
+        -- simpl in H. eapply d_typing_inftabs with (L:=L); auto...
            intros. inst_cofinites_with X.
            refine (IHn1 _ _ _ _ _ _ _ _ _ _ H3 _ _ _); eauto...
-           admit. (* maybe some minor problem with exp_size def ** *)
+           simpl. rewrite <- d_exp_size_open_dtyp; lia.
            admit. (* wft * *)
       (* e @T *)
       * simpl in H.
         eapply IHn1 in H3; eauto...
         destruct H3 as [A1 [Hsuba1 Hinfa1]].
-        eapply d_inftapp_subsumption_ in H4; eauto.
+        eapply d_inftapp_subsumption in H4; eauto.
         destruct H4 as [C2 Hc2].
         exists C2. intuition... 
         econstructor; eauto...
@@ -529,7 +549,8 @@ Proof with auto with typing.
            ++ inst_cofinites_for d_typing_chkabstop. intros.
               inst_cofinites_with x.
               refine (IHn1 _ _ _ _ _ _ _ _ _ _ H3 _ _ _); eauto...
-              admit. (* exp_size ** *)
+              eauto...
+              rewrite <- d_exp_size_open_var. lia.
               admit. (* sub_weakening *)
            ++ inst_cofinites_for d_typing_chkabs.
               admit. intros. inst_cofinites_with x.
@@ -584,8 +605,12 @@ Admitted.
 
 
 Corollary d_chk_subsumption : forall E e T1 S1,  
+  ⊢ E ->
   E ⊢ e ⇐ S1 -> 
   E ⊢ S1 <: T1 -> 
   E ⊢ e ⇐ T1.
 Proof.
-Admitted.
+  intros.
+  refine (d_chk_inf_subsumption _ _ _ _ _ _ _ _ _ _ _ H0 _ _ _); eauto.
+  now apply d_subenv_refl.
+Qed.
