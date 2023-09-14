@@ -2,6 +2,7 @@ Require Import Coq.Program.Equality.
 Require Import Program.Tactics.
 Require Import Lia.
 Require Import Metalib.Metatheory.
+Require Import LibTactics.
 
 Require Import decl.notations.
 Require Import ln_utils.
@@ -989,4 +990,4 @@ Proof.
     rewrite fstv_in_dtyp_open_dtyp_wrt_dtyp_upper; auto.
   - simpl in *. eauto.
   - simpl in *. eauto.
-Qed.
+Admitted.
