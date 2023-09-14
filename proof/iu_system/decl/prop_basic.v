@@ -806,6 +806,21 @@ Admitted. *)
 
 Hint Constructors d_typing : core.
 
+Lemma d_wft_typ_swap_env : forall F X Y E T ,
+    F ++ X ~ dbind_tvar_empty ++ Y ~ dbind_tvar_empty ++ E ⊢ T ->
+    F ++ Y ~ dbind_tvar_empty ++ X ~ dbind_tvar_empty ++ E ⊢ T.
+Proof with eauto.
+  intros * HT.
+  inductions HT...
+  - forwards* [?|?]: binds_app_1 H.
+    forwards* [?|?]: binds_app_1 H0.
+  - forwards* [?|?]: binds_app_1 H.
+    forwards* [?|?]: binds_app_1 H0.
+  - pick fresh y and apply dwftyp_all. inst_cofinites_with y.
+    applys* H.
+    rewrite_env ((y ~ dbind_tvar_empty ++ F) ++ Y ~ dbind_tvar_empty ++ X ~ dbind_tvar_empty ++ E ).
+    applys* H1.
+Qed.
 
 Lemma d_wft_typ_subst : forall E X F T1 T2,
   ⊢ F ++ X ~ dbind_tvar_empty ++ E ->
@@ -813,6 +828,25 @@ Lemma d_wft_typ_subst : forall E X F T1 T2,
   E ⊢ T2 ->
   map (d_subst_tv_in_binding T2 X) F  ++ E ⊢ {T2 /ᵈ X} T1.
 Proof with simpl in *; eauto using d_wf_env_strenthening_head.
+  (* intros * HE HT1 HT2. *)
+  (* induction F... *)
+  (* - inductions HT1... *)
+  (*   + case_if... *)
+  (*     inverts~ H. inverts H0. *)
+  (*     intuition eauto. *)
+  (*   + inverts~ H. inverts H0. *)
+  (*   + pick fresh Y and apply dwftyp_all. inst_cofinites_with Y. *)
+  (*     case_eq (Y==X); intros; subst. *)
+  (*     * false. solve_notin. *)
+  (*     * rewrite d_subst_tv_in_dtyp_open_dtyp_wrt_dtyp_var... *)
+  (*       applys* ftv_sin_dtyp_subst_inv. *)
+  (*     * rewrite d_subst_tv_in_dtyp_open_dtyp_wrt_dtyp_var... *)
+  (*       admit. *)
+  (* (*       forwards*: H1 X. *) *)
+  (* (*       ** inverts* HE. repeat econstructor... *) *)
+  (* (*       ** Search (_::_~=_::_). *) *)
+  (* (*          simpl. *) *)
+  (* (* - destruct a. destruct b... *) *)
   intros * Hwfenv Hwft1 Hwft2.
   inductions Hwft1; intros; try solve [simpl; auto].
   - destruct (X0 == X).
@@ -821,7 +855,7 @@ Proof with simpl in *; eauto using d_wf_env_strenthening_head.
   - simpl. admit.
   - simpl. inst_cofinites_for dwftyp_all; intros; inst_cofinites_with X0.
     + rewrite d_subst_tv_in_dtyp_open_dtyp_wrt_dtyp_var...
-      applys* ftv_sin_dtyp_subst_inv. 
+      applys* ftv_sin_dtyp_subst_inv.
     + rewrite d_subst_tv_in_dtyp_open_dtyp_wrt_dtyp_var...
       replace ((X0, dbind_tvar_empty) :: map (d_subst_tv_in_binding T2 X) F ++ E)
       with (map (d_subst_tv_in_binding T2 X) ((X0, dbind_tvar_empty) :: F) ++ E) by auto.
