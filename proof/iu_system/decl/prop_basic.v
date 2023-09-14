@@ -871,27 +871,6 @@ Proof.
 Qed.
 
 
-(* Lemma wft_all_open_wfdtyp_wft : forall E X T1 T2,
-  ⊢ E ->
-  E ⊢ T1 ->
-  E ⊢ T2 ->
-  E ⊢ {T2 /ᵈ X} T1.
-Proof.
-  intros E X T1 T2 Hwfenv Hwft1.
-  generalize dependent T2.
-  dependent induction Hwft1; intros; try solve [simpl; eauto].
-  - simpl. destruct (X0 == X); auto.
-  - simpl. apply dwftyp_all with (L:=L `union` singleton X `union` dom E); intros.
-    inst_cofinites_with X0.
-    + rewrite dtyp_subst_open_comm; eauto.
-      apply ftv_sin_dtyp_subst_inv; auto.
-      eapply dwf_typ_lc_dtyp; eauto.
-    + rewrite dtyp_subst_open_comm; eauto.
-      eapply H1; auto.
-      apply dwf_typ_weakening_cons; eauto.
-Qed. *)
-
-
 Lemma bind_typ_subst : forall F X E x T1 T2,
   ⊢ F ++ (X, dbind_tvar_empty) :: E ->
   binds x (dbind_typ T1) (F ++ (X, dbind_tvar_empty) :: E) ->
