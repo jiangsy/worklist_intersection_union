@@ -243,6 +243,7 @@ Hint Resolve bind_typ_subst : typing.
 Hint Resolve dwf_typ_dlc_type : typing.
 
 
+(* for the e <= forall a. A *)
 Theorem d_chkinf_subst_mono: forall E F X e m T1 T2,
   d_typing (F ++ X ~ dbind_tvar_empty ++ E) e m T1 ->
   E ⊢ T2 ->
@@ -327,14 +328,14 @@ Fixpoint dtyp_size (T:dtyp) : nat :=
   
 
 (* @shengyi:todo *** *)
-Theorem d_infabs_subsumption : forall E T1 T2 S1, d_infabs E T1 T2 -> E ⊢ S1 <:T1 ->
-  exists S2, d_inftapp E S1 T2 S2.
+(* Theorem d_infabs_subsumption : forall E T1 T2 S1, d_infabs E T1 T2 -> E ⊢ S1 <:T1 ->
+  exists S2, d_infabs E.
 Proof.
-Admitted.
+Admitted. *)
 
 (* @shengyi:todo *** *)
-Theorem d_inftapp_subsumption : forall E T1 T2 T3 S1, d_inftapp E T1 T2 T3 -> E ⊢ S1 <:T1 ->
-  exists S2, d_inftapp E S1 T2 S2.
+Theorem d_inftapp_subsumption : forall E T1 T2 T3 S1, E ⊢ T1 ○ T2 ⇒⇒ T3 -> E ⊢ S1 <: T1 ->
+ True.
 Proof.
 Admitted.
 
