@@ -457,6 +457,28 @@ Proof.
   apply d_exp_size_open_var_rec.
 Qed.
 
+
+Lemma d_exp_size_open_dtyp_rec : forall e T n, 
+  dexp_size e = dexp_size (open_dexp_wrt_dtyp_rec n T e)
+with d_body_size_open_dtyp_rec: forall b T n,
+  d_body_size b = d_body_size (open_dbody_wrt_dtyp_rec n T b).
+Proof.
+  - intros. generalize dependent n. induction e; simpl; auto.
+  - intros. generalize dependent n. induction b; simpl; auto.
+Qed.
+
+
+Lemma d_exp_size_open_dtyp: forall e T,
+  dexp_size e = dexp_size (open_dexp_wrt_dtyp e T).
+Proof.
+  intros. unfold open_dexp_wrt_dexp.
+  apply d_exp_size_open_dtyp_rec.
+Qed.
+
+
+
+Hint Extern 2 (_ < _) => rewrite d_exp_size_open_var; lia : typing.
+
 Theorem d_chk_inf_subsumption : forall n1 n2 n3 E E' e T1 mode,
   dexp_size e < n1 ->
   dmode_size mode < n2 ->
@@ -498,10 +520,10 @@ Proof with auto with typing.
       (* /\ a. e : A => forall a. A *)
       * exists (dtyp_all T1); split.
         -- eapply dsub_refl; auto.
-        -- eapply d_typing_inftabs with (L:=L); auto...
+        -- simpl in H. eapply d_typing_inftabs with (L:=L); auto...
            intros. inst_cofinites_with X.
            refine (IHn1 _ _ _ _ _ _ _ _ _ _ H3 _ _ _); eauto...
-           admit. (* maybe some minor problem with exp_size def ** *)
+           simpl. rewrite <- d_exp_size_open_dtyp; lia.
            admit. (* wft * *)
       (* e @T *)
       * simpl in H.
@@ -529,7 +551,8 @@ Proof with auto with typing.
            ++ inst_cofinites_for d_typing_chkabstop. intros.
               inst_cofinites_with x.
               refine (IHn1 _ _ _ _ _ _ _ _ _ _ H3 _ _ _); eauto...
-              admit. (* exp_size ** *)
+              eauto...
+              rewrite <- d_exp_size_open_var. lia.
               admit. (* sub_weakening *)
            ++ inst_cofinites_for d_typing_chkabs.
               admit. intros. inst_cofinites_with x.
