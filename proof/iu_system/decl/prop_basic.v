@@ -894,9 +894,9 @@ Qed.
 
 Lemma bind_typ_subst : forall F X E x T1 T2,
   ⊢ F ++ (X, dbind_tvar_empty) :: E ->
-  binds x (dbind_typ T1) (F ++ (X, dbind_tvar_empty) :: E) ->
+  x ~ T1 ∈ (F ++ (X, dbind_tvar_empty) :: E) ->
   E ⊢ T2 ->
-  binds x (dbind_typ ({T2 /ᵈ X} T1)) (map (d_subst_tv_in_binding T2 X) F ++ E).
+  x ~ ({T2 /ᵈ X} T1) ∈ (map (d_subst_tv_in_binding T2 X) F ++ E).
 Proof.
   intros. induction F; simpl in *; auto.
   - inversion H0.
