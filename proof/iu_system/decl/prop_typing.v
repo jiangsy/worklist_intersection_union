@@ -418,6 +418,15 @@ Proof with auto with typing.
         apply d_inftapp_intersection3; intuition...
 Admitted.
 
+
+Corollary d_inftapp_subsumption_: forall E E' A1 A2 B1 C1,
+  E ⊢ A1 ○ B1 ⇒⇒ C1 -> 
+  E ⊢ A2 <: A1 ->
+  d_subenv E' E -> 
+  exists C2, E ⊢ C2 <: C1 /\ E' ⊢ A2 ○ B1 ⇒⇒ C2.
+Admitted.
+
+
 Hint Extern 1 (_ < _) => lia : typing.
 Hint Extern 1 (_ ⊢ _) => eapply d_subenv_wf_typ; eauto : typing.
  
@@ -470,7 +479,11 @@ Proof with auto with typing.
       (* e @T *)
       * simpl in H.
         eapply IHn1 in H3; eauto...
-        refine (IHn1 _ _ _ _ _ _ _ _ _ _ H3 _ _ _); eauto...
+        destruct H3 as [A1 [Hsuba1 Hinfa1]].
+        eapply d_inftapp_subsumption_ in H4; eauto.
+        destruct H4 as [C2 Hc2].
+        exists C2. intuition... 
+        econstructor; eauto...
     (* e <= *)
     + dependent destruction H2.
       (* \x. e <= Top *)
