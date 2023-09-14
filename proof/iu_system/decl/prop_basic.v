@@ -2,6 +2,7 @@ Require Import Coq.Program.Equality.
 Require Import Program.Tactics.
 Require Import Lia.
 Require Import Metalib.Metatheory.
+Require Import LibTactics.
 
 Require Import decl.notations.
 Require Import ln_utils.
