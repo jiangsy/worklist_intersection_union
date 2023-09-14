@@ -326,12 +326,13 @@ Fixpoint dtyp_size (T:dtyp) : nat :=
   end.
   
 
+(* @shengyi:todo *** *)
 Theorem d_infabs_subsumption : forall E T1 T2 S1, d_infabs E T1 T2 -> E ⊢ S1 <:T1 ->
   exists S2, d_inftapp E S1 T2 S2.
 Proof.
 Admitted.
 
-
+(* @shengyi:todo *** *)
 Theorem d_inftapp_subsumption : forall E T1 T2 T3 S1, d_inftapp E T1 T2 T3 -> E ⊢ S1 <:T1 ->
   exists S2, d_inftapp E S1 T2 S2.
 Proof.
@@ -377,7 +378,7 @@ Proof with auto with typing.
       * exists dtyp_unit. split; auto.
         econstructor. eapply d_subenv_wf_env; eauto.
       (* e1 e2 => A *)
-      * admit.
+      * admit. (* @shengyi:todo *** *)
       (* /\ a. e : A => forall a. A *)
       * exists (dtyp_all T1); split.
         -- eapply dsub_refl; auto.
@@ -387,7 +388,7 @@ Proof with auto with typing.
            admit. (* maybe some minor problem with exp_size def ** *)
            admit. (* wft * *)
       (* e @T *)
-      * admit.
+      * admit. (* @shengyi:todo *** *)
     (* e <= *)
     + dependent destruction H2.
       (* \x. e <= Top *)
