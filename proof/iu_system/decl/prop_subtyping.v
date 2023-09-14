@@ -945,23 +945,51 @@ Proof.
     + intros. inversion H0.
     + intros. dependent destruction H1; rename x into Heq. 
       * destruct T1; simpl in *; try solve [inversion Heq].
-        -- admit.
-        -- admit.
-      * destruct T1; simpl in *; try solve [inversion Heq].
-        -- admit.
-        -- inversion Heq. admit.
+        -- inst_cofinites_by L. inversion H2.
+        -- destruct n.
+            ++ unfold open_dtyp_wrt_dtyp in Heq. simpl in *. 
+                subst. inversion H3.
+            ++ unfold open_dtyp_wrt_dtyp in Heq. simpl in *. 
+                inversion Heq.
+      * destruct T1; simpl in *; try solve [ inversion Heq].
+        -- destruct n.
+            ++ unfold open_dtyp_wrt_dtyp in Heq. simpl in *. 
+                subst. inversion H9.
+            ++ unfold open_dtyp_wrt_dtyp in Heq. simpl in *. 
+                inversion Heq.
+        -- inversion Heq. subst. eapply IHn1; eauto.
+           rewrite d_open_mono_same_order; auto. lia.
       * destruct T1; simpl in *; try solve [inversion Heq].
         -- destruct n.
            ++ unfold open_dtyp_wrt_dtyp in Heq. simpl in Heq.
               subst. dependent destruction H4.
               eapply d_sub_mono_bot_false with (T1:=S0); eauto.
-           ++ admit.
-        -- admit.
-      * admit.
+           ++ inversion Heq.
+        -- inversion Heq. subst. eapply IHn2 with (L:=L); eauto.
+           ++ unfold open_dtyp_wrt_dtyp. lia.
+           ++ unfold open_dtyp_wrt_dtyp. lia.
+           ++ intros. inst_cofinites_with X. dependent destruction H3; auto.
       * destruct T1; simpl in *; try solve [inversion Heq].
-        -- admit.
-        -- admit.
-Admitted.
+        -- destruct n.
+           ++ unfold open_dtyp_wrt_dtyp in Heq. simpl in Heq.
+              subst. dependent destruction H4.
+              eapply d_sub_mono_bot_false with (T1:=S2); eauto.
+           ++ inversion Heq.
+        -- inversion Heq. subst. eapply IHn2 with (L:=L); eauto.
+           ++ unfold open_dtyp_wrt_dtyp. lia.
+           ++ unfold open_dtyp_wrt_dtyp. lia.
+           ++ intros. inst_cofinites_with X. dependent destruction H3; auto.
+      * destruct T1; simpl in *; try solve [inversion Heq].
+        -- destruct n.
+           ++ unfold open_dtyp_wrt_dtyp in Heq. simpl in Heq.
+              subst. dependent destruction H3.
+              eapply d_sub_mono_bot_false with (T1:=S0); eauto.
+           ++ inversion Heq.
+        -- inversion Heq. subst. eapply IHn2 with (L:=L); eauto.
+           ++ unfold open_dtyp_wrt_dtyp. lia.
+           ++ unfold open_dtyp_wrt_dtyp. lia.
+           ++ intros. inst_cofinites_with X. dependent destruction H2; auto.
+Qed.
 
 
 Theorem d_sub_mono_stvar_false : forall E T1 SX, 
