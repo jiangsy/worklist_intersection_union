@@ -500,10 +500,10 @@ Proof with auto with typing.
   - destruct mode.
     (* e => A *)
     + dependent destruction Hty; simpl in Hn1, Hn2, Hn3.
-      * eapply d_subenv_same_var in Hsubenv; eauto. 
-        destruct Hsubenv as [S1 [Hbind Hsub]]. exists S1; intuition.
+      * eapply d_subenv_same_var in Hsubenv as Hsubenvvar; eauto. 
+        destruct Hsubenvvar as [S1 [Hbind Hsub]]. exists S1; intuition.
         constructor. auto...
-        admit. (* trivial *)
+        eapply d_subenv_wf_env with (E:=E); eauto.
         auto.         
       (* e : A => A *)
       * exists T1. split; auto. apply dsub_refl; auto.
@@ -522,7 +522,7 @@ Proof with auto with typing.
            intros. inst_cofinites_with X.
            refine (IHn1 _ _ _ _ _ _ _ _ _ _ _ H0 _ _ _); eauto...
            simpl. rewrite <- d_exp_size_open_dtyp; lia.
-           admit. (* wft * *)
+           apply dsub_refl. admit. (* wft * *)
       (* e @T *)
       * eapply IHn1 in Hty; eauto...
         destruct Hty as [A1 [Hsuba1 Hinfa1]].
@@ -540,7 +540,7 @@ Proof with auto with typing.
            simpl in H.
            refine (IHn1 _ _ _ _ _ _ _ _ _ _ _ H _ _ _); eauto...
            rewrite <- d_exp_size_open_var. lia.
-           admit.
+           econstructor; auto.
            econstructor; auto.
       (* \x. e <= T1 -> T2 *)
       * intros. 
@@ -571,9 +571,9 @@ Proof with auto with typing.
         destruct Hty as [S2 [Hsub Hinf]].
         apply d_typing_chksub with (S1 := S2); auto.
         apply sub_transitivity with (S1 := T1); auto... 
-        admit. (* add |- E to the premise * *)
+        eapply d_subenv_wf_env; eauto.
         eapply denvsub_sub; eauto. apply sub_transitivity with (S1 := S1); auto...
-        admit. (* add |- E to the premise * *)
+        eapply denvsub_sub; eauto.
         simpl. lia.
       * intros. assert (d_wft_ord S0) as Hwford. 
         admit. (* trivial * *)
