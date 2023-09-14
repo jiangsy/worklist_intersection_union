@@ -967,14 +967,14 @@ Proof.
       auto.
     + destruct a. inversion H.
       * dependent destruction H2. auto.
-      * simpl. apply dwf_typ_weakening_cons; auto.
+      * simpl. apply dwf_typ_weakening_cons; auto. admit.
   - induction E.
     + inversion H. dependent destruction H2.
       * simpl in H1. apply notin_singleton_1 in H1. contradiction.
       * auto.
     + destruct a. inversion H.
       * dependent destruction H2. auto.
-      * simpl. apply dwf_typ_weakening_cons; auto.
+      * simpl. apply dwf_typ_weakening_cons; auto. admit.
   - simpl in *. constructor.
     + apply notin_union_1 in H1.
       eauto.
@@ -988,4 +988,4 @@ Proof.
     rewrite fstv_in_dtyp_open_dtyp_wrt_dtyp_upper; auto.
   - simpl in *. eauto.
   - simpl in *. eauto.
-Qed.
+Admitted.
