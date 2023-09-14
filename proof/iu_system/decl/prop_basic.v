@@ -953,12 +953,13 @@ Admitted.
 
 
 Lemma dwf_typ_strengthening : forall F E x T b,
+    ⊢ E ++ x ~ b ++ F ->
     E ++ x ~ b ++ F ⊢ T ->
     x \notin ftv_in_dtyp T ->
     x \notin fstv_in_dtyp T ->
     E ++ F ⊢ T.
 Proof.
-  intros.
+  intros * Hwfenv H. intros.
   dependent induction H; auto.
   - induction E.
     + inversion H. dependent destruction H2.
@@ -966,14 +967,14 @@ Proof.
       auto.
     + destruct a. inversion H.
       * dependent destruction H2. auto.
-      * simpl. apply dwf_typ_weakening_cons; auto.
+      * simpl. apply dwf_typ_weakening_cons. apply IHE; auto. admit. admit.
   - induction E.
     + inversion H. dependent destruction H2.
       * simpl in H1. apply notin_singleton_1 in H1. contradiction.
       * auto.
     + destruct a. inversion H.
       * dependent destruction H2. auto.
-      * simpl. apply dwf_typ_weakening_cons; auto.
+      * simpl. apply dwf_typ_weakening_cons; auto. apply IHE; auto. admit. admit.
   - simpl in *. constructor.
     + apply notin_union_1 in H1.
       eauto.
@@ -983,6 +984,7 @@ Proof.
     apply dwftyp_all with (L:=L `union` singleton x); intros; inst_cofinites_with X.
     + auto.
     + replace (X ~ dbind_tvar_empty ++ E ++ F) with ((X ~ dbind_tvar_empty ++ E)++ F) by auto. eapply H1 with (x:=x) (b:=b); auto.
+    admit.
     rewrite ftv_in_dtyp_open_dtyp_wrt_dtyp_upper; auto.
     rewrite fstv_in_dtyp_open_dtyp_wrt_dtyp_upper; auto.
   - simpl in *. eauto.
