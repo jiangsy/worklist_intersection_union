@@ -23,36 +23,6 @@ Hint Constructors dwf_env: core.
 Hint Constructors dwf_typ_s: core.
 
 
-Lemma dwf_typ_weakening : forall E1 E2 E3 T, 
-  E1 ++ E3 ⊢ T ->
-  E1 ++ E2 ++ E3 ⊢ T.
-Proof.
-  intros.
-  dependent induction H; auto.
-  - eapply dwftyp_all with (L:=L `union` dom (E1 ++ E2 ++ E3));
-    intros; inst_cofinites_with X.
-    + auto.
-    + replace (X ~ dbind_tvar_empty ++ E1 ++ E2 ++ E3) with ((X ~ dbind_tvar_empty ++ E1) ++ E2 ++ E3) by auto.
-    eapply H1; eauto.
-Qed.
-
-Corollary dwf_typ_weakening_cons : forall E X b T,
-  E ⊢ T ->
-  ((X ~ b) ++ E) ⊢ T.
-Proof.
-  intros.
-  replace (X ~ b ++ E) with (nil ++ X ~ b ++ E) by auto.
-  now apply dwf_typ_weakening.
-Qed.
-  
-
-Lemma mono_type_order : forall T,
-  dmono_typ T -> dtyp_order T = 0.
-Proof.
-  intros. induction H; simpl; auto; lia.
-Qed. 
-
-
 (* 
 
 Theorem ld_sub_weakening: 
@@ -171,13 +141,27 @@ Proof.
 Qed.
 
 
-Lemma d_subenv_wf_typ : forall E T, 
+(* Lemma d_subenv_wf_typ : forall E T, 
   E ⊢ T -> 
   forall E', 
     d_subenv E' E ->
     E' ⊢ T.
 Proof.
   intros E T H. induction H; intros; auto.
+  - econstructor. 
+    eapply d_subenv_same_tvar; eauto.
+  - econstructor.
+    eapply d_subenv_same_stvar; eauto.
+  - eapply dwftyp_all with (L:=L).
+    + intros. inst_cofinites_with X. auto.
+    + intros. inst_cofinites_with X. eapply H1.
+      econstructor. auto.
+Qed. *)
+
+Lemma d_subenv_wf_typ : forall E E' T, 
+  E ⊢ T -> d_subenv E' E -> E' ⊢ T.
+Proof.
+  intros * H. generalize dependent E'. induction H; intros; auto.
   - econstructor. 
     eapply d_subenv_same_tvar; eauto.
   - econstructor.
@@ -249,6 +233,7 @@ Proof.
 Qed.
 
 
+Hint Constructors d_subenv: typing.
 Hint Constructors d_typing : typing.
 Hint Resolve d_subenv_wf_typ : typing.
 Hint Resolve d_subenv_wf_env : typing.
@@ -258,6 +243,7 @@ Hint Resolve bind_typ_subst : typing.
 Hint Resolve dwf_typ_dlc_type : typing.
 
 
+(* for the e <= forall a. A *)
 Theorem d_chkinf_subst_mono: forall E F X e m T1 T2,
   d_typing (F ++ X ~ dbind_tvar_empty ++ E) e m T1 ->
   E ⊢ T2 ->
@@ -341,16 +327,20 @@ Fixpoint dtyp_size (T:dtyp) : nat :=
   end.
   
 
-Theorem d_infabs_subsumption : forall E T1 T2 S1, d_infabs E T1 T2 -> E ⊢ S1 <:T1 ->
-  exists S2, d_inftapp E S1 T2 S2.
+(* @shengyi:todo *** *)
+(* Theorem d_infabs_subsumption : forall E T1 T2 S1, d_infabs E T1 T2 -> E ⊢ S1 <:T1 ->
+  exists S2, d_infabs E.
+Proof.
+Admitted. *)
+
+(* @shengyi:todo *** *)
+Theorem d_inftapp_subsumption : forall E T1 T2 T3 S1, E ⊢ T1 ○ T2 ⇒⇒ T3 -> E ⊢ S1 <: T1 ->
+ True.
 Proof.
 Admitted.
 
-
-Theorem d_inftapp_subsumption : forall E T1 T2 T3 S1, d_inftapp E T1 T2 T3 -> E ⊢ S1 <:T1 ->
-  exists S2, d_inftapp E S1 T2 S2.
-Proof.
-Admitted.
+Hint Extern 1 (_ < _) => lia : typing.
+Hint Extern 1 (_ ⊢ _) => eapply d_subenv_wf_typ; eauto : typing.
 
 Theorem dchk_dinf_subsumption : forall n1 n2 n3 E E' e T1 mode,
   dexp_size e < n1 ->
@@ -377,63 +367,62 @@ Proof with auto with typing.
       * eapply d_subenv_same_var in H3; eauto. 
         destruct H3 as [S1 [Hbind Hsub]]. exists S1; intuition.
         constructor. auto...
-        admit. auto.         
+        admit. (* trivial *)
+        auto.         
       (* e : A => A *)
       * exists T1. split; auto. apply dsub_refl; auto.
         econstructor. eapply d_subenv_wf_typ; eauto.
         simpl in H.
-        assert (dexp_size e < n1) by lia.
-        assert (dmode_size d_typingmode_chk < S (dmode_size d_typingmode_chk)) by lia.
-        assert (dtyp_size T1  < S (dtyp_size T1)) by lia.
-        specialize (IHn1 _ _ _ _ _ _ _ H5 H6 H7 H3 H4).
-        simpl in IHn1.
-        assert (E ⊢ T1 <: T1) by (eapply dsub_refl; eauto).
-        specialize (IHn1 _ H8).
-        auto.
+        refine (IHn1 _ _ _ _ _ _ _ _ _ _ H3 _ _ _); eauto...
+        apply dsub_refl; auto.
       (* () => 1 *)
       * exists dtyp_unit. split; auto.
         econstructor. eapply d_subenv_wf_env; eauto.
       (* e1 e2 => A *)
-      * admit.
+      * admit. (* d_infabs_subsumption @shengyi:todo *** *)
       (* /\ a. e : A => forall a. A *)
-      * admit.
+      * exists (dtyp_all T1); split.
+        -- eapply dsub_refl; auto.
+        -- eapply d_typing_inftabs with (L:=L); auto...
+           intros. inst_cofinites_with X.
+           refine (IHn1 _ _ _ _ _ _ _ _ _ _ H3 _ _ _); eauto...
+           admit. (* maybe some minor problem with exp_size def ** *)
+           admit. (* wft * *)
       (* e @T *)
-      * admit.
+      * admit. (* d_inftapp_subsumption @shengyi:todo *** *)
     (* e <= *)
     + dependent destruction H2.
       (* \x. e <= Top *)
       * intros. 
-        dependent induction H4.
+        dependent induction H4; eauto...
         -- eapply d_typing_chkabstop with (L:=L). intros.
            inst_cofinites_with x.
            simpl in H.
-           assert (dexp_size (open_dexp_wrt_dexp e (dexp_var_f x)) < n1)  as Hexpsize by admit.
-           assert ((dmode_size d_typingmode_chk) < S (dmode_size d_typingmode_chk)) by lia.
-           assert ((dtyp_size dtyp_top) < S (dtyp_size dtyp_top)) by lia.
-           assert (d_subenv (x ~ dbind_typ dtyp_bot ++ E')
-           (x ~ dbind_typ dtyp_bot ++ E)) by admit.
-           specialize (IHn1 (S (dmode_size d_typingmode_chk)) 
-            (S (dtyp_size dtyp_top)) (x ~ dbind_typ dtyp_bot ++ E) (x ~ dbind_typ dtyp_bot ++ E') (open_dexp_wrt_dexp e (dexp_var_f x)) dtyp_top d_typingmode_chk Hexpsize H6 H7 H2 H8).
-            simpl in IHn1. auto.
-        -- specialize (IHd_sub1 H2 H3 (eq_refl _)).
-           specialize (IHd_sub2 H2 H3 (eq_refl _)).
-           eapply d_typing_chkintersection; auto.
-        -- specialize (IHd_sub H2 H3 (eq_refl _)).
-           eapply d_typing_chkunion1; auto.
-           eapply d_subenv_wf_typ; eauto.
-        -- specialize (IHd_sub H2 H3 (eq_refl _)).
-           eapply d_typing_chkunion2; auto.
-           eapply d_subenv_wf_typ; eauto.
+           refine (IHn1 _ _ _ _ _ _ _ _ _ _ H2 _ _ _); eauto...
+           admit. (* exp_size  ** *)
       (* \x. e <= T1 -> T2 *)
       * intros. 
-        dependent destruction H5.
-        -- admit.
-        -- admit.
-        -- admit.
-        -- admit.
-        -- admit.
-      (* e <= forall a. A *) (* ignore for now *)
-      * intros. admit.
+        assert (d_wft_ord S1). admit. (* trivial * *)
+        induction H6.
+        -- dependent destruction H5.
+           ++ inst_cofinites_for d_typing_chkabstop. intros.
+              inst_cofinites_with x.
+              refine (IHn1 _ _ _ _ _ _ _ _ _ _ H3 _ _ _); eauto...
+              admit. (* exp_size ** *)
+              admit. (* sub_weakening *)
+           ++ inst_cofinites_for d_typing_chkabs.
+              admit. intros. inst_cofinites_with x.
+              refine (IHn1 _ _ _ _ _ _ _ _ _ _ H3 _ _ _); eauto...
+              admit. (* exp_size ** *)
+              admit. (* sub_weakening *)
+           ++ inversion H6.
+           ++ inversion H7.
+           ++ inversion H7.
+        -- dependent destruction H5; auto... 
+        -- dependent destruction H5; auto... 
+      (* e <= forall a. A *) 
+      * admit. (* ignore for now *** *)
+      (* e <= A *)
       * intros.
         simpl in H0. assert (dmode_size d_typingmode_inf < n2) by (simpl; lia).
         assert (dtyp_size S1 < S (dtyp_size S1)) by lia.
@@ -441,230 +430,41 @@ Proof with auto with typing.
         simpl in IHn2.
         destruct IHn2 as [S2 [Hsub Hinf]].
         apply d_typing_chksub with (S1 := S2); auto.
-        apply sub_transitivity with (S1 := T1); auto. admit.
-        eapply denvsub_sub; eauto. apply sub_transitivity with (S1 := S1); auto. admit.
+        apply sub_transitivity with (S1 := T1); auto... 
+        admit. (* add |- E to the premise * *)
+        eapply denvsub_sub; eauto. apply sub_transitivity with (S1 := S1); auto. 
+        admit. (* add |- E to the premise * *)
         eapply denvsub_sub; eauto.
-      * intros. assert (d_wft_ord S0). admit.
+      * intros. assert (d_wft_ord S0). 
+        admit. (* trivial * *)
         induction H4.
-        -- dependent destruction H2.
-           ++ simpl in H1. 
-              assert (dtyp_size S1 < n3) by lia.
-              specialize (IHn3 _ _ _ _ _ H H0 H5 H2_ H3). simpl in IHn3.
-              apply IHn3. constructor. admit.
+        -- dependent destruction H2; simpl in H1.
+           ++ dependent destruction H2. refine (IHn3 _ _ _ _ _ _ _ _ H2_ _ _ _); eauto...
            ++ inversion H4.
-           ++ simpl in H1. 
-              assert (dtyp_size S1 < n3) by lia.
-              specialize (IHn3 _ _ _ _ _ H H0 H6 H2_ H3). simpl in IHn3.
-              apply IHn3. auto.
-           ++ simpl in H1. 
-              assert (dtyp_size T1 < n3) by lia.
-              specialize (IHn3 _ _ _ _ _ H H0 H6 H2_0 H3). simpl in IHn3.
-              apply IHn3. auto.
+           ++ refine (IHn3 _ _ _ _ _ _ _ _ H2_ _ _ _); eauto...
+           ++ refine (IHn3 _ _ _ _ _ _ _ _ H2_0 _ _ _); eauto...
            ++ inversion H5.
            ++ inversion H5.
-        -- dependent destruction H2.
-           ++ auto.
-           ++ admit.
-           ++ admit.
-        -- dependent destruction H2.
-           ++ admit.
-           ++ admit.
-           ++ constructor; auto. admit.
-           ++ admit.
-      * intros.
-        simpl in H1.
-        assert (dtyp_size S1 < n3) by lia.
-        specialize (IHn3 _ _ _ _ _ H H0 H6 H2 H4).
-        simpl in IHn3.
-        specialize (dsub_union_inversion _ _ _ _ H5). intros. inversion H7.
-        apply IHn3. auto.
-      * intros.
-        simpl in H1.
-        assert (dtyp_size T1 < n3) by lia.
-        specialize (IHn3 _ _ _ _ _ H H0 H6 H2 H4).
-        simpl in IHn3.
-        specialize (dsub_union_inversion _ _ _ _ H5). intros. inversion H7.
-        apply IHn3. auto.
+        -- simpl in H1. dependent destruction H2; auto...
+           ++ refine (IHn3 _ _ _ _ _ _ _ _ H2_ _ _ _); eauto...
+           ++ refine (IHn3 _ _ _ _ _ _ _ _ H2_0 _ _ _); eauto...
+        -- simpl in H1. dependent destruction H2.
+           ++ refine (IHn3 _ _ _ _ _ _ _ _ H2_ _ _ _); eauto...  
+           ++ refine (IHn3 _ _ _ _ _ _ _ _ H2_0 _ _ _); eauto...  
+           ++ eauto... 
+           ++ eauto... 
+      * intros. simpl in H1.
+        refine (IHn3 _ _ _ _ _ _ _ _ H2 _ _ _); eauto...
+        specialize (dsub_union_inversion _ _ _ _ H5). intros. intuition.
+      * intros. simpl in H1.
+        refine (IHn3 _ _ _ _ _ _ _ _ H2 _ _ _); eauto...
+        specialize (dsub_union_inversion _ _ _ _ H5). intros. intuition.
 Admitted.
 
-(* Theorem dchk_subsumption : forall e n,
-  dexp_size e < n -> 
-  forall E S,
-    E ⊢ e ⇐ S ->
-    forall  E' T, 
-      d_subenv E' E ->
-      E ⊢ S <: T ->
-      E' ⊢ e ⇐ T
-with 
-dinf_subsumption : forall e n,
-  dexp_size e < n ->
-  forall E T, 
-    E ⊢ e ⇒ T ->
-    forall E',
-      d_subenv E' E ->
-      exists S, 
-        dsub E S T /\ E' ⊢ e ⇒ S
-with 
-dinfapp_subsumption : forall e n, 
-  dexp_size e < n ->
-    forall E T1 T2,  
-    E ⊢ T1 • e ⇒⇒ T2 ->
-    (exists T, E ⊢ e ⇐ T) /\
-    forall E' S1, 
-      d_subenv E' E -> 
-      E ⊢ S1 <: T1 -> 
-      exists S2, 
-        E ⊢ S2 <: T2 /\ E' ⊢ S1 • e ⇒⇒ S2.
+
+Corollary dchk_subsumption : forall E e T1 S1,  
+  d_typing E e d_typingmode_chk T1 ->
+  E ⊢ T1 <: S1 -> 
+  d_typing E e d_typingmode_chk S1.
 Proof.
-  - intros e n.
-    induction n.
-
-Theorem dchk_subsumption : forall E e S,
-  E ⊢ e ⇐ S ->
-  forall  E' T, 
-    d_subenv E' E ->
-    E ⊢ S <: T ->
-    E' ⊢ e ⇐ T
-with 
-dinf_subsumption : forall E e T, 
-  E ⊢ e ⇒ T ->
-  forall E',
-    d_subenv E' E ->
-    exists S, 
-      dsub E S T /\ E' ⊢ e ⇒ S
-with 
-dinfapp_subsumption : forall E T1 e T2,
-  E ⊢ T1 • e ⇒⇒ T2 ->
-  (exists T, E ⊢ e ⇐ T) /\
-  forall E' S1, 
-    d_subenv E' E -> 
-    E ⊢ S1 <: T1 -> 
-    exists S2, 
-      E ⊢ S2 <: T2 /\ E' ⊢ S1 • e ⇒⇒ S2.
-Proof.
-  - intros E e S H.
-    induction H; auto; intros.
-    + dependent induction H2; eauto.
-    + dependent induction H3. 
-      * apply dchk_top_abs with (L:=L `union` dom E). intros.
-      inst_cofinites_with x.
-      dependent destruction H3.
-      apply H1; auto.
-      econstructor; auto.
-      constructor.
-      admit. (* easy: weakening *)
-      * eapply dchk_abs with (L:=L).
-        -- eauto.  apply dsub_dwft in H3_.
-           apply dsub_dwft in H3_0.
-           destruct H3_. destruct H3_0.
-           eauto.
-        -- intros. inst_cofinites_with x.  
-          apply H1. econstructor; eauto.
-          admit. (* easy: weakening *)
-      * apply dchk_intersection; eauto.
-      * apply dchk_union1; eauto. 
-      * apply dchk_union2; eauto.
-    + specialize (dinf_subsumption _ _ _ H _ H1).
-      destruct dinf_subsumption as [S1 [Hsub Hinf]].
-      specialize (dinfapp_subsumption _ _ _ _ H0 ).
-      destruct dinfapp_subsumption as [Hchk Hinfapp_subsumption].
-      specialize (Hinfapp_subsumption _ _ H1 Hsub).
-      destruct Hinfapp_subsumption as [S2 [Hsub2 Hinfapp]].
-      eapply dchk_sub with (S:=S2).
-      eapply dinf_app with (T2:=S1); auto.
-      admit. (* easy : transitivity *)
-    (* e <= ∀ X. T *)
-    + admit.
-    (* e <= T *)
-    + specialize (dinf_subsumption _ _ _ H _ H1).
-      destruct dinf_subsumption as [S1 [Hsub Hinf]].
-      eapply dchk_sub; eauto. 
-      admit. (* easy : transitivity *)
-    (* e <= S * T *)
-    + dependent induction H2.
-      * dependent destruction H2. eapply dchk_subsumption; eauto.
-      * eapply dchk_intersection.
-        -- eapply IHdsub1 with (S:=S) (T:=T); eauto.
-        -- eapply IHdsub2 with (S:=S) (T:=T); eauto.
-      * eapply IHdchk1; eauto.
-      * eapply IHdchk2; eauto.
-      * eapply dchk_union1. eapply IHdsub with (S:=S) (T:=T); eauto.
-        eauto.
-      * eapply dchk_union2. eapply IHdsub with (S:=S) (T:=T); eauto.
-        eauto.
-    (* e <= S + T *)
-    + apply dsub_union_inversion in H2. destruct H2.
-      auto.
-    (* e <= S + T *)
-    + apply dsub_union_inversion in H2. destruct H2.
-      auto.
-
-  - intros. induction H.
-    + admit. (* easy *)
-    + exists T. split; auto.
-      * apply dsub_refl; auto.
-      * apply dinf_anno.
-        eapply d_subenv_wf_typ; eauto.
-        eapply dchk_subsumption; eauto.
-        apply dsub_refl; auto.
-    + eauto.
-      (* exists dtyp_unit.
-      split; eauto.  *)
-    + eauto. 
-      (* + specialize (dinfapp_subsumption _ _ _ _ H1).
-      destruct dinfapp_subsumption as [Hchk Hinfapp_subsumption].
-      specialize (IHdinf H0).
-      destruct IHdinf as [S1 [Hsub Hinf]].
-      specialize (Hinfapp_subsumption _ _ H0 Hsub).
-      destruct Hinfapp_subsumption as [S2 [Hsub1 Hinfapp]].
-      exists S2. split; eauto. *)
-    (* e => ∀ X. T *)
-    + admit.
-    + specialize (IHdinf H0).
-      destruct IHdinf as [S1 [Hsub Hinf]].
-      dependent induction Hsub; eauto.
-    + admit.
-    
-  - intros; induction H.
-    + split. exists T1. auto. 
-      intros. dependent induction H2; auto.
-      * dependent destruction H2. exists dtyp_bot; split;     eauto. 
-      * exists S2; split; eauto.
-        constructor; eauto. admit.
-      * admit.
-      * specialize (IHdsub _ _ H H0 H1 (eq_refl _)).
-        destruct IHdsub as [S3 [Hsub Hinfapp]].
-        exists S3; split; auto. 
-        admit. (* TODO : check rule *)
-      * specialize (IHdsub _ _ H H0 H1 (eq_refl _)).
-        destruct IHdsub as [S3 [Hsub Hinfapp]].
-        exists S3; split; auto. 
-        admit. (* TODO : check rule *)
-      * admit. (* TODO : check rule *)
-    + destruct IHdinfapp as [Hchk Hinfapp].
-      destruct Hchk as [T]. split.
-      exists T; auto. 
-      intros. dependent induction H5.
-      * exists dtyp_bot; split.
-        -- constructor. admit.
-        -- econstructor. eapply dchk_subsumption; eauto.
-            econstructor. admit. 
-      * admit.
-      * admit.
-      * admit.
-      * admit.
-      * admit.
-
-    + split.
-      exists dtyp_top; auto. 
-      intros. dependent induction H1.
-      * exists dtyp_bot. split; eauto.
-      * specialize (IHdsub H H0 (eq_refl _)).
-        destruct IHdsub as [S2 [Hsub Hinfapp]].
-        exists S2; split; eauto.
-        econstructor; eauto. admit.
-      * admit. (* TODO : check rule *)
-      * admit. (* TODO : check rule *)  
-      * admit. (* TODO : check rule *)  
 Admitted.
- *)
