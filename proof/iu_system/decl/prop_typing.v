@@ -23,8 +23,6 @@ Hint Constructors dwf_env: core.
 Hint Constructors dwf_typ_s: core.
 
 
-
-
 (* 
 
 Theorem ld_sub_weakening: 
@@ -404,7 +402,15 @@ Proof with auto with typing.
       * intros. 
         assert (d_wft_ord S1). admit. (* trivial * *)
         induction H6.
-        -- dependent destruction H5; admit.
+        -- dependent destruction H5.
+           ++ admit.
+           ++ inst_cofinites_for d_typing_chkabs.
+              admit. intros. inst_cofinites_with x.
+              refine (IHn1 _ _ _ _ _ _ _ _ _ _ H3 _ _ _); eauto...
+              admit. (* exp_size ** *)
+              admit. (* sub_weakening *)
+           ++ inversion H6.
+           ++ inversion H7.
         -- dependent destruction H5; auto... 
         -- dependent destruction H5; auto... 
       (* e <= forall a. A *) 
