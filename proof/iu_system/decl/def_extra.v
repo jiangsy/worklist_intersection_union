@@ -128,16 +128,20 @@ Inductive d_inftapp_false : dtyp -> Prop :=
     d_inftapp_false (dtyp_var_f X)
 | d__inftappfalse__svar : forall (SX:atom),
     d_inftapp_false (dtyp_svar SX)
-| d__inftappfalse__arr : forall (X:atom) (A1 A2:dtyp),
+| d__inftappfalse__top :
+    d_inftapp_false (dtyp_top)
+| d__inftappfalse__unit :
+    d_inftapp_false (dtyp_unit)
+| d__inftappfalse__arr : forall (A1 A2:dtyp),
     d_inftapp_false (dtyp_arrow A1 A2)
-| d__inftappfalse__intersection : forall (X:atom) (A1 A2:dtyp),
+| d__inftappfalse__intersection : forall (A1 A2:dtyp),
     d_inftapp_false A1 -> 
     d_inftapp_false A2 -> 
     d_inftapp_false (dtyp_intersection A1 A2)
-| d__inftappfalse__union1 : forall (X:atom) (A1 A2:dtyp),
+| d__inftappfalse__union1 : forall (A1 A2:dtyp),
     d_inftapp_false A1 -> 
     d_inftapp_false (dtyp_union A1 A2)
-| d__inftappfalse__union2 : forall (X:atom) (A1 A2:dtyp),
+| d__inftappfalse__union2 : forall (A1 A2:dtyp),
     d_inftapp_false A2 -> 
     d_inftapp_false (dtyp_union A1 A2)
 .

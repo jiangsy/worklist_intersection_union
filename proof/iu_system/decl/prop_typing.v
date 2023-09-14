@@ -305,18 +305,24 @@ Definition dmode_size (mode : d_typing_mode) : nat :=
   end.
 
 
-Fixpoint dexp_size (e:dexp) : nat :=
-  match e with 
-  | dexp_unit => 1
-  | dexp_top => 1
-  | dexp_var_f _ => 1
-  | dexp_var_b _ => 1
-  | dexp_abs e1 => 1 + dexp_size e1
-  | dexp_app e1 e2 => dexp_size e1 + dexp_size e2 
-  | dexp_anno e1 _ => 1 + dexp_size e1
-  | dexp_tapp e1 _ => 1 + dexp_size e1
-  | dexp_tabs (dbody_anno e1 T) => 2 + dexp_size e1
-  end.
+Fixpoint 
+  dexp_size (e:dexp) : nat :=
+    match e with 
+    | dexp_unit => 1
+    | dexp_top => 1
+    | dexp_var_f _ => 1
+    | dexp_var_b _ => 1
+    | dexp_abs e1 => 1 + dexp_size e1
+    | dexp_app e1 e2 => dexp_size e1 + dexp_size e2 
+    | dexp_anno e1 _ => 1 + dexp_size e1
+    | dexp_tapp e1 _ => 1 + dexp_size e1
+    | dexp_tabs b => 1 + d_body_size b  
+    end with 
+  d_body_size (b:dbody) :=
+    match b with 
+    | dbody_anno e T => 1 + dexp_size e
+    end
+  .
 
 
 Fixpoint dtyp_size (T:dtyp) : nat :=
@@ -333,32 +339,124 @@ Fixpoint dtyp_size (T:dtyp) : nat :=
 Proof.
 Admitted. *)
 
+Hint Constructors d_inftapp : inftapp.
+Hint Constructors d_inftapp_false : inftapp.
+
+Theorem d_inftapp_total: forall E A B,
+  E ⊢ A -> E ⊢ B -> d_inftapp_false A \/ exists C, d_inftapp E A B C.
+Proof with auto with inftapp.
+  intros. induction H; try solve intuition...
+  - right. exists dtyp_bot. auto...
+  - right. exists (T ^^ᵈ B). constructor; auto. admit.
+  - specialize (IHdwf_typ1 H0).
+    specialize (IHdwf_typ2 H0).
+    inversion IHdwf_typ1; inversion IHdwf_typ2; auto...
+    right.
+    destruct H2 as [C1 Hc1]. destruct H3 as [C2 Hc2].
+    exists (dtyp_union C1 C2); auto...
+  - specialize (IHdwf_typ1 H0).
+    specialize (IHdwf_typ2 H0).
+    inversion IHdwf_typ1; inversion IHdwf_typ2.
+    + auto...
+    + right. destruct H3 as [C2 Hc2]. exists C2. auto...
+    + right. destruct H2 as [C1 Hc1]. exists C1. auto...
+    + destruct H2 as [C1 Hc1]. destruct H3 as [C2 Hc2].
+      right. exists (dtyp_intersection C1 C2); auto...
+Admitted.
+
+
 (* @shengyi:todo *** *)
 Theorem d_inftapp_subsumption : forall E T1 T2 T3 S1, 
   E ⊢ T1 ○ T2 ⇒⇒ T3 -> 
   E ⊢ S1 <: T1 ->
   exists S3, E ⊢ S3 <: T3 /\ E ⊢ S1 ○ T2 ⇒⇒ S3.
-Proof.
+Proof with auto with typing.
   intros. generalize dependent S1. dependent induction H.
   - intros. dependent induction H0.
-    + admit.
+    + exists dtyp_bot. split; auto... constructor. auto.
     + eapply d_sub_open_mono_bot_false in H6; eauto. contradiction.
-    + admit.
-    + admit.
-    + admit. 
+    + specialize (d_inftapp_total _ _ _ H1 H). intros.
+      specialize (IHd_sub H (eq_refl _)). destruct IHd_sub as [C1 Hc1].
+      inversion H2. 
+      * exists C1; intuition...
+      * destruct H3 as [C2 Hc2]. destruct Hc1.
+        exists (dtyp_intersection C1 C2); split.
+        -- constructor; auto. admit.
+        -- apply d_inftapp_intersection3; auto.
+    + specialize (d_inftapp_total _ _ _ H1 H). intros.
+      specialize (IHd_sub H (eq_refl _)). destruct IHd_sub as [C1 Hc1].
+      inversion H2. 
+      * exists C1; intuition...
+      * destruct H3 as [C2 Hc2]. destruct Hc1.
+        exists (dtyp_intersection C2 C1); split.
+        -- apply d_sub_intersection3; auto. admit.
+        -- apply d_inftapp_intersection3; auto.
+    + specialize (IHd_sub1 H (eq_refl _)). destruct IHd_sub1 as [C1 Hc1].
+      specialize (IHd_sub2 H (eq_refl _)). destruct IHd_sub2 as [C2 Hc2].
+      exists (dtyp_union C1 C2). split.
+      intuition... intuition...
   - intros. dependent induction H1.
     + exists dtyp_bot. split.
       econstructor. admit.
       econstructor. auto.
-    + admit.
+    + exists (S1 ^^ᵈ T2). split; auto...
+      admit.
+      econstructor; auto.
+      admit.
     + inversion H6.
-    + admit.
-    + admit.
+    + specialize (IHd_sub _ H H0 (eq_refl _)).
+      destruct IHd_sub as [C1 Hc1].
+      specialize (d_inftapp_total _ _ _ H2 H0). intros.
+      inversion H3.
+      -- exists C1; intuition...
+      -- destruct H4 as [C2 Hc2]. 
+         exists (dtyp_intersection C1 C2). split.
+         constructor; intuition... admit. admit.
+         apply d_inftapp_intersection3; intuition...
+    + specialize (IHd_sub _ H H0 (eq_refl _)).
+      destruct IHd_sub as [C1 Hc1].
+      specialize (d_inftapp_total _ _ _ H2 H0). intros.
+      inversion H3.
+      -- exists C1; intuition...
+      -- destruct H4 as [C2 Hc2]. 
+        exists (dtyp_intersection C2 C1). split.
+        apply d_sub_intersection3; intuition... admit. admit.
+        apply d_inftapp_intersection3; intuition...
 Admitted.
+
+
+Corollary d_inftapp_subsumption_: forall E E' A1 A2 B1 C1,
+  E ⊢ A1 ○ B1 ⇒⇒ C1 -> 
+  E ⊢ A2 <: A1 ->
+  d_subenv E' E -> 
+  exists C2, E ⊢ C2 <: C1 /\ E' ⊢ A2 ○ B1 ⇒⇒ C2.
+Admitted.
+
 
 Hint Extern 1 (_ < _) => lia : typing.
 Hint Extern 1 (_ ⊢ _) => eapply d_subenv_wf_typ; eauto : typing.
- 
+
+
+Lemma d_exp_size_open_var_rec : forall e x n, 
+  dexp_size e = dexp_size (open_dexp_wrt_dexp_rec n (dexp_var_f x) e)
+with d_body_size_open_var_rec: forall b x n,
+  d_body_size b = d_body_size (open_dbody_wrt_dexp_rec n (dexp_var_f x) b).
+Proof.
+  - intros. generalize dependent n. induction e; simpl; auto.
+    + intros. destruct (lt_eq_lt_dec n n0).
+      * destruct s; auto.
+      * auto.
+  - intros. generalize dependent n. induction b; simpl; auto.
+Qed.
+
+
+Lemma d_exp_size_open_var: forall e x,
+  dexp_size e = dexp_size (open_dexp_wrt_dexp e (dexp_var_f x)).
+Proof.
+  intros. unfold open_dexp_wrt_dexp.
+  apply d_exp_size_open_var_rec.
+Qed.
+
 Theorem d_chk_inf_subsumption : forall n1 n2 n3 E E' e T1 mode,
   dexp_size e < n1 ->
   dmode_size mode < n2 ->
@@ -406,7 +504,13 @@ Proof with auto with typing.
            admit. (* maybe some minor problem with exp_size def ** *)
            admit. (* wft * *)
       (* e @T *)
-      * admit. (* d_inftapp_subsumption @shengyi:todo *** *)
+      * simpl in H.
+        eapply IHn1 in H3; eauto...
+        destruct H3 as [A1 [Hsuba1 Hinfa1]].
+        eapply d_inftapp_subsumption_ in H4; eauto.
+        destruct H4 as [C2 Hc2].
+        exists C2. intuition... 
+        econstructor; eauto...
     (* e <= *)
     + dependent destruction H2.
       (* \x. e <= Top *)
@@ -416,9 +520,9 @@ Proof with auto with typing.
            inst_cofinites_with x.
            simpl in H.
            refine (IHn1 _ _ _ _ _ _ _ _ _ _ H2 _ _ _); eauto...
-           admit. (* exp_size  ** *)
+           rewrite <- d_exp_size_open_var. lia.
       (* \x. e <= T1 -> T2 *)
-      * intros. 
+      * intros. simpl in H.
         assert (d_wft_ord S1). admit. (* trivial * *)
         induction H6.
         -- dependent destruction H5.
@@ -430,7 +534,7 @@ Proof with auto with typing.
            ++ inst_cofinites_for d_typing_chkabs.
               admit. intros. inst_cofinites_with x.
               refine (IHn1 _ _ _ _ _ _ _ _ _ _ H3 _ _ _); eauto...
-              admit. (* exp_size ** *)
+              rewrite <- d_exp_size_open_var. lia.
               admit. (* sub_weakening *)
            ++ inversion H6.
            ++ inversion H7.

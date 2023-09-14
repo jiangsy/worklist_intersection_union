@@ -828,26 +828,40 @@ Lemma d_wft_typ_subst : forall E X F T1 T2,
   E ⊢ T2 ->
   map (d_subst_tv_in_binding T2 X) F  ++ E ⊢ {T2 /ᵈ X} T1.
 Proof with simpl in *; eauto using d_wf_env_strenthening_head.
-  intros * HE HT1 HT2.
-  induction F...
-  - inductions HT1...
-    + case_if...
-      inverts~ H. inverts H0.
-      intuition eauto.
-    + inverts~ H. inverts H0.
-    + pick fresh Y and apply dwftyp_all. inst_cofinites_with Y.
-      case_eq (Y==X); intros; subst.
-      * false. solve_notin.
-      * rewrite d_subst_tv_in_dtyp_open_dtyp_wrt_dtyp_var...
-        applys* ftv_sin_dtyp_subst_inv.
-      * rewrite d_subst_tv_in_dtyp_open_dtyp_wrt_dtyp_var...
-        admit.
-  (*       forwards*: H1 X. *)
-  (*       ** inverts* HE. repeat econstructor... *)
-  (*       ** Search (_::_~=_::_). *)
-  (*          simpl. *)
-  (* - destruct a. destruct b... *)
+  (* intros * HE HT1 HT2. *)
+  (* induction F... *)
+  (* - inductions HT1... *)
+  (*   + case_if... *)
+  (*     inverts~ H. inverts H0. *)
+  (*     intuition eauto. *)
+  (*   + inverts~ H. inverts H0. *)
+  (*   + pick fresh Y and apply dwftyp_all. inst_cofinites_with Y. *)
+  (*     case_eq (Y==X); intros; subst. *)
+  (*     * false. solve_notin. *)
+  (*     * rewrite d_subst_tv_in_dtyp_open_dtyp_wrt_dtyp_var... *)
+  (*       applys* ftv_sin_dtyp_subst_inv. *)
+  (*     * rewrite d_subst_tv_in_dtyp_open_dtyp_wrt_dtyp_var... *)
+  (*       admit. *)
+  (* (*       forwards*: H1 X. *) *)
+  (* (*       ** inverts* HE. repeat econstructor... *) *)
+  (* (*       ** Search (_::_~=_::_). *) *)
+  (* (*          simpl. *) *)
+  (* (* - destruct a. destruct b... *) *)
+  intros * Hwfenv Hwft1 Hwft2.
+  inductions Hwft1; intros; try solve [simpl; auto].
+  - destruct (X0 == X).
+    + subst. simpl. admit.
+    + admit.
+  - simpl. admit.
+  - simpl. inst_cofinites_for dwftyp_all; intros; inst_cofinites_with X0.
+    + rewrite d_subst_tv_in_dtyp_open_dtyp_wrt_dtyp_var...
+      applys* ftv_sin_dtyp_subst_inv.
+    + rewrite d_subst_tv_in_dtyp_open_dtyp_wrt_dtyp_var...
+      replace ((X0, dbind_tvar_empty) :: map (d_subst_tv_in_binding T2 X) F ++ E)
+      with (map (d_subst_tv_in_binding T2 X) ((X0, dbind_tvar_empty) :: F) ++ E) by auto.
+      apply H1; auto...
 Admitted.
+
 
 Lemma d_wft_typ_subst_stvar : forall E SX F T1 T2,
   ⊢ F ++ SX ~ dbind_stvar_empty ++ E ->
@@ -914,9 +928,9 @@ Qed.
 
 Lemma bind_typ_subst : forall F X E x T1 T2,
   ⊢ F ++ (X, dbind_tvar_empty) :: E ->
-  binds x (dbind_typ T1) (F ++ (X, dbind_tvar_empty) :: E) ->
+  x ~ T1 ∈ (F ++ (X, dbind_tvar_empty) :: E) ->
   E ⊢ T2 ->
-  binds x (dbind_typ ({T2 /ᵈ X} T1)) (map (d_subst_tv_in_binding T2 X) F ++ E).
+  x ~ ({T2 /ᵈ X} T1) ∈ (map (d_subst_tv_in_binding T2 X) F ++ E).
 Proof.
   intros. induction F; simpl in *; auto.
   - inversion H0.
@@ -1013,11 +1027,6 @@ Proof.
   - simpl in *. eauto.
   - simpl in *. eauto.
 Admitted.
-
-
-Create HintDb FalseHd.
-
-Hint Resolve nil_cons List.app_cons_not_nil nil_neq_one_mid : FalseHd.
 
 (* Properties of d_wf_env *)
 Lemma d_wf_env_subst_tvar_typ : forall E X F T1,
