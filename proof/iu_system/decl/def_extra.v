@@ -122,6 +122,26 @@ Inductive d_sub : denv -> dtyp -> dtyp -> Prop :=    (* defn d_sub *)
      d_sub E S2 T1 ->
      d_sub E (dtyp_union S1 S2) T1.
 
+
+Inductive d_inftapp_false : dtyp -> Prop := 
+| d__inftappfalse__var : forall (X:atom),
+    d_inftapp_false (dtyp_var_f X)
+| d__inftappfalse__svar : forall (SX:atom),
+    d_inftapp_false (dtyp_svar SX)
+| d__inftappfalse__arr : forall (X:atom) (A1 A2:dtyp),
+    d_inftapp_false (dtyp_arrow A1 A2)
+| d__inftappfalse__intersection : forall (X:atom) (A1 A2:dtyp),
+    d_inftapp_false A1 -> 
+    d_inftapp_false A2 -> 
+    d_inftapp_false (dtyp_intersection A1 A2)
+| d__inftappfalse__union1 : forall (X:atom) (A1 A2:dtyp),
+    d_inftapp_false A1 -> 
+    d_inftapp_false (dtyp_union A1 A2)
+| d__inftappfalse__union2 : forall (X:atom) (A1 A2:dtyp),
+    d_inftapp_false A2 -> 
+    d_inftapp_false (dtyp_union A1 A2)
+.
+
 Inductive d_inftapp : denv -> dtyp -> dtyp -> dtyp -> Prop := 
 | d_inftapp_bot : forall (E:denv) (T1:dtyp),
     dwf_typ E T1 ->
@@ -129,7 +149,27 @@ Inductive d_inftapp : denv -> dtyp -> dtyp -> dtyp -> Prop :=
 | d_inftapp_all : forall (E:denv) (T1 T2:dtyp),
     dwf_typ E (dtyp_all T1) ->
     dwf_typ E T2 ->
-    d_inftapp E (dtyp_all T1) T2 (open_dtyp_wrt_dtyp  T1   T2 ).
+    d_inftapp E (dtyp_all T1) T2 (open_dtyp_wrt_dtyp  T1   T2 )
+| d_inftapp_intersection1 : forall (E:denv) (A1 A2 B C1:dtyp),
+    dwf_typ E A2 ->
+    d_inftapp_false A2 ->
+    d_inftapp E A1 B C1 ->
+    d_inftapp E (dtyp_intersection A1 A2) B C1
+| d_inftapp_intersection2 : forall (E:denv) (A1 A2 B C2:dtyp),
+    dwf_typ E A1 ->
+    d_inftapp_false A1 ->
+    d_inftapp E A2 B C2 ->
+    d_inftapp E (dtyp_intersection A1 A2) B C2
+| d_inftapp_intersection3 : forall (E:denv) (A1 A2 B C1 C2:dtyp),
+    d_inftapp E A1 B C1 ->
+    d_inftapp E A2 B C2 ->
+    d_inftapp E (dtyp_intersection A1 A2) B (dtyp_intersection C1 C2)
+| d_inftapp_union : forall (E:denv) (A1 A2 B C1 C2:dtyp),
+    d_inftapp E A1 B C1 ->
+    d_inftapp E A2 B C2 ->
+    d_inftapp E (dtyp_union A1 A2) B (dtyp_union C1 C2)
+.
+
 
 Inductive d_infabs : denv -> dtyp -> dtyp -> Prop := 
 | d_infabs_bot : forall (E:denv),

@@ -315,7 +315,7 @@ Fixpoint dexp_size (e:dexp) : nat :=
   | dexp_app e1 e2 => dexp_size e1 + dexp_size e2 
   | dexp_anno e1 _ => 1 + dexp_size e1
   | dexp_tapp e1 _ => 1 + dexp_size e1
-  | dexp_tabs (dbody_anno e1 T) => 1 + dexp_size e1
+  | dexp_tabs (dbody_anno e1 T) => 2 + dexp_size e1
   end.
 
 
@@ -334,23 +334,40 @@ Proof.
 Admitted. *)
 
 (* @shengyi:todo *** *)
-Theorem d_inftapp_subsumption : forall E T1 T2 T3 S1, E ⊢ T1 ○ T2 ⇒⇒ T3 -> E ⊢ S1 <: T1 ->
- True.
+Theorem d_inftapp_subsumption : forall E T1 T2 T3 S1, 
+  E ⊢ T1 ○ T2 ⇒⇒ T3 -> 
+  E ⊢ S1 <: T1 ->
+  exists S3, E ⊢ S3 <: T3 /\ E ⊢ S1 ○ T2 ⇒⇒ S3.
 Proof.
+  intros. generalize dependent S1. dependent induction H.
+  - intros. dependent induction H0.
+    + admit.
+    + eapply d_sub_open_mono_bot_false in H6; eauto. contradiction.
+    + admit.
+    + admit.
+    + admit. 
+  - intros. dependent induction H1.
+    + exists dtyp_bot. split.
+      econstructor. admit.
+      econstructor. auto.
+    + admit.
+    + inversion H6.
+    + admit.
+    + admit.
 Admitted.
 
 Hint Extern 1 (_ < _) => lia : typing.
 Hint Extern 1 (_ ⊢ _) => eapply d_subenv_wf_typ; eauto : typing.
-
-Theorem dchk_dinf_subsumption : forall n1 n2 n3 E E' e T1 mode,
+ 
+Theorem d_chk_inf_subsumption : forall n1 n2 n3 E E' e T1 mode,
   dexp_size e < n1 ->
   dmode_size mode < n2 ->
   dtyp_size T1 < n3 -> 
   d_typing E e mode T1 ->
   d_subenv E' E ->
     match mode with 
-    | d_typingmode_chk => forall S1, E ⊢ T1 <: S1 -> d_typing E' e d_typingmode_chk S1
-    | d_typingmode_inf => exists S1, E ⊢ S1 <: T1 /\ d_typing E' e d_typingmode_inf S1
+    | d_typingmode_chk => forall S1, E ⊢ T1 <: S1 -> E' ⊢ e ⇐ S1
+    | d_typingmode_inf => exists S1, E ⊢ S1 <: T1 /\ E' ⊢ e ⇒ S1
     end.
 Proof with auto with typing.
   intro n1; induction n1; intro n2; induction n2; intros n3; induction n3; intros.
@@ -462,9 +479,9 @@ Proof with auto with typing.
 Admitted.
 
 
-Corollary dchk_subsumption : forall E e T1 S1,  
-  d_typing E e d_typingmode_chk T1 ->
-  E ⊢ T1 <: S1 -> 
-  d_typing E e d_typingmode_chk S1.
+Corollary d_chk_subsumption : forall E e T1 S1,  
+  E ⊢ e ⇐ S1 -> 
+  E ⊢ S1 <: T1 -> 
+  E ⊢ e ⇐ T1.
 Proof.
 Admitted.
