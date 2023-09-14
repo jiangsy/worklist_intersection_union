@@ -531,6 +531,14 @@ Proof with auto with subtyping.
 Qed.
 
 
+Theorem d_sub_weakening: forall E F G S1 T1,
+  G ++ E ⊢ S1 <: T1 ->
+  ⊢ G ++ F ++ E ->
+  G ++ F ++ E ⊢ S1 <: T1.
+Proof.
+Admitted.
+
+
 (* Theorem  d_sub_strenthening: forall E F G S1 T1,
   F ++ G ++ E ⊢ S1 <: T1 ->
   F ++ E ⊢ S1 ->
