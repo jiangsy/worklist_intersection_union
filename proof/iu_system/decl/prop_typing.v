@@ -367,6 +367,7 @@ Theorem d_inftapp_subsumption : forall E T1 T2 T3 S1, d_inftapp E T1 T2 T3 -> E 
 Proof.
 Admitted.
 
+Hint Extern 1 (_ < _) => lia : typing.
 Hint Extern 1 (_ ⊢ _) => eapply d_subenv_wf_typ; eauto : typing.
 
 Theorem dchk_dinf_subsumption : forall n1 n2 n3 E E' e T1 mode,
@@ -394,7 +395,8 @@ Proof with auto with typing.
       * eapply d_subenv_same_var in H3; eauto. 
         destruct H3 as [S1 [Hbind Hsub]]. exists S1; intuition.
         constructor. auto...
-        admit. auto.         
+        admit. (* trivial *)
+        auto.         
       (* e : A => A *)
       * exists T1. split; auto. apply dsub_refl; auto.
         econstructor. eapply d_subenv_wf_typ; eauto.
@@ -413,7 +415,13 @@ Proof with auto with typing.
       (* e1 e2 => A *)
       * admit.
       (* /\ a. e : A => forall a. A *)
-      * admit.
+      * exists (dtyp_all T1); split.
+        -- eapply dsub_refl; auto.
+        -- eapply d_typing_inftabs with (L:=L); auto...
+           intros. inst_cofinites_with X.
+           refine (IHn1 _ _ _ _ _ _ _ _ _ _ H3 _ _ _); eauto...
+           admit. (* maybe some minor problem with exp_size def *)
+           admit. (* wft * *)
       (* e @T *)
       * admit.
     (* e <= *)
@@ -425,7 +433,7 @@ Proof with auto with typing.
            inst_cofinites_with x.
            simpl in H.
            refine (IHn1 _ _ _ _ _ _ _ _ _ _ H2 _ _ _); eauto...
-           admit.
+           admit. (* exp_size  ** *)
       (* \x. e <= T1 -> T2 *)
       * intros. 
         dependent destruction H5.
@@ -444,10 +452,13 @@ Proof with auto with typing.
         simpl in IHn2.
         destruct IHn2 as [S2 [Hsub Hinf]].
         apply d_typing_chksub with (S1 := S2); auto.
-        apply sub_transitivity with (S1 := T1); auto. admit.
-        eapply denvsub_sub; eauto. apply sub_transitivity with (S1 := S1); auto. admit.
+        apply sub_transitivity with (S1 := T1); auto... 
+        admit. (* add |- E to the premise * *)
+        eapply denvsub_sub; eauto. apply sub_transitivity with (S1 := S1); auto. 
+        admit. (* add |- E to the premise * *)
         eapply denvsub_sub; eauto.
-      * intros. assert (d_wft_ord S0). admit.
+      * intros. assert (d_wft_ord S0). 
+        admit. (* trivial * *)
         induction H4.
         -- dependent destruction H2.
            ++ simpl in H1. 
@@ -465,15 +476,14 @@ Proof with auto with typing.
               apply IHn3. auto.
            ++ inversion H5.
            ++ inversion H5.
-        -- dependent destruction H2.
-           ++ auto.
-           ++ admit.
-           ++ admit.
-        -- dependent destruction H2.
-           ++ admit.
-           ++ admit.
-           ++ constructor; auto. admit.
-           ++ admit.
+        -- simpl in H1. dependent destruction H2; auto...
+           ++ refine (IHn3 _ _ _ _ _ _ _ _ H2_ _ _ _); eauto...
+           ++ refine (IHn3 _ _ _ _ _ _ _ _ H2_0 _ _ _); eauto...
+        -- simpl in H1. dependent destruction H2.
+           ++ refine (IHn3 _ _ _ _ _ _ _ _ H2_ _ _ _); eauto...  
+           ++ refine (IHn3 _ _ _ _ _ _ _ _ H2_0 _ _ _); eauto...  
+           ++ eauto... 
+           ++ eauto... 
       * intros.
         simpl in H1.
         assert (dtyp_size S1 < n3) by lia.
@@ -489,185 +499,3 @@ Proof with auto with typing.
         specialize (dsub_union_inversion _ _ _ _ H5). intros. inversion H7.
         apply IHn3. auto.
 Admitted.
-
-(* Theorem dchk_subsumption : forall e n,
-  dexp_size e < n -> 
-  forall E S,
-    E ⊢ e ⇐ S ->
-    forall  E' T, 
-      d_subenv E' E ->
-      E ⊢ S <: T ->
-      E' ⊢ e ⇐ T
-with 
-dinf_subsumption : forall e n,
-  dexp_size e < n ->
-  forall E T, 
-    E ⊢ e ⇒ T ->
-    forall E',
-      d_subenv E' E ->
-      exists S, 
-        dsub E S T /\ E' ⊢ e ⇒ S
-with 
-dinfapp_subsumption : forall e n, 
-  dexp_size e < n ->
-    forall E T1 T2,  
-    E ⊢ T1 • e ⇒⇒ T2 ->
-    (exists T, E ⊢ e ⇐ T) /\
-    forall E' S1, 
-      d_subenv E' E -> 
-      E ⊢ S1 <: T1 -> 
-      exists S2, 
-        E ⊢ S2 <: T2 /\ E' ⊢ S1 • e ⇒⇒ S2.
-Proof.
-  - intros e n.
-    induction n.
-
-Theorem dchk_subsumption : forall E e S,
-  E ⊢ e ⇐ S ->
-  forall  E' T, 
-    d_subenv E' E ->
-    E ⊢ S <: T ->
-    E' ⊢ e ⇐ T
-with 
-dinf_subsumption : forall E e T, 
-  E ⊢ e ⇒ T ->
-  forall E',
-    d_subenv E' E ->
-    exists S, 
-      dsub E S T /\ E' ⊢ e ⇒ S
-with 
-dinfapp_subsumption : forall E T1 e T2,
-  E ⊢ T1 • e ⇒⇒ T2 ->
-  (exists T, E ⊢ e ⇐ T) /\
-  forall E' S1, 
-    d_subenv E' E -> 
-    E ⊢ S1 <: T1 -> 
-    exists S2, 
-      E ⊢ S2 <: T2 /\ E' ⊢ S1 • e ⇒⇒ S2.
-Proof.
-  - intros E e S H.
-    induction H; auto; intros.
-    + dependent induction H2; eauto.
-    + dependent induction H3. 
-      * apply dchk_top_abs with (L:=L `union` dom E). intros.
-      inst_cofinites_with x.
-      dependent destruction H3.
-      apply H1; auto.
-      econstructor; auto.
-      constructor.
-      admit. (* easy: weakening *)
-      * eapply dchk_abs with (L:=L).
-        -- eauto.  apply dsub_dwft in H3_.
-           apply dsub_dwft in H3_0.
-           destruct H3_. destruct H3_0.
-           eauto.
-        -- intros. inst_cofinites_with x.  
-          apply H1. econstructor; eauto.
-          admit. (* easy: weakening *)
-      * apply dchk_intersection; eauto.
-      * apply dchk_union1; eauto. 
-      * apply dchk_union2; eauto.
-    + specialize (dinf_subsumption _ _ _ H _ H1).
-      destruct dinf_subsumption as [S1 [Hsub Hinf]].
-      specialize (dinfapp_subsumption _ _ _ _ H0 ).
-      destruct dinfapp_subsumption as [Hchk Hinfapp_subsumption].
-      specialize (Hinfapp_subsumption _ _ H1 Hsub).
-      destruct Hinfapp_subsumption as [S2 [Hsub2 Hinfapp]].
-      eapply dchk_sub with (S:=S2).
-      eapply dinf_app with (T2:=S1); auto.
-      admit. (* easy : transitivity *)
-    (* e <= ∀ X. T *)
-    + admit.
-    (* e <= T *)
-    + specialize (dinf_subsumption _ _ _ H _ H1).
-      destruct dinf_subsumption as [S1 [Hsub Hinf]].
-      eapply dchk_sub; eauto. 
-      admit. (* easy : transitivity *)
-    (* e <= S * T *)
-    + dependent induction H2.
-      * dependent destruction H2. eapply dchk_subsumption; eauto.
-      * eapply dchk_intersection.
-        -- eapply IHdsub1 with (S:=S) (T:=T); eauto.
-        -- eapply IHdsub2 with (S:=S) (T:=T); eauto.
-      * eapply IHdchk1; eauto.
-      * eapply IHdchk2; eauto.
-      * eapply dchk_union1. eapply IHdsub with (S:=S) (T:=T); eauto.
-        eauto.
-      * eapply dchk_union2. eapply IHdsub with (S:=S) (T:=T); eauto.
-        eauto.
-    (* e <= S + T *)
-    + apply dsub_union_inversion in H2. destruct H2.
-      auto.
-    (* e <= S + T *)
-    + apply dsub_union_inversion in H2. destruct H2.
-      auto.
-
-  - intros. induction H.
-    + admit. (* easy *)
-    + exists T. split; auto.
-      * apply dsub_refl; auto.
-      * apply dinf_anno.
-        eapply d_subenv_wf_typ; eauto.
-        eapply dchk_subsumption; eauto.
-        apply dsub_refl; auto.
-    + eauto.
-      (* exists dtyp_unit.
-      split; eauto.  *)
-    + eauto. 
-      (* + specialize (dinfapp_subsumption _ _ _ _ H1).
-      destruct dinfapp_subsumption as [Hchk Hinfapp_subsumption].
-      specialize (IHdinf H0).
-      destruct IHdinf as [S1 [Hsub Hinf]].
-      specialize (Hinfapp_subsumption _ _ H0 Hsub).
-      destruct Hinfapp_subsumption as [S2 [Hsub1 Hinfapp]].
-      exists S2. split; eauto. *)
-    (* e => ∀ X. T *)
-    + admit.
-    + specialize (IHdinf H0).
-      destruct IHdinf as [S1 [Hsub Hinf]].
-      dependent induction Hsub; eauto.
-    + admit.
-    
-  - intros; induction H.
-    + split. exists T1. auto. 
-      intros. dependent induction H2; auto.
-      * dependent destruction H2. exists dtyp_bot; split;     eauto. 
-      * exists S2; split; eauto.
-        constructor; eauto. admit.
-      * admit.
-      * specialize (IHdsub _ _ H H0 H1 (eq_refl _)).
-        destruct IHdsub as [S3 [Hsub Hinfapp]].
-        exists S3; split; auto. 
-        admit. (* TODO : check rule *)
-      * specialize (IHdsub _ _ H H0 H1 (eq_refl _)).
-        destruct IHdsub as [S3 [Hsub Hinfapp]].
-        exists S3; split; auto. 
-        admit. (* TODO : check rule *)
-      * admit. (* TODO : check rule *)
-    + destruct IHdinfapp as [Hchk Hinfapp].
-      destruct Hchk as [T]. split.
-      exists T; auto. 
-      intros. dependent induction H5.
-      * exists dtyp_bot; split.
-        -- constructor. admit.
-        -- econstructor. eapply dchk_subsumption; eauto.
-            econstructor. admit. 
-      * admit.
-      * admit.
-      * admit.
-      * admit.
-      * admit.
-
-    + split.
-      exists dtyp_top; auto. 
-      intros. dependent induction H1.
-      * exists dtyp_bot. split; eauto.
-      * specialize (IHdsub H H0 (eq_refl _)).
-        destruct IHdsub as [S2 [Hsub Hinfapp]].
-        exists S2; split; eauto.
-        econstructor; eauto. admit.
-      * admit. (* TODO : check rule *)
-      * admit. (* TODO : check rule *)  
-      * admit. (* TODO : check rule *)  
-Admitted.
- *)
