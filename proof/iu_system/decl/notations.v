@@ -87,24 +87,3 @@ Notation " X ~ ▪ ; W " :=
 Notation " SX ~ ~▪ ; W " :=
   (dworklist_consstvar W SX dbind_stvar_empty)
       (at level 58, right associativity) : dworklist_scope.
-
-(* Declare Scope decl_context_scope.
-Delimit Scope decl_context_scope with decl_context.
-Bind Scope decl_context_scope with decl_context.
-
-Notation "G , x" :=
-  (decl_ctx_cons G x)
-    (at level 58, x at level 0, left associativity) : decl_context_scope.
-
-Reserved Notation "G1 ,, G2"
-  (at level 58, left associativity).
-
-Fixpoint decl_ctx_app (G1 G2 : decl_context) : decl_context :=
-  match G2 with
-  | decl_ctx_nil => G1
-  | G2', x => G1 ,, G2' , x
-  | decl_ctx_cons_sv G2' sx => decl_ctx_cons_sv (G1 ,, G2') sx
-  end%decl_context
-where "G1 ,, G2" := (decl_ctx_app G1 G2) : decl_context_scope.
-
-Open Scope decl_context_scope. *)

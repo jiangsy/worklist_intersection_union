@@ -621,7 +621,7 @@ Lemma dwf_typ_dwf_typ_s : forall E T,
   E ⊢ T -> E ⊢ₛ T.
 Proof.
   intros.
-  induction H; auto.
+  induction H; auto.  
   - eapply dwftyps_all with (L:= (L `union` ftv_in_dtyp T));
     intros; inst_cofinites_with SX.
     + replace (T ^^ᵈ dtyp_svar SX) with ({dtyp_svar SX /ᵈ SX}T ^ᵈ SX).
