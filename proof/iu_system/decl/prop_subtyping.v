@@ -478,13 +478,29 @@ Proof with auto with subtyping.
     apply dwf_typ_weakening with (E3:=nil); auto.
 Qed.
 
-
 Theorem d_sub_weakening: forall E F G S1 T1,
   G ++ E ⊢ S1 <: T1 ->
   ⊢ G ++ F ++ E ->
   G ++ F ++ E ⊢ S1 <: T1.
 Proof.
-Admitted.
+  intros E F G S1 T1 Hsub Hwf.
+  dependent induction Hsub;
+    try solve [simpl in *];
+    try solve [eapply dwf_typ_weakening with (E2 := F) in H0; auto]; auto.
+  - apply d_sub_all with (L :=  L `union` dom (G ++ F ++ E)); intros x Fr; inst_cofinites_with x; auto.
+    eapply H2 with (E := E) (G := (x, ▪) :: G); simpl; auto.
+    constructor; auto.
+  - apply d_sub_alll with (T2 := T2) (L :=  L `union` dom (G ++ F ++ E)); auto.
+    eapply dwf_typ_weakening with (E2 := F) in H3; auto.
+  - apply d_sub_intersection2; auto.
+    eapply dwf_typ_weakening with (E2 := F) in H; auto.
+  - apply d_sub_intersection3; auto.
+    eapply dwf_typ_weakening with (E2 := F) in H; auto.
+  - apply d_sub_union1; auto.
+    eapply dwf_typ_weakening with (E2 := F) in H; auto.
+  - apply d_sub_union2; auto.
+    eapply dwf_typ_weakening with (E2 := F) in H; auto.
+Qed.
 
 
 (* Theorem  d_sub_strenthening: forall E F G S1 T1,
