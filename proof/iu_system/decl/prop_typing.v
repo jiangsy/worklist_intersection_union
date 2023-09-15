@@ -609,6 +609,6 @@ Corollary d_chk_subsumption : forall E e T1 S1,
   E ⊢ e ⇐ T1.
 Proof.
   intros.
-  refine (d_chk_inf_subsumption _ _ _ _ _ _ _ _ _ _ _ H0 _ _ _); eauto.
+  refine (d_chk_inf_subsumption _ _ _ _ _ _ _ _ _ _ _ _ H0 _ _ _); eauto.
   now apply d_subenv_refl.
 Qed.

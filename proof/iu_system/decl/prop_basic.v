@@ -438,10 +438,14 @@ Proof with eauto; try solve_notin.
     inverts HI.
     unfold open_dtyp_wrt_dtyp in *; simpl in *...
     forwards: IHS1... econstructor... forwards: IHS2...
+    admit.
+    admit.
   }
-
-
-  intros. dependent induction H2; simpl; auto.
+  - admit.
+  - admit.
+  - admit.
+Admitted.
+  (* intros. dependent induction H2; simpl; auto.
   - destruct T1; simpl; try solve [inversion x].
     inversion x. destruct (X0 == Y).
     + subst. simpl in *.
@@ -493,17 +497,8 @@ Proof with eauto; try solve_notin.
     + inversion x. apply dsin_intersection.
       * eapply IHds_in1 with (S1:=S1) (Y:=Y); eauto.
       * eapply IHds_in2 with (S1:=S1) (Y:=Y); eauto.
-Qed.
+Qed. *)
 
-  H0 : ds_in_s x (T1 ^^ᵈ dtyp_svar x)
-  H1 : x ~ ▪ ++ E ⊢ S1 ^^ᵈ dtyp_svar x <: T1 ^^ᵈ dtyp_svar x
-  n : nat
-  H2 : x ~ ▪ ++ E ⊢ S1 ^^ᵈ dtyp_svar x <: T1 ^^ᵈ dtyp_svar x | n
-  Fr : x ∉ union L (union (fstv_in_dtyp S1) (fstv_in_dtyp S1))
-  SX : atom
-  H3 : SX ∉ union L (union (fstv_in_dtyp S1) (fstv_in_dtyp S1))
-  ============================
-  ds_in_s SX (S1 ^^ᵈ dtyp_svar SX)
 
 Lemma d_mono_typ_lc : forall T,
   dmono_typ T -> lc_dtyp T.
