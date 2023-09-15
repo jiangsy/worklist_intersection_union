@@ -1194,3 +1194,24 @@ Proof with eauto using d_wft_typ_subst.
       applys d_wft_typ_subst...
       inverts~ HE.
 Qed.
+
+
+Lemma d_wf_env_subst_stvar_typ : forall E SX F T1,
+  ⊢ F ++ SX ~ dbind_stvar_empty ++ E ->
+  E ⊢ T1 ->
+  ⊢ (map (d_subst_stv_in_binding T1 SX) F ++ E).
+Proof with eauto using d_wft_typ_subst_stvar.
+  intros * HE HT.
+  induction F; intros; simpl.
+  - inverts~ HE.
+  - destruct a. rewrite_env ((a, b) :: (F ++ SX ~ dbind_stvar_empty ++ E)) in HE.
+    forwards HE': d_wf_env_strenthening_head HE.
+    forwards~ IH: IHF.
+    rewrite_env ([(a, d_subst_stv_in_binding T1 SX b)]
+                   ++ (map (d_subst_stv_in_binding T1 SX) F ++ E)).
+    forwards: d_wf_env_uniq HE.
+    inverts H. destruct b...
+    + econstructor...
+      applys d_wft_typ_subst_stvar...
+      inverts~ HE.
+Qed.
