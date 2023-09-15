@@ -625,9 +625,12 @@ Proof with eauto with subtyping.
       * apply d_mono_typ_subst_mono_mono; auto.
       * rewrite <- d_subst_tv_in_dtyp_open_dtyp_wrt_dtyp; eauto...
     + eapply d_sub_alll with (L:=L `union` singleton X) (T2:={T2 /ᵈ X} T0); eauto...
-      * admit.
-      * admit.
-      * admit.
+      * simpl. dependent destruction H.
+        constructor; apply d_subst_tv_in_dtyp_lc_dtyp; auto.
+      * simpl. dependent destruction H0.
+        constructor; apply d_subst_tv_in_dtyp_lc_dtyp; auto.
+      * simpl. dependent destruction H0.
+        constructor; apply d_subst_tv_in_dtyp_lc_dtyp; auto.
       * intros. inst_cofinites_with X0. rewrite dtyp_subst_open_comm; auto...
         apply ftv_sin_dtyp_subst_inv; auto...
       * apply d_mono_typ_subst_mono_mono; auto.
@@ -635,7 +638,7 @@ Proof with eauto with subtyping.
     + inversion H.
     + inversion H1.
     + inversion H0.
-Admitted.
+Qed.
 
 
 Hint Resolve d_wft_typ_subst_stvar : subtyping.
