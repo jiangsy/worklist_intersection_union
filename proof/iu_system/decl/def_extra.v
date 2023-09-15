@@ -66,17 +66,22 @@ Inductive dwf_typ_s : denv -> dtyp -> Prop :=    (* defn dwf_typ_s *)
 
 Inductive d_sub : denv -> dtyp -> dtyp -> Prop :=    (* defn d_sub *)
  | d_sub_top : forall (E:denv) (S1:dtyp),
+     dwf_env E ->
      dwf_typ E S1 ->
      d_sub E S1 dtyp_top
  | d_sub_bot : forall (E:denv) (T1:dtyp),
+     dwf_env E ->
      dwf_typ E T1 ->
      d_sub E dtyp_bot T1
  | d_sub_unit : forall (E:denv),
+     dwf_env E ->
      d_sub E dtyp_unit dtyp_unit
  | d_sub_tvar : forall (E:denv) (X:typvar),
+     dwf_env E ->
      dwf_typ E (dtyp_var_f X) ->
      d_sub E (dtyp_var_f X) (dtyp_var_f X)
  | d_sub_stvar : forall (E:denv) (SX:stypvar),
+     dwf_env E ->
      dwf_typ E (dtyp_svar SX) ->
      d_sub E (dtyp_svar SX) (dtyp_svar SX)
  | d_sub_arrow : forall (E:denv) (S1 S2 T1 T2:dtyp),
@@ -148,9 +153,11 @@ Inductive d_inftapp_false : dtyp -> Prop :=
 
 Inductive d_inftapp : denv -> dtyp -> dtyp -> dtyp -> Prop := 
 | d_inftapp_bot : forall (E:denv) (T1:dtyp),
+    dwf_env E -> 
     dwf_typ E T1 ->
     d_inftapp E dtyp_bot T1 dtyp_bot
 | d_inftapp_all : forall (E:denv) (T1 T2:dtyp),
+    dwf_env E -> 
     dwf_typ E (dtyp_all T1) ->
     dwf_typ E T2 ->
     d_inftapp E (dtyp_all T1) T2 (open_dtyp_wrt_dtyp  T1   T2 )
