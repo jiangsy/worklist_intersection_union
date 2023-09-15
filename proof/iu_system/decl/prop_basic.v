@@ -1103,18 +1103,19 @@ Qed.
 
 
 Lemma d_sub_dwft : forall E T1 T2,
-  ⊢ E -> E ⊢ T1 <: T2 -> E ⊢ T1 /\ E ⊢ T2.
+  E ⊢ T1 <: T2 -> ⊢ E /\ E ⊢ T1 /\ E ⊢ T2.
 Proof with auto.
   intros.
-  induction H0; try solve [intuition].
-  - split; eapply dwftyp_all with (L:=L `union` fstv_in_dtyp S1 `union` fstv_in_dtyp T1 `union` dom E); intros; inst_cofinites_with X.
+  induction H; try solve [intuition].
+  - split.
+    inst_cofinites_by L. intuition... inversion H3. auto.
+    split; inst_cofinites_for dwftyp_all; intros; inst_cofinites_with X.
     + eapply fstv_open_tvar; auto.
-    + apply d_wf_typ_subst_tvar_stvar_cons. intuition.
-      forwards*: H3. econstructor...
+    + applys* d_wf_typ_subst_tvar_stvar_cons. auto.
     + eapply fstv_open_tvar; auto.
-    + applys* d_wf_typ_subst_tvar_stvar_cons. intuition.
-      forwards*: H3. econstructor...
-  - split; try solve [intuition].
+    + applys* d_wf_typ_subst_tvar_stvar_cons. auto.
+  - split; try solve [intuition]. 
+    split; try solve [intuition]. 
     + eapply dwftyp_all with (L:=L `union` ftv_in_dtyp S1 `union` dom E).
       * intros. inst_cofinites_with X. auto.
       * intros. inst_cofinites_with X.
@@ -1123,7 +1124,7 @@ Proof with auto.
         -- replace (X ~ dbind_tvar_empty ++ E) with (nil ++ X ~ dbind_tvar_empty ++ E) by auto.
            apply dwf_typ_weakening. simpl. rewrite  d_subst_tv_in_dtyp_open_dtyp_wrt_dtyp.
            ++ simpl. unfold eq_dec. destruct ( EqDec_eq_of_X X X ).
-              ** rewrite d_subst_tv_in_dtyp_fresh_eq; auto.
+              ** rewrite d_subst_tv_in_dtyp_fresh_eq; intuition.
               ** contradiction.
            ++ eapply dwf_typ_dlc_type; eauto.
            ++ auto.
