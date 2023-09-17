@@ -462,8 +462,6 @@ Admitted.
 Hint Constructors d_infabs : typing.
 
 
-(* Bool -> Bool \/ Int -> Int *)
-
 (* @shengyi:todo *** *)
 Theorem d_infabs_subsumption_same_env : forall E A1 B1 C1 A2, 
   E ⊢ A1 ▹ B1 → C1 -> 
@@ -513,7 +511,9 @@ Proof with auto with typing.
       dependent destruction H. dependent destruction H2.
       eauto...
   - dependent induction H3.
-    + admit.
+    + exists dtyp_top dtyp_bot. 
+      econstructor; eauto...
+      admit.
     + admit.
     + inversion H6.
     + specialize (IHd_sub T1 H H0 H1 H2 IHd_infabs (eq_refl _)).
@@ -523,21 +523,21 @@ Proof with auto with typing.
     + specialize (IHd_sub1 T1 H H0 H1 H2 IHd_infabs (eq_refl _)).
       specialize (IHd_sub2 T1 H H0 H1 H2 IHd_infabs (eq_refl _)).
       admit.
+  - apply dsub_intersection_inversion in H1. 
+    intuition.
   - apply dsub_intersection_inversion in H1.
-    admit.
-  - apply dsub_intersection_inversion in H1.
-    admit.
+    intuition.
   - dependent induction H1.
     + admit.
     + inversion H1.
-    + specialize (IHd_sub _ _ H H0 IHd_infabs1 IHd_infabs2).
+    + specialize (IHd_sub _ _ H H0 IHd_infabs1 IHd_infabs2 (eq_refl _)).
       admit.
-    + specialize (IHd_sub _ _ H H0 IHd_infabs1 IHd_infabs2).
+    + specialize (IHd_sub _ _ H H0 IHd_infabs1 IHd_infabs2 (eq_refl _)).
       admit.
     + specialize (IHd_infabs1 _ H1). admit.
     + specialize (IHd_infabs2 _ H1). admit.
-    + specialize (IHd_sub1 _ _ H H0 IHd_infabs1 IHd_infabs2).
-      specialize (IHd_sub2 _ _ H H0 IHd_infabs1 IHd_infabs2).
+    + specialize (IHd_sub1 _ _ H H0 IHd_infabs1 IHd_infabs2 (eq_refl _)).
+      specialize (IHd_sub2 _ _ H H0 IHd_infabs1 IHd_infabs2 (eq_refl _)).
       admit.
 Admitted.
 
