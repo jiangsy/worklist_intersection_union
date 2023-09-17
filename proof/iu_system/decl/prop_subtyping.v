@@ -1119,6 +1119,14 @@ Ltac solve_trans_forall_B_C :=
    end
   end.
 
+Ltac ord_inv :=
+    match goal with 
+    | H : d_ord (dtyp_intersection _ _) |- _ => inversion H
+    | H : d_ord (dtyp_union _ _)|- _ => inversion H
+   end.
+
+(* Hint Extern 1 ord_inv : trans. *)
+
 
 Lemma d_sub_sized_transitivity : forall n_dtyp_order n_dsub_size E R1 S1 T1 n1 n2 ,
   dtyp_order S1 < n_dtyp_order ->
@@ -1228,44 +1236,32 @@ Proof with auto with trans.
     + simpl in *. assert (E ⊢ T0) as Hwft0 by admit. 
       dependent destruction Hwft0; solve_trans_forall_B_C.
       (* solve_trans_forall_B_C. *)
-      * dependent destruction Hsub2; auto...
+      * dependent destruction Hsub2; try solve ord_inv; auto...
         -- econstructor... admit.
         -- eapply d_sub_alll with (T2:=T2); auto.
            eapply d_sub_size_sound; eauto.
-        -- inversion H5.
-        -- inversion H6.
-        -- inversion H6.
       (* forall a. A < bot < C *)
       * apply d_sub_size_sound in Hsub1.
         eapply d_sub_open_mono_bot_false in Hsub1 as Contra; eauto.
         inversion Contra.
       (* forall a. A < top < C *)
-      * dependent destruction Hsub2; auto...
+      * dependent destruction Hsub2; try solve ord_inv; auto...
         -- econstructor... admit.
-        -- inversion H5.
-        -- inversion H6.
-        -- inversion H6.
     (* forall a. A < X < C *)
-      * dependent destruction Hsub2; auto...
+      * dependent destruction Hsub2; try solve ord_inv; auto...
         -- econstructor... admit.
         -- eapply d_sub_alll with (T2:=T2); eauto...
             apply d_sub_size_sound in Hsub1. auto.
-        -- inversion H6.
-        -- inversion H7.
-        -- inversion H7.
       (* forall a. A < SX < C *)
       * apply d_sub_size_sound in Hsub1.
         eapply d_sub_open_mono_stvar_false in Hsub1 as Contra; eauto.
         inversion Contra.
       (* forall a. A < B1 -> B2 < C *)
-      * dependent destruction Hsub2; auto...
+      * dependent destruction Hsub2; try solve ord_inv; auto...
         -- econstructor... admit.
         -- assert (E ⊢ T1) by admit. assert (E ⊢ T4) by admit. 
           eapply d_sub_alll with (T2:=T2); eauto...
           eapply IHn_dsub_size with (S1:=dtyp_arrow T0 T3) (n2:=S(n1+n2)); eauto...
-        -- inversion H5.
-        -- inversion H6.
-        -- inversion H6.
       * inversion H.
       * inversion H1.
       * inversion H0.
