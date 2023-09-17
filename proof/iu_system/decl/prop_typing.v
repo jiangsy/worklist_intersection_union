@@ -480,7 +480,15 @@ Proof with auto with typing.
     + admit.
   - dependent induction H0...
     + admit.
-    +
+    + admit.
+    + specialize (IHd_sub _ _ (eq_refl _)).
+      destruct IHd_sub as [B2 [C2]].
+      exists B2 C2; intuition...
+      econstructor. eauto. eauto. admit. auto.
+    + admit.
+    + admit.
+    + specialize (IHd_sub1 _ _ (eq_refl _)).
+      specialize (IHd_sub2 _ _ (eq_refl _)).
     
 Admitted.
 
@@ -572,9 +580,11 @@ Proof with auto with typing.
         auto.         
       (* e : A => A *)
       * exists T1. split; auto. apply dsub_refl; auto.
+        admit.
         econstructor. eapply d_subenv_wf_typ; eauto.
         refine (IHn1 _ _ _ _ _ _ _ _ _ _  Hty _ _ _); eauto... simpl in *.
         apply dsub_refl; auto.
+        admit.
       (* () => 1 *)
       * exists dtyp_unit. split; auto.
         econstructor. eapply d_subenv_wf_env; eauto.
@@ -582,12 +592,12 @@ Proof with auto with typing.
       * admit. (* d_infabs_subsumption @shengyi:todo *** *)
       (* /\ a. e : A => forall a. A *)
       * exists (dtyp_all T1); split.
-        -- eapply dsub_refl; auto.
+        -- eapply dsub_refl; auto. admit.
         -- dependent destruction H. pick fresh X and apply d_typing_inftabs. auto...
            intros. inst_cofinites_with X.
            refine (IHn1 _ _ _ _ _ _ _ _ _ _ H1 _ _ _); eauto...
            simpl. rewrite <- d_exp_size_open_dtyp; lia.
-           apply dsub_refl. dependent destruction H; auto.
+           apply dsub_refl. admit. auto. 
       (* e @T *)
       * eapply IHn1 in Hty; eauto...
         destruct Hty as [A1 [Hsuba1 Hinfa1]].
@@ -605,14 +615,14 @@ Proof with auto with typing.
            simpl in H.
            refine (IHn1 _ _ _ _ _ _ _ _ _ _ H _ _ _); eauto...
            rewrite <- d_exp_size_open_var. lia.
-           econstructor; auto.
+           econstructor; auto. 
+           admit.
       (* \x. e <= T1 -> T2 *)
       * intros. 
         assert (d_wft_ord S1) as Hwford. admit. (* trivial * *)
         induction Hwford.
         -- dependent destruction H1.
-           ++ dependent destruction H1.
-              inst_cofinites_for d_typing_chkabstop. intros.
+           ++ inst_cofinites_for d_typing_chkabstop. intros.
               inst_cofinites_with x.
               refine (IHn1 _ _ _ _ _ _ _ _ _ _ H0 _ _ _); eauto...
               rewrite <- d_exp_size_open_var. lia.
@@ -634,18 +644,16 @@ Proof with auto with typing.
         eapply IHn2 in Hty; eauto.
         destruct Hty as [S2 [Hsub Hinf]].
         apply d_typing_chksub with (S1 := S2); auto.
-        apply sub_transitivity with (S1 := T1); auto...
-        eapply d_chk_inf_wf_env; eauto.
+        apply sub_transitivity with (S1 := T1); auto... 
+        (* eapply d_chk_inf_wf_env; eauto. *)
         eapply denvsub_sub; eauto. apply sub_transitivity with (S1 := S1); auto...
-        eapply d_chk_inf_wf_env; eauto.
-        admit.
         eapply denvsub_sub; eauto.
         simpl. lia.
       * intros. assert (d_wft_ord S0) as Hwford. 
         admit. (* trivial * *)
         induction Hwford.
         -- dependent destruction H.
-           ++ dependent destruction H. refine (IHn3 _ _ _ _ _ _ _ _ Hty1 _ _ _); eauto...
+           ++ dependent destruction H0. refine (IHn3 _ _ _ _ _ _ _ _ Hty1 _ _ _); eauto...
            ++ inversion H1.
            ++ refine (IHn3 _ _ _ _ _ _ _ _ Hty1 _ _ _); eauto...
            ++ refine (IHn3 _ _ _ _ _ _ _ _ Hty2 _ _ _); eauto...
@@ -675,6 +683,6 @@ Corollary d_chk_subsumption : forall E e T1 S1,
   E ⊢ e ⇐ T1.
 Proof.
   intros.
-  refine (d_chk_inf_subsumption _ _ _ _ _ _ _ _ _ _ _ _ H0 _ _ _); eauto.
+  refine (d_chk_inf_subsumption _ _ _ _ _ _ _ _ _ _ _ H0 _ _ _); eauto.
   now apply d_subenv_refl.
 Qed.

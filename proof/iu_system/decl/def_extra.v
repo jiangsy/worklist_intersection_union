@@ -201,10 +201,10 @@ Inductive d_infabs : denv -> dtyp -> dtyp -> dtyp -> Prop :=
     dwf_typ E T1 ->
     d_infabs E T2 T3 T4->
     d_infabs E (dtyp_intersection T1 T2) T3 T4
-| d_infabs_union : forall (E:denv) (T1 T2 T3 T4:dtyp),
+| d_infabs_union : forall (E:denv) (T1 T2 T3 T4 T5 T6:dtyp),
     d_infabs E T1 T3 T4->
-    d_infabs E T2 T3 T4->
-    d_infabs E (dtyp_union T1 T2) T3 T4
+    d_infabs E T2 T5 T6->
+    d_infabs E (dtyp_union T1 T2) (dtyp_union T3 T5) (dtyp_union T4 T6)
 .
 
 (* Inductive d_typing_mode :=
