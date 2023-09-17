@@ -33,6 +33,11 @@ Notation "E ⊢ T1 ○ T2 ⇒⇒ T3" :=
     (d_inftapp E T1 T2 T3) 
       (at level 65, T1 at next level, T2 at next level, no associativity) : type_scope. 
 
+Notation "E ⊢ T1 ▹ T2 → T3" :=
+  (d_infabs E T1 T2 T3) 
+    (at level 65, T1 at next level, T2 at next level, no associativity) : type_scope. 
+
+
 Notation "▫" := dbind_tvar_empty.
 Notation "▪" := dbind_stvar_empty.
 

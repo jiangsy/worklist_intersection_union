@@ -182,25 +182,29 @@ Inductive d_inftapp : denv -> dtyp -> dtyp -> dtyp -> Prop :=
 .
 
 
-Inductive d_infabs : denv -> dtyp -> dtyp -> Prop := 
+Inductive d_infabs : denv -> dtyp -> dtyp -> dtyp -> Prop := 
 | d_infabs_bot : forall (E:denv),
-    d_infabs E dtyp_bot (dtyp_arrow dtyp_top dtyp_bot)
+    d_infabs E dtyp_bot dtyp_top dtyp_bot
 | d_infabs_arr : forall (E:denv) (T1 T2:dtyp),
-    d_infabs E (dtyp_arrow T1 T2) (dtyp_arrow T1 T2)
-| d_infabs_all : forall (E:denv) (T1 T2 T3:dtyp),
+    d_infabs E (dtyp_arrow T1 T2) T1 T2
+| d_infabs_all : forall (E:denv) (T1 T2 T3 T4:dtyp),
     dmono_typ T2 -> 
     dwf_typ E T2 ->
     dwf_typ E (dtyp_all T1) ->
-    d_infabs E  (open_dtyp_wrt_dtyp  T1   T2 ) T3 ->
-    d_infabs E (dtyp_all T1) T3
-| d_infabs_intersection1 : forall (E:denv) (T1 T2 T3:dtyp),
+    d_infabs E  (open_dtyp_wrt_dtyp  T1   T2 ) T3 T4 ->
+    d_infabs E (dtyp_all T1) T3 T4
+| d_infabs_intersection1 : forall (E:denv) (T1 T2 T3 T4:dtyp),
     dwf_typ E T2 ->
-    d_infabs E T1 T3 ->
-    d_infabs E (dtyp_intersection T1 T2) T3
-| d_infabs_intersection2 : forall (E:denv) (T1 T2 T3:dtyp),
+    d_infabs E T1 T3 T4->
+    d_infabs E (dtyp_intersection T1 T2) T3 T4
+| d_infabs_intersection2 : forall (E:denv) (T1 T2 T3 T4:dtyp),
     dwf_typ E T1 ->
-    d_infabs E T2 T3 ->
-    d_infabs E (dtyp_intersection T1 T2) T3
+    d_infabs E T2 T3 T4->
+    d_infabs E (dtyp_intersection T1 T2) T3 T4
+| d_infabs_union : forall (E:denv) (T1 T2 T3 T4:dtyp),
+    d_infabs E T1 T3 T4->
+    d_infabs E T2 T3 T4->
+    d_infabs E (dtyp_union T1 T2) T3 T4
 .
 
 (* Inductive d_typing_mode :=
@@ -322,7 +326,7 @@ Inductive d_typing : denv -> dexp -> d_typing_mode -> dtyp -> Prop :=
     d_typing E dexp_unit d_typingmode_inf dtyp_unit
 | d_typing_infapp : forall (E:denv) (e1 e2:dexp) (T1 T2 T3:dtyp),
     d_typing E e1 d_typingmode_inf T1 ->
-    d_infabs E T1 (dtyp_arrow T2 T3) ->
+    d_infabs E T1 T2 T3 ->
     d_typing E e2 d_typingmode_chk T2 ->
     d_typing E  ( (dexp_app e1 e2) ) d_typingmode_inf T3
 | d_typing_inftabs : forall (L:vars) (E:denv) (e:dexp) (T1:dtyp),

@@ -1,4 +1,4 @@
-Require Import Coq.Program.Equality.
+(* Require Import Coq.Program.Equality.
 Require Import Metalib.Metatheory.
 Require Import Lia.
 
@@ -304,4 +304,4 @@ Proof with auto with nonoverlapping.
         apply IHn; auto. lia.
     + admit.
     + admit.
-Admitted. *)
+Admitted. *) *)

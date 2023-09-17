@@ -183,7 +183,7 @@ Proof.
   - dependent destruction H2.
     econstructor; auto.
     + apply d_sub_dwft in H3. destruct H3.
-      eapply d_subenv_wf_typ; eauto. auto.
+      eapply d_subenv_wf_typ; eauto. auto. intuition.
     + erewrite <- d_subenv_same_dom; auto.
 Qed.
 
@@ -196,26 +196,25 @@ Lemma d_subenv_wf_env_inv : forall E',
 Proof.
 Admitted.
 
+
+Ltac solve_wf_subenv := match goal with 
+  | H : d_subenv ?E' ?E |- ?E' ⊢ ?T => eapply d_subenv_wf_typ; eauto
+  | H : d_subenv ?E' ?E |- ⊢ ?E' => eapply d_subenv_wf_env; eauto
+end.
+
 Lemma denvsub_sub: forall E S1 T1, 
   E ⊢ S1 <: T1 -> forall E', d_subenv E' E -> E' ⊢ S1 <: T1.
 Proof.
   intros E S1 T1 Hsub.
-  induction Hsub.
-  - econstructor. eapply d_subenv_wf_typ; eauto.
-  - econstructor. eapply d_subenv_wf_typ; eauto.
-  - econstructor.
-  - econstructor. eapply d_subenv_wf_typ; eauto.
-  - econstructor. eapply d_subenv_wf_typ; eauto.
+  induction Hsub; try solve [econstructor; solve_wf_subenv].
   - econstructor; auto.
-  - intros. econstructor; auto.
-    intros. inst_cofinites_with SX. 
+  - intros. econstructor; auto. intros. inst_cofinites_with SX. 
     specialize (H2 (SX ~ dbind_stvar_empty ++ E')).
     assert (d_subenv (SX ~ dbind_stvar_empty ++ E') (SX ~ dbind_stvar_empty ++ E)). {
       constructor. auto. }
     specialize (H2 H5).
     auto.
-  - intros. eapply d_sub_alll with (T2:=T2); auto.
-    eapply d_subenv_wf_typ; eauto.
+  - intros. eapply d_sub_alll with (T2:=T2); auto. solve_wf_subenv.
   - intros. 
     apply d_sub_intersection1; auto.
   - intros.
@@ -344,15 +343,17 @@ Hint Constructors d_inftapp_false : inftapp.
 
 Lemma d_inftapp_wft : forall E A B C,
   d_inftapp E A B C ->
-  E ⊢ A /\ E ⊢ B /\ E ⊢ C.
+  ⊢ E /\ E ⊢ A /\ E ⊢ B /\ E ⊢ C.
 Proof. 
   intros. induction H; intuition.
   - dependent destruction H0.
     pick fresh X. inst_cofinites_with X.
-    replace (T1 ^^ᵈ T2) with ({T2 /ᵈ X} T1).
+    replace (T1 ^^ᵈ T2) with ({T2 /ᵈ X} T1 ^ᵈ X).
     rewrite_env  ((map (d_subst_tv_in_binding T2 X) nil) ++ E).
     apply d_wft_typ_subst; eauto...
-Qed.
+    admit.
+    admit.
+Admitted.
 
 
 Theorem d_inftapp_total: forall E A B,
@@ -412,6 +413,7 @@ Proof with auto with typing.
   - intros. dependent induction H2.
     + exists dtyp_bot. split.
       econstructor. admit. (* wft ★ *)
+      admit. (* wft *)
       econstructor; auto.
     + exists (S1 ^^ᵈ T2). split; auto...
       pick fresh SX. inst_cofinites_with SX.
@@ -422,6 +424,7 @@ Proof with auto with typing.
       constructor; auto.
       econstructor; auto.
       admit. (* wft ★ *)
+      admit. (* wft *)
     + inversion H6.
     + specialize (IHd_sub _ H H0 H1 (eq_refl _)).
       destruct IHd_sub as [C1 Hc1].
@@ -448,12 +451,40 @@ Proof with auto with typing.
 Admitted.
 
 
+
 Corollary d_inftapp_subsumption: forall E E' A1 A2 B1 C1,
   E ⊢ A1 ○ B1 ⇒⇒ C1 -> 
   E ⊢ A2 <: A1 ->
   d_subenv E' E -> 
   exists C2, E ⊢ C2 <: C1 /\ E' ⊢ A2 ○ B1 ⇒⇒ C2.
 Admitted.
+
+Hint Constructors d_infabs : typing.
+
+(* @shengyi:todo *** *)
+Theorem d_infabs_subsumption_same_env : forall E A1 B1 C1 A2, 
+  E ⊢ A1 ▹ B1 → C1 -> 
+  E ⊢ A2 <: A1 ->
+  exists B2 C2, E ⊢ dtyp_arrow B2 C2 <: dtyp_arrow B1 C1 /\ E ⊢ A2 ▹ B2 → C2.
+Proof with auto with typing.
+  intros. induction H.
+  - dependent induction H0...
+    + admit.
+    + exfalso. eapply d_sub_open_mono_bot_false; eauto.
+    + specialize (IHd_sub (eq_refl _)).
+      destruct IHd_sub as [B2 [C2]].
+      exists B2 C2; intuition...
+    + specialize (IHd_sub (eq_refl _)).
+      destruct IHd_sub as [B2 [C2]].
+      exists B2 C2; intuition...
+    + admit.
+  - dependent induction H0...
+    + admit.
+    +
+    
+Admitted.
+
+
 
 
 Hint Extern 1 (_ < _) => lia : typing.
