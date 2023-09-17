@@ -461,15 +461,18 @@ Admitted.
 
 Hint Constructors d_infabs : typing.
 
+
+(* Bool -> Bool \/ Int -> Int *)
+
 (* @shengyi:todo *** *)
 Theorem d_infabs_subsumption_same_env : forall E A1 B1 C1 A2, 
   E ⊢ A1 ▹ B1 → C1 -> 
   E ⊢ A2 <: A1 ->
   exists B2 C2, E ⊢ dtyp_arrow B2 C2 <: dtyp_arrow B1 C1 /\ E ⊢ A2 ▹ B2 → C2.
 Proof with auto with typing.
-  intros. induction H.
+  intros. generalize dependent A2. induction H; intros.
   - dependent induction H0...
-    + admit.
+    + exists dtyp_top dtyp_bot. auto...
     + exfalso. eapply d_sub_open_mono_bot_false; eauto.
     + specialize (IHd_sub (eq_refl _)).
       destruct IHd_sub as [B2 [C2]].
@@ -477,19 +480,65 @@ Proof with auto with typing.
     + specialize (IHd_sub (eq_refl _)).
       destruct IHd_sub as [B2 [C2]].
       exists B2 C2; intuition...
-    + admit.
+    + specialize (IHd_sub1 (eq_refl _)).
+      specialize (IHd_sub2 (eq_refl _)).
+      destruct IHd_sub1 as [B1 [C1]].
+      destruct IHd_sub2 as [B2 [C2]]. 
+      exists (dtyp_intersection B1 B2) (dtyp_union C1 C2).
+      destruct H. destruct H0.
+      split; intuition...
+      dependent destruction H. dependent destruction H2.
+      eauto...
   - dependent induction H0...
-    + admit.
-    + admit.
+    + exists dtyp_top dtyp_bot. dependent destruction H0.
+      eauto...
+    + exists S1 S2. intuition...
     + specialize (IHd_sub _ _ (eq_refl _)).
       destruct IHd_sub as [B2 [C2]].
       exists B2 C2; intuition...
       econstructor. eauto. eauto. admit. auto.
-    + admit.
-    + admit.
+    + specialize (IHd_sub _ _ (eq_refl _)).
+      destruct IHd_sub as [B2 [C2]].
+      exists B2 C2; intuition...
+    + specialize (IHd_sub _ _ (eq_refl _)).
+      destruct IHd_sub as [B2 [C2]].
+      exists B2 C2; intuition...
     + specialize (IHd_sub1 _ _ (eq_refl _)).
       specialize (IHd_sub2 _ _ (eq_refl _)).
-    
+      destruct IHd_sub1 as [B1 [C1]].
+      destruct IHd_sub2 as [B2 [C2]].
+      exists (dtyp_intersection B1 B2) (dtyp_union C1 C2).
+      destruct H. destruct H0.
+      split; intuition...
+      dependent destruction H. dependent destruction H2.
+      eauto...
+  - dependent induction H3.
+    + admit.
+    + admit.
+    + inversion H6.
+    + specialize (IHd_sub T1 H H0 H1 H2 IHd_infabs (eq_refl _)).
+      admit. 
+    + specialize (IHd_sub T1 H H0 H1 H2 IHd_infabs (eq_refl _)).
+      admit. 
+    + specialize (IHd_sub1 T1 H H0 H1 H2 IHd_infabs (eq_refl _)).
+      specialize (IHd_sub2 T1 H H0 H1 H2 IHd_infabs (eq_refl _)).
+      admit.
+  - apply dsub_intersection_inversion in H1.
+    admit.
+  - apply dsub_intersection_inversion in H1.
+    admit.
+  - dependent induction H1.
+    + admit.
+    + inversion H1.
+    + specialize (IHd_sub _ _ H H0 IHd_infabs1 IHd_infabs2).
+      admit.
+    + specialize (IHd_sub _ _ H H0 IHd_infabs1 IHd_infabs2).
+      admit.
+    + specialize (IHd_infabs1 _ H1). admit.
+    + specialize (IHd_infabs2 _ H1). admit.
+    + specialize (IHd_sub1 _ _ H H0 IHd_infabs1 IHd_infabs2).
+      specialize (IHd_sub2 _ _ H H0 IHd_infabs1 IHd_infabs2).
+      admit.
 Admitted.
 
 
