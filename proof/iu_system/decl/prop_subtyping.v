@@ -343,7 +343,7 @@ Theorem d_sub_tvar_ind_open_inv_complete: forall n1 n2 E S1 T1 X L,
           -- destruct n. simpl in *.
              ++ eapply d__sti__all with (L:=L). intros. constructor.
              ++ unfold open_dtyp_wrt_dtyp in Heq. simpl in Heq. inversion Heq.
-          -- exfalso. 
+          -- exfalso.
              dependent destruction Heq.
              eapply IHn1 in H7; eauto. inversion H7. auto.
              eapply d_sub_tvar_inv_nested_all_false with (L1:=L `union` L0 `union` L1); eauto...
@@ -376,7 +376,7 @@ Theorem d_sub_tvar_ind_open_inv_complete: forall n1 n2 E S1 T1 X L,
           -- destruct n. simpl in *.
              ++ eapply d__sti__all with (L:=L). intros. constructor.
              ++ unfold open_dtyp_wrt_dtyp in Heq. simpl in Heq. inversion Heq.
-          -- dependent destruction Heq. 
+          -- dependent destruction Heq.
              eapply IHn2 with (L:=L) in H1_; eauto...
              eapply IHn2 with (L:=L) in H1_0; eauto...
              ++ dependent destruction H1_.
@@ -760,7 +760,7 @@ Proof.
 Qed.
 
 Theorem d_mono_notin_stvar : forall F E T SX,
-  F ++ (SX ~ dbind_stvar_empty) ++ E ⊢ T -> dmono_typ T -> 
+  F ++ (SX ~ dbind_stvar_empty) ++ E ⊢ T -> dmono_typ T ->
   SX `notin` fstv_in_dtyp T.
 Proof.
   intros. induction H0; simpl in *; auto;
@@ -781,7 +781,7 @@ Proof with subst; eauto using dwf_typ_weaken_head with subtyping.
     + rewrite d_subst_stv_in_dtyp_open_comm; auto...
       apply fstv_sins_dtyp_subst_stv_s; auto...
     + repeat rewrite d_subst_stv_in_dtyp_open_comm; eauto...
-      replace (SX1 ~ dbind_stvar_empty ++ map (d_subst_stv_in_binding T2 SX) F ++ E) with 
+      replace (SX1 ~ dbind_stvar_empty ++ map (d_subst_stv_in_binding T2 SX) F ++ E) with
       (map (d_subst_stv_in_binding T2 SX) (SX1 ~ dbind_stvar_empty ++ F) ++ E) by auto.
       eapply H2; auto...
   - simpl. destruct (dneq_all_intersection_union_subst_stv T1 T2 SX) as [[? [? ?]] | ?]; eauto...
@@ -884,18 +884,53 @@ Qed.
 
 Hint Constructors d_sub_sized : sub.
 
+Theorem d_sub_size_subst_stvar : forall E F SX S1 T1 T2 n,
+  F ++ (SX ~ dbind_stvar_empty) ++ E ⊢ S1 <: T1 | n ->
+  E ⊢ T2 ->
+  (* dmono_typ T2 ->  Snow: I have to del this for renaming svar *)
+  exists n', map (d_subst_stv_in_binding T2 SX) F ++ E ⊢ {T2 /ₛᵈ SX} S1 <: {T2 /ₛᵈ SX} T1 | n'.
+Admitted.
+
+Theorem d_sub_size_weakening: forall E F G S1 T1 n,
+  G ++ E ⊢ S1 <: T1 | n ->
+  ⊢ G ++ F ++ E ->
+  G ++ F ++ E ⊢ S1 <: T1 | n.
+Admitted.
+
+(* The above two lemmas were introduced here to prove the completeness lemma but
+now I turned to the rename lemma *)
+Lemma d_sub_size_rename : forall n X Y D E A B,
+    X `notin`  (fstv_in_dtyp A `union` fstv_in_dtyp B) ->
+    Y `notin` ((dom D) `union` (dom E)) ->
+    D ++ X ~ ▪ ++ E ⊢ A ^^ᵈ dtyp_svar X <: B ^^ᵈ dtyp_svar X | n ->
+    D ++ Y ~ ▪ ++ E ⊢ A ^^ᵈ dtyp_svar Y <: B ^^ᵈ dtyp_svar Y | n.
+Admitted.
+
 Lemma d_sub_size_complete : forall E T1 T2,
   E ⊢ T1 <: T2 -> exists n, E ⊢ T1 <: T2 | n.
 Proof with eauto with sub.
   intros. induction H; eauto...
   - destruct IHd_sub1 as [n1]. destruct IHd_sub2 as [n2].
     eauto...
-  - inst_cofinites_by (L `union` fstv_in_dtyp S1 `union` fstv_in_dtyp S1).
-    destruct H2 as [n].
-    exists (S n). eapply d__subs__all with (L:=L `union` fstv_in_dtyp S1 `union` fstv_in_dtyp S1); intros.
-    + Search (ds_in_s). admit.
-    + admit.
-    + admit.
+  - pick fresh X.
+    destruct (H2 X) as [n]. solve_notin.
+    exists (S n).
+    eapply d__subs__all with (L:=L `union` fstv_in_dtyp S1 `union` fstv_in_dtyp S1); intros; eauto.
+    + forwards* HS: d_sub_size_weakening (SX ~ ▪) H3. admit.
+      rewrite_env (nil ++ (X ~ ▪ ++ SX ~ ▪ ++ E)) in HS.
+      forwards* (?&?): d_sub_size_subst_stvar (dtyp_svar SX) HS.
+      (* we need x to be n here. so the d_sub_size_subst_stvar does not work well *)
+Restart.
+Proof with eauto with sub.
+  intros. induction H; eauto...
+  - destruct IHd_sub1 as [n1]. destruct IHd_sub2 as [n2].
+    eauto...
+  - pick fresh X.
+    destruct (H2 X) as [n]. solve_notin.
+    exists (S n).
+    eapply d__subs__all with (L:=L `union` fstv_in_dtyp S1 `union` fstv_in_dtyp S1 `union` (dom E)); intros; eauto.
+    + rewrite_env (nil ++ SX ~ ▪ ++ E). rewrite_env (nil ++ X ~ ▪ ++ E) in H3.
+      applys d_sub_size_rename H3; solve_notin.
   - destruct IHd_sub as [n]. eauto...
   - destruct IHd_sub1 as [n1]. destruct IHd_sub2 as [n2].
   eauto...
@@ -905,9 +940,8 @@ Proof with eauto with sub.
   - destruct IHd_sub as [n]. eauto...
   - destruct IHd_sub1 as [n1]. destruct IHd_sub2 as [n2].
     eauto...
-Admitted.
-
-
+    Unshelve. all: econstructor.
+Qed.
 
 Hint Constructors d_sub_sized : trans.
 
@@ -1109,36 +1143,36 @@ Proof.
 Qed.
 
 
-Ltac solve_trans_forall_B_intersection_impl T1 T2:= 
-  match goal with 
-   | H1 : ?E ⊢ ?T <: T1 | ?n1 |- _ => 
-      match goal with 
+Ltac solve_trans_forall_B_intersection_impl T1 T2:=
+  match goal with
+   | H1 : ?E ⊢ ?T <: T1 | ?n1 |- _ =>
+      match goal with
       | H2 : ?E ⊢ ?T <: T2 | ?n2 |- _ =>
         apply d_sub_size_more with (n':=S(n1+n2)) in H1; auto with trans;
         apply d_sub_size_more with (n':=S(n1+n2)) in H2; auto with trans
       end
-   end. 
- 
-Ltac solve_trans_forall_B_union_impl T1 T2:= 
-  match goal with 
-    | H1 : ?E ⊢ ?T <: T1 | ?n1 |- _ => 
-      apply d_sub_size_more with (n':=S n1) in H1; auto with trans
-    | H2 : ?E ⊢ ?T <: T2 | ?n1 |- _ => 
-      apply d_sub_size_more with (n':=S n1) in H2; auto with trans
-  end. 
+   end.
 
-Ltac solve_trans_forall_B_iu := 
-  match goal with 
-   | H : ?E ⊢ ?T <: ?C | ?n |- ?E ⊢ ?B <: ?C => match C with 
+Ltac solve_trans_forall_B_union_impl T1 T2:=
+  match goal with
+    | H1 : ?E ⊢ ?T <: T1 | ?n1 |- _ =>
+      apply d_sub_size_more with (n':=S n1) in H1; auto with trans
+    | H2 : ?E ⊢ ?T <: T2 | ?n1 |- _ =>
+      apply d_sub_size_more with (n':=S n1) in H2; auto with trans
+  end.
+
+Ltac solve_trans_forall_B_iu :=
+  match goal with
+   | H : ?E ⊢ ?T <: ?C | ?n |- ?E ⊢ ?B <: ?C => match C with
       | dtyp_intersection ?C1 ?C2 => dependent destruction H; auto with trans; solve_trans_forall_B_intersection_impl C1 C2
       | dtyp_union ?C1 ?C2 => dependent destruction H; auto with trans; solve_trans_forall_B_union_impl C1 C2
       | _ => idtac
    end
-  end. 
+  end.
 
 Ltac solve_trans_forall_B_C :=
-   match goal with 
-   | H : ?E ⊢ ?T <: ?C | ?n |- ?E ⊢ ?B <: ?C => match T with 
+   match goal with
+   | H : ?E ⊢ ?T <: ?C | ?n |- ?E ⊢ ?B <: ?C => match T with
       (* the following case of B is impossible. solve them separately *)
       | dtyp_bot => idtac
       | dtyp_svar _ => idtac
@@ -1146,16 +1180,16 @@ Ltac solve_trans_forall_B_C :=
       | dtyp_union _ _ => idtac
       | dtyp_intersection _ _ => idtac
       (* solve the remaining case *)
-      | _ => let H1 := fresh H in 
-             let Hwft1 := fresh "Hwft" in 
-              apply d_sub_size_sound in H as H1; 
+      | _ => let H1 := fresh H in
+             let Hwft1 := fresh "Hwft" in
+              apply d_sub_size_sound in H as H1;
               apply d_sub_dwft in H1; destruct H1 as [_ [_ Hwtf1]];
               apply d_wft_ord_complete in Hwtf1; induction Hwtf1; solve_trans_forall_B_iu
    end
   end.
 
 Ltac ord_inv :=
-    match goal with 
+    match goal with
     | H : d_ord (dtyp_intersection _ _) |- _ => inversion H
     | H : d_ord (dtyp_union _ _)|- _ => inversion H
    end.
@@ -1235,7 +1269,7 @@ Proof with auto with trans.
       * eapply d_sub_all with (L:=L `union` L0 `union` dom E); auto.
         intros. inst_cofinites_with SX.
         eapply IHn_dtyp_order with (S1:= T0 ^^ᵈ dtyp_svar SX); eauto...
-        -- simpl in *. rewrite d_open_svar_same_order. 
+        -- simpl in *. rewrite d_open_svar_same_order.
            assert ((dtyp_order T0) < n_dtyp_order) by lia. (* lia strangely fails if proving directly *)
            auto.
       * eapply d_sub_alll with (T2:=T2); eauto.
@@ -1249,10 +1283,10 @@ Proof with auto with trans.
         rewrite d_open_mono_same_order; auto. admit.
         simpl in Hsub. auto. simpl.
         rewrite 2 d_subst_stv_in_dtyp_open_dtyp_wrt_dtyp in Hsub... simpl in Hsub.
-        unfold eq_dec in Hsub. destruct (EqDec_eq_of_X SX SX) in Hsub. 
+        unfold eq_dec in Hsub. destruct (EqDec_eq_of_X SX SX) in Hsub.
           rewrite (d_subst_stv_in_dtyp_fresh_eq S1) in Hsub...
-          rewrite (d_subst_stv_in_dtyp_fresh_eq T0) in Hsub... 
-        contradiction. 
+          rewrite (d_subst_stv_in_dtyp_fresh_eq T0) in Hsub...
+        contradiction.
       * eapply d_sub_intersection1.
         -- eapply IHn_dsub_size with (S1:=dtyp_all T0) (n1:=S n) (n2:=n1); eauto...
            econstructor; eauto.
@@ -1266,7 +1300,7 @@ Proof with auto with trans.
         -- eapply IHn_dsub_size with (S1:=dtyp_all T0) (n1:=S n) (n2:=n0); eauto...
            econstructor; eauto.
         -- auto.
-    + simpl in *. assert (E ⊢ T0) as Hwft0 by admit. 
+    + simpl in *. assert (E ⊢ T0) as Hwft0 by admit.
       dependent destruction Hwft0; solve_trans_forall_B_C.
       (* solve_trans_forall_B_C. *)
       * dependent destruction Hsub2; try solve ord_inv; auto...
@@ -1290,7 +1324,7 @@ Proof with auto with trans.
       (* forall a. A < B1 -> B2 < C *)
       * dependent destruction Hsub2; try solve ord_inv; auto...
         -- econstructor... admit.
-        -- assert (E ⊢ T1) by admit. assert (E ⊢ T4) by admit. 
+        -- assert (E ⊢ T1) by admit. assert (E ⊢ T4) by admit.
           eapply d_sub_alll with (T2:=T2); eauto...
           eapply IHn_dsub_size with (S1:=dtyp_arrow T0 T3) (n2:=S(n1+n2)); eauto...
       * inversion H.
@@ -1298,7 +1332,7 @@ Proof with auto with trans.
       * inversion H0.
     + simpl in *. dependent destruction Hsub2...
       * econstructor... apply d_sub_size_sound in Hsub1_1. apply d_sub_dwft in Hsub1_1.
-        intuition. 
+        intuition.
       * econstructor.
         eapply IHn_dsub_size with (S1:=dtyp_intersection T0 T2) (n1:=S(n1+n0)); eauto...
         eapply IHn_dsub_size with (S1:=dtyp_intersection T0 T2) (n1:=S(n1+n0)); eauto...
@@ -1328,5 +1362,4 @@ Proof.
   intros * Hrs Hst.
   apply d_sub_size_complete in Hrs. destruct Hrs as [n1].
   apply d_sub_size_complete in Hst. destruct Hst as [n2].
-  eapply d_sub_sized_transitivity; eauto.
-Qed.
+  eapply d_sub_sized_transitivity; e

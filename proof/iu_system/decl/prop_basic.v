@@ -403,101 +403,7 @@ Proof with eauto.
   induction* HD.
 Qed.
 
-Lemma lc_dtyp_open_rename : forall n X Y S,
-  lc_dtyp (open_dtyp_wrt_dtyp_rec n (dtyp_svar X) S) ->
-  lc_dtyp (open_dtyp_wrt_dtyp_rec n (dtyp_svar Y) S).
-Proof with eauto.
-  intros* H.
-  induction S; simpl in *...
-  - destruct (lt_eq_lt_dec n0 n)... case_if*.
-  - inverts* H.
-  - econstructor.
-  (*   intro X0. inverts H. *)
-  (*   default_simpl. *)
-  (*   lets: d_subst_tv_in_dtyp_open_dtyp_wrt_dtyp_rec. *)
-  (*   forwards HK: H1 X0. *)
-  (*   rewrite <- d_subst_stv_in_dtyp_open_dtyp_wrt_dtyp_mut in HK. *)
-  (*   Search open_dtyp_wrt_dtyp. *)
-    (* - inverts* H. *)
-Admitted.
-
 #[local] Hint Immediate ds_in_s_regular : core.
-
-Lemma ftv_sin_dtyp_rename_svar_s : forall X n S Y,
-    ds_in_s X (open_dtyp_wrt_dtyp_rec n (dtyp_svar X) S) ->
-    X ∉ (fstv_in_dtyp S) ->
-    Y ∉ (fstv_in_dtyp S) ->
-    ds_in_s Y (open_dtyp_wrt_dtyp_rec n (dtyp_svar Y) S).
-Proof with eauto; try solve_notin.
-  intros * HI HNx HNy.
-  induction S;
-    try solve [unfold open_dtyp_wrt_dtyp in *; simpl in *; try solve_by_invert];
-    try solve [inverts HI; unfold open_dtyp_wrt_dtyp in *; simpl in *; eauto].
-  3 : {
-    forwards HR: ds_in_s_regular HI. simpl in HR. inverts HR.
-    inverts HI.
-    unfold open_dtyp_wrt_dtyp in *; simpl in *...
-    forwards: IHS1... econstructor... forwards: IHS2...
-    admit.
-    admit.
-  }
-  - admit.
-  - admit.
-  - admit.
-Admitted.
-  (* intros. dependent induction H2; simpl; auto.
-  - destruct T1; simpl; try solve [inversion x].
-    inversion x. destruct (X0 == Y).
-    + subst. simpl in *.
-      apply notin_singleton_1 in H0. contradiction.
-    + inversion H3. auto.
-  - destruct T1; simpl; try solve [inversion x].
-    simpl in *. destruct (X0 == Y); subst.
-    + dependent destruction H.
-      simpl in H0.
-      eapply IHds_in with (S1:=T0) (Y:=Y); auto.
-      simpl. unfold eq_dec. destruct (EqDec_eq_of_X Y Y); auto.
-      contradiction.
-    + inversion x.
-    + apply dsin_arrow1; inversion x; eauto.
-      subst.
-      eapply lc_dtyp_subst; eauto.
-  - destruct T1; simpl; try solve [inversion x].
-    simpl in *. destruct (X0 == Y); subst.
-    + dependent destruction H.
-      simpl in H0. eapply IHds_in with (S1:=T2) (Y:=Y); auto.
-      simpl. unfold eq_dec. destruct (EqDec_eq_of_X Y Y); auto.
-      contradiction.
-    + inversion x.
-    + apply dsin_arrow2; inversion x; eauto.
-      subst. eapply lc_dtyp_subst; eauto.
-  - destruct T1; simpl; try solve [inversion x].
-  simpl in *. destruct (X0 == Y); subst.
-    + assert (ds_in X (dtyp_all T)).
-      * eapply dsin_all with (L:=L). intros. inst_cofinites_with Y0.
-        auto.
-      * apply sin_in in H4. contradiction.
-    + inversion x.
-    + apply dsin_all with (L:=L `union` singleton Y); intros; inst_cofinites_with Y0. auto.
-     inversion x. rewrite H6 in H3.
-    eapply H2; eauto. subst. rewrite dtyp_subst_open_comm; auto.
-  - destruct T1; simpl; try solve [inversion x].
-  simpl in *. destruct (X0 == Y); subst.
-    + assert (ds_in X (dtyp_union T0 T2)) by auto.
-      apply sin_in in H2. contradiction.
-    + inversion x.
-    + inversion x. apply dsin_union.
-      * eapply IHds_in1 with (S1:=S1) (Y:=Y); eauto.
-      * eapply IHds_in2 with (S1:=S1) (Y:=Y); eauto.
-  - destruct T1; simpl; try solve [inversion x].
-    simpl in *. destruct (X0 == Y); subst.
-    + assert (ds_in X (dtyp_intersection T0 T2)) by auto.
-      apply sin_in in H2. contradiction.
-    + inversion x.
-    + inversion x. apply dsin_intersection.
-      * eapply IHds_in1 with (S1:=S1) (Y:=Y); eauto.
-      * eapply IHds_in2 with (S1:=S1) (Y:=Y); eauto.
-Qed. *)
 
 
 Lemma d_mono_typ_lc : forall T,
@@ -743,7 +649,7 @@ Lemma dwf_typ_dwf_typ_s : forall E T,
   E ⊢ T -> E ⊢ₛ T.
 Proof.
   intros.
-  induction H; auto.  
+  induction H; auto.
   - eapply dwftyps_all with (L:= (L `union` ftv_in_dtyp T));
     intros; inst_cofinites_with SX.
     + replace (T ^^ᵈ dtyp_svar SX) with ({dtyp_svar SX /ᵈ SX}T ^ᵈ SX).
@@ -1114,8 +1020,8 @@ Proof with auto.
     + applys* d_wf_typ_subst_tvar_stvar_cons. auto.
     + eapply fstv_open_tvar; auto.
     + applys* d_wf_typ_subst_tvar_stvar_cons. auto.
-  - split; try solve [intuition]. 
-    split; try solve [intuition]. 
+  - split; try solve [intuition].
+    split; try solve [intuition].
     + eapply dwftyp_all with (L:=L `union` ftv_in_dtyp S1 `union` dom E).
       * intros. inst_cofinites_with X. auto.
       * intros. inst_cofinites_with X.
