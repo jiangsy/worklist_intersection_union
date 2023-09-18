@@ -241,7 +241,7 @@ Hint Resolve bind_typ_subst : typing.
 Hint Resolve dwf_typ_dlc_type : typing.
 
 
-(* for the e <= forall a. A *)
+(* for the e <= forall a. A, not used not*)
 Theorem d_chkinf_subst_mono: forall E F X e m T1 T2,
   d_typing (F ++ X ~ dbind_tvar_empty ++ E) e m T1 ->
   E ⊢ T2 ->
@@ -503,9 +503,9 @@ Proof with auto with typing.
       exists B2 C2; intuition...
     + specialize (IHd_sub1 _ _ (eq_refl _)).
       specialize (IHd_sub2 _ _ (eq_refl _)).
-      destruct IHd_sub1 as [B1 [C1]].
-      destruct IHd_sub2 as [B2 [C2]].
-      exists (dtyp_intersection B1 B2) (dtyp_union C1 C2).
+      destruct IHd_sub1 as [B2 [C2]].
+      destruct IHd_sub2 as [B3 [C3]].
+      exists (dtyp_intersection B2 B3) (dtyp_union C2 C3).
       destruct H. destruct H0.
       split; intuition...
       dependent destruction H. dependent destruction H2.
@@ -514,7 +514,11 @@ Proof with auto with typing.
     + exists dtyp_top dtyp_bot. 
       econstructor; eauto...
       admit.
-    + admit.
+    + assert (E ⊢ S1 ^^ᵈ T2 <: T1 ^^ᵈ T2). admit.
+      specialize (IHd_infabs _ H7).
+      destruct IHd_infabs as [B2 [C2]].
+      exists B2 C2. intuition...
+      econstructor; eauto... admit.
     + inversion H6.
     + specialize (IHd_sub T1 H H0 H1 H2 IHd_infabs (eq_refl _)).
       admit. 
@@ -534,11 +538,22 @@ Proof with auto with typing.
       admit.
     + specialize (IHd_sub _ _ H H0 IHd_infabs1 IHd_infabs2 (eq_refl _)).
       admit.
-    + specialize (IHd_infabs1 _ H1). admit.
+    + specialize (IHd_infabs1 _ H1). 
+      destruct IHd_infabs1 as [B1 [C1]].
+      exists B1 C1. intuition.
+      admit.
     + specialize (IHd_infabs2 _ H1). admit.
     + specialize (IHd_sub1 _ _ H H0 IHd_infabs1 IHd_infabs2 (eq_refl _)).
       specialize (IHd_sub2 _ _ H H0 IHd_infabs1 IHd_infabs2 (eq_refl _)).
       admit.
+Admitted.
+
+
+Corollary d_inftabs_subsumption: forall E E' A1 A2 B1 C1,
+  E ⊢ A1 ▹ B1 → C1 -> 
+  E ⊢ A2 <: A1 ->
+  d_subenv E' E -> 
+  exists B2 C2, E ⊢ dtyp_arrow B2 C2 <: dtyp_arrow B1 C1 /\ E ⊢ A2 ▹ B2 → C2.
 Admitted.
 
 

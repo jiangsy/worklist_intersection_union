@@ -1106,11 +1106,13 @@ Ltac solve_trans_forall_B_iu :=
 Ltac solve_trans_forall_B_C :=
    match goal with 
    | H : ?E ⊢ ?T <: ?C | ?n |- ?E ⊢ ?B <: ?C => match T with 
+      (* the following case of B is impossible. solve them separately *)
       | dtyp_bot => idtac
       | dtyp_svar _ => idtac
       | dtyp_all _ => idtac
       | dtyp_union _ _ => idtac
       | dtyp_intersection _ _ => idtac
+      (* solve the remaining case *)
       | _ => let H1 := fresh H in 
              let Hwft1 := fresh "Hwft" in 
               apply d_sub_size_sound in H as H1; 
@@ -1124,8 +1126,6 @@ Ltac ord_inv :=
     | H : d_ord (dtyp_intersection _ _) |- _ => inversion H
     | H : d_ord (dtyp_union _ _)|- _ => inversion H
    end.
-
-(* Hint Extern 1 ord_inv : trans. *)
 
 
 Lemma d_sub_sized_transitivity : forall n_dtyp_order n_dsub_size E R1 S1 T1 n1 n2 ,
@@ -1242,8 +1242,7 @@ Proof with auto with trans.
            eapply d_sub_size_sound; eauto.
       (* forall a. A < bot < C *)
       * apply d_sub_size_sound in Hsub1.
-        eapply d_sub_open_mono_bot_false in Hsub1 as Contra; eauto.
-        inversion Contra.
+        exfalso. eapply d_sub_open_mono_bot_false; eauto.
       (* forall a. A < top < C *)
       * dependent destruction Hsub2; try solve ord_inv; auto...
         -- econstructor... admit.
@@ -1254,8 +1253,7 @@ Proof with auto with trans.
             apply d_sub_size_sound in Hsub1. auto.
       (* forall a. A < SX < C *)
       * apply d_sub_size_sound in Hsub1.
-        eapply d_sub_open_mono_stvar_false in Hsub1 as Contra; eauto.
-        inversion Contra.
+        exfalso. eapply d_sub_open_mono_stvar_false; eauto.
       (* forall a. A < B1 -> B2 < C *)
       * dependent destruction Hsub2; try solve ord_inv; auto...
         -- econstructor... admit.
