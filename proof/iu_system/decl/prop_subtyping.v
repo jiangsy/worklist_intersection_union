@@ -1030,7 +1030,6 @@ Qed.
 Theorem d_sub_size_subst_stvar : forall E F SX S1 T1 T2 n,
   F ++ (SX ~ dbind_stvar_empty) ++ E ⊢ S1 <: T1 | n ->
   E ⊢ T2 ->
-  dmono_typ T2 ->
   exists n', map (d_subst_stv_in_binding T2 SX) F ++ E ⊢ {T2 /ₛᵈ SX} S1 <: {T2 /ₛᵈ SX} T1 | n'.
 Proof.
   intros.

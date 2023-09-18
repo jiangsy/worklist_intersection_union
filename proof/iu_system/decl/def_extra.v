@@ -184,8 +184,12 @@ Inductive d_inftapp : denv -> dtyp -> dtyp -> dtyp -> Prop :=
 
 Inductive d_infabs : denv -> dtyp -> dtyp -> dtyp -> Prop := 
 | d_infabs_bot : forall (E:denv),
+    dwf_env E ->
     d_infabs E dtyp_bot dtyp_top dtyp_bot
 | d_infabs_arr : forall (E:denv) (T1 T2:dtyp),
+    dwf_env E ->
+    dwf_typ E T1 ->
+    dwf_typ E T2 ->
     d_infabs E (dtyp_arrow T1 T2) T1 T2
 | d_infabs_all : forall (E:denv) (T1 T2 T3 T4:dtyp),
     dmono_typ T2 -> 
