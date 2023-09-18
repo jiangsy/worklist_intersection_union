@@ -549,7 +549,8 @@ Proof with auto with typing.
     intuition.
   - dependent induction H1.
     + exists dtyp_top dtyp_bot. intuition.
-      admit.
+      econstructor; econstructor; eauto. 
+      admit. admit.
     + inversion H1.
     + specialize (IHd_sub _ _ H H0 IHd_infabs1 IHd_infabs2 (eq_refl _)).
       destruct IHd_sub as [B2 [C2]].
@@ -561,12 +562,16 @@ Proof with auto with typing.
       destruct IHd_infabs1 as [B2 [C2]].
       exists B2 C2. intuition.
       dependent destruction H4. eauto...
-      admit.
+      econstructor.
+      eapply d_sub_intersection2; eauto. admit.
+      eapply d_sub_union1; eauto. admit.
     + specialize (IHd_infabs2 _ H1).
       destruct IHd_infabs2 as [B2 [C2]].
       exists B2 C2. intuition.
       dependent destruction H4. eauto...
-      admit.
+      econstructor. 
+      eapply d_sub_intersection3; eauto. admit.
+      eapply d_sub_union2; eauto. admit.
     + specialize (IHd_sub1 _ _ H H0 IHd_infabs1 IHd_infabs2 (eq_refl _)).
       specialize (IHd_sub2 _ _ H H0 IHd_infabs1 IHd_infabs2 (eq_refl _)).
       destruct IHd_sub1 as [B2 [C2]].
