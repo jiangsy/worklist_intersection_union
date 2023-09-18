@@ -884,13 +884,15 @@ Qed.
 
 Hint Constructors d_sub_sized : sub.
 
-Theorem d_sub_size_subst_stvar : forall E F SX S1 T1 T2 n,
+(* for demo only; not to be proved *)
+Theorem d_sub_size_subst_stvar_test : forall E F SX S1 T1 T2 n,
   F ++ (SX ~ dbind_stvar_empty) ++ E ⊢ S1 <: T1 | n ->
   E ⊢ T2 ->
   (* dmono_typ T2 ->  Snow: I have to del this for renaming svar *)
   exists n', map (d_subst_stv_in_binding T2 SX) F ++ E ⊢ {T2 /ₛᵈ SX} S1 <: {T2 /ₛᵈ SX} T1 | n'.
 Admitted.
 
+(* for demo only; not to be proved *)
 Theorem d_sub_size_weakening: forall E F G S1 T1 n,
   G ++ E ⊢ S1 <: T1 | n ->
   ⊢ G ++ F ++ E ->
@@ -918,7 +920,7 @@ Proof with eauto with sub.
     eapply d__subs__all with (L:=L `union` fstv_in_dtyp S1 `union` fstv_in_dtyp S1); intros; eauto.
     + forwards* HS: d_sub_size_weakening (SX ~ ▪) H3. admit.
       rewrite_env (nil ++ (X ~ ▪ ++ SX ~ ▪ ++ E)) in HS.
-      forwards* (?&?): d_sub_size_subst_stvar (dtyp_svar SX) HS.
+      forwards* (?&?): d_sub_size_subst_stvar_test (dtyp_svar SX) HS.
       (* we need x to be n here. so the d_sub_size_subst_stvar does not work well *)
 Restart.
 Proof with eauto with sub.
@@ -1361,4 +1363,5 @@ Proof.
   intros * Hrs Hst.
   apply d_sub_size_complete in Hrs. destruct Hrs as [n1].
   apply d_sub_size_complete in Hst. destruct Hst as [n2].
-  eapply d_sub_sized_transitivity; e
+  eapply d_sub_sized_transitivity; eauto.
+Qed.
