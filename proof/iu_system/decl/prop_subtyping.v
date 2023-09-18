@@ -663,41 +663,151 @@ Qed.
 
 
 Hint Resolve d_wft_typ_subst_stvar : subtyping.
+Hint Resolve d_wf_env_subst_stvar_typ : subtyping.
+Hint Resolve dsubst_stv_lc_dtyp : lngen.
+
+Lemma dneq_all_intersection_union_subst_stv : forall T1 T2 SX,
+  lc_dtyp T1 -> lc_dtyp T2 ->
+  dneq_all T1 -> dneq_intersection T1 -> dneq_union T1 ->
+  (dneq_all ({T2 /ₛᵈ SX} T1) /\
+   dneq_intersection ({T2 /ₛᵈ SX} T1) /\
+   dneq_union ({T2 /ₛᵈ SX} T1)) \/ T1 = dtyp_svar SX.
+Proof with eauto with lngen.
+  intros. destruct T1; simpl in *; auto...
+  - destruct (SX0 == SX); subst; auto.
+  - dependent destruction H. left. split.
+    eauto with lngen...
+    constructor; eauto with lngen...
+  - inversion H1.
+  - inversion H3.
+  - inversion H2.
+Qed.
+
+Theorem d_sub_mono_stvar_false : forall E T1 SX,
+  dmono_typ T1 ->
+  E ⊢ T1 <: dtyp_svar SX ->
+  False.
+Proof.
+  intros. induction H; try solve [(dependent destruction H0); auto].
+Qed.
+
+
+Theorem d_sub_open_mono_stvar_false: forall n1 n2 E S1 T1 SX L,
+    d_typ_order (T1 ^^ᵈ S1) < n1 ->
+    d_typ_size (T1 ^^ᵈ S1) < n2 ->
+    E ⊢ T1 ^^ᵈ S1 <: dtyp_svar SX ->
+    (forall X, X `notin` L -> ds_in X (T1 ^ᵈ X)) ->
+    dmono_typ S1 ->
+    False.
+Proof.
+  intro n1. induction n1.
+  - intros. inversion H.
+  - intros n2. induction n2.
+    + intros. inversion H0.
+    + intros. dependent destruction H1; rename x into Heq.
+      * destruct T1; simpl in *; try solve [inversion Heq].
+        -- inst_cofinites_by L using_name X. inversion H3.
+        -- destruct n.
+           ++ unfold open_dtyp_wrt_dtyp in Heq. simpl in *.
+              subst. inversion H4.
+           ++ unfold open_dtyp_wrt_dtyp in Heq. simpl in *.
+              inversion Heq.
+      * destruct T1; simpl in *; try solve [inversion Heq].
+        -- destruct n.
+          ++ unfold open_dtyp_wrt_dtyp in Heq. simpl in *.
+            subst. inversion H4.
+          ++ unfold open_dtyp_wrt_dtyp in Heq. simpl in *.
+            inversion Heq.
+        -- inst_cofinites_by L using_name X. inversion H3.
+      * destruct T1; simpl in *; try solve [inversion Heq].
+        -- destruct n.
+          ++ unfold open_dtyp_wrt_dtyp in Heq. simpl in Heq.
+              subst. dependent destruction H9.
+          ++ unfold open_dtyp_wrt_dtyp in Heq. simpl in Heq.
+             inversion Heq.
+        -- dependent destruction Heq.
+           eapply IHn1; eauto. rewrite d_open_mono_same_order; auto. lia.
+      * destruct T1; simpl in *; try solve [inversion Heq].
+        -- destruct n.
+           ++ unfold open_dtyp_wrt_dtyp in H, H0, Heq. simpl in *.
+              subst. dependent destruction H4.
+              apply d_sub_mono_stvar_false in H1; auto.
+           ++ unfold open_dtyp_wrt_dtyp in Heq. simpl in Heq.
+              inversion Heq.
+        -- dependent destruction Heq. unfold open_dtyp_wrt_dtyp in *.
+           eapply IHn2 with (L:=L); eauto. lia. lia.
+           intros. inst_cofinites_with X. dependent destruction H3; auto.
+      * destruct T1; simpl in *; try solve [inversion Heq].
+        -- destruct n.
+           ++ unfold open_dtyp_wrt_dtyp in H, H0, Heq. simpl in *.
+              subst. dependent destruction H4.
+              apply d_sub_mono_stvar_false in H1; auto.
+           ++ unfold open_dtyp_wrt_dtyp in Heq. simpl in Heq.
+             inversion Heq.
+        -- dependent destruction Heq. unfold open_dtyp_wrt_dtyp in *.
+           eapply IHn2 with (L:=L); eauto. lia. lia.
+           intros. inst_cofinites_with X. dependent destruction H3; auto.
+      * destruct T1; simpl in *; try solve [inversion Heq].
+        -- destruct n.
+           ++ unfold open_dtyp_wrt_dtyp in H, H0, Heq. simpl in *.
+              subst. dependent destruction H3.
+              apply d_sub_mono_stvar_false in H1_; auto.
+           ++ unfold open_dtyp_wrt_dtyp in Heq. simpl in Heq.
+             inversion Heq.
+        -- dependent destruction Heq. unfold open_dtyp_wrt_dtyp in *.
+           eapply IHn2 with (L:=L); eauto. lia. lia.
+           intros. inst_cofinites_with X. dependent destruction H2; auto.
+Qed.
+
+Theorem d_mono_notin_stvar : forall F E T SX,
+  F ++ (SX ~ dbind_stvar_empty) ++ E ⊢ T -> dmono_typ T -> 
+  SX `notin` fstv_in_dtyp T.
+Proof.
+  intros. induction H0; simpl in *; auto;
+  dependent destruction H; auto.
+Qed.
 
 Theorem d_sub_subst_stvar : forall E SX F S1 T1 T2,
   F ++ (SX ~ dbind_stvar_empty) ++ E ⊢ S1 <: T1 ->
   E ⊢ T2 ->
   map (d_subst_stv_in_binding T2 SX) F ++ E ⊢ {T2 /ₛᵈ SX} S1 <: {T2 /ₛᵈ SX} T1.
 Proof with subst; eauto using dwf_typ_weaken_head with subtyping.
-  (* intros. dependent induction H0; try solve [simpl in *; eauto with subtyping].
-  - simpl in *. inverts H0. forwards* [?|?]: binds_app_1 H4.
-    + forwards*: binds_map_2 (d_subst_stv_in_binding T2 SX) H0.
-    + match goal with
-        H: _ ~ ▫ ∈ ((_, _) :: _) |- _ => apply binds_cons_iff in H
-      end; intuition eauto; try solve_by_invert.
-  - destruct (SX0 == SX); apply dsub_refl...
-  - simpl. inst_cofinites_for d_sub_all; intros SX1 Hfr; inst_cofinites_with SX1...
-    + case_eq (SX1 == SX); intros; subst; try solve_notin.
-      replace (({T2 /ₛᵈ SX} S1) ^^ᵈ dtyp_svar SX1) with ({T2 /ₛᵈ SX} S1 ^^ᵈ dtyp_svar SX1); eauto.
-      2: { rewrite* d_subst_stv_in_dtyp_open_dtyp_wrt_dtyp.
-           simpl. case_if*. }
-      applys* fstv_sins_dtyp_subst_stv_s.
-    + case_eq (SX1 == SX); intros; subst; try solve_notin.
-      replace (({T2 /ₛᵈ SX} T1) ^^ᵈ dtyp_svar SX1) with ({T2 /ₛᵈ SX} T1 ^^ᵈ dtyp_svar SX1); eauto.
-      2: { rewrite* d_subst_stv_in_dtyp_open_dtyp_wrt_dtyp.
-           simpl. case_if*. }
-      applys* fstv_sins_dtyp_subst_stv_s.
-    + inst_cofinites_with SX1. repeat rewrite d_subst_stv_in_dtyp_open_comm; eauto...
-      replace (SX1 ~ dbind_stvar_empty ++ map (d_subst_stv_in_binding T2 SX) F ++ E) with
+  intros. dependent induction H; try solve [simpl in *; eauto with subtyping].
+  - eapply dsub_refl; auto...
+  - eapply dsub_refl; auto...
+  - simpl. inst_cofinites_for d_sub_all; intros SX1 Hfr; inst_cofinites_with SX1.
+    + rewrite d_subst_stv_in_dtyp_open_comm; auto...
+      apply fstv_sins_dtyp_subst_stv_s; auto...
+    + rewrite d_subst_stv_in_dtyp_open_comm; auto...
+      apply fstv_sins_dtyp_subst_stv_s; auto...
+    + repeat rewrite d_subst_stv_in_dtyp_open_comm; eauto...
+      replace (SX1 ~ dbind_stvar_empty ++ map (d_subst_stv_in_binding T2 SX) F ++ E) with 
       (map (d_subst_stv_in_binding T2 SX) (SX1 ~ dbind_stvar_empty ++ F) ++ E) by auto.
       eapply H2; auto...
-      simpl. constructor. auto. auto.
-  (* @chen *)
-  - assert (E ⊢ T1) by admit.
-    destruct T1; simpl in *.
-    + inst_cofinites_for d_sub_alll T2:=(T0). *)
-Admitted.
-
+  - simpl. destruct (dneq_all_intersection_union_subst_stv T1 T2 SX) as [[? [? ?]] | ?]; eauto...
+    { destruct (d_sub_dwft _ _ _ H5) as [? [? ?]]. eapply dwf_typ_lc_dtyp with (E := F ++ SX ~ ▪ ++ E). auto. }
+    + eapply d_sub_alll with (L:=L `union` singleton SX) (T2:={T2 /ₛᵈ SX} T0); eauto...
+      * intros. inst_cofinites_with SX0. rewrite d_subst_stv_in_dtyp_open_comm; auto...
+        apply fstv_sins_dtyp_subst_stv; auto...
+      * apply d_wft_typ_subst_stvar; auto...
+        destruct (d_sub_dwft _ _ _ H5) as [? [? ?]]. auto.
+      * rewrite d_subst_stv_in_dtyp_fresh_eq; auto.
+        eapply d_mono_notin_stvar with (F := F) (E := E); auto.
+      * rewrite <- d_subst_stv_in_dtyp_open_dtyp_wrt_dtyp; eauto...
+    + eapply d_sub_open_mono_stvar_false in H5; eauto. contradiction.
+  - simpl. apply d_sub_intersection2. eauto with subtyping.
+    apply d_wft_typ_subst_stvar; auto...
+    destruct (d_sub_dwft _ _ _ H) as [? [? ?]]. auto.
+  - simpl. apply d_sub_intersection3. eauto with subtyping.
+    apply d_wft_typ_subst_stvar; auto...
+    destruct (d_sub_dwft _ _ _ H) as [? [? ?]]. auto.
+  - simpl. apply d_sub_union1. eauto with subtyping.
+    apply d_wft_typ_subst_stvar; auto...
+    destruct (d_sub_dwft _ _ _ H) as [? [? ?]]. auto.
+  - simpl. apply d_sub_union2. eauto with subtyping.
+    apply d_wft_typ_subst_stvar; auto...
+    destruct (d_sub_dwft _ _ _ H) as [? [? ?]]. auto.
+Qed.
 
 Inductive d_sub_sized : denv -> dtyp -> dtyp -> nat -> Prop :=
  | d__subs__top : forall (E:denv) (S1:dtyp) (n:nat),
@@ -996,83 +1106,6 @@ Proof.
            ++ unfold open_dtyp_wrt_dtyp. lia.
            ++ unfold open_dtyp_wrt_dtyp. lia.
            ++ intros. inst_cofinites_with X. dependent destruction H2; auto.
-Qed.
-
-
-Theorem d_sub_mono_stvar_false : forall E T1 SX,
-  dmono_typ T1 ->
-  E ⊢ T1 <: dtyp_svar SX ->
-  False.
-Proof.
-  intros. induction H; try solve [(dependent destruction H0); auto].
-Qed.
-
-
-Theorem d_sub_open_mono_stvar_false: forall n1 n2 E S1 T1 SX L,
-    d_typ_order (T1 ^^ᵈ S1) < n1 ->
-    d_typ_size (T1 ^^ᵈ S1) < n2 ->
-    E ⊢ T1 ^^ᵈ S1 <: dtyp_svar SX ->
-    (forall X, X `notin` L -> ds_in X (T1 ^ᵈ X)) ->
-    dmono_typ S1 ->
-    False.
-Proof.
-  intro n1. induction n1.
-  - intros. inversion H.
-  - intros n2. induction n2.
-    + intros. inversion H0.
-    + intros. dependent destruction H1; rename x into Heq.
-      * destruct T1; simpl in *; try solve [inversion Heq].
-        -- inst_cofinites_by L using_name X. inversion H3.
-        -- destruct n.
-           ++ unfold open_dtyp_wrt_dtyp in Heq. simpl in *.
-              subst. inversion H4.
-           ++ unfold open_dtyp_wrt_dtyp in Heq. simpl in *.
-              inversion Heq.
-      * destruct T1; simpl in *; try solve [inversion Heq].
-        -- destruct n.
-          ++ unfold open_dtyp_wrt_dtyp in Heq. simpl in *.
-            subst. inversion H4.
-          ++ unfold open_dtyp_wrt_dtyp in Heq. simpl in *.
-            inversion Heq.
-        -- inst_cofinites_by L using_name X. inversion H3.
-      * destruct T1; simpl in *; try solve [inversion Heq].
-        -- destruct n.
-          ++ unfold open_dtyp_wrt_dtyp in Heq. simpl in Heq.
-              subst. dependent destruction H9.
-          ++ unfold open_dtyp_wrt_dtyp in Heq. simpl in Heq.
-             inversion Heq.
-        -- dependent destruction Heq.
-           eapply IHn1; eauto. rewrite d_open_mono_same_order; auto. lia.
-      * destruct T1; simpl in *; try solve [inversion Heq].
-        -- destruct n.
-           ++ unfold open_dtyp_wrt_dtyp in H, H0, Heq. simpl in *.
-              subst. dependent destruction H4.
-              apply d_sub_mono_stvar_false in H1; auto.
-           ++ unfold open_dtyp_wrt_dtyp in Heq. simpl in Heq.
-              inversion Heq.
-        -- dependent destruction Heq. unfold open_dtyp_wrt_dtyp in *.
-           eapply IHn2 with (L:=L); eauto. lia. lia.
-           intros. inst_cofinites_with X. dependent destruction H3; auto.
-      * destruct T1; simpl in *; try solve [inversion Heq].
-        -- destruct n.
-           ++ unfold open_dtyp_wrt_dtyp in H, H0, Heq. simpl in *.
-              subst. dependent destruction H4.
-              apply d_sub_mono_stvar_false in H1; auto.
-           ++ unfold open_dtyp_wrt_dtyp in Heq. simpl in Heq.
-             inversion Heq.
-        -- dependent destruction Heq. unfold open_dtyp_wrt_dtyp in *.
-           eapply IHn2 with (L:=L); eauto. lia. lia.
-           intros. inst_cofinites_with X. dependent destruction H3; auto.
-      * destruct T1; simpl in *; try solve [inversion Heq].
-        -- destruct n.
-           ++ unfold open_dtyp_wrt_dtyp in H, H0, Heq. simpl in *.
-              subst. dependent destruction H3.
-              apply d_sub_mono_stvar_false in H1_; auto.
-           ++ unfold open_dtyp_wrt_dtyp in Heq. simpl in Heq.
-             inversion Heq.
-        -- dependent destruction Heq. unfold open_dtyp_wrt_dtyp in *.
-           eapply IHn2 with (L:=L); eauto. lia. lia.
-           intros. inst_cofinites_with X. dependent destruction H2; auto.
 Qed.
 
 
