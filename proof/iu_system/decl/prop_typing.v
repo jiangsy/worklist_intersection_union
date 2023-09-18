@@ -241,7 +241,7 @@ Hint Resolve bind_typ_subst : typing.
 Hint Resolve dwf_typ_dlc_type : typing.
 
 
-(* for the e <= forall a. A, not used not*)
+(* for the e <= forall a. A, not used now*)
 Theorem d_chkinf_subst_mono: forall E F X e m T1 T2,
   d_typing (F ++ X ~ dbind_tvar_empty ++ E) e m T1 ->
   E ⊢ T2 ->
@@ -521,31 +521,51 @@ Proof with auto with typing.
       econstructor; eauto... admit.
     + inversion H6.
     + specialize (IHd_sub T1 H H0 H1 H2 IHd_infabs (eq_refl _)).
-      admit. 
+      destruct IHd_sub as [B2 [C2]].
+      exists B2 C2. intuition.
     + specialize (IHd_sub T1 H H0 H1 H2 IHd_infabs (eq_refl _)).
-      admit. 
+      destruct IHd_sub as [B2 [C2]].
+      exists B2 C2. intuition.    
     + specialize (IHd_sub1 T1 H H0 H1 H2 IHd_infabs (eq_refl _)).
       specialize (IHd_sub2 T1 H H0 H1 H2 IHd_infabs (eq_refl _)).
-      admit.
+      destruct IHd_sub1 as [B2 [C2]].
+      destruct IHd_sub2 as [B3 [C3]].
+      exists (dtyp_intersection B2 B3) (dtyp_union C2 C3).
+      intuition...
+      dependent destruction H5. dependent destruction H3.
+      eauto...
   - apply dsub_intersection_inversion in H1. 
     intuition.
   - apply dsub_intersection_inversion in H1.
     intuition.
   - dependent induction H1.
-    + admit.
+    + exists dtyp_top dtyp_bot. intuition.
+      admit.
     + inversion H1.
     + specialize (IHd_sub _ _ H H0 IHd_infabs1 IHd_infabs2 (eq_refl _)).
-      admit.
+      destruct IHd_sub as [B2 [C2]].
+      exists B2 C2. intuition.    
     + specialize (IHd_sub _ _ H H0 IHd_infabs1 IHd_infabs2 (eq_refl _)).
-      admit.
+      destruct IHd_sub as [B2 [C2]].
+      exists B2 C2. intuition.   
     + specialize (IHd_infabs1 _ H1). 
-      destruct IHd_infabs1 as [B1 [C1]].
-      exists B1 C1. intuition.
+      destruct IHd_infabs1 as [B2 [C2]].
+      exists B2 C2. intuition.
+      dependent destruction H4. eauto...
       admit.
-    + specialize (IHd_infabs2 _ H1). admit.
+    + specialize (IHd_infabs2 _ H1).
+      destruct IHd_infabs2 as [B2 [C2]].
+      exists B2 C2. intuition.
+      dependent destruction H4. eauto...
+      admit.
     + specialize (IHd_sub1 _ _ H H0 IHd_infabs1 IHd_infabs2 (eq_refl _)).
       specialize (IHd_sub2 _ _ H H0 IHd_infabs1 IHd_infabs2 (eq_refl _)).
-      admit.
+      destruct IHd_sub1 as [B2 [C2]].
+      destruct IHd_sub2 as [B3 [C3]].
+      exists (dtyp_intersection B2 B3) (dtyp_union C2 C3).
+      intuition...
+      dependent destruction H1. dependent destruction H3.
+      intuition...
 Admitted.
 
 
