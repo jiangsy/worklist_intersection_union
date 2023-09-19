@@ -884,7 +884,14 @@ Qed.
 
 Hint Constructors d_sub_sized : sub.
 
-(* for demo only; not to be proved *)
+Lemma d_sub_size_rename_stvar : forall E F SX SY A B n,
+    F ++ SX ~ ▪ ++ E ⊢ A <: B | n ->
+      SY ∉ (dom E `union` dom F) ->
+      (map (d_subst_stv_in_binding (dtyp_svar SY) SX) F) ++ SY ~ ▪ ++ E ⊢
+        {dtyp_svar SY /ₛᵈ SX} A <: {dtyp_svar SY /ₛᵈ SX} B | n.
+Admitted.
+
+(* (* for demo only; not to be proved *)
 Theorem d_sub_size_subst_stvar_test : forall E F SX S1 T1 T2 n,
   F ++ (SX ~ dbind_stvar_empty) ++ E ⊢ S1 <: T1 | n ->
   E ⊢ T2 ->
@@ -897,32 +904,39 @@ Theorem d_sub_size_weakening: forall E F G S1 T1 n,
   G ++ E ⊢ S1 <: T1 | n ->
   ⊢ G ++ F ++ E ->
   G ++ F ++ E ⊢ S1 <: T1 | n.
-Admitted.
+(* Admitted. *) *)
 
-(* The above two lemmas were introduced here to prove the completeness lemma but
-now I turned to the rename lemma *)
-Lemma d_sub_size_rename : forall n X Y D E A B,
+(* (* The above two lemmas were introduced here to prove the completeness lemma but *)
+(* now I turned to the rename lemma *) *)
+
+Corollary d_sub_size_rename : forall n X Y D E A B,
     X `notin`  (fstv_in_dtyp A `union` fstv_in_dtyp B) ->
     Y `notin` ((dom D) `union` (dom E)) ->
     D ++ X ~ ▪ ++ E ⊢ A ^^ᵈ dtyp_svar X <: B ^^ᵈ dtyp_svar X | n ->
-    D ++ Y ~ ▪ ++ E ⊢ A ^^ᵈ dtyp_svar Y <: B ^^ᵈ dtyp_svar Y | n.
-Admitted.
+    map (d_subst_stv_in_binding (dtyp_svar Y) X) D ++ Y ~ ▪ ++ E ⊢ A ^^ᵈ dtyp_svar Y <: B ^^ᵈ dtyp_svar Y | n.
+Proof with eauto.
+  intros.
+  forwards: d_sub_size_rename_stvar Y H1. solve_notin.
+  rewrite 2 d_subst_stv_in_dtyp_open_dtyp_wrt_dtyp in H2...
+  simpl in H2. case_if.
+  rewrite 2 d_subst_stv_in_dtyp_fresh_eq in H2...
+Qed.
 
 Lemma d_sub_size_complete : forall E T1 T2,
   E ⊢ T1 <: T2 -> exists n, E ⊢ T1 <: T2 | n.
-Proof with eauto with sub.
-  intros. induction H; eauto...
-  - destruct IHd_sub1 as [n1]. destruct IHd_sub2 as [n2].
-    eauto...
-  - pick fresh X.
-    destruct (H2 X) as [n]. solve_notin.
-    exists (S n).
-    eapply d__subs__all with (L:=L `union` fstv_in_dtyp S1 `union` fstv_in_dtyp S1); intros; eauto.
-    + forwards* HS: d_sub_size_weakening (SX ~ ▪) H3. admit.
-      rewrite_env (nil ++ (X ~ ▪ ++ SX ~ ▪ ++ E)) in HS.
-      forwards* (?&?): d_sub_size_subst_stvar_test (dtyp_svar SX) HS.
-      (* we need x to be n here. so the d_sub_size_subst_stvar does not work well *)
-Restart.
+(* Proof with eauto with sub. *)
+(*   intros. induction H; eauto... *)
+(*   - destruct IHd_sub1 as [n1]. destruct IHd_sub2 as [n2]. *)
+(*     eauto... *)
+(*   - pick fresh X. *)
+(*     destruct (H2 X) as [n]. solve_notin. *)
+(*     exists (S n). *)
+(*     eapply d__subs__all with (L:=L `union` fstv_in_dtyp S1 `union` fstv_in_dtyp S1); intros; eauto. *)
+(*     + forwards* HS: d_sub_size_weakening (SX ~ ▪) H3. admit. *)
+(*       rewrite_env (nil ++ (X ~ ▪ ++ SX ~ ▪ ++ E)) in HS. *)
+(*       forwards* (?&?): d_sub_size_subst_stvar_test (dtyp_svar SX) HS. *)
+(*       (* we need x to be n here. so the d_sub_size_subst_stvar does not work well *) *)
+(* Restart. *)
 Proof with eauto with sub.
   intros. induction H; eauto...
   - destruct IHd_sub1 as [n1]. destruct IHd_sub2 as [n2].
