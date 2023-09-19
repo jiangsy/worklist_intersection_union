@@ -24,51 +24,6 @@ Hint Constructors dwf_typ_s: core.
 Hint Constructors d_typing : typing.
 
 
-(* 
-
-Theorem ld_sub_weakening: 
-  forall G1 G2 G3 t1 t2, 
-  G1 ,, G3 ⊢ t1 <: t2 -> ⊢ G1 ,, G2 ,, G3 -> 
-  G1 ,, G2 ,, G3 ⊢ t1 <: t2.
-Proof.
-  intros.
-  dependent induction H; auto.
-  - constructor; auto. eapply ld_in_context_weakenning. auto.
-  - constructor; auto. eapply ld_wf_type_weakening; eauto.
-  - apply ld_sub_intersection_l2. auto. eapply ld_wf_type_weakening; eauto.
-  - apply ld_sub_union_r1. auto. eapply ld_wf_type_weakening; eauto.
-  - apply ld_sub_union_r2. auto. eapply ld_wf_type_weakening; eauto.
-  - eapply ld_sub_foralll with (t:=t); auto.
-    eapply ld_wf_mtype_weakening; auto.
-  - pick fresh x and apply ld_sub_forallr for weakening.
-    replace (G1,, G2,, G3, x) with (G1,, G2,, (G3, x)) by auto.
-    eapply H0; auto. constructor; auto.
-Qed.
-
-
-Theorem ld_in_context_other : forall G1 G2 x x', 
-  x <> x' -> ld_in_context x (G1, x',,G2) -> ld_in_context x (G1,,G2).
-Proof.
-  intros.
-  induction G2.
-  - simpl in *. dependent destruction H0.
-    + contradiction.
-    + auto.
-  - simpl in *. dependent destruction H0.
-    + econstructor.
-    + constructor. auto. 
-Qed.
-
-
-Ltac rewrite_subst_open_var :=
-  repeat
-    match goal with 
-      | _ : _ |-  context [ ([?e /ᵈ ?x] ?A) ^^ᵈ `ᵈ ?x' ] => 
-        replace (`ᵈ x') with ([e /ᵈ x] `ᵈ x') by (apply subst_ld_type_fresh_eq; auto)
-    end; repeat rewrite <- subst_ld_type_open_ld_type_wrt_ld_type by auto.
-
-*)
-
 
 Inductive d_subenv : denv -> denv -> Prop := 
 | d_subenv_empty: d_subenv nil nil  
