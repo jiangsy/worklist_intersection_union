@@ -714,7 +714,8 @@ Proof with auto with typing.
            refine (IHn1 _ _ _ _ _ _ _ _ _ _ H _ _ _); eauto...
            rewrite <- d_exp_size_open_var. lia.
            econstructor; auto. 
-           admit.
+           econstructor. econstructor; eauto.
+           econstructor. 
       (* \x. e <= T1 -> T2 *)
       * intros. 
         assert (d_wft_ord S1) as Hwford. admit. (* trivial * *)
@@ -743,7 +744,6 @@ Proof with auto with typing.
         destruct Hty as [S2 [Hsub Hinf]].
         apply d_typing_chksub with (S1 := S2); auto.
         apply sub_transitivity with (S1 := T1); auto... 
-        (* eapply d_chk_inf_wf_env; eauto. *)
         eapply denvsub_sub; eauto. apply sub_transitivity with (S1 := S1); auto...
         eapply denvsub_sub; eauto.
         simpl. lia.
