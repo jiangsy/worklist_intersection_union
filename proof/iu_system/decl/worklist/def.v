@@ -1,4 +1,4 @@
-Require Import Program.Equality.
+(* Require Import Program.Equality.
 
 Require Import decl.notations.
 
@@ -193,4 +193,4 @@ Inductive d_wl_red : dworklist -> Prop :=    (* defn d_wl_red *)
      apply_dcont c T1 Γ' ->
      d_wl_red (dwl_app Γ' Γ) ->
      d_wl_red (dworklist_conswork Γ (dwork_apply c T1))   
-    .
+    . *)
