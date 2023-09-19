@@ -120,21 +120,36 @@ Qed.
 
 
 Lemma d_subenv_same_var : forall E E' T1 x, 
+  ⊢ E ->
   d_subenv E' E ->
   x ~ T1 ∈ E ->
   exists S1, x ~ S1 ∈ E' /\ E ⊢ S1 <: T1.
 Proof.
-  intros. induction H; simpl; intros; auto.
-  - inversion H0; auto.
-  - inversion H0; auto.
-    + inversion H1.
-    + specialize (IHd_subenv H1).
-      admit.
-  - inversion H0; auto.
-    + inversion H1.
-    + specialize (IHd_subenv H1).
-      admit.
-Admitted.
+  intros. induction H0; simpl; intros; auto.
+  - inversion H1; auto.
+  - inversion H1; auto.
+    + inversion H2.
+    + dependent destruction H. 
+      specialize (IHd_subenv H H3).
+      destruct IHd_subenv as [S1].
+      exists S1; intuition.
+      eapply d_sub_weakening_cons; eauto.
+  - inversion H1; auto.
+    + inversion H2.
+    + dependent destruction H. specialize (IHd_subenv H H3).
+      destruct IHd_subenv as [S1].
+      exists S1; intuition.
+      eapply d_sub_weakening_cons; eauto.
+  - inversion H1; auto.
+    + dependent destruction H3.
+      exists S1; intuition.
+      eapply d_sub_weakening_cons; eauto.
+    + dependent destruction H. specialize (IHd_subenv H H5).
+      destruct IHd_subenv as [S2].
+      exists S2; intuition.
+      eapply d_sub_weakening_cons; eauto.
+Qed.
+
 
 Lemma d_subenv_same_stvar : forall E E' SX, 
   d_subenv E' E ->
@@ -344,16 +359,19 @@ Hint Constructors d_inftapp_false : inftapp.
 Lemma d_inftapp_wft : forall E A B C,
   d_inftapp E A B C ->
   ⊢ E /\ E ⊢ A /\ E ⊢ B /\ E ⊢ C.
-Proof. 
+Proof with auto with typing. 
   intros. induction H; intuition.
   - dependent destruction H0.
     pick fresh X. inst_cofinites_with X.
     replace (T1 ^^ᵈ T2) with ({T2 /ᵈ X} T1 ^ᵈ X).
-    rewrite_env  ((map (d_subst_tv_in_binding T2 X) nil) ++ E).
-    apply d_wft_typ_subst; eauto...
-    admit.
-    admit.
-Admitted.
+    + rewrite_env ((map (d_subst_tv_in_binding T2 X) nil) ++ E).
+      apply d_wft_typ_subst; eauto... 
+      econstructor; eauto.
+    + rewrite d_subst_tv_in_dtyp_open_dtyp_wrt_dtyp...
+      rewrite (d_subst_tv_in_dtyp_fresh_eq T1)...
+      simpl. unfold eq_dec. destruct (EqDec_eq_of_X X X); eauto. contradiction.
+      eapply dwf_typ_dlc_type; eauto.
+Qed.
 
 
 Theorem d_inftapp_total: forall E A B,
@@ -379,6 +397,8 @@ Proof with auto with inftapp.
 Qed.
 
 
+Hint Resolve d_inftapp_wft : typing.
+
 (* @shengyi:todo *** *)
 Theorem d_inftapp_subsumption_same_env : forall E A1 B1 C1 A2, 
   E ⊢ A1 ○ B1 ⇒⇒ C1 -> 
@@ -395,8 +415,8 @@ Proof with auto with typing.
       * exists C1; intuition...
       * destruct H4 as [C2 Hc2]. destruct Hc1.
         exists (dtyp_intersection C1 C2); split.
-        -- constructor; auto. 
-           admit. (* wft ★★ *)
+        -- constructor; auto.
+           eapply d_inftapp_wft; eauto.
         -- apply d_inftapp_intersection3; auto.
     + specialize (d_inftapp_total _ _ _ H H2 H0). intros.
       specialize (IHd_sub H H0 (eq_refl _)). destruct IHd_sub as [C1 Hc1].
@@ -404,26 +424,24 @@ Proof with auto with typing.
       * exists C1; intuition...
       * destruct H4 as [C2 Hc2]. destruct Hc1.
         exists (dtyp_intersection C2 C1); split.
-        -- apply d_sub_intersection3; auto. admit.
+        -- apply d_sub_intersection3; auto.         
+           eapply d_inftapp_wft. eauto.
         -- apply d_inftapp_intersection3; auto.
     + specialize (IHd_sub1 H H0 (eq_refl _)). destruct IHd_sub1 as [C1 Hc1].
       specialize (IHd_sub2 H H0 (eq_refl _)). destruct IHd_sub2 as [C2 Hc2].
       exists (dtyp_union C1 C2). split.
       intuition... intuition...
   - intros. dependent induction H2.
-    + exists dtyp_bot. split.
-      econstructor. admit. (* wft ★ *)
-      admit. (* wft *)
-      econstructor; auto.
+    + exists dtyp_bot. intuition... 
+      econstructor... 
+      admit.
     + exists (S1 ^^ᵈ T2). split; auto...
       pick fresh SX. inst_cofinites_with SX.
-      replace (S1 ^^ᵈ T2) with ({T2 /ₛᵈ SX} S1 ^^ᵈ dtyp_svar SX) by admit. (* ★ *)
-      replace (T1 ^^ᵈ T2) with ({T2 /ₛᵈ SX} T1 ^^ᵈ dtyp_svar SX) by admit. (* ★ *)
+      erewrite <- dtyp_subst_open_stvar; eauto.
+      rewrite <- (dtyp_subst_open_stvar SX T1 T2); eauto.
       rewrite_env ((map (d_subst_stv_in_binding T2 SX) nil) ++ E).
       apply d_sub_subst_stvar; auto...
       constructor; auto.
-      econstructor; auto.
-      admit. (* wft ★ *)
       admit. (* wft *)
     + inversion H6.
     + specialize (IHd_sub _ H H0 H1 (eq_refl _)).
@@ -434,8 +452,8 @@ Proof with auto with typing.
       -- destruct H5 as [C2 Hc2]. 
          exists (dtyp_intersection C1 C2). split.
          constructor; intuition... 
-         admit. (* wft ★★ *) 
-         admit. (* wft ★★ *) 
+         eapply d_inftapp_wft. eauto.
+         eapply d_inftapp_wft. eauto.
          apply d_inftapp_intersection3; intuition...
     + specialize (IHd_sub _ H H0 H1 (eq_refl _)).
       destruct IHd_sub as [C1 Hc1].
@@ -444,9 +462,9 @@ Proof with auto with typing.
       -- exists C1; intuition...
       -- destruct H5 as [C2 Hc2]. 
         exists (dtyp_intersection C2 C1). split.
-        apply d_sub_intersection3; intuition... 
-        admit. (* wft ★★ *) 
-        admit. (* wft ★★ *) 
+        apply d_sub_intersection3; intuition...
+        eapply d_inftapp_wft. eauto.
+        eapply d_inftapp_wft. eauto.
         apply d_inftapp_intersection3; intuition...
 Admitted.
 
