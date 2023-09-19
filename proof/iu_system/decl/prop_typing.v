@@ -399,6 +399,23 @@ Qed.
 
 Hint Resolve d_inftapp_wft : typing.
 
+
+Lemma d_inftapp_disjoint : forall E A1 B1 C1,
+  d_inftapp E A1 B1 C1 ->
+  d_inftapp_false A1 ->
+  False.
+Proof.
+  intros. dependent induction H.
+  - inversion H1.
+  - inversion H2.
+  - inversion H2. contradiction.
+  - inversion H2. contradiction.
+  - inversion H1. contradiction.
+  - inversion H1; contradiction.
+Qed.
+
+
+
 Lemma d_inftapp_determinism: forall E A1 B1 C1 C2, 
   E ⊢ A1 ○ B1 ⇒⇒ C1 -> 
   E ⊢ A1 ○ B1 ⇒⇒ C2 ->
@@ -407,14 +424,21 @@ Proof.
   intros. generalize dependent C2. induction H; intros.
   - dependent destruction H1; auto.
   - dependent destruction H2; auto.
-  - admit.
-  - admit.
-  - admit. 
+  - dependent destruction H2; auto; exfalso; eapply d_inftapp_disjoint; eauto.
+  - dependent destruction H2; auto. 
+    + exfalso. eapply d_inftapp_disjoint; eauto.
+    + exfalso. eapply d_inftapp_disjoint in H0; eauto.
+  - dependent destruction H1; auto. 
+    + exfalso. eapply d_inftapp_disjoint in H2; eauto.
+    + exfalso. eapply d_inftapp_disjoint in H2; eauto.
+    + specialize (IHd_inftapp1 _ H1_).
+      specialize (IHd_inftapp2 _ H1_0).
+      subst. auto.
   - dependent destruction H1; auto.
     specialize (IHd_inftapp1 _ H1_).
     specialize (IHd_inftapp2 _ H1_0).
     subst. auto.
-Admitted.
+Qed.
 
 (* @shengyi:todo *** *)
 Theorem d_inftapp_subsumption_same_env : forall E A1 B1 C1 A2, 
@@ -523,7 +547,7 @@ Proof with auto with typing.
       * destruct IHd_sub as [C3]. exists C3. intuition.
       * destruct IHd_sub as [C3]. destruct H4 as [C4].
         exists (dtyp_intersection C3 C4); intuition...
-        eapply d_sub_intersection3... 
+        eapply d_sub_intersection2... 
         admit. (* wft*) 
     + specialize (IHd_sub _ _ H H0 IHd_inftapp1 IHd_inftapp2 (eq_refl _)).
       apply d_inftapp_wft in H. intuition.
