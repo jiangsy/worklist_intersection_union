@@ -8,7 +8,7 @@ ftyp, T, S, U :: ftyp_ ::=
   | TOP            ::   :: top
   | X              ::   :: var
   | T1 -> T2       ::   :: arrow
-  | ∀ X . T ::   :: all  (+ bind X in T +)
+  | ∀ X . T        ::   :: all  (+ bind X in T +)
   | T1 + T2        ::   :: sum
   | T1 × T2        ::   :: prod
   | ( T )          :: S :: paren {{ coq ([[T]]) }}
@@ -54,7 +54,7 @@ fenv, E, F, G :: '' ::= {{ coq list (atom*binding) }}
 
 fvalue, v :: fvalue_ ::=
   | \ x : T . e  ::   :: abs  (+ bind x in e +)
-  | \ X <: T . e ::   :: tabs (+ bind X in e +)
+  | \ X . e      ::   :: tabs (+ bind X in e +)
   | inl v        ::   :: inl
   | inr v        ::   :: inr
   | < v1 , v2 >  ::   :: pair
@@ -81,7 +81,7 @@ E |- T :: :: wf :: 'wf_typ_' by
 --------- :: unit
 E |- UNIT
 
-(X <: U) in E
+(X : ▪) in E
 -------------- :: var
 E |- X
 
@@ -184,7 +184,7 @@ E, X : ▪ |- e : T
 -------------------------- :: tabs
 E |- \ X . e : ∀ X . T
 
-E |- e1 : \X .T1
+E |- e1 : ∀ X . T1
 --------------------------- :: tapp
 E |- e1 @ T2 : {T2 / X} T1
 
@@ -217,13 +217,13 @@ E |- case e1 of inl x -> e2 | inr y -> e3 : T
 E |- e1 : T1
 E |- e2 : T2
 ---------------------------------------------- :: pair
-E |- < e1 , e2 > : T1 * T2
+E |- < e1 , e2 > : T1 × T2
 
-E |- e : T1 * T2
+E |- e : T1 × T2
 -------------------- :: proj1
 E |- proj1 e : T1
 
-E |- e : T1 * T2
+E |- e : T1 × T2
 -------------------- :: proj2
 E |- proj2 e : T2
 
@@ -245,7 +245,7 @@ v1 e2 --> v1 e2'
 
 e1 --> e1'
 ----------------------- :: tapp_1
-e1 @ T --> e1' T
+e1 @ T --> e1' @ T
 
 ------------------------------- :: abs
 (\x:T. e1) v2  --> {v2 / x} e1
@@ -293,7 +293,7 @@ e --> e'
 proj2 e --> proj2 e'
 
 e1 --> e1'
--------------------------------------- :: pair2
+-------------------------------------- :: pair1
 < e1 , e2 > --> < e1' , e2 >
 
 e2 --> e2'
