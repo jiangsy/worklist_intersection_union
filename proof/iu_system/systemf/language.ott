@@ -54,7 +54,7 @@ fenv, E, F, G :: '' ::= {{ coq list (atom*binding) }}
 
 fvalue, v :: fvalue_ ::=
   | \ x : T . e  ::   :: abs  (+ bind x in e +)
-  | \ X <: T . e ::   :: tabs (+ bind X in e +)
+  | \ X . e      ::   :: tabs (+ bind X in e +)
   | inl v        ::   :: inl
   | inr v        ::   :: inr
   | < v1 , v2 >  ::   :: pair

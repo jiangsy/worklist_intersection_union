@@ -1,9 +1,11 @@
 # Rules
 
 - finish algo rules
-- check apply_cont, wfj for cont?
-  + a_wl_red in algo/def_worklist
-- check non overlapping
+  - reorder def/use
+  - check apply_cont, wfj for cont?
+  - check a_wl_red in algo/def_worklist
+- do we need a non-overlapping sys?
+  - check non overlapping
 - update reduction rules
 
 
@@ -12,13 +14,13 @@
 - finish subsumption
 - big theorems
   + soundness
+    @shengyi
   + completeness
-  + @Chen type safety
+    @shengyi
+  + @chen type safety
   + decidability
 
 # Code and Technical Things
 
-- uniq E
-- reorder def/use
 - ln related lemmas in prop_subtyping.v
 - @Chen system F defs
