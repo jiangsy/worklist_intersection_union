@@ -399,6 +399,23 @@ Qed.
 
 Hint Resolve d_inftapp_wft : typing.
 
+Lemma d_inftapp_determinism: forall E A1 B1 C1 C2, 
+  E ⊢ A1 ○ B1 ⇒⇒ C1 -> 
+  E ⊢ A1 ○ B1 ⇒⇒ C2 ->
+  C1 = C2.
+Proof.
+  intros. generalize dependent C2. induction H; intros.
+  - dependent destruction H1; auto.
+  - dependent destruction H2; auto.
+  - admit.
+  - admit.
+  - admit. 
+  - dependent destruction H1; auto.
+    specialize (IHd_inftapp1 _ H1_).
+    specialize (IHd_inftapp2 _ H1_0).
+    subst. auto.
+Admitted.
+
 (* @shengyi:todo *** *)
 Theorem d_inftapp_subsumption_same_env : forall E A1 B1 C1 A2, 
   E ⊢ A1 ○ B1 ⇒⇒ C1 -> 
@@ -488,40 +505,80 @@ Proof with auto with typing.
   - intros. apply dsub_intersection_inversion in H2. 
     intuition.
   - intros. dependent induction H1.
-    + admit.
+    + exists dtyp_bot. intuition... 
+      admit. (* wft *)
+      econstructor... admit. (* wft *)
     + inversion H7.
     + specialize (IHd_inftapp1 _ H1_).
       specialize (IHd_inftapp2 _ H1_0).
-      admit.
+      destruct IHd_inftapp1 as [C3].
+      destruct IHd_inftapp2 as [C4].
+      intuition.
+      eapply d_inftapp_determinism in H4; eauto. subst.
+      exists C3; intuition...
     + specialize (IHd_sub _ _ H H0 IHd_inftapp1 IHd_inftapp2 (eq_refl _)).
-      admit.
-    + admit.
-    + specialize (IHd_sub1 _ _ H H0 IHd_inftapp1 IHd_inftapp2 (eq_refl _)).
-      specialize (IHd_sub2 _ _ H H0 IHd_inftapp1 IHd_inftapp2 (eq_refl _)).
-      admit.
-  - intros. dependent induction H1.
-    + admit.
-    + inversion H1.
+      apply d_inftapp_wft in H. intuition.
+      eapply d_inftapp_total with (A:=S2) in H4...
+      destruct H4.
+      * destruct IHd_sub as [C3]. exists C3. intuition.
+      * destruct IHd_sub as [C3]. destruct H4 as [C4].
+        exists (dtyp_intersection C3 C4); intuition...
+        eapply d_sub_intersection3... 
+        admit. (* wft*) 
     + specialize (IHd_sub _ _ H H0 IHd_inftapp1 IHd_inftapp2 (eq_refl _)).
-      admit.
-    + specialize (IHd_sub _ _ H H0 IHd_inftapp1 IHd_inftapp2 (eq_refl _)).
-      admit.
-    + specialize (IHd_inftapp1 _ H1). 
-      destruct IHd_inftapp1 as [C3]. 
-      exists C3. intuition...
-      apply d_sub_union1; eauto...
-      admit.
-    + specialize (IHd_inftapp2 _ H1). 
-      destruct IHd_inftapp2 as [C3]. 
-      exists C3. intuition...
-      apply d_sub_union2; eauto...
-      admit.
+      apply d_inftapp_wft in H. intuition.
+      eapply d_inftapp_total with (A:=S1) in H4...
+      destruct H4.
+      * destruct IHd_sub as [C3]. exists C3. intuition.
+      * destruct IHd_sub as [C3]. destruct H4 as [C4].
+        exists (dtyp_intersection C4 C3); intuition...
+        eapply d_sub_intersection3... 
+        admit. (* wft*) 
     + specialize (IHd_sub1 _ _ H H0 IHd_inftapp1 IHd_inftapp2 (eq_refl _)).
       specialize (IHd_sub2 _ _ H H0 IHd_inftapp1 IHd_inftapp2 (eq_refl _)).
       destruct IHd_sub1 as [C3].
       destruct IHd_sub2 as [C4].
       exists (dtyp_union C3 C4). intuition...
-Qed.
+  - intros. dependent induction H1.
+    + exists dtyp_bot. 
+      apply d_inftapp_wft in H.
+      apply d_inftapp_wft in H0.
+      intuition...
+    + inversion H1.
+    + specialize (IHd_sub _ _ H H0 IHd_inftapp1 IHd_inftapp2 (eq_refl _)).
+      apply d_inftapp_wft in H. intuition.
+      eapply d_inftapp_total with (A:=S2) in H4...
+      destruct H4.
+      * destruct IHd_sub as [C3]. exists C3. intuition.
+      * destruct IHd_sub as [C3]. destruct H4 as [C4].
+        exists (dtyp_intersection C3 C4); intuition...
+        eapply d_sub_intersection2...
+        admit. (* wft*)
+    + specialize (IHd_sub _ _ H H0 IHd_inftapp1 IHd_inftapp2 (eq_refl _)).
+      apply d_inftapp_wft in H. intuition.
+      eapply d_inftapp_total with (A:=S1) in H4...
+      destruct H4.
+      * destruct IHd_sub as [C3]. exists C3. intuition.
+      * destruct IHd_sub as [C3]. destruct H4 as [C4].
+        exists (dtyp_intersection C4 C3); intuition...
+        eapply d_sub_intersection3...
+        admit. (* wft *)
+    + specialize (IHd_inftapp1 _ H1). 
+      destruct IHd_inftapp1 as [C3]. 
+      exists C3. intuition...
+      apply d_sub_union1; eauto...
+      admit. (* wft*)
+    + specialize (IHd_inftapp2 _ H1). 
+      destruct IHd_inftapp2 as [C3]. 
+      exists C3. intuition...
+      apply d_sub_union2; eauto...
+      admit. (* wft*)
+    + specialize (IHd_sub1 _ _ H H0 IHd_inftapp1 IHd_inftapp2 (eq_refl _)).
+      specialize (IHd_sub2 _ _ H H0 IHd_inftapp1 IHd_inftapp2 (eq_refl _)).
+      destruct IHd_sub1 as [C3].
+      destruct IHd_sub2 as [C4].
+      exists (dtyp_union C3 C4). intuition...
+Admitted.
 
 
 
