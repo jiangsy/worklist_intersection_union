@@ -281,7 +281,7 @@ Fixpoint
     | dexp_var_f _ => 1
     | dexp_var_b _ => 1
     | dexp_abs e1 => 1 + dexp_size e1
-    | dexp_app e1 e2 => dexp_size e1 + dexp_size e2 
+    | dexp_app e1 e2 => 1 + dexp_size e1 + dexp_size e2 
     | dexp_anno e1 _ => 1 + dexp_size e1
     | dexp_tapp e1 _ => 1 + dexp_size e1
     | dexp_tabs b => 1 + d_body_size b  
@@ -703,7 +703,7 @@ Corollary d_inftabs_subsumption: forall E E' A1 A2 B1 C1,
   E ⊢ A1 ▹ B1 → C1 -> 
   E ⊢ A2 <: A1 ->
   d_subenv E' E -> 
-  exists B2 C2, E ⊢ dtyp_arrow B2 C2 <: dtyp_arrow B1 C1 /\ E ⊢ A2 ▹ B2 → C2.
+  exists B2 C2, E ⊢ dtyp_arrow B2 C2 <: dtyp_arrow B1 C1 /\ E' ⊢ A2 ▹ B2 → C2.
 Admitted.
 
 
@@ -803,7 +803,16 @@ Proof with auto with typing.
       * exists dtyp_unit. split; auto.
         econstructor. eapply d_subenv_wf_env; eauto.
       (* e1 e2 => A *)
-      * admit. (* d_infabs_subsumption @shengyi:todo *** *)
+      * eapply IHn1 in Hty1; eauto...
+        destruct Hty1 as [A2]. inversion H0.
+        eapply d_inftabs_subsumption in H; eauto.
+        destruct H as [B2 [C2]].
+        exists C2; intuition.
+        dependent destruction H0...
+        dependent destruction H0...
+        econstructor; eauto...
+        refine (IHn1 _ _ _ _ _ _ _ _ _ _ Hty2 _ _ _); eauto...
+      (* d_infabs_subsumption @shengyi:todo *** *)
       (* /\ a. e : A => forall a. A *)
       * exists (dtyp_all T1); split.
         -- eapply dsub_refl; auto. admit.
