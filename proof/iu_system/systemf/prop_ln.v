@@ -48,7 +48,6 @@ Combined Scheme fexp_mutrec from fexp_rec'.
 Fixpoint size_ftyp (T1 : ftyp) {struct T1} : nat :=
   match T1 with
     | ftyp_unit => 1
-    | ftyp_top => 1
     | ftyp_var_f X1 => 1
     | ftyp_var_b n1 => 1
     | ftyp_arrow T2 T3 => 1 + (size_ftyp T2) + (size_ftyp T3)
@@ -65,6 +64,7 @@ Fixpoint size_binding (b1 : binding) {struct b1} : nat :=
 
 Fixpoint size_fexp (e1 : fexp) {struct e1} : nat :=
   match e1 with
+    | fexp_unit => 1
     | fexp_var_f x1 => 1
     | fexp_var_b n1 => 1
     | fexp_abs T1 e2 => 1 + (size_ftyp T1) + (size_fexp e2)
@@ -88,8 +88,6 @@ Fixpoint size_fexp (e1 : fexp) {struct e1} : nat :=
 Inductive degree_ftyp_wrt_ftyp : nat -> ftyp -> Prop :=
   | degree_wrt_ftyp_ftyp_unit : forall n1,
     degree_ftyp_wrt_ftyp n1 (ftyp_unit)
-  | degree_wrt_ftyp_ftyp_top : forall n1,
-    degree_ftyp_wrt_ftyp n1 (ftyp_top)
   | degree_wrt_ftyp_ftyp_var_f : forall n1 X1,
     degree_ftyp_wrt_ftyp n1 (ftyp_var_f X1)
   | degree_wrt_ftyp_ftyp_var_b : forall n1 n2,
@@ -131,6 +129,8 @@ Combined Scheme degree_binding_wrt_ftyp_mutind from degree_binding_wrt_ftyp_ind'
 #[export] Hint Constructors degree_binding_wrt_ftyp : core lngen.
 
 Inductive degree_fexp_wrt_ftyp : nat -> fexp -> Prop :=
+  | degree_wrt_ftyp_fexp_unit : forall n1,
+    degree_fexp_wrt_ftyp n1 (fexp_unit)
   | degree_wrt_ftyp_fexp_var_f : forall n1 x1,
     degree_fexp_wrt_ftyp n1 (fexp_var_f x1)
   | degree_wrt_ftyp_fexp_var_b : forall n1 n2,
@@ -173,6 +173,8 @@ Inductive degree_fexp_wrt_ftyp : nat -> fexp -> Prop :=
     degree_fexp_wrt_ftyp n1 (fexp_pair e1 e2).
 
 Inductive degree_fexp_wrt_fexp : nat -> fexp -> Prop :=
+  | degree_wrt_fexp_fexp_unit : forall n1,
+    degree_fexp_wrt_fexp n1 (fexp_unit)
   | degree_wrt_fexp_fexp_var_f : forall n1 x1,
     degree_fexp_wrt_fexp n1 (fexp_var_f x1)
   | degree_wrt_fexp_fexp_var_b : forall n1 n2,
@@ -232,8 +234,6 @@ Combined Scheme degree_fexp_wrt_fexp_mutind from degree_fexp_wrt_fexp_ind'.
 Inductive lc_set_ftyp : ftyp -> Set :=
   | lc_set_ftyp_unit :
     lc_set_ftyp (ftyp_unit)
-  | lc_set_ftyp_top :
-    lc_set_ftyp (ftyp_top)
   | lc_set_ftyp_var_f : forall X1,
     lc_set_ftyp (ftyp_var_f X1)
   | lc_set_ftyp_arrow : forall T1 T2,
@@ -251,7 +251,6 @@ Inductive lc_set_ftyp : ftyp -> Set :=
     lc_set_ftyp T1 ->
     lc_set_ftyp T2 ->
     lc_set_ftyp (ftyp_prod T1 T2).
-
 Scheme lc_ftyp_ind' := Induction for lc_ftyp Sort Prop.
 
 Combined Scheme lc_ftyp_mutind from lc_ftyp_ind'.
@@ -274,7 +273,6 @@ Inductive lc_set_binding : binding -> Set :=
   | lc_set_bind_typ : forall T1,
     lc_set_ftyp T1 ->
     lc_set_binding (bind_typ T1).
-
 Scheme lc_binding_ind' := Induction for lc_binding Sort Prop.
 
 Combined Scheme lc_binding_mutind from lc_binding_ind'.
@@ -292,6 +290,8 @@ Combined Scheme lc_set_binding_mutrec from lc_set_binding_rec'.
 #[export] Hint Constructors lc_set_binding : core lngen.
 
 Inductive lc_set_fexp : fexp -> Set :=
+  | lc_set_fexp_unit :
+    lc_set_fexp (fexp_unit)
   | lc_set_fexp_var_f : forall x1,
     lc_set_fexp (fexp_var_f x1)
   | lc_set_fexp_abs : forall T1 e1,
@@ -330,7 +330,6 @@ Inductive lc_set_fexp : fexp -> Set :=
     lc_set_fexp e1 ->
     lc_set_fexp e2 ->
     lc_set_fexp (fexp_pair e1 e2).
-
 Scheme lc_fexp_ind' := Induction for lc_fexp Sort Prop.
 
 Combined Scheme lc_fexp_mutind from lc_fexp_ind'.
@@ -373,7 +372,7 @@ Definition body_fexp_wrt_fexp e1 := forall x1, lc_fexp (open_fexp_wrt_fexp e1 (f
 
 (** Additional hint declarations. *)
 
-#[export] Hint Resolve plus_le_compat : lngen.
+#[export] Hint Resolve Nat.add_le_mono : lngen.
 
 (** Redefine some tactics. *)
 
@@ -2706,7 +2705,6 @@ match goal with
   | |- _ = _ => reflexivity
   | _ => idtac
 end;
-instantiate;
 (* everything should be easy now *)
 default_simp.
 Qed.
@@ -2745,7 +2743,6 @@ match goal with
   | |- _ = _ => reflexivity
   | _ => idtac
 end;
-instantiate;
 (* everything should be easy now *)
 default_simp.
 Qed.
@@ -2785,7 +2782,6 @@ match goal with
   | |- _ = _ => reflexivity
   | _ => idtac
 end;
-instantiate;
 (* everything should be easy now *)
 default_simp.
 Qed.
@@ -3145,7 +3141,6 @@ match goal with
   | |- _ = _ => reflexivity
   | _ => idtac
 end;
-instantiate;
 (* everything should be easy now *)
 default_simp.
 Qed.
@@ -3188,7 +3183,6 @@ match goal with
   | |- _ = _ => reflexivity
   | _ => idtac
 end;
-instantiate;
 (* everything should be easy now *)
 default_simp.
 Qed.
@@ -3231,7 +3225,6 @@ match goal with
   | |- _ = _ => reflexivity
   | _ => idtac
 end;
-instantiate;
 (* everything should be easy now *)
 default_simp.
 Qed.

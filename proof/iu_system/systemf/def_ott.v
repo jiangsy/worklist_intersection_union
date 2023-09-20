@@ -8,7 +8,6 @@ Definition expvar : Set := var.
 
 Inductive ftyp : Set := 
  | ftyp_unit : ftyp
- | ftyp_top : ftyp
  | ftyp_var_b (_:nat)
  | ftyp_var_f (X:typvar)
  | ftyp_arrow (T1:ftyp) (T2:ftyp)
@@ -21,6 +20,7 @@ Inductive binding : Set :=
  | bind_typ (T:ftyp).
 
 Inductive fexp : Set := 
+ | fexp_unit : fexp
  | fexp_var_b (_:nat)
  | fexp_var_f (x:expvar)
  | fexp_abs (T:ftyp) (e:fexp)
@@ -42,6 +42,7 @@ Definition fenv : Set := list (atom*binding).
 (** subrules *)
 Fixpoint is_fvalue_of_fexp (e_5:fexp) : bool :=
   match e_5 with
+  | fexp_unit => false
   | (fexp_var_b nat) => false
   | (fexp_var_f x) => false
   | (fexp_abs T e) => (true)
@@ -61,7 +62,6 @@ end.
 Fixpoint open_ftyp_wrt_ftyp_rec (k:nat) (T_5:ftyp) (T__6:ftyp) {struct T__6}: ftyp :=
   match T__6 with
   | ftyp_unit => ftyp_unit 
-  | ftyp_top => ftyp_top 
   | (ftyp_var_b nat) => 
       match lt_eq_lt_dec nat k with
         | inleft (left _) => ftyp_var_b nat
@@ -77,6 +77,7 @@ end.
 
 Fixpoint open_fexp_wrt_fexp_rec (k:nat) (e_5:fexp) (e__6:fexp) {struct e__6}: fexp :=
   match e__6 with
+  | fexp_unit => fexp_unit 
   | (fexp_var_b nat) => 
       match lt_eq_lt_dec nat k with
         | inleft (left _) => fexp_var_b nat
@@ -98,6 +99,7 @@ end.
 
 Fixpoint open_fexp_wrt_ftyp_rec (k:nat) (T_5:ftyp) (e_5:fexp) {struct e_5}: fexp :=
   match e_5 with
+  | fexp_unit => fexp_unit 
   | (fexp_var_b nat) => fexp_var_b nat
   | (fexp_var_f x) => fexp_var_f x
   | (fexp_abs T e) => fexp_abs (open_ftyp_wrt_ftyp_rec k T_5 T) (open_fexp_wrt_ftyp_rec k T_5 e)
@@ -130,7 +132,6 @@ Definition open_binding_wrt_ftyp T5 b5 := open_binding_wrt_ftyp_rec 0 b5 T5.
 Fixpoint close_ftyp_wrt_ftyp_rec (k:nat) (T_5:var) (T__6:ftyp) {struct T__6}: ftyp :=
   match T__6 with
   | ftyp_unit => ftyp_unit 
-  | ftyp_top => ftyp_top 
   | (ftyp_var_b nat) => 
        if (lt_dec nat k) 
          then ftyp_var_b nat
@@ -150,6 +151,7 @@ end.
 
 Fixpoint close_fexp_wrt_fexp_rec (k:nat) (e_5:var) (e__6:fexp) {struct e__6}: fexp :=
   match e__6 with
+  | fexp_unit => fexp_unit 
   | (fexp_var_b nat) => 
        if (lt_dec nat k) 
          then fexp_var_b nat
@@ -169,6 +171,7 @@ end.
 
 Fixpoint close_fexp_wrt_ftyp_rec (k:nat) (T_5:var) (e_5:fexp) {struct e_5}: fexp :=
   match e_5 with
+  | fexp_unit => fexp_unit 
   | (fexp_var_b nat) => fexp_var_b nat
   | (fexp_var_f x) => fexp_var_f x
   | (fexp_abs T e) => fexp_abs (close_ftyp_wrt_ftyp_rec k T_5 T) (close_fexp_wrt_ftyp_rec k T_5 e)
@@ -198,8 +201,6 @@ Definition close_ftyp_wrt_ftyp T__6 T_5 := close_ftyp_wrt_ftyp_rec 0 T__6 T_5.
 Inductive lc_ftyp : ftyp -> Prop :=    (* defn lc_ftyp *)
  | lc_ftyp_unit : 
      (lc_ftyp ftyp_unit)
- | lc_ftyp_top : 
-     (lc_ftyp ftyp_top)
  | lc_ftyp_var_f : forall (X:typvar),
      (lc_ftyp (ftyp_var_f X))
  | lc_ftyp_arrow : forall (T1 T2:ftyp),
@@ -228,6 +229,8 @@ Inductive lc_binding : binding -> Prop :=    (* defn lc_binding *)
 
 (* defns LC_fexp *)
 Inductive lc_fexp : fexp -> Prop :=    (* defn lc_fexp *)
+ | lc_fexp_unit : 
+     (lc_fexp fexp_unit)
  | lc_fexp_var_f : forall (x:expvar),
      (lc_fexp (fexp_var_f x))
  | lc_fexp_abs : forall (T:ftyp) (e:fexp),
@@ -270,7 +273,6 @@ Inductive lc_fexp : fexp -> Prop :=    (* defn lc_fexp *)
 Fixpoint fv_ftyp_in_ftyp (T_5:ftyp) : vars :=
   match T_5 with
   | ftyp_unit => {}
-  | ftyp_top => {}
   | (ftyp_var_b nat) => {}
   | (ftyp_var_f X) => {{X}}
   | (ftyp_arrow T1 T2) => (fv_ftyp_in_ftyp T1) \u (fv_ftyp_in_ftyp T2)
@@ -287,6 +289,7 @@ end.
 
 Fixpoint fv_fexp_in_fexp (e_5:fexp) : vars :=
   match e_5 with
+  | fexp_unit => {}
   | (fexp_var_b nat) => {}
   | (fexp_var_f x) => {{x}}
   | (fexp_abs T e) => (fv_fexp_in_fexp e)
@@ -303,6 +306,7 @@ end.
 
 Fixpoint fv_ftyp_in_fexp (e_5:fexp) : vars :=
   match e_5 with
+  | fexp_unit => {}
   | (fexp_var_b nat) => {}
   | (fexp_var_f x) => {}
   | (fexp_abs T e) => (fv_ftyp_in_ftyp T) \u (fv_ftyp_in_fexp e)
@@ -321,7 +325,6 @@ end.
 Fixpoint subst_typ_in_ftyp (T_5:ftyp) (X5:typvar) (T__6:ftyp) {struct T__6} : ftyp :=
   match T__6 with
   | ftyp_unit => ftyp_unit 
-  | ftyp_top => ftyp_top 
   | (ftyp_var_b nat) => ftyp_var_b nat
   | (ftyp_var_f X) => (if eq_var X X5 then T_5 else (ftyp_var_f X))
   | (ftyp_arrow T1 T2) => ftyp_arrow (subst_typ_in_ftyp T_5 X5 T1) (subst_typ_in_ftyp T_5 X5 T2)
@@ -338,6 +341,7 @@ end.
 
 Fixpoint subst_exp_in_fexp (e_5:fexp) (x5:expvar) (e__6:fexp) {struct e__6} : fexp :=
   match e__6 with
+  | fexp_unit => fexp_unit 
   | (fexp_var_b nat) => fexp_var_b nat
   | (fexp_var_f x) => (if eq_var x x5 then e_5 else (fexp_var_f x))
   | (fexp_abs T e) => fexp_abs T (subst_exp_in_fexp e_5 x5 e)
@@ -354,6 +358,7 @@ end.
 
 Fixpoint subst_typ_in_fexp (T_5:ftyp) (X5:typvar) (e_5:fexp) {struct e_5} : fexp :=
   match e_5 with
+  | fexp_unit => fexp_unit 
   | (fexp_var_b nat) => fexp_var_b nat
   | (fexp_var_f x) => fexp_var_f x
   | (fexp_abs T e) => fexp_abs (subst_typ_in_ftyp T_5 X5 T) (subst_typ_in_fexp T_5 X5 e)
@@ -410,6 +415,8 @@ Inductive wf_env : fenv -> Prop :=    (* defn wf_env *)
 
 (* defns Jtyping *)
 Inductive typing : fenv -> fexp -> ftyp -> Prop :=    (* defn typing *)
+ | typing_unit : forall (E:fenv),
+     typing E fexp_unit ftyp_unit
  | typing_var : forall (E:fenv) (x:expvar) (T:ftyp),
      wf_env E ->
       binds ( x ) ( (bind_typ T) ) ( E )  ->
