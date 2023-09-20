@@ -86,6 +86,9 @@ Proof.
     contradiction.
 Qed.
 
+
+
+
 Lemma dtyp_open_r_close_l : forall T1 T2 X
   , X `notin` ftv_in_dtyp T2
   -> T1 = open_dtyp_wrt_dtyp T2 `ᵈ X -> close_dtyp_wrt_dtyp X T1 = T2.
@@ -153,6 +156,19 @@ Proof.
   rewrite d_subst_stv_in_dtyp_open_dtyp_wrt_dtyp.
   rewrite (d_subst_stv_in_dtyp_fresh_eq T2); auto.
   auto.
+Qed.
+
+Lemma dtyp_subst_open_stvar : forall SX T1 T2,
+  lc_dtyp T2 ->
+  SX `notin` fstv_in_dtyp T1 ->
+  {T2 /ₛᵈ SX} T1 ^^ᵈ (dtyp_svar SX) = T1 ^^ᵈ T2.
+Proof.
+  intros.
+  rewrite d_subst_stv_in_dtyp_open_dtyp_wrt_dtyp; auto.
+  rewrite (d_subst_stv_in_dtyp_fresh_eq T1); auto.
+  simpl. unfold eq_dec.
+  - destruct (EqDec_eq_of_X SX SX); auto.
+    contradiction.
 Qed.
 
 

@@ -524,6 +524,16 @@ Proof with auto with subtyping weakening.
 Qed.
 
 
+Corollary d_sub_weakening_cons: forall E x b S1 T1,
+  E ⊢ S1 <: T1 ->
+  ⊢ x ~ b ++ E ->
+  x ~ b ++ E ⊢ S1 <: T1.
+Proof.
+  intros.
+  rewrite_env (nil ++ (x ~ b) ++ E).
+  eapply d_sub_weakening; eauto.
+Qed.
+
 (* Theorem  d_sub_strenthening: forall E F G S1 T1,
   F ++ G ++ E ⊢ S1 <: T1 ->
   F ++ E ⊢ S1 ->
