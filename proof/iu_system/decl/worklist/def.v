@@ -1,6 +1,7 @@
-(* Require Import Program.Equality.
+Require Import Program.Equality.
 
-Require Import decl.notations.
+Require Export decl.def_ott.
+Require Export decl.def_extra.
 
 
 Fixpoint dwl_app (Γ1 Γ2 : dworklist) :=
@@ -37,10 +38,10 @@ Inductive dwl_del_red : dworklist -> Prop :=
       d_typing (dwl_to_denv Γ) e d_typingmode_chk T1 ->
       dwl_del_red Γ ->
       dwl_del_red (dworklist_conswork Γ (dwork_check e T1))
-  | dwldelred_infapp : forall Γ e T1 T2 c,
+  (* | dwldelred_infapp : forall Γ e T1 T2 c,
       d_typing (dwl_to_denv Γ) e (d_typingmode_infapp T1) T2 ->
       dwl_del_red (dworklist_conswork Γ (dwork_apply c T1)) ->
-      dwl_del_red (dworklist_conswork Γ (dwork_infapp T2 e c))
+      dwl_del_red (dworklist_conswork Γ (dwork_infapp T2 e c)) *)
   | dwldelred_inftappall : forall Γ T1 T2 c,
       dwl_del_red (dworklist_conswork Γ (dwork_apply c (open_dtyp_wrt_dtyp T2 T1))) -> 
       dwl_del_red (dworklist_conswork Γ (dwork_inftapp (dtyp_all T2) T1 c))
@@ -193,4 +194,4 @@ Inductive d_wl_red : dworklist -> Prop :=    (* defn d_wl_red *)
      apply_dcont c T1 Γ' ->
      d_wl_red (dwl_app Γ' Γ) ->
      d_wl_red (dworklist_conswork Γ (dwork_apply c T1))   
-    . *)
+    .

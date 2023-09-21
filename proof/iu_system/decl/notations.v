@@ -71,10 +71,10 @@ Notation "T ^ᵈ X" := (open_dtyp_wrt_dtyp T (dtyp_var_f X))
 Notation "T1 ^^ᵈ T2" := (open_dtyp_wrt_dtyp T1 T2)
   (at level 48, left associativity) : type_scope.
 
-
+(* 
 Notation "e ⟼ e'" := 
   (dexp_red e e')
-    (at level 65, no associativity).
+    (at level 65, no associativity). *)
 
 Declare Scope dworklist_scope.
 Delimit Scope dworklist_scope with dworklist.

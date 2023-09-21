@@ -815,7 +815,8 @@ Proof with auto with typing.
       (* d_infabs_subsumption @shengyi:todo *** *)
       (* /\ a. e : A => forall a. A *)
       * exists (dtyp_all T1); split.
-        -- eapply dsub_refl; auto. admit.
+        -- eapply dsub_refl; auto.
+           admit.
         -- dependent destruction H. pick fresh X and apply d_typing_inftabs. auto...
            intros. inst_cofinites_with X.
            refine (IHn1 _ _ _ _ _ _ _ _ _ _ H1 _ _ _); eauto...
