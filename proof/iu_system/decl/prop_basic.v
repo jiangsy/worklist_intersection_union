@@ -778,7 +778,7 @@ Hint Constructors dwf_typ_s: core.
 
 Lemma dwf_typ_weakening : forall E1 E2 E3 T,
   E3 ++ E1 ⊢ T ->
-  uniq (E3 ++ E2 ++ E1) ->
+  (* uniq (E3 ++ E2 ++ E1) -> *)
   E3 ++ E2 ++ E1 ⊢ T.
 Proof.
   intros.
@@ -788,12 +788,11 @@ Proof.
     + auto.
     + replace (X ~ dbind_tvar_empty ++ E3 ++ E2 ++ E1) with ((X ~ dbind_tvar_empty ++ E3) ++ E2 ++ E1) by auto.
     eapply H1; eauto.
-    simpl. constructor; auto.
 Qed.
 
 Corollary dwf_typ_weakening_cons : forall E X b T,
   E ⊢ T ->
-  uniq ((X ~ b) ++ E) ->
+  (* uniq ((X ~ b) ++ E) -> *)
   ((X ~ b) ++ E) ⊢ T.
 Proof.
   intros.
@@ -803,7 +802,7 @@ Qed.
 
 Corollary dwf_typ_weaken_head: forall E1 E2 T,
   E1 ⊢ T ->
-  uniq (E2 ++ E1) ->
+  (* uniq (E2 ++ E1) -> *)
   E2 ++ E1 ⊢ T.
 Proof.
   intros.
@@ -888,7 +887,7 @@ Proof with simpl in *; try solve_by_invert; eauto using uniq_app_1, uniq_app_2.
   inductions Hwft1; intros; forwards: d_wf_env_uniq Hwfenv; try solve [simpl; auto]...
   - destruct (X0 == X).
     + subst. simpl. applys* dwf_typ_weaken_head.
-      solve_uniq.
+      (* solve_uniq. *)
     + forwards* [?|?]: binds_app_1 H.
       * forwards: binds_map_2 (d_subst_tv_in_binding T2 X) H1...
       * apply binds_cons_iff in H1. iauto.
@@ -920,7 +919,7 @@ Proof with simpl in *; try solve_by_invert; eauto using uniq_app_1, uniq_app_2, 
         ** inverts* H1...
   - destruct (SX0 == SX); subst...
     + subst. simpl. applys* dwf_typ_weaken_head.
-      solve_uniq.
+      (* solve_uniq. *)
     + forwards* [?|?]: binds_app_1 H.
       * forwards: binds_map_2 (d_subst_stv_in_binding T2 SX) H1...
       * apply binds_cons_iff in H1. iauto.
@@ -1049,7 +1048,7 @@ Proof with auto.
               ** rewrite d_subst_tv_in_dtyp_fresh_eq; intuition.
               ** contradiction.
            ++ eapply dwf_typ_dlc_type; eauto.
-           ++ auto.
+           (* ++ auto. *)
 Qed.
 
 
@@ -1070,7 +1069,7 @@ Proof with eauto.
       * dependent destruction H2. auto.
       * simpl. apply dwf_typ_weakening_cons. apply IHE; auto.
         rewrite_env ((a, b0) :: (E ++ x ~ b ++ F)) in Hwfenv. applys* d_wf_env_strenthening_head.
-        forwards: d_wf_env_uniq Hwfenv. solve_uniq.
+        (* forwards: d_wf_env_uniq Hwfenv. solve_uniq. *)
   - induction E.
     + inversion H. dependent destruction H2.
       * simpl in H1. apply notin_singleton_1 in H1. contradiction.
@@ -1079,7 +1078,7 @@ Proof with eauto.
       * dependent destruction H2. auto.
       * simpl. apply dwf_typ_weakening_cons; auto. apply IHE; auto.
         rewrite_env ((a, b0) :: (E ++ x ~ b ++ F)) in Hwfenv. applys* d_wf_env_strenthening_head.
-        forwards: d_wf_env_uniq Hwfenv. solve_uniq.
+        (* forwards: d_wf_env_uniq Hwfenv. solve_uniq. *)
   - simpl in *. constructor.
     + apply notin_union_1 in H1.
       eauto.
@@ -1117,7 +1116,7 @@ Proof with eauto using d_wft_typ_subst.
       inverts~ HE.
 Qed.
 
-
+(* This lemma cannot be used for svar subst because E ⊢ SY does not hold when SY is not in E *)
 Lemma d_wf_env_subst_stvar_typ : forall E SX F T1,
   ⊢ F ++ SX ~ dbind_stvar_empty ++ E ->
   E ⊢ T1 ->
