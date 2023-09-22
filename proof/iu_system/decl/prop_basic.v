@@ -961,7 +961,7 @@ Proof.
   intros. induction H; eauto.
 Qed.
 
-Hint Resolve d_mono_typ_lc : core.
+#[export] Hint Resolve d_mono_typ_lc : core.
 
 Lemma d_mono_typ_neq_all : forall T,
   dmono_typ T -> dneq_all T.
@@ -1136,3 +1136,189 @@ Proof with eauto using d_wft_typ_subst_stvar.
       applys d_wft_typ_subst_stvar...
       inverts~ HE.
 Qed.
+
+
+Corollary d_wf_env_weaken_stvar : forall E1 E2 SX,
+  ⊢ E2 ++ E1 ->
+  SX ∉ dom (E2 ++ E1) ->
+  ⊢ E2 ++ SX ~ ▪ ++ E1.
+Proof with eauto.
+  intros * HE HT. induction E2; intros.
+  - econstructor...
+  - rewrite_env (a :: (E2 ++ SX ~ ▪ ++ E1)). destruct a. destruct b.
+    1: rewrite_env ((a, ▫) :: (E2 ++ E1)) in HE.
+    2: rewrite_env ((a, ▪) :: (E2 ++ E1)) in HE.
+    3: rewrite_env ((a, dbind_typ T) :: (E2 ++ E1)) in HE.
+    all: forwards HE': d_wf_env_strenthening_head HE; inverts HE.
+    all: econstructor; try solve_notin.
+    applys dwf_typ_weakening...
+Qed.
+
+Lemma subst_same_stvar_typ_id : forall SX T,
+    {dtyp_svar SX /ₛᵈ SX} T = T.
+Proof with (try progress case_if); subst; simpl; eauto.
+  intros. induction T; simpl...
+  all: try rewrite IHT; try rewrite IHT1; try rewrite IHT2...
+Qed.
+
+Lemma subst_same_stvar_binding_id : forall SX a,
+    d_subst_stv_in_binding (dtyp_svar SX) SX a = a.
+Proof with subst; try rewrite subst_same_stvar_typ_id; simpl; eauto.
+  intros. destruct a...
+  induction* T...
+Qed.
+
+Lemma subst_same_stvar_map_id : forall SX F,
+    map (d_subst_stv_in_binding (dtyp_svar SX) SX) F = F.
+Proof with subst; try rewrite subst_same_stvar_typ_id; simpl; eauto.
+  intros. induction F... destruct a...
+  rewrite subst_same_stvar_binding_id. rewrite* IHF.
+Qed.
+
+Lemma dom_subst_id : forall T SX F,
+    dom (map (d_subst_stv_in_binding T SX) F) = dom F.
+Proof with simpl; eauto.
+  intros *. induction* F.
+  - destruct a. destruct b...
+    all: rewrite IHF...
+Qed.
+
+Lemma d_wf_typ_rename_stvar : forall E F SX T SY,
+  E ++ SX ~ ▪ ++ F  ⊢ T  ->
+  map (d_subst_stv_in_binding (dtyp_svar SY) SX ) E ++ SY ~ ▪ ++ F ⊢ { dtyp_svar SY /ₛᵈ SX } T.
+Proof with try solve_notin; simpl in *; eauto.
+  intros * HT.
+  case_eq (SX==SY); intros.
+  1: { subst. rewrite* subst_same_stvar_map_id. rewrite subst_same_stvar_typ_id... }
+  clear H.
+  inductions HT...
+  - econstructor. induction E...
+    all: inverts H; try solve_by_invert...
+    + remember (let (x, a0) := a in (x, d_subst_stv_in_binding (dtyp_svar SY) SX a0)).
+      remember (map (d_subst_stv_in_binding (dtyp_svar SY) SX) E ++ (SY, ▪) :: F).
+      destruct p. applys binds_cons_3.
+      applys IHE...
+  - case_if... induction E...
+    + econstructor. case_eq (SX0==SY); intros; subst...
+      inverts* H. exfalso. applys C. inverts~ H1.
+    + destruct a. inverts H.
+      * inverts H0...
+      * forwards: IHE...
+        remember (map (d_subst_stv_in_binding (dtyp_svar SY) SX) E ++ (SY, ▪) :: F).
+        rewrite_env ([(a, d_subst_stv_in_binding (dtyp_svar SY) SX b)] ++ l).
+        applys* dwf_typ_weaken_head.
+  - econstructor; intros; inst_cofinites_with X.
+    + forwards: fstv_sins_dtyp_subst_stv SX (dtyp_svar SY) H...
+      replace (dtyp_var_f X) with ({dtyp_svar SY /ₛᵈ SX} (dtyp_var_f X)) in *.
+      rewrite* <- d_subst_stv_in_dtyp_open_dtyp_wrt_dtyp...
+      simpl...
+    + intros.
+      rewrite d_subst_stv_in_dtyp_open_comm.
+      forwards: H1 ((X, ▫) :: E)...
+      econstructor. solve_notin.
+Qed.
+
+
+Corollary d_wf_env_rename_stvar : forall E SX F SY,
+  ⊢ F ++ SX ~ dbind_stvar_empty ++ E ->
+  SY ∉ dom (F ++ E) ->
+  ⊢ map (d_subst_stv_in_binding (dtyp_svar SY) SX) F ++ SY ~ dbind_stvar_empty ++ E.
+Proof with try solve_notin; simpl; eauto.
+  intros * HE HT.
+  case_eq (SY == SX); intros.
+  1: { subst. rewrite* subst_same_stvar_map_id. } clear H.
+  rewrite_env ((F ++ SX ~ ▪) ++ E) in HE.
+  forwards HE': d_wf_env_weaken_stvar SY HE. { solve_notin. }
+  induction F; intros; simpl.
+  - inverts~ HE. econstructor...
+  - destruct a. destruct b...
+    + rewrite_env (((a, ▫) :: (F ++ SX ~ ▪) ++ E)) in HE. inverts~ HE.
+      rewrite_env ((a, ▫) :: (F ++ SX ~ ▪) ++ (SY, ▪) :: E) in HE'. inverts~ HE'.
+      econstructor...
+    + rewrite_env (((a, ▪) :: (F ++ SX ~ ▪) ++ E)) in HE. inverts~ HE.
+      rewrite_env ((a, ▪) :: (F ++ SX ~ ▪) ++ (SY, ▪) :: E) in HE'. inverts~ HE'.
+      econstructor...
+    + rewrite_env (((a, dbind_typ T) :: (F ++ SX ~ ▪) ++ E)) in HE. inverts~ HE.
+      rewrite_env ((a, dbind_typ T) :: (F ++ SX ~ ▪) ++ (SY, ▪) :: E) in HE'. inverts~ HE'.
+      econstructor...
+      forwards*: IHF. solve_notin.
+      applys d_wf_typ_rename_stvar...
+      rewrite_env ((F ++ SX ~ ▪) ++ E)...
+Qed.
+Lemma d_neq_all_rename: forall T SX SY,
+  lc_dtyp T ->
+  dneq_all T ->
+  dneq_all ({dtyp_svar SY /ₛᵈ SX} T).
+Proof with  simpl; eauto using dsubst_stv_lc_dtyp; try solve_by_invert.
+  intros. destruct T...
+  - case_if; subst*.
+  - eapply dneqall_arrow;
+      applys dsubst_stv_lc_dtyp...
+    all: inverts~ H.
+  - econstructor; applys dsubst_stv_lc_dtyp; try inverts~ H...
+  - econstructor; applys dsubst_stv_lc_dtyp; try inverts~ H...
+Qed.
+
+Lemma d_neq_intersection_rename: forall T SX SY,
+  lc_dtyp T ->
+  dneq_intersection T ->
+  dneq_intersection ({dtyp_svar SY /ₛᵈ SX} T).
+Proof with  simpl; eauto using dsubst_stv_lc_dtyp; try solve_by_invert.
+  intros. destruct T...
+  - case_if; subst*.
+  - eapply dneqintersection_arrow;
+      applys dsubst_stv_lc_dtyp...
+    all: inverts~ H.
+  - econstructor.
+    forwards*: dsubst_stv_lc_dtyp SX (dtyp_all T) (dtyp_svar SY).
+  - econstructor; applys dsubst_stv_lc_dtyp; try inverts~ H...
+Qed.
+
+
+Lemma d_neq_union_rename: forall T SX SY,
+  lc_dtyp T ->
+  dneq_union T ->
+  dneq_union ({dtyp_svar SY /ₛᵈ SX} T).
+Proof with  simpl; eauto using dsubst_stv_lc_dtyp; try solve_by_invert.
+  intros. destruct T...
+  - case_if; subst*.
+  - eapply dnequnion_arrow;
+      applys dsubst_stv_lc_dtyp...
+    all: inverts~ H.
+  - econstructor.
+    forwards*: dsubst_stv_lc_dtyp SX (dtyp_all T) (dtyp_svar SY).
+  - econstructor; applys dsubst_stv_lc_dtyp; try inverts~ H...
+Qed.
+
+Lemma rename_mono_typ : forall T SX SY,
+    dmono_typ T ->
+    {dtyp_svar SY /ₛᵈ SX} T = T.
+Proof with simpl in *; eauto.
+  intros * HM.
+  induction HM...
+  all: try rewrite IHHM1; try rewrite IHHM2...
+Qed.
+
+#[export] Hint Resolve d_neq_all_rename d_neq_intersection_rename d_neq_union_rename rename_mono_typ : sub.
+
+
+Lemma dneq_all_lc_dtyp : forall T,
+  dneq_all T -> lc_dtyp T.
+Proof.
+  intros. induction H; eauto.
+Qed.
+
+Lemma dneq_intersection_lc_dtyp : forall T,
+  dneq_intersection T -> lc_dtyp T.
+Proof.
+  intros. induction H; eauto.
+Qed.
+
+
+Lemma dneq_union_lc_dtyp : forall T,
+  dneq_union T -> lc_dtyp T.
+Proof.
+  intros. induction H; eauto.
+Qed.
+
+#[export] Hint Immediate dneq_all_lc_dtyp dneq_intersection_lc_dtyp dneq_union_lc_dtyp : core.
