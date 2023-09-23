@@ -1051,6 +1051,21 @@ Proof with auto.
            (* ++ auto. *)
 Qed.
 
+Lemma d_sub_dwft_0 : forall E T1 T2,
+    E ⊢ T1 <: T2 -> ⊢ E.
+Proof.
+  intros. forwards*: d_sub_dwft H.
+Qed.
+Lemma d_sub_dwft_1 : forall E T1 T2,
+    E ⊢ T1 <: T2 -> E ⊢ T1.
+Proof.
+  intros. forwards*: d_sub_dwft H.
+Qed.
+Lemma d_sub_dwft_2 : forall E T1 T2,
+    E ⊢ T1 <: T2 -> E ⊢ T2.
+Proof.
+  intros. forwards*: d_sub_dwft H.
+Qed.
 
 Lemma dwf_typ_strengthening : forall F E x T b,
     ⊢ E ++ x ~ b ++ F ->
