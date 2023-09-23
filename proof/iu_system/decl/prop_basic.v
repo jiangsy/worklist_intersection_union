@@ -72,7 +72,6 @@ Proof.
 Qed.
 
 
-
 Lemma dtyp_subst_open_var : forall X T1 T2,
   lc_dtyp T2 ->
   X `notin` ftv_in_dtyp T1 ->
@@ -86,6 +85,28 @@ Proof.
     contradiction.
 Qed.
 
+Lemma open_dtyp_wrt_dtyp_twice : forall n X SY S,
+    lc_dtyp SY ->
+    open_dtyp_wrt_dtyp_rec n `ᵈ X (open_dtyp_wrt_dtyp_rec (n+1) SY S)
+    = open_dtyp_wrt_dtyp_rec n SY (open_dtyp_wrt_dtyp_rec n `ᵈ X S).
+Proof with subst; simpl in *; eauto; try lia.
+  introv HL. gen n. induction S; intros...
+  all: try congruence.
+  - destruct (lt_eq_lt_dec n (n0 + 1)); repeat case_if...
+    + remember (lt_eq_lt_dec n n0) as m.
+      destruct m... case_if; simpl; try rewrite <- Heqm...
+    + remember (lt_eq_lt_dec (n0 + 1) n0) as m; destruct m; repeat case_if...
+      remember (lt_eq_lt_dec (n0 + 1 - 1) n0) as m; destruct m; repeat case_if...
+      rewrite open_dtyp_wrt_dtyp_rec_degree_dtyp_wrt_dtyp...
+      applys degree_dtyp_wrt_dtyp_O. applys degree_dtyp_wrt_dtyp_of_lc_dtyp_mutual...
+    + remember (lt_eq_lt_dec n n0) as m.
+      destruct m... case_if; simpl; try rewrite <- Heqm...
+      remember (lt_eq_lt_dec (n - 1) n0) as m.
+      destruct m... case_if; simpl; try rewrite <- Heqm...
+  - forwards: IHS (Datatypes.S n).
+    replace (Datatypes.S (n + 1)) with (Datatypes.S n +1).
+    rewrite H. congruence. lia.
+Qed.
 
 
 
@@ -1152,6 +1173,22 @@ Proof with eauto using d_wft_typ_subst_stvar.
       inverts~ HE.
 Qed.
 
+
+Corollary d_wf_env_weaken_tvar : forall E1 E2 SX,
+  ⊢ E2 ++ E1 ->
+  SX ∉ dom (E2 ++ E1) ->
+  ⊢ E2 ++ SX ~ ▫ ++ E1.
+Proof with eauto.
+  intros * HE HT. induction E2; intros.
+  - econstructor...
+  - rewrite_env (a :: (E2 ++ SX ~ ▫ ++ E1)). destruct a. destruct b.
+    1: rewrite_env ((a, ▫) :: (E2 ++ E1)) in HE.
+    2: rewrite_env ((a, ▪) :: (E2 ++ E1)) in HE.
+    3: rewrite_env ((a, dbind_typ T) :: (E2 ++ E1)) in HE.
+    all: forwards HE': d_wf_env_strenthening_head HE; inverts HE.
+    all: econstructor; try solve_notin.
+    applys dwf_typ_weakening...
+Qed.
 
 Corollary d_wf_env_weaken_stvar : forall E1 E2 SX,
   ⊢ E2 ++ E1 ->

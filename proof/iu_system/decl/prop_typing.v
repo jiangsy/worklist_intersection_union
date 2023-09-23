@@ -215,6 +215,87 @@ Hint Resolve bind_typ_subst : typing.
 Hint Resolve dwf_typ_dlc_type : typing.
 
 
+Lemma lc_dtyp_open_stvar_subst_mono : forall S T SY,
+    lc_dtyp (S ^^ᵈ T) -> dmono_typ T -> lc_dtyp (S ^ᵈ SY).
+Proof with try solve_notin; try solve_by_invert; simpl in *; eauto.
+  intros * HD HM.
+  inductions HD.
+  all: destruct S; destruct T; unfold open_dtyp_wrt_dtyp in *; inverts x; subst; simpl in *...
+  all: try destruct (lt_eq_lt_dec n 0); try case_if; try solve [inverts~ x].
+  all: eauto...
+  all: eapply lc_dtyp_all; intro Y;
+      forwards: H Y; unfold open_dtyp_wrt_dtyp;
+      rewrite open_dtyp_wrt_dtyp_twice; rewrite open_dtyp_wrt_dtyp_twice in H1;
+    try applys H0; try rewrite open_dtyp_wrt_dtyp_twice...
+Qed.
+
+Lemma ds_in_open_stvar_subst_mono : forall S T SY SZ,
+    ds_in SY (S ^^ᵈ T) -> dmono_typ T -> SY ∉ ftv_in_dtyp T -> ds_in SY (S ^ᵈ SZ).
+Proof with try solve_notin; try solve_by_invert; simpl in *; eauto using lc_dtyp_open_stvar_subst_mono.
+  intros * HD HM HN.
+  inductions HD.
+  all: destruct S; destruct T; unfold open_dtyp_wrt_dtyp in *; simpl in *; inverts x; subst;
+    try destruct (lt_eq_lt_dec n 0); try case_if; try solve [inverts~ x];
+    try solve [inverts H0; solve_notin]...
+  all: try solve [inverts H1; inverts HM;
+                  try solve [forwards*: IHHD (dtyp_var_b 0) T4];
+                  try solve [forwards*: IHHD (dtyp_var_b 0) T3]].
+  all: try solve [pick fresh Y and apply dsin_all; inst_cofinites_with Y;
+                  rewrite open_dtyp_wrt_dtyp_twice in H0;
+                  forwards*: H0;
+                  unfold open_dtyp_wrt_dtyp; try rewrite open_dtyp_wrt_dtyp_twice; eauto].
+  all: try solve [inverts H0; inverts HM;
+                  forwards*: IHHD1 (dtyp_var_b 0) T3;
+                  forwards*: IHHD2 (dtyp_var_b 0) T4].
+Qed.
+
+Lemma d_wf_typ_open_stvar_subst_mono : forall E F S T SY,
+    E ++ F ⊢ S ^^ᵈ T -> dmono_typ T -> SY ∉ (dom F)
+    -> E ++ SY ~ ▫ ++ F ⊢ S ^ᵈ SY.
+Proof with try solve_notin; simpl in *; eauto.
+  intros * HT HD HN.
+  inductions HT...
+  all: destruct S; destruct T;
+      lazymatch goal with
+      | n : nat, Hx: _ = ↑ ?n ^^ᵈ _ |- _ =>
+        try solve [
+            induction n; unfold open_dtyp_wrt_dtyp in *; simpl in *; try solve_by_invert Hx; eauto using d_wf_env_weaken_tvar]
+      | n : nat, Hx: _ = ↑ (S ?n) ^^ᵈ _ |- _ =>
+        try solve [
+            induction n; unfold open_dtyp_wrt_dtyp in Hx; simpl in Hx; inverts Hx]
+      | Hx:`ᵈ _ = `ᵈ _ ^^ᵈ _ |- _ =>
+          try solve [
+              unfold open_dtyp_wrt_dtyp in *; simpl in *; inverts x;
+              rewrite_env (E ++ [(SY, ▫)] ++ F); applys* dwf_typ_weakening;
+              eauto using dwf_typ_weakening]
+      | Hx: dtyp_svar _ = dtyp_svar _ ^^ᵈ _ |- _ =>
+          try solve [
+              unfold open_dtyp_wrt_dtyp in *; simpl in *; inverts x;
+              rewrite_env (E ++ [(SY, ▫)] ++ F); applys* dwf_typ_weakening;
+              eauto using dwf_typ_weakening]
+      | Hx: _ = _ ^^ᵈ _ |- _ =>
+          try solve [unfold open_dtyp_wrt_dtyp in Hx; simpl in Hx; inverts Hx];
+          try solve [unfold open_dtyp_wrt_dtyp; simpl; eauto using d_wf_env_weaken_tvar];
+          try solve [unfold open_dtyp_wrt_dtyp in *; simpl in *; inverts* Hx]
+      end.
+  all:
+    try solve [
+    pick fresh SZ and apply dwftyp_all;
+      unfold open_dtyp_wrt_dtyp in *; rewrite open_dtyp_wrt_dtyp_twice in *;
+      inverts* x;
+      [ (forwards H': H SZ;
+       try rewrite open_dtyp_wrt_dtyp_twice in H';
+       try applys* ds_in_open_stvar_subst_mono H'; eauto) |
+        (match goal with
+        HD: dmono_typ ?A |- _ => assert (HE:
+               open_dtyp_wrt_dtyp_rec 0 `ᵈ SZ (open_dtyp_wrt_dtyp_rec 1 A S)
+               = open_dtyp_wrt_dtyp_rec 0 A (open_dtyp_wrt_dtyp_rec 0 `ᵈ SZ S) )
+          by rewrite* open_dtyp_wrt_dtyp_twice;
+                                 forwards*: H1 SZ ((SZ, ▫) :: E) F HE
+      end) ]
+      ].
+Qed.
+
 (* for the e <= forall a. A, not used now*)
 Theorem d_chkinf_subst_mono: forall E F X e m T1 T2,
   d_typing (F ++ X ~ dbind_tvar_empty ++ E) e m T1 ->
@@ -267,7 +348,7 @@ Proof with auto with typing.
     + replace (dtyp_all ({T0 /ᵈ X} T1)) with ({T0 /ᵈ X} dtyp_all T1) by auto.
       auto...
     + rewrite <- d_subst_tv_in_dtyp_open_dtyp_wrt_dtyp; eauto... *)
-Admitted.
+Abort.
 
 
 Definition dmode_size (mode : d_typing_mode) : nat :=
@@ -609,152 +690,6 @@ Corollary d_infabs_wft_3 : forall E A1 B1 C1,
   E ⊢ A1 ▹ B1 → C1 -> E ⊢ C1.
 Proof.
   intros. forwards*: d_infabs_wft H.
-Qed.
-
-Corollary d_wf_env_weaken_tvar : forall E1 E2 SX,
-  ⊢ E2 ++ E1 ->
-  SX ∉ dom (E2 ++ E1) ->
-  ⊢ E2 ++ SX ~ ▫ ++ E1.
-Proof with eauto.
-  intros * HE HT. induction E2; intros.
-  - econstructor...
-  - rewrite_env (a :: (E2 ++ SX ~ ▫ ++ E1)). destruct a. destruct b.
-    1: rewrite_env ((a, ▫) :: (E2 ++ E1)) in HE.
-    2: rewrite_env ((a, ▪) :: (E2 ++ E1)) in HE.
-    3: rewrite_env ((a, dbind_typ T) :: (E2 ++ E1)) in HE.
-    all: forwards HE': d_wf_env_strenthening_head HE; inverts HE.
-    all: econstructor; try solve_notin.
-    applys dwf_typ_weakening...
-Qed.
-
-Lemma open_dtyp_wrt_dtyp_twice : forall n X SY S,
-    lc_dtyp SY ->
-    open_dtyp_wrt_dtyp_rec n `ᵈ X (open_dtyp_wrt_dtyp_rec (n+1) SY S) =
-      open_dtyp_wrt_dtyp_rec n SY (open_dtyp_wrt_dtyp_rec n `ᵈ X S).
-Proof with subst; simpl in *; eauto; try lia.
-  introv HL. gen n. induction S; intros...
-  all: try congruence.
-  - destruct (lt_eq_lt_dec n (n0 + 1)); repeat case_if...
-    + remember (lt_eq_lt_dec n n0) as m.
-      destruct m... case_if; simpl; try rewrite <- Heqm...
-    + remember (lt_eq_lt_dec (n0 + 1) n0) as m; destruct m; repeat case_if...
-      remember (lt_eq_lt_dec (n0 + 1 - 1) n0) as m; destruct m; repeat case_if...
-      rewrite open_dtyp_wrt_dtyp_rec_degree_dtyp_wrt_dtyp...
-      applys degree_dtyp_wrt_dtyp_O. applys degree_dtyp_wrt_dtyp_of_lc_dtyp_mutual...
-    + remember (lt_eq_lt_dec n n0) as m.
-      destruct m... case_if; simpl; try rewrite <- Heqm...
-      remember (lt_eq_lt_dec (n - 1) n0) as m.
-      destruct m... case_if; simpl; try rewrite <- Heqm...
-  - forwards: IHS (Datatypes.S n).
-    replace (Datatypes.S (n + 1)) with (Datatypes.S n +1).
-    rewrite H. congruence. lia.
-Qed.
-
-Lemma lc_dtyp_open_stvar_subst_mono : forall S T SY,
-    lc_dtyp (S ^^ᵈ T) -> dmono_typ T -> lc_dtyp (S ^ᵈ SY).
-Proof with try solve_notin; try solve_by_invert; simpl in *; eauto.
-  intros * HD HM.
-  inductions HD.
-  all: destruct S; destruct T; unfold open_dtyp_wrt_dtyp in *; inverts x; subst; simpl in *...
-  all: try destruct (lt_eq_lt_dec n 0); try case_if; try solve [inverts~ x].
-  all: eauto...
-  all: eapply lc_dtyp_all; intro Y;
-      forwards: H Y; unfold open_dtyp_wrt_dtyp;
-      rewrite open_dtyp_wrt_dtyp_twice; rewrite open_dtyp_wrt_dtyp_twice in H1;
-    try applys H0; try rewrite open_dtyp_wrt_dtyp_twice...
-Qed.
-
-(* Lemma lc_dtyp_open_stvar_subst_mono : forall n S T SY, *)
-(*     lc_dtyp (open_dtyp_wrt_dtyp_rec n S T) -> dmono_typ T -> *)
-(*     lc_dtyp (open_dtyp_wrt_dtyp_rec n S SY). *)
-(* Proof with try solve_notin; try solve_by_invert; simpl in *; eauto. *)
-(*   intros * HD HM. *)
-(*   inductions HD. *)
-(*   all: destruct S; destruct T; unfold open_dtyp_wrt_dtyp_rec in *; inverts x; subst; simpl in *... *)
-(*   all: try destruct (lt_eq_lt_dec n 0); try case_if; try solve [inverts~ x]. *)
-(*   all: eauto... *)
-(*   eapply lc_dtyp_all; intro X. *)
-(*   forwards*: H0 X. auto. *)
-
-
-Lemma ds_in_open_stvar_subst_mono : forall S T SY SZ,
-    ds_in SY (S ^^ᵈ T) -> dmono_typ T -> SY ∉ ftv_in_dtyp T -> ds_in SY (S ^ᵈ SZ).
-Proof with try solve_notin; try solve_by_invert; simpl in *; eauto using lc_dtyp_open_stvar_subst_mono.
-  intros * HD HM HN.
-  inductions HD.
-  all: destruct S; destruct T; unfold open_dtyp_wrt_dtyp in *; simpl in *; inverts x; subst;
-    try destruct (lt_eq_lt_dec n 0); try case_if; try solve [inverts~ x];
-    try solve [inverts H0; solve_notin]...
-  all: try solve [inverts H1; inverts HM;
-                  try solve [forwards*: IHHD (dtyp_var_b 0) T4];
-                  try solve [forwards*: IHHD (dtyp_var_b 0) T3]].
-  all: try solve [pick fresh Y and apply dsin_all; inst_cofinites_with Y;
-                  rewrite open_dtyp_wrt_dtyp_twice in H0;
-                  forwards*: H0;
-                  unfold open_dtyp_wrt_dtyp; try rewrite open_dtyp_wrt_dtyp_twice; eauto].
-  all: try solve [inverts H0; inverts HM;
-                  forwards*: IHHD1 (dtyp_var_b 0) T3;
-                  forwards*: IHHD2 (dtyp_var_b 0) T4].
-Qed.
-
-(* Lemma ds_in_open_stvar_subst_mono_2 : forall S T SY, *)
-(*     ds_in SY (S ^^ᵈ T) -> dmono_typ T -> ds_in SY (S ^ᵈ SY). *)
-(* Proof with try solve_notin; try solve_by_invert; simpl in *; eauto using lc_dtyp_open_stvar_subst_mono. *)
-(*   intros * HD HM. *)
-(*   inductions HD. *)
-(*   all: destruct S; destruct T; unfold open_dtyp_wrt_dtyp in *; simpl in *; inverts x; subst; *)
-(*     try destruct (lt_eq_lt_dec n 0); try case_if; try solve [inverts~ x]... *)
-(*   all: pick fresh Y and apply dsin_all; inst_cofinites_with Y; *)
-(*     rewrite open_dtyp_wrt_dtyp_twice in H0; *)
-(*     forwards*: H0; *)
-(*     unfold open_dtyp_wrt_dtyp; rewrite open_dtyp_wrt_dtyp_twice... *)
-(* Qed. *)
-
-Lemma d_wf_typ_open_stvar_subst_mono : forall E F S T SY,
-    E ++ F ⊢ S ^^ᵈ T -> dmono_typ T -> SY ∉ (dom F)
-    -> E ++ SY ~ ▫ ++ F ⊢ S ^ᵈ SY.
-Proof with try solve_notin; simpl in *; eauto.
-  intros * HT HD HN.
-  inductions HT...
-  all: destruct S; destruct T;
-      lazymatch goal with
-      | n : nat, Hx: _ = ↑ ?n ^^ᵈ _ |- _ =>
-        try solve [
-            induction n; unfold open_dtyp_wrt_dtyp in *; simpl in *; try solve_by_invert Hx; eauto using d_wf_env_weaken_tvar]
-      | n : nat, Hx: _ = ↑ (S ?n) ^^ᵈ _ |- _ =>
-        try solve [
-            induction n; unfold open_dtyp_wrt_dtyp in Hx; simpl in Hx; inverts Hx]
-      | Hx:`ᵈ _ = `ᵈ _ ^^ᵈ _ |- _ =>
-          try solve [
-              unfold open_dtyp_wrt_dtyp in *; simpl in *; inverts x;
-              rewrite_env (E ++ [(SY, ▫)] ++ F); applys* dwf_typ_weakening;
-              eauto using dwf_typ_weakening]
-      | Hx: dtyp_svar _ = dtyp_svar _ ^^ᵈ _ |- _ =>
-          try solve [
-              unfold open_dtyp_wrt_dtyp in *; simpl in *; inverts x;
-              rewrite_env (E ++ [(SY, ▫)] ++ F); applys* dwf_typ_weakening;
-              eauto using dwf_typ_weakening]
-      | Hx: _ = _ ^^ᵈ _ |- _ =>
-          try solve [unfold open_dtyp_wrt_dtyp in Hx; simpl in Hx; inverts Hx];
-          try solve [unfold open_dtyp_wrt_dtyp; simpl; eauto using d_wf_env_weaken_tvar];
-          try solve [unfold open_dtyp_wrt_dtyp in *; simpl in *; inverts* Hx]
-      end.
-  all:
-    try solve [
-    pick fresh SZ and apply dwftyp_all;
-      unfold open_dtyp_wrt_dtyp in *; rewrite open_dtyp_wrt_dtyp_twice in *;
-      inverts* x;
-      [ (forwards H': H SZ;
-       try rewrite open_dtyp_wrt_dtyp_twice in H';
-       try applys* ds_in_open_stvar_subst_mono H'; eauto) |
-        (match goal with
-        HD: dmono_typ ?A |- _ => assert (HE:
-               open_dtyp_wrt_dtyp_rec 0 `ᵈ SZ (open_dtyp_wrt_dtyp_rec 1 A S)
-               = open_dtyp_wrt_dtyp_rec 0 A (open_dtyp_wrt_dtyp_rec 0 `ᵈ SZ S) )
-          by rewrite* open_dtyp_wrt_dtyp_twice;
-                                 forwards*: H1 SZ ((SZ, ▫) :: E) F HE
-      end) ]
-      ].
 Qed.
 
 
