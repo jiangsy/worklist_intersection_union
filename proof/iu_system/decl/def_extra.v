@@ -248,10 +248,10 @@ dwf_typ E (dtyp_all T1) ->
     dwf_typ E T1 ->
     ( forall x , x \notin  L  -> d_typing  ( x ~ (dbind_typ T1)  ++  E )  ( open_dexp_wrt_dexp e (dexp_var_f x) ) d_typingmode_chk T2 )  ->
     d_typing E (dexp_abs e) d_typingmode_chk (dtyp_arrow T1 T2)
-| d_typing_chkall : forall (L:vars) (E:denv) (e:dexp) (T1:dtyp),
+(* | d_typing_chkall : forall (L:vars) (E:denv) (e:dexp) (T1:dtyp),
     dwf_typ E (dtyp_all T1) ->
     ( forall X , X \notin  L  -> d_typing  ( X ~ dbind_tvar_empty  ++  E )  e  d_typingmode_chk ( open_dtyp_wrt_dtyp T1 (dtyp_var_f X) )  )  ->
-    d_typing E e d_typingmode_chk (dtyp_all T1)
+    d_typing E e d_typingmode_chk (dtyp_all T1) *)
 | d_typing_chksub : forall (E:denv) (e:dexp) (T1 S1:dtyp),
     d_typing E e d_typingmode_inf S1 ->
     d_sub E S1 T1 ->
