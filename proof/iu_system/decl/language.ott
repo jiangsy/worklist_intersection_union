@@ -65,6 +65,10 @@ dvalue, v :: dvalue_ ::=
   | \ x . e              ::   :: abs  (+ bind x in e +)
   | \ X . dbody          ::   :: tabs (+ bind X in dbody +)
 
+dmaybetyp, MT :: dmaybetyp_ ::=
+  | none                 ::   :: none
+  | some T               ::   :: some  
+
 dcont, c :: 'dcont_' ::=
   % | Done                :: :: done
   % | _ • e =>=> c      :: :: infapp
@@ -87,7 +91,7 @@ dwork, w :: 'dwork_' ::=
   | T1 ⊓ T2 ○ T3 =>=> c  ::   :: inftappinter
   | T1 ⊔ T2 ○ T3  =>=> c ::   :: inftappunion
   | T1 <: T2             ::   :: sub
-  | c $ T                ::   :: apply
+  | c $ MT                ::   :: apply
 
 dworklist, W :: 'dworklist_' ::=
   | empty      ::   :: empty

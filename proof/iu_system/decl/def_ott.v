@@ -19,6 +19,14 @@ Inductive dtyp : Set :=
  | dtyp_union (T1:dtyp) (T2:dtyp)
  | dtyp_intersection (T1:dtyp) (T2:dtyp).
 
+Inductive dcont : Set := 
+ | dcont_infabs (c:dcont)
+ | dcont_infabsunion (T1:dtyp) (c:dcont)
+ | dcont_inftapp (T:dtyp) (c:dcont)
+ | dcont_inftappinter (T1:dtyp) (T2:dtyp) (c:dcont)
+ | dcont_inftappunion (T1:dtyp) (T2:dtyp) (c:dcont)
+ | dcont_sub (T:dtyp).
+
 Inductive dbody : Set := 
  | dbody_anno (e:dexp) (T:dtyp)
 with dexp : Set := 
@@ -32,13 +40,14 @@ with dexp : Set :=
  | dexp_tapp (e:dexp) (T:dtyp)
  | dexp_anno (e:dexp) (T:dtyp).
 
-Inductive dcont : Set := 
- | dcont_infabs (c:dcont)
- | dcont_infabsunion (T1:dtyp) (c:dcont)
- | dcont_inftapp (T:dtyp) (c:dcont)
- | dcont_inftappinter (T1:dtyp) (T2:dtyp) (c:dcont)
- | dcont_inftappunion (T1:dtyp) (T2:dtyp) (c:dcont)
- | dcont_sub (T:dtyp).
+Inductive dmaybetyp : Set := 
+ | dmaybetyp_none : dmaybetyp
+ | dmaybetyp_some (T:dtyp).
+
+Inductive binding : Set := 
+ | dbind_tvar_empty : binding
+ | dbind_stvar_empty : binding
+ | dbind_typ (T:dtyp).
 
 Inductive dwork : Set := 
  | dwork_infer (e:dexp) (c:dcont)
@@ -49,12 +58,7 @@ Inductive dwork : Set :=
  | dwork_inftappinter (T1:dtyp) (T2:dtyp) (T3:dtyp) (c:dcont)
  | dwork_inftappunion (T1:dtyp) (T2:dtyp) (T3:dtyp) (c:dcont)
  | dwork_sub (T1:dtyp) (T2:dtyp)
- | dwork_apply (c:dcont) (T:dtyp).
-
-Inductive binding : Set := 
- | dbind_tvar_empty : binding
- | dbind_stvar_empty : binding
- | dbind_typ (T:dtyp).
+ | dwork_apply (c:dcont) (MT:dmaybetyp).
 
 Inductive dworklist : Set := 
  | dworklist_empty : dworklist
@@ -120,6 +124,12 @@ with open_dbody_wrt_dtyp_rec (k:nat) (T5:dtyp) (dbody5:dbody) : dbody :=
   | (dbody_anno e T) => dbody_anno (open_dexp_wrt_dtyp_rec k T5 e) (open_dtyp_wrt_dtyp_rec k T5 T)
 end.
 
+Definition open_dmaybetyp_wrt_dtyp_rec (k:nat) (T5:dtyp) (MT5:dmaybetyp) : dmaybetyp :=
+  match MT5 with
+  | dmaybetyp_none => dmaybetyp_none 
+  | (dmaybetyp_some T) => dmaybetyp_some (open_dtyp_wrt_dtyp_rec k T5 T)
+end.
+
 Fixpoint open_dcont_wrt_dtyp_rec (k:nat) (T_5:dtyp) (c5:dcont) {struct c5}: dcont :=
   match c5 with
   | (dcont_infabs c) => dcont_infabs (open_dcont_wrt_dtyp_rec k T_5 c)
@@ -169,7 +179,7 @@ Definition open_dwork_wrt_dtyp_rec (k:nat) (T_5:dtyp) (w5:dwork) : dwork :=
   | (dwork_inftappinter T1 T2 T3 c) => dwork_inftappinter (open_dtyp_wrt_dtyp_rec k T_5 T1) (open_dtyp_wrt_dtyp_rec k T_5 T2) (open_dtyp_wrt_dtyp_rec k T_5 T3) (open_dcont_wrt_dtyp_rec k T_5 c)
   | (dwork_inftappunion T1 T2 T3 c) => dwork_inftappunion (open_dtyp_wrt_dtyp_rec k T_5 T1) (open_dtyp_wrt_dtyp_rec k T_5 T2) (open_dtyp_wrt_dtyp_rec k T_5 T3) (open_dcont_wrt_dtyp_rec k T_5 c)
   | (dwork_sub T1 T2) => dwork_sub (open_dtyp_wrt_dtyp_rec k T_5 T1) (open_dtyp_wrt_dtyp_rec k T_5 T2)
-  | (dwork_apply c T) => dwork_apply (open_dcont_wrt_dtyp_rec k T_5 c) (open_dtyp_wrt_dtyp_rec k T_5 T)
+  | (dwork_apply c MT) => dwork_apply (open_dcont_wrt_dtyp_rec k T_5 c) (open_dmaybetyp_wrt_dtyp_rec k T_5 MT)
 end.
 
 Definition open_dwork_wrt_dexp_rec (k:nat) (e5:dexp) (w5:dwork) : dwork :=
@@ -182,7 +192,7 @@ Definition open_dwork_wrt_dexp_rec (k:nat) (e5:dexp) (w5:dwork) : dwork :=
   | (dwork_inftappinter T1 T2 T3 c) => dwork_inftappinter T1 T2 T3 c
   | (dwork_inftappunion T1 T2 T3 c) => dwork_inftappunion T1 T2 T3 c
   | (dwork_sub T1 T2) => dwork_sub T1 T2
-  | (dwork_apply c T) => dwork_apply c T
+  | (dwork_apply c MT) => dwork_apply c MT
 end.
 
 Fixpoint open_dworklist_wrt_dtyp_rec (k:nat) (T5:dtyp) (W5:dworklist) {struct W5}: dworklist :=
@@ -209,21 +219,23 @@ Definition open_dbody_wrt_dexp e5 dbody5 := open_dbody_wrt_dexp_rec 0 dbody5 e5.
 
 Definition open_dexp_wrt_dtyp T_5 e_5 := open_dexp_wrt_dtyp_rec 0 e_5 T_5.
 
+Definition open_dwork_wrt_dexp e5 w5 := open_dwork_wrt_dexp_rec 0 w5 e5.
+
 Definition open_dworklist_wrt_dtyp T5 W5 := open_dworklist_wrt_dtyp_rec 0 W5 T5.
 
-Definition open_dworklist_wrt_dexp e5 W5 := open_dworklist_wrt_dexp_rec 0 W5 e5.
-
-Definition open_dwork_wrt_dtyp T_5 w5 := open_dwork_wrt_dtyp_rec 0 w5 T_5.
+Definition open_dcont_wrt_dtyp T_5 c5 := open_dcont_wrt_dtyp_rec 0 c5 T_5.
 
 Definition open_binding_wrt_dtyp T5 b5 := open_binding_wrt_dtyp_rec 0 b5 T5.
 
-Definition open_dcont_wrt_dtyp T_5 c5 := open_dcont_wrt_dtyp_rec 0 c5 T_5.
+Definition open_dmaybetyp_wrt_dtyp T5 MT5 := open_dmaybetyp_wrt_dtyp_rec 0 MT5 T5.
+
+Definition open_dworklist_wrt_dexp e5 W5 := open_dworklist_wrt_dexp_rec 0 W5 e5.
 
 Definition open_dbody_wrt_dtyp T5 dbody5 := open_dbody_wrt_dtyp_rec 0 dbody5 T5.
 
 Definition open_dtyp_wrt_dtyp T_5 T__6 := open_dtyp_wrt_dtyp_rec 0 T__6 T_5.
 
-Definition open_dwork_wrt_dexp e5 w5 := open_dwork_wrt_dexp_rec 0 w5 e5.
+Definition open_dwork_wrt_dtyp T_5 w5 := open_dwork_wrt_dtyp_rec 0 w5 T_5.
 
 (** closing up abstractions *)
 Fixpoint close_dtyp_wrt_dtyp_rec (k:nat) (T_5:var) (T__6:dtyp) {struct T__6}: dtyp :=
@@ -258,6 +270,12 @@ end
 with close_dbody_wrt_dtyp_rec (k:nat) (T5:var) (dbody5:dbody) : dbody :=
   match dbody5 with
   | (dbody_anno e T) => dbody_anno (close_dexp_wrt_dtyp_rec k T5 e) (close_dtyp_wrt_dtyp_rec k T5 T)
+end.
+
+Definition close_dmaybetyp_wrt_dtyp_rec (k:nat) (T5:var) (MT5:dmaybetyp) : dmaybetyp :=
+  match MT5 with
+  | dmaybetyp_none => dmaybetyp_none 
+  | (dmaybetyp_some T) => dmaybetyp_some (close_dtyp_wrt_dtyp_rec k T5 T)
 end.
 
 Fixpoint close_dcont_wrt_dtyp_rec (k:nat) (T_5:var) (c5:dcont) {struct c5}: dcont :=
@@ -307,7 +325,7 @@ Definition close_dwork_wrt_dtyp_rec (k:nat) (T_5:var) (w5:dwork) : dwork :=
   | (dwork_inftappinter T1 T2 T3 c) => dwork_inftappinter (close_dtyp_wrt_dtyp_rec k T_5 T1) (close_dtyp_wrt_dtyp_rec k T_5 T2) (close_dtyp_wrt_dtyp_rec k T_5 T3) (close_dcont_wrt_dtyp_rec k T_5 c)
   | (dwork_inftappunion T1 T2 T3 c) => dwork_inftappunion (close_dtyp_wrt_dtyp_rec k T_5 T1) (close_dtyp_wrt_dtyp_rec k T_5 T2) (close_dtyp_wrt_dtyp_rec k T_5 T3) (close_dcont_wrt_dtyp_rec k T_5 c)
   | (dwork_sub T1 T2) => dwork_sub (close_dtyp_wrt_dtyp_rec k T_5 T1) (close_dtyp_wrt_dtyp_rec k T_5 T2)
-  | (dwork_apply c T) => dwork_apply (close_dcont_wrt_dtyp_rec k T_5 c) (close_dtyp_wrt_dtyp_rec k T_5 T)
+  | (dwork_apply c MT) => dwork_apply (close_dcont_wrt_dtyp_rec k T_5 c) (close_dmaybetyp_wrt_dtyp_rec k T_5 MT)
 end.
 
 Definition close_dwork_wrt_dexp_rec (k:nat) (e5:var) (w5:dwork) : dwork :=
@@ -320,7 +338,7 @@ Definition close_dwork_wrt_dexp_rec (k:nat) (e5:var) (w5:dwork) : dwork :=
   | (dwork_inftappinter T1 T2 T3 c) => dwork_inftappinter T1 T2 T3 c
   | (dwork_inftappunion T1 T2 T3 c) => dwork_inftappunion T1 T2 T3 c
   | (dwork_sub T1 T2) => dwork_sub T1 T2
-  | (dwork_apply c T) => dwork_apply c T
+  | (dwork_apply c MT) => dwork_apply c MT
 end.
 
 Fixpoint close_dworklist_wrt_dtyp_rec (k:nat) (T5:var) (W5:dworklist) {struct W5}: dworklist :=
@@ -341,27 +359,29 @@ Fixpoint close_dworklist_wrt_dexp_rec (k:nat) (e5:var) (W5:dworklist) {struct W5
   | (dworklist_conswork W w) => dworklist_conswork (close_dworklist_wrt_dexp_rec k e5 W) (close_dwork_wrt_dexp_rec k e5 w)
 end.
 
+Definition close_dbody_wrt_dtyp dbody5 T5 := close_dbody_wrt_dtyp_rec 0 dbody5 T5.
+
+Definition close_dtyp_wrt_dtyp T__6 T_5 := close_dtyp_wrt_dtyp_rec 0 T__6 T_5.
+
+Definition close_dwork_wrt_dtyp w5 T_5 := close_dwork_wrt_dtyp_rec 0 w5 T_5.
+
 Definition close_dexp_wrt_dexp e__6 e_5 := close_dexp_wrt_dexp_rec 0 e__6 e_5.
 
 Definition close_dbody_wrt_dexp dbody5 e5 := close_dbody_wrt_dexp_rec 0 dbody5 e5.
 
 Definition close_dexp_wrt_dtyp e_5 T_5 := close_dexp_wrt_dtyp_rec 0 e_5 T_5.
 
+Definition close_dwork_wrt_dexp w5 e5 := close_dwork_wrt_dexp_rec 0 w5 e5.
+
 Definition close_dworklist_wrt_dtyp W5 T5 := close_dworklist_wrt_dtyp_rec 0 W5 T5.
-
-Definition close_dworklist_wrt_dexp W5 e5 := close_dworklist_wrt_dexp_rec 0 W5 e5.
-
-Definition close_dwork_wrt_dtyp w5 T_5 := close_dwork_wrt_dtyp_rec 0 w5 T_5.
-
-Definition close_binding_wrt_dtyp b5 T5 := close_binding_wrt_dtyp_rec 0 b5 T5.
 
 Definition close_dcont_wrt_dtyp c5 T_5 := close_dcont_wrt_dtyp_rec 0 c5 T_5.
 
-Definition close_dbody_wrt_dtyp dbody5 T5 := close_dbody_wrt_dtyp_rec 0 dbody5 T5.
+Definition close_binding_wrt_dtyp b5 T5 := close_binding_wrt_dtyp_rec 0 b5 T5.
 
-Definition close_dtyp_wrt_dtyp T__6 T_5 := close_dtyp_wrt_dtyp_rec 0 T__6 T_5.
+Definition close_dmaybetyp_wrt_dtyp MT5 T5 := close_dmaybetyp_wrt_dtyp_rec 0 MT5 T5.
 
-Definition close_dwork_wrt_dexp w5 e5 := close_dwork_wrt_dexp_rec 0 w5 e5.
+Definition close_dworklist_wrt_dexp W5 e5 := close_dworklist_wrt_dexp_rec 0 W5 e5.
 
 (** terms are locally-closed pre-terms *)
 (** definitions *)
@@ -393,6 +413,33 @@ Inductive lc_dtyp : dtyp -> Prop :=    (* defn lc_dtyp *)
      (lc_dtyp T1) ->
      (lc_dtyp T2) ->
      (lc_dtyp (dtyp_intersection T1 T2)).
+
+(* defns LC_dcont *)
+Inductive lc_dcont : dcont -> Prop :=    (* defn lc_dcont *)
+ | lc_dcont_infabs : forall (c:dcont),
+     (lc_dcont c) ->
+     (lc_dcont (dcont_infabs c))
+ | lc_dcont_infabsunion : forall (T1:dtyp) (c:dcont),
+     (lc_dtyp T1) ->
+     (lc_dcont c) ->
+     (lc_dcont (dcont_infabsunion T1 c))
+ | lc_dcont_inftapp : forall (T:dtyp) (c:dcont),
+     (lc_dtyp T) ->
+     (lc_dcont c) ->
+     (lc_dcont (dcont_inftapp T c))
+ | lc_dcont_inftappinter : forall (T1 T2:dtyp) (c:dcont),
+     (lc_dtyp T1) ->
+     (lc_dtyp T2) ->
+     (lc_dcont c) ->
+     (lc_dcont (dcont_inftappinter T1 T2 c))
+ | lc_dcont_inftappunion : forall (T1 T2:dtyp) (c:dcont),
+     (lc_dtyp T1) ->
+     (lc_dtyp T2) ->
+     (lc_dcont c) ->
+     (lc_dcont (dcont_inftappunion T1 T2 c))
+ | lc_dcont_sub : forall (T:dtyp),
+     (lc_dtyp T) ->
+     (lc_dcont (dcont_sub T)).
 
 (* defns LC_dexp_dbody *)
 Inductive lc_dexp : dexp -> Prop :=    (* defn lc_dexp *)
@@ -426,32 +473,23 @@ with lc_dbody : dbody -> Prop :=    (* defn lc_dbody *)
      (lc_dtyp T) ->
      (lc_dbody (dbody_anno e T)).
 
-(* defns LC_dcont *)
-Inductive lc_dcont : dcont -> Prop :=    (* defn lc_dcont *)
- | lc_dcont_infabs : forall (c:dcont),
-     (lc_dcont c) ->
-     (lc_dcont (dcont_infabs c))
- | lc_dcont_infabsunion : forall (T1:dtyp) (c:dcont),
-     (lc_dtyp T1) ->
-     (lc_dcont c) ->
-     (lc_dcont (dcont_infabsunion T1 c))
- | lc_dcont_inftapp : forall (T:dtyp) (c:dcont),
+(* defns LC_dmaybetyp *)
+Inductive lc_dmaybetyp : dmaybetyp -> Prop :=    (* defn lc_dmaybetyp *)
+ | lc_dmaybetyp_none : 
+     (lc_dmaybetyp dmaybetyp_none)
+ | lc_dmaybetyp_some : forall (T:dtyp),
      (lc_dtyp T) ->
-     (lc_dcont c) ->
-     (lc_dcont (dcont_inftapp T c))
- | lc_dcont_inftappinter : forall (T1 T2:dtyp) (c:dcont),
-     (lc_dtyp T1) ->
-     (lc_dtyp T2) ->
-     (lc_dcont c) ->
-     (lc_dcont (dcont_inftappinter T1 T2 c))
- | lc_dcont_inftappunion : forall (T1 T2:dtyp) (c:dcont),
-     (lc_dtyp T1) ->
-     (lc_dtyp T2) ->
-     (lc_dcont c) ->
-     (lc_dcont (dcont_inftappunion T1 T2 c))
- | lc_dcont_sub : forall (T:dtyp),
+     (lc_dmaybetyp (dmaybetyp_some T)).
+
+(* defns LC_binding *)
+Inductive lc_binding : binding -> Prop :=    (* defn lc_binding *)
+ | lc_dbind_tvar_empty : 
+     (lc_binding dbind_tvar_empty)
+ | lc_dbind_stvar_empty : 
+     (lc_binding dbind_stvar_empty)
+ | lc_dbind_typ : forall (T:dtyp),
      (lc_dtyp T) ->
-     (lc_dcont (dcont_sub T)).
+     (lc_binding (dbind_typ T)).
 
 (* defns LC_dwork *)
 Inductive lc_dwork : dwork -> Prop :=    (* defn lc_dwork *)
@@ -493,20 +531,10 @@ Inductive lc_dwork : dwork -> Prop :=    (* defn lc_dwork *)
      (lc_dtyp T1) ->
      (lc_dtyp T2) ->
      (lc_dwork (dwork_sub T1 T2))
- | lc_dwork_apply : forall (c:dcont) (T:dtyp),
+ | lc_dwork_apply : forall (c:dcont) (MT:dmaybetyp),
      (lc_dcont c) ->
-     (lc_dtyp T) ->
-     (lc_dwork (dwork_apply c T)).
-
-(* defns LC_binding *)
-Inductive lc_binding : binding -> Prop :=    (* defn lc_binding *)
- | lc_dbind_tvar_empty : 
-     (lc_binding dbind_tvar_empty)
- | lc_dbind_stvar_empty : 
-     (lc_binding dbind_stvar_empty)
- | lc_dbind_typ : forall (T:dtyp),
-     (lc_dtyp T) ->
-     (lc_binding (dbind_typ T)).
+     (lc_dmaybetyp MT) ->
+     (lc_dwork (dwork_apply c MT)).
 
 (* defns LC_dworklist *)
 Inductive lc_dworklist : dworklist -> Prop :=    (* defn lc_dworklist *)
@@ -529,6 +557,20 @@ Inductive lc_dworklist : dworklist -> Prop :=    (* defn lc_dworklist *)
      (lc_dwork w) ->
      (lc_dworklist (dworklist_conswork W w)).
 (** free variables *)
+Fixpoint ftv_in_dtyp (T_5:dtyp) : vars :=
+  match T_5 with
+  | dtyp_unit => {}
+  | dtyp_top => {}
+  | dtyp_bot => {}
+  | (dtyp_var_b nat) => {}
+  | (dtyp_var_f X) => {{X}}
+  | (dtyp_svar SX) => {}
+  | (dtyp_arrow T1 T2) => (ftv_in_dtyp T1) \u (ftv_in_dtyp T2)
+  | (dtyp_all T) => (ftv_in_dtyp T)
+  | (dtyp_union T1 T2) => (ftv_in_dtyp T1) \u (ftv_in_dtyp T2)
+  | (dtyp_intersection T1 T2) => (ftv_in_dtyp T1) \u (ftv_in_dtyp T2)
+end.
+
 Fixpoint fstv_in_dtyp (T_5:dtyp) : vars :=
   match T_5 with
   | dtyp_unit => {}
@@ -543,18 +585,43 @@ Fixpoint fstv_in_dtyp (T_5:dtyp) : vars :=
   | (dtyp_intersection T1 T2) => (fstv_in_dtyp T1) \u (fstv_in_dtyp T2)
 end.
 
-Fixpoint ftv_in_dtyp (T_5:dtyp) : vars :=
-  match T_5 with
-  | dtyp_unit => {}
-  | dtyp_top => {}
-  | dtyp_bot => {}
-  | (dtyp_var_b nat) => {}
-  | (dtyp_var_f X) => {{X}}
-  | (dtyp_svar SX) => {}
-  | (dtyp_arrow T1 T2) => (ftv_in_dtyp T1) \u (ftv_in_dtyp T2)
-  | (dtyp_all T) => (ftv_in_dtyp T)
-  | (dtyp_union T1 T2) => (ftv_in_dtyp T1) \u (ftv_in_dtyp T2)
-  | (dtyp_intersection T1 T2) => (ftv_in_dtyp T1) \u (ftv_in_dtyp T2)
+Definition ftv_in_dmaybetyp (MT5:dmaybetyp) : vars :=
+  match MT5 with
+  | dmaybetyp_none => {}
+  | (dmaybetyp_some T) => (ftv_in_dtyp T)
+end.
+
+Fixpoint ftv_in_dexp (e_5:dexp) : vars :=
+  match e_5 with
+  | dexp_unit => {}
+  | dexp_top => {}
+  | (dexp_var_b nat) => {}
+  | (dexp_var_f x) => {}
+  | (dexp_abs e) => (ftv_in_dexp e)
+  | (dexp_app e1 e2) => (ftv_in_dexp e1) \u (ftv_in_dexp e2)
+  | (dexp_tabs dbody5) => (ftv_in_dbody dbody5)
+  | (dexp_tapp e T) => (ftv_in_dexp e) \u (ftv_in_dtyp T)
+  | (dexp_anno e T) => (ftv_in_dexp e) \u (ftv_in_dtyp T)
+end
+with ftv_in_dbody (dbody5:dbody) : vars :=
+  match dbody5 with
+  | (dbody_anno e T) => (ftv_in_dexp e) \u (ftv_in_dtyp T)
+end.
+
+Fixpoint ftv_in_dcont (c5:dcont) : vars :=
+  match c5 with
+  | (dcont_infabs c) => (ftv_in_dcont c)
+  | (dcont_infabsunion T1 c) => (ftv_in_dtyp T1) \u (ftv_in_dcont c)
+  | (dcont_inftapp T c) => (ftv_in_dtyp T) \u (ftv_in_dcont c)
+  | (dcont_inftappinter T1 T2 c) => (ftv_in_dtyp T1) \u (ftv_in_dtyp T2) \u (ftv_in_dcont c)
+  | (dcont_inftappunion T1 T2 c) => (ftv_in_dtyp T1) \u (ftv_in_dtyp T2) \u (ftv_in_dcont c)
+  | (dcont_sub T) => (ftv_in_dtyp T)
+end.
+
+Definition fstv_in_dmaybetyp (MT5:dmaybetyp) : vars :=
+  match MT5 with
+  | dmaybetyp_none => {}
+  | (dmaybetyp_some T) => (fstv_in_dtyp T)
 end.
 
 Fixpoint fstv_in_dcont (c5:dcont) : vars :=
@@ -601,31 +668,24 @@ with fv_in_dbody (dbody5:dbody) : vars :=
   | (dbody_anno e T) => (fv_in_dexp e)
 end.
 
-Fixpoint ftv_in_dexp (e_5:dexp) : vars :=
-  match e_5 with
-  | dexp_unit => {}
-  | dexp_top => {}
-  | (dexp_var_b nat) => {}
-  | (dexp_var_f x) => {}
-  | (dexp_abs e) => (ftv_in_dexp e)
-  | (dexp_app e1 e2) => (ftv_in_dexp e1) \u (ftv_in_dexp e2)
-  | (dexp_tabs dbody5) => (ftv_in_dbody dbody5)
-  | (dexp_tapp e T) => (ftv_in_dexp e) \u (ftv_in_dtyp T)
-  | (dexp_anno e T) => (ftv_in_dexp e) \u (ftv_in_dtyp T)
-end
-with ftv_in_dbody (dbody5:dbody) : vars :=
-  match dbody5 with
-  | (dbody_anno e T) => (ftv_in_dexp e) \u (ftv_in_dtyp T)
+Definition ftv_in_binding (b5:binding) : vars :=
+  match b5 with
+  | dbind_tvar_empty => {}
+  | dbind_stvar_empty => {}
+  | (dbind_typ T) => (ftv_in_dtyp T)
 end.
 
-Fixpoint ftv_in_dcont (c5:dcont) : vars :=
-  match c5 with
-  | (dcont_infabs c) => (ftv_in_dcont c)
-  | (dcont_infabsunion T1 c) => (ftv_in_dtyp T1) \u (ftv_in_dcont c)
-  | (dcont_inftapp T c) => (ftv_in_dtyp T) \u (ftv_in_dcont c)
-  | (dcont_inftappinter T1 T2 c) => (ftv_in_dtyp T1) \u (ftv_in_dtyp T2) \u (ftv_in_dcont c)
-  | (dcont_inftappunion T1 T2 c) => (ftv_in_dtyp T1) \u (ftv_in_dtyp T2) \u (ftv_in_dcont c)
-  | (dcont_sub T) => (ftv_in_dtyp T)
+Definition ftv_in_dwork (w5:dwork) : vars :=
+  match w5 with
+  | (dwork_infer e c) => (ftv_in_dexp e) \u (ftv_in_dcont c)
+  | (dwork_check e T) => (ftv_in_dexp e) \u (ftv_in_dtyp T)
+  | (dwork_infabs T c) => (ftv_in_dtyp T) \u (ftv_in_dcont c)
+  | (dwork_infabsunion T1 T2 c) => (ftv_in_dtyp T1) \u (ftv_in_dtyp T2) \u (ftv_in_dcont c)
+  | (dwork_inftapp T1 T2 c) => (ftv_in_dtyp T1) \u (ftv_in_dtyp T2) \u (ftv_in_dcont c)
+  | (dwork_inftappinter T1 T2 T3 c) => (ftv_in_dtyp T1) \u (ftv_in_dtyp T2) \u (ftv_in_dtyp T3) \u (ftv_in_dcont c)
+  | (dwork_inftappunion T1 T2 T3 c) => (ftv_in_dtyp T1) \u (ftv_in_dtyp T2) \u (ftv_in_dtyp T3) \u (ftv_in_dcont c)
+  | (dwork_sub T1 T2) => (ftv_in_dtyp T1) \u (ftv_in_dtyp T2)
+  | (dwork_apply c MT) => (ftv_in_dcont c) \u (ftv_in_dmaybetyp MT)
 end.
 
 Definition fstv_in_binding (b5:binding) : vars :=
@@ -645,7 +705,7 @@ Definition fstv_in_dwork (w5:dwork) : vars :=
   | (dwork_inftappinter T1 T2 T3 c) => (fstv_in_dtyp T1) \u (fstv_in_dtyp T2) \u (fstv_in_dtyp T3) \u (fstv_in_dcont c)
   | (dwork_inftappunion T1 T2 T3 c) => (fstv_in_dtyp T1) \u (fstv_in_dtyp T2) \u (fstv_in_dtyp T3) \u (fstv_in_dcont c)
   | (dwork_sub T1 T2) => (fstv_in_dtyp T1) \u (fstv_in_dtyp T2)
-  | (dwork_apply c T) => (fstv_in_dcont c) \u (fstv_in_dtyp T)
+  | (dwork_apply c MT) => (fstv_in_dcont c) \u (fstv_in_dmaybetyp MT)
 end.
 
 Definition fv_in_dwork (w5:dwork) : vars :=
@@ -658,27 +718,16 @@ Definition fv_in_dwork (w5:dwork) : vars :=
   | (dwork_inftappinter T1 T2 T3 c) => {}
   | (dwork_inftappunion T1 T2 T3 c) => {}
   | (dwork_sub T1 T2) => {}
-  | (dwork_apply c T) => {}
+  | (dwork_apply c MT) => {}
 end.
 
-Definition ftv_in_dwork (w5:dwork) : vars :=
-  match w5 with
-  | (dwork_infer e c) => (ftv_in_dexp e) \u (ftv_in_dcont c)
-  | (dwork_check e T) => (ftv_in_dexp e) \u (ftv_in_dtyp T)
-  | (dwork_infabs T c) => (ftv_in_dtyp T) \u (ftv_in_dcont c)
-  | (dwork_infabsunion T1 T2 c) => (ftv_in_dtyp T1) \u (ftv_in_dtyp T2) \u (ftv_in_dcont c)
-  | (dwork_inftapp T1 T2 c) => (ftv_in_dtyp T1) \u (ftv_in_dtyp T2) \u (ftv_in_dcont c)
-  | (dwork_inftappinter T1 T2 T3 c) => (ftv_in_dtyp T1) \u (ftv_in_dtyp T2) \u (ftv_in_dtyp T3) \u (ftv_in_dcont c)
-  | (dwork_inftappunion T1 T2 T3 c) => (ftv_in_dtyp T1) \u (ftv_in_dtyp T2) \u (ftv_in_dtyp T3) \u (ftv_in_dcont c)
-  | (dwork_sub T1 T2) => (ftv_in_dtyp T1) \u (ftv_in_dtyp T2)
-  | (dwork_apply c T) => (ftv_in_dcont c) \u (ftv_in_dtyp T)
-end.
-
-Definition ftv_in_binding (b5:binding) : vars :=
-  match b5 with
-  | dbind_tvar_empty => {}
-  | dbind_stvar_empty => {}
-  | (dbind_typ T) => (ftv_in_dtyp T)
+Fixpoint ftv_in_dworklist (W5:dworklist) : vars :=
+  match W5 with
+  | dworklist_empty => {}
+  | (dworklist_consvar W x b) => (ftv_in_dworklist W) \u (ftv_in_binding b)
+  | (dworklist_constvar W X b) => (ftv_in_dworklist W) \u (ftv_in_binding b)
+  | (dworklist_consstvar W SX b) => (ftv_in_dworklist W) \u (ftv_in_binding b)
+  | (dworklist_conswork W w) => (ftv_in_dworklist W) \u (ftv_in_dwork w)
 end.
 
 Fixpoint fstv_in_dworklist (W5:dworklist) : vars :=
@@ -697,15 +746,6 @@ Fixpoint fv_in_dworklist (W5:dworklist) : vars :=
   | (dworklist_constvar W X b) => (fv_in_dworklist W)
   | (dworklist_consstvar W SX b) => (fv_in_dworklist W)
   | (dworklist_conswork W w) => (fv_in_dworklist W) \u (fv_in_dwork w)
-end.
-
-Fixpoint ftv_in_dworklist (W5:dworklist) : vars :=
-  match W5 with
-  | dworklist_empty => {}
-  | (dworklist_consvar W x b) => (ftv_in_dworklist W) \u (ftv_in_binding b)
-  | (dworklist_constvar W X b) => (ftv_in_dworklist W) \u (ftv_in_binding b)
-  | (dworklist_consstvar W SX b) => (ftv_in_dworklist W) \u (ftv_in_binding b)
-  | (dworklist_conswork W w) => (ftv_in_dworklist W) \u (ftv_in_dwork w)
 end.
 
 (** substitutions *)
@@ -737,14 +777,10 @@ Fixpoint d_subst_stv_in_dtyp (T_5:dtyp) (SX5:stypvar) (T__6:dtyp) {struct T__6} 
   | (dtyp_intersection T1 T2) => dtyp_intersection (d_subst_stv_in_dtyp T_5 SX5 T1) (d_subst_stv_in_dtyp T_5 SX5 T2)
 end.
 
-Fixpoint d_subst_tv_in_dcont (T_5:dtyp) (X5:typvar) (c5:dcont) {struct c5} : dcont :=
-  match c5 with
-  | (dcont_infabs c) => dcont_infabs (d_subst_tv_in_dcont T_5 X5 c)
-  | (dcont_infabsunion T1 c) => dcont_infabsunion (d_subst_tv_in_dtyp T_5 X5 T1) (d_subst_tv_in_dcont T_5 X5 c)
-  | (dcont_inftapp T c) => dcont_inftapp (d_subst_tv_in_dtyp T_5 X5 T) (d_subst_tv_in_dcont T_5 X5 c)
-  | (dcont_inftappinter T1 T2 c) => dcont_inftappinter (d_subst_tv_in_dtyp T_5 X5 T1) (d_subst_tv_in_dtyp T_5 X5 T2) (d_subst_tv_in_dcont T_5 X5 c)
-  | (dcont_inftappunion T1 T2 c) => dcont_inftappunion (d_subst_tv_in_dtyp T_5 X5 T1) (d_subst_tv_in_dtyp T_5 X5 T2) (d_subst_tv_in_dcont T_5 X5 c)
-  | (dcont_sub T) => dcont_sub (d_subst_tv_in_dtyp T_5 X5 T)
+Definition d_subst_tv_in_dmaybetyp (T5:dtyp) (X5:typvar) (MT5:dmaybetyp) : dmaybetyp :=
+  match MT5 with
+  | dmaybetyp_none => dmaybetyp_none 
+  | (dmaybetyp_some T) => dmaybetyp_some (d_subst_tv_in_dtyp T5 X5 T)
 end.
 
 Fixpoint d_subst_tv_in_dexp (T_5:dtyp) (X5:typvar) (e_5:dexp) {struct e_5} : dexp :=
@@ -764,6 +800,32 @@ with d_subst_tv_in_dbody (T5:dtyp) (X5:typvar) (dbody5:dbody) {struct dbody5} : 
   | (dbody_anno e T) => dbody_anno (d_subst_tv_in_dexp T5 X5 e) (d_subst_tv_in_dtyp T5 X5 T)
 end.
 
+Fixpoint d_subst_tv_in_dcont (T_5:dtyp) (X5:typvar) (c5:dcont) {struct c5} : dcont :=
+  match c5 with
+  | (dcont_infabs c) => dcont_infabs (d_subst_tv_in_dcont T_5 X5 c)
+  | (dcont_infabsunion T1 c) => dcont_infabsunion (d_subst_tv_in_dtyp T_5 X5 T1) (d_subst_tv_in_dcont T_5 X5 c)
+  | (dcont_inftapp T c) => dcont_inftapp (d_subst_tv_in_dtyp T_5 X5 T) (d_subst_tv_in_dcont T_5 X5 c)
+  | (dcont_inftappinter T1 T2 c) => dcont_inftappinter (d_subst_tv_in_dtyp T_5 X5 T1) (d_subst_tv_in_dtyp T_5 X5 T2) (d_subst_tv_in_dcont T_5 X5 c)
+  | (dcont_inftappunion T1 T2 c) => dcont_inftappunion (d_subst_tv_in_dtyp T_5 X5 T1) (d_subst_tv_in_dtyp T_5 X5 T2) (d_subst_tv_in_dcont T_5 X5 c)
+  | (dcont_sub T) => dcont_sub (d_subst_tv_in_dtyp T_5 X5 T)
+end.
+
+Definition d_subst_stv_in_dmaybetyp (T5:dtyp) (SX5:stypvar) (MT5:dmaybetyp) : dmaybetyp :=
+  match MT5 with
+  | dmaybetyp_none => dmaybetyp_none 
+  | (dmaybetyp_some T) => dmaybetyp_some (d_subst_stv_in_dtyp T5 SX5 T)
+end.
+
+Fixpoint d_subst_stv_in_dcont (T_5:dtyp) (SX5:stypvar) (c5:dcont) {struct c5} : dcont :=
+  match c5 with
+  | (dcont_infabs c) => dcont_infabs (d_subst_stv_in_dcont T_5 SX5 c)
+  | (dcont_infabsunion T1 c) => dcont_infabsunion (d_subst_stv_in_dtyp T_5 SX5 T1) (d_subst_stv_in_dcont T_5 SX5 c)
+  | (dcont_inftapp T c) => dcont_inftapp (d_subst_stv_in_dtyp T_5 SX5 T) (d_subst_stv_in_dcont T_5 SX5 c)
+  | (dcont_inftappinter T1 T2 c) => dcont_inftappinter (d_subst_stv_in_dtyp T_5 SX5 T1) (d_subst_stv_in_dtyp T_5 SX5 T2) (d_subst_stv_in_dcont T_5 SX5 c)
+  | (dcont_inftappunion T1 T2 c) => dcont_inftappunion (d_subst_stv_in_dtyp T_5 SX5 T1) (d_subst_stv_in_dtyp T_5 SX5 T2) (d_subst_stv_in_dcont T_5 SX5 c)
+  | (dcont_sub T) => dcont_sub (d_subst_stv_in_dtyp T_5 SX5 T)
+end.
+
 Fixpoint d_subst_stv_in_dexp (T_5:dtyp) (SX5:stypvar) (e_5:dexp) {struct e_5} : dexp :=
   match e_5 with
   | dexp_unit => dexp_unit 
@@ -779,16 +841,6 @@ end
 with d_subst_stv_in_dbody (T5:dtyp) (SX5:stypvar) (dbody5:dbody) {struct dbody5} : dbody :=
   match dbody5 with
   | (dbody_anno e T) => dbody_anno (d_subst_stv_in_dexp T5 SX5 e) (d_subst_stv_in_dtyp T5 SX5 T)
-end.
-
-Fixpoint d_subst_stv_in_dcont (T_5:dtyp) (SX5:stypvar) (c5:dcont) {struct c5} : dcont :=
-  match c5 with
-  | (dcont_infabs c) => dcont_infabs (d_subst_stv_in_dcont T_5 SX5 c)
-  | (dcont_infabsunion T1 c) => dcont_infabsunion (d_subst_stv_in_dtyp T_5 SX5 T1) (d_subst_stv_in_dcont T_5 SX5 c)
-  | (dcont_inftapp T c) => dcont_inftapp (d_subst_stv_in_dtyp T_5 SX5 T) (d_subst_stv_in_dcont T_5 SX5 c)
-  | (dcont_inftappinter T1 T2 c) => dcont_inftappinter (d_subst_stv_in_dtyp T_5 SX5 T1) (d_subst_stv_in_dtyp T_5 SX5 T2) (d_subst_stv_in_dcont T_5 SX5 c)
-  | (dcont_inftappunion T1 T2 c) => dcont_inftappunion (d_subst_stv_in_dtyp T_5 SX5 T1) (d_subst_stv_in_dtyp T_5 SX5 T2) (d_subst_stv_in_dcont T_5 SX5 c)
-  | (dcont_sub T) => dcont_sub (d_subst_stv_in_dtyp T_5 SX5 T)
 end.
 
 Fixpoint d_subst_v_in_dexp (e_5:dexp) (x5:expvar) (e__6:dexp) {struct e__6} : dexp :=
@@ -825,7 +877,14 @@ Definition d_subst_tv_in_dwork (T_5:dtyp) (X5:typvar) (w5:dwork) : dwork :=
   | (dwork_inftappinter T1 T2 T3 c) => dwork_inftappinter (d_subst_tv_in_dtyp T_5 X5 T1) (d_subst_tv_in_dtyp T_5 X5 T2) (d_subst_tv_in_dtyp T_5 X5 T3) (d_subst_tv_in_dcont T_5 X5 c)
   | (dwork_inftappunion T1 T2 T3 c) => dwork_inftappunion (d_subst_tv_in_dtyp T_5 X5 T1) (d_subst_tv_in_dtyp T_5 X5 T2) (d_subst_tv_in_dtyp T_5 X5 T3) (d_subst_tv_in_dcont T_5 X5 c)
   | (dwork_sub T1 T2) => dwork_sub (d_subst_tv_in_dtyp T_5 X5 T1) (d_subst_tv_in_dtyp T_5 X5 T2)
-  | (dwork_apply c T) => dwork_apply (d_subst_tv_in_dcont T_5 X5 c) (d_subst_tv_in_dtyp T_5 X5 T)
+  | (dwork_apply c MT) => dwork_apply (d_subst_tv_in_dcont T_5 X5 c) (d_subst_tv_in_dmaybetyp T_5 X5 MT)
+end.
+
+Definition d_subst_stv_in_binding (T5:dtyp) (SX5:stypvar) (b5:binding) : binding :=
+  match b5 with
+  | dbind_tvar_empty => dbind_tvar_empty 
+  | dbind_stvar_empty => dbind_stvar_empty 
+  | (dbind_typ T) => dbind_typ (d_subst_stv_in_dtyp T5 SX5 T)
 end.
 
 Definition d_subst_stv_in_dwork (T_5:dtyp) (SX5:stypvar) (w5:dwork) : dwork :=
@@ -838,14 +897,7 @@ Definition d_subst_stv_in_dwork (T_5:dtyp) (SX5:stypvar) (w5:dwork) : dwork :=
   | (dwork_inftappinter T1 T2 T3 c) => dwork_inftappinter (d_subst_stv_in_dtyp T_5 SX5 T1) (d_subst_stv_in_dtyp T_5 SX5 T2) (d_subst_stv_in_dtyp T_5 SX5 T3) (d_subst_stv_in_dcont T_5 SX5 c)
   | (dwork_inftappunion T1 T2 T3 c) => dwork_inftappunion (d_subst_stv_in_dtyp T_5 SX5 T1) (d_subst_stv_in_dtyp T_5 SX5 T2) (d_subst_stv_in_dtyp T_5 SX5 T3) (d_subst_stv_in_dcont T_5 SX5 c)
   | (dwork_sub T1 T2) => dwork_sub (d_subst_stv_in_dtyp T_5 SX5 T1) (d_subst_stv_in_dtyp T_5 SX5 T2)
-  | (dwork_apply c T) => dwork_apply (d_subst_stv_in_dcont T_5 SX5 c) (d_subst_stv_in_dtyp T_5 SX5 T)
-end.
-
-Definition d_subst_stv_in_binding (T5:dtyp) (SX5:stypvar) (b5:binding) : binding :=
-  match b5 with
-  | dbind_tvar_empty => dbind_tvar_empty 
-  | dbind_stvar_empty => dbind_stvar_empty 
-  | (dbind_typ T) => dbind_typ (d_subst_stv_in_dtyp T5 SX5 T)
+  | (dwork_apply c MT) => dwork_apply (d_subst_stv_in_dcont T_5 SX5 c) (d_subst_stv_in_dmaybetyp T_5 SX5 MT)
 end.
 
 Definition d_subst_v_in_dwork (e5:dexp) (x5:expvar) (w5:dwork) : dwork :=
@@ -858,7 +910,7 @@ Definition d_subst_v_in_dwork (e5:dexp) (x5:expvar) (w5:dwork) : dwork :=
   | (dwork_inftappinter T1 T2 T3 c) => dwork_inftappinter T1 T2 T3 c
   | (dwork_inftappunion T1 T2 T3 c) => dwork_inftappunion T1 T2 T3 c
   | (dwork_sub T1 T2) => dwork_sub T1 T2
-  | (dwork_apply c T) => dwork_apply c T
+  | (dwork_apply c MT) => dwork_apply c MT
 end.
 
 Fixpoint d_subst_tv_in_dworklist (T5:dtyp) (X5:typvar) (W5:dworklist) {struct W5} : dworklist :=
@@ -1180,6 +1232,6 @@ Inductive dmono_typ : dtyp -> Prop :=    (* defn dmono_typ *)
 
 
 (** infrastructure *)
-#[export] Hint Constructors ds_in d_isval ds_in_s d_neq_abs dneq_all dneq_intersection dneq_union dneq_bot dwf_env_dom dwf_typ dwf_env dmono_typ lc_dtyp lc_dexp lc_dbody lc_dcont lc_dwork lc_binding lc_dworklist : core.
+#[export] Hint Constructors ds_in d_isval ds_in_s d_neq_abs dneq_all dneq_intersection dneq_union dneq_bot dwf_env_dom dwf_typ dwf_env dmono_typ lc_dtyp lc_dcont lc_dexp lc_dbody lc_dmaybetyp lc_binding lc_dwork lc_dworklist : core.
 
 
