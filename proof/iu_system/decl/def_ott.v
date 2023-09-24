@@ -1068,27 +1068,27 @@ Inductive dneq_union : dtyp -> Prop :=    (* defn dneq_union *)
 
 (* defns Jdneq_bot *)
 Inductive dneq_bot : dtyp -> Prop :=    (* defn dneq_bot *)
- | dneqall_unit : 
+ | dneqbot_unit : 
      dneq_bot dtyp_unit
- | dneqall_top : 
+ | dneqbot_top : 
      dneq_bot dtyp_top
- | dneqall_var : forall (X:typvar),
+ | dneqbot_var : forall (X:typvar),
      dneq_bot (dtyp_var_f X)
- | dneqall_svar : forall (SX:stypvar),
+ | dneqbot_svar : forall (SX:stypvar),
      dneq_bot (dtyp_svar SX)
- | dneqall_arrow : forall (T1 T2:dtyp),
+ | dneqbot_arrow : forall (T1 T2:dtyp),
      lc_dtyp T1 ->
      lc_dtyp T2 ->
      dneq_bot (dtyp_arrow T1 T2)
- | dneqall_union : forall (T1 T2:dtyp),
+ | dneqbot_union : forall (T1 T2:dtyp),
      lc_dtyp T1 ->
      lc_dtyp T2 ->
      dneq_bot (dtyp_union T1 T2)
- | dneqall_intersection : forall (T1 T2:dtyp),
+ | dneqbot_intersection : forall (T1 T2:dtyp),
      lc_dtyp T1 ->
      lc_dtyp T2 ->
      dneq_bot (dtyp_intersection T1 T2)
- | dneqall_all : forall (T:dtyp),
+ | dneqbot_all : forall (T:dtyp),
      lc_dtyp (dtyp_all T) ->
      dneq_bot (dtyp_all T).
 

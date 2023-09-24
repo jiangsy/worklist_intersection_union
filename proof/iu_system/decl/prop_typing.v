@@ -760,7 +760,6 @@ Proof.
   - inst_cofinites_by L. inversion H1; auto.
   - inst_cofinites_by L. inversion H0; auto.
   - inst_cofinites_by L. inversion H1; auto.
-  - inst_cofinites_by L. inversion H1; auto.
 Qed.
 
 
@@ -863,7 +862,7 @@ Proof with auto with typing.
         -- dependent destruction H1; auto... 
         -- dependent destruction H1; auto... 
       (* e <= forall a. A *) 
-      * admit. (* ignore for now *** *)
+      (*  * admit. ignore for now *** *)
       (* e <= A *)
       * intros.
         eapply IHn2 in Hty; eauto.

@@ -357,7 +357,7 @@ defns
 Jdneq_bot :: '' ::=
 
 defn
-T ¬= ⊥ :: :: dneq_bot :: 'dneqall_' by
+T ¬= ⊥ :: :: dneq_bot :: 'dneqbot_' by
 
 ------------------------ :: unit
 UNIT ¬= ⊥
