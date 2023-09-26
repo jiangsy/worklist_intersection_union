@@ -94,7 +94,7 @@ dwork, w :: 'dwork_' ::=
   | MT1 ⊔∘ T2 ○ T3 =>=> c  ::   :: inftappunion
   | T1 ⊔∘ T2 >> c          ::   :: interinftapp
   | T1 ⊔∘ T2 >> c          ::   :: unioninftapp
-  | T1 ⊔▹ >> c             ::   :: unioninfabs
+  | T1 ⊔▹ T2 >> c          ::   :: unioninfabs
   | c $ MT                 ::   :: apply
 
 dworklist, W :: 'dworklist_' ::=
