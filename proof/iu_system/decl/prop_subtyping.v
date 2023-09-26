@@ -795,7 +795,6 @@ Proof with subst; eauto using dwf_typ_weaken_head with subtyping.
       (map (d_subst_stv_in_binding T2 SX) (SX1 ~ dbind_stvar_empty ++ F) ++ E) by auto.
       eapply H2; auto...
   - simpl. destruct (dneq_all_intersection_union_subst_stv T1 T2 SX) as [[? [? ?]] | ?]; eauto...
-    { destruct (d_sub_dwft _ _ _ H5) as [? [? ?]]. eapply dwf_typ_lc_dtyp with (E := F ++ SX ~ ▪ ++ E). auto. }
     + eapply d_sub_alll with (L:=L `union` singleton SX) (T2:={T2 /ₛᵈ SX} T0); eauto...
       * intros. inst_cofinites_with SX0. rewrite d_subst_stv_in_dtyp_open_comm; auto...
         apply fstv_sins_dtyp_subst_stv; auto...
@@ -894,12 +893,152 @@ Qed.
 
 Hint Constructors d_sub_sized : sub.
 
+
+(*       applys IHF... *)
+(*       rewrite dom_app. rewrite dom_subst_id. solve_notin. *)
+(*       destruct_notin. *)
+(*     forwards HE'': d_wf_env_strenthening_head HE'. *)
+(*     destruct a. *)
+(*     forwards: IHF. *)
+(*     applys d_wf_env_strenthening_head. *)
+(*     forwards: d_wf_env_subst_stvar_typ (dtyp_svar SY) HE'. *)
+
+(* rewrite_env (map (d_subst_stv_in_binding (dtyp_svar SY) SX) F ++ (SY ~ ▪ ++ nil) ++ E). *)
+
+
+(*     forwards~ IH: IHF. *)
+(*     rewrite_env ([(a, d_subst_stv_in_binding T1 SX b)] *)
+(*                    ++ (map (d_subst_stv_in_binding T1 SX) F ++ E)). *)
+(*     forwards: d_wf_env_uniq HE. *)
+(*     inverts H. destruct b... *)
+(*     + econstructor... *)
+(*       applys d_wft_typ_subst_stvar... *)
+(*       inverts~ HE. *)
+(* Qed. *)
+
+
+(* Ltac gather_atoms ::= *)
+(*   let A := gather_atoms_with (fun x : vars => x) in *)
+(*   let B := gather_atoms_with (fun x : var => {{ x }}) in *)
+(*   let C := gather_atoms_with (fun x : denv => dom x) in *)
+(*   let D1 := gather_atoms_with (fun x => ftv_in_dtyp x) in *)
+(*   let D2 := gather_atoms_with (fun x => fstv_in_dtyp x) in *)
+(*   (* let D3 := gather_atoms_with (fun x => fv_typ_in_binding x) in *) *)
+(*   (* let D4 := gather_atoms_with (fun x => fv_exp_in_exp x) in *) *)
+(*   constr:(A \u B \u C \u D1 \u D2). *)
+
 Lemma d_sub_size_rename_stvar : forall E F SX SY A B n,
     F ++ SX ~ ▪ ++ E ⊢ A <: B | n ->
       SY ∉ (dom E `union` dom F) ->
       (map (d_subst_stv_in_binding (dtyp_svar SY) SX) F) ++ SY ~ ▪ ++ E ⊢
         {dtyp_svar SY /ₛᵈ SX} A <: {dtyp_svar SY /ₛᵈ SX} B | n.
-Admitted.
+Proof with (simpl in *; eauto using d_wf_env_subst_tvar_typ with sub).
+  intros * HS HN.
+  (* rewrite_env ( (map (d_subst_stv_in_binding (dtyp_svar SY) SX) F ++ SY ~ ▪ ++ nil ) ++ E ). *)
+  (* assert (HR: map (d_subst_stv_in_binding (dtyp_svar SY) SX) (F ++ [(SY, dbind_stvar_empty)]) = map (d_subst_stv_in_binding (dtyp_svar SY) SX) F ++ SY ~ ▪ ++ nil). { *)
+  (*   rewrite map_app... *)
+  (* } *)
+  (* rewrite <- HR. clear HR. *)
+
+  case_eq (SY == SX); intros.
+  1: { subst. rewrite* subst_same_stvar_map_id.
+       repeat rewrite* subst_same_stvar_typ_id. } clear H.
+
+  gen SY.
+  inductions HS; intros...
+  - econstructor...
+    applys d_wf_env_subst_stvar_typ...
+    rewrite_env ((F ++ (SX, ▪) :: nil ) ++ [(SY, ▪)] ++ E).
+    applys d_wf_env_weaken_stvar.
+    rewrite_env (F ++ SX ~ ▪ ++ E)...
+    solve_notin.
+    applys d_wf_typ_rename_stvar...
+  - econstructor...
+    applys d_wf_env_subst_stvar_typ...
+    rewrite_env ((F ++ (SX, ▪) :: nil ) ++ [(SY, ▪)] ++ E).
+    applys d_wf_env_weaken_stvar.
+    rewrite_env (F ++ SX ~ ▪ ++ E)...
+    solve_notin.
+    applys d_wf_typ_rename_stvar...
+  - econstructor...
+    applys d_wf_env_subst_stvar_typ...
+    rewrite_env ((F ++ (SX, ▪) :: nil ) ++ [(SY, ▪)] ++ E).
+    applys d_wf_env_weaken_stvar.
+    rewrite_env (F ++ SX ~ ▪ ++ E)...
+    solve_notin.
+  - econstructor...
+    applys d_wf_env_subst_stvar_typ...
+    rewrite_env ((F ++ (SX, ▪) :: nil ) ++ [(SY, ▪)] ++ E).
+    applys d_wf_env_weaken_stvar.
+    rewrite_env (F ++ SX ~ ▪ ++ E)...
+    solve_notin. inverts* H0.
+    forwards* [?|?]: binds_app_1 H3.
+    2: { forwards* [(?&?)|?]: binds_cons_1 H0. try solve_by_invert. }
+    forwards* : binds_map_2 (d_subst_stv_in_binding (dtyp_svar SY) SX) H0.
+  - case_if; subst...
+    + econstructor.
+      applys* d_wf_env_rename_stvar...
+      forwards: d_wf_typ_rename_stvar H0...
+    + econstructor.
+      applys* d_wf_env_rename_stvar...
+      forwards: d_wf_typ_rename_stvar SY H0...
+      case_if in H1...
+  - pick fresh SZ and apply d__subs__all. inst_cofinites_with SZ.
+    + rewrite d_subst_stv_in_dtyp_open_comm...
+      applys~ fstv_sins_dtyp_subst_stv_s.
+    + rewrite d_subst_stv_in_dtyp_open_comm...
+      applys~ fstv_sins_dtyp_subst_stv_s.
+    + forwards~: H2 SZ E ((SZ, ▪) :: F)...
+      repeat rewrite d_subst_stv_in_dtyp_open_comm...
+  - pick fresh SZ and apply d__subs__alll. 6: apply H4. all: auto...
+    + rewrite d_subst_stv_in_dtyp_open_comm...
+      applys fstv_sins_dtyp_subst_stv...
+    + replace T2 with ({dtyp_svar SY /ₛᵈ SX} T2)...
+      forwards: d_wf_typ_rename_stvar SY H3...
+    + forwards: IHHS...
+      rewrite d_subst_stv_in_dtyp_open_comm...
+      applys* d_mono_notin_stvar.
+  - applys d__subs__intersection2; forwards: IHHS...
+    forwards: d_wf_typ_rename_stvar SY H...
+  - applys d__subs__intersection3; forwards: IHHS...
+    forwards: d_wf_typ_rename_stvar SY H...
+  - applys d__subs__union1; forwards: IHHS...
+    forwards: d_wf_typ_rename_stvar SY H...
+  - applys d__subs__union2; forwards: IHHS...
+    forwards: d_wf_typ_rename_stvar SY H...
+    Unshelve. all: eauto. econstructor.
+Qed.
+
+(* Hint Resolve d_mono_typ_lc : core. *)
+
+(* Lemma d_mono_typ_neq_all : forall T, *)
+(*   dmono_typ T -> oof. *)
+(*   intros; induction H; auto... *)
+(* Qed. *)
+
+(*     Search (dneq_all). *)
+(* Abort. *)
+
+
+(*     + rewrite d_subst_stv_in_dtyp_open_comm... *)
+(*       applys~ fstv_sins_dtyp_subst_stv_s. *)
+(*     + rewrite d_subst_stv_in_dtyp_open_comm... *)
+(*       applys~ fstv_sins_dtyp_subst_stv_s. *)
+(*     + forwards~: H2 SZ E ((SZ, ▪) :: F)... *)
+(*       repeat rewrite d_subst_stv_in_dtyp_open_comm... *)
+(*   - *)
+(*     + *)
+(*       rewrite d_subst_stv_in_dtyp_open_comm; auto... *)
+(*       applys~ fstv_sins_dtyp_subst_stv_s. *)
+(*     + *)
+
+(*       replace (dtyp_svar SZ) with ({dtyp_svar SY /ₛᵈ SX} (dtyp_svar SZ)). *)
+(*       lets: d_subst_stv_in_dtyp_open_comm. *)
+(*       rewrite d_subst_stv_in_dtyp_open_comm; auto... *)
+(*       case_if; intros; subst; try solve_notin. *)
+(*       rewrite fstv_sins_dtyp_subst_stv_s. *)
+(*     Search (⊢_). *)
+(* Admitted. *)
 
 (* (* for demo only; not to be proved *)
 Theorem d_sub_size_subst_stvar_test : forall E F SX S1 T1 T2 n,
@@ -1168,6 +1307,32 @@ Proof.
 Qed.
 
 
+Lemma d_sub_dwft_sized : forall E T1 T2 n,
+    E ⊢ T1 <: T2 | n -> ⊢ E /\ E ⊢ T1 /\ E ⊢ T2.
+Proof.
+  intros. applys d_sub_dwft. applys* d_sub_size_sound.
+Qed.
+
+Corollary d_sub_dwft_sized_0 : forall E T1 T2 n,
+    E ⊢ T1 <: T2 | n -> ⊢ E.
+Proof.
+  intros. forwards*: d_sub_dwft_sized H.
+Qed.
+
+Corollary d_sub_dwft_sized_1 : forall E T1 T2 n,
+    E ⊢ T1 <: T2 | n -> E ⊢ T1.
+Proof.
+  intros. forwards*: d_sub_dwft_sized H.
+Qed.
+
+Corollary d_sub_dwft_sized_2 : forall E T1 T2 n,
+    E ⊢ T1 <: T2 | n -> E ⊢ T2.
+Proof.
+  intros. forwards*: d_sub_dwft_sized H.
+Qed.
+
+#[local] Hint Resolve d_sub_dwft_sized_0 d_sub_dwft_sized_1 d_sub_dwft_sized_2 : core.
+
 Ltac solve_trans_forall_B_intersection_impl T1 T2:=
   match goal with
    | H1 : ?E ⊢ ?T <: T1 | ?n1 |- _ =>
@@ -1290,6 +1455,17 @@ Proof with auto with trans.
         auto.
     + simpl in *. dependent destruction Hsub2...
       * econstructor...
+        pick fresh SY and apply dwftyp_all.
+        ** forwards: H SY...
+           applys* fstv_open_tvar. solve_notin.
+        ** forwards: H1 SY...
+           forwards: d_sub_dwft_sized_1 H4.
+           forwards: d_wft_typ_subst_stvar SY (S1 ^^ᵈ dtyp_svar SY) (dtyp_var_f SY).
+           admit. admit. admit.
+        (*    rewrite_env (nil ++ SY ~ ▪ ++ E) in H5. applys H5. *)
+        (*    apply d_wf_typ_subst_stvar_tvar in H5. *)
+        (*    simpl in H5. *)
+        (*    rewrite d_subst_stv_in_dtyp_open_dtyp_wrt_dtyp in H5. *)
         admit. (*wft*)
       * eapply d_sub_all with (L:=L `union` L0 `union` dom E); auto.
         intros. inst_cofinites_with SX.
@@ -1297,9 +1473,10 @@ Proof with auto with trans.
         -- simpl in *. rewrite d_open_svar_same_order.
            assert ((dtyp_order T0) < n_dtyp_order) by lia. (* lia strangely fails if proving directly *)
            auto.
-      * eapply d_sub_alll with (T2:=T2); eauto.
-        admit. (* ds_in *)
-        pick fresh SX. inst_cofinites_with SX.
+      * pick fresh SY and apply d_sub_alll. 5: applys H6. all: eauto.
+        ** forwards: H SY...
+           applys* fstv_open_tvar. solve_notin.
+        ** pick fresh SX. inst_cofinites_with SX.
         replace E with (map (d_subst_stv_in_binding T2 SX) nil ++ E) by auto.
         rewrite_env  (nil ++ (SX, ▪) :: E) in H1.
         eapply d_sub_size_subst_stvar in H1; eauto.
@@ -1325,11 +1502,13 @@ Proof with auto with trans.
         -- eapply IHn_dsub_size with (S1:=dtyp_all T0) (n1:=S n) (n2:=n0); eauto...
            econstructor; eauto.
         -- auto.
-    + simpl in *. assert (E ⊢ T0) as Hwft0 by admit.
+    + simpl in *. assert (E ⊢ T0) as Hwft0 by applys* d_sub_dwft_sized_1.
       dependent destruction Hwft0; solve_trans_forall_B_C.
       (* solve_trans_forall_B_C. *)
       * dependent destruction Hsub2; try solve ord_inv; auto...
-        -- econstructor... admit.
+        -- econstructor...
+           pick fresh SY and apply dwftyp_all. applys* H2.
+           admit.
         -- eapply d_sub_alll with (T2:=T2); auto.
            eapply d_sub_size_sound; eauto.
       (* forall a. A < bot < C *)
@@ -1349,7 +1528,7 @@ Proof with auto with trans.
       (* forall a. A < B1 -> B2 < C *)
       * dependent destruction Hsub2; try solve ord_inv; auto...
         -- econstructor... admit.
-        -- assert (E ⊢ T1) by admit. assert (E ⊢ T4) by admit.
+        -- assert (E ⊢ T1) by applys* d_sub_dwft_sized_1. assert (E ⊢ T4) by applys* d_sub_dwft_sized_2.
           eapply d_sub_alll with (T2:=T2); eauto...
           eapply IHn_dsub_size with (S1:=dtyp_arrow T0 T3) (n2:=S(n1+n2)); eauto...
       * inversion H.
