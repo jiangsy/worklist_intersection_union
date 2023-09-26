@@ -245,6 +245,26 @@ Inductive d_wl_red : dworklist -> Prop :=    (* defn d_wl_red *)
  | d__wlred__infabs_union : forall (Γ:dworklist) (A1 A2:dtyp) (e:dexp) (c:dcont),
      d_wl_red (dworklist_conswork Γ (dwork_infabs A1 (dcont_infabsunion A2 c))) ->
      d_wl_red (dworklist_conswork Γ (dwork_infabs (dtyp_union A1 A2) c))  
+ | d__wlred__infabsunion_arrow : forall (Γ:dworklist) (B1 C1 B2 C2:dtyp) (e:dexp) (c:dcont),
+     d_wl_red (dworklist_conswork Γ (dwork_apply c (dmaybetyp_some (dtyp_arrow (dtyp_intersection B1 B2) (dtyp_union C1 C2))))) ->
+     d_wl_red (dworklist_conswork Γ (dwork_infabsunion (dtyp_arrow B1 C1) (dtyp_arrow B2 C2) c))  
+ | d__wlred__infabsunion_bot: forall (Γ:dworklist) (B1 C1 B2 C2:dtyp) (e:dexp) (c:dcont),
+     d_wl_red (dworklist_conswork Γ (dwork_apply c (dmaybetyp_some (dtyp_arrow (dtyp_intersection B1 dtyp_top) (dtyp_union C1 dtyp_bot))))) ->
+     d_wl_red (dworklist_conswork Γ (dwork_infabsunion (dtyp_arrow B1 C1) dtyp_bot c))  
+ | d__wlred__infabsunion_all: forall (Γ:dworklist) (A2 B1 C1 B2 C2 T1:dtyp) (e:dexp) (c:dcont),
+     dwf_typ (dwl_to_denv Γ) T1 ->
+     dmono_typ T1 ->
+     d_wl_red (dworklist_conswork Γ (dwork_infabsunion (dtyp_arrow B1 C1) (open_dtyp_wrt_dtyp A2 T1) c)) ->
+     d_wl_red (dworklist_conswork Γ (dwork_infabsunion (dtyp_arrow B1 C1) (dtyp_all A2) c))  
+ | d__wlred__infabsunion_inter1: forall (Γ:dworklist) (A2 A3 B1 C1:dtyp) (e:dexp) (c:dcont),
+     d_wl_red (dworklist_conswork Γ (dwork_infabsunion (dtyp_arrow B1 C1) A2 c)) ->
+     d_wl_red (dworklist_conswork Γ (dwork_infabsunion (dtyp_arrow B1 C1) (dtyp_intersection A2 A3) c))
+ | d__wlred__infabsunion_inter2: forall (Γ:dworklist) (A2 A3 B1 C1:dtyp) (e:dexp) (c:dcont),
+     d_wl_red (dworklist_conswork Γ (dwork_infabsunion (dtyp_arrow B1 C1) A3 c)) ->
+     d_wl_red (dworklist_conswork Γ (dwork_infabsunion (dtyp_arrow B1 C1) (dtyp_intersection A2 A3) c))
+ | d__wlred__infabsunion_union: forall (Γ:dworklist) (A2 A3 B1 C1:dtyp) (e:dexp) (c:dcont),
+     d_wl_red (dworklist_conswork Γ (dwork_infabsunion (dtyp_arrow B1 C1) A3 c)) ->
+     d_wl_red (dworklist_conswork Γ (dwork_infabsunion (dtyp_arrow B1 C1) (dtyp_union A2 A3) c))
  | d__wlred__applycont : forall (Γ Γ':dworklist) (M_T1:dmaybetyp) (c:dcont),
      d_apply_cont c M_T1 Γ' ->
      d_wl_red (dwl_app Γ' Γ) ->

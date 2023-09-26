@@ -1,0 +1,564 @@
+metavar typvar, X, Y, Z     ::= {{ repr-locally-nameless }}
+metavar stypvar, SX, SY, SZ ::= {{ coq var }}
+metavar expvar, x, y, z     ::= {{ repr-locally-nameless }}
+
+grammar
+
+dtyp, T, S, U :: dtyp_ ::=
+  | UNIT           ::   :: unit
+  | TOP            ::   :: top
+  | BOT            ::   :: bot
+  | X              ::   :: var
+  | SX             ::   :: svar
+  | T1 -> T2       ::   :: arrow
+  | ∀ X . T        ::   :: all  (+ bind X in T +)
+  | T1 + T2        ::   :: union
+  | T1 * T2        ::   :: intersection
+  | ( T )          :: S :: paren {{ coq ([[T]]) }}
+  | { T2 / X } T1  :: M :: subst {{ coq (open_dtyp_wrt_dtyp [[X T1]] [[T2]]) }}
+
+dbody :: dbody_ ::= 
+  | e : T ::  :: anno
+
+dexp, e, f, g :: dexp_ ::=
+  | unit                                ::   :: unit 
+  | top                                 ::   :: top
+  | x                                   ::   :: var
+  | \ x . e                             ::   :: abs  (+ bind x in e +)
+  | e1 e2                               ::   :: app
+  | \ X . dbody                         ::   :: tabs (+ bind X in dbody +) 
+  | e @ T                               ::   :: tapp
+  | e : T                               ::   :: anno
+  | ( e )                               :: S :: paren  {{ coq ([[e]]) }}
+  | { e2 / x } e1                       :: M :: subst1 {{ coq (open_dexp_wrt_dexp [[x e1]] [[e2]]) }}
+  | { T2 / X } e1                       :: M :: subst2 {{ coq (open_dexp_wrt_dtyp [[X e1]] [[T2]]) }}
+
+binding, b :: dbind_ ::=
+  | : ▪  ::   :: tvar_empty
+  | : ~▪ ::   :: stvar_empty
+  | : T  ::   :: typ
+
+substitutions
+  single T X  :: d_subst_tv_in
+  single T SX :: d_subst_stv_in
+  single e x  :: d_subst_v_in
+
+freevars
+  T X  :: ftv_in
+  T SX :: fstv_in
+  e x  :: fv_in
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+grammar
+
+denv, E, F, G:: '' ::= {{ coq list (atom*binding) }}
+  | empty    ::   :: empty {{ coq nil }}
+  | E , x b  ::   :: cons1 {{ coq ([[x]]~[[b]] ++ [[E]])  }}
+  | E , X b  ::   :: cons2 {{ coq ([[X]]~[[b]] ++ [[E]])  }}
+  | E , SX b ::   :: cons3 {{ coq ([[SX]]~[[b]] ++ [[E]]) }}
+  | ⌊ W ⌋    :: M :: dwlenv {{ coq ( dwl_to_denv [[W]] )}}
+
+dvalue, v :: dvalue_ ::=
+  | unit                 ::   :: unit
+  | top                  ::   :: top
+  | \ x . e              ::   :: abs  (+ bind x in e +)
+  | \ X . dbody          ::   :: tabs (+ bind X in dbody +)
+
+dmaybetyp, MT :: dmaybetyp_ ::=
+  | none                 ::   :: none
+  | some T               ::   :: some  
+
+dcont, c :: 'dcont_' ::=
+  % | Done                :: :: done
+  | _ ▹ c               :: :: infabs     
+  | _ • e =>=> c        :: :: infapp
+  | _ ○ T =>=> c        :: :: inftapp
+  | _ ⊓ T2 >> c         :: :: inter
+  | _ ⊔ T2 >> c         :: :: union
+  | _ <: T              :: :: sub
+
+dwork, w :: 'dwork_' ::=
+  | e => c                ::   :: infer
+  | e <= T                ::   :: check
+  | T ▹ c                 ::   :: infabs
+  | T1 ⊔ T2 ▹ c           ::   :: infabsunion
+  | T • e =>=> c          ::   :: infapp
+  | T1 ○ T2 =>=> c        ::   :: inftapp
+  | MT1 ⊓ T2 ○ T3 =>=> c  ::   :: inftappinter
+  | MT1 ⊔ T2 ○ T3 =>=> c  ::   :: inftappunion
+  | T1 ⊓ T2 >> c          ::   :: inter
+  | T1 ⊔ T2 >> c          ::   :: union
+  | T1 <: T2              ::   :: sub
+  | c $ MT                ::   :: apply
+
+dworklist, W :: 'dworklist_' ::=
+  | empty      ::   :: empty
+  | W , x b    ::   :: consvar 
+  | W , X b    ::   :: constvar 
+  | W , SX b   ::   :: consstvar
+  | W , w      ::   :: conswork
+
+formula :: formula_ ::=
+  | judgement        ::   :: judgement
+  | ( x b )  in E    ::   :: binds1 {{ coq binds ([[x]])  ([[b]]) ([[E]]) }}
+  | ( X b )  in E    ::   :: binds2 {{ coq binds ([[X]])  ([[b]]) ([[E]]) }}
+  | ( SX b ) in E    ::   :: binds3 {{ coq binds ([[SX]]) ([[b]]) ([[E]]) }}
+  | uniq E           ::   :: uniq   {{ coq uniq ([[E]]) }}
+  | x  `notin` dom E ::   :: fresh1 {{ coq ([[x]]  `notin` dom ([[E]])) }}
+  | X  `notin` dom E ::   :: fresh2 {{ coq ([[X]]  `notin` dom ([[E]])) }}
+  | SX `notin` dom E ::   :: fresh3 {{ coq ([[SX]] `notin` dom ([[E]])) }}
+  | X in T           ::   :: appear1 {{ coq [[X]] `in` ftv_in_dtyp [[T]]}}
+  | SX in T          ::   :: appear2 {{ coq [[SX]] `in` fstv_in_dtyp [[T]]}}
+  | T ¬= TOP         ::   :: neqtop  {{ coq ~ ([[T]] = dtyp_top)}}
+ 
+subrules
+  v <:: e
+
+embed {{ coq 
+
+Fixpoint dwl_to_denv (Γ : dworklist) : denv :=
+  match Γ with 
+  | dworklist_empty => nil
+  | dworklist_conswork Γ1' _ => dwl_to_denv Γ1'
+  | dworklist_constvar Γ1' X b => X ~ b ++ dwl_to_denv Γ1'
+  | dworklist_consstvar Γ1' SX b => SX ~ b ++ dwl_to_denv Γ1'
+  | dworklist_consvar Γ1' x b => x ~ b ++ dwl_to_denv Γ1'
+  end.
+
+
+}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+defns
+Jdstrong_in :: '' ::=
+
+defn
+X ∈ₛ T :: :: ds_in :: 'dsin_' by
+
+------------------------ :: var
+X ∈ₛ X 
+
+X ∈ₛ T1
+------------------------ :: arrow1
+X ∈ₛ T1 -> T2 
+
+X ∈ₛ T2
+------------------------ :: arrow2
+X ∈ₛ T1 -> T2 
+
+X ∈ₛ T
+------------------------ :: all
+X ∈ₛ ∀ Y . T
+
+X ∈ₛ T1
+X ∈ₛ T2
+------------------------ :: union
+X ∈ₛ T1 + T2
+
+X ∈ₛ T1
+X ∈ₛ T2
+------------------------ :: intersection
+X ∈ₛ T1 * T2
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% dvalue, v :: dvalue_ ::=
+%   | unit                 ::   :: unit
+%   | top                  ::   :: top
+%   | \ x . e              ::   :: abs  (+ bind x in e +)
+%   | \ X . dbody          ::   :: tabs (+ bind X in dbody +)
+
+
+defns
+Jd_is_value :: '' ::=
+
+defn
+is_v e  :: :: d_isval :: 'd_isval_' by
+
+------------------------ :: unit
+is_v unit
+
+------------------------ :: top
+is_v top
+
+------------------------ :: abs
+is_v ( \ x . e )
+
+------------------------ :: tabs
+is_v ( \ X . e : T )
+
+------------------------ :: annoabs
+is_v ( \ x . e ): T
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+defns
+Jdstrong_in_sty :: '' ::=
+
+defn
+SX ∈ₛ T :: :: ds_in_s :: 'dsins_' by
+
+------------------------ :: var
+SX ∈ₛ SX
+
+SX ∈ₛ T1
+------------------------ :: arrow1
+SX ∈ₛ T1 -> T2 
+
+SX ∈ₛ T2
+------------------------ :: arrow2
+SX ∈ₛ T1 -> T2 
+
+SX ∈ₛ T
+------------------------ :: all
+SX ∈ₛ ∀ Y . T
+
+SX ∈ₛ T1
+SX ∈ₛ T2
+------------------------ :: union
+SX ∈ₛ T1 + T2
+
+SX ∈ₛ T1
+SX ∈ₛ T2
+------------------------ :: intersection
+SX ∈ₛ T1 * T2
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+defns
+Jd_neq_abs :: '' ::= 
+
+defn 
+e ¬= λ :: :: d_neq_abs :: 'd_neqabs_' by 
+
+---------------------- :: unit
+unit ¬= λ
+
+---------------------- :: top
+top ¬= λ
+
+---------------------- :: var
+x ¬= λ
+
+---------------------- :: app
+e1 e2  ¬= λ
+
+---------------------- :: tabs
+\ X . e : T ¬= λ
+
+---------------------- :: tapp
+e @ T ¬= λ
+
+---------------------- :: anno
+e : T ¬= λ
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+defns
+Jdneq_all :: '' ::=
+
+defn
+T ¬= ∀ :: :: dneq_all :: 'dneqall_' by
+
+------------------------ :: unit
+UNIT ¬= ∀
+
+------------------------ :: top
+TOP ¬= ∀
+
+------------------------ :: bot
+BOT ¬= ∀
+
+------------------------ :: var
+X ¬= ∀
+
+------------------------ :: svar
+SX ¬= ∀
+
+------------------------ :: arrow
+T1 -> T2 ¬= ∀
+
+------------------------ :: union
+T1 + T2 ¬= ∀
+
+------------------------ :: intersection
+T1 * T2 ¬= ∀
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+defns
+Jdneq_intersection :: '' ::=
+
+defn
+T ¬= * :: :: dneq_intersection :: 'dneqintersection_' by
+
+------------------------ :: unit
+UNIT ¬= *
+
+------------------------ :: top
+TOP ¬= * 
+
+------------------------ :: bot
+BOT ¬= *
+
+------------------------ :: var
+X ¬= *
+
+------------------------ :: svar
+SX ¬= *
+
+------------------------ :: arrow
+T1 -> T2 ¬= *
+
+------------------------ :: all
+∀ X . T ¬= *
+
+------------------------ :: union
+T1 + T2 ¬= *
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+defns
+Jdneq_union :: '' ::=
+
+defn
+T ¬= + :: :: dneq_union :: 'dnequnion_' by
+
+------------------------ :: unit
+UNIT ¬= +
+
+------------------------ :: top
+TOP ¬= +
+
+------------------------ :: bot
+BOT ¬= +
+
+------------------------ :: var
+X ¬= +
+
+------------------------ :: svar
+SX ¬= +
+
+------------------------ :: arrow
+T1 -> T2 ¬= +
+
+------------------------ :: all
+∀ X . T ¬= +
+
+------------------------ :: intersection
+T1 * T2 ¬= +
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+defns
+Jdneq_bot :: '' ::=
+
+defn
+T ¬= ⊥ :: :: dneq_bot :: 'dneqbot_' by
+
+------------------------ :: unit
+UNIT ¬= ⊥
+
+------------------------ :: top
+TOP ¬= ⊥
+
+------------------------ :: var
+X ¬= ⊥
+
+------------------------ :: svar
+SX ¬= ⊥
+
+------------------------ :: arrow
+T1 -> T2 ¬= ⊥
+
+------------------------ :: union
+T1 + T2 ¬= ⊥
+
+------------------------ :: intersection
+T1 * T2 ¬= ⊥
+
+------------------------ :: all
+∀ X . T ¬= ⊥
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+defns
+Jdwf_env_dom :: '' ::=
+
+defn
+|-dom  E :: :: dwf_env_dom :: 'dwfenvdom_' by
+
+--------- :: empty
+|-dom empty
+
+|-dom E
+X `notin` dom E
+---------------- :: tvar
+|-dom E , X : ▪
+
+|-dom E
+SX `notin` dom E 
+---------------- :: stvar
+|-dom E , SX : ~▪
+
+|-dom E
+x `notin` dom E
+---------------- :: typ
+|-dom E , x : T
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+defns
+Jdwf_typ :: '' ::=
+
+defn
+E |- T :: :: dwf_typ :: 'dwftyp_' by
+
+--------- :: unit
+E |- UNIT 
+
+--------- :: bot
+E |- BOT 
+
+--------- :: top
+E |- TOP
+
+(X : ▪) in E
+-------------- :: var
+E |- X
+
+(SX : ~▪) in E 
+-------------- :: stvar 
+E |- SX
+
+E |- T1
+E |- T2
+-------------- :: arrow
+E |- T1 -> T2
+
+X ∈ₛ T
+E, X : ▪ |- T
+-------------------- :: all
+E |- ∀ X . T
+
+E |- T1
+E |- T2
+------------- :: union
+E |- T1 + T2
+
+E |- T1
+E |- T2 
+------------- :: intersection
+E |- T1 * T2
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+defns
+Jdwf_env :: '' ::=
+
+defn
+|- E :: :: dwf_env :: 'dwfenv_' by
+
+--------- :: empty
+|- empty
+
+|- E
+X `notin` dom E
+---------------- :: tvar
+|- E , X : ▪
+
+|- E
+SX `notin` dom E 
+---------------- :: stvar
+|- E , SX : ~▪
+
+|- E
+E |- T
+x `notin` dom E
+---------------- :: typ
+|- E , x : T
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+defns 
+Jdmono_typ :: '' ::= 
+
+defn 
+mono T :: :: dmono_typ :: 'dmonotyp_' by 
+
+--------------- :: unit
+mono UNIT
+
+--------------- :: tvar
+mono X
+
+mono T1
+mono T2
+--------------- :: arrow
+mono T1 -> T2
+
+mono T1 
+mono T2 
+--------------- :: intersection
+mono T1 * T2
+
+mono T1 
+mono T2 
+--------------- :: union
+mono T1 + T2
+
+
+
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% defns
+% Jdexp_red :: '' ::=
+
+% defn
+% e1 --> e2 :: :: dexp_red :: 'dexpred_' by
+
+% e1 --> e1'
+% ----------------- :: app1
+% e1 e2 --> e1' e2
+
+% is_v e1
+% e2 --> e2'
+% ----------------- :: app2
+% e1 e2 --> e1 e2'
+
+% e1 --> e1'
+% ----------------------- :: tapp
+% e1 @ T  --> e1' @ T 
+
+% is_v e2
+% ------------------------------- :: abs
+% (\ x . e1) e2  --> {e2 / x} e1
+
+% is_v e2
+% -------------------------------------- :: abs2
+% ( ( \ x . e1 ) : T1 ) e2  --> ( {e2 / x} e1 )
+
+% e --> e' 
+% -------------------- :: anno
+% e : T --> e' : T   
+
+% ------------------------------------------------ :: tapptabs
+% (\ X . e : T1 ) @ T2 --> {T2 / X} (e : T1) 
+
+% -------------------------------------------------------------- :: tappabs
+% ( ( \ x . e ) : ∀ X . T1 ) @ T2 --> ( \ x . e ) : {T2 / X} T1 
+
+% is_v e1
+% ------------------------------ :: tappbot
+% (e1 : BOT) @ T --> (e1 : BOT)
+
+% e1 ¬= λ
+% is_v e1
+% ------------------------------ :: deanno
+% (e1 : T1) --> e1
