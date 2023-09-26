@@ -79,6 +79,7 @@ dcont, c :: 'dcont_' ::=
   | _ ⊔ T1 ○ T2 =>=> c  :: :: inftappunion
   | _ ⊓ T2 >> c         :: :: inter
   | _ ⊔ T2 >> c         :: :: union
+  | _ ⊔ T2 -> T3 >> c   :: :: unionarr
   | _ <: T              :: :: sub
 
 dwork, w :: 'dwork_' ::=
@@ -93,6 +94,7 @@ dwork, w :: 'dwork_' ::=
   | MT1 ⊔ T2 ○ T3 =>=> c  ::   :: inftappunion
   | T1 ⊓ T2 >> c          ::   :: inter
   | T1 ⊔ T2 >> c          ::   :: union
+  | T1 ⊔ T2 -> T3 >> c    ::   :: unionarr
   | c $ MT                ::   :: apply
 
 dworklist, W :: 'dworklist_' ::=
