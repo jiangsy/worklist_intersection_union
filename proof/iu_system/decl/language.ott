@@ -65,9 +65,9 @@ dvalue, v :: dvalue_ ::=
   | \ x . e              ::   :: abs  (+ bind x in e +)
   | \ X . dbody          ::   :: tabs (+ bind X in dbody +)
 
-dmaybetyp, MT :: dmaybetyp_ ::=
-  | none                 ::   :: none
-  | some T               ::   :: some  
+% dmaybetyp, MT :: dmaybetyp_ ::=
+%   | none                 ::   :: none
+%   | some T               ::   :: some  
 
 dcont, c :: 'dcont_' ::=
   % | Done                :: :: done
@@ -75,9 +75,9 @@ dcont, c :: 'dcont_' ::=
   | _ ⊔▹ T1 ▹ c          :: :: infabsunion
   | _ • e =>=> c         :: :: infapp
   | _ ○ T =>=> c         :: :: inftapp
-  | _ ⊓∘ T1 ○ T2 =>=> c  :: :: inftappinter
+  % | _ ⊓∘ T1 ○ T2 =>=> c  :: :: inftappinter
   | _ ⊔∘ T1 ○ T2 =>=> c  :: :: inftappunion
-  | _ ⊓∘ T2 >> c         :: :: interinftapp
+  % | _ ⊓∘ T2 >> c         :: :: interinftapp
   | _ ⊔∘ T2 >> c         :: :: unioninftapp
   | _ ⊔▹ T2 >> c         :: :: unioninfabs
   | _ <: T               :: :: sub
@@ -90,9 +90,9 @@ dwork, w :: 'dwork_' ::=
   | T • e =>=> c           ::   :: infapp
   | T1 ○ T2 =>=> c         ::   :: inftapp
   | T1 <: T2               ::   :: sub
-  | MT1 ⊔∘ T2 ○ T3 =>=> c  ::   :: inftappinter
-  | MT1 ⊔∘ T2 ○ T3 =>=> c  ::   :: inftappunion
-  | T1 ⊔∘ T2 >> c          ::   :: interinftapp
+  % | MT1 ⊓∘ T2 ○ T3 =>=> c  ::   :: inftappinter
+  | T1 ⊔∘ T2 ○ T3 =>=> c  ::   :: inftappunion
+  % | T1 ⊓∘ T2 >> c          ::   :: interinftapp
   | T1 ⊔∘ T2 >> c          ::   :: unioninftapp
   | T1 ⊔▹ T2 >> c          ::   :: unioninfabs
   | c $ MT                 ::   :: apply
@@ -116,6 +116,7 @@ formula :: formula_ ::=
   | X in T           ::   :: appear1 {{ coq [[X]] `in` ftv_in_dtyp [[T]]}}
   | SX in T          ::   :: appear2 {{ coq [[SX]] `in` fstv_in_dtyp [[T]]}}
   | T ¬= TOP         ::   :: neqtop  {{ coq ~ ([[T]] = dtyp_top)}}
+  | ⌊ W ⌋            ::   :: wl_to_env {{ coq dwl_to_denv [[ W ]] }}
  
 subrules
   v <:: e
@@ -177,26 +178,26 @@ X ∈ₛ T1 * T2
 %   | \ X . dbody          ::   :: tabs (+ bind X in dbody +)
 
 
-defns
-Jd_is_value :: '' ::=
+% defns
+% Jd_is_value :: '' ::=
 
-defn
-is_v e  :: :: d_isval :: 'd_isval_' by
+% defn
+% is_v e  :: :: d_isval :: 'd_isval_' by
 
------------------------- :: unit
-is_v unit
+% ------------------------ :: unit
+% is_v unit
 
------------------------- :: top
-is_v top
+% ------------------------ :: top
+% is_v top
 
------------------------- :: abs
-is_v ( \ x . e )
+% ------------------------ :: abs
+% is_v ( \ x . e )
 
------------------------- :: tabs
-is_v ( \ X . e : T )
+% ------------------------ :: tabs
+% is_v ( \ X . e : T )
 
------------------------- :: annoabs
-is_v ( \ x . e ): T
+% ------------------------ :: annoabs
+% is_v ( \ x . e ): T
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -462,6 +463,17 @@ E |- T2
 ------------- :: intersection
 E |- T1 * T2
 
+
+defns
+Jdwf_exp :: '' ::=
+
+defn
+E |- e :: :: dwf_exp :: 'dwfexp_' by
+
+--------- :: unit
+E |- unit 
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 defns
@@ -518,6 +530,29 @@ mono T1
 mono T2 
 --------------- :: union
 mono T1 + T2
+
+
+
+
+defns 
+Jdwl_wf_cont :: '' ::= 
+
+defn 
+W |- c :: :: dwl_wf_cont :: 'dwl_wf_cont_' by 
+
+W |- c
+----------------- :: infabs
+W |- _ ▹ c
+
+⌊ W ⌋ |- T
+W |- c 
+------------------ :: infabsunion
+W |- _ ⊔▹ T ▹ c
+
+⌊ W ⌋ |- e 
+W |- c
+-------------------- :: infapp
+W |- _ • e =>=> c  
 
 
 

@@ -163,18 +163,12 @@ Inductive d_inftapp : denv -> dtyp -> dtyp -> dtyp -> Prop :=
     d_inftapp E (dtyp_all T1) T2 (open_dtyp_wrt_dtyp  T1   T2 )
 | d_inftapp_intersection1 : forall (E:denv) (A1 A2 B C1:dtyp),
     dwf_typ E A2 ->
-    d_inftapp_false A2 ->
     d_inftapp E A1 B C1 ->
     d_inftapp E (dtyp_intersection A1 A2) B C1
 | d_inftapp_intersection2 : forall (E:denv) (A1 A2 B C2:dtyp),
     dwf_typ E A1 ->
-    d_inftapp_false A1 ->
     d_inftapp E A2 B C2 ->
     d_inftapp E (dtyp_intersection A1 A2) B C2
-| d_inftapp_intersection3 : forall (E:denv) (A1 A2 B C1 C2:dtyp),
-    d_inftapp E A1 B C1 ->
-    d_inftapp E A2 B C2 ->
-    d_inftapp E (dtyp_intersection A1 A2) B (dtyp_intersection C1 C2)
 | d_inftapp_union : forall (E:denv) (A1 A2 B C1 C2:dtyp),
     d_inftapp E A1 B C1 ->
     d_inftapp E A2 B C2 ->
