@@ -88,10 +88,10 @@ dwork, w :: 'dwork_' ::=
   | T • e =>=> c           ::   :: infapp
   | T1 ○ T2 =>=> c         ::   :: inftapp
   | T1 <: T2               ::   :: sub
-  | T1 ⊔∘ T2 ○ T3 =>=> c  ::   :: inftappunion
+  | T1 ⊔∘ T2 ○ T3 =>=> c   ::   :: inftappunion
   | T1 ⊔∘ T2 >> c          ::   :: unioninftapp
   | T1 ⊔▹ T2 >> c          ::   :: unioninfabs
-  | c $ T                 ::   :: apply
+  | c $ T                  ::   :: apply
 
 dworklist, W :: 'dworklist_' ::=
   | empty      ::   :: empty

@@ -71,6 +71,9 @@ Inductive dwl_del_red : dworklist -> Prop :=
       d_infabs (dwl_to_denv Γ) A2 B2 C2 ->
       dwl_del_red (dworklist_conswork Γ (dwork_apply c (dtyp_arrow (dtyp_intersection B1 B2) (dtyp_union C1 C2)))) ->
       dwl_del_red (dworklist_conswork Γ (dwork_infabsunion (dtyp_arrow B1 C1) A2 c))
+  | d__wldelred_unioninfabs : forall Γ A1 A2 c,
+      dwl_del_red (dworklist_conswork Γ (dwork_apply c (dtyp_arrow (dtyp_intersection B1 B2) (dtyp_union C1 C2)))) -> 
+      dwl_del_red (dworklist_conswork Γ (dwork_unioninfabs (dtyp_arrow B1 C1) (dtyp_arrow B2 C2) c))  
   | d__wldelred__infapp : forall Γ e T1 T2 c,
       d_typing (dwl_to_denv Γ) e d_typingmode_chk T1 ->
       dwl_del_red (dworklist_conswork (dworklist_conswork Γ (dwork_check e T1)) (dwork_apply c T2)) ->
