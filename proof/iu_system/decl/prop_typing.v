@@ -386,12 +386,6 @@ Fixpoint dtyp_size (T:dtyp) : nat :=
   end.
 
 
-(* @shengyi:todo *** *)
-(* Theorem d_infabs_subsumption : forall E T1 T2 S1, d_infabs E T1 T2 -> E ⊢ S1 <:T1 ->
-  exists S2, d_infabs E.
-Proof.
-Admitted. *)
-
 Hint Constructors d_inftapp : inftapp.
 Hint Constructors d_inftapp_false : inftapp.
 
