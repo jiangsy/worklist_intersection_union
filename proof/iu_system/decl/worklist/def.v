@@ -15,49 +15,41 @@ Fixpoint dwl_app (Γ1 Γ2 : dworklist) :=
   end.
 
 (* TODO : check *)
-Inductive d_apply_cont : dcont -> dmaybetyp -> dworklist -> Prop :=
+Inductive d_apply_cont : dcont -> dtyp -> dworklist -> Prop :=
   (* | d__ac__done : forall T1,  
       d_apply_cont dcont_done (some T1) dworklist_empty *)
   | d__ac__infabs: forall T1 c,
       d_apply_cont (dcont_infabs c) 
-                   (dmaybetyp_some T1) 
+                   T1
                    (dworklist_conswork dworklist_empty (dwork_infabs T1 c))
   | d__ac__infabsunion : forall A1 B2 c, 
       d_apply_cont (dcont_infabsunion A1 c) 
-                   (dmaybetyp_some B2) 
+                   B2
                    (dworklist_conswork dworklist_empty (dwork_infabsunion A1 B2 c))
-  | d__ac__unioninfabs : forall (A1 A2 B1 B2 c),
-      d_apply_cont (dcont_unioninfabs (dtyp_arrow A2 B2)) 
-                   (dmaybetyp_some (dtyp_arrow A1 B1)) 
-                   (dworklist_conswork dworklist_empty (dwork_unioninfabs (dtyp_arrow (dtyp_intersection A1 A2) (dtyp_union B1 B2)) c))
+  | d__ac__unioninfabs : forall A2 B1 C1 c,
+      d_apply_cont (dcont_unioninfabs A2 c) 
+                   (dtyp_arrow B1 C1)
+                   (dworklist_conswork dworklist_empty (dwork_unioninfabs (dtyp_arrow B1 C1) A2 c))
   | d__ac_infapp : forall A1 e c,
       d_apply_cont (dcont_infapp e c) 
-                   (dmaybetyp_some A1) 
+                   A1
                    (dworklist_conswork dworklist_empty (dwork_infapp A1 e c))
   | d__ac__tapp : forall A1 B1 c,
       d_apply_cont (dcont_inftapp B1 c) 
-                   (dmaybetyp_some A1) 
+                   A1
                    (dworklist_conswork dworklist_empty (dwork_inftapp A1 B1 c))
-  | d__ac__tappinter : forall A1 B1 M_C2 c,
-      d_apply_cont (dcont_inftappinter A1 B1 c) 
-                   M_C2 
-                   (dworklist_conswork dworklist_empty (dwork_inftappinter M_C2 A1 B1 c))
-  | d__ac__tappunion : forall A1 B1 M_C2 c,
+  | d__ac__tappunion : forall A1 B1 C2 c,
       d_apply_cont (dcont_inftappunion A1 B1 c) 
-                   M_C2 
-                   (dworklist_conswork dworklist_empty (dwork_inftappunion M_C2 A1 B1 c))
-  | d__ac__interinftapp : forall A1 A2 c,
-      d_apply_cont (dcont_interinftapp A2 c) 
-                   (dmaybetyp_some A1) 
-                   (dworklist_conswork dworklist_empty (dwork_interinftapp A1 A2 c))
+                   C2 
+                   (dworklist_conswork dworklist_empty (dwork_inftappunion C2 A1 B1 c))
   | d__ac__unioninftapp : forall A1 A2 c,
       d_apply_cont (dcont_unioninftapp A2 c) 
-                   (dmaybetyp_some A1) 
+                   A1
                    (dworklist_conswork dworklist_empty (dwork_unioninftapp A1 A2 c))
-  | d__ac__sub : forall T1 S1,
-      d_apply_cont (dcont_sub S1) 
-                   (dmaybetyp_some T1) 
-                   (dworklist_conswork dworklist_empty (dwork_sub T1 S1))
+  | d__ac__sub : forall A1 B1,
+      d_apply_cont (dcont_sub A1) 
+                   B1
+                   (dworklist_conswork dworklist_empty (dwork_sub B1 A1))
 .
 
 (* decl worklist delegated reduction, corresponds to Jimmy's dc *)

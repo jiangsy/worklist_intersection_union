@@ -75,9 +75,7 @@ dcont, c :: 'dcont_' ::=
   | _ ⊔▹ T1 ▹ c          :: :: infabsunion
   | _ • e =>=> c         :: :: infapp
   | _ ○ T =>=> c         :: :: inftapp
-  % | _ ⊓∘ T1 ○ T2 =>=> c  :: :: inftappinter
   | _ ⊔∘ T1 ○ T2 =>=> c  :: :: inftappunion
-  % | _ ⊓∘ T2 >> c         :: :: interinftapp
   | _ ⊔∘ T2 >> c         :: :: unioninftapp
   | _ ⊔▹ T2 >> c         :: :: unioninfabs
   | _ <: T               :: :: sub
@@ -90,12 +88,10 @@ dwork, w :: 'dwork_' ::=
   | T • e =>=> c           ::   :: infapp
   | T1 ○ T2 =>=> c         ::   :: inftapp
   | T1 <: T2               ::   :: sub
-  % | MT1 ⊓∘ T2 ○ T3 =>=> c  ::   :: inftappinter
   | T1 ⊔∘ T2 ○ T3 =>=> c  ::   :: inftappunion
-  % | T1 ⊓∘ T2 >> c          ::   :: interinftapp
   | T1 ⊔∘ T2 >> c          ::   :: unioninftapp
   | T1 ⊔▹ T2 >> c          ::   :: unioninfabs
-  | c $ MT                 ::   :: apply
+  | c $ T                 ::   :: apply
 
 dworklist, W :: 'dworklist_' ::=
   | empty      ::   :: empty
