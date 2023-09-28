@@ -43,8 +43,8 @@ Inductive d_apply_cont : dcont -> dtyp -> dworklist -> Prop :=
                    C2 
                    (dworklist_conswork dworklist_empty (dwork_inftappunion C2 A1 B1 c))
   | d__ac__unioninftapp : forall A1 A2 c,
-      d_apply_cont (dcont_unioninftapp A2 c) 
-                   A1
+      d_apply_cont (dcont_unioninftapp A1 c) 
+                   A2
                    (dworklist_conswork dworklist_empty (dwork_unioninftapp A1 A2 c))
   | d__ac__sub : forall A1 B1,
       d_apply_cont (dcont_sub A1) 
