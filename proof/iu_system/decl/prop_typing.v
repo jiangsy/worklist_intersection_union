@@ -562,6 +562,11 @@ Proof with auto with typing.
 Qed.
 
 
+Lemma d_inftapp_subenv : forall E E' A1 B1 C1,
+  E ⊢ A1 ○ B1 ⇒⇒ C1 ->
+  d_subenv E' E ->
+  E' ⊢ A1 ○ B1 ⇒⇒ C1.
+Admitted.
 
 Corollary d_inftapp_subsumption: forall E E' A1 A2 B1 C1,
   E ⊢ A1 ○ B1 ⇒⇒ C1 ->
@@ -746,14 +751,18 @@ Proof with auto with typing.
 Qed.
 
 
-Corollary d_inftabs_subsumption: forall E E' A1 A2 B1 C1,
+Lemma d_infabs_subenv : forall E E' A1 B1 C1,
+  E ⊢ A1 ▹ B1 → C1 ->
+  d_subenv E' E ->
+  E' ⊢ A1 ▹ B1 → C1.
+Admitted.
+
+Corollary d_infabs_subsumption: forall E E' A1 A2 B1 C1,
   E ⊢ A1 ▹ B1 → C1 ->
   E ⊢ A2 <: A1 ->
   d_subenv E' E ->
   exists B2 C2, E ⊢ dtyp_arrow B2 C2 <: dtyp_arrow B1 C1 /\ E' ⊢ A2 ▹ B2 → C2.
 Admitted.
-
-
 
 
 Hint Extern 1 (_ < _) => lia : typing.
@@ -851,7 +860,7 @@ Proof with auto with typing.
       (* e1 e2 => A *)
       * eapply IHn1 in Hty1; eauto...
         destruct Hty1 as [A2]. inversion H0.
-        eapply d_inftabs_subsumption in H; eauto.
+        eapply d_infabs_subsumption in H; eauto.
         destruct H as [B2 [C2]].
         exists C2; intuition.
         dependent destruction H0...

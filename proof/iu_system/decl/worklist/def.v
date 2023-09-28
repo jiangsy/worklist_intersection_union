@@ -53,50 +53,50 @@ Inductive d_apply_cont : dcont -> dtyp -> dworklist -> Prop :=
 .
 
 (* decl worklist delegated reduction, corresponds to Jimmy's dc *)
-Inductive dwl_del_red : dworklist -> Prop :=
-  | d__wldelred__empty : dwl_del_red dworklist_empty
+Inductive d_wl_del_red : dworklist -> Prop :=
+  | d__wldelred__empty : d_wl_del_red dworklist_empty
   | d__wldelred__chk : forall Γ e T1,
       d_typing (dwl_to_denv Γ) e d_typingmode_chk T1 ->
-      dwl_del_red Γ ->
-      dwl_del_red (dworklist_conswork Γ (dwork_check e T1))
+      d_wl_del_red Γ ->
+      d_wl_del_red (dworklist_conswork Γ (dwork_check e T1))
   | d__wldelred__inf : forall Γ e T1 c,
       d_typing (dwl_to_denv Γ) e d_typingmode_inf T1 ->
-      dwl_del_red (dworklist_conswork Γ (dwork_apply c T1)) ->
-      dwl_del_red (dworklist_conswork Γ (dwork_infer e c))
+      d_wl_del_red (dworklist_conswork Γ (dwork_apply c T1)) ->
+      d_wl_del_red (dworklist_conswork Γ (dwork_infer e c))
   | d__wldelred__infabs : forall Γ T1 T2 T3 c,
       d_infabs (dwl_to_denv Γ) T1 T2 T3 ->
-      dwl_del_red (dworklist_conswork Γ (dwork_apply c (dtyp_arrow T2 T3))) ->
-      dwl_del_red (dworklist_conswork Γ (dwork_infabs T1 c))
+      d_wl_del_red (dworklist_conswork Γ (dwork_apply c (dtyp_arrow T2 T3))) ->
+      d_wl_del_red (dworklist_conswork Γ (dwork_infabs T1 c))
   | d__wldelred__infabsunion : forall Γ A2 B1 B2 C1 C2 c,
       d_infabs (dwl_to_denv Γ) A2 B2 C2 ->
-      dwl_del_red (dworklist_conswork Γ (dwork_apply c (dtyp_arrow (dtyp_intersection B1 B2) (dtyp_union C1 C2)))) ->
-      dwl_del_red (dworklist_conswork Γ (dwork_infabsunion (dtyp_arrow B1 C1) A2 c))
+      d_wl_del_red (dworklist_conswork Γ (dwork_apply c (dtyp_arrow (dtyp_intersection B1 B2) (dtyp_union C1 C2)))) ->
+      d_wl_del_red (dworklist_conswork Γ (dwork_infabsunion (dtyp_arrow B1 C1) A2 c))
   | d__wldelred__unioninfabs : forall Γ B1 B2 C1 C2 c,
-      dwl_del_red (dworklist_conswork Γ (dwork_apply c (dtyp_arrow (dtyp_intersection B1 B2) (dtyp_union C1 C2)))) -> 
-      dwl_del_red (dworklist_conswork Γ (dwork_unioninfabs (dtyp_arrow B1 C1) (dtyp_arrow B2 C2) c))  
+      d_wl_del_red (dworklist_conswork Γ (dwork_apply c (dtyp_arrow (dtyp_intersection B1 B2) (dtyp_union C1 C2)))) -> 
+      d_wl_del_red (dworklist_conswork Γ (dwork_unioninfabs (dtyp_arrow B1 C1) (dtyp_arrow B2 C2) c))  
   | d__wldelred__infapp : forall Γ e T1 T2 c,
       d_typing (dwl_to_denv Γ) e d_typingmode_chk T1 ->
-      dwl_del_red (dworklist_conswork (dworklist_conswork Γ (dwork_check e T1)) (dwork_apply c T2)) ->
-      dwl_del_red (dworklist_conswork Γ (dwork_infapp (dtyp_arrow T1 T2) e c))
+      d_wl_del_red (dworklist_conswork (dworklist_conswork Γ (dwork_check e T1)) (dwork_apply c T2)) ->
+      d_wl_del_red (dworklist_conswork Γ (dwork_infapp (dtyp_arrow T1 T2) e c))
   | d__wldelred__inftapp : forall Γ T1 T2 T3 c,
       d_inftapp (dwl_to_denv Γ) T1 T2 T3 ->
-      dwl_del_red (dworklist_conswork Γ (dwork_apply c T3)) -> 
-      dwl_del_red (dworklist_conswork Γ (dwork_inftapp T1 T2 c))
+      d_wl_del_red (dworklist_conswork Γ (dwork_apply c T3)) -> 
+      d_wl_del_red (dworklist_conswork Γ (dwork_inftapp T1 T2 c))
   | d__wldelred__inftappunion : forall Γ A2 B2 C1 C2 c,
       d_inftapp (dwl_to_denv Γ) A2 B2 C2 ->
-      dwl_del_red (dworklist_conswork Γ (dwork_apply c (dtyp_union C1 C2))) -> 
-      dwl_del_red (dworklist_conswork Γ (dwork_inftappunion C1 A2 B2 c))
+      d_wl_del_red (dworklist_conswork Γ (dwork_apply c (dtyp_union C1 C2))) -> 
+      d_wl_del_red (dworklist_conswork Γ (dwork_inftappunion C1 A2 B2 c))
   | d__wldelred_unioninftapp : forall Γ A1 A2 c,
-      dwl_del_red (dworklist_conswork Γ (dwork_apply c (dtyp_union A1 A2))) -> 
-      dwl_del_red (dworklist_conswork Γ (dwork_unioninftapp A1 A2 c))
+      d_wl_del_red (dworklist_conswork Γ (dwork_apply c (dtyp_union A1 A2))) -> 
+      d_wl_del_red (dworklist_conswork Γ (dwork_unioninftapp A1 A2 c))
   | d__wldelred__sub : forall Γ S1 T1,
       d_sub (dwl_to_denv Γ) S1 T1 ->
-      dwl_del_red Γ ->
-      dwl_del_red (dworklist_conswork Γ (dwork_sub S1 T1))
+      d_wl_del_red Γ ->
+      d_wl_del_red (dworklist_conswork Γ (dwork_sub S1 T1))
   | d__wldelred__applycont : forall Γ c T1 Γ',
       d_apply_cont c T1 Γ' ->
-      dwl_del_red (dwl_app Γ' Γ) ->
-      dwl_del_red (dworklist_conswork Γ (dwork_apply c T1))
+      d_wl_del_red (dwl_app Γ' Γ) ->
+      d_wl_del_red (dworklist_conswork Γ (dwork_apply c T1))
   .
 
 (* defns Jdworklist_reduction *)
