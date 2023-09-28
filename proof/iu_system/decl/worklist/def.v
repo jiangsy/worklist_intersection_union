@@ -103,7 +103,7 @@ Inductive d_wl_del_red : dworklist -> Prop :=
 Inductive d_wl_red : dworklist -> Prop :=    (* defn d_wl_red *)
  | d__wlred__var : forall (Γ:dworklist) (x:atom) (A:dtyp),
     d_wl_red Γ ->
-    d_wl_red (dworklist_constvar Γ x (dbind_typ A))
+    d_wl_red (dworklist_consvar Γ x (dbind_typ A))
  | d__wlred__tvar : forall (Γ:dworklist) (X:atom),
     d_wl_red Γ ->
     d_wl_red (dworklist_constvar Γ X dbind_tvar_empty)
