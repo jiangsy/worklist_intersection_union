@@ -1231,7 +1231,31 @@ Inductive dwf_typ : denv -> dtyp -> Prop :=    (* defn dwf_typ *)
 (* defns Jdwf_exp *)
 Inductive dwf_exp : denv -> dexp -> Prop :=    (* defn dwf_exp *)
  | dwfexp_unit : forall (E:denv),
-     dwf_exp E dexp_unit.
+     dwf_exp E dexp_unit
+ | dwfexp_top : forall (E:denv),
+     dwf_exp E dexp_top
+ | dwfexp_var : forall (E:denv) (x:expvar) (T:dtyp),
+      binds ( x )  ( (dbind_typ T) ) ( E )  ->
+     dwf_exp E (dexp_var_f x)
+ | dwfexp_abs : forall (L:vars) (E:denv) (e:dexp),
+      ( forall x , x \notin  L  -> dwf_exp  ( x ~ (dbind_typ dtyp_top)  ++  E )   ( open_dexp_wrt_dexp e (dexp_var_f x) )  )  ->
+     dwf_exp E (dexp_abs e)
+ | dwfexp_tabs : forall (L:vars) (E:denv) (dbody5:dbody),
+      ( forall X , X \notin  L  -> dwf_body  ( X ~ dbind_tvar_empty  ++  E )   ( open_dbody_wrt_dtyp dbody5 (dtyp_var_f X) )  )  ->
+     dwf_exp E (dexp_tabs dbody5)
+ | dwfexp_tapp : forall (E:denv) (e:dexp) (T:dtyp),
+     dwf_typ E T ->
+     dwf_exp E e ->
+     dwf_exp E (dexp_tapp e T)
+ | dwfexp_anno : forall (E:denv) (e:dexp) (T:dtyp),
+     dwf_typ E T ->
+     dwf_exp E e ->
+     dwf_exp E (dexp_anno e T)
+with dwf_body : denv -> dbody -> Prop :=    (* defn dwf_body *)
+ | dwfbody_anno : forall (E:denv) (e:dexp) (T:dtyp),
+     dwf_typ E T ->
+     dwf_exp E e ->
+     dwf_body E (dbody_anno e T).
 
 (* defns Jdwf_env *)
 Inductive dwf_env : denv -> Prop :=    (* defn dwf_env *)
@@ -1282,10 +1306,35 @@ Inductive dwl_wf_cont : dworklist -> dcont -> Prop :=    (* defn dwl_wf_cont *)
  | dwl_wf_cont_infapp : forall (W:dworklist) (e:dexp) (c:dcont),
      dwf_exp  ( dwl_to_denv  W  )  e ->
      dwl_wf_cont W c ->
-     dwl_wf_cont W (dcont_infapp e c).
+     dwl_wf_cont W (dcont_infapp e c)
+ | dwl_wf_cont_inftapp : forall (W:dworklist) (T:dtyp) (c:dcont),
+     dwf_typ  ( dwl_to_denv  W  )  T ->
+     dwl_wf_cont W c ->
+     dwl_wf_cont W (dcont_inftapp T c)
+ | dwl_wf_cont_inftapp : forall (W:dworklist) (T:dtyp) (c:dcont),
+     dwf_typ  ( dwl_to_denv  W  )  T ->
+     dwl_wf_cont W c ->
+     dwl_wf_cont W (dcont_inftapp T c)
+ | dwl_wf_cont_inftappunion : forall (W:dworklist) (T1 T2:dtyp) (c:dcont),
+     dwf_typ  ( dwl_to_denv  W  )  T1 ->
+     dwf_typ  ( dwl_to_denv  W  )  T2 ->
+     dwl_wf_cont W c ->
+     dwl_wf_cont W (dcont_inftappunion T1 T2 c)
+ | dwl_wf_cont_unioninftapp : forall (W:dworklist) (T:dtyp) (c:dcont),
+     dwf_typ  ( dwl_to_denv  W  )  T ->
+     dwl_wf_cont W c ->
+     dwl_wf_cont W (dcont_unioninftapp T c)
+ | dwl_wf_cont_unioninfabs : forall (W:dworklist) (T:dtyp) (c:dcont),
+     dwf_typ  ( dwl_to_denv  W  )  T ->
+     dwl_wf_cont W c ->
+     dwl_wf_cont W (dcont_unioninfabs T c)
+ | dwl_wf_cont_sub : forall (W:dworklist) (T:dtyp) (c:dcont),
+     dwf_typ  ( dwl_to_denv  W  )  T ->
+     dwl_wf_cont W c ->
+     dwl_wf_cont W (dcont_sub T).
 
 
 (** infrastructure *)
-#[export] Hint Constructors ds_in ds_in_s d_neq_abs dneq_all dneq_intersection dneq_union dneq_bot dwf_env_dom dwf_typ dwf_exp dwf_env dmono_typ dwl_wf_cont lc_dtyp lc_dexp lc_dbody lc_dcont lc_binding lc_dwork lc_dworklist : core.
+#[export] Hint Constructors ds_in ds_in_s d_neq_abs dneq_all dneq_intersection dneq_union dneq_bot dwf_env_dom dwf_typ dwf_exp dwf_body dwf_env dmono_typ dwl_wf_cont lc_dtyp lc_dexp lc_dbody lc_dcont lc_binding lc_dwork lc_dworklist : core.
 
 
