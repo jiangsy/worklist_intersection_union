@@ -179,7 +179,24 @@ Admitted.
 
 Theorem d_wl_red_complete: forall W, 
     d_wf_wl W -> d_wl_del_red W -> d_wl_red W.
-Proof.
+Proof with auto with dworklist.
+  intros. induction H0; auto...
+  - constructor. apply IHd_wl_del_red.
+    admit.
+  - constructor. admit.
+  - constructor. admit.
+  - dependent destruction H0.
+    + eapply d__wlred__chk_abstop. admit.
+    + eapply d__wlred__chk_absarrow. admit.
+    + eapply d__wlred__chk_sub; eauto.
+      admit. admit. (* need to align the nonoverlapping condition *)
+      admit.
+    + admit.
+    + admit.
+    + admit.
+  - admit.
+  - admit.
+  - apply d__wlred__infabsunion. econstructor. 
 Admitted.
 
 
