@@ -891,7 +891,8 @@ Proof with auto with typing.
            econstructor.
       (* \x. e <= T1 -> T2 *)
       * intros.
-        assert (d_wft_ord S1) as Hwford. admit. (* trivial * *)
+        assert (d_wft_ord S1) as Hwford. 
+        { eapply d_wft_ord_complete. admit. }
         induction Hwford.
         -- dependent destruction H1.
            ++ inst_cofinites_for d_typing_chkabstop. intros.
@@ -924,7 +925,7 @@ Proof with auto with typing.
         eapply denvsub_sub; eauto.
         simpl. lia.
       * intros. assert (d_wft_ord S0) as Hwford.
-        admit. (* trivial * *)
+        { eapply d_wft_ord_complete. admit. }
         induction Hwford.
         -- dependent destruction H.
            ++ dependent destruction H0. refine (IHn3 _ _ _ _ _ _ _ _ Hty1 _ _ _); eauto...
