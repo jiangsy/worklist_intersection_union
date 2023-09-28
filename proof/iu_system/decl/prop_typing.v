@@ -561,19 +561,55 @@ Proof with auto with typing.
       exists (dtyp_union C3 C4). intuition...
 Qed.
 
+Lemma d_inftapp_wft_0 : forall E A B C,
+    d_inftapp E A B C -> ⊢ E.
+Proof with eauto.
+  intros. forwards*: d_inftapp_wft.
+Qed.
+
+Lemma d_inftapp_wft_1 : forall E A B C,
+    d_inftapp E A B C -> E ⊢ A.
+Proof with eauto.
+  intros. forwards*: d_inftapp_wft.
+Qed.
+
+Lemma d_inftapp_wft_2 : forall E A B C,
+    d_inftapp E A B C -> E ⊢ B.
+Proof with eauto.
+  intros. forwards*: d_inftapp_wft.
+Qed.
+
+Lemma d_inftapp_wft_3 : forall E A B C,
+    d_inftapp E A B C -> E ⊢ C.
+Proof with eauto.
+  intros. forwards*: d_inftapp_wft.
+Qed.
+
+#[export] Hint Immediate d_inftapp_wft_0 d_inftapp_wft_1 d_inftapp_wft_2 d_inftapp_wft_3 : core.
+
+#[local] Hint Constructors d_inftapp : core.
 
 Lemma d_inftapp_subenv : forall E E' A1 B1 C1,
   E ⊢ A1 ○ B1 ⇒⇒ C1 ->
   d_subenv E' E ->
   E' ⊢ A1 ○ B1 ⇒⇒ C1.
-Admitted.
+Proof with auto with typing;
+eauto using d_subenv_wf_env, d_subenv_wf_typ.
+  intros * HA HE.
+  induction HA; intuition eauto...
+Qed.
 
 Corollary d_inftapp_subsumption: forall E E' A1 A2 B1 C1,
   E ⊢ A1 ○ B1 ⇒⇒ C1 ->
   E ⊢ A2 <: A1 ->
   d_subenv E' E ->
   exists C2, E ⊢ C2 <: C1 /\ E' ⊢ A2 ○ B1 ⇒⇒ C2.
-Admitted.
+Proof with eauto.
+  intros * HA HS HE.
+  forwards (?&?&HA'): d_inftapp_subsumption_same_env HA HS.
+  forwards : d_inftapp_subenv HA' HE.
+  exists*.
+Qed.
 
 Hint Constructors d_infabs : typing.
 
@@ -900,7 +936,7 @@ Proof with auto with typing.
            econstructor.
       (* \x. e <= T1 -> T2 *)
       * intros.
-        assert (d_wft_ord S1) as Hwford. 
+        assert (d_wft_ord S1) as Hwford.
         { eapply d_wft_ord_complete. admit. }
         induction Hwford.
         -- dependent destruction H1.
@@ -920,9 +956,9 @@ Proof with auto with typing.
            ++ inversion H2.
            ++ inversion H3.
            ++ inversion H3.
-        -- dependent destruction H1; auto... 
-        -- dependent destruction H1; auto... 
-      (* e <= forall a. A *) 
+        -- dependent destruction H1; auto...
+        -- dependent destruction H1; auto...
+      (* e <= forall a. A *)
       (*  * admit. ignore for now *** *)
       (* e <= A *)
       * intros.
