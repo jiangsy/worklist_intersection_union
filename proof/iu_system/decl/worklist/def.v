@@ -57,7 +57,7 @@ Inductive d_wl_del_red : dworklist -> Prop :=
   | d__wldelred__empty : d_wl_del_red dworklist_empty
   | d__wldelred__var : forall Γ x A,
       d_wl_del_red Γ ->
-      d_wl_del_red (dworklist_consvar Γ x A)
+      d_wl_del_red (dworklist_consvar Γ x (dbind_typ A))
   | d__wldelred__tvar : forall Γ X,
       d_wl_del_red Γ ->
       d_wl_del_red (dworklist_constvar Γ X dbind_tvar_empty)
@@ -110,6 +110,7 @@ Inductive d_wl_del_red : dworklist -> Prop :=
 
 (* defns Jdworklist_reduction *)
 Inductive d_wl_red : dworklist -> Prop :=    (* defn d_wl_red *)
+ | d__wlred__empty : d_wl_red dworklist_empty
  | d__wlred__var : forall (Γ:dworklist) (x:atom) (A:dtyp),
     d_wl_red Γ ->
     d_wl_red (dworklist_consvar Γ x (dbind_typ A))
@@ -216,10 +217,10 @@ Inductive d_wl_red : dworklist -> Prop :=    (* defn d_wl_red *)
  | d__wlred__inftapp_bot : forall (Γ:dworklist) (T:dtyp) (c:dcont),
      d_wl_red (dworklist_conswork Γ (dwork_apply c dtyp_bot)) ->
      d_wl_red (dworklist_conswork Γ (dwork_inftapp dtyp_bot T c))
- | d__wlred__inftapp_inter1 : forall (Γ:dworklist) (A1 A2 B1:dtyp) (e:dexp) (c:dcont),
+ | d__wlred__inftapp_inter1 : forall (Γ:dworklist) (A1 A2 B1:dtyp) (c:dcont),
      d_wl_red (dworklist_conswork Γ (dwork_inftapp A1 B1 c)) ->
      d_wl_red (dworklist_conswork Γ (dwork_inftapp (dtyp_intersection A1 A2) B1 c))
- | d__wlred__inftapp_inter2: forall (Γ:dworklist) (A1 A2 B1:dtyp) (e:dexp) (c:dcont),
+ | d__wlred__inftapp_inter2: forall (Γ:dworklist) (A1 A2 B1:dtyp) (c:dcont),
      d_wl_red (dworklist_conswork Γ (dwork_inftapp A2 B1 c)) ->
      d_wl_red (dworklist_conswork Γ (dwork_inftapp (dtyp_intersection A1 A2) B1 c))
  | d__wlred__inftapp_union : forall (Γ:dworklist) (A1 A2 B1:dtyp) (c:dcont),
@@ -231,30 +232,30 @@ Inductive d_wl_red : dworklist -> Prop :=    (* defn d_wl_red *)
  | d__wlred__unioninftapp : forall (Γ:dworklist) (A1 A2:dtyp) (c:dcont),
      d_wl_red (dworklist_conswork Γ (dwork_apply c (dtyp_union A1 A2)))->
      d_wl_red (dworklist_conswork Γ (dwork_unioninftapp A1 A2 c))
- | d__wlred__infabs_arrow : forall (Γ:dworklist) (T1 T2:dtyp) (e:dexp) (c:dcont),
+ | d__wlred__infabs_arrow : forall (Γ:dworklist) (T1 T2:dtyp) (c:dcont),
      d_wl_red (dworklist_conswork Γ (dwork_apply c (dtyp_arrow T1 T2))) ->
      d_wl_red (dworklist_conswork Γ (dwork_infabs (dtyp_arrow T1 T2) c))
- | d__wlred__infabs_bot : forall (Γ:dworklist) (e:dexp) (c:dcont),
+ | d__wlred__infabs_bot : forall (Γ:dworklist) (c:dcont),
      d_wl_red (dworklist_conswork Γ (dwork_apply c (dtyp_arrow dtyp_top dtyp_bot))) ->
      d_wl_red (dworklist_conswork Γ (dwork_infabs dtyp_bot c))
- | d__wlred_infabs_all : forall (Γ:dworklist) (A1 T1:dtyp) (e:dexp) (c:dcont),
+ | d__wlred_infabs_all : forall (Γ:dworklist) (A1 T1:dtyp) (c:dcont),
      dwf_typ (dwl_to_denv Γ) T1 ->
      dmono_typ T1 ->
      d_wl_red (dworklist_conswork Γ (dwork_infabs (open_dtyp_wrt_dtyp A1 T1) c)) ->
      d_wl_red (dworklist_conswork Γ (dwork_infabs (dtyp_all A1) c))
- | d__wlred__infabs_inter1 : forall (Γ:dworklist) (A1 A2:dtyp) (e:dexp) (c:dcont),
+ | d__wlred__infabs_inter1 : forall (Γ:dworklist) (A1 A2:dtyp) (c:dcont),
      d_wl_red (dworklist_conswork Γ (dwork_infabs A1 c)) ->
      d_wl_red (dworklist_conswork Γ (dwork_infabs (dtyp_intersection A1 A2) c))
- | d__wlred__infabs_inter2: forall (Γ:dworklist) (A1 A2:dtyp) (e:dexp) (c:dcont),
+ | d__wlred__infabs_inter2: forall (Γ:dworklist) (A1 A2:dtyp) (c:dcont),
      d_wl_red (dworklist_conswork Γ (dwork_infabs A2 c)) ->
      d_wl_red (dworklist_conswork Γ (dwork_infabs (dtyp_intersection A1 A2) c))
- | d__wlred__infabs_union : forall (Γ:dworklist) (A1 A2:dtyp) (e:dexp) (c:dcont),
+ | d__wlred__infabs_union : forall (Γ:dworklist) (A1 A2:dtyp) (c:dcont),
      d_wl_red (dworklist_conswork Γ (dwork_infabs A1 (dcont_infabsunion A2 c))) ->
      d_wl_red (dworklist_conswork Γ (dwork_infabs (dtyp_union A1 A2) c))  
- | d__wlred__unioninfabs: forall (Γ:dworklist) (A1 A2 B1 B2:dtyp) (e:dexp) (c:dcont),
+ | d__wlred__unioninfabs: forall (Γ:dworklist) (A1 A2 B1 B2:dtyp) (c:dcont),
      d_wl_red (dworklist_conswork Γ (dwork_apply c (dtyp_arrow (dtyp_intersection A1 A2) (dtyp_union B1 B2)))) ->
      d_wl_red (dworklist_conswork Γ (dwork_unioninfabs (dtyp_arrow A1 B1) (dtyp_arrow A2 B2) c))
- | d__wlred__infabsunion: forall (Γ:dworklist) (A2 B1 C1:dtyp) (e:dexp) (c:dcont),
+ | d__wlred__infabsunion: forall (Γ:dworklist) (A2 B1 C1:dtyp) (c:dcont),
      d_wl_red (dworklist_conswork Γ (dwork_infabs A2 (dcont_unioninfabs (dtyp_arrow B1 C1) c))) ->
      d_wl_red (dworklist_conswork Γ (dwork_infabsunion (dtyp_arrow B1 C1) A2 c))
  | d__wlred__applycont : forall (Γ Γ':dworklist) (T1:dtyp) (c:dcont),
