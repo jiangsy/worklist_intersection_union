@@ -508,7 +508,7 @@ defns
 Jdwf_env :: '' ::=
 
 defn
-|- E :: :: dwf_env :: 'dwfenv_' by
+|- E :: :: dwf_env :: 'd__wfenv__' by
 
 --------- :: empty
 |- empty
@@ -565,7 +565,7 @@ defns
 Jdwl_wf_cont :: '' ::= 
 
 defn 
-W |- c :: :: dwl_wf_cont :: 'dwl_wf_cont_' by 
+W |- c :: :: d_wf_cont :: 'd__wfcont__' by 
 
 W |- c
 ----------------- :: infabs
@@ -580,11 +580,6 @@ W |- _ ⊔▹ T ▹ c
 W |- c
 -------------------- :: infapp
 W |- _ • e =>=> c  
-
-⌊ W ⌋ |- T 
-W |- c
--------------------- :: inftapp
-W |- _ ○ T =>=> c  
 
 ⌊ W ⌋ |- T 
 W |- c
@@ -611,6 +606,105 @@ W |- _ ⊔▹ T >> c
 W |- c
 -------------------- :: sub
 W |- _ <: T  
+
+
+defns 
+Jd_wf_work :: '' ::= 
+
+defn 
+W |- w :: :: d_wf_work :: 'd__wfwork__' by 
+
+⌊ W ⌋ |- e
+W |- c
+----------------- :: infer
+W |- e => c
+
+⌊ W ⌋ |- e
+⌊ W ⌋ |- T
+------------------ :: check
+W |- e <= T
+
+⌊ W ⌋ |- T 
+W |- c
+-------------------- :: infabs
+W |- T ▹ c  
+
+⌊ W ⌋ |- T1 
+⌊ W ⌋ |- T2
+W |- c
+-------------------- :: infabsunion
+W |- T1 ⊔▹ T2 ▹ c
+
+⌊ W ⌋ |- T
+⌊ W ⌋ |- e
+W |- c
+-------------------- :: infapp
+W |- T • e =>=> c    
+
+⌊ W ⌋ |- T1
+⌊ W ⌋ |- T2
+W |- c
+---------------------------- :: inftapp
+W |- T1 ○ T2 =>=> c  
+
+⌊ W ⌋ |- T1 
+⌊ W ⌋ |- T2
+⌊ W ⌋ |- T3
+W |- c
+---------------------------- :: inftappunion
+W |- T1 ⊔∘ T2 ○ T3 =>=> c  
+
+⌊ W ⌋ |- T1
+⌊ W ⌋ |- T2 
+W |- c
+-------------------- :: unioninftapp
+W |- T1 ⊔∘ T2 >> c  
+
+⌊ W ⌋ |- T1
+⌊ W ⌋ |- T2 
+W |- c
+-------------------- :: unioninfabs
+W |- T1 ⊔▹ T2 >> c  
+
+⌊ W ⌋ |- T1
+⌊ W ⌋ |- T2 
+-------------------- :: sub
+W |- T1 <: T2  
+
+⌊ W ⌋ |- T
+W |- c
+-------------------- :: apply
+W |- c $ T
+
+defns 
+Jd_wf_wl :: '' ::= 
+
+defn 
+|- W :: :: d_wf_wl :: 'd__wfwl__' by 
+
+-------------------- :: empty
+|- empty
+
+⌊ W ⌋ |- T
+|- W
+-------------------- :: consvar
+|- W , x : T
+
+X `notin`  dom ⌊ W ⌋
+|- W
+-------------------- :: constvar
+|- W , X : ~▪
+
+SX `notin` dom ⌊ W ⌋
+|- W
+-------------------- :: consstvar
+|- W , SX : ~▪
+
+W |- w
+|- W
+-------------------- :: conswork
+|- W , w
+
 
 
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
