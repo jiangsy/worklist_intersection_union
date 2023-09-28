@@ -1460,13 +1460,12 @@ Proof with auto with trans.
            applys* fstv_open_tvar. solve_notin.
         ** forwards: H1 SY...
            forwards: d_sub_dwft_sized_1 H4.
-           forwards: d_wft_typ_subst_stvar SY (S1 ^^ᵈ dtyp_svar SY) (dtyp_var_f SY).
-           admit. admit. admit.
-        (*    rewrite_env (nil ++ SY ~ ▪ ++ E) in H5. applys H5. *)
-        (*    apply d_wf_typ_subst_stvar_tvar in H5. *)
-        (*    simpl in H5. *)
-        (*    rewrite d_subst_stv_in_dtyp_open_dtyp_wrt_dtyp in H5. *)
-        admit. (*wft*)
+           rewrite_env (nil ++ SY ~ ▪ ++ E) in H4.
+           rewrite_env (nil ++ SY ~ ▪ ++ E) in H5.
+           forwards: d_wf_typ_subst_stvar_tvar H5.
+           simpl in H6. rewrite d_subst_stv_in_dtyp_open_dtyp_wrt_dtyp in H6.
+           simpl in H6. case_if. rewrite* d_subst_stv_in_dtyp_fresh_eq in H6.
+           solve_notin. now eauto.
       * eapply d_sub_all with (L:=L `union` L0 `union` dom E); auto.
         intros. inst_cofinites_with SX.
         eapply IHn_dtyp_order with (S1:= T0 ^^ᵈ dtyp_svar SX); eauto...
@@ -1482,7 +1481,8 @@ Proof with auto with trans.
         eapply d_sub_size_subst_stvar in H1; eauto.
         destruct H1 as [n' Hsub].
         eapply IHn_dtyp_order with (S1:=T0 ^^ᵈ T2) (n1:=n'); eauto...
-        rewrite d_open_mono_same_order; auto. admit.
+        rewrite d_open_mono_same_order; auto.
+        Search ( d_typ_order). Search ( dtyp_order).
         simpl in Hsub. auto. simpl.
         rewrite 2 d_subst_stv_in_dtyp_open_dtyp_wrt_dtyp in Hsub... simpl in Hsub.
         unfold eq_dec in Hsub. destruct (EqDec_eq_of_X SX SX) in Hsub.
