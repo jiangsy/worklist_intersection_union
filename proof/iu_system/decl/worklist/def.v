@@ -55,6 +55,15 @@ Inductive d_apply_cont : dcont -> dtyp -> dworklist -> Prop :=
 (* decl worklist delegated reduction, corresponds to Jimmy's dc *)
 Inductive d_wl_del_red : dworklist -> Prop :=
   | d__wldelred__empty : d_wl_del_red dworklist_empty
+  | d__wldelred__var : forall Γ x A,
+      d_wl_del_red Γ ->
+      d_wl_del_red (dworklist_consvar Γ x A)
+  | d__wldelred__tvar : forall Γ X,
+      d_wl_del_red Γ ->
+      d_wl_del_red (dworklist_constvar Γ X dbind_tvar_empty)
+  | d__wldelred__stvar : forall Γ SX,
+      d_wl_del_red Γ ->
+      d_wl_del_red (dworklist_consstvar Γ SX dbind_stvar_empty)
   | d__wldelred__chk : forall Γ e T1,
       d_typing (dwl_to_denv Γ) e d_typingmode_chk T1 ->
       d_wl_del_red Γ ->
@@ -109,7 +118,7 @@ Inductive d_wl_red : dworklist -> Prop :=    (* defn d_wl_red *)
     d_wl_red (dworklist_constvar Γ X dbind_tvar_empty)
  | d__wlred__stvar : forall (Γ:dworklist) (SX:atom),
     d_wl_red Γ ->
-    d_wl_red (dworklist_constvar Γ SX dbind_stvar_empty)
+    d_wl_red (dworklist_consstvar Γ SX dbind_stvar_empty)
  | d__wlred__subtop : forall (Γ:dworklist) (A1:dtyp),
      d_wl_red Γ ->
      d_wl_red (dworklist_conswork Γ (dwork_sub A1 dtyp_top))
