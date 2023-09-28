@@ -885,39 +885,6 @@ Qed.
 Hint Constructors d_sub_sized : sub.
 
 
-(*       applys IHF... *)
-(*       rewrite dom_app. rewrite dom_subst_id. solve_notin. *)
-(*       destruct_notin. *)
-(*     forwards HE'': d_wf_env_strenthening_head HE'. *)
-(*     destruct a. *)
-(*     forwards: IHF. *)
-(*     applys d_wf_env_strenthening_head. *)
-(*     forwards: d_wf_env_subst_stvar_typ (dtyp_svar SY) HE'. *)
-
-(* rewrite_env (map (d_subst_stv_in_binding (dtyp_svar SY) SX) F ++ (SY ~ ▪ ++ nil) ++ E). *)
-
-
-(*     forwards~ IH: IHF. *)
-(*     rewrite_env ([(a, d_subst_stv_in_binding T1 SX b)] *)
-(*                    ++ (map (d_subst_stv_in_binding T1 SX) F ++ E)). *)
-(*     forwards: d_wf_env_uniq HE. *)
-(*     inverts H. destruct b... *)
-(*     + econstructor... *)
-(*       applys d_wft_typ_subst_stvar... *)
-(*       inverts~ HE. *)
-(* Qed. *)
-
-
-(* Ltac gather_atoms ::= *)
-(*   let A := gather_atoms_with (fun x : vars => x) in *)
-(*   let B := gather_atoms_with (fun x : var => {{ x }}) in *)
-(*   let C := gather_atoms_with (fun x : denv => dom x) in *)
-(*   let D1 := gather_atoms_with (fun x => ftv_in_dtyp x) in *)
-(*   let D2 := gather_atoms_with (fun x => fstv_in_dtyp x) in *)
-(*   (* let D3 := gather_atoms_with (fun x => fv_typ_in_binding x) in *) *)
-(*   (* let D4 := gather_atoms_with (fun x => fv_exp_in_exp x) in *) *)
-(*   constr:(A \u B \u C \u D1 \u D2). *)
-
 Lemma d_sub_size_rename_stvar : forall E F SX SY A B n,
     F ++ SX ~ ▪ ++ E ⊢ A <: B | n ->
       SY ∉ (dom E `union` dom F) ->
@@ -925,12 +892,6 @@ Lemma d_sub_size_rename_stvar : forall E F SX SY A B n,
         {dtyp_svar SY /ₛᵈ SX} A <: {dtyp_svar SY /ₛᵈ SX} B | n.
 Proof with (simpl in *; eauto using d_wf_env_subst_tvar_typ with sub).
   intros * HS HN.
-  (* rewrite_env ( (map (d_subst_stv_in_binding (dtyp_svar SY) SX) F ++ SY ~ ▪ ++ nil ) ++ E ). *)
-  (* assert (HR: map (d_subst_stv_in_binding (dtyp_svar SY) SX) (F ++ [(SY, dbind_stvar_empty)]) = map (d_subst_stv_in_binding (dtyp_svar SY) SX) F ++ SY ~ ▪ ++ nil). { *)
-  (*   rewrite map_app... *)
-  (* } *)
-  (* rewrite <- HR. clear HR. *)
-
   case_eq (SY == SX); intros.
   1: { subst. rewrite* subst_same_stvar_map_id.
        repeat rewrite* subst_same_stvar_typ_id. } clear H.
@@ -1000,55 +961,6 @@ Proof with (simpl in *; eauto using d_wf_env_subst_tvar_typ with sub).
     Unshelve. all: eauto. econstructor.
 Qed.
 
-(* Hint Resolve d_mono_typ_lc : core. *)
-
-(* Lemma d_mono_typ_neq_all : forall T, *)
-(*   dmono_typ T -> oof. *)
-(*   intros; induction H; auto... *)
-(* Qed. *)
-
-(*     Search (dneq_all). *)
-(* Abort. *)
-
-
-(*     + rewrite d_subst_stv_in_dtyp_open_comm... *)
-(*       applys~ fstv_sins_dtyp_subst_stv_s. *)
-(*     + rewrite d_subst_stv_in_dtyp_open_comm... *)
-(*       applys~ fstv_sins_dtyp_subst_stv_s. *)
-(*     + forwards~: H2 SZ E ((SZ, ▪) :: F)... *)
-(*       repeat rewrite d_subst_stv_in_dtyp_open_comm... *)
-(*   - *)
-(*     + *)
-(*       rewrite d_subst_stv_in_dtyp_open_comm; auto... *)
-(*       applys~ fstv_sins_dtyp_subst_stv_s. *)
-(*     + *)
-
-(*       replace (dtyp_svar SZ) with ({dtyp_svar SY /ₛᵈ SX} (dtyp_svar SZ)). *)
-(*       lets: d_subst_stv_in_dtyp_open_comm. *)
-(*       rewrite d_subst_stv_in_dtyp_open_comm; auto... *)
-(*       case_if; intros; subst; try solve_notin. *)
-(*       rewrite fstv_sins_dtyp_subst_stv_s. *)
-(*     Search (⊢_). *)
-(* Admitted. *)
-
-(* (* for demo only; not to be proved *)
-Theorem d_sub_size_subst_stvar_test : forall E F SX S1 T1 T2 n,
-  F ++ (SX ~ dbind_stvar_empty) ++ E ⊢ S1 <: T1 | n ->
-  E ⊢ T2 ->
-  (* dmono_typ T2 ->  Snow: I have to del this for renaming svar *)
-  exists n', map (d_subst_stv_in_binding T2 SX) F ++ E ⊢ {T2 /ₛᵈ SX} S1 <: {T2 /ₛᵈ SX} T1 | n'.
-Admitted.
-
-(* for demo only; not to be proved *)
-Theorem d_sub_size_weakening: forall E F G S1 T1 n,
-  G ++ E ⊢ S1 <: T1 | n ->
-  ⊢ G ++ F ++ E ->
-  G ++ F ++ E ⊢ S1 <: T1 | n.
-(* Admitted. *) *)
-
-(* (* The above two lemmas were introduced here to prove the completeness lemma but *)
-(* now I turned to the rename lemma *) *)
-
 Corollary d_sub_size_rename : forall n X Y D E A B,
     X `notin`  (fstv_in_dtyp A `union` fstv_in_dtyp B) ->
     Y `notin` ((dom D) `union` (dom E)) ->
@@ -1064,19 +976,6 @@ Qed.
 
 Lemma d_sub_size_complete : forall E T1 T2,
   E ⊢ T1 <: T2 -> exists n, E ⊢ T1 <: T2 | n.
-(* Proof with eauto with sub. *)
-(*   intros. induction H; eauto... *)
-(*   - destruct IHd_sub1 as [n1]. destruct IHd_sub2 as [n2]. *)
-(*     eauto... *)
-(*   - pick fresh X. *)
-(*     destruct (H2 X) as [n]. solve_notin. *)
-(*     exists (S n). *)
-(*     eapply d__subs__all with (L:=L `union` fstv_in_dtyp S1 `union` fstv_in_dtyp S1); intros; eauto. *)
-(*     + forwards* HS: d_sub_size_weakening (SX ~ ▪) H3. admit. *)
-(*       rewrite_env (nil ++ (X ~ ▪ ++ SX ~ ▪ ++ E)) in HS. *)
-(*       forwards* (?&?): d_sub_size_subst_stvar_test (dtyp_svar SX) HS. *)
-(*       (* we need x to be n here. so the d_sub_size_subst_stvar does not work well *) *)
-(* Restart. *)
 Proof with eauto with sub.
   intros. induction H; eauto...
   - destruct IHd_sub1 as [n1]. destruct IHd_sub2 as [n2].
