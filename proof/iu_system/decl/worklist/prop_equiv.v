@@ -7,10 +7,14 @@ Require Import decl.worklist.def.
 
 
 Hint Constructors d_wl_red : dworklist.
+Hint Constructors d_wf_wl : dworklist.
 Hint Constructors d_wl_del_red : dworklist.
 
-Theorem d_wl_red_sound: forall W, 
-    d_wf_wl W -> d_wl_red W -> d_wl_del_red W.
+
+
+(* This direction is not so important *)
+Theorem d_wl_red_sound: forall Ω, 
+    d_wf_wl Ω -> d_wl_red Ω -> d_wl_del_red Ω.
 Proof with auto with dworklist.
   intros. induction H0; try solve [dependent destruction H; auto with dworklist].
   (* sub *)
@@ -177,8 +181,57 @@ Proof with auto with dworklist.
     admit.
 Admitted.
 
-Theorem d_wl_red_complete: forall W, 
-    d_wf_wl W -> d_wl_del_red W -> d_wl_red W.
+
+Lemma d_wl_red_sub_complete: forall Ω A B,
+   d_wf_wl (dworklist_conswork Ω (dwork_sub A B)) -> dwl_to_denv Ω ⊢ A <: B ->
+   d_wl_red Ω -> d_wl_red (dworklist_conswork Ω (dwork_sub A B)).
+Proof with auto with dworklist.
+  intros * Hwfwl Hsub Hred.
+  dependent induction Hsub; auto...
+  - econstructor.
+    dependent destruction Hwfwl. 
+    dependent destruction H. auto...
+    dependent destruction H. dependent destruction H1.
+    auto.
+  - dependent destruction Hwfwl. 
+    eapply d__wlred__suball with (L:=L).
+    intros. inst_cofinites_with SX.
+    apply H2; eauto.
+    econstructor. econstructor. simpl. admit.
+    admit.
+    econstructor. admit. auto. auto...
+  - dependent destruction Hwfwl. 
+    dependent destruction H5.
+    eapply d__wlred__sub_alll with (B1:=T1); eauto. admit.
+    apply IHHsub; eauto. admit.
+  - dependent destruction Hwfwl. 
+    dependent destruction H.
+    dependent destruction H0.
+    eapply d__wlred__sub_intersection1...
+  - dependent destruction Hwfwl. 
+    dependent destruction H0.
+    dependent destruction H0.
+    eapply d__wlred__sub_intersection2...
+  - dependent destruction Hwfwl. 
+    dependent destruction H0.
+    dependent destruction H0.
+    eapply d__wlred__sub_intersection3...
+  - dependent destruction Hwfwl. 
+    dependent destruction H0.
+    dependent destruction H1.
+    eapply d__wlred__sub_union1...
+  - dependent destruction Hwfwl. 
+    dependent destruction H0.
+    dependent destruction H1.
+    eapply d__wlred__sub_union2...
+  - dependent destruction Hwfwl. 
+    dependent destruction H.
+    dependent destruction H. econstructor...
+Admitted.
+
+
+Theorem d_wl_red_complete: forall Ω, 
+    d_wf_wl Ω -> d_wl_del_red Ω -> d_wl_red Ω.
 Proof with auto with dworklist.
   intros. induction H0; auto...
   - constructor. apply IHd_wl_del_red.
@@ -196,7 +249,15 @@ Proof with auto with dworklist.
     + admit.
   - admit.
   - admit.
-  - apply d__wlred__infabsunion. econstructor. 
+  - apply d__wlred__infabsunion.
+    admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - apply d_wl_red_sub_complete; eauto.
+    admit.
 Admitted.
 
 
