@@ -42,11 +42,6 @@ Inductive dcont : Set :=
  | dcont_unioninfabs (T2:dtyp) (c:dcont)
  | dcont_sub (T:dtyp).
 
-Inductive binding : Set := 
- | dbind_tvar_empty : binding
- | dbind_stvar_empty : binding
- | dbind_typ (T:dtyp).
-
 Inductive dwork : Set := 
  | dwork_infer (e:dexp) (c:dcont)
  | dwork_check (e:dexp) (T:dtyp)
@@ -60,7 +55,10 @@ Inductive dwork : Set :=
  | dwork_unioninfabs (T1:dtyp) (T2:dtyp) (c:dcont)
  | dwork_apply (c:dcont) (T:dtyp).
 
-Definition denv : Set := list (atom*binding).
+Inductive binding : Set := 
+ | dbind_tvar_empty : binding
+ | dbind_stvar_empty : binding
+ | dbind_typ (T:dtyp).
 
 Inductive dworklist : Set := 
  | dworklist_empty : dworklist
@@ -68,6 +66,8 @@ Inductive dworklist : Set :=
  | dworklist_constvar (W:dworklist) (X:typvar) (b:binding)
  | dworklist_consstvar (W:dworklist) (SX:stypvar) (b:binding)
  | dworklist_conswork (W:dworklist) (w:dwork).
+
+Definition denv : Set := list (atom*binding).
 
 (* EXPERIMENTAL *)
 (** auxiliary functions on the new list types *)
@@ -267,23 +267,6 @@ Fixpoint close_dtyp_wrt_dtyp_rec (k:nat) (T_5:var) (T__6:dtyp) {struct T__6}: dt
   | (dtyp_intersection T1 T2) => dtyp_intersection (close_dtyp_wrt_dtyp_rec k T_5 T1) (close_dtyp_wrt_dtyp_rec k T_5 T2)
 end.
 
-Fixpoint close_dexp_wrt_dtyp_rec (k:nat) (T_5:var) (e_5:dexp) {struct e_5}: dexp :=
-  match e_5 with
-  | dexp_unit => dexp_unit 
-  | dexp_top => dexp_top 
-  | (dexp_var_b nat) => dexp_var_b nat
-  | (dexp_var_f x) => dexp_var_f x
-  | (dexp_abs e) => dexp_abs (close_dexp_wrt_dtyp_rec k T_5 e)
-  | (dexp_app e1 e2) => dexp_app (close_dexp_wrt_dtyp_rec k T_5 e1) (close_dexp_wrt_dtyp_rec k T_5 e2)
-  | (dexp_tabs dbody5) => dexp_tabs (close_dbody_wrt_dtyp_rec (S k) T_5 dbody5)
-  | (dexp_tapp e T) => dexp_tapp (close_dexp_wrt_dtyp_rec k T_5 e) (close_dtyp_wrt_dtyp_rec k T_5 T)
-  | (dexp_anno e T) => dexp_anno (close_dexp_wrt_dtyp_rec k T_5 e) (close_dtyp_wrt_dtyp_rec k T_5 T)
-end
-with close_dbody_wrt_dtyp_rec (k:nat) (T5:var) (dbody5:dbody) : dbody :=
-  match dbody5 with
-  | (dbody_anno e T) => dbody_anno (close_dexp_wrt_dtyp_rec k T5 e) (close_dtyp_wrt_dtyp_rec k T5 T)
-end.
-
 Fixpoint close_dexp_wrt_dexp_rec (k:nat) (e_5:var) (e__6:dexp) {struct e__6}: dexp :=
   match e__6 with
   | dexp_unit => dexp_unit 
@@ -304,16 +287,21 @@ with close_dbody_wrt_dexp_rec (k:nat) (e5:var) (dbody5:dbody) : dbody :=
   | (dbody_anno e T) => dbody_anno (close_dexp_wrt_dexp_rec k e5 e) T
 end.
 
-Fixpoint close_dcont_wrt_dtyp_rec (k:nat) (T_5:var) (c5:dcont) {struct c5}: dcont :=
-  match c5 with
-  | (dcont_infabs c) => dcont_infabs (close_dcont_wrt_dtyp_rec k T_5 c)
-  | (dcont_infabsunion T1 c) => dcont_infabsunion (close_dtyp_wrt_dtyp_rec k T_5 T1) (close_dcont_wrt_dtyp_rec k T_5 c)
-  | (dcont_infapp e c) => dcont_infapp (close_dexp_wrt_dtyp_rec k T_5 e) (close_dcont_wrt_dtyp_rec k T_5 c)
-  | (dcont_inftapp T c) => dcont_inftapp (close_dtyp_wrt_dtyp_rec k T_5 T) (close_dcont_wrt_dtyp_rec k T_5 c)
-  | (dcont_inftappunion T1 T2 c) => dcont_inftappunion (close_dtyp_wrt_dtyp_rec k T_5 T1) (close_dtyp_wrt_dtyp_rec k T_5 T2) (close_dcont_wrt_dtyp_rec k T_5 c)
-  | (dcont_unioninftapp T2 c) => dcont_unioninftapp (close_dtyp_wrt_dtyp_rec k T_5 T2) (close_dcont_wrt_dtyp_rec k T_5 c)
-  | (dcont_unioninfabs T2 c) => dcont_unioninfabs (close_dtyp_wrt_dtyp_rec k T_5 T2) (close_dcont_wrt_dtyp_rec k T_5 c)
-  | (dcont_sub T) => dcont_sub (close_dtyp_wrt_dtyp_rec k T_5 T)
+Fixpoint close_dexp_wrt_dtyp_rec (k:nat) (T_5:var) (e_5:dexp) {struct e_5}: dexp :=
+  match e_5 with
+  | dexp_unit => dexp_unit 
+  | dexp_top => dexp_top 
+  | (dexp_var_b nat) => dexp_var_b nat
+  | (dexp_var_f x) => dexp_var_f x
+  | (dexp_abs e) => dexp_abs (close_dexp_wrt_dtyp_rec k T_5 e)
+  | (dexp_app e1 e2) => dexp_app (close_dexp_wrt_dtyp_rec k T_5 e1) (close_dexp_wrt_dtyp_rec k T_5 e2)
+  | (dexp_tabs dbody5) => dexp_tabs (close_dbody_wrt_dtyp_rec (S k) T_5 dbody5)
+  | (dexp_tapp e T) => dexp_tapp (close_dexp_wrt_dtyp_rec k T_5 e) (close_dtyp_wrt_dtyp_rec k T_5 T)
+  | (dexp_anno e T) => dexp_anno (close_dexp_wrt_dtyp_rec k T_5 e) (close_dtyp_wrt_dtyp_rec k T_5 T)
+end
+with close_dbody_wrt_dtyp_rec (k:nat) (T5:var) (dbody5:dbody) : dbody :=
+  match dbody5 with
+  | (dbody_anno e T) => dbody_anno (close_dexp_wrt_dtyp_rec k T5 e) (close_dtyp_wrt_dtyp_rec k T5 T)
 end.
 
 Fixpoint close_dcont_wrt_dexp_rec (k:nat) (e5:var) (c5:dcont) {struct c5}: dcont :=
@@ -326,6 +314,33 @@ Fixpoint close_dcont_wrt_dexp_rec (k:nat) (e5:var) (c5:dcont) {struct c5}: dcont
   | (dcont_unioninftapp T2 c) => dcont_unioninftapp T2 (close_dcont_wrt_dexp_rec k e5 c)
   | (dcont_unioninfabs T2 c) => dcont_unioninfabs T2 (close_dcont_wrt_dexp_rec k e5 c)
   | (dcont_sub T) => dcont_sub T
+end.
+
+Fixpoint close_dcont_wrt_dtyp_rec (k:nat) (T_5:var) (c5:dcont) {struct c5}: dcont :=
+  match c5 with
+  | (dcont_infabs c) => dcont_infabs (close_dcont_wrt_dtyp_rec k T_5 c)
+  | (dcont_infabsunion T1 c) => dcont_infabsunion (close_dtyp_wrt_dtyp_rec k T_5 T1) (close_dcont_wrt_dtyp_rec k T_5 c)
+  | (dcont_infapp e c) => dcont_infapp (close_dexp_wrt_dtyp_rec k T_5 e) (close_dcont_wrt_dtyp_rec k T_5 c)
+  | (dcont_inftapp T c) => dcont_inftapp (close_dtyp_wrt_dtyp_rec k T_5 T) (close_dcont_wrt_dtyp_rec k T_5 c)
+  | (dcont_inftappunion T1 T2 c) => dcont_inftappunion (close_dtyp_wrt_dtyp_rec k T_5 T1) (close_dtyp_wrt_dtyp_rec k T_5 T2) (close_dcont_wrt_dtyp_rec k T_5 c)
+  | (dcont_unioninftapp T2 c) => dcont_unioninftapp (close_dtyp_wrt_dtyp_rec k T_5 T2) (close_dcont_wrt_dtyp_rec k T_5 c)
+  | (dcont_unioninfabs T2 c) => dcont_unioninfabs (close_dtyp_wrt_dtyp_rec k T_5 T2) (close_dcont_wrt_dtyp_rec k T_5 c)
+  | (dcont_sub T) => dcont_sub (close_dtyp_wrt_dtyp_rec k T_5 T)
+end.
+
+Definition close_dwork_wrt_dexp_rec (k:nat) (e5:var) (w5:dwork) : dwork :=
+  match w5 with
+  | (dwork_infer e c) => dwork_infer (close_dexp_wrt_dexp_rec k e5 e) (close_dcont_wrt_dexp_rec k e5 c)
+  | (dwork_check e T) => dwork_check (close_dexp_wrt_dexp_rec k e5 e) T
+  | (dwork_infabs T c) => dwork_infabs T (close_dcont_wrt_dexp_rec k e5 c)
+  | (dwork_infabsunion T1 T2 c) => dwork_infabsunion T1 T2 (close_dcont_wrt_dexp_rec k e5 c)
+  | (dwork_infapp T e c) => dwork_infapp T (close_dexp_wrt_dexp_rec k e5 e) (close_dcont_wrt_dexp_rec k e5 c)
+  | (dwork_inftapp T1 T2 c) => dwork_inftapp T1 T2 (close_dcont_wrt_dexp_rec k e5 c)
+  | (dwork_sub T1 T2) => dwork_sub T1 T2
+  | (dwork_inftappunion T1 T2 T3 c) => dwork_inftappunion T1 T2 T3 (close_dcont_wrt_dexp_rec k e5 c)
+  | (dwork_unioninftapp T1 T2 c) => dwork_unioninftapp T1 T2 (close_dcont_wrt_dexp_rec k e5 c)
+  | (dwork_unioninfabs T1 T2 c) => dwork_unioninfabs T1 T2 (close_dcont_wrt_dexp_rec k e5 c)
+  | (dwork_apply c T) => dwork_apply (close_dcont_wrt_dexp_rec k e5 c) T
 end.
 
 Definition close_binding_wrt_dtyp_rec (k:nat) (T5:var) (b5:binding) : binding :=
@@ -350,19 +365,13 @@ Definition close_dwork_wrt_dtyp_rec (k:nat) (T_5:var) (w5:dwork) : dwork :=
   | (dwork_apply c T) => dwork_apply (close_dcont_wrt_dtyp_rec k T_5 c) (close_dtyp_wrt_dtyp_rec k T_5 T)
 end.
 
-Definition close_dwork_wrt_dexp_rec (k:nat) (e5:var) (w5:dwork) : dwork :=
-  match w5 with
-  | (dwork_infer e c) => dwork_infer (close_dexp_wrt_dexp_rec k e5 e) (close_dcont_wrt_dexp_rec k e5 c)
-  | (dwork_check e T) => dwork_check (close_dexp_wrt_dexp_rec k e5 e) T
-  | (dwork_infabs T c) => dwork_infabs T (close_dcont_wrt_dexp_rec k e5 c)
-  | (dwork_infabsunion T1 T2 c) => dwork_infabsunion T1 T2 (close_dcont_wrt_dexp_rec k e5 c)
-  | (dwork_infapp T e c) => dwork_infapp T (close_dexp_wrt_dexp_rec k e5 e) (close_dcont_wrt_dexp_rec k e5 c)
-  | (dwork_inftapp T1 T2 c) => dwork_inftapp T1 T2 (close_dcont_wrt_dexp_rec k e5 c)
-  | (dwork_sub T1 T2) => dwork_sub T1 T2
-  | (dwork_inftappunion T1 T2 T3 c) => dwork_inftappunion T1 T2 T3 (close_dcont_wrt_dexp_rec k e5 c)
-  | (dwork_unioninftapp T1 T2 c) => dwork_unioninftapp T1 T2 (close_dcont_wrt_dexp_rec k e5 c)
-  | (dwork_unioninfabs T1 T2 c) => dwork_unioninfabs T1 T2 (close_dcont_wrt_dexp_rec k e5 c)
-  | (dwork_apply c T) => dwork_apply (close_dcont_wrt_dexp_rec k e5 c) T
+Fixpoint close_dworklist_wrt_dexp_rec (k:nat) (e5:var) (W5:dworklist) {struct W5}: dworklist :=
+  match W5 with
+  | dworklist_empty => dworklist_empty 
+  | (dworklist_consvar W x b) => dworklist_consvar (close_dworklist_wrt_dexp_rec k e5 W) x b
+  | (dworklist_constvar W X b) => dworklist_constvar (close_dworklist_wrt_dexp_rec k e5 W) X b
+  | (dworklist_consstvar W SX b) => dworklist_consstvar (close_dworklist_wrt_dexp_rec k e5 W) SX b
+  | (dworklist_conswork W w) => dworklist_conswork (close_dworklist_wrt_dexp_rec k e5 W) (close_dwork_wrt_dexp_rec k e5 w)
 end.
 
 Fixpoint close_dworklist_wrt_dtyp_rec (k:nat) (T5:var) (W5:dworklist) {struct W5}: dworklist :=
@@ -374,26 +383,21 @@ Fixpoint close_dworklist_wrt_dtyp_rec (k:nat) (T5:var) (W5:dworklist) {struct W5
   | (dworklist_conswork W w) => dworklist_conswork (close_dworklist_wrt_dtyp_rec k T5 W) (close_dwork_wrt_dtyp_rec k T5 w)
 end.
 
-Fixpoint close_dworklist_wrt_dexp_rec (k:nat) (e5:var) (W5:dworklist) {struct W5}: dworklist :=
-  match W5 with
-  | dworklist_empty => dworklist_empty 
-  | (dworklist_consvar W x b) => dworklist_consvar (close_dworklist_wrt_dexp_rec k e5 W) x b
-  | (dworklist_constvar W X b) => dworklist_constvar (close_dworklist_wrt_dexp_rec k e5 W) X b
-  | (dworklist_consstvar W SX b) => dworklist_consstvar (close_dworklist_wrt_dexp_rec k e5 W) SX b
-  | (dworklist_conswork W w) => dworklist_conswork (close_dworklist_wrt_dexp_rec k e5 W) (close_dwork_wrt_dexp_rec k e5 w)
-end.
+Definition close_dcont_wrt_dtyp c5 T_5 := close_dcont_wrt_dtyp_rec 0 c5 T_5.
 
-Definition close_dwork_wrt_dexp w5 e5 := close_dwork_wrt_dexp_rec 0 w5 e5.
+Definition close_dexp_wrt_dtyp e_5 T_5 := close_dexp_wrt_dtyp_rec 0 e_5 T_5.
+
+Definition close_binding_wrt_dtyp b5 T5 := close_binding_wrt_dtyp_rec 0 b5 T5.
+
+Definition close_dworklist_wrt_dexp W5 e5 := close_dworklist_wrt_dexp_rec 0 W5 e5.
 
 Definition close_dworklist_wrt_dtyp W5 T5 := close_dworklist_wrt_dtyp_rec 0 W5 T5.
 
 Definition close_dcont_wrt_dexp c5 e5 := close_dcont_wrt_dexp_rec 0 c5 e5.
 
-Definition close_binding_wrt_dtyp b5 T5 := close_binding_wrt_dtyp_rec 0 b5 T5.
+Definition close_dbody_wrt_dexp dbody5 e5 := close_dbody_wrt_dexp_rec 0 dbody5 e5.
 
-Definition close_dcont_wrt_dtyp c5 T_5 := close_dcont_wrt_dtyp_rec 0 c5 T_5.
-
-Definition close_dworklist_wrt_dexp W5 e5 := close_dworklist_wrt_dexp_rec 0 W5 e5.
+Definition close_dwork_wrt_dexp w5 e5 := close_dwork_wrt_dexp_rec 0 w5 e5.
 
 Definition close_dbody_wrt_dtyp dbody5 T5 := close_dbody_wrt_dtyp_rec 0 dbody5 T5.
 
@@ -402,10 +406,6 @@ Definition close_dtyp_wrt_dtyp T__6 T_5 := close_dtyp_wrt_dtyp_rec 0 T__6 T_5.
 Definition close_dwork_wrt_dtyp w5 T_5 := close_dwork_wrt_dtyp_rec 0 w5 T_5.
 
 Definition close_dexp_wrt_dexp e__6 e_5 := close_dexp_wrt_dexp_rec 0 e__6 e_5.
-
-Definition close_dbody_wrt_dexp dbody5 e5 := close_dbody_wrt_dexp_rec 0 dbody5 e5.
-
-Definition close_dexp_wrt_dtyp e_5 T_5 := close_dexp_wrt_dtyp_rec 0 e_5 T_5.
 
 (** terms are locally-closed pre-terms *)
 (** definitions *)
@@ -504,16 +504,6 @@ Inductive lc_dcont : dcont -> Prop :=    (* defn lc_dcont *)
      (lc_dtyp T) ->
      (lc_dcont (dcont_sub T)).
 
-(* defns LC_binding *)
-Inductive lc_binding : binding -> Prop :=    (* defn lc_binding *)
- | lc_dbind_tvar_empty : 
-     (lc_binding dbind_tvar_empty)
- | lc_dbind_stvar_empty : 
-     (lc_binding dbind_stvar_empty)
- | lc_dbind_typ : forall (T:dtyp),
-     (lc_dtyp T) ->
-     (lc_binding (dbind_typ T)).
-
 (* defns LC_dwork *)
 Inductive lc_dwork : dwork -> Prop :=    (* defn lc_dwork *)
  | lc_dwork_infer : forall (e:dexp) (c:dcont),
@@ -567,6 +557,16 @@ Inductive lc_dwork : dwork -> Prop :=    (* defn lc_dwork *)
      (lc_dcont c) ->
      (lc_dtyp T) ->
      (lc_dwork (dwork_apply c T)).
+
+(* defns LC_binding *)
+Inductive lc_binding : binding -> Prop :=    (* defn lc_binding *)
+ | lc_dbind_tvar_empty : 
+     (lc_binding dbind_tvar_empty)
+ | lc_dbind_stvar_empty : 
+     (lc_binding dbind_stvar_empty)
+ | lc_dbind_typ : forall (T:dtyp),
+     (lc_dtyp T) ->
+     (lc_binding (dbind_typ T)).
 
 (* defns LC_dworklist *)
 Inductive lc_dworklist : dworklist -> Prop :=    (* defn lc_dworklist *)
@@ -1231,21 +1231,45 @@ Inductive dwf_typ : denv -> dtyp -> Prop :=    (* defn dwf_typ *)
 (* defns Jdwf_exp *)
 Inductive dwf_exp : denv -> dexp -> Prop :=    (* defn dwf_exp *)
  | dwfexp_unit : forall (E:denv),
-     dwf_exp E dexp_unit.
+     dwf_exp E dexp_unit
+ | dwfexp_top : forall (E:denv),
+     dwf_exp E dexp_top
+ | dwfexp_var : forall (E:denv) (x:expvar) (T:dtyp),
+      binds ( x )  ( (dbind_typ T) ) ( E )  ->
+     dwf_exp E (dexp_var_f x)
+ | dwfexp_abs : forall (L:vars) (E:denv) (e:dexp),
+      ( forall x , x \notin  L  -> dwf_exp  ( x ~ (dbind_typ dtyp_top)  ++  E )   ( open_dexp_wrt_dexp e (dexp_var_f x) )  )  ->
+     dwf_exp E (dexp_abs e)
+ | dwfexp_tabs : forall (L:vars) (E:denv) (dbody5:dbody),
+      ( forall X , X \notin  L  -> dwf_body  ( X ~ dbind_tvar_empty  ++  E )   ( open_dbody_wrt_dtyp dbody5 (dtyp_var_f X) )  )  ->
+     dwf_exp E (dexp_tabs dbody5)
+ | dwfexp_tapp : forall (E:denv) (e:dexp) (T:dtyp),
+     dwf_typ E T ->
+     dwf_exp E e ->
+     dwf_exp E (dexp_tapp e T)
+ | dwfexp_anno : forall (E:denv) (e:dexp) (T:dtyp),
+     dwf_typ E T ->
+     dwf_exp E e ->
+     dwf_exp E (dexp_anno e T)
+with dwf_body : denv -> dbody -> Prop :=    (* defn dwf_body *)
+ | dwfbody_anno : forall (E:denv) (e:dexp) (T:dtyp),
+     dwf_typ E T ->
+     dwf_exp E e ->
+     dwf_body E (dbody_anno e T).
 
 (* defns Jdwf_env *)
 Inductive dwf_env : denv -> Prop :=    (* defn dwf_env *)
- | dwfenv_empty : 
+ | d__wfenv__empty : 
      dwf_env  nil 
- | dwfenv_tvar : forall (E:denv) (X:typvar),
+ | d__wfenv__tvar : forall (E:denv) (X:typvar),
      dwf_env E ->
       ( X   `notin` dom ( E ))  ->
      dwf_env  ( X ~ dbind_tvar_empty  ++  E ) 
- | dwfenv_stvar : forall (E:denv) (SX:stypvar),
+ | d__wfenv__stvar : forall (E:denv) (SX:stypvar),
      dwf_env E ->
       ( SX  `notin` dom ( E ))  ->
      dwf_env  ( SX ~ dbind_stvar_empty  ++  E ) 
- | dwfenv_typ : forall (E:denv) (x:expvar) (T:dtyp),
+ | d__wfenv__typ : forall (E:denv) (x:expvar) (T:dtyp),
      dwf_env E ->
      dwf_typ E T ->
       ( x   `notin` dom ( E ))  ->
@@ -1271,21 +1295,117 @@ Inductive dmono_typ : dtyp -> Prop :=    (* defn dmono_typ *)
      dmono_typ (dtyp_union T1 T2).
 
 (* defns Jdwl_wf_cont *)
-Inductive dwl_wf_cont : dworklist -> dcont -> Prop :=    (* defn dwl_wf_cont *)
- | dwl_wf_cont_infabs : forall (W:dworklist) (c:dcont),
-     dwl_wf_cont W c ->
-     dwl_wf_cont W (dcont_infabs c)
- | dwl_wf_cont_infabsunion : forall (W:dworklist) (T:dtyp) (c:dcont),
+Inductive d_wf_cont : dworklist -> dcont -> Prop :=    (* defn d_wf_cont *)
+ | d__wfcont__infabs : forall (W:dworklist) (c:dcont),
+     d_wf_cont W c ->
+     d_wf_cont W (dcont_infabs c)
+ | d__wfcont__infabsunion : forall (W:dworklist) (T:dtyp) (c:dcont),
      dwf_typ  ( dwl_to_denv  W  )  T ->
-     dwl_wf_cont W c ->
-     dwl_wf_cont W (dcont_infabsunion T c)
- | dwl_wf_cont_infapp : forall (W:dworklist) (e:dexp) (c:dcont),
+     d_wf_cont W c ->
+     d_wf_cont W (dcont_infabsunion T c)
+ | d__wfcont__infapp : forall (W:dworklist) (e:dexp) (c:dcont),
      dwf_exp  ( dwl_to_denv  W  )  e ->
-     dwl_wf_cont W c ->
-     dwl_wf_cont W (dcont_infapp e c).
+     d_wf_cont W c ->
+     d_wf_cont W (dcont_infapp e c)
+ | d__wfcont__inftapp : forall (W:dworklist) (T:dtyp) (c:dcont),
+     dwf_typ  ( dwl_to_denv  W  )  T ->
+     d_wf_cont W c ->
+     d_wf_cont W (dcont_inftapp T c)
+ | d__wfcont__inftappunion : forall (W:dworklist) (T1 T2:dtyp) (c:dcont),
+     dwf_typ  ( dwl_to_denv  W  )  T1 ->
+     dwf_typ  ( dwl_to_denv  W  )  T2 ->
+     d_wf_cont W c ->
+     d_wf_cont W (dcont_inftappunion T1 T2 c)
+ | d__wfcont__unioninftapp : forall (W:dworklist) (T:dtyp) (c:dcont),
+     dwf_typ  ( dwl_to_denv  W  )  T ->
+     d_wf_cont W c ->
+     d_wf_cont W (dcont_unioninftapp T c)
+ | d__wfcont__unioninfabs : forall (W:dworklist) (T:dtyp) (c:dcont),
+     dwf_typ  ( dwl_to_denv  W  )  T ->
+     d_wf_cont W c ->
+     d_wf_cont W (dcont_unioninfabs T c)
+ | d__wfcont__sub : forall (W:dworklist) (T:dtyp) (c:dcont),
+     dwf_typ  ( dwl_to_denv  W  )  T ->
+     d_wf_cont W c ->
+     d_wf_cont W (dcont_sub T).
+
+(* defns Jd_wf_work *)
+Inductive d_wf_work : dworklist -> dwork -> Prop :=    (* defn d_wf_work *)
+ | d__wfwork__infer : forall (W:dworklist) (e:dexp) (c:dcont),
+     dwf_exp  ( dwl_to_denv  W  )  e ->
+     d_wf_cont W c ->
+     d_wf_work W (dwork_infer e c)
+ | d__wfwork__check : forall (W:dworklist) (e:dexp) (T:dtyp),
+     dwf_exp  ( dwl_to_denv  W  )  e ->
+     dwf_typ  ( dwl_to_denv  W  )  T ->
+     d_wf_work W (dwork_check e T)
+ | d__wfwork__infabs : forall (W:dworklist) (T:dtyp) (c:dcont),
+     dwf_typ  ( dwl_to_denv  W  )  T ->
+     d_wf_cont W c ->
+     d_wf_work W (dwork_infabs T c)
+ | d__wfwork__infabsunion : forall (W:dworklist) (T1 T2:dtyp) (c:dcont),
+     dwf_typ  ( dwl_to_denv  W  )  T1 ->
+     dwf_typ  ( dwl_to_denv  W  )  T2 ->
+     d_wf_cont W c ->
+     d_wf_work W (dwork_infabsunion T1 T2 c)
+ | d__wfwork__infapp : forall (W:dworklist) (T:dtyp) (e:dexp) (c:dcont),
+     dwf_typ  ( dwl_to_denv  W  )  T ->
+     dwf_exp  ( dwl_to_denv  W  )  e ->
+     d_wf_cont W c ->
+     d_wf_work W (dwork_infapp T e c)
+ | d__wfwork__inftapp : forall (W:dworklist) (T1 T2:dtyp) (c:dcont),
+     dwf_typ  ( dwl_to_denv  W  )  T1 ->
+     dwf_typ  ( dwl_to_denv  W  )  T2 ->
+     d_wf_cont W c ->
+     d_wf_work W (dwork_inftapp T1 T2 c)
+ | d__wfwork__inftappunion : forall (W:dworklist) (T1 T2 T3:dtyp) (c:dcont),
+     dwf_typ  ( dwl_to_denv  W  )  T1 ->
+     dwf_typ  ( dwl_to_denv  W  )  T2 ->
+     dwf_typ  ( dwl_to_denv  W  )  T3 ->
+     d_wf_cont W c ->
+     d_wf_work W (dwork_inftappunion T1 T2 T3 c)
+ | d__wfwork__unioninftapp : forall (W:dworklist) (T1 T2:dtyp) (c:dcont),
+     dwf_typ  ( dwl_to_denv  W  )  T1 ->
+     dwf_typ  ( dwl_to_denv  W  )  T2 ->
+     d_wf_cont W c ->
+     d_wf_work W (dwork_unioninftapp T1 T2 c)
+ | d__wfwork__unioninfabs : forall (W:dworklist) (T1 T2:dtyp) (c:dcont),
+     dwf_typ  ( dwl_to_denv  W  )  T1 ->
+     dwf_typ  ( dwl_to_denv  W  )  T2 ->
+     d_wf_cont W c ->
+     d_wf_work W (dwork_unioninfabs T1 T2 c)
+ | d__wfwork__sub : forall (W:dworklist) (T1 T2:dtyp),
+     dwf_typ  ( dwl_to_denv  W  )  T1 ->
+     dwf_typ  ( dwl_to_denv  W  )  T2 ->
+     d_wf_work W (dwork_sub T1 T2)
+ | d__wfwork__apply : forall (W:dworklist) (c:dcont) (T:dtyp),
+     dwf_typ  ( dwl_to_denv  W  )  T ->
+     d_wf_cont W c ->
+     d_wf_work W (dwork_apply c T).
+
+(* defns Jd_wf_wl *)
+Inductive d_wf_wl : dworklist -> Prop :=    (* defn d_wf_wl *)
+ | d__wfwl__empty : 
+     d_wf_wl dworklist_empty
+ | d__wfwl__consvar : forall (W:dworklist) (x:expvar) (T:dtyp),
+     dwf_typ  ( dwl_to_denv  W  )  T ->
+     d_wf_wl W ->
+     d_wf_wl (dworklist_consvar W x (dbind_typ T))
+ | d__wfwl__constvar : forall (W:dworklist) (X:typvar),
+      ( X   `notin` dom (  ( dwl_to_denv  W  )  ))  ->
+     d_wf_wl W ->
+     d_wf_wl (dworklist_constvar W X dbind_stvar_empty)
+ | d__wfwl__consstvar : forall (W:dworklist) (SX:stypvar),
+      ( SX  `notin` dom (  ( dwl_to_denv  W  )  ))  ->
+     d_wf_wl W ->
+     d_wf_wl (dworklist_consstvar W SX dbind_stvar_empty)
+ | d__wfwl__conswork : forall (W:dworklist) (w:dwork),
+     d_wf_work W w ->
+     d_wf_wl W ->
+     d_wf_wl (dworklist_conswork W w).
 
 
 (** infrastructure *)
-#[export] Hint Constructors ds_in ds_in_s d_neq_abs dneq_all dneq_intersection dneq_union dneq_bot dwf_env_dom dwf_typ dwf_exp dwf_env dmono_typ dwl_wf_cont lc_dtyp lc_dexp lc_dbody lc_dcont lc_binding lc_dwork lc_dworklist : core.
+#[export] Hint Constructors ds_in ds_in_s d_neq_abs dneq_all dneq_intersection dneq_union dneq_bot dwf_env_dom dwf_typ dwf_exp dwf_body dwf_env dmono_typ d_wf_cont d_wf_work d_wf_wl lc_dtyp lc_dexp lc_dbody lc_dcont lc_dwork lc_binding lc_dworklist : core.
 
 

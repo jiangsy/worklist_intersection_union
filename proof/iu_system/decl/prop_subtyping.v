@@ -97,15 +97,6 @@ Proof.
 Qed.
 
 
-Fixpoint dtyp_order (T : dtyp) : nat :=
-  match T with
-  | dtyp_arrow T1 T2 => dtyp_order T1 + dtyp_order T2
-  | dtyp_all T1 => S (dtyp_order T1)
-  | dtyp_intersection T1 T2 => dtyp_order T1 + dtyp_order T2
-  | dtyp_union T1 T2 => dtyp_order T1 + dtyp_order T2
-  | _ => 0
-  end.
-
 Hint Resolve dwf_typ_lc_dtyp : subtyping.
 Hint Resolve dsub_refl : subtyping.
 Hint Resolve d_wft_typ_subst : subtyping.
@@ -321,7 +312,7 @@ Theorem d_sub_tvar_ind_open_inv_complete: forall n1 n2 E S1 T1 X L,
     (forall X, X `notin` L -> ds_in X (T1 ^ᵈ X)) ->
     dmono_typ S1 ->
     d_sub_tvar_inv (dtyp_all T1).
-  Proof.
+Proof.
     intro n1. induction n1.
     - intros. inversion H.
     - intros n2. induction n2.
@@ -894,39 +885,6 @@ Qed.
 Hint Constructors d_sub_sized : sub.
 
 
-(*       applys IHF... *)
-(*       rewrite dom_app. rewrite dom_subst_id. solve_notin. *)
-(*       destruct_notin. *)
-(*     forwards HE'': d_wf_env_strenthening_head HE'. *)
-(*     destruct a. *)
-(*     forwards: IHF. *)
-(*     applys d_wf_env_strenthening_head. *)
-(*     forwards: d_wf_env_subst_stvar_typ (dtyp_svar SY) HE'. *)
-
-(* rewrite_env (map (d_subst_stv_in_binding (dtyp_svar SY) SX) F ++ (SY ~ ▪ ++ nil) ++ E). *)
-
-
-(*     forwards~ IH: IHF. *)
-(*     rewrite_env ([(a, d_subst_stv_in_binding T1 SX b)] *)
-(*                    ++ (map (d_subst_stv_in_binding T1 SX) F ++ E)). *)
-(*     forwards: d_wf_env_uniq HE. *)
-(*     inverts H. destruct b... *)
-(*     + econstructor... *)
-(*       applys d_wft_typ_subst_stvar... *)
-(*       inverts~ HE. *)
-(* Qed. *)
-
-
-(* Ltac gather_atoms ::= *)
-(*   let A := gather_atoms_with (fun x : vars => x) in *)
-(*   let B := gather_atoms_with (fun x : var => {{ x }}) in *)
-(*   let C := gather_atoms_with (fun x : denv => dom x) in *)
-(*   let D1 := gather_atoms_with (fun x => ftv_in_dtyp x) in *)
-(*   let D2 := gather_atoms_with (fun x => fstv_in_dtyp x) in *)
-(*   (* let D3 := gather_atoms_with (fun x => fv_typ_in_binding x) in *) *)
-(*   (* let D4 := gather_atoms_with (fun x => fv_exp_in_exp x) in *) *)
-(*   constr:(A \u B \u C \u D1 \u D2). *)
-
 Lemma d_sub_size_rename_stvar : forall E F SX SY A B n,
     F ++ SX ~ ▪ ++ E ⊢ A <: B | n ->
       SY ∉ (dom E `union` dom F) ->
@@ -934,12 +892,6 @@ Lemma d_sub_size_rename_stvar : forall E F SX SY A B n,
         {dtyp_svar SY /ₛᵈ SX} A <: {dtyp_svar SY /ₛᵈ SX} B | n.
 Proof with (simpl in *; eauto using d_wf_env_subst_tvar_typ with sub).
   intros * HS HN.
-  (* rewrite_env ( (map (d_subst_stv_in_binding (dtyp_svar SY) SX) F ++ SY ~ ▪ ++ nil ) ++ E ). *)
-  (* assert (HR: map (d_subst_stv_in_binding (dtyp_svar SY) SX) (F ++ [(SY, dbind_stvar_empty)]) = map (d_subst_stv_in_binding (dtyp_svar SY) SX) F ++ SY ~ ▪ ++ nil). { *)
-  (*   rewrite map_app... *)
-  (* } *)
-  (* rewrite <- HR. clear HR. *)
-
   case_eq (SY == SX); intros.
   1: { subst. rewrite* subst_same_stvar_map_id.
        repeat rewrite* subst_same_stvar_typ_id. } clear H.
@@ -1009,55 +961,6 @@ Proof with (simpl in *; eauto using d_wf_env_subst_tvar_typ with sub).
     Unshelve. all: eauto. econstructor.
 Qed.
 
-(* Hint Resolve d_mono_typ_lc : core. *)
-
-(* Lemma d_mono_typ_neq_all : forall T, *)
-(*   dmono_typ T -> oof. *)
-(*   intros; induction H; auto... *)
-(* Qed. *)
-
-(*     Search (dneq_all). *)
-(* Abort. *)
-
-
-(*     + rewrite d_subst_stv_in_dtyp_open_comm... *)
-(*       applys~ fstv_sins_dtyp_subst_stv_s. *)
-(*     + rewrite d_subst_stv_in_dtyp_open_comm... *)
-(*       applys~ fstv_sins_dtyp_subst_stv_s. *)
-(*     + forwards~: H2 SZ E ((SZ, ▪) :: F)... *)
-(*       repeat rewrite d_subst_stv_in_dtyp_open_comm... *)
-(*   - *)
-(*     + *)
-(*       rewrite d_subst_stv_in_dtyp_open_comm; auto... *)
-(*       applys~ fstv_sins_dtyp_subst_stv_s. *)
-(*     + *)
-
-(*       replace (dtyp_svar SZ) with ({dtyp_svar SY /ₛᵈ SX} (dtyp_svar SZ)). *)
-(*       lets: d_subst_stv_in_dtyp_open_comm. *)
-(*       rewrite d_subst_stv_in_dtyp_open_comm; auto... *)
-(*       case_if; intros; subst; try solve_notin. *)
-(*       rewrite fstv_sins_dtyp_subst_stv_s. *)
-(*     Search (⊢_). *)
-(* Admitted. *)
-
-(* (* for demo only; not to be proved *)
-Theorem d_sub_size_subst_stvar_test : forall E F SX S1 T1 T2 n,
-  F ++ (SX ~ dbind_stvar_empty) ++ E ⊢ S1 <: T1 | n ->
-  E ⊢ T2 ->
-  (* dmono_typ T2 ->  Snow: I have to del this for renaming svar *)
-  exists n', map (d_subst_stv_in_binding T2 SX) F ++ E ⊢ {T2 /ₛᵈ SX} S1 <: {T2 /ₛᵈ SX} T1 | n'.
-Admitted.
-
-(* for demo only; not to be proved *)
-Theorem d_sub_size_weakening: forall E F G S1 T1 n,
-  G ++ E ⊢ S1 <: T1 | n ->
-  ⊢ G ++ F ++ E ->
-  G ++ F ++ E ⊢ S1 <: T1 | n.
-(* Admitted. *) *)
-
-(* (* The above two lemmas were introduced here to prove the completeness lemma but *)
-(* now I turned to the rename lemma *) *)
-
 Corollary d_sub_size_rename : forall n X Y D E A B,
     X `notin`  (fstv_in_dtyp A `union` fstv_in_dtyp B) ->
     Y `notin` ((dom D) `union` (dom E)) ->
@@ -1073,19 +976,6 @@ Qed.
 
 Lemma d_sub_size_complete : forall E T1 T2,
   E ⊢ T1 <: T2 -> exists n, E ⊢ T1 <: T2 | n.
-(* Proof with eauto with sub. *)
-(*   intros. induction H; eauto... *)
-(*   - destruct IHd_sub1 as [n1]. destruct IHd_sub2 as [n2]. *)
-(*     eauto... *)
-(*   - pick fresh X. *)
-(*     destruct (H2 X) as [n]. solve_notin. *)
-(*     exists (S n). *)
-(*     eapply d__subs__all with (L:=L `union` fstv_in_dtyp S1 `union` fstv_in_dtyp S1); intros; eauto. *)
-(*     + forwards* HS: d_sub_size_weakening (SX ~ ▪) H3. admit. *)
-(*       rewrite_env (nil ++ (X ~ ▪ ++ SX ~ ▪ ++ E)) in HS. *)
-(*       forwards* (?&?): d_sub_size_subst_stvar_test (dtyp_svar SX) HS. *)
-(*       (* we need x to be n here. so the d_sub_size_subst_stvar does not work well *) *)
-(* Restart. *)
 Proof with eauto with sub.
   intros. induction H; eauto...
   - destruct IHd_sub1 as [n1]. destruct IHd_sub2 as [n2].
@@ -1385,12 +1275,12 @@ Ltac ord_inv :=
    end.
 
 
-Lemma d_sub_sized_transitivity : forall n_dtyp_order n_dsub_size E R1 S1 T1 n1 n2 ,
-  dtyp_order S1 < n_dtyp_order ->
+Lemma d_sub_sized_transitivity : forall n_d_typ_order n_dsub_size E R1 S1 T1 n1 n2 ,
+  d_typ_order S1 < n_d_typ_order ->
   n1 + n2 < n_dsub_size ->
   E ⊢ R1 <: S1 | n1 -> E ⊢ S1 <: T1 | n2 -> E ⊢ R1 <: T1.
 Proof with auto with trans.
-  induction n_dtyp_order; induction n_dsub_size; intros * Horder Hsize Hsub1 Hsub2.
+  induction n_d_typ_order; induction n_dsub_size; intros * Horder Hsize Hsub1 Hsub2.
   - inversion Horder.
   - inversion Horder.
   - inversion Hsize.
@@ -1460,18 +1350,17 @@ Proof with auto with trans.
            applys* fstv_open_tvar. solve_notin.
         ** forwards: H1 SY...
            forwards: d_sub_dwft_sized_1 H4.
-           forwards: d_wft_typ_subst_stvar SY (S1 ^^ᵈ dtyp_svar SY) (dtyp_var_f SY).
-           admit. admit. admit.
-        (*    rewrite_env (nil ++ SY ~ ▪ ++ E) in H5. applys H5. *)
-        (*    apply d_wf_typ_subst_stvar_tvar in H5. *)
-        (*    simpl in H5. *)
-        (*    rewrite d_subst_stv_in_dtyp_open_dtyp_wrt_dtyp in H5. *)
-        admit. (*wft*)
+           rewrite_env (nil ++ SY ~ ▪ ++ E) in H4.
+           rewrite_env (nil ++ SY ~ ▪ ++ E) in H5.
+           forwards: d_wf_typ_subst_stvar_tvar H5.
+           simpl in H6. rewrite d_subst_stv_in_dtyp_open_dtyp_wrt_dtyp in H6.
+           simpl in H6. case_if. rewrite* d_subst_stv_in_dtyp_fresh_eq in H6.
+           solve_notin. now eauto.
       * eapply d_sub_all with (L:=L `union` L0 `union` dom E); auto.
         intros. inst_cofinites_with SX.
-        eapply IHn_dtyp_order with (S1:= T0 ^^ᵈ dtyp_svar SX); eauto...
+        eapply IHn_d_typ_order with (S1:= T0 ^^ᵈ dtyp_svar SX); eauto...
         -- simpl in *. rewrite d_open_svar_same_order.
-           assert ((dtyp_order T0) < n_dtyp_order) by lia. (* lia strangely fails if proving directly *)
+           assert ((d_typ_order T0) < n_d_typ_order) by lia. (* lia strangely fails if proving directly *)
            auto.
       * pick fresh SY and apply d_sub_alll. 5: applys H6. all: eauto.
         ** forwards: H SY...
@@ -1481,13 +1370,13 @@ Proof with auto with trans.
         rewrite_env  (nil ++ (SX, ▪) :: E) in H1.
         eapply d_sub_size_subst_stvar in H1; eauto.
         destruct H1 as [n' Hsub].
-        eapply IHn_dtyp_order with (S1:=T0 ^^ᵈ T2) (n1:=n'); eauto...
-        rewrite d_open_mono_same_order; auto. admit.
+        eapply IHn_d_typ_order with (S1:=T0 ^^ᵈ T2) (n1:=n'); eauto...
+        rewrite d_open_mono_same_order; auto. now lia.
         simpl in Hsub. auto. simpl.
         rewrite 2 d_subst_stv_in_dtyp_open_dtyp_wrt_dtyp in Hsub... simpl in Hsub.
         unfold eq_dec in Hsub. destruct (EqDec_eq_of_X SX SX) in Hsub.
-          rewrite (d_subst_stv_in_dtyp_fresh_eq S1) in Hsub...
-          rewrite (d_subst_stv_in_dtyp_fresh_eq T0) in Hsub...
+        rewrite (d_subst_stv_in_dtyp_fresh_eq S1) in Hsub...
+        rewrite (d_subst_stv_in_dtyp_fresh_eq T0) in Hsub...
         contradiction.
       * eapply d_sub_intersection1.
         -- eapply IHn_dsub_size with (S1:=dtyp_all T0) (n1:=S n) (n2:=n1); eauto...
@@ -1508,7 +1397,9 @@ Proof with auto with trans.
       * dependent destruction Hsub2; try solve ord_inv; auto...
         -- econstructor...
            pick fresh SY and apply dwftyp_all. applys* H2.
-           admit.
+           forwards HW: d_sub_dwft_sized_1 Hsub1.
+           rewrite_env (nil ++ E) in HW.
+           forwards*: d_wf_typ_open_stvar_subst_mono HW.
         -- eapply d_sub_alll with (T2:=T2); auto.
            eapply d_sub_size_sound; eauto.
       (* forall a. A < bot < C *)
@@ -1516,10 +1407,18 @@ Proof with auto with trans.
         exfalso. eapply d_sub_open_mono_bot_false; eauto.
       (* forall a. A < top < C *)
       * dependent destruction Hsub2; try solve ord_inv; auto...
-        -- econstructor... admit.
+        -- econstructor...
+           pick fresh SY and apply dwftyp_all. applys* H2.
+           forwards HW: d_sub_dwft_sized_1 Hsub1.
+           rewrite_env (nil ++ E) in HW.
+           forwards*: d_wf_typ_open_stvar_subst_mono HW.
     (* forall a. A < X < C *)
       * dependent destruction Hsub2; try solve ord_inv; auto...
-        -- econstructor... admit.
+        -- econstructor...
+           pick fresh SY and apply dwftyp_all. applys* H2.
+           forwards HW: d_sub_dwft_sized_1 Hsub1.
+           rewrite_env (nil ++ E) in HW.
+           forwards*: d_wf_typ_open_stvar_subst_mono HW.
         -- eapply d_sub_alll with (T2:=T2); eauto...
             apply d_sub_size_sound in Hsub1. auto.
       (* forall a. A < SX < C *)
@@ -1527,7 +1426,11 @@ Proof with auto with trans.
         exfalso. eapply d_sub_open_mono_stvar_false; eauto.
       (* forall a. A < B1 -> B2 < C *)
       * dependent destruction Hsub2; try solve ord_inv; auto...
-        -- econstructor... admit.
+        -- econstructor...
+           pick fresh SY and apply dwftyp_all. applys* H2.
+           forwards HW: d_sub_dwft_sized_1 Hsub1.
+           rewrite_env (nil ++ E) in HW.
+           forwards*: d_wf_typ_open_stvar_subst_mono HW.
         -- assert (E ⊢ T1) by applys* d_sub_dwft_sized_1. assert (E ⊢ T4) by applys* d_sub_dwft_sized_2.
           eapply d_sub_alll with (T2:=T2); eauto...
           eapply IHn_dsub_size with (S1:=dtyp_arrow T0 T3) (n2:=S(n1+n2)); eauto...
@@ -1557,7 +1460,7 @@ Proof with auto with trans.
     + simpl in Horder. econstructor...
       * eapply IHn_dsub_size with (S1:=T) (n1:=n1); eauto...
       * eapply IHn_dsub_size with (S1:=T) (n1:=n0); eauto...
-Admitted.
+Qed.
 
 
 Theorem sub_transitivity : forall E R1 S1 T1,
