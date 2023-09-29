@@ -12,9 +12,9 @@ Hint Constructors d_wl_del_red : dworklist.
 
 
 
-(* This direction is not so important *)
+(* This direction is not so important because soundness is proven against decl system directly *)
 Theorem d_wl_red_sound: forall Ω, 
-    d_wf_wl Ω -> d_wl_red Ω -> d_wl_del_red Ω.
+    d_wf_wl Ω -> Ω ⟶ₐ⁎⋅ -> Ω ⟶⁎⋅.
 Proof with auto with dworklist.
   intros. induction H0; try solve [dependent destruction H; auto with dworklist].
   (* sub *)
@@ -166,7 +166,7 @@ Proof with auto with dworklist.
   - econstructor. apply IHd_wl_red.
     admit.
   
-  (* matching *)
+  (* infabs *)
   - admit.
   - admit.
   - admit.
@@ -183,10 +183,10 @@ Admitted.
 
 
 Lemma d_wl_red_sub_complete: forall Ω A B,
-   d_wf_wl (dworklist_conswork Ω (dwork_sub A B)) -> dwl_to_denv Ω ⊢ A <: B ->
-   d_wl_red Ω -> d_wl_red (dworklist_conswork Ω (dwork_sub A B)).
+  dwl_to_denv Ω ⊢ A <: B -> d_wf_wl (dworklist_conswork Ω (dwork_sub A B)) -> 
+  d_wl_red Ω -> d_wl_red (dworklist_conswork Ω (dwork_sub A B)).
 Proof with auto with dworklist.
-  intros * Hwfwl Hsub Hred.
+  intros * Hsub Hwfwl Hred.
   dependent induction Hsub; auto...
   - econstructor.
     dependent destruction Hwfwl. 
@@ -194,7 +194,7 @@ Proof with auto with dworklist.
     dependent destruction H. dependent destruction H1.
     auto.
   - dependent destruction Hwfwl. 
-    eapply d__wlred__suball with (L:=L).
+    eapply d__wlred__sub_all with (L:=L).
     intros. inst_cofinites_with SX.
     apply H2; eauto.
     econstructor. econstructor. simpl. admit.
@@ -202,7 +202,7 @@ Proof with auto with dworklist.
     econstructor. admit. auto. auto...
   - dependent destruction Hwfwl. 
     dependent destruction H5.
-    eapply d__wlred__sub_alll with (B1:=T1); eauto. admit.
+    eapply d__wlred__sub_alll with (B1:=T1); eauto. 
     apply IHHsub; eauto. admit.
   - dependent destruction Hwfwl. 
     dependent destruction H.
@@ -230,8 +230,29 @@ Proof with auto with dworklist.
 Admitted.
 
 
+Lemma d_wl_red_infabs_complete: forall Ω A B C c,
+   dwl_to_denv Ω ⊢ A ▹ B → C -> d_wf_wl (dworklist_conswork Ω (dwork_sub A B)) -> 
+   d_wl_red (dworklist_conswork Ω (dwork_apply c (dtyp_arrow B C))) -> d_wl_red (dworklist_conswork Ω (dwork_infabs A c)).
+Admitted.
+
+
+Lemma d_wl_red_inftapp_complete: forall Ω A B C c,
+  dwl_to_denv Ω ⊢ A ○ B ⇒⇒ C -> d_wf_wl (dworklist_conswork Ω (dwork_sub A B)) ->
+  d_wl_red (dworklist_conswork Ω (dwork_apply c C)) -> d_wl_red (dworklist_conswork Ω (dwork_inftapp A B c)).
+Admitted.
+
+
+Lemma d_wl_red_chk_inf_complete: forall Ω e A c mode,
+  d_typing (dwl_to_denv Ω) e mode A -> 
+  match mode with 
+  | d_typingmode_chk => d_wf_wl (dwork_check e A ⫤ Ω) -> Ω ⟶ₐ⁎⋅ -> (dwork_check e A ⫤ Ω) ⟶ₐ⁎⋅
+  | d_typingmode_inf => d_wf_wl (dwork_infer e c ⫤ Ω) -> (dwork_apply c A ⫤ Ω) ⟶ₐ⁎⋅ -> (dwork_infer e c ⫤ Ω) ⟶ₐ⁎⋅
+  end.
+Admitted.
+
+
 Theorem d_wl_red_complete: forall Ω, 
-    d_wf_wl Ω -> d_wl_del_red Ω -> d_wl_red Ω.
+    d_wf_wl Ω -> Ω ⟶⁎⋅ -> Ω ⟶ₐ⁎⋅.
 Proof with auto with dworklist.
   intros. induction H0; auto...
   - constructor. apply IHd_wl_del_red.

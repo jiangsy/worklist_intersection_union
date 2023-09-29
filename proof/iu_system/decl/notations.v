@@ -2,6 +2,7 @@ Require Export Coq.Unicode.Utf8.
 
 Require Export decl.def_ott.
 Require Export decl.def_extra.
+Require Export decl.worklist.def.
 Require Export decl.prop_ln.
 
 
@@ -81,14 +82,26 @@ Delimit Scope dworklist_scope with dworklist.
 Bind Scope dworklist_scope with dworklist.
 
 
-Notation " x ~ T ; W " :=
-  (dworklist_consvar W x (dbind_typ T))
+Notation " x ~ T ; Ω " :=
+  (dworklist_consvar Ω x (dbind_typ T))
       (at level 58, T at next level, right associativity) : dworklist_scope.
     
-Notation " X ~ ▪ ; W " :=
-  (dworklist_constvar W X dbind_tvar_empty)
+Notation " X ~ ▪ ; Ω " :=
+  (dworklist_constvar Ω X dbind_tvar_empty)
       (at level 58, right associativity) : dworklist_scope.
 
-Notation " SX ~ ~▪ ; W " :=
-  (dworklist_consstvar W SX dbind_stvar_empty)
+Notation " SX ~ ~▪ ; Ω " :=
+  (dworklist_consstvar Ω SX dbind_stvar_empty)
       (at level 58, right associativity) : dworklist_scope.
+
+Notation " W ⫤ Ω " :=
+  (dworklist_conswork Ω W)
+      (at level 58, right associativity) : dworklist_scope.
+
+Notation " Ω ⟶ₐ⁎⋅ " :=
+  (d_wl_red Ω)
+      (at level 58, no associativity) : type_scope.
+
+Notation " Ω ⟶⁎⋅ " :=
+  (d_wl_del_red Ω)
+      (at level 58, no associativity) : type_scope.
