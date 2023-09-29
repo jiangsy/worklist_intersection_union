@@ -1481,8 +1481,8 @@ Proof with auto with trans.
         eapply d_sub_size_subst_stvar in H1; eauto.
         destruct H1 as [n' Hsub].
         eapply IHn_dtyp_order with (S1:=T0 ^^ᵈ T2) (n1:=n'); eauto...
-        rewrite d_open_mono_same_order; auto.
-        Search ( d_typ_order). Search ( dtyp_order).
+        rewrite d_open_mono_same_order; auto...
+        assert ((dtyp_order T0) < n_dtyp_order) by lia. auto.
         simpl in Hsub. auto. simpl.
         rewrite 2 d_subst_stv_in_dtyp_open_dtyp_wrt_dtyp in Hsub... simpl in Hsub.
         unfold eq_dec in Hsub. destruct (EqDec_eq_of_X SX SX) in Hsub.
