@@ -105,16 +105,12 @@ Proof with auto with dworklist.
     dependent destruction H3.
     eapply d__wldelred__inf with (T1:=T3).
     econstructor; eauto.
+    admit.
     dependent destruction H3.
     dependent destruction H3.
     simpl in H4.
-    dependent destruction H4. auto.
-    dependent destruction H3.
-    dependent destruction H3.
-    simpl in H4.
-    dependent destruction H4.
-    dependent destruction H4.
-    admit. (* weakening ? @chen *)
+    dependent destruction H4. 
+    admit.
   - assert (d_wf_wl (dworklist_conswork Γ (dwork_infer e (dcont_inftapp T c)))) by admit.
     apply IHd_wl_red in H1.
     dependent destruction H1.
@@ -151,7 +147,7 @@ Proof with auto with dworklist.
     dependent destruction H2.
     simpl in H3.
     dependent destruction H3.
-    eapply d__wldelred__inftapp with (T3:=dtyp_union C2 C0); eauto.
+    eapply d__wldelred__inftapp with (T3:=dtyp_union C1 C2); eauto.
     econstructor; eauto.
   - assert (d_wf_wl
   (dworklist_conswork Γ
@@ -176,7 +172,7 @@ Proof with auto with dworklist.
   - admit.
   - admit.
 
-  - econstructor. admit.
+  - econstructor. 
     apply IHd_wl_red. admit.
 
   - econstructor; eauto.
@@ -187,7 +183,7 @@ Admitted.
 
 Lemma d_wl_red_sub_complete: forall Ω A B,
   dwl_to_denv Ω ⊢ A <: B -> d_wf_wl (dworklist_conswork Ω (dwork_sub A B)) -> 
-  d_wl_red Ω -> d_wl_red (dworklist_conswork Ω (dwork_sub A B)).
+  Ω ⟶ₐ⁎⋅ -> (dworklist_conswork Ω (dwork_sub A B)) ⟶ₐ⁎⋅.
 Proof with auto with dworklist.
   intros * Hsub Hwfwl Hred.
   dependent induction Hsub; auto...
@@ -236,6 +232,30 @@ Admitted.
 Lemma d_wl_red_infabs_complete: forall Ω A B C c,
    dwl_to_denv Ω ⊢ A ▹ B → C -> d_wf_wl (dworklist_conswork Ω (dwork_infabs A c)) -> 
    d_wl_red (dworklist_conswork Ω (dwork_apply c (dtyp_arrow B C))) -> d_wl_red (dworklist_conswork Ω (dwork_infabs A c)).
+Proof with auto with dworklist.
+  intros. generalize dependent c. dependent induction H; intros; eauto...
+  - eapply d__wlred__infabs_all with (T1:=T2); eauto.
+    apply IHd_infabs; auto. admit.
+  - apply d__wlred__infabs_inter1.
+    apply IHd_infabs...
+    admit.
+  - apply d__wlred__infabs_inter2.
+    apply IHd_infabs...
+    admit.
+  - apply d__wlred__infabs_union.
+    apply IHd_infabs1; auto.
+    admit.
+    eapply d__wlred__applycont with (Γ':=(dworklist_conswork dworklist_empty (dwork_infabsunion (dtyp_arrow T3 T4) T2 c))).
+    eapply d__ac__infabsunion.
+    simpl.
+    eapply d__wlred__infabsunion.
+    apply IHd_infabs2; auto.
+    admit.
+    eapply d__wlred__applycont with (Γ':=(dworklist_conswork dworklist_empty (dwork_unioninfabs (dtyp_arrow T3 T4) (dtyp_arrow T5 T6) c))).
+    econstructor.
+    simpl.
+    econstructor.
+    auto.  
 Admitted.
 
 
@@ -265,8 +285,10 @@ Proof with auto with dworklist.
   - refine (d_wl_red_chk_inf_complete _ _ _ _ H0 _ _); auto.
     apply IHd_wl_del_red. 
     admit.
-  - refine (d_wl_red_chk_inf_complete _ _ _ _ H0 _ _ _); auto.
-    apply IHd_wl_del_red. 
+  - dependent destruction H.
+    dependent destruction H.
+    refine (d_wl_red_chk_inf_complete _ _ _ _ H2 _ _ _); auto.
+    apply IHd_wl_del_red.
     admit.
   - eapply d_wl_red_infabs_complete; eauto.
     apply IHd_wl_del_red.
@@ -291,11 +313,11 @@ Proof with auto with dworklist.
     eapply d_wl_red_inftapp_complete; eauto.
     admit.
     admit.
-  - constructor.
-    apply IHd_wl_del_red.
-    admit.
-  - apply d_wl_red_sub_complete; eauto.
-    admit.
+  - dependent destruction H. 
+    dependent destruction H.
+    constructor.
+    apply IHd_wl_del_red. auto.
+  - dependent destruction H. apply d_wl_red_sub_complete; eauto.
 Admitted.
 
 
