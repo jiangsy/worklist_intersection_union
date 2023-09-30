@@ -22,8 +22,13 @@ Notation " x ~ T ; Ω " :=
   (dworklist_consvar Ω x (dbind_typ T))
       (at level 58, T at next level, right associativity) : dworklist_scope.
     
-Notation " X ~ ▪ ; Ω " :=
+    
+Notation " X ~ ▫ ; Ω " :=
   (dworklist_constvar Ω X dbind_tvar_empty)
+      (at level 58, right associativity) : dworklist_scope.
+
+Notation " X ~ ▪ ; Ω " :=
+  (dworklist_constvar Ω X dbind_stvar_empty)
       (at level 58, right associativity) : dworklist_scope.
 
 Notation " W ⫤ Ω " :=
@@ -353,6 +358,41 @@ Lemma d_wl_red_chk_inf_complete: forall Ω e A mode,
   | typingmode__chk => d_wf_wl (work_check e A ⫤ Ω) -> Ω ⟶ₐ⁎⋅ -> (work_check e A ⫤ Ω) ⟶ₐ⁎⋅
   | typingmode__inf => forall c, d_wf_wl (work_infer e c ⫤ Ω) -> (work_apply c A ⫤ Ω) ⟶ₐ⁎⋅ -> (work_infer e c ⫤ Ω) ⟶ₐ⁎⋅
   end.
+Proof with auto with dworklist.
+  intros. dependent induction H; intros; eauto...
+  - econstructor; eauto.
+  - econstructor. 
+    eapply IHd_typing; eauto.
+    admit.
+  - econstructor.
+    eapply IHd_typing1; eauto.
+    admit.
+    apply d_wlred__applycont with (Ω':=dworklist_conswork dworklist_empty (work_infabs T1 (cont_infapp e2 c))); eauto.
+    econstructor.
+    simpl.
+    eapply d_wl_red_infabs_complete; eauto.
+    admit.
+    admit.
+  - econstructor; eauto.
+   admit.
+  - econstructor.
+    admit.
+  - eapply d_wlred__chk_abstop.
+    admit.
+  - eapply d_wlred__chk_absarrow.
+    admit.
+  - econstructor. admit. admit.
+    apply IHd_typing; auto. admit.
+    admit.
+  - eapply d_wlred__chk_inter.
+    eapply IHd_typing2; auto. admit.
+    eapply IHd_typing1; auto. admit.
+  - eapply d_wlred__chk_union1.
+    eapply IHd_typing; auto.
+    admit.
+  - eapply d_wlred__chk_union2.
+    eapply IHd_typing; auto.
+    admit.
 Admitted.
 
 
