@@ -696,7 +696,6 @@ Proof.
 Admitted.
 
 
-(* bookmark *)
 
 Theorem d_sub_open_mono_stvar_false: forall n1 n2 E A1 T1 X L,
     d_typ_order (A1 ^^ᵈ T1) < n1 ->
@@ -738,47 +737,52 @@ Proof.
       * destruct A1; simpl in *; try solve [inversion Heq].
         -- destruct n.
            ++ unfold open_typ_wrt_typ in H, H0, Heq. simpl in *.
-              subst. dependent destruction H4.
-              apply d_sub_mono_stvar_false in H1; auto.
+              subst. dependent destruction H5.
+              eapply d_sub_mono_stvar_false in H2; auto.
            ++ unfold open_typ_wrt_typ in Heq. simpl in Heq.
               inversion Heq.
         -- dependent destruction Heq. unfold open_typ_wrt_typ in *.
            eapply IHn2 with (L:=L); eauto. lia. lia.
-           intros. inst_cofinites_with X. dependent destruction H3; auto.
+           intros. inst_cofinites_with X0. dependent destruction H4; auto.
+      * destruct A1; simpl in *; try solve [inversion Heq].
+        -- destruct n.
+           ++ unfold open_typ_wrt_typ in H, H0, Heq. simpl in *.
+              subst. dependent destruction H5.
+              apply d_sub_mono_stvar_false in H2; auto.
+           ++ unfold open_typ_wrt_typ in Heq. simpl in Heq.
+             inversion Heq.
+        -- dependent destruction Heq. unfold open_typ_wrt_typ in *.
+           eapply IHn2 with (L:=L); eauto. lia. lia.
+           intros. inst_cofinites_with X0. dependent destruction H4; auto.
       * destruct A1; simpl in *; try solve [inversion Heq].
         -- destruct n.
            ++ unfold open_typ_wrt_typ in H, H0, Heq. simpl in *.
               subst. dependent destruction H4.
-              apply d_sub_mono_stvar_false in H1; auto.
+              apply d_sub_mono_stvar_false in H2_; auto.
            ++ unfold open_typ_wrt_typ in Heq. simpl in Heq.
              inversion Heq.
         -- dependent destruction Heq. unfold open_typ_wrt_typ in *.
            eapply IHn2 with (L:=L); eauto. lia. lia.
-           intros. inst_cofinites_with X. dependent destruction H3; auto.
-      * destruct A1; simpl in *; try solve [inversion Heq].
-        -- destruct n.
-           ++ unfold open_typ_wrt_typ in H, H0, Heq. simpl in *.
-              subst. dependent destruction H3.
-              apply d_sub_mono_stvar_false in H1_; auto.
-           ++ unfold open_typ_wrt_typ in Heq. simpl in Heq.
-             inversion Heq.
-        -- dependent destruction Heq. unfold open_typ_wrt_typ in *.
-           eapply IHn2 with (L:=L); eauto. lia. lia.
-           intros. inst_cofinites_with X. dependent destruction H2; auto.
-Qed.
+           intros. inst_cofinites_with X0. dependent destruction H3; auto.
+Admitted.
 
-Theorem d_mono_notin_stvar : forall F E T SX,
-  F ++ (SX ~ dbind_stvar_empty) ++ E ⊢ T -> dmono_typ T ->
-  SX `notin` fstv_in_typ T.
+Theorem d_mono_notin_stvar : forall F E T X,
+  F ++ (X ~ dbind_stvar_empty) ++ E ⊢ T -> d_mono_typ (F ++ (X ~ dbind_stvar_empty) ++ E) T ->
+  X `notin` ftvar_in_typ T.
 Proof.
-  intros. induction H0; simpl in *; auto;
-  dependent destruction H; auto.
-Qed.
+  intros. dependent induction H0; simpl in *; auto.
+  - admit.
+  - dependent destruction H; auto... apply notin_union; eauto.
+  - dependent destruction H; auto... apply notin_union; eauto.
+  - dependent destruction H; auto... apply notin_union; eauto.
+Admitted.
 
-Theorem d_sub_subst_stvar : forall E SX F S1 T1 T2,
-  F ++ (SX ~ dbind_stvar_empty) ++ E ⊢ S1 <: T1 ->
-  E ⊢ T2 ->
-  map (d_subst_stv_in_binding T2 SX) F ++ E ⊢ {T2 /ₛᵈ SX} S1 <: {T2 /ₛᵈ SX} T1.
+(* bookmark *)
+
+Theorem d_sub_subst_stvar : forall E X F A1 B1 T1,
+  F ++ (X ~ dbind_stvar_empty) ++ E ⊢ A1 <: B1 ->
+  E ⊢ T1 ->
+  map (subst_tvar_in_dbind T1 X) F ++ E ⊢ {T1 /ᵗ X} A1 <: {T1 /ᵗ X} B1.
 Proof with subst; eauto using dwf_typ_weaken_head with subtyping.
   intros. dependent induction H; try solve [simpl in *; eauto with subtyping].
   - eapply dsub_refl; auto...

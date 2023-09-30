@@ -88,7 +88,7 @@ Proof with auto with dworklist.
     auto.
   (* \x. e <= top *)
   - econstructor.
-    eapply d_typing_chkabs with (L:=L `union` dom (dwl_to_denv Ω)).
+    eapply d_typing__chkabs with (L:=L `union` dom (dwl_to_denv Ω)).
     admit.
     intros. inst_cofinites_with x.
     assert (d_wf_wl

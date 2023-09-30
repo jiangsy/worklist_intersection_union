@@ -188,7 +188,7 @@ Proof.
       constructor. auto. }
     specialize (H2 H5).
     auto.
-  - intros. eapply d_sub_alll with (T2:=T2); auto. solve_wf_subenv.
+  - intros. eapply d_sub__alll with (T1:=T1); auto. solve_wf_subenv.
   - intros.
     apply d_sub_intersection1; auto.
   - intros.
@@ -225,7 +225,7 @@ Proof with auto with typing.
   (* intros.
   generalize dependent T2.
   dependent induction H; intros; try solve [simpl in *; eauto 5 with typing].
-  - simpl in *. eapply d_typing_inftabs with (L:=L `union` singleton X).
+  - simpl in *. eapply d_typing__inftabs with (L:=L `union` singleton X).
     + replace (dtyp_all ({T2 /ᵗ X} T1)) with ({T2 /ᵗ X}  dtyp_all T1) by auto.
       auto...
     + intros. specialize (notin_union_1 _ _ _ H4). intros.
@@ -238,20 +238,20 @@ Proof with auto with typing.
         contradiction.
       * rewrite <- H7. rewrite dtyp_subst_open_comm; auto.
   - simpl in *. rewrite d_subst_tv_in_dtyp_open_dtyp_wrt_dtyp; eauto...
-  - simpl in *. apply d_typing_chkabstop with (L:=L).
+  - simpl in *. apply d_typing__chkabstop with (L:=L).
     intros x Hfr. inst_cofinites_with x.
     replace (dexp_var_f x) with (d_subst_tv_in_dexp T2 X (dexp_var_f x)) by auto.
     rewrite <-  d_subst_tv_in_dexp_open_dexp_wrt_dexp.
     replace (x ~ dbind_typ dtyp_bot ++ map (d_subst_tv_in_binding T2 X) F ++ E) with
     ((map (d_subst_tv_in_binding T2 X) (x ~ dbind_typ dtyp_bot ++ F)) ++ E) by auto.
     auto...
-  - simpl in *. eapply d_typing_chkabs with (L:=L); eauto...
+  - simpl in *. eapply d_typing__chkabs with (L:=L); eauto...
     intros X1 Hfr.
     inst_cofinites_with X1.
     specialize (H1 E ((X1, dbind_typ T1) :: F ) X (JMeq_refl _) T0 H2 H3).
     replace (dexp_var_f X1) with (d_subst_tv_in_dexp T0 X (dexp_var_f X1)) by (simpl; auto).
     rewrite <- d_subst_tv_in_dexp_open_dexp_wrt_dexp; eauto...
-  - simpl in *. eapply d_typing_chkall with (L:=L `union` singleton X); eauto...
+  - simpl in *. eapply d_typing__chkall with (L:=L `union` singleton X); eauto...
     + replace (dtyp_all ({T2 /ᵗ X} T1)) with ({T2 /ᵗ X} dtyp_all T1) by auto.
       auto...
     + intros. inst_cofinites_with X0.
@@ -260,9 +260,9 @@ Proof with auto with typing.
       (map (d_subst_tv_in_binding T2 X) (X0 ~ dbind_tvar_empty ++ F) ++ E) by auto.
       auto.
   - simpl in *.
-    apply d_typing_chksub with (S1:=({T2 /ᵗ X} S1)); eauto.
+    apply d_typing__chksub with (S1:=({T2 /ᵗ X} S1)); eauto.
     eapply d_sub_subst_mono; eauto.
-  - simpl in *. eapply d_typing_infappall with (T3:={T0 /ᵗ X} T3); eauto...
+  - simpl in *. eapply d_typing__infappall with (T3:={T0 /ᵗ X} T3); eauto...
     + apply d_mono_typ_subst_mono_mono; auto.
     + replace (dtyp_all ({T0 /ᵗ X} T1)) with ({T0 /ᵗ X} dtyp_all T1) by auto.
       auto...
@@ -270,7 +270,7 @@ Proof with auto with typing.
 Abort.
 
 
-Definition dmode_size (mode : d_typing_mode) : nat :=
+Definition dmode_size (mode : d_typing__mode) : nat :=
   match mode with
   | d_typingmode_inf => 0
   | d_typingmode_chk => 1
@@ -752,7 +752,7 @@ Proof with auto with typing.
       * exists (dtyp_all T1); split.
         -- eapply dsub_refl; auto.
            now eauto using d_chk_inf_wf_env.
-        -- dependent destruction H. pick fresh X and apply d_typing_inftabs. auto...
+        -- dependent destruction H. pick fresh X and apply d_typing__inftabs. auto...
            intros. inst_cofinites_with X.
            refine (IHn1 _ _ _ _ _ _ _ _ _ _ H1 _ _ _); eauto...
            simpl. rewrite <- d_exp_size_open_dtyp; lia.
@@ -770,7 +770,7 @@ Proof with auto with typing.
       (* \x. e <= Top *)
       * intros.
         dependent induction H0; eauto...
-        -- eapply d_typing_chkabstop with (L:=L `union` dom E)... intros.
+        -- eapply d_typing__chkabstop with (L:=L `union` dom E)... intros.
            inst_cofinites_with x.
            simpl in H.
            refine (IHn1 _ _ _ _ _ _ _ _ _ _ H _ _ _); eauto...
@@ -784,13 +784,13 @@ Proof with auto with typing.
         { eapply d_wft_ord_complete. eauto with subtyping. }
         induction Hwford.
         -- dependent destruction H1.
-           ++ inst_cofinites_for d_typing_chkabstop. intros.
+           ++ inst_cofinites_for d_typing__chkabstop. intros.
               inst_cofinites_with x.
               refine (IHn1 _ _ _ _ _ _ _ _ _ _ H0 _ _ _); eauto...
               rewrite <- d_exp_size_open_var. lia.
               econstructor; eauto.
               inverts H2. eauto using dwf_typ_weakening_cons.
-           ++ inst_cofinites_for d_typing_chkabs.
+           ++ inst_cofinites_for d_typing__chkabs.
               eauto using d_subenv_wf_typ, d_sub_dwft_1.
               intros. inst_cofinites_with x.
               refine (IHn1 _ _ _ _ _ _ _ _ _ _ H0 _ _ _); eauto...
@@ -808,7 +808,7 @@ Proof with auto with typing.
       * intros.
         eapply IHn2 in Hty; eauto.
         destruct Hty as [S2 [Hsub Hinf]].
-        apply d_typing_chksub with (S1 := S2); auto.
+        apply d_typing__chksub with (S1 := S2); auto.
         apply sub_transitivity with (S1 := T1); auto...
         eapply denvsub_sub; eauto. apply sub_transitivity with (S1 := S1); auto...
         eapply denvsub_sub; eauto.
