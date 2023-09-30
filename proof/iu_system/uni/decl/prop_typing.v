@@ -316,74 +316,8 @@ Proof.
   - eapply d_wft_all_open; eauto.
 Qed.
 
-
-(* Theorem d_inftapp_total: forall E A B,
-  ⊢ E -> E ⊢ A -> E ⊢ B -> d_inftapp_false A \/ exists C, d_inftapp E A B C.
-Proof with auto with inftapp.
-  intros * Hwfenv Hwfta Hwftb. induction Hwfta; try solve intuition...
-  - right. exists dtyp_bot. auto...
-  - right. exists (T ^^ᵈ B). constructor; eauto...
-  - specialize (IHHwfta1 Hwfenv Hwftb).
-    specialize (IHHwfta2 Hwfenv Hwftb).
-    inversion IHHwfta1; inversion IHHwfta2; auto...
-    right.
-    destruct H as [C1 Hc1]. destruct H0 as [C2 Hc2].
-    exists (dtyp_union C1 C2); auto...
-  - specialize (IHHwfta1 Hwfenv Hwftb).
-    specialize (IHHwfta2 Hwfenv Hwftb).
-    inversion IHHwfta1; inversion IHHwfta2.
-    + auto...
-    + right. destruct H0 as [C2 Hc2]. exists C2. auto...
-    + right. destruct H as [C1 Hc1]. exists C1. auto...
-    + destruct H as [C1 Hc1]. destruct H0 as [C2 Hc2].
-      right. exists (dtyp_intersection C1 C2); auto...
-Qed. *)
-
-
 Hint Resolve d_inftapp_wft : typing.
 
-
-(* Lemma d_inftapp_disjoint : forall E A1 B1 C1,
-  d_inftapp E A1 B1 C1 ->
-  d_inftapp_false A1 ->
-  False.
-Proof.
-  intros. dependent induction H.
-  - inversion H1.
-  - inversion H2.
-  - inversion H2. contradiction.
-  - inversion H2. contradiction.
-  - inversion H1. contradiction.
-  - inversion H1; contradiction.
-Qed. *)
-
-
-
-(* Lemma d_inftapp_determinism: forall E A1 B1 C1 C2,
-  E ⊢ A1 ○ B1 ⇒⇒ C1 ->
-  E ⊢ A1 ○ B1 ⇒⇒ C2 ->
-  C1 = C2.
-Proof.
-  intros. generalize dependent C2. induction H; intros.
-  - dependent destruction H1; auto.
-  - dependent destruction H2; auto.
-  - dependent destruction H2; auto; exfalso; eapply d_inftapp_disjoint; eauto.
-  - dependent destruction H2; auto.
-    + exfalso. eapply d_inftapp_disjoint; eauto.
-    + exfalso. eapply d_inftapp_disjoint in H0; eauto.
-  - dependent destruction H1; auto.
-    + exfalso. eapply d_inftapp_disjoint in H2; eauto.
-    + exfalso. eapply d_inftapp_disjoint in H2; eauto.
-    + specialize (IHd_inftapp1 _ H1_).
-      specialize (IHd_inftapp2 _ H1_0).
-      subst. auto.
-  - dependent destruction H1; auto.
-    specialize (IHd_inftapp1 _ H1_).
-    specialize (IHd_inftapp2 _ H1_0).
-    subst. auto.
-Qed. *)
-
-(* @shengyi:todo *** *)
 Theorem d_inftapp_subsumption_same_env : forall E A1 B1 C1 A2,
   E ⊢ A1 ○ B1 ⇒⇒ C1 ->
   E ⊢ A2 <: A1 ->
