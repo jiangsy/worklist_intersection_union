@@ -1,4 +1,4 @@
-Require Import Metalib.Metatheory.
+(* Require Import Metalib.Metatheory.
 
 Require Import algo.def_ott.
 
@@ -368,4 +368,4 @@ Inductive a_wl_red' : a_worklist -> Prop :=    (* defn a_wl_red' *)
       ( forall x , x \notin  L  -> a_wl_red' (a_wl_consw (a_wl_consvar  (  ( a_wl_app  W3   W2  )  )  x (a_bind_typ (a_typ_etvar EX1))) (a_work_check  ( open_a_exp_wrt_a_exp e (a_exp_var_f x) )  (a_typ_etvar EX2))) ) ) ->
       a_wl_red' (a_wl_consw W (a_work_check (a_exp_abs e) (a_typ_etvar EX)))
 
-       *)
+       *) *)

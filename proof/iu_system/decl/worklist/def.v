@@ -26,10 +26,10 @@ Inductive d_apply_cont : dcont -> dtyp -> dworklist -> Prop :=
       d_apply_cont (dcont_infabsunion A1 c) 
                    B2
                    (dworklist_conswork dworklist_empty (dwork_infabsunion A1 B2 c))
-  | d__ac__unioninfabs : forall A2 B1 C1 c,
-      d_apply_cont (dcont_unioninfabs A2 c) 
-                   (dtyp_arrow B1 C1)
-                   (dworklist_conswork dworklist_empty (dwork_unioninfabs (dtyp_arrow B1 C1) A2 c))
+  | d__ac__unioninfabs : forall B2 C2 B1 C1 c,
+      d_apply_cont (dcont_unioninfabs (dtyp_arrow B1 C1) c) 
+                   (dtyp_arrow B2 C2)
+                   (dworklist_conswork dworklist_empty (dwork_unioninfabs (dtyp_arrow B1 C1) (dtyp_arrow B2 C2) c))
   | d__ac_infapp : forall A1 e c,
       d_apply_cont (dcont_infapp e c) 
                    A1

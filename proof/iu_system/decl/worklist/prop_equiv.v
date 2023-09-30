@@ -231,13 +231,13 @@ Admitted.
 
 
 Lemma d_wl_red_infabs_complete: forall Ω A B C c,
-   dwl_to_denv Ω ⊢ A ▹ B → C -> d_wf_wl (dworklist_conswork Ω (dwork_sub A B)) -> 
+   dwl_to_denv Ω ⊢ A ▹ B → C -> d_wf_wl (dworklist_conswork Ω (dwork_infabs A c)) -> 
    d_wl_red (dworklist_conswork Ω (dwork_apply c (dtyp_arrow B C))) -> d_wl_red (dworklist_conswork Ω (dwork_infabs A c)).
 Admitted.
 
 
 Lemma d_wl_red_inftapp_complete: forall Ω A B C c,
-  dwl_to_denv Ω ⊢ A ○ B ⇒⇒ C -> d_wf_wl (dworklist_conswork Ω (dwork_sub A B)) ->
+  dwl_to_denv Ω ⊢ A ○ B ⇒⇒ C -> d_wf_wl (dworklist_conswork Ω (dwork_inftapp A B c)) ->
   d_wl_red (dworklist_conswork Ω (dwork_apply c C)) -> d_wl_red (dworklist_conswork Ω (dwork_inftapp A B c)).
 Admitted.
 
@@ -271,7 +271,12 @@ Proof with auto with dworklist.
   - admit.
   - admit.
   - apply d__wlred__infabsunion.
-    admit.
+    eapply d_wl_red_infabs_complete; eauto.
+    admit. 
+    eapply d__wlred__applycont with (Γ':=(dworklist_conswork dworklist_empty (dwork_unioninfabs (dtyp_arrow B2 C2) (dtyp_arrow B1 C1) c))).
+    apply d__ac__unioninfabs.
+    simpl. econstructor.
+    admit.  (* need to align the order *)
   - admit.
   - admit.
   - admit.
