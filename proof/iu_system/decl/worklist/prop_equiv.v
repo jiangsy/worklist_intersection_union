@@ -245,11 +245,11 @@ Lemma d_wl_red_inftapp_complete: forall Ω A B C c,
 Admitted.
 
 
-Lemma d_wl_red_chk_inf_complete: forall Ω e A c mode,
+Lemma d_wl_red_chk_inf_complete: forall Ω e A mode,
   d_typing (dwl_to_denv Ω) e mode A -> 
   match mode with 
   | d_typingmode_chk => d_wf_wl (dwork_check e A ⫤ Ω) -> Ω ⟶ₐ⁎⋅ -> (dwork_check e A ⫤ Ω) ⟶ₐ⁎⋅
-  | d_typingmode_inf => d_wf_wl (dwork_infer e c ⫤ Ω) -> (dwork_apply c A ⫤ Ω) ⟶ₐ⁎⋅ -> (dwork_infer e c ⫤ Ω) ⟶ₐ⁎⋅
+  | d_typingmode_inf => forall c, d_wf_wl (dwork_infer e c ⫤ Ω) -> (dwork_apply c A ⫤ Ω) ⟶ₐ⁎⋅ -> (dwork_infer e c ⫤ Ω) ⟶ₐ⁎⋅
   end.
 Admitted.
 
@@ -262,17 +262,15 @@ Proof with auto with dworklist.
     admit.
   - constructor. admit.
   - constructor. admit.
-  - dependent destruction H0.
-    + eapply d__wlred__chk_abstop. admit.
-    + eapply d__wlred__chk_absarrow. admit.
-    + eapply d__wlred__chk_sub; eauto.
-      admit. admit. (* need to align the nonoverlapping condition *)
-      admit.
-    + admit.
-    + admit.
-    + admit.
-  - admit.
-  - admit.
+  - refine (d_wl_red_chk_inf_complete _ _ _ _ H0 _ _); auto.
+    apply IHd_wl_del_red. 
+    admit.
+  - refine (d_wl_red_chk_inf_complete _ _ _ _ H0 _ _ _); auto.
+    apply IHd_wl_del_red. 
+    admit.
+  - eapply d_wl_red_infabs_complete; eauto.
+    apply IHd_wl_del_red.
+    admit.
   - apply d__wlred__infabsunion.
     eapply d_wl_red_infabs_complete; eauto.
     admit. 
@@ -286,9 +284,16 @@ Proof with auto with dworklist.
   - apply d__wlred__infapp. 
     apply IHd_wl_del_red.
     admit.
-  - admit.
-  - admit.
-  - admit.
+  - eapply d_wl_red_inftapp_complete; eauto.
+    apply IHd_wl_del_red.
+    admit.
+  - econstructor. 
+    eapply d_wl_red_inftapp_complete; eauto.
+    admit.
+    admit.
+  - constructor.
+    apply IHd_wl_del_red.
+    admit.
   - apply d_wl_red_sub_complete; eauto.
     admit.
 Admitted.
