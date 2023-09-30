@@ -307,11 +307,44 @@ Proof with auto with dworklist.
     auto.  
 Qed.
 
+Lemma d_inftapp_wft : forall E A B C,
+  d_inftapp E A B C ->
+  ⊢ E /\ E ⊢ A /\ E ⊢ B /\ E ⊢ C.
+Proof.
+  intros. induction H; intuition.
+  - eapply d_wft_all_open; eauto.
+Qed.
+
 
 Lemma d_wl_red_inftapp_complete: forall Ω A B C c,
   dwl_to_denv Ω ⊢ A ○ B ⇒⇒ C -> d_wf_wl (dworklist_conswork Ω (work_inftapp A B c)) ->
   d_wl_red (dworklist_conswork Ω (work_apply c C)) -> d_wl_red (dworklist_conswork Ω (work_inftapp A B c)).
-Admitted.
+Proof with auto with dworklist.
+  intros. generalize dependent c. dependent induction H; intros; eauto...
+  - dependent destruction H1.
+    dependent destruction H1.
+    dependent destruction H1.
+    econstructor; eauto.
+  - dependent destruction H1.
+    dependent destruction H1.
+    dependent destruction H1.
+    auto...
+  - apply d_inftapp_wft in H.
+    dependent destruction H1.
+    dependent destruction H1.
+    dependent destruction H1.
+    econstructor.
+    eapply IHd_inftapp1...
+    eapply d_wlred__applycont with (Γ':=(dworklist_conswork dworklist_empty (work_inftappunion C1 A2 B c))).
+    econstructor.
+    simpl.
+    econstructor. 
+    eapply IHd_inftapp2... intuition.
+    eapply d_wlred__applycont with (Γ':=(dworklist_conswork dworklist_empty (work_unioninftapp C1 C2 c))).
+    eapply d__ac__unioninftapp...
+    econstructor.
+    auto.
+Qed.
 
 
 Lemma d_wl_red_chk_inf_complete: forall Ω e A mode,
