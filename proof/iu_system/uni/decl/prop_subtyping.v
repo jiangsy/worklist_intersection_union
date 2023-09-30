@@ -231,7 +231,7 @@ Proof.
         apply notin_union_2 in Fr0. apply notin_singleton_1 in Fr0. contradiction.
       * inst_cofinites_by L3.
         inversion H1.
-      * inst_cofinites_by (L3 `union` ftv_in_typ S1).
+      * inst_cofinites_by (L3 `union` ftvar_in_typ S1).
         rewrite open_typ_wrt_typ_lc_typ in H1; auto.
         apply sin_in in H1. apply notin_union_2 in Fr. contradiction.
     + destruct (n - 1).
@@ -262,8 +262,8 @@ Proof.
             (forall X : atom, X `notin` L1 -> d_sub_tvar_open_inv X (open_typ_wrt_typ_rec 1 S1 T1_2 ^ᵈ X))).
     {
       intros.
-      inst_cofinites_by (L1 `union` ftv_in_typ (open_typ_wrt_typ_rec 1 S1 T1_1) `union`
-                                    ftv_in_typ (open_typ_wrt_typ_rec 1 S1 T1_2)).
+      inst_cofinites_by (L1 `union` ftvar_in_typ (open_typ_wrt_typ_rec 1 S1 T1_1) `union`
+                                    ftvar_in_typ (open_typ_wrt_typ_rec 1 S1 T1_2)).
       dependent destruction H.
       - left. intros. inst_cofinites_with X.
         assert (d_sub_tvar_open_inv x (open_typ_wrt_typ_rec 1 S1 T1_1 ^ᵈ x)) by auto.
@@ -425,14 +425,14 @@ Proof.
 Qed.
 
 Inductive d_mono_ordiu : denv -> typ -> Prop :=
-| d__monoord__base : forall E T1,
+| d_monoord__base : forall E T1,
     d_ord_mono E T1 ->
     d_mono_ordiu E T1
-| d__monoord__union : forall E T1 T2,
+| d_monoord__union : forall E T1 T2,
     d_mono_ordiu E T1 ->
     d_mono_ordiu E T2 ->
     d_mono_ordiu E (typ_union T1 T2)
-| d__monoord__inter : forall E T1 T2,
+| d_monoord__inter : forall E T1 T2,
     d_mono_ordiu E T1 ->
     d_mono_ordiu E T2 ->
     d_mono_ordiu E (typ_intersection T1 T2).
@@ -443,9 +443,9 @@ Lemma d_mono_ordiu_complete : forall E T1,
 Proof.
   intros. induction H; try solve [constructor; constructor].
   - econstructor. econstructor. eapply d_mono_typ__tvar; auto.
-  - apply d__monoord__base. apply d_ordmono__arr; auto.
-  - apply d__monoord__inter; auto.
-  - apply d__monoord__union; auto.
+  - apply d_monoord__base. apply d_ordmono__arr; auto.
+  - apply d_monoord__inter; auto.
+  - apply d_monoord__union; auto.
 Qed.
 
 
@@ -569,7 +569,7 @@ Proof.
     + eapply d_ord_mono_neq_union; eauto.
     + auto.
     + auto.
-    + inst_cofinites_by (L `union` L0 `union` ftv_in_typ A1 `union` dom E) using_name X.
+    + inst_cofinites_by (L `union` L0 `union` ftvar_in_typ A1 `union` dom E) using_name X.
       apply d_sub_tvar_ind_open_subst with (E:= E) (B1:=T1) (F:=nil) in H; auto.
       * rewrite typ_subst_open_var in H; eauto.
       * simpl. constructor; auto.

@@ -53,7 +53,7 @@ Ltac gather_atoms ::=
   let B := gather_atoms_with (fun x : var => {{ x }}) in
   let C := gather_atoms_with (fun x : denv => dom x) in
   (* let C2 := gather_atoms_with (fun x : list (atom * dbind) => dom x) in *)
-  let D := gather_atoms_with (fun x => ftv_in_typ x) in
+  let D := gather_atoms_with (fun x => ftvar_in_typ x) in
   (* let D3 := gather_atoms_with (fun x => fv_typ_in_binding x) in *)
   (* let D4 := gather_atoms_with (fun x => fv_exp_in_exp x) in *)
   constr:(A \u B \u C \u D).

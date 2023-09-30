@@ -38,7 +38,7 @@ Qed.
 
 Lemma typ_subst_open_comm : forall X T1 T2 T3,
   lc_typ T2 ->
-  X `notin` ftv_in_typ T3 ->
+  X `notin` ftvar_in_typ T3 ->
   ({T2 /ᵗ X} T1) ^^ᵈ T3 = {T2 /ᵗ X} T1 ^^ᵈ T3.
 Proof.
   intros.
@@ -49,7 +49,7 @@ Qed.
 
 Lemma typ_subst_open_var : forall X T1 T2,
   lc_typ T2 ->
-  X `notin` ftv_in_typ T1 ->
+  X `notin` ftvar_in_typ T1 ->
   {T2 /ᵗ X} T1 ^ᵈ X = T1 ^^ᵈ T2.
 Proof.
   intros.
@@ -86,7 +86,7 @@ Qed.
 
 
 Lemma typ_open_r_close_l : forall T1 T2 X
-  , X `notin` ftv_in_typ T2
+  , X `notin` ftvar_in_typ T2
   -> T1 = open_typ_wrt_typ T2 `ᵈ X -> close_typ_wrt_typ X T1 = T2.
 Proof.
   intros * Fr H.
@@ -96,7 +96,7 @@ Qed.
 
 
 Lemma close_typ_notin_rec : forall X e n,
-    X `notin` ftv_in_typ (close_typ_wrt_typ_rec n X e).
+    X `notin` ftvar_in_typ (close_typ_wrt_typ_rec n X e).
 Proof.
   intros until e.
   induction e; simpl; intros; auto.
@@ -106,7 +106,7 @@ Qed.
 
 
 Lemma close_typ_notin : forall X T,
-    X `notin` ftv_in_typ (close_typ_wrt_typ X T).
+    X `notin` ftvar_in_typ (close_typ_wrt_typ X T).
 Proof.
   intros. apply close_typ_notin_rec.
 Qed.
@@ -116,11 +116,11 @@ Hint Constructors ds_in: core.
 
 Lemma sin_in : forall X T,
   ds_in X T ->
-  X `in` ftv_in_typ T.
+  X `in` ftvar_in_typ T.
 Proof.
   intros. induction H; simpl; auto.
   - inst_cofinites_by (L `union` singleton X).
-    rewrite ftv_in_typ_open_typ_wrt_typ_upper in H0.
+    rewrite ftvar_in_typ_open_typ_wrt_typ_upper in H0.
     apply AtomSetImpl.union_1 in H0; inversion H0; auto.
     + simpl in H1. apply AtomSetImpl.singleton_1 in H1.
       apply notin_union_2 in Fr. subst.
@@ -175,7 +175,7 @@ Qed.
 
 Lemma ftv_sin_typ_subst : forall X Y T1 S1,
   lc_typ S1 ->
-  X `notin` ftv_in_typ S1 ->
+  X `notin` ftvar_in_typ S1 ->
   X <> Y ->
   ds_in X ({S1 /ᵗ Y} T1) ->
   ds_in X T1.
@@ -345,7 +345,7 @@ Proof.
 Qed.
 
 Corollary d_wf_typ_subst_stvar_tvar_cons : forall E X T,
-  X `notin` ftv_in_typ T ->
+  X `notin` ftvar_in_typ T ->
   X ~ dbind_tvar_empty ++ E ⊢ₛ T ^ᵈ X ->
   X ~ dbind_stvar_empty ++ E ⊢ₛ T ^ᵈ X.
 Proof.
@@ -356,7 +356,7 @@ Proof.
 Qed.
 
 Corollary d_wf_typ_subst_tvar_stvar_cons : forall E X T,
-  X `notin` ftv_in_typ T ->
+  X `notin` ftvar_in_typ T ->
   X ~ dbind_stvar_empty ++ E ⊢ T ^ᵈ X ->
   X ~ dbind_tvar_empty ++ E ⊢ T ^ᵈ X.
 Proof.
@@ -370,7 +370,7 @@ Lemma dwf_typ_dwf_typ_s : forall E A,
 Proof.
   intros.
   induction H; auto.
-  - eapply dwftyps_all with (L:= (L `union` ftv_in_typ A));
+  - eapply dwftyps_all with (L:= (L `union` ftvar_in_typ A));
     intros; inst_cofinites_with SX.
     + auto.
     + apply d_wf_typ_subst_stvar_tvar_cons; auto.
@@ -380,7 +380,7 @@ Lemma dwf_typ_s_dwf_typ : forall E A,
   E ⊢ₛ A -> E ⊢ A.
 Proof.
   intros. induction H; auto.
-  - eapply d_wf_typ__all with (L:= (L `union` ftv_in_typ T1));
+  - eapply d_wf_typ__all with (L:= (L `union` ftvar_in_typ T1));
     intros; inst_cofinites_with X.
     + auto.
     + eapply d_wf_typ_subst_tvar_stvar_cons; auto.
@@ -449,7 +449,7 @@ Proof.
     + subst. auto.
     + inversion x.
     + inversion x.
-      eapply d_wf_typ__all with (L:=L `union` singleton X `union` ftv_in_typ T1); intros;
+      eapply d_wf_typ__all with (L:=L `union` singleton X `union` ftvar_in_typ T1); intros;
       inst_cofinites_with X0.
       * rewrite H5 in H2.
         rewrite typ_subst_open_comm in H2; auto.
@@ -611,7 +611,7 @@ Lemma d_wft_all_open : forall E A1 T1,
 Proof.
   intros.
   inversion H0.
-  inst_cofinites_by (L `union` ftv_in_typ A1 `union` dom E) using_name X.
+  inst_cofinites_by (L `union` ftvar_in_typ A1 `union` dom E) using_name X.
   rewrite_env (map (subst_tvar_in_dbind T1 X) nil ++ E).
   erewrite <- typ_subst_open_var; eauto.
   apply d_wft_typ_subst; eauto.
@@ -652,7 +652,7 @@ Qed.
 Lemma d_new_tv_notin_wf_typ : forall X E A1,
   ⊢ (X, dbind_tvar_empty) :: E ->
   E ⊢ A1 ->
-  X `notin` ftv_in_typ A1.
+  X `notin` ftvar_in_typ A1.
 Proof.
   intros; induction H0; auto.
   - simpl. destruct (X0 == X).
@@ -672,7 +672,7 @@ Proof.
     + simpl. apply notin_add_3; auto.
       dependent destruction H; auto.
     + specialize (H2 H3).
-      rewrite ftv_in_typ_open_typ_wrt_typ_lower; auto.
+      rewrite ftvar_in_typ_open_typ_wrt_typ_lower; auto.
 Qed.
 
 Lemma d_wf_typ_lc_typ : forall E T,
@@ -751,12 +751,12 @@ Proof with auto.
   induction H; try solve [intuition].
   - split.
     inst_cofinites_by L. intuition... inversion H3. auto.
-    split; eapply d_wf_typ__all with (L:=L `union` ftv_in_typ A1 `union` ftv_in_typ B1); intros; inst_cofinites_with X; auto...
+    split; eapply d_wf_typ__all with (L:=L `union` ftvar_in_typ A1 `union` ftvar_in_typ B1); intros; inst_cofinites_with X; auto...
     eapply d_wf_typ_subst_tvar_stvar_cons; intuition.
     eapply d_wf_typ_subst_tvar_stvar_cons; intuition.
   - split; try solve [intuition].
     split; try solve [intuition].
-    + eapply d_wf_typ__all with (L:=L `union` ftv_in_typ A1 `union` dom E).
+    + eapply d_wf_typ__all with (L:=L `union` ftvar_in_typ A1 `union` dom E).
       * intros. inst_cofinites_with X. auto.
       * intros. inst_cofinites_with X.
         destruct IHd_sub. auto.
@@ -792,7 +792,7 @@ Qed.
 Lemma dwf_typ_strengthening : forall F E X T b,
     ⊢ E ++ X ~ b ++ F ->
     E ++ X ~ b ++ F ⊢ T ->
-    X \notin ftv_in_typ T ->
+    X \notin ftvar_in_typ T ->
     E ++ F ⊢ T.
 Proof with eauto.
   intros * Hwfenv H. intros.
@@ -825,7 +825,7 @@ Proof with eauto.
     + auto.
     + replace (X0 ~ dbind_tvar_empty ++ E ++ F) with ((X0 ~ dbind_tvar_empty ++ E)++ F) by auto. eapply H1 with (X:=X) (b:=b); auto.
       * rewrite_env (X0 ~ dbind_tvar_empty ++ (E ++ (X, b) :: F)). econstructor...
-      * rewrite ftv_in_typ_open_typ_wrt_typ_upper; auto.
+      * rewrite ftvar_in_typ_open_typ_wrt_typ_upper; auto.
   - simpl in *. eauto.
   - simpl in *. eauto.
 Qed.
@@ -1090,7 +1090,7 @@ Proof with try solve_notin; try solve_by_invert; simpl in *; eauto.
 Qed.
 
 Lemma ds_in_open_stvar_subst_mono : forall S T SY SZ,
-    ds_in SY (S ^^ᵈ T) -> dmono_typ T -> SY ∉ ftv_in_typ T -> ds_in SY (S ^ᵈ SZ).
+    ds_in SY (S ^^ᵈ T) -> dmono_typ T -> SY ∉ ftvar_in_typ T -> ds_in SY (S ^ᵈ SZ).
 Proof with try solve_notin; try solve_by_invert; simpl in *; eauto using lc_typ_open_stvar_subst_mono.
   intros * HD HM HN.
   inductions HD.

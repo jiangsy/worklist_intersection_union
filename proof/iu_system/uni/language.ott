@@ -41,8 +41,8 @@ substitutions
   single e x  :: subst_var_in
 
 freevars
-  A X  :: ftv_in
-  e x  :: fv_in
+  A X  :: ftvar_in
+  e x  :: fvar_in
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -101,7 +101,7 @@ formula :: formula_ ::=
   | uniq E           ::   :: uniq   {{ coq uniq ([[E]]) }}
   | x  `notin` dom E ::   :: fresh1 {{ coq ([[x]]  `notin` dom ([[E]])) }}
   | X  `notin` dom E ::   :: fresh2 {{ coq ([[X]]  `notin` dom ([[E]])) }}
-  | X in A           ::   :: appear1 {{ coq [[X]] `in` ftv_in_typ [[A]]}}
+  | X in A           ::   :: appear1 {{ coq [[X]] `in` ftvar_in_typ [[A]]}}
   | A ¬= TOP         ::   :: neqtop  {{ coq ~ ([[A]] = typ_top)}}
   | ⌊ dW ⌋            ::   :: wl_to_env {{ coq dwl_to_denv [[ dW ]] }}
  

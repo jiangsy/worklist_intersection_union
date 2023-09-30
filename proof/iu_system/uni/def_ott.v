@@ -620,144 +620,144 @@ Inductive lc_dvalue : dvalue -> Prop :=    (* defn lc_dvalue *)
       ( forall X , lc_body  ( open_body_wrt_typ body5 (typ_var_f X) )  )  ->
      (lc_dvalue (dvalue_tabs body5)).
 (** free variables *)
-Fixpoint ftv_in_typ (A_5:typ) : vars :=
+Fixpoint ftvar_in_typ (A_5:typ) : vars :=
   match A_5 with
   | typ_unit => {}
   | typ_top => {}
   | typ_bot => {}
   | (typ_var_b nat) => {}
   | (typ_var_f X) => {{X}}
-  | (typ_arrow A1 A2) => (ftv_in_typ A1) \u (ftv_in_typ A2)
-  | (typ_all A) => (ftv_in_typ A)
-  | (typ_union A1 A2) => (ftv_in_typ A1) \u (ftv_in_typ A2)
-  | (typ_intersection A1 A2) => (ftv_in_typ A1) \u (ftv_in_typ A2)
+  | (typ_arrow A1 A2) => (ftvar_in_typ A1) \u (ftvar_in_typ A2)
+  | (typ_all A) => (ftvar_in_typ A)
+  | (typ_union A1 A2) => (ftvar_in_typ A1) \u (ftvar_in_typ A2)
+  | (typ_intersection A1 A2) => (ftvar_in_typ A1) \u (ftvar_in_typ A2)
 end.
 
-Fixpoint ftv_in_exp (e_5:exp) : vars :=
+Fixpoint ftvar_in_exp (e_5:exp) : vars :=
   match e_5 with
   | exp_unit => {}
   | exp_top => {}
   | (exp_var_b nat) => {}
   | (exp_var_f x) => {}
-  | (exp_abs e) => (ftv_in_exp e)
-  | (exp_app e1 e2) => (ftv_in_exp e1) \u (ftv_in_exp e2)
-  | (exp_tabs body5) => (ftv_in_body body5)
-  | (exp_tapp e A) => (ftv_in_exp e) \u (ftv_in_typ A)
-  | (exp_anno e A) => (ftv_in_exp e) \u (ftv_in_typ A)
+  | (exp_abs e) => (ftvar_in_exp e)
+  | (exp_app e1 e2) => (ftvar_in_exp e1) \u (ftvar_in_exp e2)
+  | (exp_tabs body5) => (ftvar_in_body body5)
+  | (exp_tapp e A) => (ftvar_in_exp e) \u (ftvar_in_typ A)
+  | (exp_anno e A) => (ftvar_in_exp e) \u (ftvar_in_typ A)
 end
-with ftv_in_body (body5:body) : vars :=
+with ftvar_in_body (body5:body) : vars :=
   match body5 with
-  | (body_anno e A) => (ftv_in_exp e) \u (ftv_in_typ A)
+  | (body_anno e A) => (ftvar_in_exp e) \u (ftvar_in_typ A)
 end.
 
-Fixpoint fv_in_exp (e_5:exp) : vars :=
+Fixpoint fvar_in_exp (e_5:exp) : vars :=
   match e_5 with
   | exp_unit => {}
   | exp_top => {}
   | (exp_var_b nat) => {}
   | (exp_var_f x) => {{x}}
-  | (exp_abs e) => (fv_in_exp e)
-  | (exp_app e1 e2) => (fv_in_exp e1) \u (fv_in_exp e2)
-  | (exp_tabs body5) => (fv_in_body body5)
-  | (exp_tapp e A) => (fv_in_exp e)
-  | (exp_anno e A) => (fv_in_exp e)
+  | (exp_abs e) => (fvar_in_exp e)
+  | (exp_app e1 e2) => (fvar_in_exp e1) \u (fvar_in_exp e2)
+  | (exp_tabs body5) => (fvar_in_body body5)
+  | (exp_tapp e A) => (fvar_in_exp e)
+  | (exp_anno e A) => (fvar_in_exp e)
 end
-with fv_in_body (body5:body) : vars :=
+with fvar_in_body (body5:body) : vars :=
   match body5 with
-  | (body_anno e A) => (fv_in_exp e)
+  | (body_anno e A) => (fvar_in_exp e)
 end.
 
-Fixpoint ftv_in_cont (c5:cont) : vars :=
+Fixpoint ftvar_in_cont (c5:cont) : vars :=
   match c5 with
-  | (cont_infabs c) => (ftv_in_cont c)
-  | (cont_infabsunion A1 c) => (ftv_in_typ A1) \u (ftv_in_cont c)
-  | (cont_infapp e c) => (ftv_in_exp e) \u (ftv_in_cont c)
-  | (cont_inftapp A c) => (ftv_in_typ A) \u (ftv_in_cont c)
-  | (cont_inftappunion A1 A2 c) => (ftv_in_typ A1) \u (ftv_in_typ A2) \u (ftv_in_cont c)
-  | (cont_unioninftapp A2 c) => (ftv_in_typ A2) \u (ftv_in_cont c)
-  | (cont_unioninfabs A2 c) => (ftv_in_typ A2) \u (ftv_in_cont c)
-  | (cont_sub A) => (ftv_in_typ A)
+  | (cont_infabs c) => (ftvar_in_cont c)
+  | (cont_infabsunion A1 c) => (ftvar_in_typ A1) \u (ftvar_in_cont c)
+  | (cont_infapp e c) => (ftvar_in_exp e) \u (ftvar_in_cont c)
+  | (cont_inftapp A c) => (ftvar_in_typ A) \u (ftvar_in_cont c)
+  | (cont_inftappunion A1 A2 c) => (ftvar_in_typ A1) \u (ftvar_in_typ A2) \u (ftvar_in_cont c)
+  | (cont_unioninftapp A2 c) => (ftvar_in_typ A2) \u (ftvar_in_cont c)
+  | (cont_unioninfabs A2 c) => (ftvar_in_typ A2) \u (ftvar_in_cont c)
+  | (cont_sub A) => (ftvar_in_typ A)
 end.
 
-Fixpoint fv_in_cont (c5:cont) : vars :=
+Fixpoint fvar_in_cont (c5:cont) : vars :=
   match c5 with
-  | (cont_infabs c) => (fv_in_cont c)
-  | (cont_infabsunion A1 c) => (fv_in_cont c)
-  | (cont_infapp e c) => (fv_in_exp e) \u (fv_in_cont c)
-  | (cont_inftapp A c) => (fv_in_cont c)
-  | (cont_inftappunion A1 A2 c) => (fv_in_cont c)
-  | (cont_unioninftapp A2 c) => (fv_in_cont c)
-  | (cont_unioninfabs A2 c) => (fv_in_cont c)
+  | (cont_infabs c) => (fvar_in_cont c)
+  | (cont_infabsunion A1 c) => (fvar_in_cont c)
+  | (cont_infapp e c) => (fvar_in_exp e) \u (fvar_in_cont c)
+  | (cont_inftapp A c) => (fvar_in_cont c)
+  | (cont_inftappunion A1 A2 c) => (fvar_in_cont c)
+  | (cont_unioninftapp A2 c) => (fvar_in_cont c)
+  | (cont_unioninfabs A2 c) => (fvar_in_cont c)
   | (cont_sub A) => {}
 end.
 
-Definition ftv_in_dbind (b5:dbind) : vars :=
+Definition ftvar_in_dbind (b5:dbind) : vars :=
   match b5 with
   | dbind_tvar_empty => {}
   | dbind_stvar_empty => {}
-  | (dbind_typ A) => (ftv_in_typ A)
+  | (dbind_typ A) => (ftvar_in_typ A)
 end.
 
-Definition ftv_in_work (w5:work) : vars :=
+Definition ftvar_in_work (w5:work) : vars :=
   match w5 with
-  | (work_infer e c) => (ftv_in_exp e) \u (ftv_in_cont c)
-  | (work_check e A) => (ftv_in_exp e) \u (ftv_in_typ A)
-  | (work_infabs A c) => (ftv_in_typ A) \u (ftv_in_cont c)
-  | (work_infabsunion A1 A2 c) => (ftv_in_typ A1) \u (ftv_in_typ A2) \u (ftv_in_cont c)
-  | (work_infapp A e c) => (ftv_in_typ A) \u (ftv_in_exp e) \u (ftv_in_cont c)
-  | (work_inftapp A1 A2 c) => (ftv_in_typ A1) \u (ftv_in_typ A2) \u (ftv_in_cont c)
-  | (work_sub A1 A2) => (ftv_in_typ A1) \u (ftv_in_typ A2)
-  | (work_inftappunion A1 A2 B c) => (ftv_in_typ A1) \u (ftv_in_typ A2) \u (ftv_in_typ B) \u (ftv_in_cont c)
-  | (work_unioninftapp A1 A2 c) => (ftv_in_typ A1) \u (ftv_in_typ A2) \u (ftv_in_cont c)
-  | (work_unioninfabs A1 A2 c) => (ftv_in_typ A1) \u (ftv_in_typ A2) \u (ftv_in_cont c)
-  | (work_apply c A) => (ftv_in_cont c) \u (ftv_in_typ A)
+  | (work_infer e c) => (ftvar_in_exp e) \u (ftvar_in_cont c)
+  | (work_check e A) => (ftvar_in_exp e) \u (ftvar_in_typ A)
+  | (work_infabs A c) => (ftvar_in_typ A) \u (ftvar_in_cont c)
+  | (work_infabsunion A1 A2 c) => (ftvar_in_typ A1) \u (ftvar_in_typ A2) \u (ftvar_in_cont c)
+  | (work_infapp A e c) => (ftvar_in_typ A) \u (ftvar_in_exp e) \u (ftvar_in_cont c)
+  | (work_inftapp A1 A2 c) => (ftvar_in_typ A1) \u (ftvar_in_typ A2) \u (ftvar_in_cont c)
+  | (work_sub A1 A2) => (ftvar_in_typ A1) \u (ftvar_in_typ A2)
+  | (work_inftappunion A1 A2 B c) => (ftvar_in_typ A1) \u (ftvar_in_typ A2) \u (ftvar_in_typ B) \u (ftvar_in_cont c)
+  | (work_unioninftapp A1 A2 c) => (ftvar_in_typ A1) \u (ftvar_in_typ A2) \u (ftvar_in_cont c)
+  | (work_unioninfabs A1 A2 c) => (ftvar_in_typ A1) \u (ftvar_in_typ A2) \u (ftvar_in_cont c)
+  | (work_apply c A) => (ftvar_in_cont c) \u (ftvar_in_typ A)
 end.
 
-Definition fv_in_work (w5:work) : vars :=
+Definition fvar_in_work (w5:work) : vars :=
   match w5 with
-  | (work_infer e c) => (fv_in_exp e) \u (fv_in_cont c)
-  | (work_check e A) => (fv_in_exp e)
-  | (work_infabs A c) => (fv_in_cont c)
-  | (work_infabsunion A1 A2 c) => (fv_in_cont c)
-  | (work_infapp A e c) => (fv_in_exp e) \u (fv_in_cont c)
-  | (work_inftapp A1 A2 c) => (fv_in_cont c)
+  | (work_infer e c) => (fvar_in_exp e) \u (fvar_in_cont c)
+  | (work_check e A) => (fvar_in_exp e)
+  | (work_infabs A c) => (fvar_in_cont c)
+  | (work_infabsunion A1 A2 c) => (fvar_in_cont c)
+  | (work_infapp A e c) => (fvar_in_exp e) \u (fvar_in_cont c)
+  | (work_inftapp A1 A2 c) => (fvar_in_cont c)
   | (work_sub A1 A2) => {}
-  | (work_inftappunion A1 A2 B c) => (fv_in_cont c)
-  | (work_unioninftapp A1 A2 c) => (fv_in_cont c)
-  | (work_unioninfabs A1 A2 c) => (fv_in_cont c)
-  | (work_apply c A) => (fv_in_cont c)
+  | (work_inftappunion A1 A2 B c) => (fvar_in_cont c)
+  | (work_unioninftapp A1 A2 c) => (fvar_in_cont c)
+  | (work_unioninfabs A1 A2 c) => (fvar_in_cont c)
+  | (work_apply c A) => (fvar_in_cont c)
 end.
 
-Fixpoint ftv_in_dworklist (Ω5:dworklist) : vars :=
+Fixpoint ftvar_in_dworklist (Ω5:dworklist) : vars :=
   match Ω5 with
   | dworklist_empty => {}
-  | (dworklist_consvar Ω x b) => (ftv_in_dworklist Ω) \u (ftv_in_dbind b)
-  | (dworklist_constvar Ω X b) => (ftv_in_dworklist Ω) \u (ftv_in_dbind b)
-  | (dworklist_conswork Ω w) => (ftv_in_dworklist Ω) \u (ftv_in_work w)
+  | (dworklist_consvar Ω x b) => (ftvar_in_dworklist Ω) \u (ftvar_in_dbind b)
+  | (dworklist_constvar Ω X b) => (ftvar_in_dworklist Ω) \u (ftvar_in_dbind b)
+  | (dworklist_conswork Ω w) => (ftvar_in_dworklist Ω) \u (ftvar_in_work w)
 end.
 
-Fixpoint fv_in_dworklist (Ω5:dworklist) : vars :=
+Fixpoint fvar_in_dworklist (Ω5:dworklist) : vars :=
   match Ω5 with
   | dworklist_empty => {}
-  | (dworklist_consvar Ω x b) => (fv_in_dworklist Ω)
-  | (dworklist_constvar Ω X b) => (fv_in_dworklist Ω)
-  | (dworklist_conswork Ω w) => (fv_in_dworklist Ω) \u (fv_in_work w)
+  | (dworklist_consvar Ω x b) => (fvar_in_dworklist Ω)
+  | (dworklist_constvar Ω X b) => (fvar_in_dworklist Ω)
+  | (dworklist_conswork Ω w) => (fvar_in_dworklist Ω) \u (fvar_in_work w)
 end.
 
-Definition ftv_in_dvalue (v5:dvalue) : vars :=
+Definition ftvar_in_dvalue (v5:dvalue) : vars :=
   match v5 with
   | dvalue_unit => {}
   | dvalue_top => {}
-  | (dvalue_abs e) => (ftv_in_exp e)
-  | (dvalue_tabs body5) => (ftv_in_body body5)
+  | (dvalue_abs e) => (ftvar_in_exp e)
+  | (dvalue_tabs body5) => (ftvar_in_body body5)
 end.
 
-Definition fv_in_dvalue (v5:dvalue) : vars :=
+Definition fvar_in_dvalue (v5:dvalue) : vars :=
   match v5 with
   | dvalue_unit => {}
   | dvalue_top => {}
-  | (dvalue_abs e) => (fv_in_exp e)
-  | (dvalue_tabs body5) => (fv_in_body body5)
+  | (dvalue_abs e) => (fvar_in_exp e)
+  | (dvalue_tabs body5) => (fvar_in_body body5)
 end.
 
 (** substitutions *)
