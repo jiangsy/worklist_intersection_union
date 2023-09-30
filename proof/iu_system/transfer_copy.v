@@ -257,7 +257,7 @@ Qed.
 Lemma inst_e_rename : forall θ Aᵃ Aᵈ x x'
   , θ ⫦ Aᵃ ⇝ Aᵈ 
   -> x `notin` dom θ
-  -> θ ⫦ [`ᵃ x' /ᵃ x] Aᵃ ⇝ [`ᵈ x' /ᵈ x] Aᵈ.
+  -> θ ⫦ [`ᵃ x' /ᵃ x] Aᵃ ⇝ [`ᵈ x' /ᵗ x] Aᵈ.
 Proof with auto with transfer.
   intros. induction H; simpl; auto...
   - unfold eq_dec. destruct (EqDec_eq_of_X x0 x); auto...
@@ -274,7 +274,7 @@ Lemma inst_e_rev_subst' : forall tᵃ tᵈ x θ Aᵃ,
   x `notin` (fx_la_type tᵃ `union` fv_ss θ) -> 
   θ ⫦ tᵃ ⇝ tᵈ -> 
   forall A'ᵈ, θ ⫦ [tᵃ /ᵃ x] Aᵃ ⇝ A'ᵈ
-    -> exists Aᵈ, [tᵈ /ᵈ x] Aᵈ = A'ᵈ /\ θ ⫦ Aᵃ ⇝ Aᵈ.
+    -> exists Aᵈ, [tᵈ /ᵗ x] Aᵈ = A'ᵈ /\ θ ⫦ Aᵃ ⇝ Aᵈ.
 Proof with auto with transfer.
   intros * Hlc Hfv Hinstt.
   induction Hlc; intros * HinstA; simpl in *.
@@ -333,7 +333,7 @@ Lemma inst_e_rev_subst : forall A'ᵈ θ tᵃ tᵈ x Aᵃ,
   lc_la_type Aᵃ ->
   x `notin` (fx_la_type tᵃ `union` fv_ss θ) -> 
   θ ⫦ tᵃ ⇝ tᵈ → θ ⫦ [tᵃ /ᵃ x] Aᵃ ⇝ A'ᵈ ->
-  exists Aᵈ, [tᵈ /ᵈ x] Aᵈ = A'ᵈ ∧ θ ⫦ Aᵃ ⇝ Aᵈ.
+  exists Aᵈ, [tᵈ /ᵗ x] Aᵈ = A'ᵈ ∧ θ ⫦ Aᵃ ⇝ Aᵈ.
 Proof.
   intros.  
   specialize (inst_e_rev_subst' _ _ _ _  _ H H0 H1 A'ᵈ).

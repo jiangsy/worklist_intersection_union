@@ -97,6 +97,6 @@ Tactic Notation "pick" "fresh" ident(x) "and" "apply" constr(H) "for" "weakening
 Ltac rewrite_ld_subst_open_var :=
   repeat
     match goal with 
-      | _ : _ |-  context [ ([?e /ᵈ ?x] ?A) ^ᵈ ?x' ] => 
-        replace (`ᵈ x') with ([ e /ᵈ x ] `ᵈ x') by (apply subst_ld_type_fresh_eq; auto)
+      | _ : _ |-  context [ ([?e /ᵗ ?x] ?A) ^ᵈ ?x' ] => 
+        replace (`ᵈ x') with ([ e /ᵗ x ] `ᵈ x') by (apply subst_ld_type_fresh_eq; auto)
     end; repeat rewrite <- subst_ld_type_open_ld_type_wrt_ld_type by auto. *)

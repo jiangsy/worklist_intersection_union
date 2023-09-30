@@ -56,7 +56,7 @@ Notation "`ᵈ X" := (typ_var_f X)
 Notation "↑ n" := (typ_var_b n)
   (at level 0, n at level 0, no associativity) : type_scope.
 
-Notation "{ T' /ᵈ X } T" :=
+Notation "{ T' /ᵗ X } T" :=
   (subst_tvar_in_typ T' X T)
     ( at level 49, T' at level 50, X at level 0
     , right associativity) : type_scope.

@@ -25,7 +25,7 @@ Ltac solve_by_invert :=
 
 
 Lemma subst_same_tvar_eq : forall T X,
-  T = {`ᵈ X /ᵈ X} T.
+  T = {`ᵈ X /ᵗ X} T.
 Proof.
   intros.
   induction T; auto; simpl.
@@ -39,7 +39,7 @@ Qed.
 Lemma typ_subst_open_comm : forall X T1 T2 T3,
   lc_typ T2 ->
   X `notin` ftv_in_typ T3 ->
-  ({T2 /ᵈ X} T1) ^^ᵈ T3 = {T2 /ᵈ X} T1 ^^ᵈ T3.
+  ({T2 /ᵗ X} T1) ^^ᵈ T3 = {T2 /ᵗ X} T1 ^^ᵈ T3.
 Proof.
   intros.
   rewrite subst_tvar_in_typ_open_typ_wrt_typ; auto.
@@ -50,7 +50,7 @@ Qed.
 Lemma typ_subst_open_var : forall X T1 T2,
   lc_typ T2 ->
   X `notin` ftv_in_typ T1 ->
-  {T2 /ᵈ X} T1 ^ᵈ X = T1 ^^ᵈ T2.
+  {T2 /ᵗ X} T1 ^ᵈ X = T1 ^^ᵈ T2.
 Proof.
   intros.
   rewrite subst_tvar_in_typ_open_typ_wrt_typ; auto.
@@ -128,7 +128,7 @@ Proof.
 Qed.
 
 Lemma lc_typ_subst_inv : forall A1 X T,
-  lc_typ ({T /ᵈ X} A1) ->
+  lc_typ ({T /ᵗ X} A1) ->
   lc_typ T ->
   lc_typ A1.
 Proof.
@@ -163,12 +163,12 @@ Qed.
 Lemma lc_typ_subst : forall A1 T X,
   lc_typ A1 ->
   lc_typ T ->
-  lc_typ ({ T /ᵈ X } A1).
+  lc_typ ({ T /ᵗ X } A1).
 Proof.
   intros. induction H; simpl; auto.
   - destruct (X0 == X); auto.
   - inst_cofinites_by (singleton X) using_name X. eapply lc_typ_all_exists with (X1:=X0). 
-    replace (({T /ᵈ X} A) ^ᵈ X0) with ({T /ᵈ X} A ^ᵈ X0); eauto.
+    replace (({T /ᵗ X} A) ^ᵈ X0) with ({T /ᵗ X} A ^ᵈ X0); eauto.
     rewrite typ_subst_open_comm; auto.
 Qed.
 
@@ -177,7 +177,7 @@ Lemma ftv_sin_typ_subst : forall X Y T1 S1,
   lc_typ S1 ->
   X `notin` ftv_in_typ S1 ->
   X <> Y ->
-  ds_in X ({S1 /ᵈ Y} T1) ->
+  ds_in X ({S1 /ᵗ Y} T1) ->
   ds_in X T1.
 Proof.
   intros. dependent induction H2; simpl; auto.
@@ -239,7 +239,7 @@ Lemma ftv_sin_typ_subst_inv : forall X Y T1 S1,
   lc_typ S1 ->
   X <> Y ->
   ds_in X T1 ->
-  ds_in X ({S1 /ᵈ Y} T1).
+  ds_in X ({S1 /ᵗ Y} T1).
 Proof.
   intros.
   induction H1; try solve [simpl; eauto].
@@ -413,7 +413,7 @@ Hint Constructors neq_intersection : Core.
 
 Lemma dwf_typ_open_inv : forall E A1 T1 X,
   lc_typ T1 ->
-  E ⊢ {T1 /ᵈ X} A1 ->
+  E ⊢ {T1 /ᵗ X} A1 ->
   binds X dbind_tvar_empty E ->
   E ⊢ A1.
 Proof.
@@ -578,7 +578,7 @@ Lemma d_wft_typ_subst : forall E X F A1 T2,
   ⊢ F ++ X ~ dbind_tvar_empty ++ E ->
   F ++ X ~ dbind_tvar_empty ++ E ⊢ A1 ->
   E ⊢ T2 ->
-  map (subst_tvar_in_dbind T2 X) F  ++ E ⊢ {T2 /ᵈ X} A1.
+  map (subst_tvar_in_dbind T2 X) F  ++ E ⊢ {T2 /ᵗ X} A1.
 Proof with simpl in *; try solve_by_invert; eauto using uniq_app_1, uniq_app_2.
   intros * Hwfenv Hwft1 Hwft2.
   inductions Hwft1; intros; forwards: d_wf_env_uniq Hwfenv; try solve [simpl; auto]...
@@ -623,7 +623,7 @@ Lemma d_wft_typ_subst_stvar : forall E X F A1 T2,
   ⊢ F ++ X ~ dbind_stvar_empty ++ E ->
   F ++ X ~ dbind_stvar_empty ++ E ⊢ A1 ->
   E ⊢ T2 ->
-  map (subst_tvar_in_dbind T2 X) F ++ E ⊢ {T2 /ᵈ X} A1.
+  map (subst_tvar_in_dbind T2 X) F ++ E ⊢ {T2 /ᵗ X} A1.
 Proof with simpl in *; try solve_by_invert; eauto using uniq_app_1, uniq_app_2, binds_app_1, binds_app_2.
   intros * Hwfenv Hwft1 Hwft2.
   inductions Hwft1; intros; forwards: d_wf_env_uniq Hwfenv; try solve [simpl; auto]...
@@ -694,7 +694,7 @@ Lemma d_neq_all_subst_neq_all : forall E A1 X T2,
   lc_typ A1 ->
   d_mono_typ E T2 ->
   neq_all A1 ->
-  neq_all ( {T2 /ᵈ X} A1 ).
+  neq_all ( {T2 /ᵗ X} A1 ).
 Proof.
   intros. induction H; simpl; eauto...
   - destruct (X0 == X); auto.
@@ -713,7 +713,7 @@ Lemma bind_typ_subst : forall F X E x T1 T2,
   ⊢ F ++ (X, dbind_tvar_empty) :: E ->
   x ~ T1 ∈ (F ++ (X, dbind_tvar_empty) :: E) ->
   E ⊢ T2 ->
-  x ~ ({T2 /ᵈ X} T1) ∈ (map (subst_tvar_in_dbind T2 X) F ++ E).
+  x ~ ({T2 /ᵗ X} T1) ∈ (map (subst_tvar_in_dbind T2 X) F ++ E).
 Proof.
   intros. induction F; simpl in *; auto.
   - inversion H0.
@@ -733,7 +733,7 @@ Qed.
 Lemma d_mono_typ_subst_mono_mono : forall E A1 T1 X,
   d_mono_typ E A1 ->
   d_mono_typ E T1 ->
-  d_mono_typ E ({T1 /ᵈ X} A1).
+  d_mono_typ E ({T1 /ᵗ X} A1).
 Proof.
   intros. induction A1; try solve [simpl; eauto].
   - simpl. destruct (X0 == X); auto.
@@ -907,7 +907,7 @@ Proof with eauto.
 Qed.
 
 Lemma subst_same_tvar_typ_id : forall X T,
-    {typ_var_f X /ᵈ X} T = T.
+    {typ_var_f X /ᵗ X} T = T.
 Proof with (try progress case_if); subst; simpl; eauto.
   intros. induction T; simpl...
   all: try rewrite IHT; try rewrite IHT1; try rewrite IHT2...
@@ -937,7 +937,7 @@ Qed.
 
 Lemma d_wf_typ_rename_stvar : forall E F X Y A1,
   E ++ X ~ ▪ ++ F  ⊢ A1  ->
-  map (subst_tvar_in_dbind (typ_var_f Y) X ) E ++ Y ~ ▪ ++ F ⊢ { typ_var_f Y /ᵈ X } A1.
+  map (subst_tvar_in_dbind (typ_var_f Y) X ) E ++ Y ~ ▪ ++ F ⊢ { typ_var_f Y /ᵗ X } A1.
 Proof with try solve_notin; simpl in *; eauto.
   intros * HT.
   case_eq (X==Y); intros.
@@ -1000,7 +1000,7 @@ Qed.
 Lemma d_neq_all_rename: forall A1 X Y,
   lc_typ A1 ->
   neq_all A1 ->
-  neq_all ({typ_var_f Y /ᵈ X} A1).
+  neq_all ({typ_var_f Y /ᵗ X} A1).
 Proof with  simpl; eauto using lc_typ_subst; try solve_by_invert.
   intros. destruct A1...
   - case_if; subst*.
@@ -1014,7 +1014,7 @@ Qed.
 Lemma d_neq_intersection_rename: forall A1 X Y,
   lc_typ A1 ->
   neq_intersection A1 ->
-  neq_intersection ({typ_var_f Y /ᵈ X} A1).
+  neq_intersection ({typ_var_f Y /ᵗ X} A1).
 Proof with  simpl; eauto using lc_typ_subst; try solve_by_invert.
   intros. destruct A1...
   - case_if; subst*.
@@ -1030,7 +1030,7 @@ Qed.
 Lemma d_neq_union_rename: forall A1 X Y,
   lc_typ A1 ->
   neq_union A1 ->
-  neq_union ({typ_var_f Y /ᵈ X} A1).
+  neq_union ({typ_var_f Y /ᵗ X} A1).
 Proof with  simpl; eauto using lc_typ_subst; try solve_by_invert.
   intros. destruct A1...
   - case_if; subst*.

@@ -220,13 +220,13 @@ Theorem d_chkinf_subst_mono: forall E F X e m T1 T2,
   d_typing (F ++ X ~ dbind_tvar_empty ++ E) e m T1 ->
   E ⊢ T2 ->
   dmono_typ T2 ->
-  d_typing (map (d_subst_tv_in_binding T2 X) F  ++ E) (d_subst_tv_in_dexp T2 X e) m ({T2 /ᵈ X} T1).
+  d_typing (map (d_subst_tv_in_binding T2 X) F  ++ E) (d_subst_tv_in_dexp T2 X e) m ({T2 /ᵗ X} T1).
 Proof with auto with typing.
   (* intros.
   generalize dependent T2.
   dependent induction H; intros; try solve [simpl in *; eauto 5 with typing].
   - simpl in *. eapply d_typing_inftabs with (L:=L `union` singleton X).
-    + replace (dtyp_all ({T2 /ᵈ X} T1)) with ({T2 /ᵈ X}  dtyp_all T1) by auto.
+    + replace (dtyp_all ({T2 /ᵗ X} T1)) with ({T2 /ᵗ X}  dtyp_all T1) by auto.
       auto...
     + intros. specialize (notin_union_1 _ _ _ H4). intros.
       specialize (H1 _ H5 E (X0 ~ dbind_tvar_empty ++ F) X (JMeq_refl _) T2 H2 H3).
@@ -252,7 +252,7 @@ Proof with auto with typing.
     replace (dexp_var_f X1) with (d_subst_tv_in_dexp T0 X (dexp_var_f X1)) by (simpl; auto).
     rewrite <- d_subst_tv_in_dexp_open_dexp_wrt_dexp; eauto...
   - simpl in *. eapply d_typing_chkall with (L:=L `union` singleton X); eauto...
-    + replace (dtyp_all ({T2 /ᵈ X} T1)) with ({T2 /ᵈ X} dtyp_all T1) by auto.
+    + replace (dtyp_all ({T2 /ᵗ X} T1)) with ({T2 /ᵗ X} dtyp_all T1) by auto.
       auto...
     + intros. inst_cofinites_with X0.
       rewrite dtyp_subst_open_comm; eauto...
@@ -260,11 +260,11 @@ Proof with auto with typing.
       (map (d_subst_tv_in_binding T2 X) (X0 ~ dbind_tvar_empty ++ F) ++ E) by auto.
       auto.
   - simpl in *.
-    apply d_typing_chksub with (S1:=({T2 /ᵈ X} S1)); eauto.
+    apply d_typing_chksub with (S1:=({T2 /ᵗ X} S1)); eauto.
     eapply d_sub_subst_mono; eauto.
-  - simpl in *. eapply d_typing_infappall with (T3:={T0 /ᵈ X} T3); eauto...
+  - simpl in *. eapply d_typing_infappall with (T3:={T0 /ᵗ X} T3); eauto...
     + apply d_mono_typ_subst_mono_mono; auto.
-    + replace (dtyp_all ({T0 /ᵈ X} T1)) with ({T0 /ᵈ X} dtyp_all T1) by auto.
+    + replace (dtyp_all ({T0 /ᵗ X} T1)) with ({T0 /ᵗ X} dtyp_all T1) by auto.
       auto...
     + rewrite <- d_subst_tv_in_dtyp_open_dtyp_wrt_dtyp; eauto... *)
 Abort.
