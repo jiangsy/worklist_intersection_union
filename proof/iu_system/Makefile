@@ -3,7 +3,7 @@ COQ_MAKEFILE := CoqMakefile
 
 OTT_FLAGS := -coq_lngen true -signal_parse_errors true
 
-SYSTEMS := decl algo systemf
+SYSTEMS := uni
 IGNORE_DIRS := ""
 OTT_OUTS   := $(addsuffix /def_ott.v,${SYSTEMS})
 LNGEN_OUTS := $(addsuffix /prop_ln.v,${SYSTEMS})
@@ -13,8 +13,10 @@ LNGEN_OUTS := $(addsuffix /prop_ln.v,${SYSTEMS})
 %/def_ott.v : %/language.ott
 	ott -i $^ -o $@ ${OTT_FLAGS}
 	sed -e "/Ott.ott_list_core/d" -i "" $@
+	sed -e "/lc_typ[ ](exp_tabs[ ](body_anno/d" -i "" $@ 
 	sed -e "/lc_dtyp[ ](dexp_tabs[ ](dbody_anno/d" -i "" $@ 
 	sed -e "/lc_a_typ[ ](a_exp_tabs[ ](a_body_anno/d" -i "" $@ 
+	sed -e "s/dW/Ω/g" -i "" $@ 
 
 ott : ${OTT_OUTS}
 

@@ -4,9 +4,13 @@ Require Import decl.def_extra.
 Require Import decl.notations.
 Require Import decl.prop_basic.
 Require Import decl.prop_subtyping.
+Require Import uni.prop_basic.
+
 
 Require Import systemf.def_ott.
 Require Import systemf.prop_ln.
+
+(* 
 
 Notation "E ⊢ e : T" :=
   (typing E e T) 
@@ -944,4 +948,4 @@ Proof.
     rewrite <- trans_typ_open_dtyp_wrt_dtyp with (T2:=dtyp_var_f X). auto.
   - eapply typing_app with (T1:=trans_typ S1); auto.
     apply sub_sound_f. auto.
-Admitted.
+Admitted. *)

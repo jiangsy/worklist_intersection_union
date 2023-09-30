@@ -306,7 +306,6 @@ Fixpoint dtyp_size (T:dtyp) : nat :=
 
 
 Hint Constructors d_inftapp : inftapp.
-Hint Constructors d_inftapp_false : inftapp.
 
 
 Lemma d_inftapp_wft : forall E A B C,
