@@ -154,6 +154,12 @@ Proof.
 Qed.
 
 
+Lemma d_mono_typ_d_wf_typ : forall E A1,
+  d_mono_typ E A1 -> E ⊢ A1.
+Proof.
+  intros. induction H; auto.
+Qed.
+
 Lemma lc_typ_subst : forall A1 T X,
   lc_typ A1 ->
   lc_typ T ->
@@ -595,6 +601,21 @@ Proof with simpl in *; try solve_by_invert; eauto using uniq_app_1, uniq_app_2.
       with (map (subst_tvar_in_dbind T2 X) ((X0, dbind_tvar_empty) :: F) ++ E) by auto.
       apply H1; auto...
       econstructor...
+Qed.
+
+Lemma d_wft_all_open : forall E A1 T1,
+  ⊢ E ->
+  E ⊢ typ_all A1 ->
+  E ⊢ T1 ->
+  E ⊢ A1 ^^ᵈ T1. 
+Proof.
+  intros.
+  inversion H0.
+  inst_cofinites_by (L `union` ftv_in_typ A1 `union` dom E) using_name X.
+  rewrite_env (map (subst_tvar_in_dbind T1 X) nil ++ E).
+  erewrite <- typ_subst_open_var; eauto.
+  apply d_wft_typ_subst; eauto.
+  econstructor; auto.
 Qed.
 
 

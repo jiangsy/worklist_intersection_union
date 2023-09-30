@@ -2,6 +2,7 @@ Require Import Coq.Program.Equality.
 
 Require Import ln_utils.
 Require Import uni.decl.def_extra.
+Require Import uni.prop_basic.
 Require Import uni.def_ott.
 Require Import uni.notations.
 Require Import uni.decl_worklist.def.
@@ -218,16 +219,19 @@ Proof with auto with dworklist.
     dependent destruction H. dependent destruction H1.
     auto.
   - dependent destruction Hwfwl. 
-    eapply d_wlred__sub_all with (L:=L).
+    eapply d_wlred__sub_all with (L:=L `union` dom (dwl_to_denv Ω)).
     intros. inst_cofinites_with SX.
-    apply H2; eauto.
-    econstructor. econstructor. simpl. admit.
-    admit.
-    econstructor. admit. auto. auto...
+    apply H2; eauto...
+    inst_cofinites_with X.
+    apply d_sub_dwft in H1; intuition.
   - dependent destruction Hwfwl. 
     dependent destruction H4.
     eapply d_wlred__sub_alll with (T1:=T2); eauto. 
-    apply IHHsub; eauto. admit.
+    apply IHHsub; eauto. 
+    econstructor; auto. econstructor; auto.
+    apply d_wft_all_open; eauto; auto.
+    eapply d_sub_dwft; eauto.
+    eapply d_mono_typ_d_wf_typ; auto.
   - dependent destruction Hwfwl. 
     dependent destruction H.
     dependent destruction H0.
@@ -251,7 +255,15 @@ Proof with auto with dworklist.
   - dependent destruction Hwfwl. 
     dependent destruction H.
     dependent destruction H. econstructor...
-Admitted.
+Qed.
+
+
+Lemma d_infabs_wft : forall E A1 B1 C1,
+  E ⊢ A1 ▹ B1 → C1 ->
+  ⊢ E /\ E ⊢ A1 /\ E ⊢ B1 /\ E ⊢ C1.
+Proof.
+  intros. induction H; intuition.
+Qed.
 
 
 Lemma d_wl_red_infabs_complete: forall Ω A B C c,
@@ -259,29 +271,41 @@ Lemma d_wl_red_infabs_complete: forall Ω A B C c,
    d_wl_red (dworklist_conswork Ω (work_apply c (typ_arrow B C))) -> d_wl_red (dworklist_conswork Ω (work_infabs A c)).
 Proof with auto with dworklist.
   intros. generalize dependent c. dependent induction H; intros; eauto...
-  - eapply d_wlred__infabs_all with (T1:=T2); eauto.
-    apply IHd_infabs; auto. admit.
-  - apply d_wlred__infabs_inter1.
+  - dependent destruction H1.
+    dependent destruction H4.
+    dependent destruction H4.
+    eapply d_wlred__infabs_all with (T1:=T2); eauto.
+    apply IHd_infabs; auto.
+    econstructor; auto. econstructor; auto.
+    apply d_wft_all_open; eauto.
+    eapply d_infabs_wft; eauto.
+  - dependent destruction H1.
+    dependent destruction H1.
+    dependent destruction H1.
+    apply d_wlred__infabs_inter1.
     apply IHd_infabs...
-    admit.
-  - apply d_wlred__infabs_inter2.
+  - dependent destruction H1.
+    dependent destruction H1.
+    dependent destruction H1.
+    apply d_wlred__infabs_inter2.
     apply IHd_infabs...
-    admit.
-  - apply d_wlred__infabs_union.
+  - dependent destruction H1.
+    dependent destruction H1.
+    dependent destruction H1.
+    apply d_infabs_wft in H.
+    apply d_wlred__infabs_union.
     apply IHd_infabs1; auto.
-    admit.
     eapply d_wlred__applycont with (Γ':=(dworklist_conswork dworklist_empty (work_infabsunion (typ_arrow T3 T4) T2 c))).
     eapply d__ac__infabsunion.
     simpl.
     eapply d_wlred__infabsunion.
-    apply IHd_infabs2; auto.
-    admit.
+    apply IHd_infabs2; intuition.
     eapply d_wlred__applycont with (Γ':=(dworklist_conswork dworklist_empty (work_unioninfabs (typ_arrow T3 T4) (typ_arrow T5 T6) c))).
     econstructor.
     simpl.
     econstructor.
     auto.  
-Admitted.
+Qed.
 
 
 Lemma d_wl_red_inftapp_complete: forall Ω A B C c,
