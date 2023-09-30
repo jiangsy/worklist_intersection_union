@@ -311,18 +311,9 @@ Hint Constructors d_inftapp : inftapp.
 Lemma d_inftapp_wft : forall E A B C,
   d_inftapp E A B C ->
   ⊢ E /\ E ⊢ A /\ E ⊢ B /\ E ⊢ C.
-Proof with auto with typing.
+Proof.
   intros. induction H; intuition.
-  - dependent destruction H0.
-    pick fresh X. inst_cofinites_with X.
-    replace (T1 ^^ᵈ T2) with ({T2 /ᵈ X} T1 ^ᵈ X).
-    + rewrite_env ((map (d_subst_tv_in_binding T2 X) nil) ++ E).
-      apply d_wft_typ_subst; eauto...
-      econstructor; eauto.
-    + rewrite d_subst_tv_in_dtyp_open_dtyp_wrt_dtyp...
-      rewrite (d_subst_tv_in_dtyp_fresh_eq T1)...
-      simpl. unfold eq_dec. destruct (EqDec_eq_of_X X X); eauto. contradiction.
-      eapply dwf_typ_dlc_type; eauto.
+  - eapply d_wft_all_open; eauto.
 Qed.
 
 

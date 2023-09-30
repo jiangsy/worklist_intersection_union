@@ -226,7 +226,7 @@ Proof with auto with dworklist.
     apply d_sub_dwft in H1; intuition.
   - dependent destruction Hwfwl. 
     dependent destruction H4.
-    eapply d_wlred__sub_alll with (T1:=T2); eauto. 
+    eapply d_wlred__sub_alll with (T1:=T1); eauto. 
     apply IHHsub; eauto. 
     econstructor; auto. econstructor; auto.
     apply d_wft_all_open; eauto; auto.

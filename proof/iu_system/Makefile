@@ -42,4 +42,4 @@ coq : ${COQ_MAKEFILE}
 
 clean :
 	${MAKE} -f ${COQ_MAKEFILE} clean
-	rm */prop_ln.v */ott_def.v ${COQ_MAKEFILE} ${COQ_MAKEFILE}.conf .FILE_LIST
+	rm */prop_ln.v */def_ott.v ${COQ_MAKEFILE} ${COQ_MAKEFILE}.conf .FILE_LIST

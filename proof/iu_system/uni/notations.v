@@ -1,7 +1,7 @@
 Require Export Coq.Unicode.Utf8.
 
 Require Export uni.def_ott.
-Require Export uni.def_extra.
+Require Export uni.decl.def_extra.
 (* Require Export uni.worklist.def. *)
 Require Export uni.prop_ln.
 

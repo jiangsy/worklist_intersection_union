@@ -2,7 +2,7 @@ Require Import Program.Equality.
 
 Require Import uni.prop_ln.
 Require Export uni.def_ott.
-Require Export uni.def_extra.
+Require Export uni.decl.def_extra.
 
 
 Fixpoint dwl_app (Γ1 Γ2 : dworklist) :=

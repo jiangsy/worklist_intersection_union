@@ -1288,13 +1288,13 @@ Inductive d_sub : denv -> typ -> typ -> Prop :=    (* defn d_sub *)
       ( forall X , X \notin  L  -> ds_in X  ( open_typ_wrt_typ B1 (typ_var_f X) )  )  ->
       ( forall X , X \notin  L  -> d_sub  ( X ~ dbind_stvar_empty  ++  E )   ( open_typ_wrt_typ A1 (typ_var_f X) )   ( open_typ_wrt_typ B1 (typ_var_f X) )  )  ->
      d_sub E (typ_all A1) (typ_all B1)
- | d_sub__alll : forall (L:vars) (E:denv) (A1 B1 T2:typ),
+ | d_sub__alll : forall (L:vars) (E:denv) (A1 B1 T1:typ),
      neq_all B1 ->
      neq_intersection B1 ->
      neq_union B1 ->
       ( forall X , X \notin  L  -> ds_in X  ( open_typ_wrt_typ A1 (typ_var_f X) )  )  ->
-     d_mono_typ E T2 ->
-     d_sub E  (open_typ_wrt_typ  A1   T2 )  B1 ->
+     d_mono_typ E T1 ->
+     d_sub E  (open_typ_wrt_typ  A1   T1 )  B1 ->
      d_sub E (typ_all A1) B1
  | d_sub__intersection1 : forall (E:denv) (A1 B1 B2:typ),
      d_sub E A1 B1 ->

@@ -411,56 +411,56 @@ Hint Constructors neq_union : Core.
 Hint Constructors neq_intersection : Core.
 
 
-Lemma dwf_typ_open_inv : forall E T1 S1 X,
-  lc_typ S1 ->
-  E ⊢ {S1 /ᵈ X} T1 ->
+Lemma dwf_typ_open_inv : forall E A1 T1 X,
+  lc_typ T1 ->
+  E ⊢ {T1 /ᵈ X} A1 ->
   binds X dbind_tvar_empty E ->
-  E ⊢ T1.
+  E ⊢ A1.
 Proof.
   intros. dependent induction H0; auto.
-  - destruct T1; simpl in *; try solve [inversion x].
+  - destruct A1; simpl in *; try solve [inversion x].
     + econstructor.
     + destruct (X0 == X).
       * subst. auto.
       * inversion x.
-  - destruct T1; simpl in *; try solve [inversion x].
+  - destruct A1; simpl in *; try solve [inversion x].
     + econstructor.
     + destruct (X0 == X).
       * subst. auto.
       * inversion x.
-  - destruct T1; simpl in *; try solve [inversion x].
+  - destruct A1; simpl in *; try solve [inversion x].
     + econstructor.
     + destruct (X0 == X).
       * subst. auto.
       * inversion x.
-  - destruct T1; simpl in *; try solve [inversion x].
+  - destruct A1; simpl in *; try solve [inversion x].
     + destruct (X1 == X) in x; subst.
       auto.
       inversion x. subst. auto.
-  - destruct T1; simpl in *; try solve [inversion x].
+  - destruct A1; simpl in *; try solve [inversion x].
     + destruct (X1 == X) in x; subst.
       auto. inversion x. subst. auto.
-  - destruct T1; simpl in *; try solve [inversion x].
+  - destruct A1; simpl in *; try solve [inversion x].
       destruct (X0 == X) in x.
       subst. auto. inversion x.
     + inversion x. eauto.
-  - destruct T1; simpl in *; try solve [inversion x].
+  - destruct A1; simpl in *; try solve [inversion x].
     destruct (X0 == X) in x.
     + subst. auto.
     + inversion x.
     + inversion x.
-      eapply d_wf_typ__all with (L:=L `union` singleton X `union` ftv_in_typ S1); intros;
+      eapply d_wf_typ__all with (L:=L `union` singleton X `union` ftv_in_typ T1); intros;
       inst_cofinites_with X0.
       * rewrite H5 in H2.
         rewrite typ_subst_open_comm in H2; auto.
         eapply ftv_sin_typ_subst; eauto.
-      * eapply H1 with (X:=X) (S1:=S1); auto.
+      * eapply H1 with (X:=X) (T1:=T1); auto.
         -- rewrite H5. rewrite typ_subst_open_comm; auto.
-  - destruct T1; simpl in *; try solve [inversion x].
+  - destruct A1; simpl in *; try solve [inversion x].
     destruct (X0 == X) in x.
     subst. auto. inversion x.
     + inversion x. eauto.
-  - destruct T1; simpl in *; try solve [inversion x].
+  - destruct A1; simpl in *; try solve [inversion x].
     destruct (X0 == X) in x.
     subst. auto. inversion x.
     + inversion x. eauto.
@@ -760,7 +760,7 @@ Proof with auto.
       * intros. inst_cofinites_with X. auto.
       * intros. inst_cofinites_with X.
         destruct IHd_sub. auto.
-        eapply dwf_typ_open_inv with (X:=X) (S1:=T2); auto.
+        eapply dwf_typ_open_inv with (X:=X) (T1:=T1); auto.
         -- eapply d_mono_typ_lc; eauto.
         -- replace (X ~ dbind_tvar_empty ++ E) with (nil ++ X ~ dbind_tvar_empty ++ E) by auto.
            apply dwf_typ_weakening. simpl. rewrite  subst_tvar_in_typ_open_typ_wrt_typ.
