@@ -1316,9 +1316,9 @@ Inductive d_sub : denv -> typ -> typ -> Prop :=    (* defn d_sub *)
      d_sub E A1 B2 ->
      d_wf_typ E B1 ->
      d_sub E A1 (typ_union B1 B2)
- | d_sub__union3 : forall (E:denv) (A1 A2 B1 B2:typ),
+ | d_sub__union3 : forall (E:denv) (A1 A2 B1:typ),
      d_sub E A1 B1 ->
-     d_sub E A2 B2 ->
+     d_sub E A2 B1 ->
      d_sub E (typ_union A1 A2) B1.
 
 

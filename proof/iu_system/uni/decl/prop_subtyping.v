@@ -2,8 +2,8 @@ Require Import Coq.Program.Equality.
 Require Import Lia.
 Require Import LibTactics.
 
-Require Import decl.notations.
-Require Import decl.prop_basic.
+Require Import uni.notations.
+Require Import uni.prop_basic.
 Require Import ln_utils.
 
 Hint Constructors d_sub : sub.
@@ -12,7 +12,7 @@ Lemma dsub_refl' : forall E T,
   ⊢ E -> E ⊢ₛ T -> E ⊢ T <: T.
 Proof with auto with sub.
   intros; dependent induction H0; eauto...
-  eapply d_sub_all with (L:=L `union` dom E); eauto.
+  eapply d_sub__all with (L:=L `union` dom E); eauto.
 Qed.
 
 
@@ -27,7 +27,7 @@ Qed.
 
 
 Lemma dsub_union_inversion : forall E S1 S2 T1,
-  E ⊢ dtyp_union S1 S2 <: T1 ->
+  E ⊢ typ_union S1 S2 <: T1 ->
   E ⊢ S1 <: T1 /\ E ⊢ S2 <: T1.
 Proof with auto with sub.
   intros.
@@ -45,7 +45,7 @@ Qed.
 
 
 Lemma dsub_intersection_inversion : forall E S1 T1 T2,
-  E ⊢ S1 <: dtyp_intersection T1 T2 ->
+  E ⊢ S1 <: typ_intersection T1 T2 ->
   E ⊢ S1 <: T1 /\ E ⊢ S1 <: T2.
 Proof with auto with sub.
   intros.
