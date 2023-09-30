@@ -176,6 +176,9 @@ Proof with auto with dworklist.
   - admit.
   - admit.
 
+  - econstructor. admit.
+    apply IHd_wl_red. admit.
+
   - econstructor; eauto.
     apply IHd_wl_red. 
     admit.
@@ -273,12 +276,16 @@ Proof with auto with dworklist.
   - apply d__wlred__infabsunion.
     eapply d_wl_red_infabs_complete; eauto.
     admit. 
-    eapply d__wlred__applycont with (Γ':=(dworklist_conswork dworklist_empty (dwork_unioninfabs (dtyp_arrow B2 C2) (dtyp_arrow B1 C1) c))).
+    eapply d__wlred__applycont with (Γ':=(dworklist_conswork dworklist_empty (dwork_unioninfabs (dtyp_arrow B1 C1)  (dtyp_arrow B2 C2) c))).
     apply d__ac__unioninfabs.
     simpl. econstructor.
-    admit.  (* need to align the order *)
-  - admit.
-  - admit.
+    apply IHd_wl_del_red.
+    admit.  
+  - econstructor. apply IHd_wl_del_red. 
+    admit.
+  - apply d__wlred__infapp. 
+    apply IHd_wl_del_red.
+    admit.
   - admit.
   - admit.
   - admit.

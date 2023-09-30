@@ -258,6 +258,9 @@ Inductive d_wl_red : dworklist -> Prop :=    (* defn d_wl_red *)
  | d__wlred__infabsunion: forall (Γ:dworklist) (A2 B1 C1:dtyp) (c:dcont),
      d_wl_red (dworklist_conswork Γ (dwork_infabs A2 (dcont_unioninfabs (dtyp_arrow B1 C1) c))) ->
      d_wl_red (dworklist_conswork Γ (dwork_infabsunion (dtyp_arrow B1 C1) A2 c))
+ | d__wlred__infapp: forall (Γ:dworklist) (e:dexp) (A1 B1:dtyp) (c:dcont),
+     d_wl_red (dworklist_conswork (dworklist_conswork Γ (dwork_check e A1)) (dwork_apply c B1)) ->
+     d_wl_red (dworklist_conswork Γ (dwork_infapp (dtyp_arrow A1 B1) e c))
  | d__wlred__applycont : forall (Γ Γ':dworklist) (T1:dtyp) (c:dcont),
      d_apply_cont c T1 Γ' ->
      d_wl_red (dwl_app Γ' Γ) ->
