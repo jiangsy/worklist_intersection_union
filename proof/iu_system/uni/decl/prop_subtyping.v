@@ -398,11 +398,11 @@ Qed.
 
 
 Inductive d_ord_mono : denv -> typ -> Prop :=
-| d__ordmono__tvar : forall E X, 
+| d_ordmono__tvar : forall E X, 
     d_mono_typ E (typ_var_f X) ->
     d_ord_mono E (typ_var_f X)
-| d__ordmono__unit : forall E, d_ord_mono E typ_unit
-| d__ordmono__arr : forall E T1 T2,
+| d_ordmono__unit : forall E, d_ord_mono E typ_unit
+| d_ordmono__arr : forall E T1 T2,
     d_mono_typ E T1 ->
     d_mono_typ E T2 ->
     d_ord_mono E (typ_arrow T1 T2)
@@ -443,7 +443,7 @@ Lemma d_mono_ordiu_complete : forall E T1,
 Proof.
   intros. induction H; try solve [constructor; constructor].
   - econstructor. econstructor. eapply d_mono_typ__tvar; auto.
-  - apply d__monoord__base. apply d__ordmono__arr; auto.
+  - apply d__monoord__base. apply d_ordmono__arr; auto.
   - apply d__monoord__inter; auto.
   - apply d__monoord__union; auto.
 Qed.
@@ -804,35 +804,35 @@ Proof with subst; eauto using dwf_typ_weaken_head with subtyping.
 Qed.
 
 Inductive d_sub_sized : denv -> typ -> typ -> nat -> Prop :=
- | d__subs__top : forall (E:denv) (S1:typ) (n:nat),
+ | d_subs__top : forall (E:denv) (S1:typ) (n:nat),
      dwf_env E ->
      dwf_typ E S1 ->
      d_sub_sized E S1 typ_top n
- | d__subs__bot : forall (E:denv) (T:typ) (n:nat),
+ | d_subs__bot : forall (E:denv) (T:typ) (n:nat),
      dwf_env E ->
      dwf_typ E T ->
      d_sub_sized E typ_bot T n
- | d__subs__unit : forall (E:denv) (n:nat),
+ | d_subs__unit : forall (E:denv) (n:nat),
      dwf_env E ->
      d_sub_sized E typ_unit typ_unit n
- | d__subs__tvar : forall (E:denv) (X:typvar) (n:nat),
+ | d_subs__tvar : forall (E:denv) (X:typvar) (n:nat),
      dwf_env E ->
      dwf_typ E (typ_var_f X) ->
      d_sub_sized E (typ_var_f X) (typ_var_f X) n
- | d__subs__stvar : forall (E:denv) (SX:stypvar) (n:nat),
+ | d_subs__stvar : forall (E:denv) (SX:stypvar) (n:nat),
      dwf_env E ->
      dwf_typ E (typ_svar SX) ->
      d_sub_sized E (typ_svar SX) (typ_svar SX) n
- | d__subs__arrow : forall (E:denv) (S1 S2 T1 T2:typ) (n1 n2:nat),
+ | d_subs__arrow : forall (E:denv) (S1 S2 T1 T2:typ) (n1 n2:nat),
      d_sub_sized E T1 S1 n1 ->
      d_sub_sized E S2 T2 n2 ->
      d_sub_sized E (typ_arrow S1 S2) (typ_arrow T1 T2) (S (n1 + n2))
- | d__subs__all : forall (L:vars) (E:denv) (S1 T1:typ) (n:nat),
+ | d_subs__all : forall (L:vars) (E:denv) (S1 T1:typ) (n:nat),
      ( forall SX , SX \notin L -> ds_in_s SX  (open_typ_wrt_typ  S1   (typ_svar SX) ) ) ->
      ( forall SX , SX \notin L -> ds_in_s SX  (open_typ_wrt_typ  T1   (typ_svar SX) ) ) ->
      ( forall SX , SX \notin L -> d_sub_sized  ( SX ~ dbind_stvar_empty  ++  E )   (open_typ_wrt_typ  S1   (typ_svar SX) )   (open_typ_wrt_typ  T1  (typ_svar SX) ) n) ->
      d_sub_sized E (typ_all S1) (typ_all T1) (S n)
- | d__subs__alll : forall (L:vars) (E:denv) (S1 T1 T2:typ) (n:nat),
+ | d_subs__alll : forall (L:vars) (E:denv) (S1 T1 T2:typ) (n:nat),
      dneq_all T1 ->
      dneq_intersection T1 ->
      dneq_union T1 ->
@@ -841,27 +841,27 @@ Inductive d_sub_sized : denv -> typ -> typ -> nat -> Prop :=
      dmono_typ T2 ->
      d_sub_sized E  (open_typ_wrt_typ  S1   T2 )  T1 n ->
      d_sub_sized E (typ_all S1) T1 (S n)
- | d__subs__intersection1 : forall (E:denv) (S1 T1 T2:typ) (n1 n2:nat),
+ | d_subs__intersection1 : forall (E:denv) (S1 T1 T2:typ) (n1 n2:nat),
      d_sub_sized E S1 T1 n1 ->
      d_sub_sized E S1 T2 n2 ->
      d_sub_sized E S1 (typ_intersection T1 T2) (S (n1 + n2))
- | d__subs__intersection2 : forall (E:denv) (S1 S2 T:typ) (n:nat),
+ | d_subs__intersection2 : forall (E:denv) (S1 S2 T:typ) (n:nat),
      d_sub_sized E S1 T n ->
      dwf_typ E S2 ->
      d_sub_sized E (typ_intersection S1 S2) T (S n)
- | d__subs__intersection3 : forall (E:denv) (S1 S2 T:typ) (n:nat),
+ | d_subs__intersection3 : forall (E:denv) (S1 S2 T:typ) (n:nat),
      d_sub_sized E S2 T n ->
      dwf_typ E S1 ->
      d_sub_sized E (typ_intersection S1 S2) T (S n)
- | d__subs__union1 : forall (E:denv) (S1 T1 T2:typ) (n:nat),
+ | d_subs__union1 : forall (E:denv) (S1 T1 T2:typ) (n:nat),
      d_sub_sized E S1 T1 n ->
      dwf_typ E T2 ->
      d_sub_sized E S1 (typ_union T1 T2) (S n)
- | d__subs__union2 : forall (E:denv) (S1 T1 T2:typ) (n:nat),
+ | d_subs__union2 : forall (E:denv) (S1 T1 T2:typ) (n:nat),
      d_sub_sized E S1 T2 n ->
      dwf_typ E T1 ->
      d_sub_sized E S1 (typ_union T1 T2) (S n)
- | d__subs__union3 : forall (E:denv) (S1 S2 T:typ) (n1 n2:nat),
+ | d_subs__union3 : forall (E:denv) (S1 S2 T:typ) (n1 n2:nat),
      d_sub_sized E S1 T n1 ->
      d_sub_sized E S2 T n2 ->
      d_sub_sized E (typ_union S1 S2) T (S (n1 + n2)).
@@ -929,14 +929,14 @@ Proof with (simpl in *; eauto using d_wf_env_subst_tvar_typ with sub).
       applys* d_wf_env_rename_stvar...
       forwards: d_wf_typ_rename_stvar SY H0...
       case_if in H1...
-  - pick fresh SZ and apply d__subs__all. inst_cofinites_with SZ.
+  - pick fresh SZ and apply d_subs__all. inst_cofinites_with SZ.
     + rewrite d_subst_stv_in_typ_open_comm...
       applys~ fstv_sins_typ_subst_stv_s.
     + rewrite d_subst_stv_in_typ_open_comm...
       applys~ fstv_sins_typ_subst_stv_s.
     + forwards~: H2 SZ E ((SZ, ▪) :: F)...
       repeat rewrite d_subst_stv_in_typ_open_comm...
-  - pick fresh SZ and apply d__subs__alll. 6: apply H4. all: auto...
+  - pick fresh SZ and apply d_subs__alll. 6: apply H4. all: auto...
     + rewrite d_subst_stv_in_typ_open_comm...
       applys fstv_sins_typ_subst_stv...
     + replace T2 with ({typ_svar SY /ₛᵈ SX} T2)...
@@ -944,13 +944,13 @@ Proof with (simpl in *; eauto using d_wf_env_subst_tvar_typ with sub).
     + forwards: IHHS...
       rewrite d_subst_stv_in_typ_open_comm...
       applys* d_mono_notin_stvar.
-  - applys d__subs__intersection2; forwards: IHHS...
+  - applys d_subs__intersection2; forwards: IHHS...
     forwards: d_wf_typ_rename_stvar SY H...
-  - applys d__subs__intersection3; forwards: IHHS...
+  - applys d_subs__intersection3; forwards: IHHS...
     forwards: d_wf_typ_rename_stvar SY H...
-  - applys d__subs__union1; forwards: IHHS...
+  - applys d_subs__union1; forwards: IHHS...
     forwards: d_wf_typ_rename_stvar SY H...
-  - applys d__subs__union2; forwards: IHHS...
+  - applys d_subs__union2; forwards: IHHS...
     forwards: d_wf_typ_rename_stvar SY H...
     Unshelve. all: eauto. econstructor.
 Qed.
@@ -977,7 +977,7 @@ Proof with eauto with sub.
   - pick fresh X.
     destruct (H2 X) as [n]. solve_notin.
     exists (S n).
-    eapply d__subs__all with (L:=L `union` fstv_in_typ S1 `union` fstv_in_typ S1 `union` (dom E)); intros; eauto.
+    eapply d_subs__all with (L:=L `union` fstv_in_typ S1 `union` fstv_in_typ S1 `union` (dom E)); intros; eauto.
     + rewrite_env (nil ++ SX ~ ▪ ++ E). rewrite_env (nil ++ X ~ ▪ ++ E) in H3.
       applys d_sub_size_rename H3; solve_notin.
   - destruct IHd_sub as [n]. eauto...
@@ -1066,9 +1066,9 @@ Proof with auto with trans.
     specialize (IHd_sub_sized2 S1 S2 (eq_refl _)).
     split; constructor; intuition.
   - specialize (IHd_sub_sized S1 S2 (eq_refl _)).
-    split; apply d__subs__union1; intuition.
+    split; apply d_subs__union1; intuition.
   - specialize (IHd_sub_sized S1 S2 (eq_refl _)).
-    split; apply d__subs__union2; intuition.
+    split; apply d_subs__union2; intuition.
   - split.
     eapply d_sub_size_more; eauto. lia.
     eapply d_sub_size_more; eauto. lia.
@@ -1088,24 +1088,24 @@ Proof.
 Qed.
 
 Inductive d_ord : typ -> Prop :=
-| d__ord__tvar : forall X, d_ord (typ_var_f X)
-| d__ord__stvar : forall SX, d_ord (typ_svar SX)
-| d__ord__bot : d_ord typ_bot
-| d__ord__top : d_ord typ_top
-| d__ord__unit : d_ord typ_unit
-| d__ord__arr : forall T1 T2,
+| d_ord__tvar : forall X, d_ord (typ_var_f X)
+| d_ord__stvar : forall SX, d_ord (typ_svar SX)
+| d_ord__bot : d_ord typ_bot
+| d_ord__top : d_ord typ_top
+| d_ord__unit : d_ord typ_unit
+| d_ord__arr : forall T1 T2,
     d_ord (typ_arrow T1 T2)
-| d__ord__all : forall T,
+| d_ord__all : forall T,
     d_ord (typ_all T)
 .
 
 Inductive d_wft_ord : typ -> Prop :=
-| d__wftord__base : forall T, d_ord T -> d_wft_ord T
-| d__wftord__intersection: forall T1 T2,
+| d_wftord__base : forall T, d_ord T -> d_wft_ord T
+| d_wftord__intersection: forall T1 T2,
     d_wft_ord T1 ->
     d_wft_ord T2 ->
     d_wft_ord (typ_intersection T1 T2)
-| d__wftord__union: forall T1 T2,
+| d_wftord__union: forall T1 T2,
     d_wft_ord T1 ->
     d_wft_ord T2 ->
     d_wft_ord (typ_union T1 T2)

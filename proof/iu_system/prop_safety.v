@@ -1,9 +1,10 @@
 Require Import ln_utils.
-Require Import decl.def_ott.
-Require Import decl.def_extra.
-Require Import decl.notations.
-Require Import decl.prop_basic.
-Require Import decl.prop_subtyping.
+Require Import uni.def_ott.
+Require Import uni.def_extra.
+Require Import uni.notations.
+Require Import uni.prop_basic.
+Require Import uni.decl_worklist.prop_equiv.
+Require Import uni.prop_subtyping.
 Require Import uni.prop_basic.
 
 
