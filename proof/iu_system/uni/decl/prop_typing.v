@@ -5,9 +5,9 @@ Require Import Metalib.Metatheory.
 Require Import LibTactics.
 
 
-Require Import decl.notations.
-Require Import decl.prop_basic.
-Require Import decl.prop_subtyping.
+Require Import uni.notations.
+Require Import uni.prop_basic.
+Require Import uni.prop_subtyping.
 Require Import ln_utils.
 
 
