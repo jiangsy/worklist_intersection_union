@@ -58,7 +58,7 @@ Proof with auto with dworklist.
   - dependent destruction H. econstructor.
     assert (d_wf_wl
                (dworklist_conswork
-                  (dworklist_conswork Γ
+                  (dworklist_conswork Ω
                      (work_sub B1 A1))
                   (work_sub A2 B2))) by admit.
     apply IHd_wl_red in H2. dependent destruction H2.
@@ -79,7 +79,7 @@ Proof with auto with dworklist.
 
   (* e <= A -> e => _ <: A *)
   - assert (d_wf_wl
-    (dworklist_conswork Γ
+    (dworklist_conswork Ω
       (work_infer e (cont_sub A1)))) by admit.
     apply IHd_wl_red in H3. dependent destruction H3.
     dependent destruction H4. dependent destruction H4.
@@ -88,11 +88,11 @@ Proof with auto with dworklist.
     auto.
   (* \x. e <= top *)
   - econstructor.
-    eapply d_typing_chkabs with (L:=L `union` dom (dwl_to_denv Γ)).
+    eapply d_typing_chkabs with (L:=L `union` dom (dwl_to_denv Ω)).
     admit.
     intros. inst_cofinites_with x.
     assert (d_wf_wl
-      (dworklist_conswork ((dworklist_consvar Γ x (dbind_typ A1)))
+      (dworklist_conswork ((dworklist_consvar Ω x (dbind_typ A1)))
        (work_check (open_exp_wrt_exp e (exp_var_f x)) A2))) by admit.
     apply H1 in H3.
     dependent destruction H3.
@@ -119,7 +119,7 @@ Proof with auto with dworklist.
     + econstructor. admit.
     + apply IHd_wl_red. admit.
   - assert (d_wf_wl
-  (dworklist_conswork Γ
+  (dworklist_conswork Ω
      (work_infer e1
         (cont_infabs
            (cont_infapp e2 c))))) by admit.
@@ -137,7 +137,7 @@ Proof with auto with dworklist.
     simpl in H4.
     dependent destruction H4. 
     admit.
-  - assert (d_wf_wl (dworklist_conswork Γ (work_infer e (cont_inftapp T c)))) by admit.
+  - assert (d_wf_wl (dworklist_conswork Ω (work_infer e (cont_inftapp T c)))) by admit.
     apply IHd_wl_red in H1.
     dependent destruction H1.
     dependent destruction H2.
@@ -158,14 +158,14 @@ Proof with auto with dworklist.
   - eapply d_wldelred__inftapp with (T3:=typ_bot); eauto.
     econstructor; admit.
     apply IHd_wl_red. admit.
-  - assert (d_wf_wl (dworklist_conswork Γ (work_inftapp A1 B1 c))) by admit.
+  - assert (d_wf_wl (dworklist_conswork Ω (work_inftapp A1 B1 c))) by admit.
     apply IHd_wl_red in H1. 
     dependent destruction H1.
     eapply d_wldelred__inftapp with (T3:=T3); eauto.
     econstructor; eauto. admit.
   - admit.
   - assert (d_wf_wl
-     (dworklist_conswork Γ
+     (dworklist_conswork Ω
      (work_inftapp A1 B1 (cont_inftappunion A2 B1 c)))) by admit.
     apply IHd_wl_red in H1.
     dependent destruction H1.
@@ -176,7 +176,7 @@ Proof with auto with dworklist.
     eapply d_wldelred__inftapp with (T3:=typ_union C1 C2); eauto.
     econstructor; eauto.
   - assert (d_wf_wl
-  (dworklist_conswork Γ
+  (dworklist_conswork Ω
      (work_inftapp A2 B2 (cont_unioninftapp C1 c)))) by admit.
     apply IHd_wl_red in H1.
     dependent destruction H1.
@@ -295,12 +295,12 @@ Proof with auto with dworklist.
     apply d_infabs_wft in H.
     apply d_wlred__infabs_union.
     apply IHd_infabs1; auto.
-    eapply d_wlred__applycont with (Γ':=(dworklist_conswork dworklist_empty (work_infabsunion (typ_arrow T3 T4) T2 c))).
+    eapply d_wlred__applycont with (Ω':=(dworklist_conswork dworklist_empty (work_infabsunion (typ_arrow T3 T4) T2 c))).
     eapply d__ac__infabsunion.
     simpl.
     eapply d_wlred__infabsunion.
     apply IHd_infabs2; intuition.
-    eapply d_wlred__applycont with (Γ':=(dworklist_conswork dworklist_empty (work_unioninfabs (typ_arrow T3 T4) (typ_arrow T5 T6) c))).
+    eapply d_wlred__applycont with (Ω':=(dworklist_conswork dworklist_empty (work_unioninfabs (typ_arrow T3 T4) (typ_arrow T5 T6) c))).
     econstructor.
     simpl.
     econstructor.
@@ -335,12 +335,12 @@ Proof with auto with dworklist.
     dependent destruction H1.
     econstructor.
     eapply IHd_inftapp1...
-    eapply d_wlred__applycont with (Γ':=(dworklist_conswork dworklist_empty (work_inftappunion C1 A2 B c))).
+    eapply d_wlred__applycont with (Ω':=(dworklist_conswork dworklist_empty (work_inftappunion C1 A2 B c))).
     econstructor.
     simpl.
     econstructor. 
     eapply IHd_inftapp2... intuition.
-    eapply d_wlred__applycont with (Γ':=(dworklist_conswork dworklist_empty (work_unioninftapp C1 C2 c))).
+    eapply d_wlred__applycont with (Ω':=(dworklist_conswork dworklist_empty (work_unioninftapp C1 C2 c))).
     eapply d__ac__unioninftapp...
     econstructor.
     auto.
@@ -378,7 +378,7 @@ Proof with auto with dworklist.
   - apply d_wlred__infabsunion.
     eapply d_wl_red_infabs_complete; eauto.
     admit. 
-    eapply d_wlred__applycont with (Γ':=(dworklist_conswork dworklist_empty (work_unioninfabs (typ_arrow B1 C1)  (typ_arrow B2 C2) c))).
+    eapply d_wlred__applycont with (Ω':=(dworklist_conswork dworklist_empty (work_unioninfabs (typ_arrow B1 C1)  (typ_arrow B2 C2) c))).
     apply d__ac__unioninfabs.
     simpl. econstructor.
     apply IHd_wl_del_red.
