@@ -307,7 +307,7 @@ Theorem d_sub_tvar_ind_open_inv_complete: forall n1 n2 E S1 T1 X L,
     d_typ_size (T1 ^^ᵈ S1) < n2 ->
     E ⊢ T1 ^^ᵈ S1 <: `ᵈ X ->
     (forall X, X `notin` L -> ds_in X (T1 ^ᵈ X)) ->
-    dmono_typ S1 ->
+    d_mono_typ E S1 ->
     d_sub_tvar_inv (typ_all T1).
 Proof.
     intro n1. induction n1.
@@ -333,9 +333,9 @@ Proof.
              ++ unfold open_typ_wrt_typ in Heq. simpl in Heq. inversion Heq.
           -- exfalso.
              dependent destruction Heq.
-             eapply IHn1 in H7; eauto. inversion H7. auto.
+             eapply IHn1 in H6; eauto. inversion H6. auto.
              eapply d_sub_tvar_inv_nested_all_false with (L1:=L `union` L0 `union` L1); eauto...
-             rewrite d_open_mono_same_order. lia. auto.
+             erewrite d_open_mono_same_order; eauto... lia.
         * rename H3 into Hdsin. rename H4 into Hmono. destruct T1; simpl in *; try solve [inversion Heq].
           -- destruct n. simpl in *.
              ++ eapply d__sti__all with (L:=L). intros. constructor.
@@ -397,61 +397,66 @@ Proof.
 Qed.
 
 
-Inductive d_ord_mono : typ -> Prop :=
-| d__ordmono__tvar : forall X, d_ord_mono (typ_var_f X)
-| d__ordmono__unit : d_ord_mono typ_unit
-| d__ordmono__arr : forall T1 T2,
-    dmono_typ T1 ->
-    dmono_typ T2 ->
-    d_ord_mono (typ_arrow T1 T2)
+Inductive d_ord_mono : denv -> typ -> Prop :=
+| d__ordmono__tvar : forall E X, 
+    d_mono_typ E (typ_var_f X) ->
+    d_ord_mono E (typ_var_f X)
+| d__ordmono__unit : forall E, d_ord_mono E typ_unit
+| d__ordmono__arr : forall E T1 T2,
+    d_mono_typ E T1 ->
+    d_mono_typ E T2 ->
+    d_ord_mono E (typ_arrow T1 T2)
 .
 
-Lemma d_ord_mono_neq_intersection: forall T1,
-  d_ord_mono T1 ->
-  dneq_intersection T1.
+Lemma d_ord_mono_neq_intersection: forall E T1,
+  d_ord_mono E T1 ->
+  neq_intersection T1.
 Proof.
   intros. induction H; auto.
+  econstructor; eapply d_mono_typ_lc; eauto.
 Qed.
 
-Lemma d_ord_mono_neq_union: forall T1,
-  d_ord_mono T1 ->
-  dneq_union T1.
+Lemma d_ord_mono_neq_union: forall E T1,
+  d_ord_mono E T1 ->
+  neq_union T1.
 Proof.
   intros. induction H; auto.
+  econstructor; eapply d_mono_typ_lc; eauto.
 Qed.
 
-Inductive d_mono_ordiu : typ -> Prop :=
-| d__monoord__base : forall T1,
-    d_ord_mono T1 ->
-    d_mono_ordiu T1
-| d__monoord__union : forall T1 T2,
-    d_mono_ordiu T1 ->
-    d_mono_ordiu T2 ->
-    d_mono_ordiu (typ_union T1 T2)
-| d__monoord__inter : forall T1 T2,
-    d_mono_ordiu T1 ->
-    d_mono_ordiu T2 ->
-    d_mono_ordiu (typ_intersection T1 T2).
+Inductive d_mono_ordiu : denv -> typ -> Prop :=
+| d__monoord__base : forall E T1,
+    d_ord_mono E T1 ->
+    d_mono_ordiu E T1
+| d__monoord__union : forall E T1 T2,
+    d_mono_ordiu E T1 ->
+    d_mono_ordiu E T2 ->
+    d_mono_ordiu E (typ_union T1 T2)
+| d__monoord__inter : forall E T1 T2,
+    d_mono_ordiu E T1 ->
+    d_mono_ordiu E T2 ->
+    d_mono_ordiu E (typ_intersection T1 T2).
 
 
-Lemma d_mono_ordiu_complete : forall T1,
-  dmono_typ T1 -> d_mono_ordiu T1.
+Lemma d_mono_ordiu_complete : forall E T1,
+  d_mono_typ E T1 -> d_mono_ordiu E T1.
 Proof.
   intros. induction H; try solve [constructor; constructor].
+  - econstructor. econstructor. eapply d_mono_typ__tvar; auto.
   - apply d__monoord__base. apply d__ordmono__arr; auto.
   - apply d__monoord__inter; auto.
   - apply d__monoord__union; auto.
 Qed.
 
 
-Lemma d_ord_mono_sound: forall T1,
-  d_ord_mono T1 -> dmono_typ T1.
+Lemma d_ord_mono_sound: forall E T1,
+  d_ord_mono E T1 -> d_mono_typ E T1.
 Proof.
   intros. induction H; auto.
 Qed.
 
-Lemma d_mono_ordiu_sound : forall T1,
-  d_mono_ordiu T1 -> dmono_typ T1.
+Lemma d_mono_ordiu_sound : forall E T1,
+  d_mono_ordiu E T1 -> d_mono_typ E T1.
 Proof.
   intros. induction H; auto.
   - apply d_ord_mono_sound. auto.
@@ -461,10 +466,10 @@ Qed.
 Theorem d_sub_tvar_ind_open_subst : forall E F X T1 T2,
   ⊢ F ++ (X ~ dbind_tvar_empty) ++ E ->
   d_sub_tvar_open_inv X T1 ->
-  dmono_typ T2 ->
+  d_mono_typ E T2 ->
   (X ~ dbind_tvar_empty) ++ E ⊢ T1 ->
   E ⊢ T2 ->
-  map (d_subst_tv_in_binding T2 X) F ++ E ⊢ ({T2 /ᵈ X} T1) <: T2.
+  map (subst_tvar_in_dbind T2 X) F ++ E ⊢ ({T2 /ᵈ X} T1) <: T2.
 Proof with auto with subtyping.
   intros * Hwfenv H. induction H; intros.
   - simpl. destruct (X == X).
