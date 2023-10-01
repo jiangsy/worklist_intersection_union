@@ -294,6 +294,40 @@ Ltac rewrite_dwl_app :=
     | _ : _ |- context [dworklist_conswork (dwl_app ?Ω2 ?Ω1) ?w] => rewrite dwl_app_cons_work
     end.
 
+
+Lemma d_wl_app_assoc : forall Ω1 Ω2 Ω3,
+  dwl_app Ω3 (dwl_app Ω2 Ω1) = dwl_app (dwl_app Ω3 Ω2) Ω1.
+Proof.
+  induction Ω3; auto.
+  - simpl. rewrite <- IHΩ3. auto.
+  - simpl. rewrite <- IHΩ3. auto.
+  - simpl. rewrite <- IHΩ3. auto.
+Qed.
+
+Lemma d_wl_red_weaken: forall Ω1 Ω2,
+  (dwl_app Ω2 Ω1) ⟶ₐ⁎⋅ -> Ω1 ⟶ₐ⁎⋅ .
+Proof.
+  intros. dependent induction H; try destruct Ω2; simpl in x; try solve [inversion x]; dependent destruction x; simpl; eauto with dworklist;
+    try solve [eapply IHd_wl_red; rewrite_dwl_app; eauto].
+  - inst_cofinites_by L. eapply H0.
+    rewrite_dwl_app; eauto.
+  - inst_cofinites_by L. eapply H0.
+    rewrite_dwl_app; eauto.
+  - inst_cofinites_by L. eapply H0.
+    rewrite_dwl_app; eauto.
+  - inst_cofinites_by L. eapply H0.
+    rewrite_dwl_app; eauto.
+  - eapply IHd_wl_red. rewrite d_wl_app_assoc. eauto.
+Qed.
+
+Corollary d_wl_red_weaken_consw : forall Ω w,
+  dworklist_conswork Ω w ⟶ₐ⁎⋅ -> Ω ⟶ₐ⁎⋅ .
+Proof.
+  intros.
+  replace (w ⫤ Ω)%dworklist with (dwl_app (dworklist_conswork dworklist_empty w) Ω) in H by auto.
+  eapply d_wl_red_weaken. eauto.
+Qed.
+
 Lemma d_wl_red_strengthen_work : forall Ω1 Ω2 w,
   (w ⫤ Ω1) ⟶ₐ⁎⋅ -> (dwl_app Ω2 Ω1) ⟶ₐ⁎⋅ -> (dwl_app Ω2 (w ⫤ Ω1)) ⟶ₐ⁎⋅ .
 Proof. 
@@ -322,9 +356,9 @@ Proof.
     admit.
     rewrite_dwl_app. auto.
   - econstructor; eauto.
-    replace (dwl_app Ω' (dwl_app Ω2 (w ⫤ Ω1))) with ((dwl_app (dwl_app Ω' Ω2) (w ⫤ Ω1))) by admit.
+    rewrite d_wl_app_assoc.
     apply IHd_wl_red; auto.
-    admit.
+    eapply d_wl_app_assoc.
 Admitted.
 
 
@@ -426,7 +460,11 @@ Proof with auto with dworklist.
     apply d_wlred__applycont with (Ω':=dworklist_conswork dworklist_empty (work_infapp (typ_arrow T2 T3) e2 c)); eauto.
     econstructor.
     econstructor.
-    admit.
+    assert ((work_check e2 T2 ⫤ Ω) ⟶ₐ⁎⋅).
+      apply IHd_typing2; auto. admit.
+      apply d_wl_red_weaken_consw in H5; auto.
+    replace (work_apply c T3 ⫤ work_check e2 T2 ⫤ Ω)%dworklist with (dwl_app (work_apply c T3 ⫤ dworklist_empty) (work_check e2 T2 ⫤ Ω)%dworklist) by auto.
+    apply d_wl_red_strengthen_work; eauto.
   - econstructor; eauto.
     admit.
   - destruct_wf.
