@@ -84,19 +84,3 @@ Tactic Notation "inst_cofinites_for" constr(H) ident(argname1)":="constr(arg1) "
 
 Tactic Notation "pick" "fresh" ident(x) "and" "apply" constr(H) "for" "weakening" :=
   apply_fresh_base_fixed H gather_for_weakening x. *)
-
-
-(* Ltac rewrite_la_subst_open_var :=
-  repeat
-    match goal with 
-      | _ : _ |-  context [ ([?e /ᵃ ?x] ?A) ^ᵃ ?x' ] => 
-        replace (`ᵃ x') with ([ e /ᵃ x ] (`ᵃ x')) by (apply subst_la_type_fresh_eq; auto)
-    end; repeat rewrite <- subst_la_type_open_la_type_wrt_la_type by auto.
-
-
-Ltac rewrite_ld_subst_open_var :=
-  repeat
-    match goal with 
-      | _ : _ |-  context [ ([?e /ᵗ ?x] ?A) ^ᵈ ?x' ] => 
-        replace (`ᵈ x') with ([ e /ᵗ x ] `ᵈ x') by (apply subst_ld_type_fresh_eq; auto)
-    end; repeat rewrite <- subst_ld_type_open_ld_type_wrt_ld_type by auto. *)
