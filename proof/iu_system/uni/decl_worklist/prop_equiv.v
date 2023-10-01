@@ -317,7 +317,6 @@ Proof.
     rewrite_dwl_app; eauto.
   - inst_cofinites_by L. eapply H0.
     rewrite_dwl_app; eauto.
-  - eapply IHd_wl_red. rewrite d_wl_app_assoc. eauto.
 Qed.
 
 Corollary d_wl_red_weaken_consw : forall Ω w,
@@ -365,9 +364,7 @@ Proof.
     rewrite d_wl_app_cons_work_same_env. auto.
     rewrite_dwl_app. auto.
   - econstructor; eauto.
-    rewrite d_wl_app_assoc.
-    apply IHd_wl_red; auto.
-    eapply d_wl_app_assoc.
+    rewrite_dwl_app. auto.
 Qed.
 
 
@@ -388,13 +385,13 @@ Proof with auto with dworklist.
     apply d_wlred__infabs_union.
     apply IHd_infabs1; auto.
     eapply d_wlred__applycont with 
-      (Ω':=(dworklist_conswork dworklist_empty (work_infabsunion (typ_arrow T3 T4) T2 c))).
-    eapply d_applycont__infabsunion.
+      (w:=((work_infabsunion (typ_arrow T3 T4) T2 c))).
+    eapply applycont__infabsunion.
     simpl.
     eapply d_wlred__infabsunion.
     apply IHd_infabs2; intuition.
     eapply d_wlred__applycont with 
-      (Ω':=(dworklist_conswork dworklist_empty (work_unioninfabs (typ_arrow T3 T4) (typ_arrow T5 T6) c))).
+      (w:=(work_unioninfabs (typ_arrow T3 T4) (typ_arrow T5 T6) c)).
     econstructor.
     simpl.
     econstructor.
@@ -421,13 +418,13 @@ Proof with auto with dworklist.
     destruct_wf.
     econstructor.
     eapply IHd_inftapp1...
-    eapply d_wlred__applycont with (Ω':=(dworklist_conswork dworklist_empty (work_inftappunion C1 A2 B c))).
+    eapply d_wlred__applycont with (w:=work_inftappunion C1 A2 B c).
     econstructor.
     simpl.
     econstructor. 
     eapply IHd_inftapp2... intuition.
-    eapply d_wlred__applycont with (Ω':=(dworklist_conswork dworklist_empty (work_unioninftapp C1 C2 c))).
-    eapply d_applycont__unioninftapp...
+    eapply d_wlred__applycont with (w:=work_unioninftapp C1 C2 c).
+    eapply applycont__unioninftapp...
     econstructor...
 Qed.
 
@@ -460,7 +457,7 @@ Proof with auto with dworklist.
   - econstructor.
     destruct_wf.
     eapply IHd_typing1; eauto.
-    apply d_wlred__applycont with (Ω':=dworklist_conswork dworklist_empty (work_infabs T1 (cont_infapp e2 c))); eauto.
+    apply d_wlred__applycont with (w:=work_infabs T1 (cont_infapp e2 c)); eauto.
     econstructor. simpl.
     apply d_infabs_wft in H0 as Hwft. intuition.
     eapply d_wl_red_infabs_complete; eauto.
@@ -480,7 +477,7 @@ Proof with auto with dworklist.
     apply d_chk_inf_wft in H0.
     econstructor.
     apply IHd_typing; auto...
-    apply d_wlred__applycont with (Ω':=dworklist_conswork dworklist_empty (work_inftapp T1 T2 c)); eauto.
+    apply d_wlred__applycont with (w:=(work_inftapp T1 T2 c)); eauto.
     econstructor.
     simpl.
     eapply d_wl_red_inftapp_complete; eauto.
@@ -511,9 +508,9 @@ Proof with auto with dworklist.
 Qed.
 
 
-Theorem d_wf_work_apply_cont : forall Ω c A1 Ω',
-  ⊢ᵈ Ω -> d_wf_cont (dwl_to_denv Ω) c -> dwl_to_denv Ω ⊢ A1 -> d_apply_cont c A1 Ω' ->
-  ⊢ᵈ dwl_app Ω' Ω.
+Theorem d_wf_work_apply_cont : forall Ω c A1 w,
+  ⊢ᵈ Ω -> d_wf_cont (dwl_to_denv Ω) c -> dwl_to_denv Ω ⊢ A1 -> apply_cont c A1 w ->
+  ⊢ᵈ dworklist_conswork Ω w.
 Proof.
   intros. induction H2; simpl; auto;
     dependent destruction H0; auto.
@@ -536,8 +533,8 @@ Proof with auto with dworklist.
   - destruct_wf. 
     apply d_wlred__infabsunion.
     eapply d_wl_red_infabs_complete; eauto.
-    eapply d_wlred__applycont with (Ω':=(dworklist_conswork dworklist_empty (work_unioninfabs (typ_arrow B1 C1)  (typ_arrow B2 C2) c))).
-    apply d_applycont__unioninfabs.
+    eapply d_wlred__applycont with (w:=(work_unioninfabs (typ_arrow B1 C1)  (typ_arrow B2 C2) c)).
+    apply applycont__unioninfabs.
     simpl. econstructor.
     apply d_infabs_wft in H4. 
     apply IHd_wl_del_red. intuition.
@@ -550,7 +547,7 @@ Proof with auto with dworklist.
     apply d_inftapp_wft in H3. intuition.
   - destruct_wf. econstructor. 
     eapply d_wl_red_inftapp_complete; eauto...
-    eapply d_wlred__applycont with (Ω':=(dworklist_conswork dworklist_empty (work_unioninftapp C1 C2 c)))...
+    eapply d_wlred__applycont with (w:=(work_unioninftapp C1 C2 c))...
     econstructor. simpl.
     apply d_inftapp_wft in H4.
     econstructor. intuition.

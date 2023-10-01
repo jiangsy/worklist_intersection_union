@@ -14,41 +14,41 @@ Fixpoint dwl_app (Ω1 Ω2 : dworklist) :=
   end.
 
 (* TODO : could change to cont -> typ -> work *)
-Inductive d_apply_cont : cont -> typ -> dworklist -> Prop :=
-  (* | d_applycont__done : forall T1,  
-      d_apply_cont cont_done (some T1) dworklist_empty *)
-  | d_applycont__infabs: forall T1 c,
-      d_apply_cont (cont_infabs c) 
+Inductive apply_cont : cont -> typ -> work -> Prop :=
+  (* | applycont__done : forall T1,  
+      apply_cont cont_done (some T1) dworklist_empty *)
+  | applycont__infabs: forall T1 c,
+      apply_cont (cont_infabs c) 
                    T1
-                   (dworklist_conswork dworklist_empty (work_infabs T1 c))
-  | d_applycont__infabsunion : forall A2 B1 C1 c, 
-      d_apply_cont (cont_infabsunion A2 c) 
+                   (work_infabs T1 c)
+  | applycont__infabsunion : forall A2 B1 C1 c, 
+      apply_cont (cont_infabsunion A2 c) 
                    (typ_arrow B1 C1)
-                   (dworklist_conswork dworklist_empty (work_infabsunion (typ_arrow B1 C1) A2 c))
-  | d_applycont__unioninfabs : forall B2 C2 B1 C1 c,
-      d_apply_cont (cont_unioninfabs (typ_arrow B1 C1) c) 
+                   (work_infabsunion (typ_arrow B1 C1) A2 c)
+  | applycont__unioninfabs : forall B2 C2 B1 C1 c,
+      apply_cont (cont_unioninfabs (typ_arrow B1 C1) c) 
                    (typ_arrow B2 C2)
-                   (dworklist_conswork dworklist_empty (work_unioninfabs (typ_arrow B1 C1) (typ_arrow B2 C2) c))
+                   (work_unioninfabs (typ_arrow B1 C1) (typ_arrow B2 C2) c)
   | d_applycont_infapp : forall A1 e c,
-      d_apply_cont (cont_infapp e c) 
+      apply_cont (cont_infapp e c) 
                    A1
-                   (dworklist_conswork dworklist_empty (work_infapp A1 e c))
-  | d_applycont__tapp : forall A1 B1 c,
-      d_apply_cont (cont_inftapp B1 c) 
+                  (work_infapp A1 e c)
+  | applycont__tapp : forall A1 B1 c,
+      apply_cont (cont_inftapp B1 c) 
                    A1
-                   (dworklist_conswork dworklist_empty (work_inftapp A1 B1 c))
-  | d_applycont__tappunion : forall A2 B2 C1 c,
-      d_apply_cont (cont_inftappunion A2 B2 c) 
+                   (work_inftapp A1 B1 c)
+  | applycont__tappunion : forall A2 B2 C1 c,
+      apply_cont (cont_inftappunion A2 B2 c) 
                    C1 
-                   (dworklist_conswork dworklist_empty (work_inftappunion C1 A2 B2 c))
-  | d_applycont__unioninftapp : forall A1 A2 c,
-      d_apply_cont (cont_unioninftapp A1 c) 
+                   (work_inftappunion C1 A2 B2 c)
+  | applycont__unioninftapp : forall A1 A2 c,
+      apply_cont (cont_unioninftapp A1 c) 
                    A2
-                   (dworklist_conswork dworklist_empty (work_unioninftapp A1 A2 c))
-  | d_applycont__sub : forall A1 B1,
-      d_apply_cont (cont_sub A1) 
+                   (work_unioninftapp A1 A2 c)
+  | applycont__sub : forall A1 B1,
+      apply_cont (cont_sub A1) 
                    B1
-                   (dworklist_conswork dworklist_empty (work_sub B1 A1))
+                   (work_sub B1 A1)
 .
 
 (* decl worklist delegated reduction, corresponds to Jimmy's dc *)
@@ -100,9 +100,9 @@ Inductive d_wl_del_red : dworklist -> Prop :=
       d_sub (dwl_to_denv Ω) S1 T1 ->
       d_wl_del_red Ω ->
       d_wl_del_red (dworklist_conswork Ω (work_sub S1 T1))
-  | d_wldelred__applycont : forall Ω c T1 Ω',
-      d_apply_cont c T1 Ω' ->
-      d_wl_del_red (dwl_app Ω' Ω) ->
+  | d_wldelred__applycont : forall Ω c T1 w,
+      apply_cont c T1 w ->
+      d_wl_del_red (dworklist_conswork Ω w) ->
       d_wl_del_red (dworklist_conswork Ω (work_apply c T1))
   .
 
@@ -252,8 +252,8 @@ Inductive d_wl_red : dworklist -> Prop :=    (* defn d_wl_red *)
  | d_wlred__infapp: forall (Ω:dworklist) (e:exp) (A1 B1:typ) (c:cont),
      d_wl_red (dworklist_conswork (dworklist_conswork Ω (work_check e A1)) (work_apply c B1)) ->
      d_wl_red (dworklist_conswork Ω (work_infapp (typ_arrow A1 B1) e c))
- | d_wlred__applycont : forall (Ω Ω':dworklist) (T1:typ) (c:cont),
-     d_apply_cont c T1 Ω' ->
-     d_wl_red (dwl_app Ω' Ω) ->
+ | d_wlred__applycont : forall (Ω:dworklist) (w:work) (T1:typ) (c:cont),
+     apply_cont c T1 w ->
+     d_wl_red (dworklist_conswork Ω w) ->
      d_wl_red (dworklist_conswork Ω (work_apply c T1))   
     .
