@@ -549,11 +549,6 @@ Proof.
       apply dwf_typ_weakening_cons; auto.
 Qed.
 
-(* Lemma dwft_subst : forall E X T1 T2,
-  X ~ dbind_tvar_empty ++ E ⊢ T1 ^ᵈ X ->
-  E ⊢ T2 ->
-  E ⊢ T1 ^^ᵈ T2.
-Admitted. *)
 
 Hint Constructors d_typing : core.
 

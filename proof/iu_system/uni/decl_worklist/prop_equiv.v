@@ -507,6 +507,15 @@ Proof with auto with dworklist.
 Admitted.
 
 
+Theorem d_wf_work_apply_cont : forall Ω c A1 Ω',
+  ⊢ᵈ Ω -> d_wf_cont (dwl_to_denv Ω) c -> dwl_to_denv Ω ⊢ A1 -> d_apply_cont c A1 Ω' ->
+  ⊢ᵈ dwl_app Ω' Ω.
+Proof.
+  intros. induction H2; simpl; auto;
+   try solve [dependent destruction H0; auto].
+Qed.
+
+
 Theorem d_wl_red_complete: forall Ω, 
     ⊢ᵈ Ω -> Ω ⟶⁎⋅ -> Ω ⟶ₐ⁎⋅.
 Proof with auto with dworklist.
@@ -543,6 +552,6 @@ Proof with auto with dworklist.
     econstructor. intuition.
   - destruct_wf. apply d_wl_red_sub_complete; eauto.
   - destruct_wf. econstructor; eauto.
-    apply IHd_wl_del_red. admit.
-Admitted.
+    apply IHd_wl_del_red. eapply d_wf_work_apply_cont; eauto.
+Qed.
 
