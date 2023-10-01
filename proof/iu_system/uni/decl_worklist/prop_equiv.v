@@ -280,10 +280,16 @@ Proof.
   intros. auto.
 Qed.
 
+Lemma dwl_app_cons_var: forall Ω1 Ω2 x b,
+  dworklist_consvar (dwl_app Ω2 Ω1) x b =(dwl_app (dworklist_consvar Ω2 x b) Ω1).
+Proof.
+  intros. auto.
+Qed.
 
 Ltac rewrite_dwl_app :=
   repeat
     match goal with
+    | _ : _ |- context [dworklist_consvar  (dwl_app ?Ω2 ?Ω1) ?X ?b] => rewrite dwl_app_cons_var
     | _ : _ |- context [dworklist_constvar (dwl_app ?Ω2 ?Ω1) ?X ?b] => rewrite dwl_app_cons_tvar
     | _ : _ |- context [dworklist_conswork (dwl_app ?Ω2 ?Ω1) ?w] => rewrite dwl_app_cons_work
     end.
@@ -292,49 +298,29 @@ Lemma d_wl_red_strengthen_work : forall Ω1 Ω2 w,
   (w ⫤ Ω1) ⟶ₐ⁎⋅ -> (dwl_app Ω2 Ω1) ⟶ₐ⁎⋅ -> (dwl_app Ω2 (w ⫤ Ω1)) ⟶ₐ⁎⋅ .
 Proof. 
   intros. dependent induction H0; 
-      try destruct Ω2; simpl in x; try solve [inversion x]; dependent destruction x; simpl; eauto with dworklist.
-  - econstructor. rewrite_dwl_app; auto.
+      try destruct Ω2; simpl in x; try solve [inversion x]; dependent destruction x; simpl; eauto with dworklist;
+      try solve [econstructor; rewrite_dwl_app; auto].
   - eapply d_wlred__sub_all with (L:=L). 
     intros. inst_cofinites_with X. 
     rewrite_dwl_app. auto.
   - eapply d_wlred__sub_alll with (T1:=T1); auto.
     admit.
     rewrite_dwl_app. auto.
-  - eapply d_wlred__sub_intersection1.
+  - eapply d_wlred__chk_absarrow with (L:=L).
+    intros. inst_cofinites_with x.
     rewrite_dwl_app. auto.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
+  - eapply d_wlred__chk_abstop with (L:=L).
+    intros. inst_cofinites_with x.
+    rewrite_dwl_app. auto.
+  - eapply d_wlred__inf_var with (A1:=A1). 
+    admit.
+    rewrite_dwl_app. auto.
+  - eapply d_wlred__inf_tabs with (L:=L).
+    intros. inst_cofinites_with X.
+    rewrite_dwl_app. auto.
+  - eapply d_wlred__infabs_all with (T1:=T1).
+    admit.
+    rewrite_dwl_app. auto.
   - econstructor; eauto.
     replace (dwl_app Ω' (dwl_app Ω2 (w ⫤ Ω1))) with ((dwl_app (dwl_app Ω' Ω2) (w ⫤ Ω1))) by admit.
     apply IHd_wl_red; auto.
@@ -475,8 +461,8 @@ Proof with auto with dworklist.
   - destruct_wf. refine (d_wl_red_chk_inf_complete _ _ _ _ H2 _ _); auto...
   - destruct_wf.
     refine (d_wl_red_chk_inf_complete _ _ _ _ H2 _ _ _); auto...
+    apply d_chk_inf_wft in H2.
     apply IHd_wl_del_red. auto.
-    admit.
   - destruct_wf. eapply d_wl_red_infabs_complete; eauto...
     apply d_infabs_wft in H2. 
     intuition.
@@ -502,6 +488,7 @@ Proof with auto with dworklist.
     apply d_inftapp_wft in H4.
     econstructor. intuition.
   - destruct_wf. apply d_wl_red_sub_complete; eauto.
-Admitted.
-
+  - destruct_wf. econstructor; eauto.
+    apply IHd_wl_del_red. admit.
+Qed.
 
