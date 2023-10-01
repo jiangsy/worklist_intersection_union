@@ -138,52 +138,97 @@ with inst_body : subst_set -> a_body -> dbody -> Prop :=
 . *)
 
 Inductive inst_cont : subst_set -> cont -> cont -> Prop :=
-  (* | instc_app : forall θ eᵃ eᵈ cᵃ cᵈ,
+  | inst_cont__infabs : forall θ cᵃ cᵈ,
+    inst_cont θ cᵃ cᵈ ->
+    inst_cont θ (cont_infabs cᵃ) (cont_infabs cᵈ)
+  | inst_cont__infabs_union : forall θ A1ᵃ A1ᵈ cᵃ cᵈ,
+    inst_typ θ A1ᵃ A1ᵈ ->
+    inst_cont θ cᵃ cᵈ ->
+    inst_cont θ (cont_infabsunion A1ᵃ cᵃ) (cont_infabsunion A1ᵈ cᵈ)
+  | inst_cont__infapp : forall θ eᵃ eᵈ cᵃ cᵈ,
     inst_exp θ eᵃ eᵈ ->
     inst_cont θ cᵃ cᵈ ->
-    inst_cont θ (a_cont_app eᵃ cᵃ) (dcont_app eᵈ cᵈ)
-  | instc_tapp : forall θ Tᵃ Tᵈ cᵃ cᵈ,
-    inst_typ θ Tᵃ Tᵈ ->
+    inst_cont θ (cont_infapp eᵃ cᵃ) (cont_infapp eᵈ cᵈ)
+  | inst_cont__inftapp : forall θ A1ᵃ A1ᵈ cᵃ cᵈ,
+    inst_typ θ A1ᵃ A1ᵈ ->
     inst_cont θ cᵃ cᵈ ->
-    inst_cont θ (a_cont_tapp Tᵃ cᵃ) (dcont_tapp Tᵈ cᵈ) *)
-  | inst_sub : forall θ A1ᵃ A1ᵈ,
+    inst_cont θ (cont_inftapp A1ᵃ cᵃ) (cont_inftapp A1ᵈ cᵈ)
+  | inst_cont__inftappunion : forall θ A1ᵃ A1ᵈ A2ᵃ A2ᵈ cᵃ cᵈ,
+    inst_typ θ A1ᵃ A1ᵈ ->
+    inst_typ θ A2ᵃ A2ᵈ ->
+    inst_cont θ cᵃ cᵈ ->
+    inst_cont θ (cont_inftappunion A1ᵃ A2ᵃ cᵃ) (cont_inftappunion A1ᵈ A2ᵈ cᵈ)
+  | inst_cont__unioninftapp : forall θ A1ᵃ A1ᵈ cᵃ cᵈ,
+    inst_typ θ A1ᵃ A1ᵈ ->
+    inst_cont θ cᵃ cᵈ ->
+    inst_cont θ (cont_unioninftapp A1ᵃ cᵃ) (cont_unioninftapp A1ᵈ cᵈ)
+  | inst_cont__unioninfabs : forall θ A1ᵃ A1ᵈ cᵃ cᵈ,
+    inst_typ θ A1ᵃ A1ᵈ ->
+    inst_cont θ cᵃ cᵈ ->
+    inst_cont θ (cont_unioninfabs A1ᵃ cᵃ) (cont_unioninfabs A1ᵈ cᵈ)    
+  | inst_cont__sub : forall θ A1ᵃ A1ᵈ,
     inst_typ θ A1ᵃ A1ᵈ ->
     inst_cont θ (cont_sub A1ᵃ) (cont_sub A1ᵈ)
 .
 
 
-Inductive inst_work : subst_set -> a_work -> dwork -> Prop :=
-  | instw_inf : forall Θ eᵃ eᵈ cᵃ cᵈ,
+Inductive inst_work : subst_set -> work -> work -> Prop :=
+  | inst_work__inf : forall Θ eᵃ eᵈ cᵃ cᵈ,
       inst_exp Θ eᵃ eᵈ ->
       inst_cont Θ cᵃ cᵈ ->
-      inst_work Θ (a_work_infer eᵃ cᵃ) (dwork_infer eᵈ cᵈ)
-  | instw_chk : forall Θ eᵃ eᵈ Tᵃ Tᵈ,
+      inst_work Θ (work_infer eᵃ cᵃ) (work_infer eᵈ cᵈ)
+  | inst_work__chk : forall Θ eᵃ eᵈ A1ᵃ A1ᵈ,
       inst_exp Θ eᵃ eᵈ ->
-      inst_typ Θ Tᵃ Tᵈ ->
-      inst_work Θ (a_work_check eᵃ Tᵃ) (dwork_check eᵈ Tᵈ)
-  | instw_infapp : forall Θ Tᵃ Tᵈ eᵃ eᵈ cᵃ cᵈ,
-      inst_typ Θ Tᵃ Tᵈ ->
+      inst_typ Θ A1ᵃ A1ᵈ ->
+      inst_work Θ (work_check eᵃ A1ᵃ) (work_check eᵈ A1ᵈ)
+  | inst_work__infabs : forall Θ A1ᵃ A1ᵈ  cᵃ cᵈ,
+      inst_typ Θ A1ᵃ A1ᵈ ->
+      inst_cont Θ cᵃ cᵈ ->
+      inst_work Θ (work_infabs A1ᵃ cᵃ ) (work_infabs A1ᵈ cᵈ)
+  | inst_work__infabsunion : forall Θ A1ᵃ A1ᵈ A2ᵃ A2ᵈ cᵃ cᵈ,
+      inst_typ Θ A1ᵃ A1ᵈ ->
+      inst_typ Θ A2ᵃ A2ᵈ ->
+      inst_cont Θ cᵃ cᵈ ->
+      inst_work Θ (work_infabsunion A1ᵃ A2ᵃ cᵃ) (work_infabsunion A1ᵈ A2ᵈ cᵈ)
+  | inst_work__infapp : forall Θ A1ᵃ A1ᵈ eᵃ eᵈ cᵃ cᵈ,
+      inst_typ Θ A1ᵃ A1ᵈ ->
       inst_exp Θ eᵃ eᵈ ->
       inst_cont Θ cᵃ cᵈ ->
-      inst_work Θ (a_work_infapp Tᵃ eᵃ cᵃ) (dwork_infapp Tᵈ eᵈ cᵈ)
-  | instw_inftapp : forall Θ T1ᵃ T1ᵈ T2ᵃ T2ᵈ cᵃ cᵈ,
-      inst_typ Θ T1ᵃ T1ᵈ ->
-      inst_typ Θ T2ᵃ T2ᵈ ->
+      inst_work Θ (work_infapp A1ᵃ eᵃ cᵃ) (work_infapp A1ᵈ eᵈ cᵈ)
+  | inst_work__inftapp : forall Θ A1ᵃ A1ᵈ A2ᵃ A2ᵈ cᵃ cᵈ,
+      inst_typ Θ A1ᵃ A1ᵈ ->
+      inst_typ Θ A2ᵃ A2ᵈ ->
       inst_cont Θ cᵃ cᵈ ->
-      inst_work Θ (a_work_inftapp T1ᵃ T2ᵃ cᵃ) (dwork_inftapp T1ᵈ T2ᵈ cᵈ)
-  | instw_sub : forall θ S1ᵃ S1ᵈ T1ᵃ T1ᵈ,
-      inst_typ θ S1ᵃ S1ᵈ ->
-      inst_typ θ T1ᵃ T1ᵈ ->
-      inst_work θ (a_work_sub S1ᵃ T1ᵃ) (dwork_sub S1ᵈ T1ᵈ)
-  | instw_apply : forall θ cᵃ cᵈ Tᵃ Tᵈ,
+      inst_work Θ (work_inftapp A1ᵃ A2ᵃ cᵃ) (work_inftapp A1ᵈ A2ᵈ cᵈ)
+  | inst_work__sub : forall θ A1ᵃ A1ᵈ B1ᵃ B1ᵈ,
+      inst_typ θ A1ᵃ A1ᵈ ->
+      inst_typ θ B1ᵃ B1ᵈ ->
+      inst_work θ (work_sub A1ᵃ B1ᵃ) (work_sub A1ᵈ B1ᵈ)
+  | inst_work__inftappunion : forall Θ A1ᵃ A1ᵈ A2ᵃ A2ᵈ B1ᵃ B1ᵈ cᵃ cᵈ,
+      inst_typ Θ A1ᵃ A1ᵈ ->
+      inst_typ Θ A2ᵃ A2ᵈ ->
+      inst_typ Θ B1ᵃ B1ᵈ ->
+      inst_cont Θ cᵃ cᵈ ->
+      inst_work Θ (work_inftappunion A1ᵃ A2ᵃ B1ᵃ cᵃ) (work_inftappunion A1ᵈ A2ᵈ B1ᵈ cᵈ)
+  | inst_work__unioninftapp : forall Θ A1ᵃ A1ᵈ A2ᵃ A2ᵈ cᵃ cᵈ,
+      inst_typ Θ A1ᵃ A1ᵈ ->
+      inst_typ Θ A2ᵃ A2ᵈ ->
+      inst_cont Θ cᵃ cᵈ ->
+      inst_work Θ (work_unioninftapp A1ᵃ A2ᵃ cᵃ) (work_unioninftapp A1ᵈ A2ᵈ cᵈ)
+  | inst_work__unioninfabs : forall Θ A1ᵃ A1ᵈ A2ᵃ A2ᵈ cᵃ cᵈ,
+      inst_typ Θ A1ᵃ A1ᵈ ->
+      inst_typ Θ A2ᵃ A2ᵈ ->
+      inst_cont Θ cᵃ cᵈ ->
+      inst_work Θ (work_unioninfabs A1ᵃ A2ᵃ cᵃ) (work_unioninfabs A1ᵈ A2ᵈ cᵈ)
+  | inst_work__applycont : forall θ cᵃ cᵈ A1ᵃ A1ᵈ,
       inst_cont θ cᵃ cᵈ ->
-      inst_typ θ Tᵃ Tᵈ ->
-      inst_work θ (a_work_apply cᵃ Tᵃ) (dwork_apply cᵈ Tᵈ)
+      inst_typ θ A1ᵃ A1ᵈ ->
+      inst_work θ (work_apply cᵃ A1ᵃ) (work_apply cᵈ A1ᵈ)
 .
 
 Reserved Notation "θ ⫦ Γᵃ ⇝ Γᵈ ⫣ θ'"
   (at level 65, Γᵃ at next level, Γᵈ at next level, no associativity).
-Inductive inst_worklist : subst_set -> la_worklist -> ld_worklist -> subst_set -> Prop := 
+Inductive inst_worklist : subst_set -> lworklist -> ld_worklist -> subst_set -> Prop := 
   | inst_wl_nil : forall θ, 
       wf_ss θ -> 
       θ ⫦ la_wl_nil ⇝ ld_wl_nil ⫣ θ
@@ -600,5 +645,5 @@ Proof.
 Admitted. *)
 
 
-Definition transfer (Γ : la_worklist) (Γ' : ld_worklist) : Prop :=
+Definition transfer (Γ : lworklist) (Γ' : ld_worklist) : Prop :=
   exists θ', inst_worklist nil Γ Γ' θ'.
