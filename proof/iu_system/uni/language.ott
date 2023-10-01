@@ -20,7 +20,6 @@ body :: body_ ::=
 
 exp, e, f, g :: exp_ ::=
   | unit                                ::   :: unit 
-  | top                                 ::   :: top
   | x                                   ::   :: var
   | \ x . e                             ::   :: abs  (+ bind x in e +)
   | e1 e2                               ::   :: app
@@ -56,7 +55,6 @@ denv, E, F, G:: '' ::= {{ coq list (atom*dbind) }}
 
 dvalue, v :: dvalue_ ::=
   | unit                 ::   :: unit
-  | top                  ::   :: top
   | \ x . e              ::   :: abs  (+ bind x in e +)
   | \ X . body          ::   :: tabs (+ bind X in body +)
 
@@ -190,9 +188,6 @@ e ¬= λ :: :: neq_abs :: 'neq_abs__' by
 
 ---------------------- :: unit
 unit ¬= λ
-
----------------------- :: top
-top ¬= λ
 
 ---------------------- :: var
 x ¬= λ
@@ -408,14 +403,12 @@ E |- e :: :: d_wf_exp :: 'd_wf_exp__' by
 --------- :: unit
 E |- unit 
 
---------- :: top
-E |- top 
-
 (x : A) in E  
 ----------------- :: var
 E |- x 
 
-E , x : TOP |- e
+E |- T
+E , x : T |- e
 ----------------- :: abs
 E |- \ x . e
 
@@ -548,7 +541,6 @@ E |- c
 E |- _ ⊔▹ A >> c  
 
 E |- A 
-E |- c
 -------------------- :: sub
 E |- _ <: A  
 

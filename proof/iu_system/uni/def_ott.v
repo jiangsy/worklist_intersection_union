@@ -21,7 +21,6 @@ Inductive body : Set :=
  | body_anno (e:exp) (A:typ)
 with exp : Set := 
  | exp_unit : exp
- | exp_top : exp
  | exp_var_b (_:nat)
  | exp_var_f (x:expvar)
  | exp_abs (e:exp)
@@ -68,7 +67,6 @@ Inductive dworklist : Set :=
 
 Inductive dvalue : Set := 
  | dvalue_unit : dvalue
- | dvalue_top : dvalue
  | dvalue_abs (e:exp)
  | dvalue_tabs (body5:body).
 
@@ -99,7 +97,6 @@ end.
 Fixpoint open_exp_wrt_typ_rec (k:nat) (A_5:typ) (e_5:exp) {struct e_5}: exp :=
   match e_5 with
   | exp_unit => exp_unit 
-  | exp_top => exp_top 
   | (exp_var_b nat) => exp_var_b nat
   | (exp_var_f x) => exp_var_f x
   | (exp_abs e) => exp_abs (open_exp_wrt_typ_rec k A_5 e)
@@ -116,7 +113,6 @@ end.
 Fixpoint open_exp_wrt_exp_rec (k:nat) (e_5:exp) (e__6:exp) {struct e__6}: exp :=
   match e__6 with
   | exp_unit => exp_unit 
-  | exp_top => exp_top 
   | (exp_var_b nat) => 
       match lt_eq_lt_dec nat k with
         | inleft (left _) => exp_var_b nat
@@ -199,7 +195,6 @@ end.
 Definition open_dvalue_wrt_exp_rec (k:nat) (e5:exp) (v5:dvalue) : dvalue :=
   match v5 with
   | dvalue_unit => dvalue_unit 
-  | dvalue_top => dvalue_top 
   | (dvalue_abs e) => dvalue_abs (open_exp_wrt_exp_rec (S k) e5 e)
   | (dvalue_tabs body5) => dvalue_tabs (open_body_wrt_exp_rec k e5 body5)
 end.
@@ -207,7 +202,6 @@ end.
 Definition open_dvalue_wrt_typ_rec (k:nat) (A5:typ) (v5:dvalue) : dvalue :=
   match v5 with
   | dvalue_unit => dvalue_unit 
-  | dvalue_top => dvalue_top 
   | (dvalue_abs e) => dvalue_abs (open_exp_wrt_typ_rec k A5 e)
   | (dvalue_tabs body5) => dvalue_tabs (open_body_wrt_typ_rec (S k) A5 body5)
 end.
@@ -276,7 +270,6 @@ end.
 Fixpoint close_exp_wrt_typ_rec (k:nat) (A_5:var) (e_5:exp) {struct e_5}: exp :=
   match e_5 with
   | exp_unit => exp_unit 
-  | exp_top => exp_top 
   | (exp_var_b nat) => exp_var_b nat
   | (exp_var_f x) => exp_var_f x
   | (exp_abs e) => exp_abs (close_exp_wrt_typ_rec k A_5 e)
@@ -293,7 +286,6 @@ end.
 Fixpoint close_exp_wrt_exp_rec (k:nat) (e_5:var) (e__6:exp) {struct e__6}: exp :=
   match e__6 with
   | exp_unit => exp_unit 
-  | exp_top => exp_top 
   | (exp_var_b nat) => 
        if (lt_dec nat k) 
          then exp_var_b nat
@@ -374,7 +366,6 @@ end.
 Definition close_dvalue_wrt_exp_rec (k:nat) (e5:var) (v5:dvalue) : dvalue :=
   match v5 with
   | dvalue_unit => dvalue_unit 
-  | dvalue_top => dvalue_top 
   | (dvalue_abs e) => dvalue_abs (close_exp_wrt_exp_rec (S k) e5 e)
   | (dvalue_tabs body5) => dvalue_tabs (close_body_wrt_exp_rec k e5 body5)
 end.
@@ -382,7 +373,6 @@ end.
 Definition close_dvalue_wrt_typ_rec (k:nat) (A5:var) (v5:dvalue) : dvalue :=
   match v5 with
   | dvalue_unit => dvalue_unit 
-  | dvalue_top => dvalue_top 
   | (dvalue_abs e) => dvalue_abs (close_exp_wrt_typ_rec k A5 e)
   | (dvalue_tabs body5) => dvalue_tabs (close_body_wrt_typ_rec (S k) A5 body5)
 end.
@@ -464,8 +454,6 @@ Inductive lc_typ : typ -> Prop :=    (* defn lc_typ *)
 Inductive lc_exp : exp -> Prop :=    (* defn lc_exp *)
  | lc_exp_unit : 
      (lc_exp exp_unit)
- | lc_exp_top : 
-     (lc_exp exp_top)
  | lc_exp_var_f : forall (x:expvar),
      (lc_exp (exp_var_f x))
  | lc_exp_abs : forall (e:exp),
@@ -611,8 +599,6 @@ Inductive lc_dworklist : dworklist -> Prop :=    (* defn lc_dworklist *)
 Inductive lc_dvalue : dvalue -> Prop :=    (* defn lc_dvalue *)
  | lc_dvalue_unit : 
      (lc_dvalue dvalue_unit)
- | lc_dvalue_top : 
-     (lc_dvalue dvalue_top)
  | lc_dvalue_abs : forall (e:exp),
       ( forall x , lc_exp  ( open_exp_wrt_exp e (exp_var_f x) )  )  ->
      (lc_dvalue (dvalue_abs e))
@@ -636,7 +622,6 @@ end.
 Fixpoint ftvar_in_exp (e_5:exp) : vars :=
   match e_5 with
   | exp_unit => {}
-  | exp_top => {}
   | (exp_var_b nat) => {}
   | (exp_var_f x) => {}
   | (exp_abs e) => (ftvar_in_exp e)
@@ -653,7 +638,6 @@ end.
 Fixpoint fvar_in_exp (e_5:exp) : vars :=
   match e_5 with
   | exp_unit => {}
-  | exp_top => {}
   | (exp_var_b nat) => {}
   | (exp_var_f x) => {{x}}
   | (exp_abs e) => (fvar_in_exp e)
@@ -747,7 +731,6 @@ end.
 Definition ftvar_in_dvalue (v5:dvalue) : vars :=
   match v5 with
   | dvalue_unit => {}
-  | dvalue_top => {}
   | (dvalue_abs e) => (ftvar_in_exp e)
   | (dvalue_tabs body5) => (ftvar_in_body body5)
 end.
@@ -755,7 +738,6 @@ end.
 Definition fvar_in_dvalue (v5:dvalue) : vars :=
   match v5 with
   | dvalue_unit => {}
-  | dvalue_top => {}
   | (dvalue_abs e) => (fvar_in_exp e)
   | (dvalue_tabs body5) => (fvar_in_body body5)
 end.
@@ -777,7 +759,6 @@ end.
 Fixpoint subst_tvar_in_exp (A_5:typ) (X5:typvar) (e_5:exp) {struct e_5} : exp :=
   match e_5 with
   | exp_unit => exp_unit 
-  | exp_top => exp_top 
   | (exp_var_b nat) => exp_var_b nat
   | (exp_var_f x) => exp_var_f x
   | (exp_abs e) => exp_abs (subst_tvar_in_exp A_5 X5 e)
@@ -794,7 +775,6 @@ end.
 Fixpoint subst_var_in_exp (e_5:exp) (x5:expvar) (e__6:exp) {struct e__6} : exp :=
   match e__6 with
   | exp_unit => exp_unit 
-  | exp_top => exp_top 
   | (exp_var_b nat) => exp_var_b nat
   | (exp_var_f x) => (if eq_var x x5 then e_5 else (exp_var_f x))
   | (exp_abs e) => exp_abs (subst_var_in_exp e_5 x5 e)
@@ -888,7 +868,6 @@ end.
 Definition subst_tvar_in_dvalue (A5:typ) (X5:typvar) (v5:dvalue) : dvalue :=
   match v5 with
   | dvalue_unit => dvalue_unit 
-  | dvalue_top => dvalue_top 
   | (dvalue_abs e) => dvalue_abs (subst_tvar_in_exp A5 X5 e)
   | (dvalue_tabs body5) => dvalue_tabs (subst_tvar_in_body A5 X5 body5)
 end.
@@ -896,7 +875,6 @@ end.
 Definition subst_var_in_dvalue (e5:exp) (x5:expvar) (v5:dvalue) : dvalue :=
   match v5 with
   | dvalue_unit => dvalue_unit 
-  | dvalue_top => dvalue_top 
   | (dvalue_abs e) => dvalue_abs (subst_var_in_exp e5 x5 e)
   | (dvalue_tabs body5) => dvalue_tabs (subst_var_in_body e5 x5 body5)
 end.
@@ -943,8 +921,6 @@ Inductive ds_in : typvar -> typ -> Prop :=    (* defn ds_in *)
 Inductive neq_abs : exp -> Prop :=    (* defn neq_abs *)
  | neq_abs__unit : 
      neq_abs exp_unit
- | neq_abs__top : 
-     neq_abs exp_top
  | neq_abs__var : forall (x:expvar),
      neq_abs (exp_var_f x)
  | neq_abs__app : forall (e1 e2:exp),
@@ -1089,13 +1065,12 @@ Inductive d_wf_typ : denv -> typ -> Prop :=    (* defn d_wf_typ *)
 Inductive d_wf_exp : denv -> exp -> Prop :=    (* defn d_wf_exp *)
  | d_wf_exp__unit : forall (E:denv),
      d_wf_exp E exp_unit
- | d_wf_exp__top : forall (E:denv),
-     d_wf_exp E exp_top
  | d_wf_exp__var : forall (E:denv) (x:expvar) (A:typ),
       binds ( x )  ( (dbind_typ A) ) ( E )  ->
      d_wf_exp E (exp_var_f x)
- | d_wf_exp__abs : forall (L:vars) (E:denv) (e:exp),
-      ( forall x , x \notin  L  -> d_wf_exp  ( x ~ (dbind_typ typ_top)  ++  E )   ( open_exp_wrt_exp e (exp_var_f x) )  )  ->
+ | d_wf_exp__abs : forall (L:vars) (E:denv) (e:exp) (T:typ),
+     d_wf_typ E T ->
+      ( forall x , x \notin  L  -> d_wf_exp  ( x ~ (dbind_typ T)  ++  E )   ( open_exp_wrt_exp e (exp_var_f x) )  )  ->
      d_wf_exp E (exp_abs e)
  | d_wf_exp__app : forall (E:denv) (e1 e2:exp),
      d_wf_exp E e1 ->
@@ -1186,9 +1161,8 @@ Inductive d_wf_cont : denv -> cont -> Prop :=    (* defn d_wf_cont *)
      d_wf_typ E A ->
      d_wf_cont E c ->
      d_wf_cont E (cont_unioninfabs A c)
- | d_wf_cont__sub : forall (E:denv) (A:typ) (c:cont),
+ | d_wf_cont__sub : forall (E:denv) (A:typ),
      d_wf_typ E A ->
-     d_wf_cont E c ->
      d_wf_cont E (cont_sub A).
 
 (* defns J_d_wf_work *)

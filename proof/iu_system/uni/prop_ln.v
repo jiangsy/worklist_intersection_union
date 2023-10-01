@@ -68,7 +68,6 @@ Fixpoint size_body (body1 : body) {struct body1} : nat :=
 with size_exp (e1 : exp) {struct e1} : nat :=
   match e1 with
     | exp_unit => 1
-    | exp_top => 1
     | exp_var_f x1 => 1
     | exp_var_b n1 => 1
     | exp_abs e2 => 1 + (size_exp e2)
@@ -134,8 +133,6 @@ Inductive degree_body_wrt_typ : nat -> body -> Prop :=
 with degree_exp_wrt_typ : nat -> exp -> Prop :=
   | degree_wrt_typ_exp_unit : forall n1,
     degree_exp_wrt_typ n1 (exp_unit)
-  | degree_wrt_typ_exp_top : forall n1,
-    degree_exp_wrt_typ n1 (exp_top)
   | degree_wrt_typ_exp_var_f : forall n1 x1,
     degree_exp_wrt_typ n1 (exp_var_f x1)
   | degree_wrt_typ_exp_var_b : forall n1 n2,
@@ -167,8 +164,6 @@ Inductive degree_body_wrt_exp : nat -> body -> Prop :=
 with degree_exp_wrt_exp : nat -> exp -> Prop :=
   | degree_wrt_exp_exp_unit : forall n1,
     degree_exp_wrt_exp n1 (exp_unit)
-  | degree_wrt_exp_exp_top : forall n1,
-    degree_exp_wrt_exp n1 (exp_top)
   | degree_wrt_exp_exp_var_f : forall n1 x1,
     degree_exp_wrt_exp n1 (exp_var_f x1)
   | degree_wrt_exp_exp_var_b : forall n1 n2,
@@ -278,8 +273,6 @@ Inductive lc_set_body : body -> Set :=
 with lc_set_exp : exp -> Set :=
   | lc_set_exp_unit :
     lc_set_exp (exp_unit)
-  | lc_set_exp_top :
-    lc_set_exp (exp_top)
   | lc_set_exp_var_f : forall x1,
     lc_set_exp (exp_var_f x1)
   | lc_set_exp_abs : forall e1,
