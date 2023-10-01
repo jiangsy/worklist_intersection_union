@@ -8,19 +8,19 @@ Require Import uni.notations.
 Require Import ln_utils.
 
 
-Inductive ss_entry := 
-  | sse_tvar 
-  | sse_stvar
-  | sse_etvar (T : dtyp).
+Inductive ss_bind := 
+  | ss_bind__tvar_empty
+  | ss_bind__stvar_empty
+  | ss_bind__typ (T : typ).
 
-Definition subst_set := list (atom * ss_entry).
+Definition subst_set := list (atom * ss_bind).
 
-Fixpoint ss_to_denv (θ : list (atom * ss_entry)) : denv := 
+Fixpoint ss_to_denv (θ : list (atom * ss_bind)) : denv := 
   match θ with 
   | nil => nil
-  | (X , sse_tvar) :: θ' => (X ~ dbind_tvar_empty) ++ ss_to_denv θ'
-  | (X , sse_stvar) :: θ' => (X ~ dbind_stvar_empty) ++ ss_to_denv θ'
-  | (X , sse_etvar T) :: θ' => ss_to_denv θ'
+  | (X , ss_bind__tvar_empty) :: θ' => (X ~ dbind_tvar_empty) ++ ss_to_denv θ'
+  | (X , ss_bind__stvar_empty) :: θ' => (X ~ dbind_stvar_empty) ++ ss_to_denv θ'
+  | (X , ss_bind__typ T) :: θ' => ss_to_denv θ'
   end.
 
 Inductive wf_ss : subst_set -> Prop :=
@@ -28,17 +28,16 @@ Inductive wf_ss : subst_set -> Prop :=
   | wfss_tvar : forall θ X,
       wf_ss θ -> 
       X `notin` dom θ ->
-      wf_ss ((X , sse_tvar) :: θ)
-  | wf_ss_stvar : forall θ SX,
-      wf_ss θ ->
-      SX `notin` dom θ ->
-      wf_ss ((SX, sse_stvar) :: θ)
-  | wf_ss_ev : forall θ EX T, 
-     wf_ss θ  -> 
-     EX `notin` dom θ  ->
-     (ss_to_denv θ) ⊢ T -> 
-     dmono_typ T ->
-     wf_ss ((EX , sse_etvar T) :: θ)
+      wf_ss ((X , ss_bind__tvar_empty) :: θ)
+  | wf_ss_stvar : forall θ X,
+    wf_ss θ ->
+    X `notin` dom θ ->
+    wf_ss ((X, ss_bind__stvar_empty) :: θ)
+  | wf_ss_ev : forall θ X T, 
+    wf_ss θ  -> 
+    X `notin` dom θ  ->
+    d_mono_typ (ss_to_denv θ) T -> 
+    wf_ss ((X , ss_bind__typ T) :: θ)
 .
 
 Lemma wf_uniq : forall Θ,
@@ -48,7 +47,7 @@ Proof.
 Qed.
 
 
-Lemma wf_mono : forall θ X T, 
+(* Lemma wf_mono : forall θ X T, 
   wf_ss θ -> binds X (sse_etvar T) θ -> dmono_typ T.
 Proof.
   intros. induction H.
@@ -61,53 +60,53 @@ Proof.
     + auto.
   - inversion H0; auto.
     dependent destruction H4. auto.
-Qed.
+Qed. *)
 
-Inductive inst_typ : subst_set -> a_typ -> dtyp -> Prop := 
-  | insttyp_tvar : forall θ X, 
+Inductive inst_typ : subst_set -> typ -> typ -> Prop := 
+  | inst_typ__tvar : forall θ X, 
       wf_ss θ -> 
-      inst_typ θ (a_typ_tvar_f X) (dtyp_var_f X)
-  | insttyp_stvar : forall θ SX, 
+      binds X (ss_bind__tvar_empty) θ ->
+      inst_typ θ (typ_var_f X) (typ_var_f X)
+  | inst_typ__stvar : forall θ X, 
       wf_ss θ -> 
-      inst_typ θ (a_typ_stvar SX) (dtyp_svar SX)
-  | insttyp_etvar : forall θ EX T,
+      binds X (ss_bind__stvar_empty) θ ->
+      inst_typ θ (typ_var_f X) (typ_var_f X)
+  | inst_typ__etvar : forall θ X A1,
       wf_ss θ ->
-      binds EX (sse_etvar T) θ ->
-      inst_typ θ (a_typ_etvar EX) T
-  | instyp_unit : forall θ,
+      binds X (ss_bind__typ A1) θ ->
+      inst_typ θ (typ_var_f X) A1
+  | inst_typ_unit : forall θ,
       wf_ss θ ->
-      inst_typ θ a_typ_unit dtyp_unit
-  | instyp_bot : forall θ,
+      inst_typ θ typ_unit typ_unit
+  | inst_typ__bot : forall θ,
       wf_ss θ ->
-      inst_typ θ a_typ_bot dtyp_bot
-  | instyp_top : forall θ,
+      inst_typ θ typ_bot typ_bot
+  | inst_typ__top : forall θ,
       wf_ss θ ->
-      inst_typ θ a_typ_top dtyp_top
-  | instyp_arrow : forall θ T1ᵃ T1ᵈ T2ᵃ T2ᵈ,
-      inst_typ θ T1ᵃ T1ᵈ ->
-      inst_typ θ T2ᵃ T2ᵈ ->
-      inst_typ θ (a_typ_arrow T1ᵃ T2ᵃ) (dtyp_arrow T1ᵈ T2ᵈ)
-  | instyp_all : forall θ L T1ᵃ T1ᵈ,
+      inst_typ θ typ_top typ_top
+  | instyp_arrow : forall θ A1ᵃ A2ᵃ A1ᵈ A2ᵈ,
+      inst_typ θ A1ᵃ A1ᵈ ->
+      inst_typ θ A2ᵃ A2ᵈ ->
+      inst_typ θ (typ_arrow A1ᵃ A2ᵃ) (typ_arrow A1ᵈ A2ᵈ)
+  | instyp_all : forall θ L A1ᵃ A1ᵈ,
       (forall X, X `notin` L -> 
-        inst_typ θ (open_a_typ_wrt_a_typ T1ᵃ (a_typ_tvar_f X)) (open_dtyp_wrt_dtyp T1ᵈ (dtyp_var_f X))
+        inst_typ ((X, ss_bind__tvar_empty) :: θ) (open_typ_wrt_typ A1ᵃ (typ_var_f X)) (open_typ_wrt_typ A1ᵈ (typ_var_f X))
       ) ->
-      inst_typ θ (a_typ_all T1ᵃ) (dtyp_all T1ᵈ)
-  | instyp_intersection : forall θ T1ᵃ T1ᵈ T2ᵃ T2ᵈ,
-      inst_typ θ T1ᵃ T1ᵈ ->
-      inst_typ θ T2ᵃ T2ᵈ ->
-      inst_typ θ (a_typ_intersection T1ᵃ T2ᵃ) (dtyp_intersection T1ᵈ T2ᵈ)
-  | instyp_union : forall θ T1ᵃ T1ᵈ T2ᵃ T2ᵈ,
-      inst_typ θ T1ᵃ T1ᵈ ->
-      inst_typ θ T2ᵃ T2ᵈ ->
-      inst_typ θ (a_typ_union T1ᵃ T2ᵃ) (dtyp_union T1ᵈ T2ᵈ)
+      inst_typ θ (typ_all A1ᵃ) (typ_all A1ᵈ)
+  | instyp_intersection : forall θ A1ᵃ A2ᵃ A1ᵈ A2ᵈ,
+      inst_typ θ A1ᵃ A1ᵈ ->
+      inst_typ θ A2ᵃ A2ᵈ ->
+      inst_typ θ (typ_intersection A1ᵃ A2ᵃ) (typ_intersection A1ᵈ A2ᵈ)
+  | instyp_union : forall θ A1ᵃ A2ᵃ A1ᵈ A2ᵈ,
+      inst_typ θ A1ᵃ A1ᵈ ->
+      inst_typ θ A2ᵃ A2ᵈ ->
+      inst_typ θ (typ_union A1ᵃ A2ᵃ) (typ_union A1ᵈ A2ᵈ)
   . 
 
-Inductive inst_exp : subst_set -> a_exp -> dexp -> Prop :=
+Inductive inst_exp : subst_set -> exp -> exp -> Prop :=
   | inste_unit : forall θ,
-      inst_exp θ a_exp_unit dexp_unit
-  | inste_top : forall θ,
-      inst_exp θ a_exp_top dexp_top
-  | inste_abs : forall L θ eᵃ eᵈ,
+      inst_exp θ exp_unit exp_unit.
+  (* | inste_abs : forall L θ eᵃ eᵈ,
       (forall x, x `notin` L -> 
         inst_exp θ (open_a_exp_wrt_a_exp eᵃ (a_exp_var_f x))
                    (open_dexp_wrt_dexp eᵈ (dexp_var_f x))
@@ -136,23 +135,20 @@ with inst_body : subst_set -> a_body -> dbody -> Prop :=
       inst_exp θ eᵃ eᵈ ->
       inst_typ θ Tᵃ Tᵈ ->
       inst_body θ (a_body_anno eᵃ Tᵃ) (dbody_anno eᵈ Tᵈ)
-.
+. *)
 
-Inductive inst_cont : subst_set -> a_cont -> dcont -> Prop :=
-  | instc_done : forall θ,
-    wf_ss θ -> 
-    inst_cont θ a_cont_done dcont_done
-  | instc_app : forall θ eᵃ eᵈ cᵃ cᵈ,
+Inductive inst_cont : subst_set -> cont -> cont -> Prop :=
+  (* | instc_app : forall θ eᵃ eᵈ cᵃ cᵈ,
     inst_exp θ eᵃ eᵈ ->
     inst_cont θ cᵃ cᵈ ->
     inst_cont θ (a_cont_app eᵃ cᵃ) (dcont_app eᵈ cᵈ)
   | instc_tapp : forall θ Tᵃ Tᵈ cᵃ cᵈ,
     inst_typ θ Tᵃ Tᵈ ->
     inst_cont θ cᵃ cᵈ ->
-    inst_cont θ (a_cont_tapp Tᵃ cᵃ) (dcont_tapp Tᵈ cᵈ)
-  | inst_sub : forall θ Tᵃ Tᵈ,
-    inst_typ θ Tᵃ Tᵈ ->
-    inst_cont θ (a_cont_sub Tᵃ) (dcont_sub Tᵈ)
+    inst_cont θ (a_cont_tapp Tᵃ cᵃ) (dcont_tapp Tᵈ cᵈ) *)
+  | inst_sub : forall θ A1ᵃ A1ᵈ,
+    inst_typ θ A1ᵃ A1ᵈ ->
+    inst_cont θ (cont_sub A1ᵃ) (cont_sub A1ᵈ)
 .
 
 
