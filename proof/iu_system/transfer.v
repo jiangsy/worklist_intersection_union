@@ -105,37 +105,40 @@ Inductive inst_typ : subst_set -> typ -> typ -> Prop :=
 
 Inductive inst_exp : subst_set -> exp -> exp -> Prop :=
   | inste_unit : forall θ,
-      inst_exp θ exp_unit exp_unit.
-  (* | inste_abs : forall L θ eᵃ eᵈ,
+      inst_exp θ exp_unit exp_unit
+  | inste_var : forall θ x,
+      inst_exp θ (exp_var_f x) (exp_var_f x)
+  | inste_abs : forall L θ eᵃ eᵈ,
       (forall x, x `notin` L -> 
-        inst_exp θ (open_a_exp_wrt_a_exp eᵃ (a_exp_var_f x))
-                   (open_dexp_wrt_dexp eᵈ (dexp_var_f x))
+        inst_exp θ (open_exp_wrt_exp eᵃ (exp_var_f x))
+                   (open_exp_wrt_exp eᵈ (exp_var_f x))
         ) ->
-      inst_exp θ (a_exp_abs eᵃ) (dexp_abs eᵈ)
+      inst_exp θ (exp_abs eᵃ) (exp_abs eᵈ)
   | inste_app : forall θ e1ᵃ e2ᵃ e1ᵈ e2ᵈ,
       inst_exp θ e1ᵃ e1ᵈ ->
       inst_exp θ e2ᵃ e2ᵈ ->
-      inst_exp θ (a_exp_app e1ᵃ e2ᵃ) (dexp_app e1ᵈ e2ᵈ)
+      inst_exp θ (exp_app e1ᵃ e2ᵃ) (exp_app e1ᵈ e2ᵈ)
   | inste_tabs : forall L θ bᵃ bᵈ,
       (forall X, X \notin L -> 
-        inst_body θ (open_a_body_wrt_a_typ bᵃ (a_typ_tvar_f X))
-                    (open_dbody_wrt_dtyp bᵈ (dtyp_var_f X))
+        inst_body ((X, ss_bind__tvar_empty) :: θ) 
+                  (open_body_wrt_typ bᵃ (typ_var_f X))
+                  (open_body_wrt_typ bᵈ (typ_var_f X))
       ) ->
-      inst_exp θ (a_exp_tabs bᵃ) (dexp_tabs bᵈ)
-  | inste_tapp : forall θ eᵃ eᵈ Tᵃ Tᵈ,
+      inst_exp θ (exp_tabs bᵃ) (exp_tabs bᵈ)
+  | inste_tapp : forall θ eᵃ eᵈ A1ᵃ A1ᵈ,
       inst_exp θ eᵃ eᵈ ->
-      inst_typ θ Tᵃ Tᵈ ->
-      inst_exp θ (a_exp_tapp eᵃ Tᵃ) (dexp_tapp eᵈ Tᵈ)
-  | inste_anno : forall θ eᵃ eᵈ Tᵃ Tᵈ, 
+      inst_typ θ A1ᵃ A1ᵈ ->
+      inst_exp θ (exp_tapp eᵃ A1ᵃ) (exp_tapp eᵈ A1ᵈ)
+  | inste_anno : forall θ eᵃ eᵈ A1ᵃ A1ᵈ, 
       inst_exp θ eᵃ eᵈ ->
-      inst_typ θ Tᵃ Tᵈ ->
-      inst_exp θ (a_exp_anno eᵃ Tᵃ) (dexp_anno eᵈ Tᵈ) 
-with inst_body : subst_set -> a_body -> dbody -> Prop :=
-  | inst_bodyanno : forall θ eᵃ eᵈ Tᵃ Tᵈ,
+      inst_typ θ A1ᵃ A1ᵈ ->
+      inst_exp θ (exp_anno eᵃ A1ᵃ) (exp_anno eᵈ A1ᵈ) 
+with inst_body : subst_set -> body -> body -> Prop :=
+  | inst_bodyanno : forall θ eᵃ eᵈ A1ᵃ A1ᵈ,
       inst_exp θ eᵃ eᵈ ->
-      inst_typ θ Tᵃ Tᵈ ->
-      inst_body θ (a_body_anno eᵃ Tᵃ) (dbody_anno eᵈ Tᵈ)
-. *)
+      inst_typ θ A1ᵃ A1ᵈ ->
+      inst_body θ (body_anno eᵃ A1ᵃ) (body_anno eᵈ A1ᵈ)
+.
 
 Inductive inst_cont : subst_set -> cont -> cont -> Prop :=
   | inst_cont__infabs : forall θ cᵃ cᵈ,
@@ -226,31 +229,38 @@ Inductive inst_work : subst_set -> work -> work -> Prop :=
       inst_work θ (work_apply cᵃ A1ᵃ) (work_apply cᵈ A1ᵈ)
 .
 
-Reserved Notation "θ ⫦ Γᵃ ⇝ Γᵈ ⫣ θ'"
-  (at level 65, Γᵃ at next level, Γᵈ at next level, no associativity).
-Inductive inst_worklist : subst_set -> lworklist -> ld_worklist -> subst_set -> Prop := 
-  | inst_wl_nil : forall θ, 
+Reserved Notation "θ ⫦ Ω ⇝ Γ ⫣ θ'"
+  (at level 65, Ω at next level, Γ at next level, no associativity).
+Inductive inst_worklist : subst_set -> aworklist -> dworklist -> subst_set -> Prop := 
+  | inst_wl__empty : forall θ, 
       wf_ss θ -> 
-      θ ⫦ la_wl_nil ⇝ ld_wl_nil ⫣ θ
-  | inst_wl_sub : forall θ θ' Γᵃ t1ᵃ t2ᵃ Γᵈ t1ᵈ t2ᵈ, 
-      θ ⫦ Γᵃ ⇝ Γᵈ ⫣ θ' -> 
-      θ' ⫦ t1ᵃ ⇝ t1ᵈ -> 
-      θ' ⫦ t2ᵃ ⇝ t2ᵈ -> 
-      θ ⫦ (la_wl_cons_w Γᵃ (la_w_sub t1ᵃ t2ᵃ)) ⇝ (ld_wl_cons_w Γᵈ (ld_w_sub t1ᵈ t2ᵈ)) ⫣ θ'
-  | inst_wl_tv : forall θ θ' x Γᵃ Γᵈ, 
-      θ ⫦ Γᵃ ⇝ Γᵈ ⫣ θ' -> 
-      θ ⫦ (la_wl_cons_tv Γᵃ x) ⇝ (ld_wl_cons_tv Γᵈ x) ⫣ (θ'; x)
-  | inst_wl_ev : forall θ θ' ex lbᵃ ubᵃ lbᵈ ubᵈ Γᵃ Γᵈ, 
-      θ ⫦ Γᵃ ⇝ Γᵈ ⫣ θ' -> 
-      θ ⫦ lbᵃ ⇝ lbᵈ ->
-      θ ⫦ ubᵃ ⇝ ubᵈ ->
-      θ ⫦ (la_wl_cons_ev Γᵃ lbᵃ ex ubᵃ) ⇝ (ld_wl_cons_w Γᵈ (ld_w_sub lbᵈ ubᵈ)) ⫣ (θ' ; ex : lbᵈ)
+      θ ⫦ aworklist_empty ⇝ dworklist_empty ⫣ θ
+  | inst_wl__conswork : forall θ θ' Γ Ω  wᵃ wᵈ, 
+      wf_ss θ -> 
+      θ ⫦ Γ ⇝ Ω ⫣ θ' ->
+      inst_work θ' wᵃ wᵈ ->
+      θ ⫦ aworklist_conswork Γ wᵃ ⇝ dworklist_conswork Ω wᵈ ⫣ θ
+  | inst_wl__constvar : forall θ θ' Γ Ω X, 
+      θ ⫦ Γ ⇝ Ω ⫣ θ' ->
+      θ ⫦ aworklist_constvar Γ X abind_tvar_empty ⇝ dworklist_constvar Ω X dbind_tvar_empty ⫣  (X, ss_bind__tvar_empty) :: θ'
+  | inst_wl__cons_stvar : forall θ θ' Γ Ω X, 
+      θ ⫦ Γ ⇝ Ω ⫣ θ' ->
+      θ ⫦ aworklist_constvar Γ X abind_stvar_empty ⇝ dworklist_constvar Ω X dbind_stvar_empty ⫣  (X, ss_bind__stvar_empty) :: θ'
+  | inst_wl__cons_var : forall θ θ' Γ Ω A1ᵃ A1ᵈ x, 
+      θ ⫦ Γ ⇝ Ω ⫣ θ' ->
+      inst_typ θ' A1ᵃ A1ᵈ ->
+      θ ⫦ aworklist_consvar Γ x (abind_typ A1ᵃ) ⇝ dworklist_consvar Ω x (dbind_typ A1ᵈ) ⫣ θ'
+  | inst_wl_ev : forall θ θ' Γ Ω A1ᵃ A1ᵈ B1ᵃ B1ᵈ T1 X, 
+      θ ⫦ Γ ⇝ Ω ⫣ θ' -> 
+      inst_typ θ' A1ᵃ A1ᵈ ->
+      inst_typ θ' B1ᵃ B1ᵈ ->
+      (* TODO: check A1 < T1, T1 < B1  *)
+      θ ⫦ aworklist_consvar Γ X (abind_bound A1ᵃ B1ᵃ) ⇝ dworklist_conswork Ω (work_sub A1ᵈ B1ᵈ) ⫣  (X, ss_bind__typ T1) :: θ'
 where "θ ⫦ Γᵃ ⇝ Γᵈ ⫣ θ'" := (inst_worklist θ Γᵃ Γᵈ θ').
 
 
-Hint Constructors inst_type : transfer.
+Hint Constructors inst_typ : transfer.
 Hint Constructors inst_worklist : transfer.
-
 
 Lemma fv_ss_ld_ctx_dom: forall θ x,
   x `notin` fv_ss θ -> x `notin` ld_ctx_dom (ss_to_ctx θ).
@@ -446,93 +456,6 @@ Proof.
   auto.
 Qed.
 
-Fixpoint ld_type_to_la_type (Aᵈ : ld_type) : la_type :=
-  match Aᵈ with 
-  | ld_t_int => la_t_int
-  | ld_t_forall A'ᵈ => la_t_forall (ld_type_to_la_type A'ᵈ)
-  | ld_t_arrow A₁ᵈ A₂ᵈ => la_t_arrow (ld_type_to_la_type A₁ᵈ) (ld_type_to_la_type A₂ᵈ)
-  | ld_t_var_b n => la_t_tvar_b n
-  | ld_t_var_f x => la_t_tvar_f x
-  end.
-
-Lemma ld_type_to_la_type_open_open_expr_wrt_expr_distr_rec : forall e1 e2 n,
-ld_type_to_la_type (open_ld_type_wrt_ld_type_rec n e2 e1) = open_la_type_wrt_la_type_rec n (ld_type_to_la_type e2) (ld_type_to_la_type e1).
-Proof.
-  intros e1.
-  induction e1; simpl; intros; auto.
-  - rewrite IHe1. auto.
-  - rewrite IHe1_1. rewrite IHe1_2. auto.
-  - destruct (lt_eq_lt_dec n n0).
-    + destruct s; simpl. auto.
-      auto.
-    + simpl. auto.
-Qed.
-
-Lemma ld_type_to_la_type_open_open_expr_wrt_expr_distr : forall e1 e2,
-  ld_type_to_la_type (open_ld_type_wrt_ld_type e1 e2) = open_la_type_wrt_la_type
-  (ld_type_to_la_type e1)(ld_type_to_la_type e2) .
-Proof.
-  intros.
-  unfold open_la_type_wrt_la_type.
-  unfold open_ld_type_wrt_ld_type.
-  rewrite ld_type_to_la_type_open_open_expr_wrt_expr_distr_rec.
-  auto.
-Qed.
-
-Lemma inst_ld_type_to_la_type: forall θ Aᵈ,
-  lc_ld_type Aᵈ ->
-  wf_ss θ ->
-  θ ⫦ ld_type_to_la_type Aᵈ ⇝ Aᵈ.
-Proof.
-  intros * Hlc.
-  induction Hlc; simpl; try (constructor; auto; fail).
-  - intros.
-    eapply inst_t_forall with (L:=empty).
-    intros.
-    specialize (H0 x H1).
-    rewrite ld_type_to_la_type_open_open_expr_wrt_expr_distr in H0.
-    simpl in *.
-    eauto.
-Qed.
-
-
-Lemma ld_type_to_la_type_open_rec_distr: forall t1ᵈ t2ᵈ n, 
-  ld_type_to_la_type (open_ld_type_wrt_ld_type_rec n t2ᵈ t1ᵈ) = open_la_type_wrt_la_type_rec n (ld_type_to_la_type t2ᵈ) (ld_type_to_la_type t1ᵈ).
-Proof.
-  intro t1ᵈ; induction t1ᵈ; intros; auto.
-  - simpl. rewrite IHt1ᵈ.
-    auto.
-  - simpl. rewrite IHt1ᵈ1. rewrite IHt1ᵈ2. auto.
-  - simpl. destruct (lt_eq_lt_dec n n0); simpl; auto.
-    + destruct s; auto.
-Qed.
-
-
-Lemma ld_type_to_la_type_open_distr: forall t1ᵈ t2ᵈ , 
-  ld_type_to_la_type (open_ld_type_wrt_ld_type t1ᵈ t2ᵈ ) = open_la_type_wrt_la_type (ld_type_to_la_type t1ᵈ) (ld_type_to_la_type t2ᵈ).
-Proof.
-  intros. unfold open_ld_type_wrt_ld_type. unfold open_la_type_wrt_la_type.
-  rewrite ld_type_to_la_type_open_rec_distr. auto.
-Qed.
-
-Lemma ld_type_to_la_type_open_var_distr: forall t1ᵈ x , 
-  ld_type_to_la_type (t1ᵈ ^ᵈ x) = (ld_type_to_la_type t1ᵈ) ^ᵃ x.
-Proof.
-  intros. 
-  replace (`ᵃ x) with (ld_type_to_la_type (`ᵈ x)) by auto.
-  rewrite ld_type_to_la_type_open_distr.
-  auto.
-Qed.
-
-
-Lemma ld_type_to_la_type_keeps_lc: forall tᵈ,
-  lc_ld_type tᵈ -> lc_la_type (ld_type_to_la_type tᵈ).
-Proof.
-  intros. induction H; simpl; auto.
-  - econstructor. intros. simpl in *. simpl.
-    rewrite <- ld_type_to_la_type_open_var_distr.
-    auto.
-Qed.
 
 Lemma inst_subst : forall θ x tᵈ Aᵃ Aᵈ, 
   lc_la_type Aᵃ ->
@@ -645,5 +568,5 @@ Proof.
 Admitted. *)
 
 
-Definition transfer (Γ : lworklist) (Γ' : ld_worklist) : Prop :=
-  exists θ', inst_worklist nil Γ Γ' θ'.
+Definition transfer (Ω : dworklist) (Γ : aworklist) : Prop :=
+  exists θ', inst_worklist nil Ω Γ θ'.
