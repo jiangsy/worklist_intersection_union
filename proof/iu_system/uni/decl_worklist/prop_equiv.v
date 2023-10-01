@@ -44,6 +44,18 @@ Notation " Ω ⟶⁎⋅ " :=
       (at level 58, no associativity) : type_scope.
 
 
+
+Ltac destruct_wf :=
+  repeat
+    match goal with
+    | H : d_wf_wl (dworklist_conswork ?Ω ?w) |- _ => dependent destruction H
+    | H : d_wf_work ?Ω ?w |- _ => dependent destruction H
+    | H : d_wf_typ ?E (typ_intersection ?A ?B) |- _ => dependent destruction H
+    | H : d_wf_typ ?E (typ_union ?A ?B) |- _ => dependent destruction H
+    | H : d_wf_typ ?E (typ_arrow ?A ?B) |- _ => dependent destruction H
+    end.
+
+
 (* This direction is not so important because soundness is proven against decl system directly *)
 Theorem d_wl_red_sound: forall Ω, 
     d_wf_wl Ω -> Ω ⟶ₐ⁎⋅ -> Ω ⟶⁎⋅.
@@ -217,49 +229,21 @@ Lemma d_wl_red_sub_complete: forall Ω A B,
   Ω ⟶ₐ⁎⋅ -> (dworklist_conswork Ω (work_sub A B)) ⟶ₐ⁎⋅.
 Proof with auto with dworklist.
   intros * Hsub Hwfwl Hred.
-  dependent induction Hsub; auto...
-  - econstructor.
-    dependent destruction Hwfwl. 
-    dependent destruction H. auto...
-    dependent destruction H. dependent destruction H1.
-    auto.
-  - dependent destruction Hwfwl. 
+  dependent induction Hsub; 
+  try solve [destruct_wf; econstructor; auto with dworklist].
+  - destruct_wf. 
     eapply d_wlred__sub_all with (L:=L `union` dom (dwl_to_denv Ω)).
     intros. inst_cofinites_with SX.
     apply H2; eauto...
     inst_cofinites_with X.
     apply d_sub_dwft in H1; intuition.
-  - dependent destruction Hwfwl. 
-    dependent destruction H4.
+  - destruct_wf. 
     eapply d_wlred__sub_alll with (T1:=T1); eauto. 
     apply IHHsub; eauto. 
     econstructor; auto. econstructor; auto.
     apply d_wft_all_open; eauto; auto.
     eapply d_sub_dwft; eauto.
     eapply d_mono_typ_d_wf_typ; auto.
-  - dependent destruction Hwfwl. 
-    dependent destruction H.
-    dependent destruction H0.
-    eapply d_wlred__sub_intersection1...
-  - dependent destruction Hwfwl. 
-    dependent destruction H0.
-    dependent destruction H0.
-    eapply d_wlred__sub_intersection2...
-  - dependent destruction Hwfwl. 
-    dependent destruction H0.
-    dependent destruction H0.
-    eapply d_wlred__sub_intersection3...
-  - dependent destruction Hwfwl. 
-    dependent destruction H0.
-    dependent destruction H1.
-    eapply d_wlred__sub_union1...
-  - dependent destruction Hwfwl. 
-    dependent destruction H0.
-    dependent destruction H1.
-    eapply d_wlred__sub_union2...
-  - dependent destruction Hwfwl. 
-    dependent destruction H.
-    dependent destruction H. econstructor...
 Qed.
 
 
@@ -275,28 +259,15 @@ Lemma d_wl_red_infabs_complete: forall Ω A B C c,
    dwl_to_denv Ω ⊢ A ▹ B → C -> d_wf_wl (dworklist_conswork Ω (work_infabs A c)) -> 
    d_wl_red (dworklist_conswork Ω (work_apply c (typ_arrow B C))) -> d_wl_red (dworklist_conswork Ω (work_infabs A c)).
 Proof with auto with dworklist.
-  intros. generalize dependent c. dependent induction H; intros; eauto...
-  - dependent destruction H1.
-    dependent destruction H4.
-    dependent destruction H4.
+  intros. generalize dependent c. dependent induction H; intros; eauto;
+  try solve [destruct_wf; econstructor; auto with dworklist].
+  - destruct_wf.
     eapply d_wlred__infabs_all with (T1:=T2); eauto.
     apply IHd_infabs; auto.
     econstructor; auto. econstructor; auto.
     apply d_wft_all_open; eauto.
     eapply d_infabs_wft; eauto.
-  - dependent destruction H1.
-    dependent destruction H1.
-    dependent destruction H1.
-    apply d_wlred__infabs_inter1.
-    apply IHd_infabs...
-  - dependent destruction H1.
-    dependent destruction H1.
-    dependent destruction H1.
-    apply d_wlred__infabs_inter2.
-    apply IHd_infabs...
-  - dependent destruction H1.
-    dependent destruction H1.
-    dependent destruction H1.
+  - destruct_wf.
     apply d_infabs_wft in H.
     apply d_wlred__infabs_union.
     apply IHd_infabs1; auto.
@@ -320,24 +291,14 @@ Proof.
   - eapply d_wft_all_open; eauto.
 Qed.
 
-
 Lemma d_wl_red_inftapp_complete: forall Ω A B C c,
   dwl_to_denv Ω ⊢ A ○ B ⇒⇒ C -> d_wf_wl (dworklist_conswork Ω (work_inftapp A B c)) ->
   d_wl_red (dworklist_conswork Ω (work_apply c C)) -> d_wl_red (dworklist_conswork Ω (work_inftapp A B c)).
 Proof with auto with dworklist.
-  intros. generalize dependent c. dependent induction H; intros; eauto...
-  - dependent destruction H1.
-    dependent destruction H1.
-    dependent destruction H1.
-    econstructor; eauto.
-  - dependent destruction H1.
-    dependent destruction H1.
-    dependent destruction H1.
-    auto...
+  intros. generalize dependent c. dependent induction H; intros; eauto;
+  try solve [destruct_wf; econstructor; eauto with dworklist].
   - apply d_inftapp_wft in H.
-    dependent destruction H1.
-    dependent destruction H1.
-    dependent destruction H1.
+    destruct_wf.
     econstructor.
     eapply IHd_inftapp1...
     eapply d_wlred__applycont with (Ω':=(dworklist_conswork dworklist_empty (work_inftappunion C1 A2 B c))).
@@ -347,8 +308,7 @@ Proof with auto with dworklist.
     eapply IHd_inftapp2... intuition.
     eapply d_wlred__applycont with (Ω':=(dworklist_conswork dworklist_empty (work_unioninftapp C1 C2 c))).
     eapply d__ac__unioninftapp...
-    econstructor.
-    auto.
+    econstructor...
 Qed.
 
 
