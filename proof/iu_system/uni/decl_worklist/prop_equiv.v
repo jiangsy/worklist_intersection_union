@@ -465,8 +465,12 @@ Proof with auto with dworklist.
       apply d_wl_red_weaken_consw in H5; auto.
     replace (work_apply c T3 ⫤ work_check e2 T2 ⫤ Ω)%dworklist with (dwl_app (work_apply c T3 ⫤ dworklist_empty) (work_check e2 T2 ⫤ Ω)%dworklist) by auto.
     apply d_wl_red_strengthen_work; eauto.
-  - econstructor; eauto.
-    admit.
+  - destruct_wf. 
+    dependent destruction H2.
+    eapply d_wlred__inf_tabs with (L:=L `union` L0 `union` dom (dwl_to_denv Ω)); eauto. 
+    intros. inst_cofinites_with X. dependent destruction H2.
+    apply H1; auto. 
+    eauto...
   - destruct_wf.
     apply d_chk_inf_wft in H0.
     econstructor.

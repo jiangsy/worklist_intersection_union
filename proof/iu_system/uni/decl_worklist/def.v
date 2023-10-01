@@ -192,7 +192,7 @@ Inductive d_wl_red : dworklist -> Prop :=    (* defn d_wl_red *)
      d_wl_red (dworklist_conswork Ω (work_infer  ( (exp_anno e A1) )  c))
  | d_wlred__inf_tabs : forall (L:vars) (Ω:dworklist) (e:exp) (A1:typ) (c:cont),
       (* ( forall X , X \notin  L  -> ds_in X  ( open_typ_wrt_typ A1 (typ_var_f X) )  )  -> *)
-      ( forall X , X \notin  L  -> d_wl_red (dworklist_conswork (dworklist_constvar (dworklist_conswork Ω (work_apply c  (typ_all A1) )) X dbind_tvar_empty) (work_check  ( open_exp_wrt_typ e (typ_var_f X) )   ( open_typ_wrt_typ A1 (typ_var_f X) ) )) )  ->
+      ( forall X , X \notin  L  -> d_wl_red (dworklist_conswork (dworklist_constvar (dworklist_conswork Ω (work_apply c  (typ_all A1) )) X dbind_tvar_empty) (work_check (exp_anno  ( open_exp_wrt_typ e (typ_var_f X) ) ( open_typ_wrt_typ A1 (typ_var_f X) ) )  ( open_typ_wrt_typ A1 (typ_var_f X) ) )) )  ->
      d_wl_red (dworklist_conswork Ω (work_infer (exp_tabs (body_anno e A1)) c))
  | d_wlred__inf_unit : forall (Ω:dworklist) (c:cont),
      d_wl_red (dworklist_conswork Ω (work_apply c typ_unit)) ->
