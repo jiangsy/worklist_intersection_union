@@ -660,8 +660,8 @@ Proof.
       simpl in *. exfalso.
       eapply binds_dom_contradiction; eauto.
     + apply notin_singleton; auto.
-  - simpl. inst_cofinites_by (L `union` singleton X `union` dom E) using_name X.
-    assert (⊢ (X, dbind_tvar_empty) :: X0 ~ dbind_tvar_empty ++ E).
+  - simpl. inst_cofinites_by (L `union` singleton X `union` dom dE) using_name X.
+    assert (⊢ (X, dbind_tvar_empty) :: X0 ~ dbind_tvar_empty ++ dE).
     constructor; auto.
     + constructor; auto. dependent destruction H; auto.
     + simpl. apply notin_add_3; auto.
@@ -751,13 +751,13 @@ Proof with auto.
     eapply d_wf_typ_subst_tvar_stvar_cons; intuition.
   - split; try solve [intuition].
     split; try solve [intuition].
-    + eapply d_wf_typ__all with (L:=L `union` ftvar_in_typ A1 `union` dom E).
+    + eapply d_wf_typ__all with (L:=L `union` ftvar_in_typ A1 `union` dom dE).
       * intros. inst_cofinites_with X. auto.
       * intros. inst_cofinites_with X.
         destruct IHd_sub. auto.
         eapply dwf_typ_open_inv with (X:=X) (T1:=T1); auto.
         -- eapply d_mono_typ_lc; eauto.
-        -- replace (X ~ dbind_tvar_empty ++ E) with (nil ++ X ~ dbind_tvar_empty ++ E) by auto.
+        -- replace (X ~ dbind_tvar_empty ++ dE) with (nil ++ X ~ dbind_tvar_empty ++ dE) by auto.
            apply dwf_typ_weakening. simpl. rewrite  subst_tvar_in_typ_open_typ_wrt_typ.
            ++ simpl. unfold eq_dec. destruct ( EqDec_eq_of_X X X ).
               ** rewrite subst_tvar_in_typ_fresh_eq; intuition.

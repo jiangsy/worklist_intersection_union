@@ -79,18 +79,18 @@ awork, w :: 'awork_' ::=
   | A1 ⊔▹ A2 >> c          ::   :: unioninfabs
   | c $ A                  ::   :: apply
 
-a_mode_addbound , m :: 'a_modeab_' ::=
+amode_addbound , m :: 'amodeab_' ::=
   | +                   ::   :: upper
   | -                   ::   :: lower
   | ±                   ::   :: both
 
-a_worklist, W  :: 'a_wl_' ::=
-  | nil      ::   :: nil 
-  | W , x b  ::   :: consvar 
-  | W , X b  ::   :: constvar
-  | W , w    ::   :: consw
-  | ( W )    :: S :: paren  {{ coq ([[W]]) }}
-  | W1 ++ W2 :: M :: app {{ coq ( a_wl_app [[W2]] [[W1]] )}}
+aworklist, aW  :: 'a_wl_' ::=
+  | nil       ::   :: nil 
+  | aW , x b  ::   :: consvar 
+  | aW , X b  ::   :: constvar
+  | aW , w    ::   :: consw
+  | ( aW )    :: S :: paren  {{ coq ([[W]]) }}
+  | W1 ++ W2  :: M :: app {{ coq ( a_wl_app [[W2]] [[W1]] )}}
 
 formula :: formula_ ::=
   | judgement                        ::   :: judgement

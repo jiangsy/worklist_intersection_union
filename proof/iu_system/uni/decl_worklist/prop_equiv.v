@@ -516,7 +516,7 @@ Theorem d_wf_work_apply_cont : forall Ω c A1 Ω',
   ⊢ᵈ dwl_app Ω' Ω.
 Proof.
   intros. induction H2; simpl; auto;
-   try solve [dependent destruction H0; auto].
+    dependent destruction H0; auto.
 Qed.
 
 
@@ -559,3 +559,5 @@ Proof with auto with dworklist.
     apply IHd_wl_del_red. eapply d_wf_work_apply_cont; eauto.
 Qed.
 
+
+Print Assumptions  d_wl_red_complete.

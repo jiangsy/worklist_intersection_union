@@ -25,6 +25,14 @@ Scheme typ_rec' := Induction for typ Sort Set.
 
 Combined Scheme typ_mutrec from typ_rec'.
 
+Scheme abind_ind' := Induction for abind Sort Prop.
+
+Combined Scheme abind_mutind from abind_ind'.
+
+Scheme abind_rec' := Induction for abind Sort Set.
+
+Combined Scheme abind_mutrec from abind_rec'.
+
 Scheme body_ind' := Induction for body Sort Prop
   with exp_ind' := Induction for exp Sort Prop.
 
@@ -60,6 +68,14 @@ Fixpoint size_typ (A1 : typ) {struct A1} : nat :=
     | typ_intersection A2 A3 => 1 + (size_typ A2) + (size_typ A3)
   end.
 
+Fixpoint size_abind (ab1 : abind) {struct ab1} : nat :=
+  match ab1 with
+    | abind_tvar_empty => 1
+    | abind_stvar_empty => 1
+    | abind_typ A1 => 1 + (size_typ A1)
+    | abind_bound A1 B1 => 1 + (size_typ A1) + (size_typ B1)
+  end.
+
 Fixpoint size_body (body1 : body) {struct body1} : nat :=
   match body1 with
     | body_anno e1 A1 => 1 + (size_exp e1) + (size_typ A1)
@@ -77,8 +93,8 @@ with size_exp (e1 : exp) {struct e1} : nat :=
     | exp_anno e2 A1 => 1 + (size_exp e2) + (size_typ A1)
   end.
 
-Fixpoint size_dbind (b1 : dbind) {struct b1} : nat :=
-  match b1 with
+Fixpoint size_dbind (db1 : dbind) {struct db1} : nat :=
+  match db1 with
     | dbind_tvar_empty => 1
     | dbind_stvar_empty => 1
     | dbind_typ A1 => 1 + (size_typ A1)
@@ -123,6 +139,25 @@ Scheme degree_typ_wrt_typ_ind' := Induction for degree_typ_wrt_typ Sort Prop.
 Combined Scheme degree_typ_wrt_typ_mutind from degree_typ_wrt_typ_ind'.
 
 #[export] Hint Constructors degree_typ_wrt_typ : core lngen.
+
+Inductive degree_abind_wrt_typ : nat -> abind -> Prop :=
+  | degree_wrt_typ_abind_tvar_empty : forall n1,
+    degree_abind_wrt_typ n1 (abind_tvar_empty)
+  | degree_wrt_typ_abind_stvar_empty : forall n1,
+    degree_abind_wrt_typ n1 (abind_stvar_empty)
+  | degree_wrt_typ_abind_typ : forall n1 A1,
+    degree_typ_wrt_typ n1 A1 ->
+    degree_abind_wrt_typ n1 (abind_typ A1)
+  | degree_wrt_typ_abind_bound : forall n1 A1 B1,
+    degree_typ_wrt_typ n1 A1 ->
+    degree_typ_wrt_typ n1 B1 ->
+    degree_abind_wrt_typ n1 (abind_bound A1 B1).
+
+Scheme degree_abind_wrt_typ_ind' := Induction for degree_abind_wrt_typ Sort Prop.
+
+Combined Scheme degree_abind_wrt_typ_mutind from degree_abind_wrt_typ_ind'.
+
+#[export] Hint Constructors degree_abind_wrt_typ : core lngen.
 
 Inductive degree_body_wrt_typ : nat -> body -> Prop :=
   | degree_wrt_typ_body_anno : forall n1 e1 A1,
@@ -264,6 +299,35 @@ Combined Scheme lc_set_typ_mutrec from lc_set_typ_rec'.
 
 #[export] Hint Constructors lc_set_typ : core lngen.
 
+Inductive lc_set_abind : abind -> Set :=
+  | lc_set_abind_tvar_empty :
+    lc_set_abind (abind_tvar_empty)
+  | lc_set_abind_stvar_empty :
+    lc_set_abind (abind_stvar_empty)
+  | lc_set_abind_typ : forall A1,
+    lc_set_typ A1 ->
+    lc_set_abind (abind_typ A1)
+  | lc_set_abind_bound : forall A1 B1,
+    lc_set_typ A1 ->
+    lc_set_typ B1 ->
+    lc_set_abind (abind_bound A1 B1).
+
+Scheme lc_abind_ind' := Induction for lc_abind Sort Prop.
+
+Combined Scheme lc_abind_mutind from lc_abind_ind'.
+
+Scheme lc_set_abind_ind' := Induction for lc_set_abind Sort Prop.
+
+Combined Scheme lc_set_abind_mutind from lc_set_abind_ind'.
+
+Scheme lc_set_abind_rec' := Induction for lc_set_abind Sort Set.
+
+Combined Scheme lc_set_abind_mutrec from lc_set_abind_rec'.
+
+#[export] Hint Constructors lc_abind : core lngen.
+
+#[export] Hint Constructors lc_set_abind : core lngen.
+
 Inductive lc_set_body : body -> Set :=
   | lc_set_body_anno : forall e1 A1,
     lc_set_exp e1 ->
@@ -350,6 +414,10 @@ Definition body_typ_wrt_typ A1 := forall X1, lc_typ (open_typ_wrt_typ A1 (typ_va
 
 #[export] Hint Unfold body_typ_wrt_typ : core.
 
+Definition body_abind_wrt_typ ab1 := forall X1, lc_abind (open_abind_wrt_typ ab1 (typ_var_f X1)).
+
+#[export] Hint Unfold body_abind_wrt_typ : core.
+
 Definition body_body_wrt_typ body1 := forall X1, lc_body (open_body_wrt_typ body1 (typ_var_f X1)).
 
 Definition body_exp_wrt_typ e1 := forall X1, lc_exp (open_exp_wrt_typ e1 (typ_var_f X1)).
@@ -366,7 +434,7 @@ Definition body_exp_wrt_exp e1 := forall x1, lc_exp (open_exp_wrt_exp e1 (exp_va
 
 #[export] Hint Unfold body_exp_wrt_exp : core.
 
-Definition body_dbind_wrt_typ b1 := forall X1, lc_dbind (open_dbind_wrt_typ b1 (typ_var_f X1)).
+Definition body_dbind_wrt_typ db1 := forall X1, lc_dbind (open_dbind_wrt_typ db1 (typ_var_f X1)).
 
 #[export] Hint Unfold body_dbind_wrt_typ : core.
 
@@ -415,6 +483,25 @@ Qed.
 
 (* begin hide *)
 
+Lemma size_abind_min_mutual :
+(forall ab1, 1 <= size_abind ab1).
+Proof.
+apply_mutual_ind abind_mutind;
+default_simp.
+Qed.
+
+(* end hide *)
+
+Lemma size_abind_min :
+forall ab1, 1 <= size_abind ab1.
+Proof.
+pose proof size_abind_min_mutual as H; intuition eauto.
+Qed.
+
+#[export] Hint Resolve size_abind_min : lngen.
+
+(* begin hide *)
+
 Lemma size_body_min_size_exp_min_mutual :
 (forall body1, 1 <= size_body body1) /\
 (forall e1, 1 <= size_exp e1).
@@ -444,7 +531,7 @@ Qed.
 (* begin hide *)
 
 Lemma size_dbind_min_mutual :
-(forall b1, 1 <= size_dbind b1).
+(forall db1, 1 <= size_dbind db1).
 Proof.
 apply_mutual_ind dbind_mutind;
 default_simp.
@@ -453,7 +540,7 @@ Qed.
 (* end hide *)
 
 Lemma size_dbind_min :
-forall b1, 1 <= size_dbind b1.
+forall db1, 1 <= size_dbind db1.
 Proof.
 pose proof size_dbind_min_mutual as H; intuition eauto.
 Qed.
@@ -483,6 +570,32 @@ Qed.
 
 #[export] Hint Resolve size_typ_close_typ_wrt_typ_rec : lngen.
 #[export] Hint Rewrite size_typ_close_typ_wrt_typ_rec using solve [auto] : lngen.
+
+(* end hide *)
+
+(* begin hide *)
+
+Lemma size_abind_close_abind_wrt_typ_rec_mutual :
+(forall ab1 X1 n1,
+  size_abind (close_abind_wrt_typ_rec n1 X1 ab1) = size_abind ab1).
+Proof.
+apply_mutual_ind abind_mutind;
+default_simp.
+Qed.
+
+(* end hide *)
+
+(* begin hide *)
+
+Lemma size_abind_close_abind_wrt_typ_rec :
+forall ab1 X1 n1,
+  size_abind (close_abind_wrt_typ_rec n1 X1 ab1) = size_abind ab1.
+Proof.
+pose proof size_abind_close_abind_wrt_typ_rec_mutual as H; intuition eauto.
+Qed.
+
+#[export] Hint Resolve size_abind_close_abind_wrt_typ_rec : lngen.
+#[export] Hint Rewrite size_abind_close_abind_wrt_typ_rec using solve [auto] : lngen.
 
 (* end hide *)
 
@@ -573,8 +686,8 @@ Qed.
 (* begin hide *)
 
 Lemma size_dbind_close_dbind_wrt_typ_rec_mutual :
-(forall b1 X1 n1,
-  size_dbind (close_dbind_wrt_typ_rec n1 X1 b1) = size_dbind b1).
+(forall db1 X1 n1,
+  size_dbind (close_dbind_wrt_typ_rec n1 X1 db1) = size_dbind db1).
 Proof.
 apply_mutual_ind dbind_mutind;
 default_simp.
@@ -585,8 +698,8 @@ Qed.
 (* begin hide *)
 
 Lemma size_dbind_close_dbind_wrt_typ_rec :
-forall b1 X1 n1,
-  size_dbind (close_dbind_wrt_typ_rec n1 X1 b1) = size_dbind b1.
+forall db1 X1 n1,
+  size_dbind (close_dbind_wrt_typ_rec n1 X1 db1) = size_dbind db1.
 Proof.
 pose proof size_dbind_close_dbind_wrt_typ_rec_mutual as H; intuition eauto.
 Qed.
@@ -605,6 +718,16 @@ Qed.
 
 #[export] Hint Resolve size_typ_close_typ_wrt_typ : lngen.
 #[export] Hint Rewrite size_typ_close_typ_wrt_typ using solve [auto] : lngen.
+
+Lemma size_abind_close_abind_wrt_typ :
+forall ab1 X1,
+  size_abind (close_abind_wrt_typ X1 ab1) = size_abind ab1.
+Proof.
+unfold close_abind_wrt_typ; default_simp.
+Qed.
+
+#[export] Hint Resolve size_abind_close_abind_wrt_typ : lngen.
+#[export] Hint Rewrite size_abind_close_abind_wrt_typ using solve [auto] : lngen.
 
 Lemma size_body_close_body_wrt_typ :
 forall body1 X1,
@@ -647,8 +770,8 @@ Qed.
 #[export] Hint Rewrite size_exp_close_exp_wrt_exp using solve [auto] : lngen.
 
 Lemma size_dbind_close_dbind_wrt_typ :
-forall b1 X1,
-  size_dbind (close_dbind_wrt_typ X1 b1) = size_dbind b1.
+forall db1 X1,
+  size_dbind (close_dbind_wrt_typ X1 db1) = size_dbind db1.
 Proof.
 unfold close_dbind_wrt_typ; default_simp.
 Qed.
@@ -678,6 +801,31 @@ pose proof size_typ_open_typ_wrt_typ_rec_mutual as H; intuition eauto.
 Qed.
 
 #[export] Hint Resolve size_typ_open_typ_wrt_typ_rec : lngen.
+
+(* end hide *)
+
+(* begin hide *)
+
+Lemma size_abind_open_abind_wrt_typ_rec_mutual :
+(forall ab1 A1 n1,
+  size_abind ab1 <= size_abind (open_abind_wrt_typ_rec n1 A1 ab1)).
+Proof.
+apply_mutual_ind abind_mutind;
+default_simp.
+Qed.
+
+(* end hide *)
+
+(* begin hide *)
+
+Lemma size_abind_open_abind_wrt_typ_rec :
+forall ab1 A1 n1,
+  size_abind ab1 <= size_abind (open_abind_wrt_typ_rec n1 A1 ab1).
+Proof.
+pose proof size_abind_open_abind_wrt_typ_rec_mutual as H; intuition eauto.
+Qed.
+
+#[export] Hint Resolve size_abind_open_abind_wrt_typ_rec : lngen.
 
 (* end hide *)
 
@@ -764,8 +912,8 @@ Qed.
 (* begin hide *)
 
 Lemma size_dbind_open_dbind_wrt_typ_rec_mutual :
-(forall b1 A1 n1,
-  size_dbind b1 <= size_dbind (open_dbind_wrt_typ_rec n1 A1 b1)).
+(forall db1 A1 n1,
+  size_dbind db1 <= size_dbind (open_dbind_wrt_typ_rec n1 A1 db1)).
 Proof.
 apply_mutual_ind dbind_mutind;
 default_simp.
@@ -776,8 +924,8 @@ Qed.
 (* begin hide *)
 
 Lemma size_dbind_open_dbind_wrt_typ_rec :
-forall b1 A1 n1,
-  size_dbind b1 <= size_dbind (open_dbind_wrt_typ_rec n1 A1 b1).
+forall db1 A1 n1,
+  size_dbind db1 <= size_dbind (open_dbind_wrt_typ_rec n1 A1 db1).
 Proof.
 pose proof size_dbind_open_dbind_wrt_typ_rec_mutual as H; intuition eauto.
 Qed.
@@ -794,6 +942,15 @@ unfold open_typ_wrt_typ; default_simp.
 Qed.
 
 #[export] Hint Resolve size_typ_open_typ_wrt_typ : lngen.
+
+Lemma size_abind_open_abind_wrt_typ :
+forall ab1 A1,
+  size_abind ab1 <= size_abind (open_abind_wrt_typ ab1 A1).
+Proof.
+unfold open_abind_wrt_typ; default_simp.
+Qed.
+
+#[export] Hint Resolve size_abind_open_abind_wrt_typ : lngen.
 
 Lemma size_body_open_body_wrt_typ :
 forall body1 A1,
@@ -832,8 +989,8 @@ Qed.
 #[export] Hint Resolve size_exp_open_exp_wrt_exp : lngen.
 
 Lemma size_dbind_open_dbind_wrt_typ :
-forall b1 A1,
-  size_dbind b1 <= size_dbind (open_dbind_wrt_typ b1 A1).
+forall db1 A1,
+  size_dbind db1 <= size_dbind (open_dbind_wrt_typ db1 A1).
 Proof.
 unfold open_dbind_wrt_typ; default_simp.
 Qed.
@@ -863,6 +1020,32 @@ Qed.
 
 #[export] Hint Resolve size_typ_open_typ_wrt_typ_rec_var : lngen.
 #[export] Hint Rewrite size_typ_open_typ_wrt_typ_rec_var using solve [auto] : lngen.
+
+(* end hide *)
+
+(* begin hide *)
+
+Lemma size_abind_open_abind_wrt_typ_rec_var_mutual :
+(forall ab1 X1 n1,
+  size_abind (open_abind_wrt_typ_rec n1 (typ_var_f X1) ab1) = size_abind ab1).
+Proof.
+apply_mutual_ind abind_mutind;
+default_simp.
+Qed.
+
+(* end hide *)
+
+(* begin hide *)
+
+Lemma size_abind_open_abind_wrt_typ_rec_var :
+forall ab1 X1 n1,
+  size_abind (open_abind_wrt_typ_rec n1 (typ_var_f X1) ab1) = size_abind ab1.
+Proof.
+pose proof size_abind_open_abind_wrt_typ_rec_var_mutual as H; intuition eauto.
+Qed.
+
+#[export] Hint Resolve size_abind_open_abind_wrt_typ_rec_var : lngen.
+#[export] Hint Rewrite size_abind_open_abind_wrt_typ_rec_var using solve [auto] : lngen.
 
 (* end hide *)
 
@@ -953,8 +1136,8 @@ Qed.
 (* begin hide *)
 
 Lemma size_dbind_open_dbind_wrt_typ_rec_var_mutual :
-(forall b1 X1 n1,
-  size_dbind (open_dbind_wrt_typ_rec n1 (typ_var_f X1) b1) = size_dbind b1).
+(forall db1 X1 n1,
+  size_dbind (open_dbind_wrt_typ_rec n1 (typ_var_f X1) db1) = size_dbind db1).
 Proof.
 apply_mutual_ind dbind_mutind;
 default_simp.
@@ -965,8 +1148,8 @@ Qed.
 (* begin hide *)
 
 Lemma size_dbind_open_dbind_wrt_typ_rec_var :
-forall b1 X1 n1,
-  size_dbind (open_dbind_wrt_typ_rec n1 (typ_var_f X1) b1) = size_dbind b1.
+forall db1 X1 n1,
+  size_dbind (open_dbind_wrt_typ_rec n1 (typ_var_f X1) db1) = size_dbind db1.
 Proof.
 pose proof size_dbind_open_dbind_wrt_typ_rec_var_mutual as H; intuition eauto.
 Qed.
@@ -985,6 +1168,16 @@ Qed.
 
 #[export] Hint Resolve size_typ_open_typ_wrt_typ_var : lngen.
 #[export] Hint Rewrite size_typ_open_typ_wrt_typ_var using solve [auto] : lngen.
+
+Lemma size_abind_open_abind_wrt_typ_var :
+forall ab1 X1,
+  size_abind (open_abind_wrt_typ ab1 (typ_var_f X1)) = size_abind ab1.
+Proof.
+unfold open_abind_wrt_typ; default_simp.
+Qed.
+
+#[export] Hint Resolve size_abind_open_abind_wrt_typ_var : lngen.
+#[export] Hint Rewrite size_abind_open_abind_wrt_typ_var using solve [auto] : lngen.
 
 Lemma size_body_open_body_wrt_typ_var :
 forall body1 X1,
@@ -1027,8 +1220,8 @@ Qed.
 #[export] Hint Rewrite size_exp_open_exp_wrt_exp_var using solve [auto] : lngen.
 
 Lemma size_dbind_open_dbind_wrt_typ_var :
-forall b1 X1,
-  size_dbind (open_dbind_wrt_typ b1 (typ_var_f X1)) = size_dbind b1.
+forall db1 X1,
+  size_dbind (open_dbind_wrt_typ db1 (typ_var_f X1)) = size_dbind db1.
 Proof.
 unfold open_dbind_wrt_typ; default_simp.
 Qed.
@@ -1065,6 +1258,29 @@ pose proof degree_typ_wrt_typ_S_mutual as H; intuition eauto.
 Qed.
 
 #[export] Hint Resolve degree_typ_wrt_typ_S : lngen.
+
+(* begin hide *)
+
+Lemma degree_abind_wrt_typ_S_mutual :
+(forall n1 ab1,
+  degree_abind_wrt_typ n1 ab1 ->
+  degree_abind_wrt_typ (S n1) ab1).
+Proof.
+apply_mutual_ind degree_abind_wrt_typ_mutind;
+default_simp.
+Qed.
+
+(* end hide *)
+
+Lemma degree_abind_wrt_typ_S :
+forall n1 ab1,
+  degree_abind_wrt_typ n1 ab1 ->
+  degree_abind_wrt_typ (S n1) ab1.
+Proof.
+pose proof degree_abind_wrt_typ_S_mutual as H; intuition eauto.
+Qed.
+
+#[export] Hint Resolve degree_abind_wrt_typ_S : lngen.
 
 (* begin hide *)
 
@@ -1141,9 +1357,9 @@ Qed.
 (* begin hide *)
 
 Lemma degree_dbind_wrt_typ_S_mutual :
-(forall n1 b1,
-  degree_dbind_wrt_typ n1 b1 ->
-  degree_dbind_wrt_typ (S n1) b1).
+(forall n1 db1,
+  degree_dbind_wrt_typ n1 db1 ->
+  degree_dbind_wrt_typ (S n1) db1).
 Proof.
 apply_mutual_ind degree_dbind_wrt_typ_mutind;
 default_simp.
@@ -1152,9 +1368,9 @@ Qed.
 (* end hide *)
 
 Lemma degree_dbind_wrt_typ_S :
-forall n1 b1,
-  degree_dbind_wrt_typ n1 b1 ->
-  degree_dbind_wrt_typ (S n1) b1.
+forall n1 db1,
+  degree_dbind_wrt_typ n1 db1 ->
+  degree_dbind_wrt_typ (S n1) db1.
 Proof.
 pose proof degree_dbind_wrt_typ_S_mutual as H; intuition eauto.
 Qed.
@@ -1170,6 +1386,16 @@ induction n1; default_simp.
 Qed.
 
 #[export] Hint Resolve degree_typ_wrt_typ_O : lngen.
+
+Lemma degree_abind_wrt_typ_O :
+forall n1 ab1,
+  degree_abind_wrt_typ O ab1 ->
+  degree_abind_wrt_typ n1 ab1.
+Proof.
+induction n1; default_simp.
+Qed.
+
+#[export] Hint Resolve degree_abind_wrt_typ_O : lngen.
 
 Lemma degree_body_wrt_typ_O :
 forall n1 body1,
@@ -1212,9 +1438,9 @@ Qed.
 #[export] Hint Resolve degree_exp_wrt_exp_O : lngen.
 
 Lemma degree_dbind_wrt_typ_O :
-forall n1 b1,
-  degree_dbind_wrt_typ O b1 ->
-  degree_dbind_wrt_typ n1 b1.
+forall n1 db1,
+  degree_dbind_wrt_typ O db1 ->
+  degree_dbind_wrt_typ n1 db1.
 Proof.
 induction n1; default_simp.
 Qed.
@@ -1245,6 +1471,33 @@ pose proof degree_typ_wrt_typ_close_typ_wrt_typ_rec_mutual as H; intuition eauto
 Qed.
 
 #[export] Hint Resolve degree_typ_wrt_typ_close_typ_wrt_typ_rec : lngen.
+
+(* end hide *)
+
+(* begin hide *)
+
+Lemma degree_abind_wrt_typ_close_abind_wrt_typ_rec_mutual :
+(forall ab1 X1 n1,
+  degree_abind_wrt_typ n1 ab1 ->
+  degree_abind_wrt_typ (S n1) (close_abind_wrt_typ_rec n1 X1 ab1)).
+Proof.
+apply_mutual_ind abind_mutind;
+default_simp.
+Qed.
+
+(* end hide *)
+
+(* begin hide *)
+
+Lemma degree_abind_wrt_typ_close_abind_wrt_typ_rec :
+forall ab1 X1 n1,
+  degree_abind_wrt_typ n1 ab1 ->
+  degree_abind_wrt_typ (S n1) (close_abind_wrt_typ_rec n1 X1 ab1).
+Proof.
+pose proof degree_abind_wrt_typ_close_abind_wrt_typ_rec_mutual as H; intuition eauto.
+Qed.
+
+#[export] Hint Resolve degree_abind_wrt_typ_close_abind_wrt_typ_rec : lngen.
 
 (* end hide *)
 
@@ -1427,9 +1680,9 @@ Qed.
 (* begin hide *)
 
 Lemma degree_dbind_wrt_typ_close_dbind_wrt_typ_rec_mutual :
-(forall b1 X1 n1,
-  degree_dbind_wrt_typ n1 b1 ->
-  degree_dbind_wrt_typ (S n1) (close_dbind_wrt_typ_rec n1 X1 b1)).
+(forall db1 X1 n1,
+  degree_dbind_wrt_typ n1 db1 ->
+  degree_dbind_wrt_typ (S n1) (close_dbind_wrt_typ_rec n1 X1 db1)).
 Proof.
 apply_mutual_ind dbind_mutind;
 default_simp.
@@ -1440,9 +1693,9 @@ Qed.
 (* begin hide *)
 
 Lemma degree_dbind_wrt_typ_close_dbind_wrt_typ_rec :
-forall b1 X1 n1,
-  degree_dbind_wrt_typ n1 b1 ->
-  degree_dbind_wrt_typ (S n1) (close_dbind_wrt_typ_rec n1 X1 b1).
+forall db1 X1 n1,
+  degree_dbind_wrt_typ n1 db1 ->
+  degree_dbind_wrt_typ (S n1) (close_dbind_wrt_typ_rec n1 X1 db1).
 Proof.
 pose proof degree_dbind_wrt_typ_close_dbind_wrt_typ_rec_mutual as H; intuition eauto.
 Qed.
@@ -1460,6 +1713,16 @@ unfold close_typ_wrt_typ; default_simp.
 Qed.
 
 #[export] Hint Resolve degree_typ_wrt_typ_close_typ_wrt_typ : lngen.
+
+Lemma degree_abind_wrt_typ_close_abind_wrt_typ :
+forall ab1 X1,
+  degree_abind_wrt_typ 0 ab1 ->
+  degree_abind_wrt_typ 1 (close_abind_wrt_typ X1 ab1).
+Proof.
+unfold close_abind_wrt_typ; default_simp.
+Qed.
+
+#[export] Hint Resolve degree_abind_wrt_typ_close_abind_wrt_typ : lngen.
 
 Lemma degree_body_wrt_typ_close_body_wrt_typ :
 forall body1 X1,
@@ -1542,9 +1805,9 @@ Qed.
 #[export] Hint Resolve degree_exp_wrt_exp_close_exp_wrt_exp : lngen.
 
 Lemma degree_dbind_wrt_typ_close_dbind_wrt_typ :
-forall b1 X1,
-  degree_dbind_wrt_typ 0 b1 ->
-  degree_dbind_wrt_typ 1 (close_dbind_wrt_typ X1 b1).
+forall db1 X1,
+  degree_dbind_wrt_typ 0 db1 ->
+  degree_dbind_wrt_typ 1 (close_dbind_wrt_typ X1 db1).
 Proof.
 unfold close_dbind_wrt_typ; default_simp.
 Qed.
@@ -1575,6 +1838,33 @@ pose proof degree_typ_wrt_typ_close_typ_wrt_typ_rec_inv_mutual as H; intuition e
 Qed.
 
 #[export] Hint Immediate degree_typ_wrt_typ_close_typ_wrt_typ_rec_inv : lngen.
+
+(* end hide *)
+
+(* begin hide *)
+
+Lemma degree_abind_wrt_typ_close_abind_wrt_typ_rec_inv_mutual :
+(forall ab1 X1 n1,
+  degree_abind_wrt_typ (S n1) (close_abind_wrt_typ_rec n1 X1 ab1) ->
+  degree_abind_wrt_typ n1 ab1).
+Proof.
+apply_mutual_ind abind_mutind;
+default_simp; eauto with lngen.
+Qed.
+
+(* end hide *)
+
+(* begin hide *)
+
+Lemma degree_abind_wrt_typ_close_abind_wrt_typ_rec_inv :
+forall ab1 X1 n1,
+  degree_abind_wrt_typ (S n1) (close_abind_wrt_typ_rec n1 X1 ab1) ->
+  degree_abind_wrt_typ n1 ab1.
+Proof.
+pose proof degree_abind_wrt_typ_close_abind_wrt_typ_rec_inv_mutual as H; intuition eauto.
+Qed.
+
+#[export] Hint Immediate degree_abind_wrt_typ_close_abind_wrt_typ_rec_inv : lngen.
 
 (* end hide *)
 
@@ -1757,9 +2047,9 @@ Qed.
 (* begin hide *)
 
 Lemma degree_dbind_wrt_typ_close_dbind_wrt_typ_rec_inv_mutual :
-(forall b1 X1 n1,
-  degree_dbind_wrt_typ (S n1) (close_dbind_wrt_typ_rec n1 X1 b1) ->
-  degree_dbind_wrt_typ n1 b1).
+(forall db1 X1 n1,
+  degree_dbind_wrt_typ (S n1) (close_dbind_wrt_typ_rec n1 X1 db1) ->
+  degree_dbind_wrt_typ n1 db1).
 Proof.
 apply_mutual_ind dbind_mutind;
 default_simp; eauto with lngen.
@@ -1770,9 +2060,9 @@ Qed.
 (* begin hide *)
 
 Lemma degree_dbind_wrt_typ_close_dbind_wrt_typ_rec_inv :
-forall b1 X1 n1,
-  degree_dbind_wrt_typ (S n1) (close_dbind_wrt_typ_rec n1 X1 b1) ->
-  degree_dbind_wrt_typ n1 b1.
+forall db1 X1 n1,
+  degree_dbind_wrt_typ (S n1) (close_dbind_wrt_typ_rec n1 X1 db1) ->
+  degree_dbind_wrt_typ n1 db1.
 Proof.
 pose proof degree_dbind_wrt_typ_close_dbind_wrt_typ_rec_inv_mutual as H; intuition eauto.
 Qed.
@@ -1790,6 +2080,16 @@ unfold close_typ_wrt_typ; eauto with lngen.
 Qed.
 
 #[export] Hint Immediate degree_typ_wrt_typ_close_typ_wrt_typ_inv : lngen.
+
+Lemma degree_abind_wrt_typ_close_abind_wrt_typ_inv :
+forall ab1 X1,
+  degree_abind_wrt_typ 1 (close_abind_wrt_typ X1 ab1) ->
+  degree_abind_wrt_typ 0 ab1.
+Proof.
+unfold close_abind_wrt_typ; eauto with lngen.
+Qed.
+
+#[export] Hint Immediate degree_abind_wrt_typ_close_abind_wrt_typ_inv : lngen.
 
 Lemma degree_body_wrt_typ_close_body_wrt_typ_inv :
 forall body1 X1,
@@ -1872,9 +2172,9 @@ Qed.
 #[export] Hint Immediate degree_exp_wrt_exp_close_exp_wrt_exp_inv : lngen.
 
 Lemma degree_dbind_wrt_typ_close_dbind_wrt_typ_inv :
-forall b1 X1,
-  degree_dbind_wrt_typ 1 (close_dbind_wrt_typ X1 b1) ->
-  degree_dbind_wrt_typ 0 b1.
+forall db1 X1,
+  degree_dbind_wrt_typ 1 (close_dbind_wrt_typ X1 db1) ->
+  degree_dbind_wrt_typ 0 db1.
 Proof.
 unfold close_dbind_wrt_typ; eauto with lngen.
 Qed.
@@ -1907,6 +2207,35 @@ pose proof degree_typ_wrt_typ_open_typ_wrt_typ_rec_mutual as H; intuition eauto.
 Qed.
 
 #[export] Hint Resolve degree_typ_wrt_typ_open_typ_wrt_typ_rec : lngen.
+
+(* end hide *)
+
+(* begin hide *)
+
+Lemma degree_abind_wrt_typ_open_abind_wrt_typ_rec_mutual :
+(forall ab1 A1 n1,
+  degree_abind_wrt_typ (S n1) ab1 ->
+  degree_typ_wrt_typ n1 A1 ->
+  degree_abind_wrt_typ n1 (open_abind_wrt_typ_rec n1 A1 ab1)).
+Proof.
+apply_mutual_ind abind_mutind;
+default_simp.
+Qed.
+
+(* end hide *)
+
+(* begin hide *)
+
+Lemma degree_abind_wrt_typ_open_abind_wrt_typ_rec :
+forall ab1 A1 n1,
+  degree_abind_wrt_typ (S n1) ab1 ->
+  degree_typ_wrt_typ n1 A1 ->
+  degree_abind_wrt_typ n1 (open_abind_wrt_typ_rec n1 A1 ab1).
+Proof.
+pose proof degree_abind_wrt_typ_open_abind_wrt_typ_rec_mutual as H; intuition eauto.
+Qed.
+
+#[export] Hint Resolve degree_abind_wrt_typ_open_abind_wrt_typ_rec : lngen.
 
 (* end hide *)
 
@@ -2101,10 +2430,10 @@ Qed.
 (* begin hide *)
 
 Lemma degree_dbind_wrt_typ_open_dbind_wrt_typ_rec_mutual :
-(forall b1 A1 n1,
-  degree_dbind_wrt_typ (S n1) b1 ->
+(forall db1 A1 n1,
+  degree_dbind_wrt_typ (S n1) db1 ->
   degree_typ_wrt_typ n1 A1 ->
-  degree_dbind_wrt_typ n1 (open_dbind_wrt_typ_rec n1 A1 b1)).
+  degree_dbind_wrt_typ n1 (open_dbind_wrt_typ_rec n1 A1 db1)).
 Proof.
 apply_mutual_ind dbind_mutind;
 default_simp.
@@ -2115,10 +2444,10 @@ Qed.
 (* begin hide *)
 
 Lemma degree_dbind_wrt_typ_open_dbind_wrt_typ_rec :
-forall b1 A1 n1,
-  degree_dbind_wrt_typ (S n1) b1 ->
+forall db1 A1 n1,
+  degree_dbind_wrt_typ (S n1) db1 ->
   degree_typ_wrt_typ n1 A1 ->
-  degree_dbind_wrt_typ n1 (open_dbind_wrt_typ_rec n1 A1 b1).
+  degree_dbind_wrt_typ n1 (open_dbind_wrt_typ_rec n1 A1 db1).
 Proof.
 pose proof degree_dbind_wrt_typ_open_dbind_wrt_typ_rec_mutual as H; intuition eauto.
 Qed.
@@ -2137,6 +2466,17 @@ unfold open_typ_wrt_typ; default_simp.
 Qed.
 
 #[export] Hint Resolve degree_typ_wrt_typ_open_typ_wrt_typ : lngen.
+
+Lemma degree_abind_wrt_typ_open_abind_wrt_typ :
+forall ab1 A1,
+  degree_abind_wrt_typ 1 ab1 ->
+  degree_typ_wrt_typ 0 A1 ->
+  degree_abind_wrt_typ 0 (open_abind_wrt_typ ab1 A1).
+Proof.
+unfold open_abind_wrt_typ; default_simp.
+Qed.
+
+#[export] Hint Resolve degree_abind_wrt_typ_open_abind_wrt_typ : lngen.
 
 Lemma degree_body_wrt_typ_open_body_wrt_typ :
 forall body1 A1,
@@ -2225,10 +2565,10 @@ Qed.
 #[export] Hint Resolve degree_exp_wrt_exp_open_exp_wrt_exp : lngen.
 
 Lemma degree_dbind_wrt_typ_open_dbind_wrt_typ :
-forall b1 A1,
-  degree_dbind_wrt_typ 1 b1 ->
+forall db1 A1,
+  degree_dbind_wrt_typ 1 db1 ->
   degree_typ_wrt_typ 0 A1 ->
-  degree_dbind_wrt_typ 0 (open_dbind_wrt_typ b1 A1).
+  degree_dbind_wrt_typ 0 (open_dbind_wrt_typ db1 A1).
 Proof.
 unfold open_dbind_wrt_typ; default_simp.
 Qed.
@@ -2259,6 +2599,33 @@ pose proof degree_typ_wrt_typ_open_typ_wrt_typ_rec_inv_mutual as H; intuition ea
 Qed.
 
 #[export] Hint Immediate degree_typ_wrt_typ_open_typ_wrt_typ_rec_inv : lngen.
+
+(* end hide *)
+
+(* begin hide *)
+
+Lemma degree_abind_wrt_typ_open_abind_wrt_typ_rec_inv_mutual :
+(forall ab1 A1 n1,
+  degree_abind_wrt_typ n1 (open_abind_wrt_typ_rec n1 A1 ab1) ->
+  degree_abind_wrt_typ (S n1) ab1).
+Proof.
+apply_mutual_ind abind_mutind;
+default_simp; eauto with lngen.
+Qed.
+
+(* end hide *)
+
+(* begin hide *)
+
+Lemma degree_abind_wrt_typ_open_abind_wrt_typ_rec_inv :
+forall ab1 A1 n1,
+  degree_abind_wrt_typ n1 (open_abind_wrt_typ_rec n1 A1 ab1) ->
+  degree_abind_wrt_typ (S n1) ab1.
+Proof.
+pose proof degree_abind_wrt_typ_open_abind_wrt_typ_rec_inv_mutual as H; intuition eauto.
+Qed.
+
+#[export] Hint Immediate degree_abind_wrt_typ_open_abind_wrt_typ_rec_inv : lngen.
 
 (* end hide *)
 
@@ -2441,9 +2808,9 @@ Qed.
 (* begin hide *)
 
 Lemma degree_dbind_wrt_typ_open_dbind_wrt_typ_rec_inv_mutual :
-(forall b1 A1 n1,
-  degree_dbind_wrt_typ n1 (open_dbind_wrt_typ_rec n1 A1 b1) ->
-  degree_dbind_wrt_typ (S n1) b1).
+(forall db1 A1 n1,
+  degree_dbind_wrt_typ n1 (open_dbind_wrt_typ_rec n1 A1 db1) ->
+  degree_dbind_wrt_typ (S n1) db1).
 Proof.
 apply_mutual_ind dbind_mutind;
 default_simp; eauto with lngen.
@@ -2454,9 +2821,9 @@ Qed.
 (* begin hide *)
 
 Lemma degree_dbind_wrt_typ_open_dbind_wrt_typ_rec_inv :
-forall b1 A1 n1,
-  degree_dbind_wrt_typ n1 (open_dbind_wrt_typ_rec n1 A1 b1) ->
-  degree_dbind_wrt_typ (S n1) b1.
+forall db1 A1 n1,
+  degree_dbind_wrt_typ n1 (open_dbind_wrt_typ_rec n1 A1 db1) ->
+  degree_dbind_wrt_typ (S n1) db1.
 Proof.
 pose proof degree_dbind_wrt_typ_open_dbind_wrt_typ_rec_inv_mutual as H; intuition eauto.
 Qed.
@@ -2474,6 +2841,16 @@ unfold open_typ_wrt_typ; eauto with lngen.
 Qed.
 
 #[export] Hint Immediate degree_typ_wrt_typ_open_typ_wrt_typ_inv : lngen.
+
+Lemma degree_abind_wrt_typ_open_abind_wrt_typ_inv :
+forall ab1 A1,
+  degree_abind_wrt_typ 0 (open_abind_wrt_typ ab1 A1) ->
+  degree_abind_wrt_typ 1 ab1.
+Proof.
+unfold open_abind_wrt_typ; eauto with lngen.
+Qed.
+
+#[export] Hint Immediate degree_abind_wrt_typ_open_abind_wrt_typ_inv : lngen.
 
 Lemma degree_body_wrt_typ_open_body_wrt_typ_inv :
 forall body1 A1,
@@ -2556,9 +2933,9 @@ Qed.
 #[export] Hint Immediate degree_exp_wrt_exp_open_exp_wrt_exp_inv : lngen.
 
 Lemma degree_dbind_wrt_typ_open_dbind_wrt_typ_inv :
-forall b1 A1,
-  degree_dbind_wrt_typ 0 (open_dbind_wrt_typ b1 A1) ->
-  degree_dbind_wrt_typ 1 b1.
+forall db1 A1,
+  degree_dbind_wrt_typ 0 (open_dbind_wrt_typ db1 A1) ->
+  degree_dbind_wrt_typ 1 db1.
 Proof.
 unfold open_dbind_wrt_typ; eauto with lngen.
 Qed.
@@ -2599,6 +2976,36 @@ pose proof close_typ_wrt_typ_rec_inj_mutual as H; intuition eauto.
 Qed.
 
 #[export] Hint Immediate close_typ_wrt_typ_rec_inj : lngen.
+
+(* end hide *)
+
+(* begin hide *)
+
+Lemma close_abind_wrt_typ_rec_inj_mutual :
+(forall ab1 ab2 X1 n1,
+  close_abind_wrt_typ_rec n1 X1 ab1 = close_abind_wrt_typ_rec n1 X1 ab2 ->
+  ab1 = ab2).
+Proof.
+apply_mutual_ind abind_mutind;
+intros; match goal with
+          | |- _ = ?term => destruct term
+        end;
+default_simp; eauto with lngen.
+Qed.
+
+(* end hide *)
+
+(* begin hide *)
+
+Lemma close_abind_wrt_typ_rec_inj :
+forall ab1 ab2 X1 n1,
+  close_abind_wrt_typ_rec n1 X1 ab1 = close_abind_wrt_typ_rec n1 X1 ab2 ->
+  ab1 = ab2.
+Proof.
+pose proof close_abind_wrt_typ_rec_inj_mutual as H; intuition eauto.
+Qed.
+
+#[export] Hint Immediate close_abind_wrt_typ_rec_inj : lngen.
 
 (* end hide *)
 
@@ -2699,9 +3106,9 @@ Qed.
 (* begin hide *)
 
 Lemma close_dbind_wrt_typ_rec_inj_mutual :
-(forall b1 b2 X1 n1,
-  close_dbind_wrt_typ_rec n1 X1 b1 = close_dbind_wrt_typ_rec n1 X1 b2 ->
-  b1 = b2).
+(forall db1 db2 X1 n1,
+  close_dbind_wrt_typ_rec n1 X1 db1 = close_dbind_wrt_typ_rec n1 X1 db2 ->
+  db1 = db2).
 Proof.
 apply_mutual_ind dbind_mutind;
 intros; match goal with
@@ -2715,9 +3122,9 @@ Qed.
 (* begin hide *)
 
 Lemma close_dbind_wrt_typ_rec_inj :
-forall b1 b2 X1 n1,
-  close_dbind_wrt_typ_rec n1 X1 b1 = close_dbind_wrt_typ_rec n1 X1 b2 ->
-  b1 = b2.
+forall db1 db2 X1 n1,
+  close_dbind_wrt_typ_rec n1 X1 db1 = close_dbind_wrt_typ_rec n1 X1 db2 ->
+  db1 = db2.
 Proof.
 pose proof close_dbind_wrt_typ_rec_inj_mutual as H; intuition eauto.
 Qed.
@@ -2735,6 +3142,16 @@ unfold close_typ_wrt_typ; eauto with lngen.
 Qed.
 
 #[export] Hint Immediate close_typ_wrt_typ_inj : lngen.
+
+Lemma close_abind_wrt_typ_inj :
+forall ab1 ab2 X1,
+  close_abind_wrt_typ X1 ab1 = close_abind_wrt_typ X1 ab2 ->
+  ab1 = ab2.
+Proof.
+unfold close_abind_wrt_typ; eauto with lngen.
+Qed.
+
+#[export] Hint Immediate close_abind_wrt_typ_inj : lngen.
 
 Lemma close_body_wrt_typ_inj :
 forall body1 body2 X1,
@@ -2777,9 +3194,9 @@ Qed.
 #[export] Hint Immediate close_exp_wrt_exp_inj : lngen.
 
 Lemma close_dbind_wrt_typ_inj :
-forall b1 b2 X1,
-  close_dbind_wrt_typ X1 b1 = close_dbind_wrt_typ X1 b2 ->
-  b1 = b2.
+forall db1 db2 X1,
+  close_dbind_wrt_typ X1 db1 = close_dbind_wrt_typ X1 db2 ->
+  db1 = db2.
 Proof.
 unfold close_dbind_wrt_typ; eauto with lngen.
 Qed.
@@ -2811,6 +3228,34 @@ Qed.
 
 #[export] Hint Resolve close_typ_wrt_typ_rec_open_typ_wrt_typ_rec : lngen.
 #[export] Hint Rewrite close_typ_wrt_typ_rec_open_typ_wrt_typ_rec using solve [auto] : lngen.
+
+(* end hide *)
+
+(* begin hide *)
+
+Lemma close_abind_wrt_typ_rec_open_abind_wrt_typ_rec_mutual :
+(forall ab1 X1 n1,
+  X1 `notin` ftvar_in_abind ab1 ->
+  close_abind_wrt_typ_rec n1 X1 (open_abind_wrt_typ_rec n1 (typ_var_f X1) ab1) = ab1).
+Proof.
+apply_mutual_ind abind_mutind;
+default_simp.
+Qed.
+
+(* end hide *)
+
+(* begin hide *)
+
+Lemma close_abind_wrt_typ_rec_open_abind_wrt_typ_rec :
+forall ab1 X1 n1,
+  X1 `notin` ftvar_in_abind ab1 ->
+  close_abind_wrt_typ_rec n1 X1 (open_abind_wrt_typ_rec n1 (typ_var_f X1) ab1) = ab1.
+Proof.
+pose proof close_abind_wrt_typ_rec_open_abind_wrt_typ_rec_mutual as H; intuition eauto.
+Qed.
+
+#[export] Hint Resolve close_abind_wrt_typ_rec_open_abind_wrt_typ_rec : lngen.
+#[export] Hint Rewrite close_abind_wrt_typ_rec_open_abind_wrt_typ_rec using solve [auto] : lngen.
 
 (* end hide *)
 
@@ -2909,9 +3354,9 @@ Qed.
 (* begin hide *)
 
 Lemma close_dbind_wrt_typ_rec_open_dbind_wrt_typ_rec_mutual :
-(forall b1 X1 n1,
-  X1 `notin` ftvar_in_dbind b1 ->
-  close_dbind_wrt_typ_rec n1 X1 (open_dbind_wrt_typ_rec n1 (typ_var_f X1) b1) = b1).
+(forall db1 X1 n1,
+  X1 `notin` ftvar_in_dbind db1 ->
+  close_dbind_wrt_typ_rec n1 X1 (open_dbind_wrt_typ_rec n1 (typ_var_f X1) db1) = db1).
 Proof.
 apply_mutual_ind dbind_mutind;
 default_simp.
@@ -2922,9 +3367,9 @@ Qed.
 (* begin hide *)
 
 Lemma close_dbind_wrt_typ_rec_open_dbind_wrt_typ_rec :
-forall b1 X1 n1,
-  X1 `notin` ftvar_in_dbind b1 ->
-  close_dbind_wrt_typ_rec n1 X1 (open_dbind_wrt_typ_rec n1 (typ_var_f X1) b1) = b1.
+forall db1 X1 n1,
+  X1 `notin` ftvar_in_dbind db1 ->
+  close_dbind_wrt_typ_rec n1 X1 (open_dbind_wrt_typ_rec n1 (typ_var_f X1) db1) = db1.
 Proof.
 pose proof close_dbind_wrt_typ_rec_open_dbind_wrt_typ_rec_mutual as H; intuition eauto.
 Qed.
@@ -2944,6 +3389,17 @@ Qed.
 
 #[export] Hint Resolve close_typ_wrt_typ_open_typ_wrt_typ : lngen.
 #[export] Hint Rewrite close_typ_wrt_typ_open_typ_wrt_typ using solve [auto] : lngen.
+
+Lemma close_abind_wrt_typ_open_abind_wrt_typ :
+forall ab1 X1,
+  X1 `notin` ftvar_in_abind ab1 ->
+  close_abind_wrt_typ X1 (open_abind_wrt_typ ab1 (typ_var_f X1)) = ab1.
+Proof.
+unfold close_abind_wrt_typ; unfold open_abind_wrt_typ; default_simp.
+Qed.
+
+#[export] Hint Resolve close_abind_wrt_typ_open_abind_wrt_typ : lngen.
+#[export] Hint Rewrite close_abind_wrt_typ_open_abind_wrt_typ using solve [auto] : lngen.
 
 Lemma close_body_wrt_typ_open_body_wrt_typ :
 forall body1 X1,
@@ -2990,9 +3446,9 @@ Qed.
 #[export] Hint Rewrite close_exp_wrt_exp_open_exp_wrt_exp using solve [auto] : lngen.
 
 Lemma close_dbind_wrt_typ_open_dbind_wrt_typ :
-forall b1 X1,
-  X1 `notin` ftvar_in_dbind b1 ->
-  close_dbind_wrt_typ X1 (open_dbind_wrt_typ b1 (typ_var_f X1)) = b1.
+forall db1 X1,
+  X1 `notin` ftvar_in_dbind db1 ->
+  close_dbind_wrt_typ X1 (open_dbind_wrt_typ db1 (typ_var_f X1)) = db1.
 Proof.
 unfold close_dbind_wrt_typ; unfold open_dbind_wrt_typ; default_simp.
 Qed.
@@ -3023,6 +3479,32 @@ Qed.
 
 #[export] Hint Resolve open_typ_wrt_typ_rec_close_typ_wrt_typ_rec : lngen.
 #[export] Hint Rewrite open_typ_wrt_typ_rec_close_typ_wrt_typ_rec using solve [auto] : lngen.
+
+(* end hide *)
+
+(* begin hide *)
+
+Lemma open_abind_wrt_typ_rec_close_abind_wrt_typ_rec_mutual :
+(forall ab1 X1 n1,
+  open_abind_wrt_typ_rec n1 (typ_var_f X1) (close_abind_wrt_typ_rec n1 X1 ab1) = ab1).
+Proof.
+apply_mutual_ind abind_mutind;
+default_simp.
+Qed.
+
+(* end hide *)
+
+(* begin hide *)
+
+Lemma open_abind_wrt_typ_rec_close_abind_wrt_typ_rec :
+forall ab1 X1 n1,
+  open_abind_wrt_typ_rec n1 (typ_var_f X1) (close_abind_wrt_typ_rec n1 X1 ab1) = ab1.
+Proof.
+pose proof open_abind_wrt_typ_rec_close_abind_wrt_typ_rec_mutual as H; intuition eauto.
+Qed.
+
+#[export] Hint Resolve open_abind_wrt_typ_rec_close_abind_wrt_typ_rec : lngen.
+#[export] Hint Rewrite open_abind_wrt_typ_rec_close_abind_wrt_typ_rec using solve [auto] : lngen.
 
 (* end hide *)
 
@@ -3113,8 +3595,8 @@ Qed.
 (* begin hide *)
 
 Lemma open_dbind_wrt_typ_rec_close_dbind_wrt_typ_rec_mutual :
-(forall b1 X1 n1,
-  open_dbind_wrt_typ_rec n1 (typ_var_f X1) (close_dbind_wrt_typ_rec n1 X1 b1) = b1).
+(forall db1 X1 n1,
+  open_dbind_wrt_typ_rec n1 (typ_var_f X1) (close_dbind_wrt_typ_rec n1 X1 db1) = db1).
 Proof.
 apply_mutual_ind dbind_mutind;
 default_simp.
@@ -3125,8 +3607,8 @@ Qed.
 (* begin hide *)
 
 Lemma open_dbind_wrt_typ_rec_close_dbind_wrt_typ_rec :
-forall b1 X1 n1,
-  open_dbind_wrt_typ_rec n1 (typ_var_f X1) (close_dbind_wrt_typ_rec n1 X1 b1) = b1.
+forall db1 X1 n1,
+  open_dbind_wrt_typ_rec n1 (typ_var_f X1) (close_dbind_wrt_typ_rec n1 X1 db1) = db1.
 Proof.
 pose proof open_dbind_wrt_typ_rec_close_dbind_wrt_typ_rec_mutual as H; intuition eauto.
 Qed.
@@ -3145,6 +3627,16 @@ Qed.
 
 #[export] Hint Resolve open_typ_wrt_typ_close_typ_wrt_typ : lngen.
 #[export] Hint Rewrite open_typ_wrt_typ_close_typ_wrt_typ using solve [auto] : lngen.
+
+Lemma open_abind_wrt_typ_close_abind_wrt_typ :
+forall ab1 X1,
+  open_abind_wrt_typ (close_abind_wrt_typ X1 ab1) (typ_var_f X1) = ab1.
+Proof.
+unfold close_abind_wrt_typ; unfold open_abind_wrt_typ; default_simp.
+Qed.
+
+#[export] Hint Resolve open_abind_wrt_typ_close_abind_wrt_typ : lngen.
+#[export] Hint Rewrite open_abind_wrt_typ_close_abind_wrt_typ using solve [auto] : lngen.
 
 Lemma open_body_wrt_typ_close_body_wrt_typ :
 forall body1 X1,
@@ -3187,8 +3679,8 @@ Qed.
 #[export] Hint Rewrite open_exp_wrt_exp_close_exp_wrt_exp using solve [auto] : lngen.
 
 Lemma open_dbind_wrt_typ_close_dbind_wrt_typ :
-forall b1 X1,
-  open_dbind_wrt_typ (close_dbind_wrt_typ X1 b1) (typ_var_f X1) = b1.
+forall db1 X1,
+  open_dbind_wrt_typ (close_dbind_wrt_typ X1 db1) (typ_var_f X1) = db1.
 Proof.
 unfold close_dbind_wrt_typ; unfold open_dbind_wrt_typ; default_simp.
 Qed.
@@ -3227,6 +3719,40 @@ pose proof open_typ_wrt_typ_rec_inj_mutual as H; intuition eauto.
 Qed.
 
 #[export] Hint Immediate open_typ_wrt_typ_rec_inj : lngen.
+
+(* end hide *)
+
+(* begin hide *)
+
+Lemma open_abind_wrt_typ_rec_inj_mutual :
+(forall ab2 ab1 X1 n1,
+  X1 `notin` ftvar_in_abind ab2 ->
+  X1 `notin` ftvar_in_abind ab1 ->
+  open_abind_wrt_typ_rec n1 (typ_var_f X1) ab2 = open_abind_wrt_typ_rec n1 (typ_var_f X1) ab1 ->
+  ab2 = ab1).
+Proof.
+apply_mutual_ind abind_mutind;
+intros; match goal with
+          | |- _ = ?term => destruct term
+        end;
+default_simp; eauto with lngen.
+Qed.
+
+(* end hide *)
+
+(* begin hide *)
+
+Lemma open_abind_wrt_typ_rec_inj :
+forall ab2 ab1 X1 n1,
+  X1 `notin` ftvar_in_abind ab2 ->
+  X1 `notin` ftvar_in_abind ab1 ->
+  open_abind_wrt_typ_rec n1 (typ_var_f X1) ab2 = open_abind_wrt_typ_rec n1 (typ_var_f X1) ab1 ->
+  ab2 = ab1.
+Proof.
+pose proof open_abind_wrt_typ_rec_inj_mutual as H; intuition eauto.
+Qed.
+
+#[export] Hint Immediate open_abind_wrt_typ_rec_inj : lngen.
 
 (* end hide *)
 
@@ -3343,11 +3869,11 @@ Qed.
 (* begin hide *)
 
 Lemma open_dbind_wrt_typ_rec_inj_mutual :
-(forall b2 b1 X1 n1,
-  X1 `notin` ftvar_in_dbind b2 ->
-  X1 `notin` ftvar_in_dbind b1 ->
-  open_dbind_wrt_typ_rec n1 (typ_var_f X1) b2 = open_dbind_wrt_typ_rec n1 (typ_var_f X1) b1 ->
-  b2 = b1).
+(forall db2 db1 X1 n1,
+  X1 `notin` ftvar_in_dbind db2 ->
+  X1 `notin` ftvar_in_dbind db1 ->
+  open_dbind_wrt_typ_rec n1 (typ_var_f X1) db2 = open_dbind_wrt_typ_rec n1 (typ_var_f X1) db1 ->
+  db2 = db1).
 Proof.
 apply_mutual_ind dbind_mutind;
 intros; match goal with
@@ -3361,11 +3887,11 @@ Qed.
 (* begin hide *)
 
 Lemma open_dbind_wrt_typ_rec_inj :
-forall b2 b1 X1 n1,
-  X1 `notin` ftvar_in_dbind b2 ->
-  X1 `notin` ftvar_in_dbind b1 ->
-  open_dbind_wrt_typ_rec n1 (typ_var_f X1) b2 = open_dbind_wrt_typ_rec n1 (typ_var_f X1) b1 ->
-  b2 = b1.
+forall db2 db1 X1 n1,
+  X1 `notin` ftvar_in_dbind db2 ->
+  X1 `notin` ftvar_in_dbind db1 ->
+  open_dbind_wrt_typ_rec n1 (typ_var_f X1) db2 = open_dbind_wrt_typ_rec n1 (typ_var_f X1) db1 ->
+  db2 = db1.
 Proof.
 pose proof open_dbind_wrt_typ_rec_inj_mutual as H; intuition eauto.
 Qed.
@@ -3385,6 +3911,18 @@ unfold open_typ_wrt_typ; eauto with lngen.
 Qed.
 
 #[export] Hint Immediate open_typ_wrt_typ_inj : lngen.
+
+Lemma open_abind_wrt_typ_inj :
+forall ab2 ab1 X1,
+  X1 `notin` ftvar_in_abind ab2 ->
+  X1 `notin` ftvar_in_abind ab1 ->
+  open_abind_wrt_typ ab2 (typ_var_f X1) = open_abind_wrt_typ ab1 (typ_var_f X1) ->
+  ab2 = ab1.
+Proof.
+unfold open_abind_wrt_typ; eauto with lngen.
+Qed.
+
+#[export] Hint Immediate open_abind_wrt_typ_inj : lngen.
 
 Lemma open_body_wrt_typ_inj :
 forall body2 body1 X1,
@@ -3435,11 +3973,11 @@ Qed.
 #[export] Hint Immediate open_exp_wrt_exp_inj : lngen.
 
 Lemma open_dbind_wrt_typ_inj :
-forall b2 b1 X1,
-  X1 `notin` ftvar_in_dbind b2 ->
-  X1 `notin` ftvar_in_dbind b1 ->
-  open_dbind_wrt_typ b2 (typ_var_f X1) = open_dbind_wrt_typ b1 (typ_var_f X1) ->
-  b2 = b1.
+forall db2 db1 X1,
+  X1 `notin` ftvar_in_dbind db2 ->
+  X1 `notin` ftvar_in_dbind db1 ->
+  open_dbind_wrt_typ db2 (typ_var_f X1) = open_dbind_wrt_typ db1 (typ_var_f X1) ->
+  db2 = db1.
 Proof.
 unfold open_dbind_wrt_typ; eauto with lngen.
 Qed.
@@ -3480,6 +4018,34 @@ pose proof degree_typ_wrt_typ_of_lc_typ_mutual as H; intuition eauto.
 Qed.
 
 #[export] Hint Resolve degree_typ_wrt_typ_of_lc_typ : lngen.
+
+(* begin hide *)
+
+Lemma degree_abind_wrt_typ_of_lc_abind_mutual :
+(forall ab1,
+  lc_abind ab1 ->
+  degree_abind_wrt_typ 0 ab1).
+Proof.
+apply_mutual_ind lc_abind_mutind;
+intros;
+let X1 := fresh "X1" in pick_fresh X1;
+repeat (match goal with
+          | H1 : _, H2 : _ |- _ => specialize H1 with H2
+        end);
+default_simp; eauto with lngen.
+Qed.
+
+(* end hide *)
+
+Lemma degree_abind_wrt_typ_of_lc_abind :
+forall ab1,
+  lc_abind ab1 ->
+  degree_abind_wrt_typ 0 ab1.
+Proof.
+pose proof degree_abind_wrt_typ_of_lc_abind_mutual as H; intuition eauto.
+Qed.
+
+#[export] Hint Resolve degree_abind_wrt_typ_of_lc_abind : lngen.
 
 (* begin hide *)
 
@@ -3568,9 +4134,9 @@ Qed.
 (* begin hide *)
 
 Lemma degree_dbind_wrt_typ_of_lc_dbind_mutual :
-(forall b1,
-  lc_dbind b1 ->
-  degree_dbind_wrt_typ 0 b1).
+(forall db1,
+  lc_dbind db1 ->
+  degree_dbind_wrt_typ 0 db1).
 Proof.
 apply_mutual_ind lc_dbind_mutind;
 intros;
@@ -3584,9 +4150,9 @@ Qed.
 (* end hide *)
 
 Lemma degree_dbind_wrt_typ_of_lc_dbind :
-forall b1,
-  lc_dbind b1 ->
-  degree_dbind_wrt_typ 0 b1.
+forall db1,
+  lc_dbind db1 ->
+  degree_dbind_wrt_typ 0 db1.
 Proof.
 pose proof degree_dbind_wrt_typ_of_lc_dbind_mutual as H; intuition eauto.
 Qed.
@@ -3631,6 +4197,45 @@ intuition eauto.
 Qed.
 
 #[export] Hint Resolve lc_typ_of_degree : lngen.
+
+(* begin hide *)
+
+Lemma lc_abind_of_degree_size_mutual :
+forall i1,
+(forall ab1,
+  size_abind ab1 = i1 ->
+  degree_abind_wrt_typ 0 ab1 ->
+  lc_abind ab1).
+Proof.
+intros i1; pattern i1; apply lt_wf_rec;
+clear i1; intros i1 H1;
+apply_mutual_ind abind_mutind;
+default_simp;
+(* non-trivial cases *)
+constructor; default_simp; eapply_first_lt_hyp;
+(* instantiate the size *)
+match goal with
+  | |- _ = _ => reflexivity
+  | _ => idtac
+end;
+instantiate;
+(* everything should be easy now *)
+default_simp.
+Qed.
+
+(* end hide *)
+
+Lemma lc_abind_of_degree :
+forall ab1,
+  degree_abind_wrt_typ 0 ab1 ->
+  lc_abind ab1.
+Proof.
+intros ab1; intros;
+pose proof (lc_abind_of_degree_size_mutual (size_abind ab1));
+intuition eauto.
+Qed.
+
+#[export] Hint Resolve lc_abind_of_degree : lngen.
 
 (* begin hide *)
 
@@ -3695,10 +4300,10 @@ Qed.
 
 Lemma lc_dbind_of_degree_size_mutual :
 forall i1,
-(forall b1,
-  size_dbind b1 = i1 ->
-  degree_dbind_wrt_typ 0 b1 ->
-  lc_dbind b1).
+(forall db1,
+  size_dbind db1 = i1 ->
+  degree_dbind_wrt_typ 0 db1 ->
+  lc_dbind db1).
 Proof.
 intros i1; pattern i1; apply lt_wf_rec;
 clear i1; intros i1 H1;
@@ -3719,12 +4324,12 @@ Qed.
 (* end hide *)
 
 Lemma lc_dbind_of_degree :
-forall b1,
-  degree_dbind_wrt_typ 0 b1 ->
-  lc_dbind b1.
+forall db1,
+  degree_dbind_wrt_typ 0 db1 ->
+  lc_dbind db1.
 Proof.
-intros b1; intros;
-pose proof (lc_dbind_of_degree_size_mutual (size_dbind b1));
+intros db1; intros;
+pose proof (lc_dbind_of_degree_size_mutual (size_dbind db1));
 intuition eauto.
 Qed.
 
@@ -3734,6 +4339,12 @@ Ltac typ_lc_exists_tac :=
   repeat (match goal with
             | H : _ |- _ =>
               let J1 := fresh in pose proof H as J1; apply degree_typ_wrt_typ_of_lc_typ in J1; clear H
+          end).
+
+Ltac abind_lc_exists_tac :=
+  repeat (match goal with
+            | H : _ |- _ =>
+              let J1 := fresh in pose proof H as J1; apply degree_abind_wrt_typ_of_lc_abind in J1; clear H
           end).
 
 Ltac body_exp_lc_exists_tac :=
@@ -3808,6 +4419,23 @@ Qed.
 
 #[export] Hint Resolve lc_body_typ_wrt_typ : lngen.
 
+Lemma lc_body_abind_wrt_typ :
+forall ab1 A1,
+  body_abind_wrt_typ ab1 ->
+  lc_typ A1 ->
+  lc_abind (open_abind_wrt_typ ab1 A1).
+Proof.
+unfold body_abind_wrt_typ;
+default_simp;
+let X1 := fresh "x" in
+pick_fresh X1;
+specialize_all X1;
+abind_lc_exists_tac;
+eauto 7 with lngen.
+Qed.
+
+#[export] Hint Resolve lc_body_abind_wrt_typ : lngen.
+
 Lemma lc_body_body_wrt_typ :
 forall body1 A1,
   body_body_wrt_typ body1 ->
@@ -3877,10 +4505,10 @@ Qed.
 #[export] Hint Resolve lc_body_exp_wrt_exp : lngen.
 
 Lemma lc_body_dbind_wrt_typ :
-forall b1 A1,
-  body_dbind_wrt_typ b1 ->
+forall db1 A1,
+  body_dbind_wrt_typ db1 ->
   lc_typ A1 ->
-  lc_dbind (open_dbind_wrt_typ b1 A1).
+  lc_dbind (open_dbind_wrt_typ db1 A1).
 Proof.
 unfold body_dbind_wrt_typ;
 default_simp;
@@ -3947,6 +4575,28 @@ Qed.
 
 (* begin hide *)
 
+Lemma lc_abind_unique_mutual :
+(forall ab1 (proof2 proof3 : lc_abind ab1), proof2 = proof3).
+Proof.
+apply_mutual_ind lc_abind_mutind;
+intros;
+let proof1 := fresh "proof1" in
+rename_last_into proof1; dependent destruction proof1;
+f_equal; default_simp; auto using @functional_extensionality_dep with lngen.
+Qed.
+
+(* end hide *)
+
+Lemma lc_abind_unique :
+forall ab1 (proof2 proof3 : lc_abind ab1), proof2 = proof3.
+Proof.
+pose proof lc_abind_unique_mutual as H; intuition eauto.
+Qed.
+
+#[export] Hint Resolve lc_abind_unique : lngen.
+
+(* begin hide *)
+
 Lemma lc_body_unique_lc_exp_unique_mutual :
 (forall body1 (proof2 proof3 : lc_body body1), proof2 = proof3) /\
 (forall e1 (proof2 proof3 : lc_exp e1), proof2 = proof3).
@@ -3979,7 +4629,7 @@ Qed.
 (* begin hide *)
 
 Lemma lc_dbind_unique_mutual :
-(forall b1 (proof2 proof3 : lc_dbind b1), proof2 = proof3).
+(forall db1 (proof2 proof3 : lc_dbind db1), proof2 = proof3).
 Proof.
 apply_mutual_ind lc_dbind_mutind;
 intros;
@@ -3991,7 +4641,7 @@ Qed.
 (* end hide *)
 
 Lemma lc_dbind_unique :
-forall b1 (proof2 proof3 : lc_dbind b1), proof2 = proof3.
+forall db1 (proof2 proof3 : lc_dbind db1), proof2 = proof3.
 Proof.
 pose proof lc_dbind_unique_mutual as H; intuition eauto.
 Qed.
@@ -4016,6 +4666,25 @@ pose proof lc_typ_of_lc_set_typ_mutual as H; intuition eauto.
 Qed.
 
 #[export] Hint Resolve lc_typ_of_lc_set_typ : lngen.
+
+(* begin hide *)
+
+Lemma lc_abind_of_lc_set_abind_mutual :
+(forall ab1, lc_set_abind ab1 -> lc_abind ab1).
+Proof.
+apply_mutual_ind lc_set_abind_mutind;
+default_simp.
+Qed.
+
+(* end hide *)
+
+Lemma lc_abind_of_lc_set_abind :
+forall ab1, lc_set_abind ab1 -> lc_abind ab1.
+Proof.
+pose proof lc_abind_of_lc_set_abind_mutual as H; intuition eauto.
+Qed.
+
+#[export] Hint Resolve lc_abind_of_lc_set_abind : lngen.
 
 (* begin hide *)
 
@@ -4048,7 +4717,7 @@ Qed.
 (* begin hide *)
 
 Lemma lc_dbind_of_lc_set_dbind_mutual :
-(forall b1, lc_set_dbind b1 -> lc_dbind b1).
+(forall db1, lc_set_dbind db1 -> lc_dbind db1).
 Proof.
 apply_mutual_ind lc_set_dbind_mutind;
 default_simp.
@@ -4057,7 +4726,7 @@ Qed.
 (* end hide *)
 
 Lemma lc_dbind_of_lc_set_dbind :
-forall b1, lc_set_dbind b1 -> lc_dbind b1.
+forall db1, lc_set_dbind db1 -> lc_dbind db1.
 Proof.
 pose proof lc_dbind_of_lc_set_dbind_mutual as H; intuition eauto.
 Qed.
@@ -4105,6 +4774,49 @@ intuition eauto.
 Qed.
 
 #[export] Hint Resolve lc_set_typ_of_lc_typ : lngen.
+
+(* begin hide *)
+
+Lemma lc_set_abind_of_lc_abind_size_mutual :
+forall i1,
+(forall ab1,
+  size_abind ab1 = i1 ->
+  lc_abind ab1 ->
+  lc_set_abind ab1).
+Proof.
+intros i1; pattern i1; apply lt_wf_rec;
+clear i1; intros i1 H1;
+apply_mutual_ind abind_mutrec;
+default_simp;
+try solve [assert False by default_simp; tauto];
+(* non-trivial cases *)
+constructor; default_simp;
+try first [apply lc_set_typ_of_lc_typ
+ | apply lc_set_abind_of_lc_abind];
+default_simp; eapply_first_lt_hyp;
+(* instantiate the size *)
+match goal with
+  | |- _ = _ => reflexivity
+  | _ => idtac
+end;
+instantiate;
+(* everything should be easy now *)
+default_simp.
+Qed.
+
+(* end hide *)
+
+Lemma lc_set_abind_of_lc_abind :
+forall ab1,
+  lc_abind ab1 ->
+  lc_set_abind ab1.
+Proof.
+intros ab1; intros;
+pose proof (lc_set_abind_of_lc_abind_size_mutual (size_abind ab1));
+intuition eauto.
+Qed.
+
+#[export] Hint Resolve lc_set_abind_of_lc_abind : lngen.
 
 (* begin hide *)
 
@@ -4173,10 +4885,10 @@ Qed.
 
 Lemma lc_set_dbind_of_lc_dbind_size_mutual :
 forall i1,
-(forall b1,
-  size_dbind b1 = i1 ->
-  lc_dbind b1 ->
-  lc_set_dbind b1).
+(forall db1,
+  size_dbind db1 = i1 ->
+  lc_dbind db1 ->
+  lc_set_dbind db1).
 Proof.
 intros i1; pattern i1; apply lt_wf_rec;
 clear i1; intros i1 H1;
@@ -4201,12 +4913,12 @@ Qed.
 (* end hide *)
 
 Lemma lc_set_dbind_of_lc_dbind :
-forall b1,
-  lc_dbind b1 ->
-  lc_set_dbind b1.
+forall db1,
+  lc_dbind db1 ->
+  lc_set_dbind db1.
 Proof.
-intros b1; intros;
-pose proof (lc_set_dbind_of_lc_dbind_size_mutual (size_dbind b1));
+intros db1; intros;
+pose proof (lc_set_dbind_of_lc_dbind_size_mutual (size_dbind db1));
 intuition eauto.
 Qed.
 
@@ -4246,6 +4958,36 @@ Qed.
 
 #[export] Hint Resolve close_typ_wrt_typ_rec_degree_typ_wrt_typ : lngen.
 #[export] Hint Rewrite close_typ_wrt_typ_rec_degree_typ_wrt_typ using solve [auto] : lngen.
+
+(* end hide *)
+
+(* begin hide *)
+
+Lemma close_abind_wrt_typ_rec_degree_abind_wrt_typ_mutual :
+(forall ab1 X1 n1,
+  degree_abind_wrt_typ n1 ab1 ->
+  X1 `notin` ftvar_in_abind ab1 ->
+  close_abind_wrt_typ_rec n1 X1 ab1 = ab1).
+Proof.
+apply_mutual_ind abind_mutind;
+default_simp.
+Qed.
+
+(* end hide *)
+
+(* begin hide *)
+
+Lemma close_abind_wrt_typ_rec_degree_abind_wrt_typ :
+forall ab1 X1 n1,
+  degree_abind_wrt_typ n1 ab1 ->
+  X1 `notin` ftvar_in_abind ab1 ->
+  close_abind_wrt_typ_rec n1 X1 ab1 = ab1.
+Proof.
+pose proof close_abind_wrt_typ_rec_degree_abind_wrt_typ_mutual as H; intuition eauto.
+Qed.
+
+#[export] Hint Resolve close_abind_wrt_typ_rec_degree_abind_wrt_typ : lngen.
+#[export] Hint Rewrite close_abind_wrt_typ_rec_degree_abind_wrt_typ using solve [auto] : lngen.
 
 (* end hide *)
 
@@ -4352,10 +5094,10 @@ Qed.
 (* begin hide *)
 
 Lemma close_dbind_wrt_typ_rec_degree_dbind_wrt_typ_mutual :
-(forall b1 X1 n1,
-  degree_dbind_wrt_typ n1 b1 ->
-  X1 `notin` ftvar_in_dbind b1 ->
-  close_dbind_wrt_typ_rec n1 X1 b1 = b1).
+(forall db1 X1 n1,
+  degree_dbind_wrt_typ n1 db1 ->
+  X1 `notin` ftvar_in_dbind db1 ->
+  close_dbind_wrt_typ_rec n1 X1 db1 = db1).
 Proof.
 apply_mutual_ind dbind_mutind;
 default_simp.
@@ -4366,10 +5108,10 @@ Qed.
 (* begin hide *)
 
 Lemma close_dbind_wrt_typ_rec_degree_dbind_wrt_typ :
-forall b1 X1 n1,
-  degree_dbind_wrt_typ n1 b1 ->
-  X1 `notin` ftvar_in_dbind b1 ->
-  close_dbind_wrt_typ_rec n1 X1 b1 = b1.
+forall db1 X1 n1,
+  degree_dbind_wrt_typ n1 db1 ->
+  X1 `notin` ftvar_in_dbind db1 ->
+  close_dbind_wrt_typ_rec n1 X1 db1 = db1.
 Proof.
 pose proof close_dbind_wrt_typ_rec_degree_dbind_wrt_typ_mutual as H; intuition eauto.
 Qed.
@@ -4390,6 +5132,18 @@ Qed.
 
 #[export] Hint Resolve close_typ_wrt_typ_lc_typ : lngen.
 #[export] Hint Rewrite close_typ_wrt_typ_lc_typ using solve [auto] : lngen.
+
+Lemma close_abind_wrt_typ_lc_abind :
+forall ab1 X1,
+  lc_abind ab1 ->
+  X1 `notin` ftvar_in_abind ab1 ->
+  close_abind_wrt_typ X1 ab1 = ab1.
+Proof.
+unfold close_abind_wrt_typ; default_simp.
+Qed.
+
+#[export] Hint Resolve close_abind_wrt_typ_lc_abind : lngen.
+#[export] Hint Rewrite close_abind_wrt_typ_lc_abind using solve [auto] : lngen.
 
 Lemma close_body_wrt_typ_lc_body :
 forall body1 X1,
@@ -4440,10 +5194,10 @@ Qed.
 #[export] Hint Rewrite close_exp_wrt_exp_lc_exp using solve [auto] : lngen.
 
 Lemma close_dbind_wrt_typ_lc_dbind :
-forall b1 X1,
-  lc_dbind b1 ->
-  X1 `notin` ftvar_in_dbind b1 ->
-  close_dbind_wrt_typ X1 b1 = b1.
+forall db1 X1,
+  lc_dbind db1 ->
+  X1 `notin` ftvar_in_dbind db1 ->
+  close_dbind_wrt_typ X1 db1 = db1.
 Proof.
 unfold close_dbind_wrt_typ; default_simp.
 Qed.
@@ -4476,6 +5230,34 @@ Qed.
 
 #[export] Hint Resolve open_typ_wrt_typ_rec_degree_typ_wrt_typ : lngen.
 #[export] Hint Rewrite open_typ_wrt_typ_rec_degree_typ_wrt_typ using solve [auto] : lngen.
+
+(* end hide *)
+
+(* begin hide *)
+
+Lemma open_abind_wrt_typ_rec_degree_abind_wrt_typ_mutual :
+(forall ab1 A1 n1,
+  degree_abind_wrt_typ n1 ab1 ->
+  open_abind_wrt_typ_rec n1 A1 ab1 = ab1).
+Proof.
+apply_mutual_ind abind_mutind;
+default_simp.
+Qed.
+
+(* end hide *)
+
+(* begin hide *)
+
+Lemma open_abind_wrt_typ_rec_degree_abind_wrt_typ :
+forall ab1 A1 n1,
+  degree_abind_wrt_typ n1 ab1 ->
+  open_abind_wrt_typ_rec n1 A1 ab1 = ab1.
+Proof.
+pose proof open_abind_wrt_typ_rec_degree_abind_wrt_typ_mutual as H; intuition eauto.
+Qed.
+
+#[export] Hint Resolve open_abind_wrt_typ_rec_degree_abind_wrt_typ : lngen.
+#[export] Hint Rewrite open_abind_wrt_typ_rec_degree_abind_wrt_typ using solve [auto] : lngen.
 
 (* end hide *)
 
@@ -4574,9 +5356,9 @@ Qed.
 (* begin hide *)
 
 Lemma open_dbind_wrt_typ_rec_degree_dbind_wrt_typ_mutual :
-(forall b1 A1 n1,
-  degree_dbind_wrt_typ n1 b1 ->
-  open_dbind_wrt_typ_rec n1 A1 b1 = b1).
+(forall db1 A1 n1,
+  degree_dbind_wrt_typ n1 db1 ->
+  open_dbind_wrt_typ_rec n1 A1 db1 = db1).
 Proof.
 apply_mutual_ind dbind_mutind;
 default_simp.
@@ -4587,9 +5369,9 @@ Qed.
 (* begin hide *)
 
 Lemma open_dbind_wrt_typ_rec_degree_dbind_wrt_typ :
-forall b1 A1 n1,
-  degree_dbind_wrt_typ n1 b1 ->
-  open_dbind_wrt_typ_rec n1 A1 b1 = b1.
+forall db1 A1 n1,
+  degree_dbind_wrt_typ n1 db1 ->
+  open_dbind_wrt_typ_rec n1 A1 db1 = db1.
 Proof.
 pose proof open_dbind_wrt_typ_rec_degree_dbind_wrt_typ_mutual as H; intuition eauto.
 Qed.
@@ -4609,6 +5391,17 @@ Qed.
 
 #[export] Hint Resolve open_typ_wrt_typ_lc_typ : lngen.
 #[export] Hint Rewrite open_typ_wrt_typ_lc_typ using solve [auto] : lngen.
+
+Lemma open_abind_wrt_typ_lc_abind :
+forall ab1 A1,
+  lc_abind ab1 ->
+  open_abind_wrt_typ ab1 A1 = ab1.
+Proof.
+unfold open_abind_wrt_typ; default_simp.
+Qed.
+
+#[export] Hint Resolve open_abind_wrt_typ_lc_abind : lngen.
+#[export] Hint Rewrite open_abind_wrt_typ_lc_abind using solve [auto] : lngen.
 
 Lemma open_body_wrt_typ_lc_body :
 forall body1 A1,
@@ -4655,9 +5448,9 @@ Qed.
 #[export] Hint Rewrite open_exp_wrt_exp_lc_exp using solve [auto] : lngen.
 
 Lemma open_dbind_wrt_typ_lc_dbind :
-forall b1 A1,
-  lc_dbind b1 ->
-  open_dbind_wrt_typ b1 A1 = b1.
+forall db1 A1,
+  lc_dbind db1 ->
+  open_dbind_wrt_typ db1 A1 = db1.
 Proof.
 unfold open_dbind_wrt_typ; default_simp.
 Qed.
@@ -4695,6 +5488,32 @@ Qed.
 
 #[export] Hint Resolve ftvar_in_typ_close_typ_wrt_typ_rec : lngen.
 #[export] Hint Rewrite ftvar_in_typ_close_typ_wrt_typ_rec using solve [auto] : lngen.
+
+(* end hide *)
+
+(* begin hide *)
+
+Lemma ftvar_in_abind_close_abind_wrt_typ_rec_mutual :
+(forall ab1 X1 n1,
+  ftvar_in_abind (close_abind_wrt_typ_rec n1 X1 ab1) [=] remove X1 (ftvar_in_abind ab1)).
+Proof.
+apply_mutual_ind abind_mutind;
+default_simp; fsetdec.
+Qed.
+
+(* end hide *)
+
+(* begin hide *)
+
+Lemma ftvar_in_abind_close_abind_wrt_typ_rec :
+forall ab1 X1 n1,
+  ftvar_in_abind (close_abind_wrt_typ_rec n1 X1 ab1) [=] remove X1 (ftvar_in_abind ab1).
+Proof.
+pose proof ftvar_in_abind_close_abind_wrt_typ_rec_mutual as H; intuition eauto.
+Qed.
+
+#[export] Hint Resolve ftvar_in_abind_close_abind_wrt_typ_rec : lngen.
+#[export] Hint Rewrite ftvar_in_abind_close_abind_wrt_typ_rec using solve [auto] : lngen.
 
 (* end hide *)
 
@@ -4869,8 +5688,8 @@ Qed.
 (* begin hide *)
 
 Lemma ftvar_in_dbind_close_dbind_wrt_typ_rec_mutual :
-(forall b1 X1 n1,
-  ftvar_in_dbind (close_dbind_wrt_typ_rec n1 X1 b1) [=] remove X1 (ftvar_in_dbind b1)).
+(forall db1 X1 n1,
+  ftvar_in_dbind (close_dbind_wrt_typ_rec n1 X1 db1) [=] remove X1 (ftvar_in_dbind db1)).
 Proof.
 apply_mutual_ind dbind_mutind;
 default_simp; fsetdec.
@@ -4881,8 +5700,8 @@ Qed.
 (* begin hide *)
 
 Lemma ftvar_in_dbind_close_dbind_wrt_typ_rec :
-forall b1 X1 n1,
-  ftvar_in_dbind (close_dbind_wrt_typ_rec n1 X1 b1) [=] remove X1 (ftvar_in_dbind b1).
+forall db1 X1 n1,
+  ftvar_in_dbind (close_dbind_wrt_typ_rec n1 X1 db1) [=] remove X1 (ftvar_in_dbind db1).
 Proof.
 pose proof ftvar_in_dbind_close_dbind_wrt_typ_rec_mutual as H; intuition eauto.
 Qed.
@@ -4901,6 +5720,16 @@ Qed.
 
 #[export] Hint Resolve ftvar_in_typ_close_typ_wrt_typ : lngen.
 #[export] Hint Rewrite ftvar_in_typ_close_typ_wrt_typ using solve [auto] : lngen.
+
+Lemma ftvar_in_abind_close_abind_wrt_typ :
+forall ab1 X1,
+  ftvar_in_abind (close_abind_wrt_typ X1 ab1) [=] remove X1 (ftvar_in_abind ab1).
+Proof.
+unfold close_abind_wrt_typ; default_simp.
+Qed.
+
+#[export] Hint Resolve ftvar_in_abind_close_abind_wrt_typ : lngen.
+#[export] Hint Rewrite ftvar_in_abind_close_abind_wrt_typ using solve [auto] : lngen.
 
 Lemma ftvar_in_body_close_body_wrt_typ :
 forall body1 X1,
@@ -4983,8 +5812,8 @@ Qed.
 #[export] Hint Rewrite fvar_in_exp_close_exp_wrt_exp using solve [auto] : lngen.
 
 Lemma ftvar_in_dbind_close_dbind_wrt_typ :
-forall b1 X1,
-  ftvar_in_dbind (close_dbind_wrt_typ X1 b1) [=] remove X1 (ftvar_in_dbind b1).
+forall db1 X1,
+  ftvar_in_dbind (close_dbind_wrt_typ X1 db1) [=] remove X1 (ftvar_in_dbind db1).
 Proof.
 unfold close_dbind_wrt_typ; default_simp.
 Qed.
@@ -5014,6 +5843,31 @@ pose proof ftvar_in_typ_open_typ_wrt_typ_rec_lower_mutual as H; intuition eauto.
 Qed.
 
 #[export] Hint Resolve ftvar_in_typ_open_typ_wrt_typ_rec_lower : lngen.
+
+(* end hide *)
+
+(* begin hide *)
+
+Lemma ftvar_in_abind_open_abind_wrt_typ_rec_lower_mutual :
+(forall ab1 A1 n1,
+  ftvar_in_abind ab1 [<=] ftvar_in_abind (open_abind_wrt_typ_rec n1 A1 ab1)).
+Proof.
+apply_mutual_ind abind_mutind;
+default_simp; fsetdec.
+Qed.
+
+(* end hide *)
+
+(* begin hide *)
+
+Lemma ftvar_in_abind_open_abind_wrt_typ_rec_lower :
+forall ab1 A1 n1,
+  ftvar_in_abind ab1 [<=] ftvar_in_abind (open_abind_wrt_typ_rec n1 A1 ab1).
+Proof.
+pose proof ftvar_in_abind_open_abind_wrt_typ_rec_lower_mutual as H; intuition eauto.
+Qed.
+
+#[export] Hint Resolve ftvar_in_abind_open_abind_wrt_typ_rec_lower : lngen.
 
 (* end hide *)
 
@@ -5180,8 +6034,8 @@ Qed.
 (* begin hide *)
 
 Lemma ftvar_in_dbind_open_dbind_wrt_typ_rec_lower_mutual :
-(forall b1 A1 n1,
-  ftvar_in_dbind b1 [<=] ftvar_in_dbind (open_dbind_wrt_typ_rec n1 A1 b1)).
+(forall db1 A1 n1,
+  ftvar_in_dbind db1 [<=] ftvar_in_dbind (open_dbind_wrt_typ_rec n1 A1 db1)).
 Proof.
 apply_mutual_ind dbind_mutind;
 default_simp; fsetdec.
@@ -5192,8 +6046,8 @@ Qed.
 (* begin hide *)
 
 Lemma ftvar_in_dbind_open_dbind_wrt_typ_rec_lower :
-forall b1 A1 n1,
-  ftvar_in_dbind b1 [<=] ftvar_in_dbind (open_dbind_wrt_typ_rec n1 A1 b1).
+forall db1 A1 n1,
+  ftvar_in_dbind db1 [<=] ftvar_in_dbind (open_dbind_wrt_typ_rec n1 A1 db1).
 Proof.
 pose proof ftvar_in_dbind_open_dbind_wrt_typ_rec_lower_mutual as H; intuition eauto.
 Qed.
@@ -5210,6 +6064,15 @@ unfold open_typ_wrt_typ; default_simp.
 Qed.
 
 #[export] Hint Resolve ftvar_in_typ_open_typ_wrt_typ_lower : lngen.
+
+Lemma ftvar_in_abind_open_abind_wrt_typ_lower :
+forall ab1 A1,
+  ftvar_in_abind ab1 [<=] ftvar_in_abind (open_abind_wrt_typ ab1 A1).
+Proof.
+unfold open_abind_wrt_typ; default_simp.
+Qed.
+
+#[export] Hint Resolve ftvar_in_abind_open_abind_wrt_typ_lower : lngen.
 
 Lemma ftvar_in_body_open_body_wrt_typ_lower :
 forall body1 A1,
@@ -5284,8 +6147,8 @@ Qed.
 #[export] Hint Resolve fvar_in_exp_open_exp_wrt_exp_lower : lngen.
 
 Lemma ftvar_in_dbind_open_dbind_wrt_typ_lower :
-forall b1 A1,
-  ftvar_in_dbind b1 [<=] ftvar_in_dbind (open_dbind_wrt_typ b1 A1).
+forall db1 A1,
+  ftvar_in_dbind db1 [<=] ftvar_in_dbind (open_dbind_wrt_typ db1 A1).
 Proof.
 unfold open_dbind_wrt_typ; default_simp.
 Qed.
@@ -5314,6 +6177,31 @@ pose proof ftvar_in_typ_open_typ_wrt_typ_rec_upper_mutual as H; intuition eauto.
 Qed.
 
 #[export] Hint Resolve ftvar_in_typ_open_typ_wrt_typ_rec_upper : lngen.
+
+(* end hide *)
+
+(* begin hide *)
+
+Lemma ftvar_in_abind_open_abind_wrt_typ_rec_upper_mutual :
+(forall ab1 A1 n1,
+  ftvar_in_abind (open_abind_wrt_typ_rec n1 A1 ab1) [<=] ftvar_in_typ A1 `union` ftvar_in_abind ab1).
+Proof.
+apply_mutual_ind abind_mutind;
+default_simp; fsetdec.
+Qed.
+
+(* end hide *)
+
+(* begin hide *)
+
+Lemma ftvar_in_abind_open_abind_wrt_typ_rec_upper :
+forall ab1 A1 n1,
+  ftvar_in_abind (open_abind_wrt_typ_rec n1 A1 ab1) [<=] ftvar_in_typ A1 `union` ftvar_in_abind ab1.
+Proof.
+pose proof ftvar_in_abind_open_abind_wrt_typ_rec_upper_mutual as H; intuition eauto.
+Qed.
+
+#[export] Hint Resolve ftvar_in_abind_open_abind_wrt_typ_rec_upper : lngen.
 
 (* end hide *)
 
@@ -5480,8 +6368,8 @@ Qed.
 (* begin hide *)
 
 Lemma ftvar_in_dbind_open_dbind_wrt_typ_rec_upper_mutual :
-(forall b1 A1 n1,
-  ftvar_in_dbind (open_dbind_wrt_typ_rec n1 A1 b1) [<=] ftvar_in_typ A1 `union` ftvar_in_dbind b1).
+(forall db1 A1 n1,
+  ftvar_in_dbind (open_dbind_wrt_typ_rec n1 A1 db1) [<=] ftvar_in_typ A1 `union` ftvar_in_dbind db1).
 Proof.
 apply_mutual_ind dbind_mutind;
 default_simp; fsetdec.
@@ -5492,8 +6380,8 @@ Qed.
 (* begin hide *)
 
 Lemma ftvar_in_dbind_open_dbind_wrt_typ_rec_upper :
-forall b1 A1 n1,
-  ftvar_in_dbind (open_dbind_wrt_typ_rec n1 A1 b1) [<=] ftvar_in_typ A1 `union` ftvar_in_dbind b1.
+forall db1 A1 n1,
+  ftvar_in_dbind (open_dbind_wrt_typ_rec n1 A1 db1) [<=] ftvar_in_typ A1 `union` ftvar_in_dbind db1.
 Proof.
 pose proof ftvar_in_dbind_open_dbind_wrt_typ_rec_upper_mutual as H; intuition eauto.
 Qed.
@@ -5510,6 +6398,15 @@ unfold open_typ_wrt_typ; default_simp.
 Qed.
 
 #[export] Hint Resolve ftvar_in_typ_open_typ_wrt_typ_upper : lngen.
+
+Lemma ftvar_in_abind_open_abind_wrt_typ_upper :
+forall ab1 A1,
+  ftvar_in_abind (open_abind_wrt_typ ab1 A1) [<=] ftvar_in_typ A1 `union` ftvar_in_abind ab1.
+Proof.
+unfold open_abind_wrt_typ; default_simp.
+Qed.
+
+#[export] Hint Resolve ftvar_in_abind_open_abind_wrt_typ_upper : lngen.
 
 Lemma ftvar_in_body_open_body_wrt_typ_upper :
 forall body1 A1,
@@ -5584,8 +6481,8 @@ Qed.
 #[export] Hint Resolve fvar_in_exp_open_exp_wrt_exp_upper : lngen.
 
 Lemma ftvar_in_dbind_open_dbind_wrt_typ_upper :
-forall b1 A1,
-  ftvar_in_dbind (open_dbind_wrt_typ b1 A1) [<=] ftvar_in_typ A1 `union` ftvar_in_dbind b1.
+forall db1 A1,
+  ftvar_in_dbind (open_dbind_wrt_typ db1 A1) [<=] ftvar_in_typ A1 `union` ftvar_in_dbind db1.
 Proof.
 unfold open_dbind_wrt_typ; default_simp.
 Qed.
@@ -5615,6 +6512,30 @@ Qed.
 
 #[export] Hint Resolve ftvar_in_typ_subst_tvar_in_typ_fresh : lngen.
 #[export] Hint Rewrite ftvar_in_typ_subst_tvar_in_typ_fresh using solve [auto] : lngen.
+
+(* begin hide *)
+
+Lemma ftvar_in_abind_subst_tvar_in_abind_fresh_mutual :
+(forall ab1 A1 X1,
+  X1 `notin` ftvar_in_abind ab1 ->
+  ftvar_in_abind (subst_tvar_in_abind A1 X1 ab1) [=] ftvar_in_abind ab1).
+Proof.
+apply_mutual_ind abind_mutind;
+default_simp; fsetdec.
+Qed.
+
+(* end hide *)
+
+Lemma ftvar_in_abind_subst_tvar_in_abind_fresh :
+forall ab1 A1 X1,
+  X1 `notin` ftvar_in_abind ab1 ->
+  ftvar_in_abind (subst_tvar_in_abind A1 X1 ab1) [=] ftvar_in_abind ab1.
+Proof.
+pose proof ftvar_in_abind_subst_tvar_in_abind_fresh_mutual as H; intuition eauto.
+Qed.
+
+#[export] Hint Resolve ftvar_in_abind_subst_tvar_in_abind_fresh : lngen.
+#[export] Hint Rewrite ftvar_in_abind_subst_tvar_in_abind_fresh using solve [auto] : lngen.
 
 (* begin hide *)
 
@@ -5729,9 +6650,9 @@ Qed.
 (* begin hide *)
 
 Lemma ftvar_in_dbind_subst_tvar_in_dbind_fresh_mutual :
-(forall b1 A1 X1,
-  X1 `notin` ftvar_in_dbind b1 ->
-  ftvar_in_dbind (subst_tvar_in_dbind A1 X1 b1) [=] ftvar_in_dbind b1).
+(forall db1 A1 X1,
+  X1 `notin` ftvar_in_dbind db1 ->
+  ftvar_in_dbind (subst_tvar_in_dbind A1 X1 db1) [=] ftvar_in_dbind db1).
 Proof.
 apply_mutual_ind dbind_mutind;
 default_simp; fsetdec.
@@ -5740,9 +6661,9 @@ Qed.
 (* end hide *)
 
 Lemma ftvar_in_dbind_subst_tvar_in_dbind_fresh :
-forall b1 A1 X1,
-  X1 `notin` ftvar_in_dbind b1 ->
-  ftvar_in_dbind (subst_tvar_in_dbind A1 X1 b1) [=] ftvar_in_dbind b1.
+forall db1 A1 X1,
+  X1 `notin` ftvar_in_dbind db1 ->
+  ftvar_in_dbind (subst_tvar_in_dbind A1 X1 db1) [=] ftvar_in_dbind db1.
 Proof.
 pose proof ftvar_in_dbind_subst_tvar_in_dbind_fresh_mutual as H; intuition eauto.
 Qed.
@@ -5770,6 +6691,27 @@ pose proof ftvar_in_typ_subst_tvar_in_typ_lower_mutual as H; intuition eauto.
 Qed.
 
 #[export] Hint Resolve ftvar_in_typ_subst_tvar_in_typ_lower : lngen.
+
+(* begin hide *)
+
+Lemma ftvar_in_abind_subst_tvar_in_abind_lower_mutual :
+(forall ab1 A1 X1,
+  remove X1 (ftvar_in_abind ab1) [<=] ftvar_in_abind (subst_tvar_in_abind A1 X1 ab1)).
+Proof.
+apply_mutual_ind abind_mutind;
+default_simp; fsetdec.
+Qed.
+
+(* end hide *)
+
+Lemma ftvar_in_abind_subst_tvar_in_abind_lower :
+forall ab1 A1 X1,
+  remove X1 (ftvar_in_abind ab1) [<=] ftvar_in_abind (subst_tvar_in_abind A1 X1 ab1).
+Proof.
+pose proof ftvar_in_abind_subst_tvar_in_abind_lower_mutual as H; intuition eauto.
+Qed.
+
+#[export] Hint Resolve ftvar_in_abind_subst_tvar_in_abind_lower : lngen.
 
 (* begin hide *)
 
@@ -5902,8 +6844,8 @@ Qed.
 (* begin hide *)
 
 Lemma ftvar_in_dbind_subst_tvar_in_dbind_lower_mutual :
-(forall b1 A1 X1,
-  remove X1 (ftvar_in_dbind b1) [<=] ftvar_in_dbind (subst_tvar_in_dbind A1 X1 b1)).
+(forall db1 A1 X1,
+  remove X1 (ftvar_in_dbind db1) [<=] ftvar_in_dbind (subst_tvar_in_dbind A1 X1 db1)).
 Proof.
 apply_mutual_ind dbind_mutind;
 default_simp; fsetdec.
@@ -5912,8 +6854,8 @@ Qed.
 (* end hide *)
 
 Lemma ftvar_in_dbind_subst_tvar_in_dbind_lower :
-forall b1 A1 X1,
-  remove X1 (ftvar_in_dbind b1) [<=] ftvar_in_dbind (subst_tvar_in_dbind A1 X1 b1).
+forall db1 A1 X1,
+  remove X1 (ftvar_in_dbind db1) [<=] ftvar_in_dbind (subst_tvar_in_dbind A1 X1 db1).
 Proof.
 pose proof ftvar_in_dbind_subst_tvar_in_dbind_lower_mutual as H; intuition eauto.
 Qed.
@@ -5944,6 +6886,31 @@ pose proof ftvar_in_typ_subst_tvar_in_typ_notin_mutual as H; intuition eauto.
 Qed.
 
 #[export] Hint Resolve ftvar_in_typ_subst_tvar_in_typ_notin : lngen.
+
+(* begin hide *)
+
+Lemma ftvar_in_abind_subst_tvar_in_abind_notin_mutual :
+(forall ab1 A1 X1 X2,
+  X2 `notin` ftvar_in_abind ab1 ->
+  X2 `notin` ftvar_in_typ A1 ->
+  X2 `notin` ftvar_in_abind (subst_tvar_in_abind A1 X1 ab1)).
+Proof.
+apply_mutual_ind abind_mutind;
+default_simp; fsetdec.
+Qed.
+
+(* end hide *)
+
+Lemma ftvar_in_abind_subst_tvar_in_abind_notin :
+forall ab1 A1 X1 X2,
+  X2 `notin` ftvar_in_abind ab1 ->
+  X2 `notin` ftvar_in_typ A1 ->
+  X2 `notin` ftvar_in_abind (subst_tvar_in_abind A1 X1 ab1).
+Proof.
+pose proof ftvar_in_abind_subst_tvar_in_abind_notin_mutual as H; intuition eauto.
+Qed.
+
+#[export] Hint Resolve ftvar_in_abind_subst_tvar_in_abind_notin : lngen.
 
 (* begin hide *)
 
@@ -6104,10 +7071,10 @@ Qed.
 (* begin hide *)
 
 Lemma ftvar_in_dbind_subst_tvar_in_dbind_notin_mutual :
-(forall b1 A1 X1 X2,
-  X2 `notin` ftvar_in_dbind b1 ->
+(forall db1 A1 X1 X2,
+  X2 `notin` ftvar_in_dbind db1 ->
   X2 `notin` ftvar_in_typ A1 ->
-  X2 `notin` ftvar_in_dbind (subst_tvar_in_dbind A1 X1 b1)).
+  X2 `notin` ftvar_in_dbind (subst_tvar_in_dbind A1 X1 db1)).
 Proof.
 apply_mutual_ind dbind_mutind;
 default_simp; fsetdec.
@@ -6116,10 +7083,10 @@ Qed.
 (* end hide *)
 
 Lemma ftvar_in_dbind_subst_tvar_in_dbind_notin :
-forall b1 A1 X1 X2,
-  X2 `notin` ftvar_in_dbind b1 ->
+forall db1 A1 X1 X2,
+  X2 `notin` ftvar_in_dbind db1 ->
   X2 `notin` ftvar_in_typ A1 ->
-  X2 `notin` ftvar_in_dbind (subst_tvar_in_dbind A1 X1 b1).
+  X2 `notin` ftvar_in_dbind (subst_tvar_in_dbind A1 X1 db1).
 Proof.
 pose proof ftvar_in_dbind_subst_tvar_in_dbind_notin_mutual as H; intuition eauto.
 Qed.
@@ -6146,6 +7113,27 @@ pose proof ftvar_in_typ_subst_tvar_in_typ_upper_mutual as H; intuition eauto.
 Qed.
 
 #[export] Hint Resolve ftvar_in_typ_subst_tvar_in_typ_upper : lngen.
+
+(* begin hide *)
+
+Lemma ftvar_in_abind_subst_tvar_in_abind_upper_mutual :
+(forall ab1 A1 X1,
+  ftvar_in_abind (subst_tvar_in_abind A1 X1 ab1) [<=] ftvar_in_typ A1 `union` remove X1 (ftvar_in_abind ab1)).
+Proof.
+apply_mutual_ind abind_mutind;
+default_simp; fsetdec.
+Qed.
+
+(* end hide *)
+
+Lemma ftvar_in_abind_subst_tvar_in_abind_upper :
+forall ab1 A1 X1,
+  ftvar_in_abind (subst_tvar_in_abind A1 X1 ab1) [<=] ftvar_in_typ A1 `union` remove X1 (ftvar_in_abind ab1).
+Proof.
+pose proof ftvar_in_abind_subst_tvar_in_abind_upper_mutual as H; intuition eauto.
+Qed.
+
+#[export] Hint Resolve ftvar_in_abind_subst_tvar_in_abind_upper : lngen.
 
 (* begin hide *)
 
@@ -6278,8 +7266,8 @@ Qed.
 (* begin hide *)
 
 Lemma ftvar_in_dbind_subst_tvar_in_dbind_upper_mutual :
-(forall b1 A1 X1,
-  ftvar_in_dbind (subst_tvar_in_dbind A1 X1 b1) [<=] ftvar_in_typ A1 `union` remove X1 (ftvar_in_dbind b1)).
+(forall db1 A1 X1,
+  ftvar_in_dbind (subst_tvar_in_dbind A1 X1 db1) [<=] ftvar_in_typ A1 `union` remove X1 (ftvar_in_dbind db1)).
 Proof.
 apply_mutual_ind dbind_mutind;
 default_simp; fsetdec.
@@ -6288,8 +7276,8 @@ Qed.
 (* end hide *)
 
 Lemma ftvar_in_dbind_subst_tvar_in_dbind_upper :
-forall b1 A1 X1,
-  ftvar_in_dbind (subst_tvar_in_dbind A1 X1 b1) [<=] ftvar_in_typ A1 `union` remove X1 (ftvar_in_dbind b1).
+forall db1 A1 X1,
+  ftvar_in_dbind (subst_tvar_in_dbind A1 X1 db1) [<=] ftvar_in_typ A1 `union` remove X1 (ftvar_in_dbind db1).
 Proof.
 pose proof ftvar_in_dbind_subst_tvar_in_dbind_upper_mutual as H; intuition eauto.
 Qed.
@@ -6329,6 +7317,33 @@ pose proof subst_tvar_in_typ_close_typ_wrt_typ_rec_mutual as H; intuition eauto.
 Qed.
 
 #[export] Hint Resolve subst_tvar_in_typ_close_typ_wrt_typ_rec : lngen.
+
+(* begin hide *)
+
+Lemma subst_tvar_in_abind_close_abind_wrt_typ_rec_mutual :
+(forall ab1 A1 X1 X2 n1,
+  degree_typ_wrt_typ n1 A1 ->
+  X1 <> X2 ->
+  X2 `notin` ftvar_in_typ A1 ->
+  subst_tvar_in_abind A1 X1 (close_abind_wrt_typ_rec n1 X2 ab1) = close_abind_wrt_typ_rec n1 X2 (subst_tvar_in_abind A1 X1 ab1)).
+Proof.
+apply_mutual_ind abind_mutind;
+default_simp.
+Qed.
+
+(* end hide *)
+
+Lemma subst_tvar_in_abind_close_abind_wrt_typ_rec :
+forall ab1 A1 X1 X2 n1,
+  degree_typ_wrt_typ n1 A1 ->
+  X1 <> X2 ->
+  X2 `notin` ftvar_in_typ A1 ->
+  subst_tvar_in_abind A1 X1 (close_abind_wrt_typ_rec n1 X2 ab1) = close_abind_wrt_typ_rec n1 X2 (subst_tvar_in_abind A1 X1 ab1).
+Proof.
+pose proof subst_tvar_in_abind_close_abind_wrt_typ_rec_mutual as H; intuition eauto.
+Qed.
+
+#[export] Hint Resolve subst_tvar_in_abind_close_abind_wrt_typ_rec : lngen.
 
 (* begin hide *)
 
@@ -6493,11 +7508,11 @@ Qed.
 (* begin hide *)
 
 Lemma subst_tvar_in_dbind_close_dbind_wrt_typ_rec_mutual :
-(forall b1 A1 X1 X2 n1,
+(forall db1 A1 X1 X2 n1,
   degree_typ_wrt_typ n1 A1 ->
   X1 <> X2 ->
   X2 `notin` ftvar_in_typ A1 ->
-  subst_tvar_in_dbind A1 X1 (close_dbind_wrt_typ_rec n1 X2 b1) = close_dbind_wrt_typ_rec n1 X2 (subst_tvar_in_dbind A1 X1 b1)).
+  subst_tvar_in_dbind A1 X1 (close_dbind_wrt_typ_rec n1 X2 db1) = close_dbind_wrt_typ_rec n1 X2 (subst_tvar_in_dbind A1 X1 db1)).
 Proof.
 apply_mutual_ind dbind_mutind;
 default_simp.
@@ -6506,11 +7521,11 @@ Qed.
 (* end hide *)
 
 Lemma subst_tvar_in_dbind_close_dbind_wrt_typ_rec :
-forall b1 A1 X1 X2 n1,
+forall db1 A1 X1 X2 n1,
   degree_typ_wrt_typ n1 A1 ->
   X1 <> X2 ->
   X2 `notin` ftvar_in_typ A1 ->
-  subst_tvar_in_dbind A1 X1 (close_dbind_wrt_typ_rec n1 X2 b1) = close_dbind_wrt_typ_rec n1 X2 (subst_tvar_in_dbind A1 X1 b1).
+  subst_tvar_in_dbind A1 X1 (close_dbind_wrt_typ_rec n1 X2 db1) = close_dbind_wrt_typ_rec n1 X2 (subst_tvar_in_dbind A1 X1 db1).
 Proof.
 pose proof subst_tvar_in_dbind_close_dbind_wrt_typ_rec_mutual as H; intuition eauto.
 Qed.
@@ -6527,6 +7542,17 @@ unfold close_typ_wrt_typ; default_simp.
 Qed.
 
 #[export] Hint Resolve subst_tvar_in_typ_close_typ_wrt_typ : lngen.
+
+Lemma subst_tvar_in_abind_close_abind_wrt_typ :
+forall ab1 A1 X1 X2,
+  lc_typ A1 ->  X1 <> X2 ->
+  X2 `notin` ftvar_in_typ A1 ->
+  subst_tvar_in_abind A1 X1 (close_abind_wrt_typ X2 ab1) = close_abind_wrt_typ X2 (subst_tvar_in_abind A1 X1 ab1).
+Proof.
+unfold close_abind_wrt_typ; default_simp.
+Qed.
+
+#[export] Hint Resolve subst_tvar_in_abind_close_abind_wrt_typ : lngen.
 
 Lemma subst_tvar_in_body_close_body_wrt_typ :
 forall body1 A1 X1 X2,
@@ -6611,10 +7637,10 @@ Qed.
 #[export] Hint Resolve subst_var_in_exp_close_exp_wrt_exp : lngen.
 
 Lemma subst_tvar_in_dbind_close_dbind_wrt_typ :
-forall b1 A1 X1 X2,
+forall db1 A1 X1 X2,
   lc_typ A1 ->  X1 <> X2 ->
   X2 `notin` ftvar_in_typ A1 ->
-  subst_tvar_in_dbind A1 X1 (close_dbind_wrt_typ X2 b1) = close_dbind_wrt_typ X2 (subst_tvar_in_dbind A1 X1 b1).
+  subst_tvar_in_dbind A1 X1 (close_dbind_wrt_typ X2 db1) = close_dbind_wrt_typ X2 (subst_tvar_in_dbind A1 X1 db1).
 Proof.
 unfold close_dbind_wrt_typ; default_simp.
 Qed.
@@ -6645,6 +7671,31 @@ pose proof subst_tvar_in_typ_degree_typ_wrt_typ_mutual as H; intuition eauto.
 Qed.
 
 #[export] Hint Resolve subst_tvar_in_typ_degree_typ_wrt_typ : lngen.
+
+(* begin hide *)
+
+Lemma subst_tvar_in_abind_degree_abind_wrt_typ_mutual :
+(forall ab1 A1 X1 n1,
+  degree_abind_wrt_typ n1 ab1 ->
+  degree_typ_wrt_typ n1 A1 ->
+  degree_abind_wrt_typ n1 (subst_tvar_in_abind A1 X1 ab1)).
+Proof.
+apply_mutual_ind abind_mutind;
+default_simp.
+Qed.
+
+(* end hide *)
+
+Lemma subst_tvar_in_abind_degree_abind_wrt_typ :
+forall ab1 A1 X1 n1,
+  degree_abind_wrt_typ n1 ab1 ->
+  degree_typ_wrt_typ n1 A1 ->
+  degree_abind_wrt_typ n1 (subst_tvar_in_abind A1 X1 ab1).
+Proof.
+pose proof subst_tvar_in_abind_degree_abind_wrt_typ_mutual as H; intuition eauto.
+Qed.
+
+#[export] Hint Resolve subst_tvar_in_abind_degree_abind_wrt_typ : lngen.
 
 (* begin hide *)
 
@@ -6805,10 +7856,10 @@ Qed.
 (* begin hide *)
 
 Lemma subst_tvar_in_dbind_degree_dbind_wrt_typ_mutual :
-(forall b1 A1 X1 n1,
-  degree_dbind_wrt_typ n1 b1 ->
+(forall db1 A1 X1 n1,
+  degree_dbind_wrt_typ n1 db1 ->
   degree_typ_wrt_typ n1 A1 ->
-  degree_dbind_wrt_typ n1 (subst_tvar_in_dbind A1 X1 b1)).
+  degree_dbind_wrt_typ n1 (subst_tvar_in_dbind A1 X1 db1)).
 Proof.
 apply_mutual_ind dbind_mutind;
 default_simp.
@@ -6817,10 +7868,10 @@ Qed.
 (* end hide *)
 
 Lemma subst_tvar_in_dbind_degree_dbind_wrt_typ :
-forall b1 A1 X1 n1,
-  degree_dbind_wrt_typ n1 b1 ->
+forall db1 A1 X1 n1,
+  degree_dbind_wrt_typ n1 db1 ->
   degree_typ_wrt_typ n1 A1 ->
-  degree_dbind_wrt_typ n1 (subst_tvar_in_dbind A1 X1 b1).
+  degree_dbind_wrt_typ n1 (subst_tvar_in_dbind A1 X1 db1).
 Proof.
 pose proof subst_tvar_in_dbind_degree_dbind_wrt_typ_mutual as H; intuition eauto.
 Qed.
@@ -6850,6 +7901,30 @@ Qed.
 
 #[export] Hint Resolve subst_tvar_in_typ_fresh_eq : lngen.
 #[export] Hint Rewrite subst_tvar_in_typ_fresh_eq using solve [auto] : lngen.
+
+(* begin hide *)
+
+Lemma subst_tvar_in_abind_fresh_eq_mutual :
+(forall ab1 A1 X1,
+  X1 `notin` ftvar_in_abind ab1 ->
+  subst_tvar_in_abind A1 X1 ab1 = ab1).
+Proof.
+apply_mutual_ind abind_mutind;
+default_simp.
+Qed.
+
+(* end hide *)
+
+Lemma subst_tvar_in_abind_fresh_eq :
+forall ab1 A1 X1,
+  X1 `notin` ftvar_in_abind ab1 ->
+  subst_tvar_in_abind A1 X1 ab1 = ab1.
+Proof.
+pose proof subst_tvar_in_abind_fresh_eq_mutual as H; intuition eauto.
+Qed.
+
+#[export] Hint Resolve subst_tvar_in_abind_fresh_eq : lngen.
+#[export] Hint Rewrite subst_tvar_in_abind_fresh_eq using solve [auto] : lngen.
 
 (* begin hide *)
 
@@ -6930,9 +8005,9 @@ Qed.
 (* begin hide *)
 
 Lemma subst_tvar_in_dbind_fresh_eq_mutual :
-(forall b1 A1 X1,
-  X1 `notin` ftvar_in_dbind b1 ->
-  subst_tvar_in_dbind A1 X1 b1 = b1).
+(forall db1 A1 X1,
+  X1 `notin` ftvar_in_dbind db1 ->
+  subst_tvar_in_dbind A1 X1 db1 = db1).
 Proof.
 apply_mutual_ind dbind_mutind;
 default_simp.
@@ -6941,9 +8016,9 @@ Qed.
 (* end hide *)
 
 Lemma subst_tvar_in_dbind_fresh_eq :
-forall b1 A1 X1,
-  X1 `notin` ftvar_in_dbind b1 ->
-  subst_tvar_in_dbind A1 X1 b1 = b1.
+forall db1 A1 X1,
+  X1 `notin` ftvar_in_dbind db1 ->
+  subst_tvar_in_dbind A1 X1 db1 = db1.
 Proof.
 pose proof subst_tvar_in_dbind_fresh_eq_mutual as H; intuition eauto.
 Qed.
@@ -6973,6 +8048,29 @@ pose proof subst_tvar_in_typ_fresh_same_mutual as H; intuition eauto.
 Qed.
 
 #[export] Hint Resolve subst_tvar_in_typ_fresh_same : lngen.
+
+(* begin hide *)
+
+Lemma subst_tvar_in_abind_fresh_same_mutual :
+(forall ab1 A1 X1,
+  X1 `notin` ftvar_in_typ A1 ->
+  X1 `notin` ftvar_in_abind (subst_tvar_in_abind A1 X1 ab1)).
+Proof.
+apply_mutual_ind abind_mutind;
+default_simp.
+Qed.
+
+(* end hide *)
+
+Lemma subst_tvar_in_abind_fresh_same :
+forall ab1 A1 X1,
+  X1 `notin` ftvar_in_typ A1 ->
+  X1 `notin` ftvar_in_abind (subst_tvar_in_abind A1 X1 ab1).
+Proof.
+pose proof subst_tvar_in_abind_fresh_same_mutual as H; intuition eauto.
+Qed.
+
+#[export] Hint Resolve subst_tvar_in_abind_fresh_same : lngen.
 
 (* begin hide *)
 
@@ -7049,9 +8147,9 @@ Qed.
 (* begin hide *)
 
 Lemma subst_tvar_in_dbind_fresh_same_mutual :
-(forall b1 A1 X1,
+(forall db1 A1 X1,
   X1 `notin` ftvar_in_typ A1 ->
-  X1 `notin` ftvar_in_dbind (subst_tvar_in_dbind A1 X1 b1)).
+  X1 `notin` ftvar_in_dbind (subst_tvar_in_dbind A1 X1 db1)).
 Proof.
 apply_mutual_ind dbind_mutind;
 default_simp.
@@ -7060,9 +8158,9 @@ Qed.
 (* end hide *)
 
 Lemma subst_tvar_in_dbind_fresh_same :
-forall b1 A1 X1,
+forall db1 A1 X1,
   X1 `notin` ftvar_in_typ A1 ->
-  X1 `notin` ftvar_in_dbind (subst_tvar_in_dbind A1 X1 b1).
+  X1 `notin` ftvar_in_dbind (subst_tvar_in_dbind A1 X1 db1).
 Proof.
 pose proof subst_tvar_in_dbind_fresh_same_mutual as H; intuition eauto.
 Qed.
@@ -7093,6 +8191,31 @@ pose proof subst_tvar_in_typ_fresh_mutual as H; intuition eauto.
 Qed.
 
 #[export] Hint Resolve subst_tvar_in_typ_fresh : lngen.
+
+(* begin hide *)
+
+Lemma subst_tvar_in_abind_fresh_mutual :
+(forall ab1 A1 X1 X2,
+  X1 `notin` ftvar_in_abind ab1 ->
+  X1 `notin` ftvar_in_typ A1 ->
+  X1 `notin` ftvar_in_abind (subst_tvar_in_abind A1 X2 ab1)).
+Proof.
+apply_mutual_ind abind_mutind;
+default_simp.
+Qed.
+
+(* end hide *)
+
+Lemma subst_tvar_in_abind_fresh :
+forall ab1 A1 X1 X2,
+  X1 `notin` ftvar_in_abind ab1 ->
+  X1 `notin` ftvar_in_typ A1 ->
+  X1 `notin` ftvar_in_abind (subst_tvar_in_abind A1 X2 ab1).
+Proof.
+pose proof subst_tvar_in_abind_fresh_mutual as H; intuition eauto.
+Qed.
+
+#[export] Hint Resolve subst_tvar_in_abind_fresh : lngen.
 
 (* begin hide *)
 
@@ -7177,10 +8300,10 @@ Qed.
 (* begin hide *)
 
 Lemma subst_tvar_in_dbind_fresh_mutual :
-(forall b1 A1 X1 X2,
-  X1 `notin` ftvar_in_dbind b1 ->
+(forall db1 A1 X1 X2,
+  X1 `notin` ftvar_in_dbind db1 ->
   X1 `notin` ftvar_in_typ A1 ->
-  X1 `notin` ftvar_in_dbind (subst_tvar_in_dbind A1 X2 b1)).
+  X1 `notin` ftvar_in_dbind (subst_tvar_in_dbind A1 X2 db1)).
 Proof.
 apply_mutual_ind dbind_mutind;
 default_simp.
@@ -7189,10 +8312,10 @@ Qed.
 (* end hide *)
 
 Lemma subst_tvar_in_dbind_fresh :
-forall b1 A1 X1 X2,
-  X1 `notin` ftvar_in_dbind b1 ->
+forall db1 A1 X1 X2,
+  X1 `notin` ftvar_in_dbind db1 ->
   X1 `notin` ftvar_in_typ A1 ->
-  X1 `notin` ftvar_in_dbind (subst_tvar_in_dbind A1 X2 b1).
+  X1 `notin` ftvar_in_dbind (subst_tvar_in_dbind A1 X2 db1).
 Proof.
 pose proof subst_tvar_in_dbind_fresh_mutual as H; intuition eauto.
 Qed.
@@ -7209,6 +8332,17 @@ default_simp.
 Qed.
 
 #[export] Hint Resolve subst_tvar_in_typ_lc_typ : lngen.
+
+Lemma subst_tvar_in_abind_lc_abind :
+forall ab1 A1 X1,
+  lc_abind ab1 ->
+  lc_typ A1 ->
+  lc_abind (subst_tvar_in_abind A1 X1 ab1).
+Proof.
+default_simp.
+Qed.
+
+#[export] Hint Resolve subst_tvar_in_abind_lc_abind : lngen.
 
 Lemma subst_tvar_in_body_lc_body :
 forall body1 A1 X1,
@@ -7255,10 +8389,10 @@ Qed.
 #[export] Hint Resolve subst_var_in_exp_lc_exp : lngen.
 
 Lemma subst_tvar_in_dbind_lc_dbind :
-forall b1 A1 X1,
-  lc_dbind b1 ->
+forall db1 A1 X1,
+  lc_dbind db1 ->
   lc_typ A1 ->
-  lc_dbind (subst_tvar_in_dbind A1 X1 b1).
+  lc_dbind (subst_tvar_in_dbind A1 X1 db1).
 Proof.
 default_simp.
 Qed.
@@ -7289,6 +8423,33 @@ pose proof subst_tvar_in_typ_open_typ_wrt_typ_rec_mutual as H; intuition eauto.
 Qed.
 
 #[export] Hint Resolve subst_tvar_in_typ_open_typ_wrt_typ_rec : lngen.
+
+(* end hide *)
+
+(* begin hide *)
+
+Lemma subst_tvar_in_abind_open_abind_wrt_typ_rec_mutual :
+(forall ab1 A1 A2 X1 n1,
+  lc_typ A1 ->
+  subst_tvar_in_abind A1 X1 (open_abind_wrt_typ_rec n1 A2 ab1) = open_abind_wrt_typ_rec n1 (subst_tvar_in_typ A1 X1 A2) (subst_tvar_in_abind A1 X1 ab1)).
+Proof.
+apply_mutual_ind abind_mutind;
+default_simp.
+Qed.
+
+(* end hide *)
+
+(* begin hide *)
+
+Lemma subst_tvar_in_abind_open_abind_wrt_typ_rec :
+forall ab1 A1 A2 X1 n1,
+  lc_typ A1 ->
+  subst_tvar_in_abind A1 X1 (open_abind_wrt_typ_rec n1 A2 ab1) = open_abind_wrt_typ_rec n1 (subst_tvar_in_typ A1 X1 A2) (subst_tvar_in_abind A1 X1 ab1).
+Proof.
+pose proof subst_tvar_in_abind_open_abind_wrt_typ_rec_mutual as H; intuition eauto.
+Qed.
+
+#[export] Hint Resolve subst_tvar_in_abind_open_abind_wrt_typ_rec : lngen.
 
 (* end hide *)
 
@@ -7467,9 +8628,9 @@ Qed.
 (* begin hide *)
 
 Lemma subst_tvar_in_dbind_open_dbind_wrt_typ_rec_mutual :
-(forall b1 A1 A2 X1 n1,
+(forall db1 A1 A2 X1 n1,
   lc_typ A1 ->
-  subst_tvar_in_dbind A1 X1 (open_dbind_wrt_typ_rec n1 A2 b1) = open_dbind_wrt_typ_rec n1 (subst_tvar_in_typ A1 X1 A2) (subst_tvar_in_dbind A1 X1 b1)).
+  subst_tvar_in_dbind A1 X1 (open_dbind_wrt_typ_rec n1 A2 db1) = open_dbind_wrt_typ_rec n1 (subst_tvar_in_typ A1 X1 A2) (subst_tvar_in_dbind A1 X1 db1)).
 Proof.
 apply_mutual_ind dbind_mutind;
 default_simp.
@@ -7480,9 +8641,9 @@ Qed.
 (* begin hide *)
 
 Lemma subst_tvar_in_dbind_open_dbind_wrt_typ_rec :
-forall b1 A1 A2 X1 n1,
+forall db1 A1 A2 X1 n1,
   lc_typ A1 ->
-  subst_tvar_in_dbind A1 X1 (open_dbind_wrt_typ_rec n1 A2 b1) = open_dbind_wrt_typ_rec n1 (subst_tvar_in_typ A1 X1 A2) (subst_tvar_in_dbind A1 X1 b1).
+  subst_tvar_in_dbind A1 X1 (open_dbind_wrt_typ_rec n1 A2 db1) = open_dbind_wrt_typ_rec n1 (subst_tvar_in_typ A1 X1 A2) (subst_tvar_in_dbind A1 X1 db1).
 Proof.
 pose proof subst_tvar_in_dbind_open_dbind_wrt_typ_rec_mutual as H; intuition eauto.
 Qed.
@@ -7500,6 +8661,16 @@ unfold open_typ_wrt_typ; default_simp.
 Qed.
 
 #[export] Hint Resolve subst_tvar_in_typ_open_typ_wrt_typ : lngen.
+
+Lemma subst_tvar_in_abind_open_abind_wrt_typ :
+forall ab1 A1 A2 X1,
+  lc_typ A1 ->
+  subst_tvar_in_abind A1 X1 (open_abind_wrt_typ ab1 A2) = open_abind_wrt_typ (subst_tvar_in_abind A1 X1 ab1) (subst_tvar_in_typ A1 X1 A2).
+Proof.
+unfold open_abind_wrt_typ; default_simp.
+Qed.
+
+#[export] Hint Resolve subst_tvar_in_abind_open_abind_wrt_typ : lngen.
 
 Lemma subst_tvar_in_body_open_body_wrt_typ :
 forall body1 A1 A2 X1,
@@ -7580,9 +8751,9 @@ Qed.
 #[export] Hint Resolve subst_var_in_exp_open_exp_wrt_exp : lngen.
 
 Lemma subst_tvar_in_dbind_open_dbind_wrt_typ :
-forall b1 A1 A2 X1,
+forall db1 A1 A2 X1,
   lc_typ A1 ->
-  subst_tvar_in_dbind A1 X1 (open_dbind_wrt_typ b1 A2) = open_dbind_wrt_typ (subst_tvar_in_dbind A1 X1 b1) (subst_tvar_in_typ A1 X1 A2).
+  subst_tvar_in_dbind A1 X1 (open_dbind_wrt_typ db1 A2) = open_dbind_wrt_typ (subst_tvar_in_dbind A1 X1 db1) (subst_tvar_in_typ A1 X1 A2).
 Proof.
 unfold open_dbind_wrt_typ; default_simp.
 Qed.
@@ -7599,6 +8770,17 @@ intros; rewrite subst_tvar_in_typ_open_typ_wrt_typ; default_simp.
 Qed.
 
 #[export] Hint Resolve subst_tvar_in_typ_open_typ_wrt_typ_var : lngen.
+
+Lemma subst_tvar_in_abind_open_abind_wrt_typ_var :
+forall ab1 A1 X1 X2,
+  X1 <> X2 ->
+  lc_typ A1 ->
+  open_abind_wrt_typ (subst_tvar_in_abind A1 X1 ab1) (typ_var_f X2) = subst_tvar_in_abind A1 X1 (open_abind_wrt_typ ab1 (typ_var_f X2)).
+Proof.
+intros; rewrite subst_tvar_in_abind_open_abind_wrt_typ; default_simp.
+Qed.
+
+#[export] Hint Resolve subst_tvar_in_abind_open_abind_wrt_typ_var : lngen.
 
 Lemma subst_tvar_in_body_open_body_wrt_typ_var :
 forall body1 A1 X1 X2,
@@ -7683,10 +8865,10 @@ Qed.
 #[export] Hint Resolve subst_var_in_exp_open_exp_wrt_exp_var : lngen.
 
 Lemma subst_tvar_in_dbind_open_dbind_wrt_typ_var :
-forall b1 A1 X1 X2,
+forall db1 A1 X1 X2,
   X1 <> X2 ->
   lc_typ A1 ->
-  open_dbind_wrt_typ (subst_tvar_in_dbind A1 X1 b1) (typ_var_f X2) = subst_tvar_in_dbind A1 X1 (open_dbind_wrt_typ b1 (typ_var_f X2)).
+  open_dbind_wrt_typ (subst_tvar_in_dbind A1 X1 db1) (typ_var_f X2) = subst_tvar_in_dbind A1 X1 (open_dbind_wrt_typ db1 (typ_var_f X2)).
 Proof.
 intros; rewrite subst_tvar_in_dbind_open_dbind_wrt_typ; default_simp.
 Qed.
@@ -7715,6 +8897,31 @@ pose proof subst_tvar_in_typ_spec_rec_mutual as H; intuition eauto.
 Qed.
 
 #[export] Hint Resolve subst_tvar_in_typ_spec_rec : lngen.
+
+(* end hide *)
+
+(* begin hide *)
+
+Lemma subst_tvar_in_abind_spec_rec_mutual :
+(forall ab1 A1 X1 n1,
+  subst_tvar_in_abind A1 X1 ab1 = open_abind_wrt_typ_rec n1 A1 (close_abind_wrt_typ_rec n1 X1 ab1)).
+Proof.
+apply_mutual_ind abind_mutind;
+default_simp.
+Qed.
+
+(* end hide *)
+
+(* begin hide *)
+
+Lemma subst_tvar_in_abind_spec_rec :
+forall ab1 A1 X1 n1,
+  subst_tvar_in_abind A1 X1 ab1 = open_abind_wrt_typ_rec n1 A1 (close_abind_wrt_typ_rec n1 X1 ab1).
+Proof.
+pose proof subst_tvar_in_abind_spec_rec_mutual as H; intuition eauto.
+Qed.
+
+#[export] Hint Resolve subst_tvar_in_abind_spec_rec : lngen.
 
 (* end hide *)
 
@@ -7801,8 +9008,8 @@ Qed.
 (* begin hide *)
 
 Lemma subst_tvar_in_dbind_spec_rec_mutual :
-(forall b1 A1 X1 n1,
-  subst_tvar_in_dbind A1 X1 b1 = open_dbind_wrt_typ_rec n1 A1 (close_dbind_wrt_typ_rec n1 X1 b1)).
+(forall db1 A1 X1 n1,
+  subst_tvar_in_dbind A1 X1 db1 = open_dbind_wrt_typ_rec n1 A1 (close_dbind_wrt_typ_rec n1 X1 db1)).
 Proof.
 apply_mutual_ind dbind_mutind;
 default_simp.
@@ -7813,8 +9020,8 @@ Qed.
 (* begin hide *)
 
 Lemma subst_tvar_in_dbind_spec_rec :
-forall b1 A1 X1 n1,
-  subst_tvar_in_dbind A1 X1 b1 = open_dbind_wrt_typ_rec n1 A1 (close_dbind_wrt_typ_rec n1 X1 b1).
+forall db1 A1 X1 n1,
+  subst_tvar_in_dbind A1 X1 db1 = open_dbind_wrt_typ_rec n1 A1 (close_dbind_wrt_typ_rec n1 X1 db1).
 Proof.
 pose proof subst_tvar_in_dbind_spec_rec_mutual as H; intuition eauto.
 Qed.
@@ -7831,6 +9038,15 @@ unfold close_typ_wrt_typ; unfold open_typ_wrt_typ; default_simp.
 Qed.
 
 #[export] Hint Resolve subst_tvar_in_typ_spec : lngen.
+
+Lemma subst_tvar_in_abind_spec :
+forall ab1 A1 X1,
+  subst_tvar_in_abind A1 X1 ab1 = open_abind_wrt_typ (close_abind_wrt_typ X1 ab1) A1.
+Proof.
+unfold close_abind_wrt_typ; unfold open_abind_wrt_typ; default_simp.
+Qed.
+
+#[export] Hint Resolve subst_tvar_in_abind_spec : lngen.
 
 Lemma subst_tvar_in_body_spec :
 forall body1 A1 X1,
@@ -7869,8 +9085,8 @@ Qed.
 #[export] Hint Resolve subst_var_in_exp_spec : lngen.
 
 Lemma subst_tvar_in_dbind_spec :
-forall b1 A1 X1,
-  subst_tvar_in_dbind A1 X1 b1 = open_dbind_wrt_typ (close_dbind_wrt_typ X1 b1) A1.
+forall db1 A1 X1,
+  subst_tvar_in_dbind A1 X1 db1 = open_dbind_wrt_typ (close_dbind_wrt_typ X1 db1) A1.
 Proof.
 unfold close_dbind_wrt_typ; unfold open_dbind_wrt_typ; default_simp.
 Qed.
@@ -7901,6 +9117,31 @@ pose proof subst_tvar_in_typ_subst_tvar_in_typ_mutual as H; intuition eauto.
 Qed.
 
 #[export] Hint Resolve subst_tvar_in_typ_subst_tvar_in_typ : lngen.
+
+(* begin hide *)
+
+Lemma subst_tvar_in_abind_subst_tvar_in_abind_mutual :
+(forall ab1 A1 A2 X2 X1,
+  X2 `notin` ftvar_in_typ A1 ->
+  X2 <> X1 ->
+  subst_tvar_in_abind A1 X1 (subst_tvar_in_abind A2 X2 ab1) = subst_tvar_in_abind (subst_tvar_in_typ A1 X1 A2) X2 (subst_tvar_in_abind A1 X1 ab1)).
+Proof.
+apply_mutual_ind abind_mutind;
+default_simp.
+Qed.
+
+(* end hide *)
+
+Lemma subst_tvar_in_abind_subst_tvar_in_abind :
+forall ab1 A1 A2 X2 X1,
+  X2 `notin` ftvar_in_typ A1 ->
+  X2 <> X1 ->
+  subst_tvar_in_abind A1 X1 (subst_tvar_in_abind A2 X2 ab1) = subst_tvar_in_abind (subst_tvar_in_typ A1 X1 A2) X2 (subst_tvar_in_abind A1 X1 ab1).
+Proof.
+pose proof subst_tvar_in_abind_subst_tvar_in_abind_mutual as H; intuition eauto.
+Qed.
+
+#[export] Hint Resolve subst_tvar_in_abind_subst_tvar_in_abind : lngen.
 
 (* begin hide *)
 
@@ -8053,10 +9294,10 @@ Qed.
 (* begin hide *)
 
 Lemma subst_tvar_in_dbind_subst_tvar_in_dbind_mutual :
-(forall b1 A1 A2 X2 X1,
+(forall db1 A1 A2 X2 X1,
   X2 `notin` ftvar_in_typ A1 ->
   X2 <> X1 ->
-  subst_tvar_in_dbind A1 X1 (subst_tvar_in_dbind A2 X2 b1) = subst_tvar_in_dbind (subst_tvar_in_typ A1 X1 A2) X2 (subst_tvar_in_dbind A1 X1 b1)).
+  subst_tvar_in_dbind A1 X1 (subst_tvar_in_dbind A2 X2 db1) = subst_tvar_in_dbind (subst_tvar_in_typ A1 X1 A2) X2 (subst_tvar_in_dbind A1 X1 db1)).
 Proof.
 apply_mutual_ind dbind_mutind;
 default_simp.
@@ -8065,10 +9306,10 @@ Qed.
 (* end hide *)
 
 Lemma subst_tvar_in_dbind_subst_tvar_in_dbind :
-forall b1 A1 A2 X2 X1,
+forall db1 A1 A2 X2 X1,
   X2 `notin` ftvar_in_typ A1 ->
   X2 <> X1 ->
-  subst_tvar_in_dbind A1 X1 (subst_tvar_in_dbind A2 X2 b1) = subst_tvar_in_dbind (subst_tvar_in_typ A1 X1 A2) X2 (subst_tvar_in_dbind A1 X1 b1).
+  subst_tvar_in_dbind A1 X1 (subst_tvar_in_dbind A2 X2 db1) = subst_tvar_in_dbind (subst_tvar_in_typ A1 X1 A2) X2 (subst_tvar_in_dbind A1 X1 db1).
 Proof.
 pose proof subst_tvar_in_dbind_subst_tvar_in_dbind_mutual as H; intuition eauto.
 Qed.
@@ -8105,6 +9346,39 @@ pose proof subst_tvar_in_typ_close_typ_wrt_typ_rec_open_typ_wrt_typ_rec_mutual a
 Qed.
 
 #[export] Hint Resolve subst_tvar_in_typ_close_typ_wrt_typ_rec_open_typ_wrt_typ_rec : lngen.
+
+(* end hide *)
+
+(* begin hide *)
+
+Lemma subst_tvar_in_abind_close_abind_wrt_typ_rec_open_abind_wrt_typ_rec_mutual :
+(forall ab1 A1 X1 X2 n1,
+  X2 `notin` ftvar_in_abind ab1 ->
+  X2 `notin` ftvar_in_typ A1 ->
+  X2 <> X1 ->
+  degree_typ_wrt_typ n1 A1 ->
+  subst_tvar_in_abind A1 X1 ab1 = close_abind_wrt_typ_rec n1 X2 (subst_tvar_in_abind A1 X1 (open_abind_wrt_typ_rec n1 (typ_var_f X2) ab1))).
+Proof.
+apply_mutual_ind abind_mutrec;
+default_simp.
+Qed.
+
+(* end hide *)
+
+(* begin hide *)
+
+Lemma subst_tvar_in_abind_close_abind_wrt_typ_rec_open_abind_wrt_typ_rec :
+forall ab1 A1 X1 X2 n1,
+  X2 `notin` ftvar_in_abind ab1 ->
+  X2 `notin` ftvar_in_typ A1 ->
+  X2 <> X1 ->
+  degree_typ_wrt_typ n1 A1 ->
+  subst_tvar_in_abind A1 X1 ab1 = close_abind_wrt_typ_rec n1 X2 (subst_tvar_in_abind A1 X1 (open_abind_wrt_typ_rec n1 (typ_var_f X2) ab1)).
+Proof.
+pose proof subst_tvar_in_abind_close_abind_wrt_typ_rec_open_abind_wrt_typ_rec_mutual as H; intuition eauto.
+Qed.
+
+#[export] Hint Resolve subst_tvar_in_abind_close_abind_wrt_typ_rec_open_abind_wrt_typ_rec : lngen.
 
 (* end hide *)
 
@@ -8319,12 +9593,12 @@ Qed.
 (* begin hide *)
 
 Lemma subst_tvar_in_dbind_close_dbind_wrt_typ_rec_open_dbind_wrt_typ_rec_mutual :
-(forall b1 A1 X1 X2 n1,
-  X2 `notin` ftvar_in_dbind b1 ->
+(forall db1 A1 X1 X2 n1,
+  X2 `notin` ftvar_in_dbind db1 ->
   X2 `notin` ftvar_in_typ A1 ->
   X2 <> X1 ->
   degree_typ_wrt_typ n1 A1 ->
-  subst_tvar_in_dbind A1 X1 b1 = close_dbind_wrt_typ_rec n1 X2 (subst_tvar_in_dbind A1 X1 (open_dbind_wrt_typ_rec n1 (typ_var_f X2) b1))).
+  subst_tvar_in_dbind A1 X1 db1 = close_dbind_wrt_typ_rec n1 X2 (subst_tvar_in_dbind A1 X1 (open_dbind_wrt_typ_rec n1 (typ_var_f X2) db1))).
 Proof.
 apply_mutual_ind dbind_mutrec;
 default_simp.
@@ -8335,12 +9609,12 @@ Qed.
 (* begin hide *)
 
 Lemma subst_tvar_in_dbind_close_dbind_wrt_typ_rec_open_dbind_wrt_typ_rec :
-forall b1 A1 X1 X2 n1,
-  X2 `notin` ftvar_in_dbind b1 ->
+forall db1 A1 X1 X2 n1,
+  X2 `notin` ftvar_in_dbind db1 ->
   X2 `notin` ftvar_in_typ A1 ->
   X2 <> X1 ->
   degree_typ_wrt_typ n1 A1 ->
-  subst_tvar_in_dbind A1 X1 b1 = close_dbind_wrt_typ_rec n1 X2 (subst_tvar_in_dbind A1 X1 (open_dbind_wrt_typ_rec n1 (typ_var_f X2) b1)).
+  subst_tvar_in_dbind A1 X1 db1 = close_dbind_wrt_typ_rec n1 X2 (subst_tvar_in_dbind A1 X1 (open_dbind_wrt_typ_rec n1 (typ_var_f X2) db1)).
 Proof.
 pose proof subst_tvar_in_dbind_close_dbind_wrt_typ_rec_open_dbind_wrt_typ_rec_mutual as H; intuition eauto.
 Qed.
@@ -8361,6 +9635,19 @@ unfold close_typ_wrt_typ; unfold open_typ_wrt_typ; default_simp.
 Qed.
 
 #[export] Hint Resolve subst_tvar_in_typ_close_typ_wrt_typ_open_typ_wrt_typ : lngen.
+
+Lemma subst_tvar_in_abind_close_abind_wrt_typ_open_abind_wrt_typ :
+forall ab1 A1 X1 X2,
+  X2 `notin` ftvar_in_abind ab1 ->
+  X2 `notin` ftvar_in_typ A1 ->
+  X2 <> X1 ->
+  lc_typ A1 ->
+  subst_tvar_in_abind A1 X1 ab1 = close_abind_wrt_typ X2 (subst_tvar_in_abind A1 X1 (open_abind_wrt_typ ab1 (typ_var_f X2))).
+Proof.
+unfold close_abind_wrt_typ; unfold open_abind_wrt_typ; default_simp.
+Qed.
+
+#[export] Hint Resolve subst_tvar_in_abind_close_abind_wrt_typ_open_abind_wrt_typ : lngen.
 
 Lemma subst_tvar_in_body_close_body_wrt_typ_open_body_wrt_typ :
 forall body1 A1 X1 X2,
@@ -8461,12 +9748,12 @@ Qed.
 #[export] Hint Resolve subst_var_in_exp_close_exp_wrt_exp_open_exp_wrt_exp : lngen.
 
 Lemma subst_tvar_in_dbind_close_dbind_wrt_typ_open_dbind_wrt_typ :
-forall b1 A1 X1 X2,
-  X2 `notin` ftvar_in_dbind b1 ->
+forall db1 A1 X1 X2,
+  X2 `notin` ftvar_in_dbind db1 ->
   X2 `notin` ftvar_in_typ A1 ->
   X2 <> X1 ->
   lc_typ A1 ->
-  subst_tvar_in_dbind A1 X1 b1 = close_dbind_wrt_typ X2 (subst_tvar_in_dbind A1 X1 (open_dbind_wrt_typ b1 (typ_var_f X2))).
+  subst_tvar_in_dbind A1 X1 db1 = close_dbind_wrt_typ X2 (subst_tvar_in_dbind A1 X1 (open_dbind_wrt_typ db1 (typ_var_f X2))).
 Proof.
 unfold close_dbind_wrt_typ; unfold open_dbind_wrt_typ; default_simp.
 Qed.
@@ -8554,6 +9841,30 @@ Qed.
 
 (* begin hide *)
 
+Lemma subst_tvar_in_abind_intro_rec_mutual :
+(forall ab1 X1 A1 n1,
+  X1 `notin` ftvar_in_abind ab1 ->
+  open_abind_wrt_typ_rec n1 A1 ab1 = subst_tvar_in_abind A1 X1 (open_abind_wrt_typ_rec n1 (typ_var_f X1) ab1)).
+Proof.
+apply_mutual_ind abind_mutind;
+default_simp.
+Qed.
+
+(* end hide *)
+
+Lemma subst_tvar_in_abind_intro_rec :
+forall ab1 X1 A1 n1,
+  X1 `notin` ftvar_in_abind ab1 ->
+  open_abind_wrt_typ_rec n1 A1 ab1 = subst_tvar_in_abind A1 X1 (open_abind_wrt_typ_rec n1 (typ_var_f X1) ab1).
+Proof.
+pose proof subst_tvar_in_abind_intro_rec_mutual as H; intuition eauto.
+Qed.
+
+#[export] Hint Resolve subst_tvar_in_abind_intro_rec : lngen.
+#[export] Hint Rewrite subst_tvar_in_abind_intro_rec using solve [auto] : lngen.
+
+(* begin hide *)
+
 Lemma subst_tvar_in_body_intro_rec_subst_tvar_in_exp_intro_rec_mutual :
 (forall body1 X1 A1 n1,
   X1 `notin` ftvar_in_body body1 ->
@@ -8631,9 +9942,9 @@ Qed.
 (* begin hide *)
 
 Lemma subst_tvar_in_dbind_intro_rec_mutual :
-(forall b1 X1 A1 n1,
-  X1 `notin` ftvar_in_dbind b1 ->
-  open_dbind_wrt_typ_rec n1 A1 b1 = subst_tvar_in_dbind A1 X1 (open_dbind_wrt_typ_rec n1 (typ_var_f X1) b1)).
+(forall db1 X1 A1 n1,
+  X1 `notin` ftvar_in_dbind db1 ->
+  open_dbind_wrt_typ_rec n1 A1 db1 = subst_tvar_in_dbind A1 X1 (open_dbind_wrt_typ_rec n1 (typ_var_f X1) db1)).
 Proof.
 apply_mutual_ind dbind_mutind;
 default_simp.
@@ -8642,9 +9953,9 @@ Qed.
 (* end hide *)
 
 Lemma subst_tvar_in_dbind_intro_rec :
-forall b1 X1 A1 n1,
-  X1 `notin` ftvar_in_dbind b1 ->
-  open_dbind_wrt_typ_rec n1 A1 b1 = subst_tvar_in_dbind A1 X1 (open_dbind_wrt_typ_rec n1 (typ_var_f X1) b1).
+forall db1 X1 A1 n1,
+  X1 `notin` ftvar_in_dbind db1 ->
+  open_dbind_wrt_typ_rec n1 A1 db1 = subst_tvar_in_dbind A1 X1 (open_dbind_wrt_typ_rec n1 (typ_var_f X1) db1).
 Proof.
 pose proof subst_tvar_in_dbind_intro_rec_mutual as H; intuition eauto.
 Qed.
@@ -8661,6 +9972,16 @@ unfold open_typ_wrt_typ; default_simp.
 Qed.
 
 #[export] Hint Resolve subst_tvar_in_typ_intro : lngen.
+
+Lemma subst_tvar_in_abind_intro :
+forall X1 ab1 A1,
+  X1 `notin` ftvar_in_abind ab1 ->
+  open_abind_wrt_typ ab1 A1 = subst_tvar_in_abind A1 X1 (open_abind_wrt_typ ab1 (typ_var_f X1)).
+Proof.
+unfold open_abind_wrt_typ; default_simp.
+Qed.
+
+#[export] Hint Resolve subst_tvar_in_abind_intro : lngen.
 
 Lemma subst_tvar_in_body_intro :
 forall X1 body1 A1,
@@ -8703,9 +10024,9 @@ Qed.
 #[export] Hint Resolve subst_var_in_exp_intro : lngen.
 
 Lemma subst_tvar_in_dbind_intro :
-forall X1 b1 A1,
-  X1 `notin` ftvar_in_dbind b1 ->
-  open_dbind_wrt_typ b1 A1 = subst_tvar_in_dbind A1 X1 (open_dbind_wrt_typ b1 (typ_var_f X1)).
+forall X1 db1 A1,
+  X1 `notin` ftvar_in_dbind db1 ->
+  open_dbind_wrt_typ db1 A1 = subst_tvar_in_dbind A1 X1 (open_dbind_wrt_typ db1 (typ_var_f X1)).
 Proof.
 unfold open_dbind_wrt_typ; default_simp.
 Qed.
