@@ -268,6 +268,40 @@ Proof.
 Qed.
 
 
+Lemma dwl_app_cons_work: forall Ω1 Ω2 w,
+  dworklist_conswork (dwl_app Ω2 Ω1) w =(dwl_app (dworklist_conswork Ω2 w) Ω1).
+Proof.
+  intros. auto.
+Qed.
+
+Lemma dwl_app_cons_tvar: forall Ω1 Ω2 X,
+  dworklist_constvar (dwl_app Ω2 Ω1) X dbind_tvar_empty =(dwl_app (dworklist_constvar Ω2 X dbind_tvar_empty) Ω1).
+Proof.
+  intros. auto.
+Qed.
+
+Lemma dwl_app_cons_stvar: forall Ω1 Ω2 X,
+  dworklist_constvar (dwl_app Ω2 Ω1) X dbind_stvar_empty =(dwl_app (dworklist_constvar Ω2 X dbind_stvar_empty) Ω1).
+Proof.
+  intros. auto.
+Qed.
+
+
+Lemma d_wl_red_strengthen_work : forall Ω1 Ω2 w,
+  (w ⫤ Ω1) ⟶ₐ⁎⋅ -> (dwl_app Ω2 Ω1) ⟶ₐ⁎⋅ -> (dwl_app Ω2 (w ⫤ Ω1)) ⟶ₐ⁎⋅ .
+Proof. 
+  intros. dependent induction H0; 
+      try destruct Ω2; simpl in x; try solve [inversion x]; dependent destruction x; simpl; eauto with dworklist.
+  - econstructor.
+    repeat rewrite dwl_app_cons_work; eauto.
+  - eapply d_wlred__sub_all with (L:=L). 
+    intros. inst_cofinites_with X. 
+    repeat rewrite dwl_app_cons_stvar.
+    repeat rewrite dwl_app_cons_work.
+    apply H0; auto.
+Admitted.
+
+
 Lemma d_wl_red_infabs_complete: forall Ω A B C c,
    dwl_to_denv Ω ⊢ A ▹ B → C -> d_wf_wl (dworklist_conswork Ω (work_infabs A c)) -> 
    d_wl_red (dworklist_conswork Ω (work_apply c (typ_arrow B C))) -> d_wl_red (dworklist_conswork Ω (work_infabs A c)).
