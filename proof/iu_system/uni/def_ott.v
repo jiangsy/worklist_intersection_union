@@ -1153,93 +1153,93 @@ Inductive d_mono_typ : denv -> typ -> Prop :=    (* defn d_mono_typ *)
      d_mono_typ E (typ_union A1 A2).
 
 (* defns J_d_wf_cont *)
-Inductive d_wf_cont : dworklist -> cont -> Prop :=    (* defn d_wf_cont *)
- | d_wf_cont__infabs : forall (Ω:dworklist) (c:cont),
-     d_wf_cont Ω c ->
-     d_wf_cont Ω (cont_infabs c)
- | d_wf_cont__infabsunion : forall (Ω:dworklist) (A:typ) (c:cont),
-     d_wf_typ  ( dwl_to_denv  Ω  )  A ->
-     d_wf_cont Ω c ->
-     d_wf_cont Ω (cont_infabsunion A c)
- | d_wf_cont__infapp : forall (Ω:dworklist) (e:exp) (c:cont),
-     d_wf_exp  ( dwl_to_denv  Ω  )  e ->
-     d_wf_cont Ω c ->
-     d_wf_cont Ω (cont_infapp e c)
- | d_wf_cont__inftapp : forall (Ω:dworklist) (A:typ) (c:cont),
-     d_wf_typ  ( dwl_to_denv  Ω  )  A ->
-     d_wf_cont Ω c ->
-     d_wf_cont Ω (cont_inftapp A c)
- | d_wf_cont__inftappunion : forall (Ω:dworklist) (A1 A2:typ) (c:cont),
-     d_wf_typ  ( dwl_to_denv  Ω  )  A1 ->
-     d_wf_typ  ( dwl_to_denv  Ω  )  A2 ->
-     d_wf_cont Ω c ->
-     d_wf_cont Ω (cont_inftappunion A1 A2 c)
- | d_wf_cont__unioninftapp : forall (Ω:dworklist) (A:typ) (c:cont),
-     d_wf_typ  ( dwl_to_denv  Ω  )  A ->
-     d_wf_cont Ω c ->
-     d_wf_cont Ω (cont_unioninftapp A c)
- | d_wf_cont__unioninfabs : forall (Ω:dworklist) (A:typ) (c:cont),
-     d_wf_typ  ( dwl_to_denv  Ω  )  A ->
-     d_wf_cont Ω c ->
-     d_wf_cont Ω (cont_unioninfabs A c)
- | d_wf_cont__sub : forall (Ω:dworklist) (A:typ) (c:cont),
-     d_wf_typ  ( dwl_to_denv  Ω  )  A ->
-     d_wf_cont Ω c ->
-     d_wf_cont Ω (cont_sub A).
+Inductive d_wf_cont : denv -> cont -> Prop :=    (* defn d_wf_cont *)
+ | d_wf_cont__infabs : forall (E:denv) (c:cont),
+     d_wf_cont E c ->
+     d_wf_cont E (cont_infabs c)
+ | d_wf_cont__infabsunion : forall (E:denv) (A:typ) (c:cont),
+     d_wf_typ E A ->
+     d_wf_cont E c ->
+     d_wf_cont E (cont_infabsunion A c)
+ | d_wf_cont__infapp : forall (E:denv) (e:exp) (c:cont),
+     d_wf_exp E e ->
+     d_wf_cont E c ->
+     d_wf_cont E (cont_infapp e c)
+ | d_wf_cont__inftapp : forall (E:denv) (A:typ) (c:cont),
+     d_wf_typ E A ->
+     d_wf_cont E c ->
+     d_wf_cont E (cont_inftapp A c)
+ | d_wf_cont__inftappunion : forall (E:denv) (A1 A2:typ) (c:cont),
+     d_wf_typ E A1 ->
+     d_wf_typ E A2 ->
+     d_wf_cont E c ->
+     d_wf_cont E (cont_inftappunion A1 A2 c)
+ | d_wf_cont__unioninftapp : forall (E:denv) (A:typ) (c:cont),
+     d_wf_typ E A ->
+     d_wf_cont E c ->
+     d_wf_cont E (cont_unioninftapp A c)
+ | d_wf_cont__unioninfabs : forall (E:denv) (A:typ) (c:cont),
+     d_wf_typ E A ->
+     d_wf_cont E c ->
+     d_wf_cont E (cont_unioninfabs A c)
+ | d_wf_cont__sub : forall (E:denv) (A:typ) (c:cont),
+     d_wf_typ E A ->
+     d_wf_cont E c ->
+     d_wf_cont E (cont_sub A).
 
 (* defns J_d_wf_work *)
-Inductive d_wf_work : dworklist -> work -> Prop :=    (* defn d_wf_work *)
- | d_wf_work__infer : forall (Ω:dworklist) (e:exp) (c:cont),
-     d_wf_exp  ( dwl_to_denv  Ω  )  e ->
-     d_wf_cont Ω c ->
-     d_wf_work Ω (work_infer e c)
- | d_wf_work__check : forall (Ω:dworklist) (e:exp) (A:typ),
-     d_wf_exp  ( dwl_to_denv  Ω  )  e ->
-     d_wf_typ  ( dwl_to_denv  Ω  )  A ->
-     d_wf_work Ω (work_check e A)
- | d_wf_work__infabs : forall (Ω:dworklist) (A:typ) (c:cont),
-     d_wf_typ  ( dwl_to_denv  Ω  )  A ->
-     d_wf_cont Ω c ->
-     d_wf_work Ω (work_infabs A c)
- | d_wf_work__infabsunion : forall (Ω:dworklist) (A1 A2:typ) (c:cont),
-     d_wf_typ  ( dwl_to_denv  Ω  )  A1 ->
-     d_wf_typ  ( dwl_to_denv  Ω  )  A2 ->
-     d_wf_cont Ω c ->
-     d_wf_work Ω (work_infabsunion A1 A2 c)
- | d_wf_work__infapp : forall (Ω:dworklist) (A:typ) (e:exp) (c:cont),
-     d_wf_typ  ( dwl_to_denv  Ω  )  A ->
-     d_wf_exp  ( dwl_to_denv  Ω  )  e ->
-     d_wf_cont Ω c ->
-     d_wf_work Ω (work_infapp A e c)
- | d_wf_work__inftapp : forall (Ω:dworklist) (A1 A2:typ) (c:cont),
-     d_wf_typ  ( dwl_to_denv  Ω  )  A1 ->
-     d_wf_typ  ( dwl_to_denv  Ω  )  A2 ->
-     d_wf_cont Ω c ->
-     d_wf_work Ω (work_inftapp A1 A2 c)
- | d_wf_work__inftappunion : forall (Ω:dworklist) (A1 A2 B:typ) (c:cont),
-     d_wf_typ  ( dwl_to_denv  Ω  )  A1 ->
-     d_wf_typ  ( dwl_to_denv  Ω  )  A2 ->
-     d_wf_typ  ( dwl_to_denv  Ω  )  B ->
-     d_wf_cont Ω c ->
-     d_wf_work Ω (work_inftappunion A1 A2 B c)
- | d_wf_work__unioninftapp : forall (Ω:dworklist) (A1 A2:typ) (c:cont),
-     d_wf_typ  ( dwl_to_denv  Ω  )  A1 ->
-     d_wf_typ  ( dwl_to_denv  Ω  )  A2 ->
-     d_wf_cont Ω c ->
-     d_wf_work Ω (work_unioninftapp A1 A2 c)
- | d_wf_work__unioninfabs : forall (Ω:dworklist) (A1 A2:typ) (c:cont),
-     d_wf_typ  ( dwl_to_denv  Ω  )  A1 ->
-     d_wf_typ  ( dwl_to_denv  Ω  )  A2 ->
-     d_wf_cont Ω c ->
-     d_wf_work Ω (work_unioninfabs A1 A2 c)
- | d_wf_work__sub : forall (Ω:dworklist) (A1 A2:typ),
-     d_wf_typ  ( dwl_to_denv  Ω  )  A1 ->
-     d_wf_typ  ( dwl_to_denv  Ω  )  A2 ->
-     d_wf_work Ω (work_sub A1 A2)
- | d_wf_work__apply : forall (Ω:dworklist) (c:cont) (A:typ),
-     d_wf_typ  ( dwl_to_denv  Ω  )  A ->
-     d_wf_cont Ω c ->
-     d_wf_work Ω (work_apply c A).
+Inductive d_wf_work : denv -> work -> Prop :=    (* defn d_wf_work *)
+ | d_wf_work__infer : forall (E:denv) (e:exp) (c:cont),
+     d_wf_exp E e ->
+     d_wf_cont E c ->
+     d_wf_work E (work_infer e c)
+ | d_wf_work__check : forall (E:denv) (e:exp) (A:typ),
+     d_wf_exp E e ->
+     d_wf_typ E A ->
+     d_wf_work E (work_check e A)
+ | d_wf_work__infabs : forall (E:denv) (A:typ) (c:cont),
+     d_wf_typ E A ->
+     d_wf_cont E c ->
+     d_wf_work E (work_infabs A c)
+ | d_wf_work__infabsunion : forall (E:denv) (A1 A2:typ) (c:cont),
+     d_wf_typ E A1 ->
+     d_wf_typ E A2 ->
+     d_wf_cont E c ->
+     d_wf_work E (work_infabsunion A1 A2 c)
+ | d_wf_work__infapp : forall (E:denv) (A:typ) (e:exp) (c:cont),
+     d_wf_typ E A ->
+     d_wf_exp E e ->
+     d_wf_cont E c ->
+     d_wf_work E (work_infapp A e c)
+ | d_wf_work__inftapp : forall (E:denv) (A1 A2:typ) (c:cont),
+     d_wf_typ E A1 ->
+     d_wf_typ E A2 ->
+     d_wf_cont E c ->
+     d_wf_work E (work_inftapp A1 A2 c)
+ | d_wf_work__inftappunion : forall (E:denv) (A1 A2 B:typ) (c:cont),
+     d_wf_typ E A1 ->
+     d_wf_typ E A2 ->
+     d_wf_typ E B ->
+     d_wf_cont E c ->
+     d_wf_work E (work_inftappunion A1 A2 B c)
+ | d_wf_work__unioninftapp : forall (E:denv) (A1 A2:typ) (c:cont),
+     d_wf_typ E A1 ->
+     d_wf_typ E A2 ->
+     d_wf_cont E c ->
+     d_wf_work E (work_unioninftapp A1 A2 c)
+ | d_wf_work__unioninfabs : forall (E:denv) (A1 A2:typ) (c:cont),
+     d_wf_typ E A1 ->
+     d_wf_typ E A2 ->
+     d_wf_cont E c ->
+     d_wf_work E (work_unioninfabs A1 A2 c)
+ | d_wf_work__sub : forall (E:denv) (A1 A2:typ),
+     d_wf_typ E A1 ->
+     d_wf_typ E A2 ->
+     d_wf_work E (work_sub A1 A2)
+ | d_wf_work__apply : forall (E:denv) (c:cont) (A:typ),
+     d_wf_typ E A ->
+     d_wf_cont E c ->
+     d_wf_work E (work_apply c A).
 
 (* defns Jd_wf_wl *)
 Inductive d_wf_wl : dworklist -> Prop :=    (* defn d_wf_wl *)
@@ -1252,13 +1252,13 @@ Inductive d_wf_wl : dworklist -> Prop :=    (* defn d_wf_wl *)
  | d__wfwl__constvar : forall (Ω:dworklist) (X:typvar),
       ( X   `notin` dom (  ( dwl_to_denv  Ω  )  ))  ->
      d_wf_wl Ω ->
-     d_wf_wl (dworklist_constvar Ω X dbind_stvar_empty)
+     d_wf_wl (dworklist_constvar Ω X dbind_tvar_empty)
  | d__wfwl__consstvar : forall (Ω:dworklist) (X:typvar),
       ( X   `notin` dom (  ( dwl_to_denv  Ω  )  ))  ->
      d_wf_wl Ω ->
      d_wf_wl (dworklist_constvar Ω X dbind_stvar_empty)
  | d__wfwl__conswork : forall (Ω:dworklist) (w:work),
-     d_wf_work Ω w ->
+     d_wf_work  ( dwl_to_denv  Ω  )  w ->
      d_wf_wl Ω ->
      d_wf_wl (dworklist_conswork Ω w).
 

@@ -505,116 +505,116 @@ defns
 J_d_wf_cont :: '' ::= 
 
 defn 
-dW |- c :: :: d_wf_cont :: 'd_wf_cont__' by 
+E |- c :: :: d_wf_cont :: 'd_wf_cont__' by 
 
-dW |- c
+E |- c
 ----------------- :: infabs
-dW |- _ ▹ c
+E |- _ ▹ c
 
-⌊ dW ⌋ |- A
-dW |- c 
+E |- A
+E |- c 
 ------------------ :: infabsunion
-dW |- _ ⊔▹ A ▹ c
+E |- _ ⊔▹ A ▹ c
 
-⌊ dW ⌋ |- e 
-dW |- c
+E |- e 
+E |- c
 -------------------- :: infapp
-dW |- _ • e =>=> c  
+E |- _ • e =>=> c  
 
-⌊ dW ⌋ |- A 
-dW |- c
+E |- A 
+E |- c
 -------------------- :: inftapp
-dW |- _ ○ A =>=> c  
+E |- _ ○ A =>=> c  
 
-⌊ dW ⌋ |- A1 
-⌊ dW ⌋ |- A2
-dW |- c
+E |- A1 
+E |- A2
+E |- c
 -------------------- :: inftappunion
-dW |- _ ⊔∘ A1 ○ A2 =>=> c  
+E |- _ ⊔∘ A1 ○ A2 =>=> c  
 
-⌊ dW ⌋ |- A 
-dW |- c
+E |- A 
+E |- c
 -------------------- :: unioninftapp
-dW |- _ ⊔∘ A >> c  
+E |- _ ⊔∘ A >> c  
 
-⌊ dW ⌋ |- A 
-dW |- c
+E |- A 
+E |- c
 -------------------- :: unioninfabs
-dW |- _ ⊔▹ A >> c  
+E |- _ ⊔▹ A >> c  
 
-⌊ dW ⌋ |- A 
-dW |- c
+E |- A 
+E |- c
 -------------------- :: sub
-dW |- _ <: A  
+E |- _ <: A  
 
 
 defns 
 J_d_wf_work :: '' ::= 
 
 defn 
-dW |- w :: :: d_wf_work :: 'd_wf_work__' by 
+E |- w :: :: d_wf_work :: 'd_wf_work__' by 
 
-⌊ dW ⌋ |- e
-dW |- c
+E |- e
+E |- c
 ----------------- :: infer
-dW |- e => c
+E |- e => c
 
-⌊ dW ⌋ |- e
-⌊ dW ⌋ |- A
+E |- e
+E |- A
 ------------------ :: check
-dW |- e <= A
+E |- e <= A
 
-⌊ dW ⌋ |- A 
-dW |- c
+E |- A 
+E |- c
 -------------------- :: infabs
-dW |- A ▹ c  
+E |- A ▹ c  
 
-⌊ dW ⌋ |- A1 
-⌊ dW ⌋ |- A2
-dW |- c
+E |- A1 
+E |- A2
+E |- c
 -------------------- :: infabsunion
-dW |- A1 ⊔▹ A2 ▹ c
+E |- A1 ⊔▹ A2 ▹ c
 
-⌊ dW ⌋ |- A
-⌊ dW ⌋ |- e
-dW |- c
+E |- A
+E |- e
+E |- c
 -------------------- :: infapp
-dW |- A • e =>=> c    
+E |- A • e =>=> c    
 
-⌊ dW ⌋ |- A1
-⌊ dW ⌋ |- A2
-dW |- c
+E |- A1
+E |- A2
+E |- c
 ---------------------------- :: inftapp
-dW |- A1 ○ A2 =>=> c  
+E |- A1 ○ A2 =>=> c  
 
-⌊ dW ⌋ |- A1 
-⌊ dW ⌋ |- A2
-⌊ dW ⌋ |- B
-dW |- c
+E |- A1 
+E |- A2
+E |- B
+E |- c
 ---------------------------- :: inftappunion
-dW |- A1 ⊔∘ A2 ○ B =>=> c  
+E |- A1 ⊔∘ A2 ○ B =>=> c  
 
-⌊ dW ⌋ |- A1
-⌊ dW ⌋ |- A2 
-dW |- c
+E |- A1
+E |- A2 
+E |- c
 ------------------------------ :: unioninftapp
-dW |- A1 ⊔∘ A2 >> c  
+E |- A1 ⊔∘ A2 >> c  
 
-⌊ dW ⌋ |- A1
-⌊ dW ⌋ |- A2 
-dW |- c
+E |- A1
+E |- A2 
+E |- c
 -------------------- :: unioninfabs
-dW |- A1 ⊔▹ A2 >> c  
+E |- A1 ⊔▹ A2 >> c  
 
-⌊ dW ⌋ |- A1
-⌊ dW ⌋ |- A2 
+E |- A1
+E |- A2 
 -------------------- :: sub
-dW |- A1 <: A2  
+E |- A1 <: A2  
 
-⌊ dW ⌋ |- A
-dW |- c
+E |- A
+E |- c
 -------------------- :: apply
-dW |- c $ A
+E |- c $ A
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -636,14 +636,14 @@ defn
 X `notin`  dom ⌊ dW ⌋
 |- dW
 -------------------- :: constvar
-|- dW , X : ~▪
+|- dW , X : ▪
 
 X `notin` dom ⌊ dW ⌋
 |- dW
 -------------------- :: consstvar
 |- dW , X : ~▪
 
-dW |- w
+⌊ dW ⌋ |- w
 |- dW
 -------------------- :: conswork
 |- dW , w
@@ -654,74 +654,74 @@ defns
 J_d_sub :: '' ::=
 
 defn
-E |- A1 <: B1 :: :: d_sub :: 'd_sub__' by
+E ||- A1 <: B1 :: :: d_sub :: 'd_sub__' by
 
 
 |- E
 E |- A1
 -------------- :: top
-E |- A1 <: TOP
+E ||- A1 <: TOP
 
 |- E
 E |- B1
 ------------------- :: bot
-E |- BOT <: B1
+E ||- BOT <: B1
 
 |- E
 ------------------- :: unit
-E |- UNIT <: UNIT
+E ||- UNIT <: UNIT
 
 |- E
 E |- X
 ------------ :: tvar
-E |- X <: X
+E ||- X <: X
 
-E |- B1 <: A1
-E |- A2 <: B2
+E ||- B1 <: A1
+E ||- A2 <: B2
 -------------------------- :: arrow
-E |- A1 -> A2 <: B1 -> B2
+E ||- A1 -> A2 <: B1 -> B2
 
 X ∈ₛ A1
 X ∈ₛ B1
-E , X : ~▪ |- A1 <: B1
+E , X : ~▪ ||- A1 <: B1
 -------------------------------------------- :: all
-E |- ∀ X. A1 <: ∀ X. B1
+E ||- ∀ X. A1 <: ∀ X. B1
 
 B1 ¬= ∀ 
 B1 ¬= ⊓
 B1 ¬= ⊔
 X ∈ₛ A1
 E |-m T1
-E |- { T1 / X } A1 <: B1
+E ||- { T1 / X } A1 <: B1
 ---------------------------- :: alll
-E |- ∀ X . A1 <: B1
+E ||- ∀ X . A1 <: B1
 
-E |- A1 <: B1
-E |- A1 <: B2
+E ||- A1 <: B1
+E ||- A1 <: B2
 ------------------------ :: intersection1
-E |- A1 <: B1 ⊓ B2
+E ||- A1 <: B1 ⊓ B2
 
-E |- A1 <: B1
+E ||- A1 <: B1
 E |- A2
 ------------------------ :: intersection2
-E |- A1 ⊓ A2 <: B1
+E ||- A1 ⊓ A2 <: B1
 
-E |- A2 <: B1
+E ||- A2 <: B1
 E |- A1
 ------------------------ :: intersection3
-E |- A1 ⊓ A2 <: B1
+E ||- A1 ⊓ A2 <: B1
 
-E |- A1 <: B1
+E ||- A1 <: B1
 E |- B2
 ------------------------ :: union1
-E |- A1 <: B1 ⊔ B2
+E ||- A1 <: B1 ⊔ B2
 
-E |- A1 <: B2
+E ||- A1 <: B2
 E |- B1  
 ------------------------ :: union2
-E |- A1 <: B1 ⊔ B2
+E ||- A1 <: B1 ⊔ B2
 
-E |- A1 <: B1
-E |- A2 <: B1
+E ||- A1 <: B1
+E ||- A2 <: B1
 ------------------------ :: union3
-E |- A1 ⊔ A2 <: B1
+E ||- A1 ⊔ A2 <: B1

@@ -49,6 +49,8 @@ Ltac destruct_wf :=
   repeat
     match goal with
     | H : d_wf_wl (dworklist_conswork ?Ω ?w) |- _ => dependent destruction H
+    | H : d_wf_wl (dworklist_consvar ?Ω ?w ?b) |- _ => dependent destruction H
+    | H : d_wf_wl (dworklist_constvar ?Ω ?w ?b) |- _ => dependent destruction H
     | H : d_wf_work ?Ω ?w |- _ => dependent destruction H
     | H : d_wf_typ ?E (typ_intersection ?A ?B) |- _ => dependent destruction H
     | H : d_wf_typ ?E (typ_union ?A ?B) |- _ => dependent destruction H
@@ -271,12 +273,14 @@ Proof with auto with dworklist.
     apply d_infabs_wft in H.
     apply d_wlred__infabs_union.
     apply IHd_infabs1; auto.
-    eapply d_wlred__applycont with (Ω':=(dworklist_conswork dworklist_empty (work_infabsunion (typ_arrow T3 T4) T2 c))).
+    eapply d_wlred__applycont with 
+      (Ω':=(dworklist_conswork dworklist_empty (work_infabsunion (typ_arrow T3 T4) T2 c))).
     eapply d__ac__infabsunion.
     simpl.
     eapply d_wlred__infabsunion.
     apply IHd_infabs2; intuition.
-    eapply d_wlred__applycont with (Ω':=(dworklist_conswork dworklist_empty (work_unioninfabs (typ_arrow T3 T4) (typ_arrow T5 T6) c))).
+    eapply d_wlred__applycont with 
+      (Ω':=(dworklist_conswork dworklist_empty (work_unioninfabs (typ_arrow T3 T4) (typ_arrow T5 T6) c))).
     econstructor.
     simpl.
     econstructor.
@@ -359,47 +363,36 @@ Admitted.
 Theorem d_wl_red_complete: forall Ω, 
     d_wf_wl Ω -> Ω ⟶⁎⋅ -> Ω ⟶ₐ⁎⋅.
 Proof with auto with dworklist.
-  intros. induction H0; auto...
-  - constructor. apply IHd_wl_del_red.
+  intros. induction H0; auto;
+  try solve [destruct_wf; econstructor; eauto with dworklist].
+  - destruct_wf. refine (d_wl_red_chk_inf_complete _ _ _ _ H2 _ _); auto...
+  - destruct_wf.
+    refine (d_wl_red_chk_inf_complete _ _ _ _ H2 _ _ _); auto...
+    apply IHd_wl_del_red. auto.
     admit.
-  - constructor. admit.
-  - constructor. admit.
-  - refine (d_wl_red_chk_inf_complete _ _ _ _ H0 _ _); auto.
-    apply IHd_wl_del_red. 
-    admit.
-  - dependent destruction H.
-    dependent destruction H.
-    refine (d_wl_red_chk_inf_complete _ _ _ _ H2 _ _ _); auto.
+  - destruct_wf. eapply d_wl_red_infabs_complete; eauto.
     apply IHd_wl_del_red.
     admit.
-  - eapply d_wl_red_infabs_complete; eauto.
-    apply IHd_wl_del_red.
-    admit.
-  - apply d_wlred__infabsunion.
+  - destruct_wf. 
+    apply d_wlred__infabsunion.
     eapply d_wl_red_infabs_complete; eauto.
-    admit. 
     eapply d_wlred__applycont with (Ω':=(dworklist_conswork dworklist_empty (work_unioninfabs (typ_arrow B1 C1)  (typ_arrow B2 C2) c))).
     apply d__ac__unioninfabs.
     simpl. econstructor.
     apply IHd_wl_del_red.
     admit.  
-  - econstructor. apply IHd_wl_del_red. 
+  - destruct_wf.
+    econstructor. apply IHd_wl_del_red...
+  - destruct_wf.
+    apply d_wlred__infapp. 
+    apply IHd_wl_del_red...
+  - destruct_wf.  eapply d_wl_red_inftapp_complete; eauto.
+    apply IHd_wl_del_red...
     admit.
-  - apply d_wlred__infapp. 
-    apply IHd_wl_del_red.
+  - destruct_wf. econstructor. 
+    eapply d_wl_red_inftapp_complete; eauto...
     admit.
-  - eapply d_wl_red_inftapp_complete; eauto.
-    apply IHd_wl_del_red.
-    admit.
-  - econstructor. 
-    eapply d_wl_red_inftapp_complete; eauto.
-    admit.
-    admit.
-  - dependent destruction H. 
-    dependent destruction H.
-    constructor.
-    apply IHd_wl_del_red. auto.
-  - dependent destruction H. apply d_wl_red_sub_complete; eauto.
+  - destruct_wf. apply d_wl_red_sub_complete; eauto.
 Admitted.
 
 
