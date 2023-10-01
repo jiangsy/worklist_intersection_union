@@ -1097,6 +1097,10 @@ Inductive d_wf_exp : denv -> exp -> Prop :=    (* defn d_wf_exp *)
  | d_wf_exp__abs : forall (L:vars) (E:denv) (e:exp),
       ( forall x , x \notin  L  -> d_wf_exp  ( x ~ (dbind_typ typ_top)  ++  E )   ( open_exp_wrt_exp e (exp_var_f x) )  )  ->
      d_wf_exp E (exp_abs e)
+ | d_wf_exp__app : forall (E:denv) (e1 e2:exp),
+     d_wf_exp E e1 ->
+     d_wf_exp E e2 ->
+     d_wf_exp E (exp_app e1 e2)
  | d_wf_exp__tabs : forall (L:vars) (E:denv) (body5:body),
       ( forall X , X \notin  L  -> d_wf_body  ( X ~ dbind_tvar_empty  ++  E )   ( open_body_wrt_typ body5 (typ_var_f X) )  )  ->
      d_wf_exp E (exp_tabs body5)
@@ -1246,6 +1250,7 @@ Inductive d_wf_wl : dworklist -> Prop :=    (* defn d_wf_wl *)
  | d__wfwl__empty : 
      d_wf_wl dworklist_empty
  | d__wfwl__consvar : forall (Ω:dworklist) (x:expvar) (A:typ),
+      ( x   `notin` dom (  ( dwl_to_denv  Ω  )  ))  ->
      d_wf_typ  ( dwl_to_denv  Ω  )  A ->
      d_wf_wl Ω ->
      d_wf_wl (dworklist_consvar Ω x (dbind_typ A))

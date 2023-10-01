@@ -3,9 +3,8 @@ Require Import Program.Tactics.
 Require Import Metalib.Metatheory.
 Require Import List.
 
-Require Import decl.def_ott.
-Require Import decl.notations.
-Require Import algo.def_ott.
+Require Import uni.def_ott.
+Require Import uni.notations.
 Require Import ln_utils.
 
 
@@ -20,7 +19,7 @@ Fixpoint ss_to_denv (θ : list (atom * ss_entry)) : denv :=
   match θ with 
   | nil => nil
   | (X , sse_tvar) :: θ' => (X ~ dbind_tvar_empty) ++ ss_to_denv θ'
-  | (SX , sse_stvar) :: θ' => (SX ~ dbind_stvar_empty) ++ ss_to_denv θ'
+  | (X , sse_stvar) :: θ' => (X ~ dbind_stvar_empty) ++ ss_to_denv θ'
   | (X , sse_etvar T) :: θ' => ss_to_denv θ'
   end.
 

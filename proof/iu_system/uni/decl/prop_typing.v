@@ -687,8 +687,8 @@ Proof.
 Qed.
 
 
-Lemma d_chk_inf_wf_env: forall E e mode T,
-  d_typing E e mode T ->
+Lemma d_chk_inf_wf_env: forall E e mode A1,
+  d_typing E e mode A1 ->
   ⊢ E.
 Proof.
   intros. induction H; auto.
@@ -696,6 +696,17 @@ Proof.
   - inst_cofinites_by L. inversion H0; auto.
   - inst_cofinites_by L. inversion H1; auto.
 Qed.
+
+Lemma d_chk_inf_wft: forall E e mode A1,
+  d_typing E e mode A1 ->
+  E ⊢ A1.
+Proof.
+  intros. induction H; auto.
+  - admit. 
+  - apply d_infabs_wft in H0; intuition.
+  - apply d_inftapp_wft in H1; intuition.
+  - admit.
+Admitted.
 
 #[export] Hint Immediate d_sub_dwft_0 d_sub_dwft_1 d_sub_dwft_2 : core.
 #[export] Hint Resolve d_sub_dwft_0 d_sub_dwft_1 d_sub_dwft_2 : subtyping.
