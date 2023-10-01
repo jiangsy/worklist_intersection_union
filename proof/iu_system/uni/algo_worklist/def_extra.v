@@ -4,6 +4,8 @@ Require Import List.
 
 Require Import uni.prop_ln.
 Require Export uni.def_ott.
+Require Export uni.decl_worklist.def.
+
 
 Definition fv_env_gen (fv : abind -> atoms) (E : aenv) : atoms :=
   fold_right (fun xb acc => match xb with (x , b) => acc `union` fv b end ) {} E.
@@ -271,4 +273,9 @@ Inductive a_wl_red : aworklist -> Prop :=    (* defn a_wl_red *)
      a_wl_red (aworklist_conswork aW (work_inftappunion C1 A2 B c))
  | a_wlred__unioninftapp : forall (aW:aworklist) (C2 C1:typ) (c:cont),
      a_wl_red (aworklist_conswork aW (work_apply c (typ_union C1 C2))) ->
-     a_wl_red (aworklist_conswork aW (work_unioninftapp C2 C1 c)).
+     a_wl_red (aworklist_conswork aW (work_unioninftapp C2 C1 c))
+ | d_wlred__applycont : forall (aW:aworklist) (w:work) (T1:typ) (c:cont),
+     apply_cont c T1 w ->
+     a_wl_red (aworklist_conswork aW w) ->
+     a_wl_red (aworklist_conswork aW (work_apply c T1))   
+.
