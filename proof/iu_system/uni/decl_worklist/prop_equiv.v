@@ -274,31 +274,71 @@ Proof.
   intros. auto.
 Qed.
 
-Lemma dwl_app_cons_tvar: forall Ω1 Ω2 X,
-  dworklist_constvar (dwl_app Ω2 Ω1) X dbind_tvar_empty =(dwl_app (dworklist_constvar Ω2 X dbind_tvar_empty) Ω1).
+Lemma dwl_app_cons_tvar: forall Ω1 Ω2 X b,
+  dworklist_constvar (dwl_app Ω2 Ω1) X b =(dwl_app (dworklist_constvar Ω2 X b) Ω1).
 Proof.
   intros. auto.
 Qed.
 
-Lemma dwl_app_cons_stvar: forall Ω1 Ω2 X,
-  dworklist_constvar (dwl_app Ω2 Ω1) X dbind_stvar_empty =(dwl_app (dworklist_constvar Ω2 X dbind_stvar_empty) Ω1).
-Proof.
-  intros. auto.
-Qed.
 
+Ltac rewrite_dwl_app :=
+  repeat
+    match goal with
+    | _ : _ |- context [dworklist_constvar (dwl_app ?Ω2 ?Ω1) ?X ?b] => rewrite dwl_app_cons_tvar
+    | _ : _ |- context [dworklist_conswork (dwl_app ?Ω2 ?Ω1) ?w] => rewrite dwl_app_cons_work
+    end.
 
 Lemma d_wl_red_strengthen_work : forall Ω1 Ω2 w,
   (w ⫤ Ω1) ⟶ₐ⁎⋅ -> (dwl_app Ω2 Ω1) ⟶ₐ⁎⋅ -> (dwl_app Ω2 (w ⫤ Ω1)) ⟶ₐ⁎⋅ .
 Proof. 
   intros. dependent induction H0; 
       try destruct Ω2; simpl in x; try solve [inversion x]; dependent destruction x; simpl; eauto with dworklist.
-  - econstructor.
-    repeat rewrite dwl_app_cons_work; eauto.
+  - econstructor. rewrite_dwl_app; auto.
   - eapply d_wlred__sub_all with (L:=L). 
     intros. inst_cofinites_with X. 
-    repeat rewrite dwl_app_cons_stvar.
-    repeat rewrite dwl_app_cons_work.
-    apply H0; auto.
+    rewrite_dwl_app. auto.
+  - eapply d_wlred__sub_alll with (T1:=T1); auto.
+    admit.
+    rewrite_dwl_app. auto.
+  - eapply d_wlred__sub_intersection1.
+    rewrite_dwl_app. auto.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - econstructor; eauto.
+    replace (dwl_app Ω' (dwl_app Ω2 (w ⫤ Ω1))) with ((dwl_app (dwl_app Ω' Ω2) (w ⫤ Ω1))) by admit.
+    apply IHd_wl_red; auto.
+    admit.
 Admitted.
 
 
