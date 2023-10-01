@@ -1153,3 +1153,73 @@ Proof with try solve_notin; simpl in *; eauto.
 Qed. 
 
 *)
+
+Lemma d_wf_typ_bound_typ : forall E x F A1 B1 B2,
+  F ++ x ~ dbind_typ B1 ++ E ⊢ A1 ->
+  E ⊢ B2 ->
+  F ++ x ~ dbind_typ B2 ++ E ⊢ A1.
+Proof.
+  intros.
+  dependent induction H; eauto.
+  - induction F; simpl. auto.
+    + simpl in H. inversion H. inversion H1.
+      eauto.
+    + destruct a. destruct d. 
+      inversion H.
+        dependent destruction H1. econstructor; eauto.
+        apply dwf_typ_weakening_cons; auto.
+      inversion H. inversion H1. 
+        apply dwf_typ_weakening_cons; auto. 
+      inversion H. inversion H1.
+        apply dwf_typ_weakening_cons; auto.  
+  - induction F; simpl. auto.
+    + simpl in H. inversion H. inversion H1.
+      eauto.
+    + destruct a. destruct d. 
+      inversion H.
+        dependent destruction H1. 
+        apply dwf_typ_weakening_cons; auto.
+      inversion H. inversion H1.
+        eauto... 
+        apply dwf_typ_weakening_cons; auto. 
+      inversion H. inversion H1.
+        apply dwf_typ_weakening_cons; auto.  
+  - eapply d_wf_typ__all with (L:=L); intros; inst_cofinites_with X.
+    auto. 
+    rewrite_env ((X ~ ▫ ++ F) ++ x ~ dbind_typ B2 ++ E).
+    eapply H1; simpl; eauto.
+Qed.
+
+Lemma d_wf_exp_bound_typ : forall E x F e A1 A2,
+  d_wf_exp (F ++ x ~ dbind_typ A1 ++ E) e ->
+  E ⊢ A2 ->
+  d_wf_exp (F ++ x ~ dbind_typ A2 ++ E) e.
+Proof.
+  intros.
+  dependent induction H; auto.
+  - induction F; simpl. auto.
+    + simpl in H. inversion H. dependent destruction H1.
+      eauto.
+      admit.
+    + admit.
+  - admit.
+  - eauto.
+  - econstructor. intros.
+    simpl.
+    destruct body5.
+    simpl. admit.
+  - econstructor. eapply d_wf_typ_bound_typ; eauto. 
+    eauto.
+  - econstructor. eapply d_wf_typ_bound_typ; eauto. 
+    eauto.
+Admitted.
+
+Lemma d_wf_exp_bound_typ_head : forall E x e A1 A2,
+  d_wf_exp (x ~ dbind_typ A1 ++ E) e ->
+  E ⊢ A2 ->
+  d_wf_exp (x ~ dbind_typ A2 ++ E) e.
+Proof.
+  intros.
+  rewrite_env (nil ++ x ~ dbind_typ A2 ++ E).
+  eapply d_wf_exp_bound_typ; eauto.
+Qed.

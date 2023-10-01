@@ -488,14 +488,18 @@ Proof with auto with dworklist.
     dependent destruction H1.
     eapply d_wlred__chk_abstop with (L:=L `union` L0 `union` dom (dwl_to_denv Ω)).
     intros. inst_cofinites_with x.
-    apply H0... econstructor... econstructor... simpl. auto. 
-    admit.
+    apply H0... econstructor... econstructor... simpl. auto.
+    simpl.
+    rewrite_env ((x ~ dbind_typ typ_bot) ++ dwl_to_denv Ω).
+    eapply d_wf_exp_bound_typ_head; eauto.
   - destruct_wf.
     dependent destruction H2.
-    eapply d_wlred__chk_absarrow with (L:=L `union` L0).
+    eapply d_wlred__chk_absarrow with (L:=L `union` L0 `union` dom (dwl_to_denv Ω)).
     intros. inst_cofinites_with x.
     apply H1... 
-    admit.
+    econstructor; econstructor; eauto.
+    eapply d_wf_exp_bound_typ_head; eauto.
+    simpl. apply dwf_typ_weakening_cons...
   - destruct_wf. econstructor. 
     apply IHd_typing; auto... econstructor; auto.
     constructor; auto. simpl.
@@ -504,7 +508,7 @@ Proof with auto with dworklist.
   - destruct_wf. eapply d_wlred__chk_inter...
   - destruct_wf. eauto...
   - destruct_wf. eauto... 
-Admitted.
+Qed.
 
 
 Theorem d_wf_work_apply_cont : forall Ω c A1 Ω',
