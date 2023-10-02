@@ -239,7 +239,7 @@ Inductive inst_worklist : subst_set -> aworklist -> dworklist -> subst_set -> Pr
       wf_ss θ -> 
       θ ⫦ Γ ⇝ Ω ⫣ θ' ->
       inst_work θ' wᵃ wᵈ ->
-      θ ⫦ aworklist_conswork Γ wᵃ ⇝ dworklist_conswork Ω wᵈ ⫣ θ
+      θ ⫦ aworklist_conswork Γ wᵃ ⇝ dworklist_conswork Ω wᵈ ⫣ θ'
   | inst_wl__constvar : forall θ θ' Γ Ω X, 
       θ ⫦ Γ ⇝ Ω ⫣ θ' ->
       θ ⫦ aworklist_constvar Γ X abind_tvar_empty ⇝ dworklist_constvar Ω X dbind_tvar_empty ⫣  (X, ss_bind__tvar_empty) :: θ'
@@ -259,7 +259,7 @@ Inductive inst_worklist : subst_set -> aworklist -> dworklist -> subst_set -> Pr
 where "θ ⫦ Γᵃ ⇝ Γᵈ ⫣ θ'" := (inst_worklist θ Γᵃ Γᵈ θ').
 
 
-Hint Constructors inst_typ : transfer.
+(* Hint Constructors inst_typ : transfer.
 Hint Constructors inst_worklist : transfer.
 
 Lemma fv_ss_ld_ctx_dom: forall θ x,
@@ -504,7 +504,7 @@ Proof.
         contradiction.
       * econstructor; auto.      
         dependent destruction H. auto.
-Qed.
+Qed. *)
 
 
 (* Lemma transfer_reorder: forall Γᵃ Γ'ᵈ θ' x t m Γ'ᵃ,
