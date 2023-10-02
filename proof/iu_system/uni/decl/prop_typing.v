@@ -7,7 +7,7 @@ Require Import LibTactics.
 
 Require Import uni.notations.
 Require Import uni.prop_basic.
-Require Import uni.prop_subtyping.
+Require Import uni.decl.prop_subtyping.
 Require Import ln_utils.
 
 
