@@ -60,9 +60,9 @@ Inductive d_wl_del_red : dworklist -> Prop :=
   | d_wldelred__tvar : forall Ω X,
       d_wl_del_red Ω ->
       d_wl_del_red (dworklist_constvar Ω X dbind_tvar_empty)
-  | d_wldelred__stvar : forall Ω SX,
+  | d_wldelred__stvar : forall Ω X,
       d_wl_del_red Ω ->
-      d_wl_del_red (dworklist_constvar Ω SX dbind_stvar_empty)
+      d_wl_del_red (dworklist_constvar Ω X dbind_stvar_empty)
   | d_wldelred__chk : forall Ω e T1,
       d_typing (dwl_to_denv Ω) e typingmode__chk T1 ->
       d_wl_del_red Ω ->

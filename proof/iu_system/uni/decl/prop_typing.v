@@ -272,8 +272,8 @@ Abort.
 
 Definition dmode_size (mode : d_typing__mode) : nat :=
   match mode with
-  | d_typingmode_inf => 0
-  | d_typingmode_chk => 1
+  | typingmode__inf => 0
+  | typingmode__chk => 1
   end.
 
 
@@ -718,8 +718,8 @@ Theorem d_chk_inf_subsumption : forall n1 n2 n3 E E' e T1 mode,
   d_typing E e mode T1 ->
   d_subenv E' E ->
     match mode with
-    | d_typingmode_chk => forall S1, E ⊢ T1 <: S1 -> E' ⊢ e ⇐ S1
-    | d_typingmode_inf => exists S1, E ⊢ S1 <: T1 /\ E' ⊢ e ⇒ S1
+    | typingmode__chk => forall S1, E ⊢ T1 <: S1 -> E' ⊢ e ⇐ S1
+    | typingmode__inf => exists S1, E ⊢ S1 <: T1 /\ E' ⊢ e ⇒ S1
     end.
 Proof with auto with typing.
   intro n1; induction n1; intro n2; induction n2; intros n3; induction n3; intros * Hn1 Hn2 Hn3 Hty Hsubenv.

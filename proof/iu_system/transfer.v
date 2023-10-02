@@ -272,6 +272,9 @@ Proof.
 Qed.
 
 
+
+
+
 Lemma notin_wf_t_notin_ss: forall t θ x,
   ss_to_ctx θ ⊢ t -> x `notin` fv_ss θ -> x `notin` fv_ld_type t.
 Proof.
