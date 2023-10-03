@@ -8,8 +8,8 @@ Require Import ln_utils.
 
 Hint Constructors d_sub : sub.
 
-Lemma dsub_refl' : forall Ψ T,
-  ⊢ Ψ -> Ψ ⊢ₛ T -> Ψ ⊢ T <: T.
+Lemma dsub_refl' : forall Ψ A,
+  ⊢ Ψ -> Ψ ⊢ₛ A -> Ψ ⊢ A <: A.
 Proof with auto with sub.
   intros; dependent induction H0; eauto...
   eapply d_sub__all with (L:=L `union` dom Ψ); eauto.
@@ -169,8 +169,8 @@ Fixpoint d_typ_size (T : typ) :=
   end.
 
 
-Lemma d_mono_type_order_0 : forall Ψ T,
-  d_mono_typ Ψ T -> d_typ_order T = 0.
+Lemma d_mono_type_order_0 : forall Ψ A,
+  d_mono_typ Ψ A -> d_typ_order A = 0.
 Proof.
   intros; induction H; simpl; auto.
   - rewrite IHd_mono_typ1. rewrite IHd_mono_typ2. auto.
@@ -188,25 +188,25 @@ Proof.
     + auto.
 Qed.
 
-Lemma d_open_rec_tvar_same_order : forall T1 X n,
-  d_typ_order (open_typ_wrt_typ_rec n (typ_var_f X) T1) = d_typ_order T1.
+Lemma d_open_rec_tvar_same_order : forall A X n,
+  d_typ_order (open_typ_wrt_typ_rec n (typ_var_f X) A) = d_typ_order A.
 Proof.
-  induction T1; simpl; intros; auto.
+  induction A; simpl; intros; auto.
   - destruct (lt_eq_lt_dec n n0).
     + destruct s; auto.
     + auto.
 Qed.
 
-Lemma d_open_mono_same_order : forall Ψ A1 T1,
-  d_mono_typ Ψ T1 ->
-  d_typ_order (A1 ^^ᵈ T1) = d_typ_order A1.
+Lemma d_open_mono_same_order : forall Ψ A T,
+  d_mono_typ Ψ T ->
+  d_typ_order (A ^^ᵈ T) = d_typ_order A.
 Proof.
   intros. unfold open_typ_wrt_typ. eapply d_open_rec_mono_same_order; eauto.
 Qed.
 
 
-Lemma d_open_svar_same_order : forall T1 X,
-  d_typ_order (T1 ^ᵈ X) = d_typ_order T1.
+Lemma d_open_svar_same_order : forall A X,
+  d_typ_order (A ^ᵈ X) = d_typ_order A.
 Proof.
   intros. unfold open_typ_wrt_typ. apply d_open_rec_tvar_same_order; auto.
 Qed.

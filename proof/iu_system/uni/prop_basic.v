@@ -271,7 +271,7 @@ Proof.
   intros Ψ1 Ψ2 X A H.
   dependent induction H; try solve [simpl; auto].
   - simpl. unfold eq_dec. destruct (EqDec_eq_of_X X0 X).
-    + subst. eapply dwftyps_stvar. auto.
+    + subst. eapply d_wf_typ_s__stvar. auto.
     + econstructor.
       induction Ψ2.
       * simpl in *. inversion H.
@@ -280,7 +280,7 @@ Proof.
       * destruct a. inversion H.
         -- inversion H0. subst. simpl. auto.
         -- simpl. auto.
-  - simpl. eapply dwftyps_stvar. auto.
+  - simpl. eapply d_wf_typ_s__stvar. auto.
     induction Ψ2.
     * simpl in *. inversion H.
       -- inversion H0.
@@ -291,7 +291,7 @@ Proof.
   - simpl. constructor.
     + apply IHd_wf_typ_s1; auto.
     + apply IHd_wf_typ_s2; auto.
-  - simpl. eapply dwftyps_all with (L:=L);
+  - simpl. eapply d_wf_typ_s__all with (L:=L);
     intros X1 Hf; inst_cofinites_with X1.
     + auto. 
     + rewrite_env ((X1 ~ ▪ ++ Ψ2) ++ (X, ▪) :: Ψ1 ).
@@ -371,7 +371,7 @@ Lemma dwf_typ_dwf_typ_s : forall Ψ A,
 Proof.
   intros.
   induction H; auto.
-  - eapply dwftyps_all with (L:= (L `union` ftvar_in_typ A));
+  - eapply d_wf_typ_s__all with (L:= (L `union` ftvar_in_typ A));
     intros; auto.
     + apply d_wf_typ_subst_stvar_tvar_cons; auto.
 Qed.

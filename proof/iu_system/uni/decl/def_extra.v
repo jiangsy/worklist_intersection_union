@@ -22,31 +22,31 @@ end.
 
 (* defns Jd_wf_typ_s *)
 Inductive d_wf_typ_s : denv -> typ -> Prop :=    (* defn d_wf_typ_s *)
- | dwftyps_unit : forall (Ψ:denv),
+ | d_wf_typ_s__unit : forall (Ψ:denv),
      d_wf_typ_s Ψ typ_unit
- | dwftyps_bot : forall (Ψ:denv),
+ | d_wf_typ_s__bot : forall (Ψ:denv),
      d_wf_typ_s Ψ typ_bot
- | dwftyps_top : forall (Ψ:denv),
+ | d_wf_typ_s__top : forall (Ψ:denv),
      d_wf_typ_s Ψ typ_top
- | dwftyps_var : forall (Ψ:denv) (X:typvar),
+ | d_wf_typ_s__var : forall (Ψ:denv) (X:typvar),
       binds ( X )  ( dbind_tvar_empty ) ( Ψ )  ->
      d_wf_typ_s Ψ (typ_var_f X)
- | dwftyps_stvar : forall (Ψ:denv) (X:typvar),
+ | d_wf_typ_s__stvar : forall (Ψ:denv) (X:typvar),
       binds ( X ) ( dbind_stvar_empty ) ( Ψ )  ->
      d_wf_typ_s Ψ (typ_var_f X)
- | dwftyps_arrow : forall (Ψ:denv) (T1 T2:typ),
+ | d_wf_typ_s__arrow : forall (Ψ:denv) (T1 T2:typ),
      d_wf_typ_s Ψ T1 ->
      d_wf_typ_s Ψ T2 ->
      d_wf_typ_s Ψ (typ_arrow T1 T2)
- | dwftyps_all : forall (L:vars) (Ψ:denv) (T1:typ),
+ | d_wf_typ_s__all : forall (L:vars) (Ψ:denv) (T1:typ),
      ( forall X , X \notin L -> ds_in X  (open_typ_wrt_typ  T1   (typ_var_f X) ) ) ->
      ( forall X , X \notin L -> d_wf_typ_s  ( X ~ dbind_stvar_empty  ++  Ψ )   (open_typ_wrt_typ  T1   (typ_var_f X) ) ) ->
      d_wf_typ_s Ψ (typ_all T1)
- | dwftyps_union : forall (Ψ:denv) (T1 T2:typ),
+ | d_wf_typ_s__union : forall (Ψ:denv) (T1 T2:typ),
      d_wf_typ_s Ψ T1 ->
      d_wf_typ_s Ψ T2 ->
      d_wf_typ_s Ψ (typ_union T1 T2)
- | dwftyps_intersection : forall (Ψ:denv) (T1 T2:typ),
+ | d_wf_typ_s__intersection : forall (Ψ:denv) (T1 T2:typ),
      d_wf_typ_s Ψ T1 ->
      d_wf_typ_s Ψ T2 ->
      d_wf_typ_s Ψ (typ_intersection T1 T2).
