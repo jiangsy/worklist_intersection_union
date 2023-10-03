@@ -7,7 +7,7 @@ Require Import LibTactics.
 
 Require Import uni.notations.
 Require Import uni.prop_basic.
-(* Require Import uni.decl.prop_subtyping. *)
+Require Import uni.decl.prop_subtyping.
 Require Import ln_utils.
 
 
@@ -18,9 +18,9 @@ Proof.
 Defined. *)
 
 
-Hint Constructors dwf_typ: core.
-Hint Constructors dwf_env: core.
-Hint Constructors dwf_typ_s: core.
+Hint Constructors d_wf_typ: core.
+Hint Constructors d_wf_env: core.
+Hint Constructors d_wf_typ_s: core.
 Hint Constructors d_typing : typing.
 
 
@@ -97,19 +97,19 @@ Proof.
       eapply d_sub_weakening_cons; eauto.
   - inversion H1; auto.
     + dependent destruction H3.
-      exists A'; intuition.
+      exists A0; intuition.
       eapply d_sub_weakening_cons; eauto.
     + dependent destruction H. specialize (IHd_subenv H H5).
-      destruct IHd_subenv as [A'].
-      exists A'; intuition.
+      destruct IHd_subenv as [A''].
+      exists A''; intuition.
       eapply d_sub_weakening_cons; eauto.
 Qed.
 
 
-Lemma d_subenv_same_stvar : forall Ψ Ψ' SX,
+Lemma d_subenv_same_stvar : forall Ψ Ψ' X,
   d_subenv Ψ' Ψ ->
-  binds SX dbind_stvar_empty Ψ ->
-  binds SX dbind_stvar_empty Ψ'.
+  binds X dbind_stvar_empty Ψ ->
+  binds X dbind_stvar_empty Ψ'.
 Proof.
   intros. induction H; simpl; intros; auto.
   - inversion H0; auto.
@@ -139,7 +139,7 @@ Qed.
 Lemma d_subenv_wf_env : forall Ψ,
   ⊢ Ψ ->
   forall Ψ',
-    d_subenv Ψ Ψ ->
+    d_subenv Ψ' Ψ ->
     ⊢ Ψ'.
 Proof.
   intros Ψ H. induction H; intros.
@@ -182,30 +182,32 @@ Proof.
   intros Ψ A B Hsub.
   induction Hsub; try solve [econstructor; solve_wf_subenv].
   - econstructor; auto.
-  - intros. econstructor; auto. intros. inst_cofinites_with SX.
-    specialize (H2 (SX ~ dbind_stvar_empty ++ Ψ')).
-    assert (d_subenv (SX ~ dbind_stvar_empty ++ Ψ') (SX ~ dbind_stvar_empty ++ Ψ)). {
+  - intros. econstructor; auto. intros. inst_cofinites_with X.
+    specialize (H2 (X ~ dbind_stvar_empty ++ Ψ')).
+    assert (d_subenv (X ~ dbind_stvar_empty ++ Ψ') (X ~ dbind_stvar_empty ++ Ψ)). {
       constructor. auto. }
     specialize (H2 H5).
     auto.
-  - intros. eapply d_sub__alll with (T1:=T1); auto. solve_wf_subenv.
+  - intros. eapply d_sub__alll with (T:=T); auto. 
+    admit.
   - intros.
-    apply d_sub_intersection1; auto.
+    apply d_sub__intersection1; auto.
   - intros.
-    apply d_sub_intersection2; auto.
+    apply d_sub__intersection2; auto.
     eapply d_subenv_wf_typ; eauto.
   - intros.
-    apply d_sub_intersection3; auto.
+    apply d_sub__intersection3; auto.
     eapply d_subenv_wf_typ; eauto.
   - intros.
-    apply d_sub_union1; auto.
+    apply d_sub__union1; auto.
     eapply d_subenv_wf_typ; eauto.
   - intros.
-    apply d_sub_union2; auto.
+    apply d_sub__union2; auto.
     eapply d_subenv_wf_typ; eauto.
   - intros.
-    apply d_sub_union3; auto.
-Qed.
+    apply d_sub__union3; auto.
+Admitted.
+
 
 Hint Resolve d_subenv_wf_typ : typing.
 Hint Resolve d_subenv_wf_env : typing.
@@ -339,25 +341,22 @@ Proof with auto with typing.
       dependent destruction H0. pick fresh X.
       inst_cofinites_with X.
       erewrite <- typ_subst_open_var; eauto...
-      rewrite_env ((map (d_subst_tv_in_binding T2 X) nil) ++ Ψ).
+      rewrite_env ((map (subst_tvar_in_dbind B X) nil) ++ Ψ).
       eapply d_wft_typ_subst; eauto...
       econstructor; eauto.
-    + exists (S1 ^^ᵈ T2). split; auto...
-      pick fresh SX. inst_cofinites_with SX.
-      erewrite <- typ_subst_open_stvar; eauto.
-      rewrite <- (typ_subst_open_stvar SX T1 T2); eauto.
-      rewrite_env ((map (d_subst_stv_in_binding T2 SX) nil) ++ Ψ).
+    + exists (A0 ^^ᵈ B). split; auto...
+      pick fresh X. inst_cofinites_with X.
+      erewrite <- typ_subst_open_var; eauto.
+      erewrite <- typ_subst_open_var with (A:=A); eauto.
+      rewrite_env ((map (subst_tvar_in_dbind B X) nil) ++ Ψ).
       apply d_sub_subst_stvar; auto...
-      constructor; auto.
-      inst_cofinites_for dwftyp_all; intros.
-      * inst_cofinites_with X.
-        replace (S1 ^ᵈ X) with ({typ_var_f X /ᵗ X} (S1 ^^ᵈ (typ_svar X))).
-        apply ftv_sins_typ_tvar_fstv_sin_typ; auto.
-        erewrite typ_subst_open_stvar; auto.
+      econstructor; eauto.
+      inst_cofinites_for d_wf_typ__all; intros.
+      * inst_cofinites_with X. auto.
       * inst_cofinites_with X.
         apply d_wf_typ_subst_tvar_stvar_cons; eauto...
         apply d_sub_dwft in H5; intuition.
-    + inversion H6.
+    + inversion H5.
     + specialize (IHd_sub _ H H0 H1 (eq_refl _)).
       destruct IHd_sub as [C1 Hc1].
       exists C1; intuition...
@@ -388,18 +387,18 @@ Proof with auto with typing.
     + specialize (IHd_inftapp1 _ H1).
       destruct IHd_inftapp1 as [C3].
       exists C3. intuition...
-      apply d_sub_union1; eauto...
+      apply d_sub__union1; eauto...
       apply d_inftapp_wft in H0. intuition.
     + specialize (IHd_inftapp2 _ H1).
       destruct IHd_inftapp2 as [C3].
       exists C3. intuition...
-      apply d_sub_union2; eauto...
+      apply d_sub__union2; eauto...
       apply d_inftapp_wft in H. intuition.
     + specialize (IHd_sub1 _ _ H H0 IHd_inftapp1 IHd_inftapp2 (eq_refl _)).
       specialize (IHd_sub2 _ _ H H0 IHd_inftapp1 IHd_inftapp2 (eq_refl _)).
-      destruct IHd_sub1 as [C3].
-      destruct IHd_sub2 as [C4].
-      exists (typ_union C3 C4). intuition...
+      destruct IHd_sub1 as [C1'].
+      destruct IHd_sub2 as [C2'].
+      exists (typ_union C1' C2'). intuition...
 Qed.
 
 Corollary d_inftapp_wft_0 : forall Ψ A B C,
@@ -441,7 +440,7 @@ eauto using d_subenv_wf_env, d_subenv_wf_typ.
 Qed.
 
 Corollary d_inftapp_subsumption: forall Ψ Ψ' A A' B C,
-  Ψ ⊢ A' ○ B ⇒⇒ C ->
+  Ψ ⊢ A ○ B ⇒⇒ C ->
   Ψ ⊢ A' <: A ->
   d_subenv Ψ' Ψ ->
   exists C', Ψ ⊢ C' <: C /\ Ψ' ⊢ A' ○ B ⇒⇒ C'.
@@ -495,7 +494,7 @@ Theorem d_infabs_subsumption_same_env : forall Ψ A A' B C,
   Ψ ⊢ A' <: A ->
   exists B' C', Ψ ⊢ typ_arrow B' C' <: typ_arrow B C /\ Ψ ⊢ A' ▹ B' → C'.
 Proof with auto with typing.
-  intros. generalize dependent A2. induction H; intros.
+  intros. generalize dependent A'. induction H; intros.
   - dependent induction H0...
     + exists typ_top typ_bot. auto...
     + exfalso. eapply d_sub_open_mono_bot_false; eauto.
@@ -517,7 +516,7 @@ Proof with auto with typing.
   - dependent induction H2...
     + exists typ_top typ_bot. dependent destruction H2.
       eauto...
-    + exists S1 S2. intuition...
+    + exists A1 A2. intuition...
       apply d_sub_dwft in H2_.
       apply d_sub_dwft in H2_0.
       intuition...
@@ -525,12 +524,14 @@ Proof with auto with typing.
       destruct IHd_sub as [B2 [C2]].
       exists B2 C2; intuition...
       econstructor. eauto. eauto.
-      ++ pick fresh SY and apply dwftyp_all.
-         ** forwards: H2 SY...
-         ** forwards: d_sub_dwft_1 H5.
-            rewrite_env (nil++Ψ) in H9.
-            forwards*: d_wf_typ_open_stvar_subst_mono H9.
-      ++ eauto.
+      * admit.
+      * pick fresh Y and apply d_wf_typ__all.
+         ** forwards: H2 Y...
+         ** forwards: d_sub_dwft_1 H4.
+            rewrite_env (nil++Ψ) in H8.
+            admit.
+            (* forwards*: d_wf_typ_open_tvar_subst_mono H9. *)
+      * eauto.
     + specialize (IHd_sub _ _ H H0 H1 (eq_refl _)).
       destruct IHd_sub as [B2 [C2]].
       exists B2 C2; intuition...
@@ -548,38 +549,34 @@ Proof with auto with typing.
   - dependent induction H3.
     + exists typ_top typ_bot.
       econstructor; eauto...
-    + assert (Ψ ⊢ S1 ^^ᵈ T2 <: T1 ^^ᵈ T2). {
+    + assert (Ψ ⊢ A0 ^^ᵈ T <: A ^^ᵈ T). {
         pick fresh SZ. forwards*: H5 SZ.
         rewrite_env (nil++ (SZ, ▪) :: Ψ ) in H7.
-        forwards*: d_sub_subst_stvar T2 H7.
+        forwards*: d_sub_subst_stvar T H7.
         simpl in H8.
-        rewrite d_subst_stv_in_typ_open_typ_wrt_typ in H8...
+        rewrite subst_tvar_in_typ_open_typ_wrt_typ in H8...
         simpl in H8. case_if in H8.
-        rewrite d_subst_stv_in_typ_fresh_eq in H8...
-        rewrite d_subst_stv_in_typ_open_typ_wrt_typ in H8...
+        rewrite subst_tvar_in_typ_fresh_eq in H8...
+        rewrite subst_tvar_in_typ_open_typ_wrt_typ in H8...
         simpl in H8. case_if in H8...
-        rewrite d_subst_stv_in_typ_fresh_eq in H8...
+        rewrite subst_tvar_in_typ_fresh_eq in H8...
+          admit.
+         admit.
       }
       specialize (IHd_infabs _ H7).
       destruct IHd_infabs as [B2 [C2]].
       exists B2 C2. intuition...
-      econstructor; eauto...
-      (* prove Ψ ⊢ typ_all S1 *)
-      ++ pick fresh SY and apply dwftyp_all.
-         ** forwards: H3 SY...
-            applys* fstv_open_tvar. solve_notin.
-         ** forwards HS: H5 SY...
-            forwards: d_sub_dwft_1 HS.
-            forwards: d_wf_typ_subst_tvar_stvar_cons H8...
-    + inversion H6.
-    + specialize (IHd_sub T1 H H0 H1 H2 IHd_infabs (eq_refl _)).
+      eapply d_infabs__all with (T:=T). eauto. eauto. admit.
+       eauto...
+    + inversion H5.
+    + specialize (IHd_sub _ H H0 H1 H2 IHd_infabs (eq_refl _)).
       destruct IHd_sub as [B2 [C2]].
       exists B2 C2. intuition.
-    + specialize (IHd_sub T1 H H0 H1 H2 IHd_infabs (eq_refl _)).
+    + specialize (IHd_sub _ H H0 H1 H2 IHd_infabs (eq_refl _)).
       destruct IHd_sub as [B2 [C2]].
       exists B2 C2. intuition.
-    + specialize (IHd_sub1 T1 H H0 H1 H2 IHd_infabs (eq_refl _)).
-      specialize (IHd_sub2 T1 H H0 H1 H2 IHd_infabs (eq_refl _)).
+    + specialize (IHd_sub1 _ H H0 H1 H2 IHd_infabs (eq_refl _)).
+      specialize (IHd_sub2 _ H H0 H1 H2 IHd_infabs (eq_refl _)).
       destruct IHd_sub1 as [B2 [C2]].
       destruct IHd_sub2 as [B3 [C3]].
       exists (typ_intersection B2 B3) (typ_union C2 C3).
@@ -596,28 +593,28 @@ Proof with auto with typing.
       all: eauto using d_infabs_wft_2, d_infabs_wft_3.
     + inversion H1.
     + specialize (IHd_sub _ _ H H0 IHd_infabs1 IHd_infabs2 (eq_refl _)).
-      destruct IHd_sub as [B2 [C2]].
-      exists B2 C2. intuition.
+      destruct IHd_sub as [B2' [C2']].
+      exists B2' C2'. intuition.
     + specialize (IHd_sub _ _ H H0 IHd_infabs1 IHd_infabs2 (eq_refl _)).
-      destruct IHd_sub as [B2 [C2]].
-      exists B2 C2. intuition.
+      destruct IHd_sub as [B2' [C2']].
+      exists B2' C2'. intuition.
     + specialize (IHd_infabs1 _ H1).
-      destruct IHd_infabs1 as [B2 [C2]].
-      exists B2 C2. intuition.
+      destruct IHd_infabs1 as [B2' [C2']].
+      exists B2' C2'. intuition.
       dependent destruction H4. eauto...
     + specialize (IHd_infabs2 _ H1).
-      destruct IHd_infabs2 as [B2 [C2]].
-      exists B2 C2. intuition.
+      destruct IHd_infabs2 as [B2' [C2']].
+      exists B2' C2'. intuition.
       dependent destruction H4. eauto...
     + specialize (IHd_sub1 _ _ H H0 IHd_infabs1 IHd_infabs2 (eq_refl _)).
       specialize (IHd_sub2 _ _ H H0 IHd_infabs1 IHd_infabs2 (eq_refl _)).
-      destruct IHd_sub1 as [B2 [C2]].
-      destruct IHd_sub2 as [B3 [C3]].
-      exists (typ_intersection B2 B3) (typ_union C2 C3).
+      destruct IHd_sub1 as [B2' [C2']].
+      destruct IHd_sub2 as [B3' [C3']].
+      exists (typ_intersection B2' B3') (typ_union C2' C3').
       intuition...
       dependent destruction H1. dependent destruction H3.
       intuition...
-Qed.
+Admitted.
 
 
 Lemma d_infabs_subenv : forall Ψ Ψ' A B C,
@@ -638,18 +635,18 @@ Proof with eauto.
   intros * HA HS HE.
   forwards (?&?&HA'): d_infabs_subsumption_same_env HA HS.
   forwards : d_infabs_subenv HA' HE.
-  exists*.
+  exists*. 
 Qed.
 
 
-Hint Extern 1 (_ < _) => lia : typing.
+Hint Extern 1 (_c < _) => lia : typing.
 Hint Extern 1 (_ ⊢ _) => eapply d_subenv_wf_typ; eauto : typing.
 
 
 Lemma d_exp_size_open_var_rec : forall e x n,
   exp_size e = exp_size (open_exp_wrt_exp_rec n (exp_var_f x) e)
 with d_body_size_open_var_rec: forall b x n,
-  d_body_size b = d_body_size (open_dbody_wrt_exp_rec n (exp_var_f x) b).
+  body_size b = body_size (open_body_wrt_exp_rec n (exp_var_f x) b).
 Proof.
   - intros. generalize dependent n. induction e; simpl; auto.
     + intros. destruct (lt_eq_lt_dec n n0).
@@ -737,7 +734,7 @@ Proof with auto with typing.
         eapply d_subenv_wf_env with (Ψ:=Ψ); eauto.
         auto.
       (* e : A => A *)
-      * exists T1. split; auto. apply dsub_refl; auto.
+      * exists A. split; auto. apply dsub_refl; auto.
         now eauto using d_chk_inf_wf_env.
         econstructor. eapply d_subenv_wf_typ; eauto.
         refine (IHn1 _ _ _ _ _ _ _ _ _ _  Hty _ _ _); eauto... simpl in *.

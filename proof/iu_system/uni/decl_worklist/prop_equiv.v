@@ -212,7 +212,7 @@ Proof with auto with Hdb_dworklist_equiv typing.
     dependent destruction H. dependent destruction H1.
     eapply d_sub__all with (L:=L `union` L0 `union` L1 `union` dom (dwl_to_denv Ω)); intros; auto.
     inst_cofinites_with X.
-    assert ( d_wf_wl  (dworklist_conswork (dworklist_consvar Ω X dbind_stvar_empty) (work_sub (A1 ^ᵈ X) (B1 ^ᵈ X)) ) ).
+    assert ( d_wf_wl  (dworklist_conswork (dworklist_consvar Ω X dbind_stvar_empty) (work_sub (A ^ᵈ X) (B ^ᵈ X)) ) ).
     admit.
     admit.
     admit.
@@ -222,7 +222,7 @@ Proof with auto with Hdb_dworklist_equiv typing.
     eapply d_typing__chkabstop with (L:=L).
     intros. inst_cofinites_with x...
     admit. admit.
-  - eapply d_wl_del_red__inf with (T1:=A1)...
+  - eapply d_wl_del_red__inf with (T1:=A)...
     econstructor... admit.
     apply IHd_wl_red. admit.
   - admit.
@@ -276,7 +276,7 @@ Proof with auto with Hdb_dworklist_equiv.
     inst_cofinites_with X.
     apply d_sub_dwft in H1; intuition.
   - destruct_wf. 
-    eapply d_wl_red__sub_alll with (T1:=T); eauto. 
+    eapply d_wl_red__sub_alll with (T:=T); eauto. 
     apply IHHsub; eauto. 
     econstructor; auto. econstructor; auto.
     apply d_wft_all_open; eauto; auto.
@@ -337,7 +337,7 @@ Proof.
   - eapply d_wl_red__sub_all with (L:=L). 
     intros. inst_cofinites_with X. 
     rewrite_dwl_app. auto.
-  - eapply d_wl_red__sub_alll with (T1:=T1); auto.
+  - eapply d_wl_red__sub_alll with (T:=T); auto.
     rewrite d_wl_app_cons_work_same_env; auto.
     rewrite_dwl_app. auto.
   - eapply d_wl_red__chk_absarrow with (L:=L).
@@ -346,13 +346,13 @@ Proof.
   - eapply d_wl_red__chk_abstop with (L:=L).
     intros. inst_cofinites_with x.
     rewrite_dwl_app. auto.
-  - eapply d_wl_red__inf_var with (A1:=A1). 
+  - eapply d_wl_red__inf_var with (A:=A). 
     rewrite d_wl_app_cons_work_same_env. auto.
     rewrite_dwl_app. auto.
   - eapply d_wl_red__inf_tabs with (L:=L).
     intros. inst_cofinites_with X.
     rewrite_dwl_app. auto.
-  - eapply d_wl_red__infabs_all with (T1:=T1).
+  - eapply d_wl_red__infabs_all with (T:=T).
     rewrite d_wl_app_cons_work_same_env. auto.
     rewrite_dwl_app. auto.
   - econstructor; eauto.
@@ -367,7 +367,7 @@ Proof with auto with Hdb_dworklist_equiv.
   intros. generalize dependent c. dependent induction H; intros; eauto;
   try solve [destruct_wf; econstructor; auto with Hdb_dworklist_equiv].
   - destruct_wf.
-    eapply d_wl_red__infabs_all with (T1:=T); eauto.
+    eapply d_wl_red__infabs_all with (T:=T); eauto.
     apply IHd_infabs; auto.
     econstructor; auto. econstructor; auto.
     apply d_wft_all_open; eauto.
