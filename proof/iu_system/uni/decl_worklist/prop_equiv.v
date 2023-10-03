@@ -72,6 +72,10 @@ Proof.
   intros. induction H; simpl; auto; econstructor; auto.
 Qed.
 
+Inductive d_all_work : dworklist -> Prop :=
+  | d_all_work__empty : d_all_work dworklist_empty
+  | d_all_work__conswork : forall Ω w,
+      d_all_work Ω -> d_all_work (dworklist_conswork Ω w).
 
 Lemma dwl_app_cons_work: forall Ω1 Ω2 w,
   dworklist_conswork (dwl_app Ω2 Ω1) w =(dwl_app (dworklist_conswork Ω2 w) Ω1).
@@ -107,10 +111,78 @@ Lemma d_wl_app_cons_work_same_env : forall Ω1 Ω2 w,
     rewrite IHΩ2. auto.
   Qed.
 
+Ltac inv_all_work := 
+  match goal with
+  | H : d_all_work (dworklist_consvar ?Ω ?x ?b) |- _ => inversion H
+  | H : d_all_work (dworklist_constvar ?Ω ?X ?b) |- _ => inversion H
+  end.
+
+Ltac destruct_all_work := 
+  match goal with
+  | H : d_all_work (dworklist_conswork ?Ω ?w) |- _ => dependent destruction H
+  end.
+
+Hint Constructors d_all_work : dworklist.
+
+Lemma d_wl_app_all_work_same_env : forall Ω1 Ω2 Ω3,
+  d_all_work Ω2 ->
+  dwl_to_denv (dwl_app Ω3 (dwl_app Ω2 Ω1)) = dwl_to_denv (dwl_app Ω3 Ω1).
+Admitted.
+
+Ltac solve_Ω1 IH :=
+  match goal with 
+  | H : ?Ω1 = ?Ω2 |- d_wl_del_red ?Ω => 
+      dependent destruction H; replace Ω with (dwl_app dworklist_empty Ω) by auto; eapply IH;
+      simpl; rewrite_dwl_app; eauto with dworklist
+  end.
+
+
+Lemma d_wl_red_weaken_works : forall Ω1 Ω2 Ω3,
+  (dwl_app Ω3 (dwl_app Ω2 Ω1)) ⟶ᵈ⁎⋅ -> d_all_work Ω2 -> (dwl_app Ω3 Ω1) ⟶ᵈ⁎⋅.
+Proof with auto with dworklist.
+  intros * Hred Haw. dependent induction Hred;
+    try destruct Ω3; simpl in x; try solve [inversion x]; dependent destruction x; simpl;
+    destruct Ω2; simpl in *; 
+      try solve [inversion x]; 
+      try solve [dependent destruction x; eauto with dworklist];
+      try inv_all_work; (* Ω2 contains x or X *) 
+      try solve [destruct_all_work; solve_Ω1 IHHred];
+      try solve [econstructor; eauto];
+      try solve [econstructor; eapply IHHred; rewrite_dwl_app; eauto].
+  - rewrite dwl_app_cons_work in H. rewrite d_wl_app_all_work_same_env in H...
+    econstructor; eauto.
+    rewrite_dwl_app. eapply IHHred; eauto...
+  - rewrite dwl_app_cons_work in H. rewrite d_wl_app_all_work_same_env in H...
+    econstructor; eauto.
+    rewrite_dwl_app. eapply IHHred; eauto...
+  - rewrite dwl_app_cons_work in H. rewrite d_wl_app_all_work_same_env in H...
+    econstructor; eauto.
+    rewrite_dwl_app. eapply IHHred; eauto...
+  - rewrite dwl_app_cons_work in H. rewrite d_wl_app_all_work_same_env in H...
+    econstructor; eauto.
+    rewrite_dwl_app. eapply IHHred; eauto...
+  - econstructor; rewrite_dwl_app;
+    eapply IHHred; simpl; eauto...
+  - econstructor; rewrite_dwl_app;
+    eapply IHHred; simpl; eauto...
+  - rewrite dwl_app_cons_work in H. rewrite d_wl_app_all_work_same_env in H...
+    econstructor; eauto.
+    rewrite_dwl_app. eapply IHHred; eauto...
+  - rewrite dwl_app_cons_work in H. rewrite d_wl_app_all_work_same_env in H...
+    econstructor; eauto.
+    rewrite_dwl_app. eapply IHHred; eauto...
+  - econstructor; rewrite_dwl_app;
+    eapply IHHred; simpl; eauto...
+  - rewrite dwl_app_cons_work in H. rewrite d_wl_app_all_work_same_env in H...
+    econstructor; eauto.
+    rewrite_dwl_app. eapply IHHred; eauto...
+  - econstructor; eauto.
+    rewrite_dwl_app. eapply IHHred; eauto...
+Qed.
 
 (* so many cases *)
 (* we do not need such a generalized lemma, can restrict Ω2 to only contain works *)
-Lemma d_wl_red_weaken_work : forall Ω1 Ω2 Ω3,
+(* Lemma d_wl_red_weaken_work : forall Ω1 Ω2 Ω3,
   (dwl_app Ω3 (dwl_app Ω2 Ω1)) ⟶ᵈ⁎⋅ ->  (dwl_app Ω3 Ω1) ⟶ᵈ⁎⋅.
 Proof with auto with dworklist.
   intros. dependent induction H; 
@@ -134,27 +206,15 @@ Proof with auto with dworklist.
     eapply IHd_wl_del_red. simpl. auto.
   - econstructor; auto.
   - econstructor; eauto.
-Admitted.
+Admitted. *)
 
-
-(* Lemma d_wl_red_weaken_work : forall Ω1 Ω2 w,
+Lemma d_wl_red_weaken_work : forall Ω1 Ω2 w,
   (dwl_app Ω2 (w ⫤ Ω1)) ⟶ᵈ⁎⋅ ->  (dwl_app Ω2 Ω1) ⟶ᵈ⁎⋅.
 Proof with auto with dworklist.
-  intros. dependent induction H;  try destruct Ω2; simpl in x; try solve [inversion x]; dependent destruction x; simpl; eauto with dworklist;
-    try solve [replace Ω1 with (dwl_app dworklist_empty Ω1) by auto; eapply IHd_wl_del_red; simpl; eauto].
-
-  - rewrite d_wl_app_cons_work_same_env in *. econstructor; eauto.
-  - rewrite d_wl_app_cons_work_same_env in *. econstructor; eauto. 
-    rewrite_dwl_app. eapply IHd_wl_del_red; simpl; eauto.
-  - rewrite d_wl_app_cons_work_same_env in *. econstructor; eauto. 
-    rewrite_dwl_app. eapply IHd_wl_del_red; simpl; eauto.
-  - rewrite d_wl_app_cons_work_same_env in *. econstructor; eauto. 
-    rewrite_dwl_app. eapply IHd_wl_del_red; simpl; eauto.
-  - econstructor; eauto. rewrite_dwl_app. eapply IHd_wl_del_red; simpl; eauto.
-  - 
-  
-  replace Ω1 with (dwl_app dworklist_empty Ω1) by auto; eapply IHd_wl_del_red; simpl.
-Admitted. *)
+  intros.  
+  replace (dwl_app Ω2 (w ⫤ Ω1)) with (dwl_app Ω2 (dwl_app (dworklist_conswork dworklist_empty w) Ω1)) in H by auto.
+  eapply d_wl_red_weaken_works; eauto...
+Qed.
 
 Hint Resolve d_wf_wl_wf_env : dworklist.
 
@@ -351,14 +411,13 @@ Proof with auto with dworklist.
 Qed.
 
 
+(* remove later *)
 Lemma d_infabs_wft : forall E A1 B1 C1,
   E ⊢ A1 ▹ B1 → C1 ->
   ⊢ E /\ E ⊢ A1 /\ E ⊢ B1 /\ E ⊢ C1.
 Proof.
   intros. induction H; intuition.
 Qed.
-
-
 
 
 Lemma d_wl_app_assoc : forall Ω1 Ω2 Ω3,
@@ -392,8 +451,6 @@ Proof.
   replace (w ⫤ Ω)%dworklist with (dwl_app (dworklist_conswork dworklist_empty w) Ω) in H by auto.
   eapply d_wl_red_weaken. eauto.
 Qed.
-
-
 
 
 Lemma d_wl_red_strengthen_work : forall Ω1 Ω2 w,
