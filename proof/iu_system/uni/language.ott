@@ -112,8 +112,8 @@ aworklist, aW  :: 'aworklist_' ::=
   | aW , X ab   ::   :: constvar
   | aW , w      ::   :: conswork
   | ( aW )      :: S :: paren {{ coq ( [[aW]] ) }}
-  | aW1 ++ aW2  :: M :: app {{ coq ( awl_app [[aW2]] [[aW1]] )}}
-
+  | aW1 ++ aW2  :: M :: app {{ coq ( awl_app [[aW2]] [[aW1]] )}} 
+  
 formula :: formula_ ::=
   | judgement        ::   :: judgement
   | ( x db )  in dE    ::   :: binds1 {{ coq binds ([[x]])  ([[db]]) ([[dE]]) }}

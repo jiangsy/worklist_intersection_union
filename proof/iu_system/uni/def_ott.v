@@ -1194,192 +1194,192 @@ Inductive neq_bot : typ -> Prop :=    (* defn neq_bot *)
 
 (* defns J_d_wf_typ *)
 Inductive d_wf_typ : denv -> typ -> Prop :=    (* defn d_wf_typ *)
- | d_wf_typ__unit : forall (dE:denv),
-     d_wf_typ dE typ_unit
- | d_wf_typ__bot : forall (dE:denv),
-     d_wf_typ dE typ_bot
- | d_wf_typ__top : forall (dE:denv),
-     d_wf_typ dE typ_top
- | d_wf_typ__tvar : forall (dE:denv) (X:typvar),
-      binds ( X )  ( dbind_tvar_empty ) ( dE )  ->
-     d_wf_typ dE (typ_var_f X)
- | d_wf_typ__stvar : forall (dE:denv) (X:typvar),
-      binds ( X )  ( dbind_stvar_empty ) ( dE )  ->
-     d_wf_typ dE (typ_var_f X)
- | d_wf_typ__arrow : forall (dE:denv) (A1 A2:typ),
-     d_wf_typ dE A1 ->
-     d_wf_typ dE A2 ->
-     d_wf_typ dE (typ_arrow A1 A2)
- | d_wf_typ__all : forall (L:vars) (dE:denv) (A:typ),
+ | d_wf_typ__unit : forall (Ψ:denv),
+     d_wf_typ Ψ typ_unit
+ | d_wf_typ__bot : forall (Ψ:denv),
+     d_wf_typ Ψ typ_bot
+ | d_wf_typ__top : forall (Ψ:denv),
+     d_wf_typ Ψ typ_top
+ | d_wf_typ__tvar : forall (Ψ:denv) (X:typvar),
+      binds ( X )  ( dbind_tvar_empty ) ( Ψ )  ->
+     d_wf_typ Ψ (typ_var_f X)
+ | d_wf_typ__stvar : forall (Ψ:denv) (X:typvar),
+      binds ( X )  ( dbind_stvar_empty ) ( Ψ )  ->
+     d_wf_typ Ψ (typ_var_f X)
+ | d_wf_typ__arrow : forall (Ψ:denv) (A1 A2:typ),
+     d_wf_typ Ψ A1 ->
+     d_wf_typ Ψ A2 ->
+     d_wf_typ Ψ (typ_arrow A1 A2)
+ | d_wf_typ__all : forall (L:vars) (Ψ:denv) (A:typ),
       ( forall X , X \notin  L  -> ds_in X  ( open_typ_wrt_typ A (typ_var_f X) )  )  ->
-      ( forall X , X \notin  L  -> d_wf_typ  ( X ~ dbind_tvar_empty  ++  dE )   ( open_typ_wrt_typ A (typ_var_f X) )  )  ->
-     d_wf_typ dE (typ_all A)
- | d_wf_typ__union : forall (dE:denv) (A1 A2:typ),
-     d_wf_typ dE A1 ->
-     d_wf_typ dE A2 ->
-     d_wf_typ dE (typ_union A1 A2)
- | d_wf_typ__intersection : forall (dE:denv) (A1 A2:typ),
-     d_wf_typ dE A1 ->
-     d_wf_typ dE A2 ->
-     d_wf_typ dE (typ_intersection A1 A2).
+      ( forall X , X \notin  L  -> d_wf_typ  ( X ~ dbind_tvar_empty  ++  Ψ )   ( open_typ_wrt_typ A (typ_var_f X) )  )  ->
+     d_wf_typ Ψ (typ_all A)
+ | d_wf_typ__union : forall (Ψ:denv) (A1 A2:typ),
+     d_wf_typ Ψ A1 ->
+     d_wf_typ Ψ A2 ->
+     d_wf_typ Ψ (typ_union A1 A2)
+ | d_wf_typ__intersection : forall (Ψ:denv) (A1 A2:typ),
+     d_wf_typ Ψ A1 ->
+     d_wf_typ Ψ A2 ->
+     d_wf_typ Ψ (typ_intersection A1 A2).
 
 (* defns J_d_wf_exp *)
 Inductive d_wf_exp : denv -> exp -> Prop :=    (* defn d_wf_exp *)
- | d_wf_exp__unit : forall (dE:denv),
-     d_wf_exp dE exp_unit
- | d_wf_exp__var : forall (dE:denv) (x:expvar) (A:typ),
-      binds ( x )  ( (dbind_typ A) ) ( dE )  ->
-     d_wf_exp dE (exp_var_f x)
- | d_wf_exp__abs : forall (L:vars) (dE:denv) (e:exp) (T:typ),
-     d_wf_typ dE T ->
-      ( forall x , x \notin  L  -> d_wf_exp  ( x ~ (dbind_typ T)  ++  dE )   ( open_exp_wrt_exp e (exp_var_f x) )  )  ->
-     d_wf_exp dE (exp_abs e)
- | d_wf_exp__app : forall (dE:denv) (e1 e2:exp),
-     d_wf_exp dE e1 ->
-     d_wf_exp dE e2 ->
-     d_wf_exp dE (exp_app e1 e2)
- | d_wf_exp__tabs : forall (L:vars) (dE:denv) (body5:body),
-      ( forall X , X \notin  L  -> d_wf_body  ( X ~ dbind_tvar_empty  ++  dE )   ( open_body_wrt_typ body5 (typ_var_f X) )  )  ->
-     d_wf_exp dE (exp_tabs body5)
- | d_wf_exp__tapp : forall (dE:denv) (e:exp) (A:typ),
-     d_wf_typ dE A ->
-     d_wf_exp dE e ->
-     d_wf_exp dE (exp_tapp e A)
- | d_wf_exp__anno : forall (dE:denv) (e:exp) (A:typ),
-     d_wf_typ dE A ->
-     d_wf_exp dE e ->
-     d_wf_exp dE (exp_anno e A)
+ | d_wf_exp__unit : forall (Ψ:denv),
+     d_wf_exp Ψ exp_unit
+ | d_wf_exp__var : forall (Ψ:denv) (x:expvar) (A:typ),
+      binds ( x )  ( (dbind_typ A) ) ( Ψ )  ->
+     d_wf_exp Ψ (exp_var_f x)
+ | d_wf_exp__abs : forall (L:vars) (Ψ:denv) (e:exp) (T:typ),
+     d_wf_typ Ψ T ->
+      ( forall x , x \notin  L  -> d_wf_exp  ( x ~ (dbind_typ T)  ++  Ψ )   ( open_exp_wrt_exp e (exp_var_f x) )  )  ->
+     d_wf_exp Ψ (exp_abs e)
+ | d_wf_exp__app : forall (Ψ:denv) (e1 e2:exp),
+     d_wf_exp Ψ e1 ->
+     d_wf_exp Ψ e2 ->
+     d_wf_exp Ψ (exp_app e1 e2)
+ | d_wf_exp__tabs : forall (L:vars) (Ψ:denv) (body5:body),
+      ( forall X , X \notin  L  -> d_wf_body  ( X ~ dbind_tvar_empty  ++  Ψ )   ( open_body_wrt_typ body5 (typ_var_f X) )  )  ->
+     d_wf_exp Ψ (exp_tabs body5)
+ | d_wf_exp__tapp : forall (Ψ:denv) (e:exp) (A:typ),
+     d_wf_typ Ψ A ->
+     d_wf_exp Ψ e ->
+     d_wf_exp Ψ (exp_tapp e A)
+ | d_wf_exp__anno : forall (Ψ:denv) (e:exp) (A:typ),
+     d_wf_typ Ψ A ->
+     d_wf_exp Ψ e ->
+     d_wf_exp Ψ (exp_anno e A)
 with d_wf_body : denv -> body -> Prop :=    (* defn d_wf_body *)
- | d_wf_body__anno : forall (dE:denv) (e:exp) (A:typ),
-     d_wf_typ dE A ->
-     d_wf_exp dE e ->
-     d_wf_body dE (body_anno e A).
+ | d_wf_body__anno : forall (Ψ:denv) (e:exp) (A:typ),
+     d_wf_typ Ψ A ->
+     d_wf_exp Ψ e ->
+     d_wf_body Ψ (body_anno e A).
 
 (* defns J_d_wf_env *)
 Inductive d_wf_env : denv -> Prop :=    (* defn d_wf_env *)
  | d_wf_env__empty : 
      d_wf_env  nil 
- | d_wf_env__tvar : forall (dE:denv) (X:typvar),
-     d_wf_env dE ->
-      ( X   `notin` dom ( dE ))  ->
-     d_wf_env  ( X ~ dbind_tvar_empty  ++  dE ) 
- | d_wf_env__stvar : forall (dE:denv) (X:typvar),
-     d_wf_env dE ->
-      ( X   `notin` dom ( dE ))  ->
-     d_wf_env  ( X ~ dbind_stvar_empty  ++  dE ) 
- | d_wf_env__typ : forall (dE:denv) (x:expvar) (A:typ),
-     d_wf_env dE ->
-     d_wf_typ dE A ->
-      ( x   `notin` dom ( dE ))  ->
-     d_wf_env  ( x ~ (dbind_typ A)  ++  dE ) .
+ | d_wf_env__tvar : forall (Ψ:denv) (X:typvar),
+     d_wf_env Ψ ->
+      ( X   `notin` dom ( Ψ ))  ->
+     d_wf_env  ( X ~ dbind_tvar_empty  ++  Ψ ) 
+ | d_wf_env__stvar : forall (Ψ:denv) (X:typvar),
+     d_wf_env Ψ ->
+      ( X   `notin` dom ( Ψ ))  ->
+     d_wf_env  ( X ~ dbind_stvar_empty  ++  Ψ ) 
+ | d_wf_env__typ : forall (Ψ:denv) (x:expvar) (A:typ),
+     d_wf_env Ψ ->
+     d_wf_typ Ψ A ->
+      ( x   `notin` dom ( Ψ ))  ->
+     d_wf_env  ( x ~ (dbind_typ A)  ++  Ψ ) .
 
 (* defns J_d_mono_typ *)
 Inductive d_mono_typ : denv -> typ -> Prop :=    (* defn d_mono_typ *)
- | d_mono_typ__unit : forall (dE:denv),
-     d_mono_typ dE typ_unit
- | d_mono_typ__tvar : forall (dE:denv) (X:typvar),
-      binds ( X )  ( dbind_tvar_empty ) ( dE )  ->
-     d_mono_typ dE (typ_var_f X)
- | d_mono_typ__arrow : forall (dE:denv) (A1 A2:typ),
-     d_mono_typ dE A1 ->
-     d_mono_typ dE A2 ->
-     d_mono_typ dE (typ_arrow A1 A2)
- | d_mono_typ__intersection : forall (dE:denv) (A1 A2:typ),
-     d_mono_typ dE A1 ->
-     d_mono_typ dE A2 ->
-     d_mono_typ dE (typ_intersection A1 A2)
- | d_mono_typ__union : forall (dE:denv) (A1 A2:typ),
-     d_mono_typ dE A1 ->
-     d_mono_typ dE A2 ->
-     d_mono_typ dE (typ_union A1 A2).
+ | d_mono_typ__unit : forall (Ψ:denv),
+     d_mono_typ Ψ typ_unit
+ | d_mono_typ__tvar : forall (Ψ:denv) (X:typvar),
+      binds ( X )  ( dbind_tvar_empty ) ( Ψ )  ->
+     d_mono_typ Ψ (typ_var_f X)
+ | d_mono_typ__arrow : forall (Ψ:denv) (A1 A2:typ),
+     d_mono_typ Ψ A1 ->
+     d_mono_typ Ψ A2 ->
+     d_mono_typ Ψ (typ_arrow A1 A2)
+ | d_mono_typ__intersection : forall (Ψ:denv) (A1 A2:typ),
+     d_mono_typ Ψ A1 ->
+     d_mono_typ Ψ A2 ->
+     d_mono_typ Ψ (typ_intersection A1 A2)
+ | d_mono_typ__union : forall (Ψ:denv) (A1 A2:typ),
+     d_mono_typ Ψ A1 ->
+     d_mono_typ Ψ A2 ->
+     d_mono_typ Ψ (typ_union A1 A2).
 
 (* defns J_d_wf_cont *)
 Inductive d_wf_cont : denv -> cont -> Prop :=    (* defn d_wf_cont *)
- | d_wf_cont__infabs : forall (dE:denv) (c:cont),
-     d_wf_cont dE c ->
-     d_wf_cont dE (cont_infabs c)
- | d_wf_cont__infabsunion : forall (dE:denv) (A:typ) (c:cont),
-     d_wf_typ dE A ->
-     d_wf_cont dE c ->
-     d_wf_cont dE (cont_infabsunion A c)
- | d_wf_cont__infapp : forall (dE:denv) (e:exp) (c:cont),
-     d_wf_exp dE e ->
-     d_wf_cont dE c ->
-     d_wf_cont dE (cont_infapp e c)
- | d_wf_cont__inftapp : forall (dE:denv) (A:typ) (c:cont),
-     d_wf_typ dE A ->
-     d_wf_cont dE c ->
-     d_wf_cont dE (cont_inftapp A c)
- | d_wf_cont__inftappunion : forall (dE:denv) (A1 A2:typ) (c:cont),
-     d_wf_typ dE A1 ->
-     d_wf_typ dE A2 ->
-     d_wf_cont dE c ->
-     d_wf_cont dE (cont_inftappunion A1 A2 c)
- | d_wf_cont__unioninftapp : forall (dE:denv) (A:typ) (c:cont),
-     d_wf_typ dE A ->
-     d_wf_cont dE c ->
-     d_wf_cont dE (cont_unioninftapp A c)
- | d_wf_cont__unioninfabs : forall (dE:denv) (A:typ) (c:cont),
-     d_wf_typ dE A ->
-     d_wf_cont dE c ->
-     d_wf_cont dE (cont_unioninfabs A c)
- | d_wf_cont__sub : forall (dE:denv) (A:typ),
-     d_wf_typ dE A ->
-     d_wf_cont dE (cont_sub A).
+ | d_wf_cont__infabs : forall (Ψ:denv) (c:cont),
+     d_wf_cont Ψ c ->
+     d_wf_cont Ψ (cont_infabs c)
+ | d_wf_cont__infabsunion : forall (Ψ:denv) (A:typ) (c:cont),
+     d_wf_typ Ψ A ->
+     d_wf_cont Ψ c ->
+     d_wf_cont Ψ (cont_infabsunion A c)
+ | d_wf_cont__infapp : forall (Ψ:denv) (e:exp) (c:cont),
+     d_wf_exp Ψ e ->
+     d_wf_cont Ψ c ->
+     d_wf_cont Ψ (cont_infapp e c)
+ | d_wf_cont__inftapp : forall (Ψ:denv) (A:typ) (c:cont),
+     d_wf_typ Ψ A ->
+     d_wf_cont Ψ c ->
+     d_wf_cont Ψ (cont_inftapp A c)
+ | d_wf_cont__inftappunion : forall (Ψ:denv) (A1 A2:typ) (c:cont),
+     d_wf_typ Ψ A1 ->
+     d_wf_typ Ψ A2 ->
+     d_wf_cont Ψ c ->
+     d_wf_cont Ψ (cont_inftappunion A1 A2 c)
+ | d_wf_cont__unioninftapp : forall (Ψ:denv) (A:typ) (c:cont),
+     d_wf_typ Ψ A ->
+     d_wf_cont Ψ c ->
+     d_wf_cont Ψ (cont_unioninftapp A c)
+ | d_wf_cont__unioninfabs : forall (Ψ:denv) (A:typ) (c:cont),
+     d_wf_typ Ψ A ->
+     d_wf_cont Ψ c ->
+     d_wf_cont Ψ (cont_unioninfabs A c)
+ | d_wf_cont__sub : forall (Ψ:denv) (A:typ),
+     d_wf_typ Ψ A ->
+     d_wf_cont Ψ (cont_sub A).
 
 (* defns J_d_wf_work *)
 Inductive d_wf_work : denv -> work -> Prop :=    (* defn d_wf_work *)
- | d_wf_work__infer : forall (dE:denv) (e:exp) (c:cont),
-     d_wf_exp dE e ->
-     d_wf_cont dE c ->
-     d_wf_work dE (work_infer e c)
- | d_wf_work__check : forall (dE:denv) (e:exp) (A:typ),
-     d_wf_exp dE e ->
-     d_wf_typ dE A ->
-     d_wf_work dE (work_check e A)
- | d_wf_work__infabs : forall (dE:denv) (A:typ) (c:cont),
-     d_wf_typ dE A ->
-     d_wf_cont dE c ->
-     d_wf_work dE (work_infabs A c)
- | d_wf_work__infabsunion : forall (dE:denv) (A1 A2:typ) (c:cont),
-     d_wf_typ dE A1 ->
-     d_wf_typ dE A2 ->
-     d_wf_cont dE c ->
-     d_wf_work dE (work_infabsunion A1 A2 c)
- | d_wf_work__infapp : forall (dE:denv) (A:typ) (e:exp) (c:cont),
-     d_wf_typ dE A ->
-     d_wf_exp dE e ->
-     d_wf_cont dE c ->
-     d_wf_work dE (work_infapp A e c)
- | d_wf_work__inftapp : forall (dE:denv) (A1 A2:typ) (c:cont),
-     d_wf_typ dE A1 ->
-     d_wf_typ dE A2 ->
-     d_wf_cont dE c ->
-     d_wf_work dE (work_inftapp A1 A2 c)
- | d_wf_work__inftappunion : forall (dE:denv) (A1 A2 B:typ) (c:cont),
-     d_wf_typ dE A1 ->
-     d_wf_typ dE A2 ->
-     d_wf_typ dE B ->
-     d_wf_cont dE c ->
-     d_wf_work dE (work_inftappunion A1 A2 B c)
- | d_wf_work__unioninftapp : forall (dE:denv) (A1 A2:typ) (c:cont),
-     d_wf_typ dE A1 ->
-     d_wf_typ dE A2 ->
-     d_wf_cont dE c ->
-     d_wf_work dE (work_unioninftapp A1 A2 c)
- | d_wf_work__unioninfabs : forall (dE:denv) (A1 A2:typ) (c:cont),
-     d_wf_typ dE A1 ->
-     d_wf_typ dE A2 ->
-     d_wf_cont dE c ->
-     d_wf_work dE (work_unioninfabs A1 A2 c)
- | d_wf_work__sub : forall (dE:denv) (A1 A2:typ),
-     d_wf_typ dE A1 ->
-     d_wf_typ dE A2 ->
-     d_wf_work dE (work_sub A1 A2)
- | d_wf_work__apply : forall (dE:denv) (c:cont) (A:typ),
-     d_wf_typ dE A ->
-     d_wf_cont dE c ->
-     d_wf_work dE (work_apply c A).
+ | d_wf_work__infer : forall (Ψ:denv) (e:exp) (c:cont),
+     d_wf_exp Ψ e ->
+     d_wf_cont Ψ c ->
+     d_wf_work Ψ (work_infer e c)
+ | d_wf_work__check : forall (Ψ:denv) (e:exp) (A:typ),
+     d_wf_exp Ψ e ->
+     d_wf_typ Ψ A ->
+     d_wf_work Ψ (work_check e A)
+ | d_wf_work__infabs : forall (Ψ:denv) (A:typ) (c:cont),
+     d_wf_typ Ψ A ->
+     d_wf_cont Ψ c ->
+     d_wf_work Ψ (work_infabs A c)
+ | d_wf_work__infabsunion : forall (Ψ:denv) (A1 A2:typ) (c:cont),
+     d_wf_typ Ψ A1 ->
+     d_wf_typ Ψ A2 ->
+     d_wf_cont Ψ c ->
+     d_wf_work Ψ (work_infabsunion A1 A2 c)
+ | d_wf_work__infapp : forall (Ψ:denv) (A:typ) (e:exp) (c:cont),
+     d_wf_typ Ψ A ->
+     d_wf_exp Ψ e ->
+     d_wf_cont Ψ c ->
+     d_wf_work Ψ (work_infapp A e c)
+ | d_wf_work__inftapp : forall (Ψ:denv) (A1 A2:typ) (c:cont),
+     d_wf_typ Ψ A1 ->
+     d_wf_typ Ψ A2 ->
+     d_wf_cont Ψ c ->
+     d_wf_work Ψ (work_inftapp A1 A2 c)
+ | d_wf_work__inftappunion : forall (Ψ:denv) (A1 A2 B:typ) (c:cont),
+     d_wf_typ Ψ A1 ->
+     d_wf_typ Ψ A2 ->
+     d_wf_typ Ψ B ->
+     d_wf_cont Ψ c ->
+     d_wf_work Ψ (work_inftappunion A1 A2 B c)
+ | d_wf_work__unioninftapp : forall (Ψ:denv) (A1 A2:typ) (c:cont),
+     d_wf_typ Ψ A1 ->
+     d_wf_typ Ψ A2 ->
+     d_wf_cont Ψ c ->
+     d_wf_work Ψ (work_unioninftapp A1 A2 c)
+ | d_wf_work__unioninfabs : forall (Ψ:denv) (A1 A2:typ) (c:cont),
+     d_wf_typ Ψ A1 ->
+     d_wf_typ Ψ A2 ->
+     d_wf_cont Ψ c ->
+     d_wf_work Ψ (work_unioninfabs A1 A2 c)
+ | d_wf_work__sub : forall (Ψ:denv) (A1 A2:typ),
+     d_wf_typ Ψ A1 ->
+     d_wf_typ Ψ A2 ->
+     d_wf_work Ψ (work_sub A1 A2)
+ | d_wf_work__apply : forall (Ψ:denv) (c:cont) (A:typ),
+     d_wf_typ Ψ A ->
+     d_wf_cont Ψ c ->
+     d_wf_work Ψ (work_apply c A).
 
 (* defns Jd_wf_wl *)
 Inductive d_wf_wl : dworklist -> Prop :=    (* defn d_wf_wl *)
@@ -1405,62 +1405,62 @@ Inductive d_wf_wl : dworklist -> Prop :=    (* defn d_wf_wl *)
 
 (* defns J_d_sub *)
 Inductive d_sub : denv -> typ -> typ -> Prop :=    (* defn d_sub *)
- | d_sub__top : forall (dE:denv) (A1:typ),
-     d_wf_env dE ->
-     d_wf_typ dE A1 ->
-     d_sub dE A1 typ_top
- | d_sub__bot : forall (dE:denv) (B1:typ),
-     d_wf_env dE ->
-     d_wf_typ dE B1 ->
-     d_sub dE typ_bot B1
- | d_sub__unit : forall (dE:denv),
-     d_wf_env dE ->
-     d_sub dE typ_unit typ_unit
- | d_sub__tvar : forall (dE:denv) (X:typvar),
-     d_wf_env dE ->
-     d_wf_typ dE (typ_var_f X) ->
-     d_sub dE (typ_var_f X) (typ_var_f X)
- | d_sub__arrow : forall (dE:denv) (A1 A2 B1 B2:typ),
-     d_sub dE B1 A1 ->
-     d_sub dE A2 B2 ->
-     d_sub dE (typ_arrow A1 A2) (typ_arrow B1 B2)
- | d_sub__all : forall (L:vars) (dE:denv) (A1 B1:typ),
+ | d_sub__top : forall (Ψ:denv) (A1:typ),
+     d_wf_env Ψ ->
+     d_wf_typ Ψ A1 ->
+     d_sub Ψ A1 typ_top
+ | d_sub__bot : forall (Ψ:denv) (B1:typ),
+     d_wf_env Ψ ->
+     d_wf_typ Ψ B1 ->
+     d_sub Ψ typ_bot B1
+ | d_sub__unit : forall (Ψ:denv),
+     d_wf_env Ψ ->
+     d_sub Ψ typ_unit typ_unit
+ | d_sub__tvar : forall (Ψ:denv) (X:typvar),
+     d_wf_env Ψ ->
+     d_wf_typ Ψ (typ_var_f X) ->
+     d_sub Ψ (typ_var_f X) (typ_var_f X)
+ | d_sub__arrow : forall (Ψ:denv) (A1 A2 B1 B2:typ),
+     d_sub Ψ B1 A1 ->
+     d_sub Ψ A2 B2 ->
+     d_sub Ψ (typ_arrow A1 A2) (typ_arrow B1 B2)
+ | d_sub__all : forall (L:vars) (Ψ:denv) (A1 B1:typ),
       ( forall X , X \notin  L  -> ds_in X  ( open_typ_wrt_typ A1 (typ_var_f X) )  )  ->
       ( forall X , X \notin  L  -> ds_in X  ( open_typ_wrt_typ B1 (typ_var_f X) )  )  ->
-      ( forall X , X \notin  L  -> d_sub  ( X ~ dbind_stvar_empty  ++  dE )   ( open_typ_wrt_typ A1 (typ_var_f X) )   ( open_typ_wrt_typ B1 (typ_var_f X) )  )  ->
-     d_sub dE (typ_all A1) (typ_all B1)
- | d_sub__alll : forall (L:vars) (dE:denv) (A1 B1 T1:typ),
+      ( forall X , X \notin  L  -> d_sub  ( X ~ dbind_stvar_empty  ++  Ψ )   ( open_typ_wrt_typ A1 (typ_var_f X) )   ( open_typ_wrt_typ B1 (typ_var_f X) )  )  ->
+     d_sub Ψ (typ_all A1) (typ_all B1)
+ | d_sub__alll : forall (L:vars) (Ψ:denv) (A1 B1 T1:typ),
      neq_all B1 ->
      neq_intersection B1 ->
      neq_union B1 ->
       ( forall X , X \notin  L  -> ds_in X  ( open_typ_wrt_typ A1 (typ_var_f X) )  )  ->
-     d_mono_typ dE T1 ->
-     d_sub dE  (open_typ_wrt_typ  A1   T1 )  B1 ->
-     d_sub dE (typ_all A1) B1
- | d_sub__intersection1 : forall (dE:denv) (A1 B1 B2:typ),
-     d_sub dE A1 B1 ->
-     d_sub dE A1 B2 ->
-     d_sub dE A1 (typ_intersection B1 B2)
- | d_sub__intersection2 : forall (dE:denv) (A1 A2 B1:typ),
-     d_sub dE A1 B1 ->
-     d_wf_typ dE A2 ->
-     d_sub dE (typ_intersection A1 A2) B1
- | d_sub__intersection3 : forall (dE:denv) (A1 A2 B1:typ),
-     d_sub dE A2 B1 ->
-     d_wf_typ dE A1 ->
-     d_sub dE (typ_intersection A1 A2) B1
- | d_sub__union1 : forall (dE:denv) (A1 B1 B2:typ),
-     d_sub dE A1 B1 ->
-     d_wf_typ dE B2 ->
-     d_sub dE A1 (typ_union B1 B2)
- | d_sub__union2 : forall (dE:denv) (A1 B1 B2:typ),
-     d_sub dE A1 B2 ->
-     d_wf_typ dE B1 ->
-     d_sub dE A1 (typ_union B1 B2)
- | d_sub__union3 : forall (dE:denv) (A1 A2 B1:typ),
-     d_sub dE A1 B1 ->
-     d_sub dE A2 B1 ->
-     d_sub dE (typ_union A1 A2) B1.
+     d_mono_typ Ψ T1 ->
+     d_sub Ψ  (open_typ_wrt_typ  A1   T1 )  B1 ->
+     d_sub Ψ (typ_all A1) B1
+ | d_sub__intersection1 : forall (Ψ:denv) (A1 B1 B2:typ),
+     d_sub Ψ A1 B1 ->
+     d_sub Ψ A1 B2 ->
+     d_sub Ψ A1 (typ_intersection B1 B2)
+ | d_sub__intersection2 : forall (Ψ:denv) (A1 A2 B1:typ),
+     d_sub Ψ A1 B1 ->
+     d_wf_typ Ψ A2 ->
+     d_sub Ψ (typ_intersection A1 A2) B1
+ | d_sub__intersection3 : forall (Ψ:denv) (A1 A2 B1:typ),
+     d_sub Ψ A2 B1 ->
+     d_wf_typ Ψ A1 ->
+     d_sub Ψ (typ_intersection A1 A2) B1
+ | d_sub__union1 : forall (Ψ:denv) (A1 B1 B2:typ),
+     d_sub Ψ A1 B1 ->
+     d_wf_typ Ψ B2 ->
+     d_sub Ψ A1 (typ_union B1 B2)
+ | d_sub__union2 : forall (Ψ:denv) (A1 B1 B2:typ),
+     d_sub Ψ A1 B2 ->
+     d_wf_typ Ψ B1 ->
+     d_sub Ψ A1 (typ_union B1 B2)
+ | d_sub__union3 : forall (Ψ:denv) (A1 A2 B1:typ),
+     d_sub Ψ A1 B1 ->
+     d_sub Ψ A2 B1 ->
+     d_sub Ψ (typ_union A1 A2) B1.
 
 (* defns J_a_strong_mono_typ *)
 Inductive a_smono_typ : aenv -> typ -> Prop :=    (* defn a_smono_typ *)

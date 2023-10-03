@@ -550,13 +550,13 @@ Proof.
 Admitted. *)
 
 
-Theorem d_sub_tvar_ind_sub_all : forall E A1 B1,
+Theorem d_sub_tvar_ind_sub_all : forall E A B,
   ⊢ E ->
-  d_sub_tvar_inv (typ_all A1) ->
-  E ⊢ typ_all A1 ->
-  d_mono_typ E B1 ->
-  E ⊢ B1 ->
-  E ⊢ typ_all A1 <: B1.
+  d_sub_tvar_inv (typ_all A) ->
+  E ⊢ typ_all A ->
+  d_mono_typ E B ->
+  E ⊢ B ->
+  E ⊢ typ_all A <: B.
 Proof.
   intros * Hwfenv H Hwft Hmono Hwft2.
   specialize (d_mono_ordiu_complete _ _ Hmono). intros.
@@ -569,8 +569,8 @@ Proof.
     + eapply d_ord_mono_neq_union; eauto.
     + auto.
     + auto.
-    + inst_cofinites_by (L `union` L0 `union` ftvar_in_typ A1 `union` dom E) using_name X.
-      apply d_sub_tvar_ind_open_subst with (E:= E) (B1:=T1) (F:=nil) in H; auto.
+    + inst_cofinites_by (L `union` L0 `union` ftvar_in_typ A `union` dom dE) using_name X.
+      apply d_sub_tvar_ind_open_subst with (E:= dE) (B1:=T1) (F:=nil) in H; auto.
       * rewrite typ_subst_open_var in H; eauto.
       * simpl. constructor; auto.
   - inversion Hmono. inversion Hwft2. auto.
@@ -697,13 +697,13 @@ Admitted.
 
 
 
-Theorem d_sub_open_mono_stvar_false: forall n1 n2 E A1 T1 X L,
-    d_typ_order (A1 ^^ᵈ T1) < n1 ->
-    d_typ_size (A1 ^^ᵈ T1) < n2 ->
+Theorem d_sub_open_mono_stvar_false: forall n1 n2 E A T X L,
+    d_typ_order (A ^^ᵈ T) < n1 ->
+    d_typ_size (A ^^ᵈ T) < n2 ->
     X ~ ▪ ∈ E ->
-    E ⊢ A1 ^^ᵈ T1 <: typ_var_f X ->
-    (forall X, X `notin` L -> ds_in X (A1 ^ᵈ X)) ->
-    d_mono_typ E T1 ->
+    E ⊢ A ^^ᵈ T <: typ_var_f X ->
+    (forall X, X `notin` L -> ds_in X (A ^ᵈ X)) ->
+    d_mono_typ E T ->
     False.
 Proof.
   intro n1. induction n1.
@@ -711,14 +711,14 @@ Proof.
   - intros n2. induction n2.
     + intros. inversion H0.
     + intros. dependent destruction H2; rename x into Heq.
-      * destruct A1; simpl in *; try solve [inversion Heq].
+      * destruct A; simpl in *; try solve [inversion Heq].
         -- inst_cofinites_by L using_name X. inversion H4.
         -- destruct n.
            ++ unfold open_typ_wrt_typ in Heq. simpl in *.
               subst. inversion H5.
            ++ unfold open_typ_wrt_typ in Heq. simpl in *.
               inversion Heq.
-      * destruct A1; simpl in *; try solve [inversion Heq].
+      * destruct A; simpl in *; try solve [inversion Heq].
         -- destruct n.
           ++ unfold open_typ_wrt_typ in Heq. simpl in *.
             subst. dependent destruction H5. admit.
@@ -726,7 +726,7 @@ Proof.
             inversion Heq.
         -- inst_cofinites_by (L `union` singleton X0) using_name X. inversion H4.
            admit.
-      * destruct A1; simpl in *; try solve [inversion Heq].
+      * destruct A; simpl in *; try solve [inversion Heq].
         -- destruct n.
           ++ unfold open_typ_wrt_typ in Heq. simpl in Heq.
               subst. dependent destruction H9.
@@ -734,7 +734,7 @@ Proof.
              inversion Heq.
         -- dependent destruction Heq.
            eapply IHn1; eauto. erewrite d_open_mono_same_order; eauto. lia.
-      * destruct A1; simpl in *; try solve [inversion Heq].
+      * destruct A; simpl in *; try solve [inversion Heq].
         -- destruct n.
            ++ unfold open_typ_wrt_typ in H, H0, Heq. simpl in *.
               subst. dependent destruction H5.
@@ -744,7 +744,7 @@ Proof.
         -- dependent destruction Heq. unfold open_typ_wrt_typ in *.
            eapply IHn2 with (L:=L); eauto. lia. lia.
            intros. inst_cofinites_with X0. dependent destruction H4; auto.
-      * destruct A1; simpl in *; try solve [inversion Heq].
+      * destruct A; simpl in *; try solve [inversion Heq].
         -- destruct n.
            ++ unfold open_typ_wrt_typ in H, H0, Heq. simpl in *.
               subst. dependent destruction H5.
@@ -754,7 +754,7 @@ Proof.
         -- dependent destruction Heq. unfold open_typ_wrt_typ in *.
            eapply IHn2 with (L:=L); eauto. lia. lia.
            intros. inst_cofinites_with X0. dependent destruction H4; auto.
-      * destruct A1; simpl in *; try solve [inversion Heq].
+      * destruct A; simpl in *; try solve [inversion Heq].
         -- destruct n.
            ++ unfold open_typ_wrt_typ in H, H0, Heq. simpl in *.
               subst. dependent destruction H4.
@@ -766,9 +766,9 @@ Proof.
            intros. inst_cofinites_with X0. dependent destruction H3; auto.
 Admitted.
 
-Theorem d_mono_notin_stvar : forall F E T X,
-  F ++ (X ~ dbind_stvar_empty) ++ E ⊢ T -> d_mono_typ (F ++ (X ~ dbind_stvar_empty) ++ E) T ->
-  X `notin` ftvar_in_typ T.
+Theorem d_mono_notin_stvar : forall F E A X,
+  F ++ (X ~ dbind_stvar_empty) ++ E ⊢ A -> d_mono_typ (F ++ (X ~ dbind_stvar_empty) ++ E) A ->
+  X `notin` ftvar_in_typ A.
 Proof.
   intros. dependent induction H0; simpl in *; auto.
   - admit.
@@ -779,10 +779,10 @@ Admitted.
 
 (* bookmark *)
 
-Theorem d_sub_subst_stvar : forall E X F A1 B1 T1,
-  F ++ (X ~ dbind_stvar_empty) ++ E ⊢ A1 <: B1 ->
-  E ⊢ T1 ->
-  map (subst_tvar_in_dbind T1 X) F ++ E ⊢ {T1 /ᵗ X} A1 <: {T1 /ᵗ X} B1.
+Theorem d_sub_subst_stvar : forall E X F A B T,
+  F ++ (X ~ dbind_stvar_empty) ++ E ⊢ A <: B ->
+  E ⊢ T ->
+  map (subst_tvar_in_dbind T X) F ++ E ⊢ {T /ᵗ X} A <: {T /ᵗ X} B.
 Proof with subst; eauto using dwf_typ_weaken_head with subtyping.
   intros. dependent induction H; try solve [simpl in *; eauto with subtyping].
   - eapply dsub_refl; auto...
@@ -792,7 +792,7 @@ Proof with subst; eauto using dwf_typ_weaken_head with subtyping.
     + rewrite typ_subst_open_comm; auto...
       apply ftv_sin_typ_subst_inv; auto...
     + repeat rewrite typ_subst_open_comm; eauto...
-      rewrite_env (map (subst_tvar_in_dbind T1 X) (X1 ~ ▪ ++ F) ++ E).
+      rewrite_env (map (subst_tvar_in_dbind T X) (X1 ~ ▪ ++ F) ++ E).
       eapply H2; auto...
   - simpl. destruct (dneq_all_intersection_union_subst_stv T1 T2 X) as [[? [? ?]] | ?]; eauto...
     + eapply d_sub_alll with (L:=L `union` singleton X) (T2:={T2 /ᵗ X} T0); eauto...
@@ -1155,7 +1155,7 @@ Qed.
 Theorem d_sub_size_subst_stvar : forall E F X S1 T1 T2 n,
   F ++ (X ~ dbind_stvar_empty) ++ E ⊢ S1 <: T1 | n ->
   E ⊢ T2 ->
-  exists n', map (d_subst_stv_in_binding T2 X) F ++ E ⊢ {T2 /ᵗ X} S1 <: {T2 /ᵗ X} T1 | n'.
+  exists n', map (subst_tvar_in_dbind T2 X) F ++ E ⊢ {T2 /ᵗ X} S1 <: {T2 /ᵗ X} T1 | n'.
 Proof.
   intros.
   apply d_sub_size_sound in H.
@@ -1196,9 +1196,9 @@ Proof with auto with wf.
   intros. induction H; eauto...
 Qed.
 
-Theorem d_sub_mono_bot_false : forall E T1,
-  dmono_typ T1 ->
-  E ⊢ T1 <: typ_bot ->
+Theorem d_sub_mono_bot_false : forall E A,
+  d_mono_typ E A ->
+  E ⊢ A <: typ_bot ->
   False.
 Proof.
   intros. induction H; try solve [(dependent destruction H0); auto].
@@ -1206,12 +1206,12 @@ Qed.
 
 
 
-Theorem d_sub_open_mono_bot_false: forall n1 n2 E S1 T1 L,
-    d_typ_order (T1 ^^ᵈ S1) < n1 ->
-    d_typ_size (T1 ^^ᵈ S1) < n2 ->
-    E ⊢ T1 ^^ᵈ S1 <: typ_bot ->
-    (forall X, X `notin` L -> ds_in X (T1 ^ᵈ X)) ->
-    dmono_typ S1 ->
+Theorem d_sub_open_mono_bot_false: forall n1 n2 E A T L,
+    d_typ_order (A ^^ᵈ T) < n1 ->
+    d_typ_size (A ^^ᵈ T) < n2 ->
+    E ⊢ A ^^ᵈ T <: typ_bot ->
+    (forall X, X `notin` L -> ds_in X (A ^ᵈ X)) ->
+    d_mono_typ E T ->
     False.
 Proof.
   intro n1. induction n1.
