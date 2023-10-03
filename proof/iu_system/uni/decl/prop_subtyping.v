@@ -1054,7 +1054,7 @@ Proof with eauto with sub.
   - pick fresh X.
     destruct (H2 X) as [n]. solve_notin.
     exists (S n).
-    eapply d_subs__all with (L:=L `union` ftvar_in_typ A1 `union` ftvar_in_typ B1 `union` (dom Ψ)); intros; eauto.
+    eapply d_subs__all with (L:=L `union` ftvar_in_typ A `union` ftvar_in_typ B `union` (dom Ψ)); intros; eauto.
     + rewrite_env (nil ++ X0 ~ ▪ ++ Ψ). rewrite_env (nil ++ X ~ ▪ ++ Ψ) in H3.
       applys d_sub_size_rename H3; solve_notin.
   - destruct IHd_sub as [n]. eauto...
@@ -1455,7 +1455,7 @@ Proof with auto with trans.
            forwards HW: d_sub_dwft_sized_1 Hsub1.
            rewrite_env (nil ++ Ψ) in HW.
             admit.
-        -- eapply d_sub__alll with (T1:=T1); auto.
+        -- eapply d_sub__alll with (T:=T1); auto.
            eapply d_sub_size_sound; eauto.
       (* forall a. A < bot < C *)
       * apply d_sub_size_sound in Hsub1.
@@ -1474,7 +1474,7 @@ Proof with auto with trans.
            forwards HW: d_sub_dwft_sized_1 Hsub1.
            rewrite_env (nil ++ Ψ) in HW.
            admit.
-        -- eapply d_sub__alll with (T1:=T1); eauto...
+        -- eapply d_sub__alll with (T:=T1); eauto...
             apply d_sub_size_sound in Hsub1. auto.
       (* forall a. A < X < C *)
       * apply d_sub_size_sound in Hsub1.
@@ -1487,7 +1487,7 @@ Proof with auto with trans.
            rewrite_env (nil ++ Ψ) in HW.
            admit.
         -- assert (Ψ ⊢ B1) by applys* d_sub_dwft_sized_1. assert (Ψ ⊢ B2) by applys* d_sub_dwft_sized_2.
-          eapply d_sub__alll with (T1:=T1); eauto...
+          eapply d_sub__alll with (T:=T1); eauto...
           eapply IHn_dsub_size with (B:=typ_arrow A0 A2) (n2:=S(n1+n2)); eauto...
       * inversion H.
       * inversion H1.
