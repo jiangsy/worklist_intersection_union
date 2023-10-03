@@ -11,11 +11,11 @@ Require Import uni.prop_basic.
 Require Import ln_utils.
 
 
-Definition wf_dom : forall {Ψ}, ⊢ Ψ -> atoms.
+(* Definition wf_dom : forall {Ψ}, ⊢ Ψ -> atoms.
 Proof.
   intros.
   set (x := dom Ψ). exact x.
-Defined.
+Defined. *)
 
 
 Hint Constructors dwf_typ: core.
@@ -179,7 +179,7 @@ end.
 Lemma d_sub_subenv: forall Ψ A B,
   Ψ ⊢ A <: B -> forall Ψ', d_subenv Ψ' Ψ -> Ψ' ⊢ A <: B.
 Proof.
-  intros Ψ S1 T1 Hsub.
+  intros Ψ A B Hsub.
   induction Hsub; try solve [econstructor; solve_wf_subenv].
   - econstructor; auto.
   - intros. econstructor; auto. intros. inst_cofinites_with SX.
@@ -351,7 +351,7 @@ Proof with auto with typing.
       constructor; auto.
       inst_cofinites_for dwftyp_all; intros.
       * inst_cofinites_with X.
-        replace (S1 ^ᵈ X) with ({typ_var_f X /ₛᵈ X} (S1 ^^ᵈ (typ_svar X))).
+        replace (S1 ^ᵈ X) with ({typ_var_f X /ᵗ X} (S1 ^^ᵈ (typ_svar X))).
         apply ftv_sins_typ_tvar_fstv_sin_typ; auto.
         erewrite typ_subst_open_stvar; auto.
       * inst_cofinites_with X.
@@ -455,33 +455,33 @@ Qed.
 Hint Constructors d_infabs : typing.
 
 
-Lemma d_infabs_wft : forall Ψ A1 B1 C1,
-  Ψ ⊢ A1 ▹ B1 → C1 ->
-  ⊢ Ψ /\ Ψ ⊢ A1 /\ Ψ ⊢ B1 /\ Ψ ⊢ C1.
+Lemma d_infabs_wft : forall Ψ A B C,
+  Ψ ⊢ A ▹ B → C ->
+  ⊢ Ψ /\ Ψ ⊢ A /\ Ψ ⊢ B /\ Ψ ⊢ C.
 Proof.
   intros. induction H; intuition.
 Qed.
 
-Corollary d_infabs_wft_0 : forall Ψ A1 B1 C1,
-  Ψ ⊢ A1 ▹ B1 → C1 -> ⊢ Ψ.
+Corollary d_infabs_wft_0 : forall Ψ A B C,
+  Ψ ⊢ A ▹ B → C -> ⊢ Ψ.
 Proof.
   intros. forwards*: d_infabs_wft H.
 Qed.
 
-Corollary d_infabs_wft_1 : forall Ψ A1 B1 C1,
-  Ψ ⊢ A1 ▹ B1 → C1 -> Ψ ⊢ A1.
+Corollary d_infabs_wft_1 : forall Ψ A B C,
+  Ψ ⊢ A ▹ B → C -> Ψ ⊢ A.
 Proof.
   intros. forwards*: d_infabs_wft H.
 Qed.
 
-Corollary d_infabs_wft_2 : forall Ψ A1 B1 C1,
-  Ψ ⊢ A1 ▹ B1 → C1 -> Ψ ⊢ B1.
+Corollary d_infabs_wft_2 : forall Ψ A B C,
+  Ψ ⊢ A ▹ B → C -> Ψ ⊢ B.
 Proof.
   intros. forwards*: d_infabs_wft H.
 Qed.
 
-Corollary d_infabs_wft_3 : forall Ψ A1 B1 C1,
-  Ψ ⊢ A1 ▹ B1 → C1 -> Ψ ⊢ C1.
+Corollary d_infabs_wft_3 : forall Ψ A B C,
+  Ψ ⊢ A ▹ B → C -> Ψ ⊢ C.
 Proof.
   intros. forwards*: d_infabs_wft H.
 Qed.
