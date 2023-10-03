@@ -687,8 +687,8 @@ Proof.
 Qed.
 
 
-Lemma d_chk_inf_wf_env: forall Ψ e mode A1,
-  d_typing Ψ e mode A1 ->
+Lemma d_chk_inf_wf_env: forall Ψ e mode A,
+  d_typing Ψ e mode A ->
   ⊢ Ψ.
 Proof.
   intros. induction H; auto.
@@ -697,9 +697,9 @@ Proof.
   - inst_cofinites_by L. inversion H1; auto.
 Qed.
 
-Lemma d_chk_inf_wft: forall Ψ e mode A1,
-  d_typing Ψ e mode A1 ->
-  Ψ ⊢ A1.
+Lemma d_chk_inf_wft: forall Ψ e mode A,
+  d_typing Ψ e mode A ->
+  Ψ ⊢ A.
 Proof.
   intros. induction H; auto.
   - admit. 
@@ -711,15 +711,15 @@ Admitted.
 #[export] Hint Immediate d_sub_dwft_0 d_sub_dwft_1 d_sub_dwft_2 : core.
 #[export] Hint Resolve d_sub_dwft_0 d_sub_dwft_1 d_sub_dwft_2 : subtyping.
 
-Theorem d_chk_inf_subsumption : forall n1 n2 n3 Ψ Ψ' e T1 mode,
+Theorem d_chk_inf_subsumption : forall n1 n2 n3 Ψ Ψ' e A mode,
   dexp_size e < n1 ->
   dmode_size mode < n2 ->
-  dtyp_size T1 < n3 ->
-  d_typing Ψ e mode T1 ->
+  dtyp_size A < n3 ->
+  d_typing Ψ e mode Ψ ->
   d_subenv Ψ' Ψ ->
     match mode with
-    | typingmode__chk => forall S1, Ψ ⊢ T1 <: S1 -> Ψ' ⊢ e ⇐ S1
-    | typingmode__inf => exists S1, Ψ ⊢ S1 <: T1 /\ Ψ' ⊢ e ⇒ S1
+    | typingmode__chk => forall A', Ψ ⊢ A <: A' -> Ψ' ⊢ e ⇐ A'
+    | typingmode__inf => exists A', Ψ ⊢ A' <: A /\ Ψ' ⊢ e ⇒ A'
     end.
 Proof with auto with typing.
   intro n1; induction n1; intro n2; induction n2; intros n3; induction n3; intros * Hn1 Hn2 Hn3 Hty Hsubenv.
@@ -850,11 +850,11 @@ Proof with auto with typing.
         apply dsub_union_inversion in H0. intros. intuition.
 Qed.
 
-Corollary d_chk_subsumption : forall Ψ e T1 S1,
+Corollary d_chk_subsumption : forall Ψ e A A',
   ⊢ Ψ ->
-  Ψ ⊢ e ⇐ S1 ->
-  Ψ ⊢ S1 <: T1 ->
-  Ψ ⊢ e ⇐ T1.
+  Ψ ⊢ e ⇐ A ->
+  Ψ ⊢ A <: A' ->
+  Ψ ⊢ e ⇐ A'.
 Proof.
   intros.
   refine (d_chk_inf_subsumption _ _ _ _ _ _ _ _ _ _ _ H0 _ _ _); eauto.
