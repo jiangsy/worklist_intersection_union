@@ -815,8 +815,8 @@ Proof with auto with typing.
       (* e <= A *)
       * intros.
         eapply IHn2 in Hty; eauto.
-        destruct Hty as [S2 [Hsub Hinf]].
-        apply d_typing__chksub with (B := S2); auto.
+        destruct Hty as [A'' [Hsub Hinf]].
+        apply d_typing__chksub with (B := A''); auto.
         apply sub_transitivity with (B := B); auto...
         eapply d_sub_subenv; eauto. apply sub_transitivity with (B := A); auto...
         eapply d_sub_subenv; eauto.
