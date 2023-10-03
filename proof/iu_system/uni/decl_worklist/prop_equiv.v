@@ -276,7 +276,7 @@ Proof with auto with Hdb_dworklist_equiv.
     inst_cofinites_with X.
     apply d_sub_dwft in H1; intuition.
   - destruct_wf. 
-    eapply d_wl_red__sub_alll with (T1:=T1); eauto. 
+    eapply d_wl_red__sub_alll with (T1:=T); eauto. 
     apply IHHsub; eauto. 
     econstructor; auto. econstructor; auto.
     apply d_wft_all_open; eauto; auto.

@@ -746,16 +746,16 @@ Proof with auto.
   induction H; try solve [intuition].
   - split.
     inst_cofinites_by L. intuition... inversion H3. auto.
-    split; eapply d_wf_typ__all with (L:=L `union` ftvar_in_typ A1 `union` ftvar_in_typ B1); intros; inst_cofinites_with X; auto...
+    split; eapply d_wf_typ__all with (L:=L `union` ftvar_in_typ A `union` ftvar_in_typ B); intros; inst_cofinites_with X; auto...
     eapply d_wf_typ_subst_tvar_stvar_cons; intuition.
     eapply d_wf_typ_subst_tvar_stvar_cons; intuition.
   - split; try solve [intuition].
     split; try solve [intuition].
-    + eapply d_wf_typ__all with (L:=L `union` ftvar_in_typ A1 `union` dom Ψ).
+    + eapply d_wf_typ__all with (L:=L `union` ftvar_in_typ A `union` dom Ψ).
       * intros. inst_cofinites_with X. auto.
       * intros. inst_cofinites_with X.
         destruct IHd_sub. auto.
-        eapply dwf_typ_open_inv with (X:=X) (T1:=T1); auto.
+        eapply dwf_typ_open_inv with (X:=X) (T1:=T); auto.
         -- eapply d_mono_typ_lc; eauto.
         -- replace (X ~ dbind_tvar_empty ++ Ψ) with (nil ++ X ~ dbind_tvar_empty ++ Ψ) by auto.
            apply dwf_typ_weakening. simpl. rewrite  subst_tvar_in_typ_open_typ_wrt_typ.

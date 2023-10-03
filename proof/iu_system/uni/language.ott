@@ -689,18 +689,18 @@ defns
 J_d_sub :: '' ::=
 
 defn
-dE ||- A1 <: B1 :: :: d_sub :: 'd_sub__' by
+dE ||- A <: B :: :: d_sub :: 'd_sub__' by
 
 
 |- dE
-dE |- A1
+dE |- A
 -------------- :: top
-dE ||- A1 <: TOP
+dE ||- A <: TOP
 
 |- dE
-dE |- B1
+dE |- B
 ------------------- :: bot
-dE ||- BOT <: B1
+dE ||- BOT <: B
 
 |- dE
 ------------------- :: unit
@@ -716,50 +716,50 @@ dE ||- A2 <: B2
 -------------------------- :: arrow
 dE ||- A1 -> A2 <: B1 -> B2
 
-X ∈ₛ A1
-X ∈ₛ B1
-dE , X : ~▪ ||- A1 <: B1
+X ∈ₛ A
+X ∈ₛ B
+dE , X : ~▪ ||- A <: B
 -------------------------------------------- :: all
-dE ||- ∀ X. A1 <: ∀ X. B1
+dE ||- ∀ X. A <: ∀ X. B
 
-B1 ¬= ∀ 
-B1 ¬= ⊓
-B1 ¬= ⊔
-X ∈ₛ A1
-dE |-m T1
-dE ||- { T1 / X } A1 <: B1
+B ¬= ∀ 
+B ¬= ⊓
+B ¬= ⊔
+X ∈ₛ A
+dE |-m T
+dE ||- { T / X } A <: B
 ---------------------------- :: alll
-dE ||- ∀ X . A1 <: B1
+dE ||- ∀ X . A <: B
 
-dE ||- A1 <: B1
-dE ||- A1 <: B2
+dE ||- A <: B1
+dE ||- A <: B2
 ------------------------ :: intersection1
-dE ||- A1 <: B1 ⊓ B2
+dE ||- A <: B1 ⊓ B2
 
-dE ||- A1 <: B1
+dE ||- A1 <: B
 dE |- A2
 ------------------------ :: intersection2
-dE ||- A1 ⊓ A2 <: B1
+dE ||- A1 ⊓ A2 <: B
 
-dE ||- A2 <: B1
+dE ||- A2 <: B
 dE |- A1
 ------------------------ :: intersection3
-dE ||- A1 ⊓ A2 <: B1
+dE ||- A1 ⊓ A2 <: B
 
-dE ||- A1 <: B1
+dE ||- A <: B1
 dE |- B2
 ------------------------ :: union1
-dE ||- A1 <: B1 ⊔ B2
+dE ||- A <: B1 ⊔ B2
 
-dE ||- A1 <: B2
+dE ||- A <: B2
 dE |- B1  
 ------------------------ :: union2
-dE ||- A1 <: B1 ⊔ B2
+dE ||- A <: B1 ⊔ B2
 
-dE ||- A1 <: B1
-dE ||- A2 <: B1
+dE ||- A1 <: B
+dE ||- A2 <: B
 ------------------------ :: union3
-dE ||- A1 ⊔ A2 <: B1
+dE ||- A1 ⊔ A2 <: B
 
 
 defns 
