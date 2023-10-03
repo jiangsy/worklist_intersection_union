@@ -624,13 +624,16 @@ Lemma d_infabs_subenv : forall Ψ Ψ' A B C,
 Proof with eauto using d_subenv_wf_env, d_subenv_wf_typ with typing.
   intros * HA HE.
   induction HA; intuition eauto...
-Qed.
+  eapply d_infabs__all with (T:=T); eauto.
+  admit. admit. admit.
+Admitted.
+
 
 Corollary d_infabs_subsumption: forall Ψ Ψ' A A' B C,
   Ψ ⊢ A ▹ B → C ->
   Ψ ⊢ A' <: A ->
   d_subenv Ψ' Ψ ->
-  exists B' C', Ψ ⊢ typ_arrow B' C' <: typ_arrow B C /\ Ψ' ⊢ A ▹ B → C.
+  exists B' C', Ψ ⊢ typ_arrow B' C' <: typ_arrow B C /\ Ψ' ⊢ A' ▹ B' → C'.
 Proof with eauto.
   intros * HA HS HE.
   forwards (?&?&HA'): d_infabs_subsumption_same_env HA HS.
@@ -638,8 +641,7 @@ Proof with eauto.
   exists*. 
 Qed.
 
-
-Hint Extern 1 (_c < _) => lia : typing.
+Hint Extern 1 (_ < _) => lia : typing.
 Hint Extern 1 (_ ⊢ _) => eapply d_subenv_wf_typ; eauto : typing.
 
 
@@ -667,7 +669,7 @@ Qed.
 Lemma d_exp_size_open_typ_rec : forall e A n,
   exp_size e = exp_size (open_exp_wrt_typ_rec n A e)
 with d_body_size_open_typ_rec: forall b A n,
-  d_body_size b = d_body_size (open_dbody_wrt_typ_rec n A b).
+  body_size b = body_size (open_body_wrt_typ_rec n A b).
 Proof.
   - intros. generalize dependent n. induction e; simpl; auto.
   - intros. generalize dependent n. induction b; simpl; auto.
@@ -737,7 +739,7 @@ Proof with auto with typing.
       * exists A. split; auto. apply dsub_refl; auto.
         now eauto using d_chk_inf_wf_env.
         econstructor. eapply d_subenv_wf_typ; eauto.
-        refine (IHn1 _ _ _ _ _ _ _ _ _ _  Hty _ _ _); eauto... simpl in *.
+        refine (IHn1 _ _ _ _ _ _ _ _ _ _  Hty _ _ _); eauto... simpl in *...
         apply dsub_refl; auto.
         now eauto using d_chk_inf_wf_env.
       (* () => 1 *)
@@ -755,7 +757,7 @@ Proof with auto with typing.
         refine (IHn1 _ _ _ _ _ _ _ _ _ _ Hty2 _ _ _); eauto...
       (* d_infabs_subsumption @shengyi:todo *** *)
       (* /\ a. e : A => forall a. A *)
-      * exists (typ_all T1); split.
+      * exists (typ_all A); split.
         -- eapply dsub_refl; auto.
            now eauto using d_chk_inf_wf_env.
         -- dependent destruction H. pick fresh X and apply d_typing__inftabs. auto...
@@ -786,7 +788,7 @@ Proof with auto with typing.
            econstructor.
       (* \x. e <= T1 -> T2 *)
       * intros.
-        assert (d_wft_ord S1) as Hwford.
+        assert (d_wft_ord A') as Hwford.
         { eapply d_wft_ord_complete. eauto with subtyping. }
         induction Hwford.
         -- dependent destruction H1.
@@ -814,12 +816,13 @@ Proof with auto with typing.
       * intros.
         eapply IHn2 in Hty; eauto.
         destruct Hty as [S2 [Hsub Hinf]].
-        apply d_typing__chksub with (S1 := S2); auto.
-        apply sub_transitivity with (S1 := T1); auto...
-        eapply denvsub_sub; eauto. apply sub_transitivity with (S1 := S1); auto...
-        eapply denvsub_sub; eauto.
+        apply d_typing__chksub with (B := S2); auto.
+        apply sub_transitivity with (B := B); auto...
+        eapply d_sub_subenv; eauto. apply sub_transitivity with (B := A); auto...
+        eapply d_sub_subenv; eauto.
+        eapply d_sub_subenv; eauto.
         simpl. lia.
-      * intros. assert (d_wft_ord S0) as Hwford.
+      * intros. assert (d_wft_ord A') as Hwford.
         { eapply d_wft_ord_complete. eauto with subtyping. }
         induction Hwford.
         -- dependent destruction H.
