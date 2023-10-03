@@ -31,7 +31,7 @@ fexp, e, f, g :: fexp_ ::=
   | { e2 / x } e1                       :: M :: subst1 {{ coq (open_fexp_wrt_fexp [[x e1]] [[e2]]) }}
   | { T2 / X } e1                       :: M :: subst2 {{ coq (open_fexp_wrt_ftyp [[X e1]] [[T2]]) }}
 
-binding, b :: bind_ ::=
+fbind, fb :: fbind_ ::=
   | : ▪  ::   :: tvar_empty
   | : T  ::   :: typ
 
@@ -47,10 +47,10 @@ freevars
 
 grammar
 
-fenv, E, F, G :: '' ::= {{ coq list (atom*binding) }}
+fenv, E, F, G :: '' ::= {{ coq list (atom*fbind) }}
   | empty   ::   :: empty {{ coq nil }}
-  | E , x b ::   :: cons1 {{ coq ([[x]]~[[b]] ++ [[E]]) }}
-  | E , X b ::   :: cons2 {{ coq ([[X]]~[[b]] ++ [[E]]) }}
+  | E , x fb ::   :: cons1 {{ coq ([[x]]~[[fb]] ++ [[E]]) }}
+  | E , X fb ::   :: cons2 {{ coq ([[X]]~[[fb]] ++ [[E]]) }}
 
 fvalue, v :: fvalue_ ::=
   | \ x : T . e  ::   :: abs  (+ bind x in e +)
@@ -61,8 +61,8 @@ fvalue, v :: fvalue_ ::=
 
 formula :: formula_ ::=
   | judgement       ::   :: judgement
-  | ( x b ) in E    ::   :: binds1 {{ coq binds ([[x]]) ([[b]]) ([[E]]) }}
-  | ( X b ) in E    ::   :: binds2 {{ coq binds ([[X]]) ([[b]]) ([[E]]) }}
+  | ( x fb ) in E    ::   :: binds1 {{ coq binds ([[x]]) ([[fb]]) ([[E]]) }}
+  | ( X fb ) in E    ::   :: binds2 {{ coq binds ([[X]]) ([[fb]]) ([[E]]) }}
   | uniq E          ::   :: uniq   {{ coq uniq ([[E]]) }}
   | x `notin` dom E ::   :: fresh1 {{ coq ([[x]] `notin` dom ([[E]])) }}
   | X `notin` dom E ::   :: fresh2 {{ coq ([[X]] `notin` dom ([[E]])) }}
@@ -73,10 +73,10 @@ subrules
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 defns
-Jwf_typ :: '' ::=
+J_wf_typ :: '' ::=
 
 defn
-E |- T :: :: wf :: 'wf_typ_' by
+E |- T :: :: f_wf_typ :: 'f_wf_typ__' by
 
 --------- :: unit
 E |- UNIT
@@ -107,10 +107,10 @@ E |- T1 × T2
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 defns
-Jwf_env :: '' ::=
+J_f_wf_env :: '' ::=
 
 defn
-|- E :: :: wf_env :: 'wf_env_' by
+|- E :: :: f_wf_env :: 'f_wf_env__' by
 
 --------- :: empty
 |- empty
@@ -161,10 +161,10 @@ x `notin` dom E
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 defns
-Jtyping :: '' ::=
+J_f_typing :: '' ::=
 
 defn
-E |- e : T :: :: typing :: 'typing_' by
+E |- e : T :: :: f_typing :: 'f_typing__' by
 
 ---------------- :: unit
 E |- unit : UNIT
@@ -233,10 +233,10 @@ E |- proj2 e : T2
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 defns
-Jop :: '' ::=
+J_f_exp_red :: '' ::=
 
 defn
-e1 --> e2 :: :: red :: 'red_' by
+e1 --> e2 :: :: f_exp_red :: 'f_exp_red__' by
 
 e1 --> e1'
 ----------------- :: app_1

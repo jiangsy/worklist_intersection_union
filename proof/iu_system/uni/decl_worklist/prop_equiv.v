@@ -9,9 +9,9 @@ Require Import uni.notations.
 Require Import uni.decl_worklist.def.
 
 
-Hint Constructors d_wl_red : dworklist.
-Hint Constructors d_wf_wl : dworklist.
-Hint Constructors d_wl_del_red : dworklist.
+Hint Constructors d_wl_red : Hdb_dworklist_equiv.
+Hint Constructors d_wf_wl : Hdb_dworklist_equiv.
+Hint Constructors d_wl_del_red : Hdb_dworklist_equiv.
 
 
 Declare Scope dworklist_scope.
@@ -122,7 +122,7 @@ Ltac destruct_all_work :=
   | H : d_all_work (dworklist_conswork ?Ω ?w) |- _ => dependent destruction H
   end.
 
-Hint Constructors d_all_work : dworklist.
+Hint Constructors d_all_work : Hdb_dworklist_equiv.
 
 Lemma d_wl_app_all_work_same_env : forall Ω1 Ω2 Ω3,
   d_all_work Ω2 ->
@@ -133,18 +133,18 @@ Ltac solve_Ω1 IH :=
   match goal with 
   | H : ?Ω1 = ?Ω2 |- d_wl_del_red ?Ω => 
       dependent destruction H; replace Ω with (dwl_app dworklist_empty Ω) by auto; eapply IH;
-      simpl; rewrite_dwl_app; eauto with dworklist
+      simpl; rewrite_dwl_app; eauto with Hdb_dworklist_equiv
   end.
 
 
 Lemma d_wl_red_weaken_works : forall Ω1 Ω2 Ω3,
   (dwl_app Ω3 (dwl_app Ω2 Ω1)) ⟶ᵈ⁎⋅ -> d_all_work Ω2 -> (dwl_app Ω3 Ω1) ⟶ᵈ⁎⋅.
-Proof with auto with dworklist.
+Proof with auto with Hdb_dworklist_equiv.
   intros * Hred Haw. dependent induction Hred;
     try destruct Ω3; simpl in x; try solve [inversion x]; dependent destruction x; simpl;
     destruct Ω2; simpl in *; 
       try solve [inversion x]; 
-      try solve [dependent destruction x; eauto with dworklist];
+      try solve [dependent destruction x; eauto with Hdb_dworklist_equiv];
       try inv_all_work; (* Ω2 contains x or X *) 
       try solve [destruct_all_work; solve_Ω1 IHHred];
       try solve [econstructor; eauto];
@@ -184,10 +184,10 @@ Qed.
 (* we do not need such a generalized lemma, can restrict Ω2 to only contain works *)
 (* Lemma d_wl_red_weaken_work : forall Ω1 Ω2 Ω3,
   (dwl_app Ω3 (dwl_app Ω2 Ω1)) ⟶ᵈ⁎⋅ ->  (dwl_app Ω3 Ω1) ⟶ᵈ⁎⋅.
-Proof with auto with dworklist.
+Proof with auto with Hdb_dworklist_equiv.
   intros. dependent induction H; 
     try destruct Ω3; simpl in x; try solve [inversion x]; dependent destruction x; simpl;
-    destruct Ω2; simpl in *; try solve [inversion x]; try solve [dependent destruction x; eauto with dworklist];
+    destruct Ω2; simpl in *; try solve [inversion x]; try solve [dependent destruction x; eauto with Hdb_dworklist_equiv];
       try solve [econstructor; eapply IHd_wl_del_red; rewrite_dwl_app; eauto].
   - dependent destruction x.
     replace Ω1 with (dwl_app dworklist_empty Ω1) by auto.
@@ -210,7 +210,7 @@ Admitted. *)
 
 Lemma d_wl_red_weaken_work1 : forall Ω1 w1 w2,
   (w2 ⫤ (w1 ⫤ Ω1)) ⟶ᵈ⁎⋅ ->  (w1 ⫤ Ω1) ⟶ᵈ⁎⋅.
-Proof with auto with dworklist.
+Proof with auto with Hdb_dworklist_equiv.
   intros.  
   replace (w1 ⫤ Ω1)%dworklist with ((dwl_app dworklist_empty (w1 ⫤ Ω1))) by auto.
   eapply d_wl_red_weaken_works with (Ω2:=(w2 ⫤ dworklist_empty)%dworklist)...
@@ -218,14 +218,14 @@ Qed.
 
 Lemma d_wl_red_weaken_work2 : forall Ω1 w1 w2,
   (w2 ⫤ (w1 ⫤ Ω1)) ⟶ᵈ⁎⋅ ->  (w2 ⫤ Ω1) ⟶ᵈ⁎⋅.
-Proof with auto with dworklist.
+Proof with auto with Hdb_dworklist_equiv.
   intros.  
   replace (w2 ⫤ Ω1)%dworklist with ((dwl_app (w2 ⫤ dworklist_empty) (Ω1))) by auto.
   eapply d_wl_red_weaken_works with (Ω2:=(w1 ⫤ dworklist_empty)%dworklist)...
 Qed.
 
 
-Hint Resolve d_wf_wl_wf_env : dworklist.
+Hint Resolve d_wf_wl_wf_env : Hdb_dworklist_equiv.
 
 (* 
 Ltac destruct_d_wl_del_red := 
@@ -271,9 +271,6 @@ Ltac destruct_d_wl_del_red :=
   | H : apply_cont ?c ?A ?w |- _ => dependent destruction H
   end.
 
-
-
-
 Ltac _apply_IH_d_wl_red :=
   let H := fresh "H" in
     match goal with 
@@ -283,15 +280,15 @@ Ltac _apply_IH_d_wl_red :=
       apply H in H1
     end.
 
-
+(* remove later *)
 Hint Constructors d_typing : typing.
 
 (* This direction is not so important because soundness is proven against decl system directly *)
 Theorem d_wl_red_sound: forall Ω, 
     ⊢ᵈ Ω -> Ω ⟶ᵈʷ⁎⋅ -> Ω ⟶ᵈ⁎⋅.
-Proof with auto with dworklist typing.
-  intros. induction H0; try solve [dependent destruction H; auto with dworklist];
-    try solve [destruct_wf; _apply_IH_d_wl_red; destruct_d_wl_del_red; eauto with dworklist].
+Proof with auto with Hdb_dworklist_equiv typing.
+  intros. induction H0; try solve [dependent destruction H; auto with Hdb_dworklist_equiv];
+    try solve [destruct_wf; _apply_IH_d_wl_red; destruct_d_wl_del_red; eauto with Hdb_dworklist_equiv].
   (* sub *)
 
   - destruct_wf. econstructor.
@@ -351,10 +348,10 @@ Admitted.
 Lemma d_wl_red_sub_complete: forall Ω A B,
   dwl_to_denv Ω ⊢ A <: B -> ⊢ᵈ (work_sub A B ⫤ Ω) -> 
   Ω ⟶ᵈʷ⁎⋅ -> (work_sub A B ⫤ Ω) ⟶ᵈʷ⁎⋅.
-Proof with auto with dworklist.
+Proof with auto with Hdb_dworklist_equiv.
   intros * Hsub Hwfwl Hred.
   dependent induction Hsub; 
-  try solve [destruct_wf; econstructor; auto with dworklist].
+  try solve [destruct_wf; econstructor; auto with Hdb_dworklist_equiv].
   - destruct_wf. 
     eapply d_wlred__sub_all with (L:=L `union` dom (dwl_to_denv Ω)).
     intros. inst_cofinites_with SX.
@@ -393,7 +390,7 @@ Lemma d_wl_red_weaken: forall Ω1 Ω2,
   (dwl_app Ω2 Ω1) ⟶ᵈʷ⁎⋅ -> Ω1 ⟶ᵈʷ⁎⋅ .
 Proof.
   intros. dependent induction H; try destruct Ω2; simpl in x; 
-    try solve [inversion x]; dependent destruction x; simpl; eauto with dworklist;
+    try solve [inversion x]; dependent destruction x; simpl; eauto with Hdb_dworklist_equiv;
     try solve [eapply IHd_wl_red; rewrite_dwl_app; eauto].
   - inst_cofinites_by L. eapply H0.
     rewrite_dwl_app; eauto.
@@ -418,7 +415,7 @@ Lemma d_wl_red_strengthen_work : forall Ω1 Ω2 w,
   (w ⫤ Ω1) ⟶ᵈʷ⁎⋅ -> (dwl_app Ω2 Ω1) ⟶ᵈʷ⁎⋅ -> (dwl_app Ω2 (w ⫤ Ω1)) ⟶ᵈʷ⁎⋅ .
 Proof. 
   intros. dependent induction H0; 
-      try destruct Ω2; simpl in x; try solve [inversion x]; dependent destruction x; simpl; eauto with dworklist;
+      try destruct Ω2; simpl in x; try solve [inversion x]; dependent destruction x; simpl; eauto with Hdb_dworklist_equiv;
       try solve [econstructor; rewrite_dwl_app; auto].
   - eapply d_wlred__sub_all with (L:=L). 
     intros. inst_cofinites_with X. 
@@ -449,9 +446,9 @@ Qed.
 Lemma d_wl_red_infabs_complete: forall Ω A B C c,
    dwl_to_denv Ω ⊢ A ▹ B → C -> d_wf_wl (dworklist_conswork Ω (work_infabs A c)) -> 
    d_wl_red (dworklist_conswork Ω (work_apply c (typ_arrow B C))) -> d_wl_red (dworklist_conswork Ω (work_infabs A c)).
-Proof with auto with dworklist.
+Proof with auto with Hdb_dworklist_equiv.
   intros. generalize dependent c. dependent induction H; intros; eauto;
-  try solve [destruct_wf; econstructor; auto with dworklist].
+  try solve [destruct_wf; econstructor; auto with Hdb_dworklist_equiv].
   - destruct_wf.
     eapply d_wlred__infabs_all with (T1:=T2); eauto.
     apply IHd_infabs; auto.
@@ -489,9 +486,9 @@ Qed.
 Lemma d_wl_red_inftapp_complete: forall Ω A B C c,
   dwl_to_denv Ω ⊢ A ○ B ⇒⇒ C -> d_wf_wl (dworklist_conswork Ω (work_inftapp A B c)) ->
   d_wl_red (dworklist_conswork Ω (work_apply c C)) -> d_wl_red (dworklist_conswork Ω (work_inftapp A B c)).
-Proof with auto with dworklist.
+Proof with auto with Hdb_dworklist_equiv.
   intros. generalize dependent c. dependent induction H; intros; eauto;
-  try solve [destruct_wf; econstructor; eauto with dworklist].
+  try solve [destruct_wf; econstructor; eauto with Hdb_dworklist_equiv].
   - apply d_inftapp_wft in H.
     destruct_wf.
     econstructor.
@@ -526,7 +523,7 @@ Lemma d_wl_red_chk_inf_complete: forall Ω e A mode,
   | typingmode__chk => ⊢ᵈ (work_check e A ⫤ Ω) -> Ω ⟶ᵈʷ⁎⋅ -> (work_check e A ⫤ Ω) ⟶ᵈʷ⁎⋅
   | typingmode__inf => forall c, ⊢ᵈ (work_infer e c ⫤ Ω) -> (work_apply c A ⫤ Ω) ⟶ᵈʷ⁎⋅ -> (work_infer e c ⫤ Ω) ⟶ᵈʷ⁎⋅
   end.
-Proof with auto with dworklist.
+Proof with auto with Hdb_dworklist_equiv.
   intros. dependent induction H; intros; eauto...
   - econstructor; eauto.
   - econstructor. 
@@ -588,9 +585,9 @@ Qed.
 
 Theorem d_wl_red_complete: forall Ω, 
     ⊢ᵈ Ω -> Ω ⟶ᵈ⁎⋅ -> Ω ⟶ᵈʷ⁎⋅.
-Proof with auto with dworklist.
+Proof with auto with Hdb_dworklist_equiv.
   intros. induction H0; auto;
-  try solve [destruct_wf; econstructor; eauto with dworklist].
+  try solve [destruct_wf; econstructor; eauto with Hdb_dworklist_equiv].
   - destruct_wf. refine (d_wl_red_chk_inf_complete _ _ _ _ H2 _ _); auto...
   - destruct_wf.
     refine (d_wl_red_chk_inf_complete _ _ _ _ H2 _ _ _); auto...
