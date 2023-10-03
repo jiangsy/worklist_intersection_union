@@ -1223,3 +1223,14 @@ Proof.
   rewrite_env (nil ++ x ~ dbind_typ A2 ++ E).
   eapply d_wf_exp_bound_typ; eauto.
 Qed.
+
+Lemma d_wf_typ_strengthen_var : forall E x F A B,
+  (F ++ x ~ dbind_typ B ++ E) ⊢ A ->
+  (F ++ E) ⊢ A.
+Proof.
+  intros.
+  dependent induction H; eauto.
+  - admit.
+  - admit.
+  - admit.
+Admitted.
