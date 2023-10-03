@@ -380,7 +380,7 @@ Lemma dwf_typ_s_dwf_typ : forall Ψ A,
   Ψ ⊢ₛ A -> Ψ ⊢ A.
 Proof.
   intros. induction H; auto.
-  - eapply d_wf_typ__all with (L:= (L `union` ftvar_in_typ T1));
+  - eapply d_wf_typ__all with (L:= (L `union` ftvar_in_typ A));
     intros; inst_cofinites_with X.
     + auto.
     + eapply d_wf_typ_subst_tvar_stvar_cons; auto.
