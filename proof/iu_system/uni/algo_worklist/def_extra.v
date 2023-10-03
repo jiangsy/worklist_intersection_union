@@ -89,6 +89,7 @@ Inductive a_update_bound
 
 (* defns Jaworklist_reduction *)
 Inductive a_wl_red : aworklist -> Prop :=    (* defn a_wl_red *)
+ | a_wlred__empty : a_wl_red aworklist_empty
  | a_wlred__gc_var : forall (Γ:aworklist) (x:expvar) (A:typ),
      a_wl_red Γ ->
      a_wl_red (aworklist_consvar Γ x (abind_typ A))
@@ -228,22 +229,18 @@ Inductive a_wl_red : aworklist -> Prop :=    (* defn a_wl_red *)
  | a_wlred__inf_app : forall (Γ:aworklist) (e1 e2:exp) (c:cont),
      a_wl_red (aworklist_conswork Γ (work_infer e1  (  (cont_infabs  (  (cont_infapp e2 c)  ) )  ) )) ->
      a_wl_red (aworklist_conswork Γ (work_infer  ( (exp_app e1 e2) )  c))
- | a_wlred__infapparrow : forall (Γ:aworklist) (A1 A2:typ) (e:exp) (c:cont),
+ | a_wlred__infapp : forall (Γ:aworklist) (A1 A2:typ) (e:exp) (c:cont),
      a_wl_red (aworklist_conswork (aworklist_conswork Γ (work_apply c A2)) (work_check e A1)) ->
      a_wl_red (aworklist_conswork Γ (work_infapp (typ_arrow A1 A2) e c))
  | a_wlred__infabs_arr : forall (Γ:aworklist) (A1 B1:typ) (c:cont),
      a_wl_red (aworklist_conswork Γ (work_apply c (typ_arrow A1 B1))) ->
      a_wl_red (aworklist_conswork Γ (work_infabs (typ_arrow A1 B1) c))
- | a_wlred__infabs_evar : forall (L:vars) (Γ:aworklist) (X:typvar) (c:cont) (A1 A2:typ) (X1 X2:typvar),
-      binds ( X )  ( (abind_bound A1 A2) ) (  ( awl_to_aenv  Γ  )  )  ->
-      (forall X1 X2 Γ2 Γ3, X1 `notin` L -> X2 `notin` (L `union` singleton X1) -> 
-        (a_update_bound  (aworklist_constvar (aworklist_constvar Γ X1 (abind_bound typ_bot typ_top)) X2 (abind_bound typ_bot typ_top))   nil   X   (typ_arrow (typ_var_f X1) (typ_var_f X2))  a_mode_ub__both  Γ2   Γ3 )  /\
-        a_wl_red (aworklist_conswork  (   ( awl_app  Γ3   Γ2  )   )  (work_infabs (typ_arrow (typ_var_f X1) (typ_var_f X2)) c))
-      ) ->
-     a_wl_red (aworklist_conswork Γ (work_infabs (typ_var_f X) c))
- | a_wlred__infappbot : forall (Γ:aworklist) (c:cont),
+ | a_wlred__infabs_bot : forall (Γ:aworklist) (c:cont),
      a_wl_red (aworklist_conswork Γ (work_infabs (typ_arrow typ_top typ_bot) c)) ->
      a_wl_red (aworklist_conswork Γ (work_infabs typ_bot c))
+ | a_wlred__infabs_all : forall (L:vars) (Γ:aworklist) (A:typ) (c:cont),
+     (forall X, X `notin` L -> a_wl_red (aworklist_conswork  (aworklist_constvar Γ X (abind_bound typ_bot typ_top)) (work_infabs (open_typ_wrt_typ A (typ_var_f X)) c)) ) ->
+     a_wl_red (aworklist_conswork Γ (work_infabs (typ_all A) c))
  | a_wlred__infabs_inter1 : forall (Γ:aworklist) (A1 A2:typ) (c:cont),
      lc_typ A2 ->
      a_wl_red (aworklist_conswork Γ (work_infabs A1 c)) ->
@@ -261,6 +258,13 @@ Inductive a_wl_red : aworklist -> Prop :=    (* defn a_wl_red *)
  | a_wlred__unioninfabs : forall (Γ:aworklist) (B2 C2 B1 C1:typ) (c:cont),
      a_wl_red (aworklist_conswork Γ (work_apply c (typ_arrow  ( (typ_intersection B1 B2) )   ( (typ_union C1 C2) ) ))) ->
      a_wl_red (aworklist_conswork Γ (work_unioninfabs (typ_arrow B2 C2) (typ_arrow B1 C1) c))
+ | a_wlred__infabs_evar : forall (L:vars) (Γ:aworklist) (X:typvar) (c:cont) (A1 A2:typ) (X1 X2:typvar),
+     binds ( X )  ( (abind_bound A1 A2) ) (  ( awl_to_aenv  Γ  )  )  ->
+     (forall X1 X2 Γ2 Γ3, X1 `notin` L -> X2 `notin` (L `union` singleton X1) -> 
+       (a_update_bound  (aworklist_constvar (aworklist_constvar Γ X1 (abind_bound typ_bot typ_top)) X2 (abind_bound typ_bot typ_top))   nil   X   (typ_arrow (typ_var_f X1) (typ_var_f X2))  a_mode_ub__both  Γ2   Γ3 )  /\
+       a_wl_red (aworklist_conswork  (   ( awl_app  Γ3   Γ2  )   )  (work_infabs (typ_arrow (typ_var_f X1) (typ_var_f X2)) c))
+     ) ->
+    a_wl_red (aworklist_conswork Γ (work_infabs (typ_var_f X) c))
  | a_wlred__inf_tapp : forall (Γ:aworklist) (e:exp) (B:typ) (c:cont),
      a_wl_red (aworklist_conswork Γ (work_infer e (cont_inftapp B c))) ->
      a_wl_red (aworklist_conswork Γ (work_infer (exp_tapp e B) c))
@@ -285,8 +289,40 @@ Inductive a_wl_red : aworklist -> Prop :=    (* defn a_wl_red *)
  | a_wlred__unioninftapp : forall (Γ:aworklist) (C2 C1:typ) (c:cont),
      a_wl_red (aworklist_conswork Γ (work_apply c (typ_union C1 C2))) ->
      a_wl_red (aworklist_conswork Γ (work_unioninftapp C2 C1 c))
- | d_wlred__applycont : forall (Γ:aworklist) (w:work) (T1:typ) (c:cont),
+ | d_wl_red__applycont : forall (Γ:aworklist) (w:work) (T1:typ) (c:cont),
      apply_cont c T1 w ->
      a_wl_red (aworklist_conswork Γ w) ->
      a_wl_red (aworklist_conswork Γ (work_apply c T1))   
 .
+
+
+Declare Scope aworklist_scope.
+Delimit Scope aworklist_scope with aworklist.
+Bind Scope aworklist_scope with aworklist.
+
+
+
+Notation " x ~ A ; Γ " :=
+  (aworklist_consvar Γ x (abind_typ A))
+      (at level 58, A at next level, right associativity) : aworklist_scope.
+    
+Notation " X ~ ▫ ; Γ " :=
+  (aworklist_constvar Γ X abind_tvar_empty)
+      (at level 58, right associativity) : aworklist_scope.
+
+Notation " X ~ ▪ ; Γ " :=
+  (aworklist_constvar Γ X abind_stvar_empty)
+      (at level 58, right associativity) : aworklist_scope.
+
+Notation " W ⫤ Γ " :=
+  (aworklist_conswork Γ W)
+      (at level 58, right associativity) : aworklist_scope.
+
+Notation " Γ ⟶ᵃʷ⁎⋅ " :=
+  (a_wl_red Γ)
+      (at level 58, no associativity) : type_scope.
+
+Notation " ⊢ᵃ Γ " :=
+  (a_wf_wl Γ)
+      (at level 58, no associativity) : type_scope.
+    

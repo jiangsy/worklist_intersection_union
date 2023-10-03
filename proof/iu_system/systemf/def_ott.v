@@ -376,49 +376,49 @@ end.
 
 (** definitions *)
 
-(* defns Jwf_typ *)
-Inductive wf : fenv -> ftyp -> Prop :=    (* defn wf *)
+(* defns J_wf_typ *)
+Inductive f_wf_typ : fenv -> ftyp -> Prop :=    (* defn f_wf_typ *)
  | f_wf_typ__unit : forall (E:fenv),
-     wf E ftyp_unit
+     f_wf_typ E ftyp_unit
  | f_wf_typ__var : forall (E:fenv) (X:typvar),
       binds ( X ) ( fbind_tvar_empty ) ( E )  ->
-     wf E (ftyp_var_f X)
+     f_wf_typ E (ftyp_var_f X)
  | f_wf_typ__arrow : forall (E:fenv) (T1 T2:ftyp),
-     wf E T1 ->
-     wf E T2 ->
-     wf E (ftyp_arrow T1 T2)
+     f_wf_typ E T1 ->
+     f_wf_typ E T2 ->
+     f_wf_typ E (ftyp_arrow T1 T2)
  | f_wf_typ__all : forall (L:vars) (E:fenv) (T:ftyp),
-      ( forall X , X \notin  L  -> wf  ( X ~ fbind_tvar_empty  ++  E )   ( open_ftyp_wrt_ftyp T (ftyp_var_f X) )  )  ->
-     wf E (ftyp_all T)
+      ( forall X , X \notin  L  -> f_wf_typ  ( X ~ fbind_tvar_empty  ++  E )   ( open_ftyp_wrt_ftyp T (ftyp_var_f X) )  )  ->
+     f_wf_typ E (ftyp_all T)
  | f_wf_typ__sum : forall (E:fenv) (T1 T2:ftyp),
-     wf E T1 ->
-     wf E T2 ->
-     wf E (ftyp_sum T1 T2)
+     f_wf_typ E T1 ->
+     f_wf_typ E T2 ->
+     f_wf_typ E (ftyp_sum T1 T2)
  | f_wf_typ__prod : forall (E:fenv) (T1 T2:ftyp),
-     wf E T1 ->
-     wf E T2 ->
-     wf E (ftyp_prod T1 T2).
+     f_wf_typ E T1 ->
+     f_wf_typ E T2 ->
+     f_wf_typ E (ftyp_prod T1 T2).
 
-(* defns Jwf_env *)
-Inductive wf_env : fenv -> Prop :=    (* defn wf_env *)
+(* defns J_f_wf_env *)
+Inductive f_wf_env : fenv -> Prop :=    (* defn f_wf_env *)
  | f_wf_env__empty : 
-     wf_env  nil 
+     f_wf_env  nil 
  | f_wf_env__sub : forall (E:fenv) (X:typvar),
-     wf_env E ->
+     f_wf_env E ->
       ( X  `notin` dom ( E ))  ->
-     wf_env  ( X ~ fbind_tvar_empty  ++  E ) 
+     f_wf_env  ( X ~ fbind_tvar_empty  ++  E ) 
  | f_wf_env__typ : forall (E:fenv) (x:expvar) (T:ftyp),
-     wf_env E ->
-     wf E T ->
+     f_wf_env E ->
+     f_wf_typ E T ->
       ( x  `notin` dom ( E ))  ->
-     wf_env  ( x ~ (fbind_typ T)  ++  E ) .
+     f_wf_env  ( x ~ (fbind_typ T)  ++  E ) .
 
-(* defns Jtyping *)
+(* defns J_f_typing *)
 Inductive f_typing : fenv -> fexp -> ftyp -> Prop :=    (* defn f_typing *)
  | f_typing__unit : forall (E:fenv),
      f_typing E fexp_unit ftyp_unit
  | f_typing__var : forall (E:fenv) (x:expvar) (T:ftyp),
-     wf_env E ->
+     f_wf_env E ->
       binds ( x ) ( (fbind_typ T) ) ( E )  ->
      f_typing E (fexp_var_f x) T
  | f_typing__abs : forall (L:vars) (E:fenv) (T1:ftyp) (e:fexp) (T2:ftyp),
@@ -437,11 +437,11 @@ Inductive f_typing : fenv -> fexp -> ftyp -> Prop :=    (* defn f_typing *)
      f_typing E (fexp_tapp e1 T2)  (open_ftyp_wrt_ftyp  T1   T2 ) 
  | f_typing__inl : forall (E:fenv) (e1:fexp) (T1 T2:ftyp),
      f_typing E e1 T1 ->
-     wf E T2 ->
+     f_wf_typ E T2 ->
      f_typing E (fexp_inl e1) (ftyp_sum T1 T2)
  | f_typing__inr : forall (E:fenv) (e1:fexp) (T1 T2:ftyp),
      f_typing E e1 T2 ->
-     wf E T1 ->
+     f_wf_typ E T1 ->
      f_typing E (fexp_inr e1) (ftyp_sum T1 T2)
  | f_typing__case : forall (L:vars) (E:fenv) (e1 e2 e3:fexp) (T T1 T2:ftyp),
      f_typing E e1 (ftyp_sum T1 T2) ->
@@ -536,6 +536,6 @@ Inductive f_exp_red : fexp -> fexp -> Prop :=    (* defn f_exp_red *)
 
 
 (** infrastructure *)
-#[export] Hint Constructors wf wf_env f_typing f_exp_red lc_ftyp lc_fbind lc_fexp : core.
+#[export] Hint Constructors f_wf_typ f_wf_env f_typing f_exp_red lc_ftyp lc_fbind lc_fexp : core.
 
 

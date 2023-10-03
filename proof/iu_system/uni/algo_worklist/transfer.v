@@ -3,7 +3,6 @@ Require Import Program.Tactics.
 Require Import Metalib.Metatheory.
 Require Import List.
 
-Require Import uni.def_ott.
 Require Import uni.notations.
 Require Import ln_utils.
 
@@ -240,7 +239,7 @@ Inductive inst_worklist : subst_set -> aworklist -> dworklist -> subst_set -> Pr
       θ ⫦ Γ ⇝ Ω ⫣ θ' ->
       inst_work θ' wᵃ wᵈ ->
       θ ⫦ aworklist_conswork Γ wᵃ ⇝ dworklist_conswork Ω wᵈ ⫣ θ'
-  | inst_wl__constvar : forall θ θ' Γ Ω X, 
+  | inst_wl__cons_tvar : forall θ θ' Γ Ω X, 
       θ ⫦ Γ ⇝ Ω ⫣ θ' ->
       θ ⫦ aworklist_constvar Γ X abind_tvar_empty ⇝ dworklist_constvar Ω X dbind_tvar_empty ⫣  (X, ss_bind__tvar_empty) :: θ'
   | inst_wl__cons_stvar : forall θ θ' Γ Ω X, 
@@ -571,5 +570,5 @@ Proof.
 Admitted. *)
 
 
-Definition transfer (Ω : dworklist) (Γ : aworklist) : Prop :=
-  exists θ', inst_worklist nil Ω Γ θ'.
+Definition transfer (Γ : aworklist) (Ω : dworklist)  : Prop :=
+  exists θ', inst_worklist nil Γ Ω θ'.
