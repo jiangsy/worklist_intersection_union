@@ -36,11 +36,11 @@ Notation " W ⫤ Ω " :=
   (dworklist_conswork Ω W)
       (at level 58, right associativity) : dworklist_scope.
 
-Notation " Ω ⟶ₐ⁎⋅ " :=
+Notation " Ω ⟶ᵈʷ⁎⋅ " :=
   (d_wl_red Ω)
       (at level 58, no associativity) : type_scope.
 
-Notation " Ω ⟶⁎⋅ " :=
+Notation " Ω ⟶ᵈ⁎⋅ " :=
   (d_wl_del_red Ω)
       (at level 58, no associativity) : type_scope.
 
@@ -111,7 +111,7 @@ Lemma d_wl_app_cons_work_same_env : forall Ω1 Ω2 w,
 (* so many cases *)
 (* we do not need such a generalized lemma, can restrict Ω2 to only contain works *)
 Lemma d_wl_red_weaken_work : forall Ω1 Ω2 Ω3,
-  (dwl_app Ω3 (dwl_app Ω2 Ω1)) ⟶⁎⋅ ->  (dwl_app Ω3 Ω1) ⟶⁎⋅.
+  (dwl_app Ω3 (dwl_app Ω2 Ω1)) ⟶ᵈ⁎⋅ ->  (dwl_app Ω3 Ω1) ⟶ᵈ⁎⋅.
 Proof with auto with dworklist.
   intros. dependent induction H; 
     try destruct Ω3; simpl in x; try solve [inversion x]; dependent destruction x; simpl;
@@ -138,7 +138,7 @@ Admitted.
 
 
 (* Lemma d_wl_red_weaken_work : forall Ω1 Ω2 w,
-  (dwl_app Ω2 (w ⫤ Ω1)) ⟶⁎⋅ ->  (dwl_app Ω2 Ω1) ⟶⁎⋅.
+  (dwl_app Ω2 (w ⫤ Ω1)) ⟶ᵈ⁎⋅ ->  (dwl_app Ω2 Ω1) ⟶ᵈ⁎⋅.
 Proof with auto with dworklist.
   intros. dependent induction H;  try destruct Ω2; simpl in x; try solve [inversion x]; dependent destruction x; simpl; eauto with dworklist;
     try solve [replace Ω1 with (dwl_app dworklist_empty Ω1) by auto; eapply IHd_wl_del_red; simpl; eauto].
@@ -160,7 +160,7 @@ Hint Resolve d_wf_wl_wf_env : dworklist.
 
 (* This direction is not so important because soundness is proven against decl system directly *)
 Theorem d_wl_red_sound: forall Ω, 
-    ⊢ᵈ Ω -> Ω ⟶ₐ⁎⋅ -> Ω ⟶⁎⋅.
+    ⊢ᵈ Ω -> Ω ⟶ᵈʷ⁎⋅ -> Ω ⟶ᵈ⁎⋅.
 Proof with auto with dworklist.
   intros. induction H0; try solve [dependent destruction H; auto with dworklist];
     try solve [destruct_wf; auto with dworklist].
@@ -221,7 +221,7 @@ Proof with auto with dworklist.
   (* \x. e <= Top *)
   - admit.
   - destruct_wf.
-    assert ((work_check e A2 ⫤ work_check e A1 ⫤ Ω) ⟶⁎⋅) by auto.
+    assert ((work_check e A2 ⫤ work_check e A1 ⫤ Ω) ⟶ᵈ⁎⋅) by auto.
     dependent destruction H0; auto.
     dependent destruction H3; auto...
   - admit.
@@ -330,7 +330,7 @@ Admitted.
 
 Lemma d_wl_red_sub_complete: forall Ω A B,
   dwl_to_denv Ω ⊢ A <: B -> ⊢ᵈ (work_sub A B ⫤ Ω) -> 
-  Ω ⟶ₐ⁎⋅ -> (work_sub A B ⫤ Ω) ⟶ₐ⁎⋅.
+  Ω ⟶ᵈʷ⁎⋅ -> (work_sub A B ⫤ Ω) ⟶ᵈʷ⁎⋅.
 Proof with auto with dworklist.
   intros * Hsub Hwfwl Hred.
   dependent induction Hsub; 
@@ -371,7 +371,7 @@ Proof.
 Qed.
 
 Lemma d_wl_red_weaken: forall Ω1 Ω2,
-  (dwl_app Ω2 Ω1) ⟶ₐ⁎⋅ -> Ω1 ⟶ₐ⁎⋅ .
+  (dwl_app Ω2 Ω1) ⟶ᵈʷ⁎⋅ -> Ω1 ⟶ᵈʷ⁎⋅ .
 Proof.
   intros. dependent induction H; try destruct Ω2; simpl in x; try solve [inversion x]; dependent destruction x; simpl; eauto with dworklist;
     try solve [eapply IHd_wl_red; rewrite_dwl_app; eauto].
@@ -386,7 +386,7 @@ Proof.
 Qed.
 
 Corollary d_wl_red_weaken_consw : forall Ω w,
-  (w ⫤ Ω) ⟶ₐ⁎⋅ -> Ω ⟶ₐ⁎⋅ .
+  (w ⫤ Ω) ⟶ᵈʷ⁎⋅ -> Ω ⟶ᵈʷ⁎⋅ .
 Proof.
   intros.
   replace (w ⫤ Ω)%dworklist with (dwl_app (dworklist_conswork dworklist_empty w) Ω) in H by auto.
@@ -397,7 +397,7 @@ Qed.
 
 
 Lemma d_wl_red_strengthen_work : forall Ω1 Ω2 w,
-  (w ⫤ Ω1) ⟶ₐ⁎⋅ -> (dwl_app Ω2 Ω1) ⟶ₐ⁎⋅ -> (dwl_app Ω2 (w ⫤ Ω1)) ⟶ₐ⁎⋅ .
+  (w ⫤ Ω1) ⟶ᵈʷ⁎⋅ -> (dwl_app Ω2 Ω1) ⟶ᵈʷ⁎⋅ -> (dwl_app Ω2 (w ⫤ Ω1)) ⟶ᵈʷ⁎⋅ .
 Proof. 
   intros. dependent induction H0; 
       try destruct Ω2; simpl in x; try solve [inversion x]; dependent destruction x; simpl; eauto with dworklist;
@@ -505,8 +505,8 @@ Admitted.
 Lemma d_wl_red_chk_inf_complete: forall Ω e A mode,
   d_typing (dwl_to_denv Ω) e mode A -> 
   match mode with 
-  | typingmode__chk => ⊢ᵈ (work_check e A ⫤ Ω) -> Ω ⟶ₐ⁎⋅ -> (work_check e A ⫤ Ω) ⟶ₐ⁎⋅
-  | typingmode__inf => forall c, ⊢ᵈ (work_infer e c ⫤ Ω) -> (work_apply c A ⫤ Ω) ⟶ₐ⁎⋅ -> (work_infer e c ⫤ Ω) ⟶ₐ⁎⋅
+  | typingmode__chk => ⊢ᵈ (work_check e A ⫤ Ω) -> Ω ⟶ᵈʷ⁎⋅ -> (work_check e A ⫤ Ω) ⟶ᵈʷ⁎⋅
+  | typingmode__inf => forall c, ⊢ᵈ (work_infer e c ⫤ Ω) -> (work_apply c A ⫤ Ω) ⟶ᵈʷ⁎⋅ -> (work_infer e c ⫤ Ω) ⟶ᵈʷ⁎⋅
   end.
 Proof with auto with dworklist.
   intros. dependent induction H; intros; eauto...
@@ -522,7 +522,7 @@ Proof with auto with dworklist.
     apply d_infabs_wft in H0 as Hwft. intuition.
     eapply d_wl_red_infabs_complete; eauto.
     econstructor... econstructor... econstructor.
-    assert ((work_check e2 T2 ⫤ Ω) ⟶ₐ⁎⋅).
+    assert ((work_check e2 T2 ⫤ Ω) ⟶ᵈʷ⁎⋅).
       apply IHd_typing2; auto.
       apply d_wl_red_weaken_consw in H5; auto.
     replace (work_apply c T3 ⫤ work_check e2 T2 ⫤ Ω)%dworklist with (dwl_app (work_apply c T3 ⫤ dworklist_empty) (work_check e2 T2 ⫤ Ω)%dworklist) by auto.
@@ -578,7 +578,7 @@ Qed.
 
 
 Theorem d_wl_red_complete: forall Ω, 
-    ⊢ᵈ Ω -> Ω ⟶⁎⋅ -> Ω ⟶ₐ⁎⋅.
+    ⊢ᵈ Ω -> Ω ⟶ᵈ⁎⋅ -> Ω ⟶ᵈʷ⁎⋅.
 Proof with auto with dworklist.
   intros. induction H0; auto;
   try solve [destruct_wf; econstructor; eauto with dworklist].
