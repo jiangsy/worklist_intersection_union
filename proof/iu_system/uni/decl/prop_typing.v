@@ -713,7 +713,7 @@ Theorem d_chk_inf_subsumption : forall n1 n2 n3 Ψ Ψ' e A mode,
   exp_size e < n1 ->
   dmode_size mode < n2 ->
   typ_size A < n3 ->
-  d_typing Ψ e mode Ψ ->
+  d_typing Ψ e mode A ->
   d_subenv Ψ' Ψ ->
     match mode with
     | typingmode__chk => forall A', Ψ ⊢ A <: A' -> Ψ' ⊢ e ⇐ A'
