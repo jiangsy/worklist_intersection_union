@@ -1,4 +1,5 @@
 Require Import Coq.Program.Equality.
+Require Import Coq.Unicode.Utf8.
 
 Require Import ln_utils.
 Require Import uni.decl.def_extra.
@@ -489,8 +490,8 @@ Qed.
 
 
 (* remove later *)
-Lemma d_chk_inf_wft: forall E e mode A1,
-  d_typing E e mode A1 ->
+Lemma d_chk_inf_wft: forall E e m A1,
+  d_typing E e m A1 ->
   E ⊢ A1.
 Proof.
   intros. induction H; auto.

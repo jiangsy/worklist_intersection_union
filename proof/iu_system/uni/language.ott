@@ -107,7 +107,7 @@ dworklist, dW :: 'dworklist_' ::=
   | dW , w      ::   :: conswork
 
 aworklist, aW  :: 'aworklist_' ::=
-  | nil         ::   :: empty 
+  | empty       ::   :: empty 
   | aW , x ab   ::   :: consvar 
   | aW , X ab   ::   :: constvar
   | aW , w      ::   :: conswork
@@ -123,6 +123,8 @@ formula :: formula_ ::=
   | uniq dE           ::   :: uniq   {{ coq uniq ([[dE]]) }}
   | x  `notin` dom dE ::   :: fresh1 {{ coq ([[x]]  `notin` dom ([[dE]])) }}
   | X  `notin` dom dE ::   :: fresh2 {{ coq ([[X]]  `notin` dom ([[dE]])) }}
+  | x  `notin` dom aE ::   :: fresh3 {{ coq ([[x]]  `notin` dom ([[aE]])) }}
+  | X  `notin` dom aE ::   :: fresh4 {{ coq ([[X]]  `notin` dom ([[aE]])) }}
   | X in A           ::   :: appear1 {{ coq [[X]] `in` ftvar_in_typ [[A]]}}
   | A ¬= TOP         ::   :: neqtop  {{ coq ~ ([[A]] = typ_top)}}
   | ⌊ dW ⌋           ::   :: dwl_to_env {{ coq dwl_to_denv [[ dW ]] }}
@@ -788,248 +790,251 @@ aW [ X1 ] [ X2 ]
 aW , w [ X1 ] [ X2 ] 
 
 
+
 defns
-Jaworklist_reduction :: '' ::=
+J_a_wf_typ :: '' ::=
 
 defn
-|= aW :: :: a_wl_red :: 'a__wlred__' by
+aE |- A :: :: a_wf_typ :: 'a_wf_typ__' by
 
-|= aW
------------------- :: gc_var
-|= aW , x : A
+--------- :: unit
+aE |- UNIT 
 
-|= aW
------------------- :: gc_tvar
-|= aW , X : ▪
+--------- :: bot
+aE |- BOT 
 
-|= aW
------------------- :: gc_stvar
-|= aW , X : ~▪
+--------- :: top
+aE |- TOP
 
-|= aW , A <: B
------------------- :: gc_stvar
-|= aW , X : A < B
+(X : ▪) in aE
+-------------- :: tvar
+aE |- X
 
-|= aW
------------------- :: sub_top
-|= aW , B1 <: TOP
+(X : ~▪) in aE 
+-------------- :: stvar 
+aE |- X
 
-|= aW
-------------------- :: sub_bot
-|= aW , BOT <: A
+(X : A < B) in aE 
+-------------------- :: etvar 
+aE |- X
 
-|= aW
-------------------- :: sub_unit
-|= aW , UNIT <: UNIT
+aE |- A1
+aE |- A2
+-------------- :: arrow
+aE |- A1 -> A2
 
-|= aW
------------------ :: sub_tvar
-|= aW , X <: X
+X ∈ₛ A
+aE, X : ▪ |- A
+-------------------- :: all
+aE |- ∀ X . A
 
-|= aW , A1 <: B1 , B2 <: A2
------------------------------- :: subarrow
-|= aW , B1 -> B2 <: A1 -> A2
+aE |- A1
+aE |- A2
+------------- :: union
+aE |- A1 ⊔ A2
 
-A1 ¬= ∀
-A1 ¬= ⊓
-A1 ¬= ⊔
-|= aW , X : BOT < TOP , B1 <: A1
-------------------------------------------------- :: sub_alll
-|= aW , ∀ X . B1 <: A1
+aE |- A1
+aE |- A2 
+------------- :: intersection
+aE |- A1 ⊓ A2
 
-|= aW , X : ~▪ , B1 <: A1
-------------------------------------------------- :: sub_all
-|= aW , ∀ X . B1 <: ∀ X . A1
 
-(X : B1 < B2) in ⌊ aW ⌋
-¬smono ⌊ aW ⌋ (A1 -> A2)
-aW , X1 : BOT < TOP, X2 : BOT < TOP ≺⁺ ( X : X1 -> X2 ) ~ aW2 | aW3 ‖ E
-|= ( aW2 ++ aW3 ) , X1 -> X2 <: A1 -> A2
---------------------------------------------------------------------------- :: sub_arrow1
-|= aW , X <: A1 -> A2
+defns
+J_a_wf_exp :: '' ::=
 
-(X : B1 < B2) in ⌊ aW ⌋
-¬smono ⌊ aW ⌋ (A1 -> A2)
-aW , X1 : BOT < TOP, X2 : BOT < TOP ≺⁻ ( X : X1 -> X2 ) ~ aW2 | aW3 ‖ E
-|= ( aW2 ++ aW3 ) , A1 -> A2 <: X1 -> X2
---------------------------------------------------------------------------- :: sub_arrow2
-|= aW , A1 -> A2 <: X
+defn
+aE |- e :: :: a_wf_exp :: 'a_wf_exp__' by
 
-(X : B1 < B2) in ⌊ aW ⌋
-(Y : B3 < B4) in ⌊ aW ⌋
-aW ≺⁻ ( X : Y ) ~ aW2 | aW3 ‖ E
-aW [ X ] [ Y ]
-|= ( aW2 ++ aW3 )
--------------------------------------------- :: sub_etvar1
-|= aW , Y <: X
+--------- :: unit
+aE |- unit 
 
-(X : B1 < B2) in ⌊ aW ⌋
-(Y : B3 < B4) in ⌊ aW ⌋
-aW ≺⁺ ( X : Y ) ~ aW2 | aW3 ‖ E
-aW [ X ] [ Y ]
-|= ( aW2 ++ aW3 )
--------------------------------------------- :: sub_etvar2
-|= aW , X <: Y
+(x : A) in aE  
+----------------- :: var
+aE |- x 
 
-(X : B1 < B2) in ⌊ aW ⌋
-smono ⌊ aW ⌋ A1
-aW ≺⁻ ( X : A1 ) ~ aW2 | aW3 ‖ E
-|= ( aW2 ++ aW3 )
--------------------------------------------- :: sub_etvarmono1
-|= aW , A1 <: X
+aE |- T
+aE , x : T |- e
+----------------- :: abs
+aE |- \ x . e
 
-(X : A1 < A2) in ⌊ aW ⌋
-smono ⌊ aW ⌋ B1
-aW ≺⁺ ( X : B1 ) ~ aW2 | aW3 ‖ E
-|= ( aW2 ++ aW3 )
--------------------------------------------- :: sub_etvarmono2
-|= aW , X <: B1
+aE |- e1
+aE |- e2
+----------------- :: app
+aE |- e1 e2
 
-|= aW , A1 <: B1 , A1 <: B2
------------------------------ :: sub_intersection1
-|= aW , A1 <: B1 ⊓ B2
+aE , X : ▪ |- body
+----------------- :: tabs 
+aE |- \ X . body
 
-|= aW , B1 <: A1
--------------------------- :: sub_intersection2
-|= aW , B1 ⊓ B2 <: A1
+aE |- A
+aE |- e
+----------------- :: tapp 
+aE |- e @ A
 
-|= aW , B2 <: A1
------------------------- :: sub_intersection3
-|= aW , B1 ⊓ B2 <: A1
+aE |- A
+aE |- e
+----------------- :: anno 
+aE |- e : A
 
-|= aW , B1 <: A1
------------------------- :: sub_union1
-|= aW , B1 <: A1 ⊔ A2
+defn
+aE |- body :: :: a_wf_body :: 'a_wf_body__' by
 
-|= aW , B1 <: A2
------------------------- :: sub_union2
-|= aW , B1 <: A1 ⊔ A2
+aE |- A
+aE |- e
+----------- :: anno
+aE |- e : A
 
-|= aW , B1 <: A1 , B2 <: A1
----------------------------- :: sub_union3
-|= aW , B1 ⊔ B2 <: A1
 
-|= aW , e => _ <: A1
------------------------- :: chk_sub
-|= aW , e <= A1
+defns 
+J_a_wf_cont :: '' ::= 
 
-% |= aW , X : ▪ , e <= A1 
-% ------------------------- :: chk_all
-% |= aW , e <= ∀ X . A1    
+defn 
+aE |- c :: :: a_wf_cont :: 'a_wf_cont__' by 
 
-|= aW , x : A1 , e <= A2
------------------------------ :: chk_absarrow
-|= aW , \ x . e <= A1 -> A2    
+aE |- c
+----------------- :: infabs
+aE |- _ ▹ c
 
-(X : A1 < A2) in ⌊ aW ⌋
-aW , X1 : BOT < TOP, X2 : BOT < TOP ≺± ( X : X1 -> X2 ) ~ aW2 | aW3 ‖ E
-|= ( aW2 ++ aW3 ) , x : X1 , e <= X2
----------------------------------------------------------------------------- :: chk_absevar
-|= aW , \ x . e <= X  
+aE |- A
+aE |- c 
+------------------ :: infabsunion
+aE |- _ ⊔▹ A ▹ c
 
-|= aW , x : BOT , e <= TOP 
----------------------------  :: chk_abstop
-|= aW , \ x . e <= TOP
+aE |- e 
+aE |- c
+-------------------- :: infapp
+aE |- _ • e =>=> c  
 
-|= aW , e <= A1 , e <= A2
----------------------------  :: chk_inter
-|= aW , e <= A1 ⊓ A2 
+aE |- A 
+aE |- c
+-------------------- :: inftapp
+aE |- _ ○ A =>=> c  
 
-|= aW , e <= A1 
----------------------------  :: chk_union1
-|= aW , e <= A1 ⊔ A2 
+aE |- A1 
+aE |- A2
+aE |- c
+-------------------- :: inftappunion
+aE |- _ ⊔∘ A1 ○ A2 =>=> c  
 
-|= aW , e <= A2
----------------------------  :: chk_union2
-|= aW , e <= A1 ⊔ A2 
+aE |- A 
+aE |- c
+-------------------- :: unioninftapp
+aE |- _ ⊔∘ A >> c  
 
-(x : A) in ⌊ aW ⌋ 
-|= aW , c $ A
--------------------------- :: inf_var
-|= aW , x => c
+aE |- A 
+aE |- c
+-------------------- :: unioninfabs
+aE |- _ ⊔▹ A >> c  
 
-|= aW , c $ A , e <= A
--------------------------- :: inf_anno
-|= aW , (e : A) => c
+aE |- A 
+-------------------- :: sub
+aE |- _ <: A  
 
-|= aW2 , c $ (∀ X . A) , X : ▪ , e <= A
-------------------------------------- :: inf_tabs
-|= aW , \ X . e : A => c
 
-|= aW , c $ UNIT
-------------------------------------- :: inf_unit
-|= aW , unit => c
+defns 
+J_a_wf_work :: '' ::= 
 
-|= aW , e1 => ( _ ▹ (_ • e2 =>=> c))
-------------------------------------- :: inf_app
-|= aW , (e1 e2) => c
+defn 
+aE |- w :: :: a_wf_work :: 'a_wf_work__' by 
 
-|= aW , c $ A2 , e <= A1
-------------------------------------- :: infapparrow
-|= aW , A1 -> A2 • e =>=> c
+aE |- e
+aE |- c
+----------------- :: infer
+aE |- e => c
 
-|= aW , c $ A1 -> B1
---------------------------------------------------------------------------- :: infabs_arr
-|= aW , A1 -> B1 ▹ c
+aE |- e
+aE |- A
+------------------ :: check
+aE |- e <= A
 
-(X : A1 < A2) in ⌊ aW ⌋
-aW , X1 : BOT < TOP, X2 : BOT < TOP ≺± ( X : X1 -> X2 ) ~ aW2 | aW3 ‖ E
-|= ( aW2 ++ aW3 ) , X1 -> X2 ▹ c
---------------------------------------------------------------------------- :: infabs_evar
-|= aW , X ▹ c
+aE |- A 
+aE |- c
+-------------------- :: infabs
+aE |- A ▹ c  
 
-|= aW , TOP -> BOT ▹ c
--------------------------------------------------- :: infappbot
-|= aW , BOT ▹ c
+aE |- A1 
+aE |- A2
+aE |- c
+-------------------- :: infabsunion
+aE |- A1 ⊔▹ A2 ▹ c
 
-|= aW , A1 ▹ c
--------------------------------------------------- :: infabs_inter1
-|= aW , A1 ⊓ A2 ▹ c
+aE |- A
+aE |- e
+aE |- c
+-------------------- :: infapp
+aE |- A • e =>=> c    
 
-|= aW , A2 ▹ c
--------------------------------------------------- :: infabs_inter2
-|= aW , A1 ⊓ A2 ▹ c
+aE |- A1
+aE |- A2
+aE |- c
+---------------------------- :: inftapp
+aE |- A1 ○ A2 =>=> c  
 
-|= aW , A1 ▹ ( _ ⊔▹ A2 ▹ c )
--------------------------------------------------- :: infabs_union
-|= aW , A1 ⊔ A2 ▹ c
+aE |- A1 
+aE |- A2
+aE |- B
+aE |- c
+---------------------------- :: inftappunion
+aE |- A1 ⊔∘ A2 ○ B =>=> c  
 
-|= aW , A2 ▹ ( _ ⊔▹ B1 -> C1 >> c )
--------------------------------------------------- :: infabsunion
-|= aW , B1 -> C1 ⊔▹ A2 ▹ c
+aE |- A1
+aE |- A2 
+aE |- c
+------------------------------ :: unioninftapp
+aE |- A1 ⊔∘ A2 >> c  
 
-|= aW , c $ (B1 ⊓ B2) -> (C1 ⊔ C2)
--------------------------------------------------- :: unioninfabs
-|= aW , B2 -> C2 ⊔▹ B1 -> C1 >> c 
+aE |- A1
+aE |- A2 
+aE |- c
+-------------------- :: unioninfabs
+aE |- A1 ⊔▹ A2 >> c  
 
-|= aW , e => _ ○ B =>=> c
-------------------------------------- :: inf_tapp
-|= aW , e @ B => c
+aE |- A1
+aE |- A2 
+-------------------- :: sub
+aE |- A1 <: A2  
 
-|= aW , c $ {B / X} A
-------------------------------------- :: inftapp_all
-|= aW , ∀ X . A ○ B =>=> c
+aE |- A
+aE |- c
+-------------------- :: apply
+aE |- c $ A
 
-|= aW , c $ BOT
-------------------------------------- :: inftapp_bot
-|= aW , BOT ○ B =>=> c
 
-|= aW , A1 ○ B =>=> c
--------------------------------------------------- :: inftapp_inter1
-|= aW , A1 ⊓ A2 ○ B =>=> c
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-|= aW , A2 ○ B =>=> c
--------------------------------------------------- :: inftapp_inter2
-|= aW , A1 ⊓ A2 ○ B =>=> c
+defns 
+J_a_wf_wl :: '' ::= 
 
-|= aW , A1 ○ B =>=> ( _ ⊔∘ A2 ○ B =>=> c )
--------------------------------------------------- :: inftapp_union
-|= aW , A1 ⊔ A2 ○ B =>=> c
+defn 
+|- aW :: :: a_wf_wl :: 'a_wf_wl__' by 
 
-|= aW , A2 ○ B =>=> ( _ ⊔∘ C1 >> c)
--------------------------------------------------- :: inftappunion
-|= aW , C1 ⊔∘ A2 ○ B =>=> c
+-------------------- :: empty
+|- empty
 
-|= aW , c $ C1 ⊔ C2
--------------------------------------------------- :: unioninftapp
-|= aW , C2 ⊔∘ C1 >> c
+x `notin`  dom ⌊ aW ⌋
+⌊ aW ⌋ |- A
+|- aW
+-------------------- :: consvar
+|- aW , x : A
+
+X `notin`  dom ⌊ aW ⌋
+|- aW
+-------------------- :: constvar
+|- aW , X : ▪
+
+X `notin` dom ⌊ aW ⌋
+|- aW
+-------------------- :: consstvar
+|- aW , X : ~▪
+
+X `notin` dom ⌊ aW ⌋
+⌊ aW ⌋ |- A
+⌊ aW ⌋ |- B
+|- aW
+-------------------- :: consetvar
+|- aW , X : A < B
+
+⌊ aW ⌋ |- w
+|- aW
+-------------------- :: conswork
+|- aW , w

@@ -32,7 +32,8 @@ Fixpoint aenv_to_awl (E : list (atom*abind)) :=
   | (X, b) :: E'  => aworklist_constvar (aenv_to_awl E') X b
   end.
 
-  
+
+(* TODO *)
 Inductive a_smono_typ :  list (atom*abind)  -> typ -> Prop  :=
   | a_smono_typ__unit : forall E, a_smono_typ E typ_unit.
   
