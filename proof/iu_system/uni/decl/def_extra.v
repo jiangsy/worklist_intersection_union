@@ -101,8 +101,8 @@ Inductive d_infabs : denv -> typ -> typ -> typ -> Prop :=
     d_infabs Ψ A2 B C->
     d_infabs Ψ (typ_intersection A1 A2) B C
 | d_infabs__union : forall (Ψ:denv) (A1 A2 B1 B2 C1 C2:typ),
-    d_infabs Ψ A1 B1 C1->
-    d_infabs Ψ A2 B2 C2->
+    d_infabs Ψ A1 B1 C1 ->
+    d_infabs Ψ A2 B2 C2 ->
     d_infabs Ψ (typ_union A1 A2) (typ_intersection B1 B2) (typ_union C1 C2)
 .
 

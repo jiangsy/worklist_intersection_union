@@ -19,6 +19,16 @@ Hint Constructors wf_ss : Hdb_a_wl_red_soundness.
 Hint Constructors d_wl_del_red : Hdb_a_wl_red_soundness.
 
 
+Theorem a_mono_typ_wf : forall aE A,
+  a_mono_typ aE A -> a_wf_typ aE A.
+Proof.
+  intros. induction H; auto.
+  econstructor. admit.
+Admitted.
+
+Hint Resolve a_mono_typ_wf : Hdb_a_wl_red_soundness.
+
+
 
 Ltac destruct_a_wf_wl :=
   repeat
@@ -55,28 +65,50 @@ Lemma a_wf_typ_trans_typ : forall θ Γ Ω Aᵃ,
     inst_typ θ Aᵃ Aᵈ.
 Admitted.
 
-
+Ltac trans_all_typ :=
+  match goal with 
+  | H5 : nil ⫦ ?Γ ⇝ ?Ω ⫣ ?θ |- _ => 
+    repeat
+    match goal with 
+    | H1 : a_wf_typ (awl_to_aenv ?Γ) ?C |- _ =>
+      let H3 := fresh "Htrans" in
+      let H4 := fresh "Htrans"  in
+      let C1 := fresh C"ᵈ" in
+        lazymatch goal with
+        | _ : inst_typ θ C ?Cᵈ |- _ => fail
+        | _ : _ |- _ =>
+        eapply a_wf_typ_trans_typ in H1 as H3; eauto with Hdb_a_wl_red_soundness
+        end;
+        destruct H3 as [C1]
+    end
+  end.
 
 Theorem d_a_wl_red_soundness: forall Γ,
   ⊢ᵃ Γ -> Γ ⟶ᵃʷ⁎⋅ -> exists Ω, transfer Γ Ω /\ Ω ⟶ᵈ⁎⋅.
 Proof with eauto with Hdb_a_wl_red_soundness.
   intros * Hwfa Hared. induction Hared; auto; unfold transfer in *.
   - exists dworklist_empty. intuition...
-  - _apply_IH_a_wl_red. 
-    eapply a_wf_typ_trans_typ in H0...
-    destruct H0 as [Aᵈ].
-    exists (dworklist_consvar Ω x (dbind_typ Aᵈ))...
+  - _apply_IH_a_wl_red.   
+    trans_all_typ. admit.
+     (* exists (dworklist_consvar Ω x (dbind_typ Aᵈ))... *)
   - _apply_IH_a_wl_red.
     exists (dworklist_constvar Ω X dbind_tvar_empty)...
     split... exists ((X, ss_bind__tvar_empty) :: θ)...
   - _apply_IH_a_wl_red. admit.
-  - destruct_a_wf_wl; intuition.
+  - destruct_a_wf_wl; intuition; subst; _apply_IH_a_wl_red.
+    + apply a_mono_typ_wf in H2.
+      apply a_mono_typ_wf in H0.
+      dependent destruction Htrans.
+      trans_all_typ. admit.
+    + dependent destruction Htrans. trans_all_typ. admit.
     + admit.
     + admit.
-    + admit.
-    + subst. _apply_IH_a_wl_red.
-      admit.
-  - admit.
+  - _apply_IH_a_wl_red.
+    trans_all_typ.
+    exists (dworklist_conswork Ω (work_sub B1ᵈ typ_top)); split...
+    exists θ... econstructor... econstructor... econstructor...
+    eauto... admit.
+    econstructor; eauto... admit.
   - admit.
   - _apply_IH_a_wl_red. 
     exists (dworklist_conswork Ω (work_sub typ_unit typ_unit)).
@@ -84,6 +116,23 @@ Proof with eauto with Hdb_a_wl_red_soundness.
     admit.
     admit.
   - _apply_IH_a_wl_red.
+    dependent destruction H.
+    + admit.
+    + admit.
+    + admit.
+  - _apply_IH_a_wl_red.
+    dependent destruction Htrans. dependent destruction Htrans.
+    dependent destruction H4. dependent destruction H6.
+    exists ((work_sub (typ_arrow B1ᵈ A1ᵈ0) (typ_arrow A1ᵈ B1ᵈ0) ⫤ Ω)%dworklist).
+    split. exists θ. auto...
+    econstructor.
+    econstructor. 
     admit.
+    admit.
+    admit.  
+  - exists ((work_sub (typ_arrow B1ᵈ A1ᵈ0) (typ_arrow A1ᵈ B1ᵈ0) ⫤ Ω)%dworklist).
+  - admit.
+  - admit.
+  - admit.
   -
 Admitted.
