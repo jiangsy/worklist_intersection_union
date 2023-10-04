@@ -115,7 +115,8 @@ aworklist, aW  :: 'aworklist_' ::=
   | aW1 ++ aW2  :: M :: app {{ coq ( awl_app [[aW2]] [[aW1]] )}} 
   
 formula :: formula_ ::=
-  | judgement        ::   :: judgement
+  | judgement             ::   :: judgement
+  | formula \/ formula'       ::   :: judgement_or {{ coq  ([[formula]]) \/ ([[formula']]) }}
   | ( x db )  in dE    ::   :: binds1 {{ coq binds ([[x]])  ([[db]]) ([[dE]]) }}
   | ( X db )  in dE    ::   :: binds2 {{ coq binds ([[X]])  ([[db]]) ([[dE]]) }}
   | ( x ab )  in aE    ::   :: binds3 {{ coq binds ([[x]])  ([[ab]]) ([[aE]]) }}
@@ -127,6 +128,8 @@ formula :: formula_ ::=
   | X  `notin` dom aE ::   :: fresh4 {{ coq ([[X]]  `notin` dom ([[aE]])) }}
   | X in A           ::   :: appear1 {{ coq [[X]] `in` ftvar_in_typ [[A]]}}
   | A ¬= TOP         ::   :: neqtop  {{ coq ~ ([[A]] = typ_top)}}
+  | A = TOP          ::   :: eqtop  {{ coq ([[A]] = typ_top)}}
+  | A = BOT          ::   :: eqbot  {{ coq ([[A]] = typ_bot)}}
   | ⌊ dW ⌋           ::   :: dwl_to_env {{ coq dwl_to_denv [[ dW ]] }}
   | ⌊ aW ⌋           ::   :: awl_to_env {{ coq awl_to_aenv [[ aW ]] }}
 
@@ -790,7 +793,6 @@ aW [ X1 ] [ X2 ]
 aW , w [ X1 ] [ X2 ] 
 
 
-
 defns
 J_a_wf_typ :: '' ::=
 
@@ -837,6 +839,38 @@ aE |- A1
 aE |- A2 
 ------------- :: intersection
 aE |- A1 ⊓ A2
+
+defns 
+J_a_mono_typ :: '' ::= 
+
+defn 
+aE |-m A :: :: a_mono_typ :: 'a_mono_typ__' by 
+
+--------------- :: unit
+aE |-m UNIT
+
+(X : ▪) in aE
+--------------- :: tvar
+aE |-m X
+
+(X : A < B) in aE
+----------------- :: etvar
+aE |-m X
+
+aE |-m A1
+aE |-m A2
+--------------- :: arrow
+aE |-m A1 -> A2
+
+aE |-m A1 
+aE |-m A2 
+--------------- :: intersection
+aE |-m A1 ⊓ A2
+
+aE |-m A1 
+aE |-m A2 
+--------------- :: union
+aE |-m A1 ⊔ A2
 
 
 defns
@@ -1028,8 +1062,8 @@ X `notin` dom ⌊ aW ⌋
 |- aW , X : ~▪
 
 X `notin` dom ⌊ aW ⌋
-⌊ aW ⌋ |- A
-⌊ aW ⌋ |- B
+⌊ aW ⌋ |-m A \/ A = BOT
+⌊ aW ⌋ |-m B \/ B = TOP
 |- aW
 -------------------- :: consetvar
 |- aW , X : A < B
