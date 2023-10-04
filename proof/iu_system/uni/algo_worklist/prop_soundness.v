@@ -57,7 +57,10 @@ Ltac _apply_IH_a_wl_red :=
 
 Lemma a_wf_wl_wf_ss : forall θ Γ Ω,  
   ⊢ᵃ Γ -> nil ⫦ Γ ⇝ Ω ⫣ θ -> wf_ss θ.
-Proof.
+Proof with eauto.
+  intros. dependent induction H0; dependent destruction H...
+  - econstructor... admit.
+  - econstructor... admit.
 Admitted.
 
 Lemma a_wf_typ_trans_typ : forall θ Γ Ω Aᵃ,
@@ -122,7 +125,7 @@ Proof with eauto with Hdb_a_wl_red_soundness.
     + admit.
   - _apply_IH_a_wl_red.
     dependent destruction Htrans. dependent destruction Htrans.
-    dependent destruction H4. dependent destruction H6.
+    dependent destruction H2. dependent destruction H4.
     exists ((work_sub (typ_arrow B1ᵈ A1ᵈ0) (typ_arrow A1ᵈ B1ᵈ0) ⫤ Ω)%dworklist).
     split. exists θ. auto...
     econstructor.

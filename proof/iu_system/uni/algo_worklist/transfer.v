@@ -104,8 +104,10 @@ Inductive inst_typ : subst_set -> typ -> typ -> Prop :=
 
 Inductive inst_exp : subst_set -> exp -> exp -> Prop :=
   | inste_unit : forall θ,
+      wf_ss θ ->
       inst_exp θ exp_unit exp_unit
   | inste_var : forall θ x,
+      wf_ss θ ->
       inst_exp θ (exp_var_f x) (exp_var_f x)
   | inste_abs : forall L θ eᵃ eᵈ,
       (forall x, x `notin` L -> 
@@ -236,7 +238,6 @@ Inductive inst_worklist : subst_set -> aworklist -> dworklist -> subst_set -> Pr
       wf_ss θ -> 
       θ ⫦ aworklist_empty ⇝ dworklist_empty ⫣ θ
   | inst_wl__conswork : forall θ θ' Γ Ω  wᵃ wᵈ, 
-      wf_ss θ -> 
       θ ⫦ Γ ⇝ Ω ⫣ θ' ->
       inst_work θ' wᵃ wᵈ ->
       θ ⫦ aworklist_conswork Γ wᵃ ⇝ dworklist_conswork Ω wᵈ ⫣ θ'
