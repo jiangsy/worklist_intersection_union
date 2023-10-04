@@ -119,9 +119,13 @@ Inductive d_typing : denv -> exp -> typing_mode -> typ -> Prop :=
     d_wf_typ Ψ A ->
     d_typing Ψ e typingmode__chk A ->
     d_typing Ψ  ( (exp_anno e A) )  typingmode__inf A
-| d_typinginf_unit : forall (Ψ:denv),
+| d_typing__inf_unit : forall (Ψ:denv),
     d_wf_env Ψ ->
     d_typing Ψ exp_unit typingmode__inf typ_unit
+| d_typing__inf_abs_mono : forall (L:vars) (Ψ:denv) (e:exp) (A1 A2:typ),
+    d_mono_typ Ψ (typ_arrow A1 A2) ->
+    ( forall x , x \notin  L  -> d_typing  ( x ~ (dbind_typ A1)  ++  Ψ )  ( open_exp_wrt_exp e (exp_var_f x) ) typingmode__chk A2 )  ->
+    d_typing Ψ (exp_abs e) typingmode__inf (typ_arrow A1 A2)
 | d_typing__infapp : forall (Ψ:denv) (e1 e2:exp) (A B C:typ),
     d_typing Ψ e1 typingmode__inf A ->
     d_infabs Ψ A B C ->

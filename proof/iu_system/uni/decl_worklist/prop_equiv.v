@@ -226,6 +226,7 @@ Proof with auto with Hdb_dworklist_equiv typing.
     econstructor... admit.
     apply IHd_wl_red. admit.
   - admit.
+  - admit.
   - destruct_wf. _apply_IH_d_wl_red.
     destruct_d_wl_del_red.
     admit.
@@ -315,6 +316,8 @@ Proof.
     rewrite_dwl_app; eauto.
   - inst_cofinites_by L. eapply H0.
     rewrite_dwl_app; eauto.
+  - inst_cofinites_by L. eapply H1.
+    rewrite_dwl_app; eauto.
   - inst_cofinites_by L. eapply H0.
     rewrite_dwl_app; eauto.
 Qed.
@@ -349,6 +352,9 @@ Proof.
   - eapply d_wl_red__inf_var with (A:=A). 
     rewrite d_wl_app_cons_work_same_env. auto.
     rewrite_dwl_app. auto.
+  - eapply d_wl_red__inf_abs_mono with (A1:=A1) (A2:=A2) (L:=L).
+    rewrite d_wl_app_cons_work_same_env. auto.
+    intros. inst_cofinites_with x. rewrite_dwl_app. auto.
   - eapply d_wl_red__inf_tabs with (L:=L).
     intros. inst_cofinites_with X.
     rewrite_dwl_app. auto.
@@ -428,6 +434,7 @@ Lemma d_chk_inf_wft: forall E e m A1,
 Proof.
   intros. induction H; auto.
   - admit. 
+  - admit.
   - apply d_infabs_wft in H0; intuition.
   - apply d_inftapp_wft in H1; intuition.
   - admit.
@@ -446,6 +453,14 @@ Proof with auto with Hdb_dworklist_equiv.
   - econstructor. 
     eapply IHd_typing; eauto.
     destruct_wf...
+  - destruct_wf.
+    eapply d_wl_red__inf_abs_mono with (A1:=A1) (A2:=A2) (L:=L `union` L0 `union` dom (dwl_to_denv Ω))...
+    intros. inst_cofinites_with x.
+    apply H1...
+    apply d_mono_typ_d_wf_typ in H. dependent destruction H.
+    econstructor...
+    econstructor... simpl. eapply d_wf_exp_bound_typ_head; eauto.    
+    simpl. apply dwf_typ_weakening_cons...
   - econstructor.
     destruct_wf.
     eapply IHd_typing1; eauto.
