@@ -497,7 +497,7 @@ Proof.
 Qed.
 
 Corollary dwf_typ_weaken_head: forall Ψ1 Ψ2 T,
-Ψ1 ⊢ T ->
+    Ψ1 ⊢ T ->
   (* uniq (Ψ2 ++ Ψ1) -> *)
   Ψ2 ++ Ψ1 ⊢ T.
 Proof.
@@ -1071,8 +1071,8 @@ Qed.
 #[export] Hint Immediate neq_all_lc_typ dneq_intersection_lc_typ dneq_union_lc_typ : core.
 
 
-(* Lemma lc_typ_open_stvar_subst_mono : forall S T SY,
-    lc_typ (S ^^ᵈ T) -> d_mono_typ T -> lc_typ (S ^ᵈ SY).
+Lemma lc_typ_open_stvar_subst_mono : forall S Ψ T SY,
+    lc_typ (S ^^ᵈ T) -> d_mono_typ Ψ T -> lc_typ (S ^ᵈ SY).
 Proof with try solve_notin; try solve_by_invert; simpl in *; eauto.
   intros * HD HM.
   inductions HD.
@@ -1085,8 +1085,14 @@ Proof with try solve_notin; try solve_by_invert; simpl in *; eauto.
     try applys H0; try rewrite open_typ_wrt_typ_twice...
 Qed.
 
-Lemma ds_in_open_stvar_subst_mono : forall S T SY SZ,
-    ds_in SY (S ^^ᵈ T) -> dmono_typ T -> SY ∉ ftvar_in_typ T -> ds_in SY (S ^ᵈ SZ).
+Lemma d_mono_typ_for_any_var : forall Y,
+  exists E, d_mono_typ E `ᵈ Y.
+Proof with eauto.
+  intros. exists* (Y ~ ▫ ++ nil).
+Qed.
+
+Lemma ds_in_open_stvar_subst_mono : forall S T Ψ SY SZ,
+    ds_in SY (S ^^ᵈ T) -> d_mono_typ Ψ T -> SY ∉ ftvar_in_typ T -> ds_in SY (S ^ᵈ SZ).
 Proof with try solve_notin; try solve_by_invert; simpl in *; eauto using lc_typ_open_stvar_subst_mono.
   intros * HD HM HN.
   inductions HD.
@@ -1094,24 +1100,33 @@ Proof with try solve_notin; try solve_by_invert; simpl in *; eauto using lc_typ_
     try destruct (lt_eq_lt_dec n 0); try case_if; try solve [inverts~ x];
     try solve [inverts H0; solve_notin]...
   all: try solve [inverts H1; inverts HM;
-                  try solve [forwards*: IHHD (typ_var_b 0) T4];
-                  try solve [forwards*: IHHD (typ_var_b 0) T3]].
-  all: try solve [pick fresh Y and apply dsin_all; inst_cofinites_with Y;
-                  rewrite open_typ_wrt_typ_twice in H0;
-                  forwards*: H0;
-                  unfold open_typ_wrt_typ; try rewrite open_typ_wrt_typ_twice; eauto].
-  all: try solve [inverts H0; inverts HM;
-                  forwards*: IHHD1 (typ_var_b 0) T3;
-                  forwards*: IHHD2 (typ_var_b 0) T4].
+                  try solve [forwards*: IHHD (typ_var_b 0) T1];
+                  try solve [forwards*: IHHD (typ_var_b 0) T2]].
+  all: try solve [
+           pick fresh Y and apply dsin_all; inst_cofinites_with Y;
+           rewrite open_typ_wrt_typ_twice in H0;
+           [ forwards*: H0 | ];
+           unfold open_typ_wrt_typ; try rewrite open_typ_wrt_typ_twice;
+           eauto using lc_typ_open_stvar_subst_mono ].
+  all: try solve [
+           inverts H0; inverts HM;
+                  forwards*: IHHD1 (typ_var_b 0) T1;
+                  forwards*: IHHD2 (typ_var_b 0) T2 ].
 Qed.
 
+Lemma d_mono_typ_weaken_head: forall Ψ T a,
+    d_mono_typ Ψ T -> d_mono_typ (a ++ Ψ) T.
+Proof.
+  intros. induction* H.
+Qed.
 
-Lemma d_wf_typ_open_stvar_subst_mono : forall Ψ1 Ψ2 S T SY,
+Lemma d_wf_typ_open_tvar_subst_mono : forall Ψ1 Ψ2 S T SY,
     Ψ1 ++ Ψ2 ⊢ S ^^ᵈ T -> d_mono_typ (Ψ1 ++ Ψ2) T -> SY ∉ (dom Ψ2)
     -> Ψ1 ++ SY ~ ▫ ++ Ψ2 ⊢ S ^ᵈ SY.
 Proof with try solve_notin; simpl in *; eauto.
   intros * HT HD HN.
   inductions HT...
+
   all: destruct S; destruct T;
       lazymatch goal with
       | n : nat, Hx: _ = ↑ ?n ^^ᵈ _ |- _ =>
@@ -1125,35 +1140,35 @@ Proof with try solve_notin; simpl in *; eauto.
               unfold open_typ_wrt_typ in *; simpl in *; inverts x;
               rewrite_env (Ψ1 ++ [(SY, ▫)] ++ Ψ2); applys* dwf_typ_weakening;
               eauto using dwf_typ_weakening]
-      | Hx: typ_svar _ = typ_svar _ ^^ᵈ _ |- _ =>
-          try solve [
-              unfold open_typ_wrt_typ in *; simpl in *; inverts x;
-              rewrite_env (Ψ1 ++ [(SY, ▫)] ++ Ψ2); applys* dwf_typ_weakening;
-              eauto using dwf_typ_weakening]
+      (* | Hx: dtyp_svar _ = dtyp_svar _ ^^ᵈ _ |- _ => *)
+      (*     try solve [ *)
+      (*         unfold open_typ_wrt_typ in *; simpl in *; inverts x; *)
+      (*         rewrite_env (Ψ1 ++ [(SY, ▫)] ++ Ψ2); applys* dwf_typ_weakening; *)
+      (*         eauto using dwf_typ_weakening] *)
       | Hx: _ = _ ^^ᵈ _ |- _ =>
-          try solve [unfold open_typ_wrt_typ in Hx; simpl in Hx; inverts Hx];
+          try solve [unfold open_typ_wrt_typ in Hx; simpl in x; inverts x];
           try solve [unfold open_typ_wrt_typ; simpl; eauto using d_wf_env_weaken_tvar];
-          try solve [unfold open_typ_wrt_typ in *; simpl in *; inverts* Hx]
+          try solve [unfold open_typ_wrt_typ in *; simpl in *; inverts* x]
       end.
-  all:
-    try solve [
-    pick fresh SZ and apply dwftyp_all;
+ all: try solve [
+    pick fresh SZ and apply d_wf_typ__all;
       unfold open_typ_wrt_typ in *; rewrite open_typ_wrt_typ_twice in *;
       inverts* x;
       [ (forwards H': H SZ;
        try rewrite open_typ_wrt_typ_twice in H';
        try applys* ds_in_open_stvar_subst_mono H'; eauto) |
         (match goal with
-        HD: dmono_typ ?A |- _ => assert (HE:
+        HD: d_mono_typ _ ?A |- _ => assert (HE:
                open_typ_wrt_typ_rec 0 `ᵈ SZ (open_typ_wrt_typ_rec 1 A S)
                = open_typ_wrt_typ_rec 0 A (open_typ_wrt_typ_rec 0 `ᵈ SZ S) )
           by rewrite* open_typ_wrt_typ_twice;
-                                 forwards*: H1 SZ ((SZ, ▫) :: Ψ1) Ψ2 HE
+                                    forwards*: H1 SZ ((SZ, ▫) :: Ψ1) Ψ2 HE;
+                                    rewrite_env ( SZ ~ ▫ ++ (Ψ1 ++ Ψ2));
+                                    eauto using d_mono_typ_weaken_head
       end) ]
       ].
 Qed.
 
-*)
 
 Lemma d_wf_typ_bound_typ : forall Ψ1 x Ψ2 A1 B1 B2,
   Ψ2 ++ x ~ dbind_typ B1 ++ Ψ1 ⊢ A1 ->
