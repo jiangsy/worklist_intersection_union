@@ -258,6 +258,38 @@ Inductive inst_worklist : subst_set -> aworklist -> dworklist -> subst_set -> Pr
 where "θ ⫦ Γᵃ ⇝ Γᵈ ⫣ θ'" := (inst_worklist θ Γᵃ Γᵈ θ').
 
 
+Reserved Notation "θ ⫦ Ω ⇝' Γ ⫣ θ'"
+  (at level 65, Ω at next level, Γ at next level, no associativity).
+Inductive inst_worklist' : subst_set -> aworklist -> dworklist -> subst_set -> Prop := 
+  | inst_wl'__empty : forall θ, 
+      wf_ss θ -> 
+      θ ⫦ aworklist_empty ⇝' dworklist_empty ⫣ θ
+  | inst_wl'__conswork : forall θ θ' Γ Ω  wᵃ wᵈ, 
+      wf_ss θ -> 
+      θ ⫦ Γ ⇝' Ω ⫣ θ' ->
+      inst_work θ' wᵃ wᵈ ->
+      θ ⫦ aworklist_conswork Γ wᵃ ⇝' dworklist_conswork Ω wᵈ ⫣ θ'
+  | inst_wl'__cons_tvar : forall θ θ' Γ Ω X, 
+      θ ⫦ Γ ⇝' Ω ⫣ θ' ->
+      θ ⫦ aworklist_constvar Γ X abind_tvar_empty ⇝' dworklist_constvar Ω X dbind_tvar_empty ⫣  (X, ss_bind__tvar_empty) :: θ'
+  | inst_wl'__cons_stvar : forall θ θ' Γ Ω X, 
+      θ ⫦ Γ ⇝' Ω ⫣ θ' ->
+      θ ⫦ aworklist_constvar Γ X abind_stvar_empty ⇝' dworklist_constvar Ω X dbind_stvar_empty ⫣  (X, ss_bind__stvar_empty) :: θ'
+  | inst_wl'__cons_var : forall θ θ' Γ Ω A1ᵃ A1ᵈ x, 
+      θ ⫦ Γ ⇝' Ω ⫣ θ' ->
+      inst_typ θ' A1ᵃ A1ᵈ ->
+      θ ⫦ aworklist_consvar Γ x (abind_typ A1ᵃ) ⇝' dworklist_consvar Ω x (dbind_typ A1ᵈ) ⫣ θ'
+  | inst_wl'_ev : forall θ θ' Γ Ω Aᵃ Aᵈ Bᵃ Bᵈ T X, 
+      θ ⫦ Γ ⇝' Ω ⫣ θ' -> 
+      inst_typ θ' Aᵃ Aᵈ ->
+      inst_typ θ' Bᵃ Bᵈ ->
+      dwl_to_denv Ω ⊢ Aᵈ <: T ->
+      dwl_to_denv Ω ⊢ T <: Bᵈ ->
+      (* TODO: check A1 < T1, T1 < B1  *)
+      θ ⫦ aworklist_consvar Γ X (abind_bound Aᵃ Bᵃ) ⇝' Ω ⫣  (X, ss_bind__typ T) :: θ'
+where "θ ⫦ Γᵃ ⇝' Γᵈ ⫣ θ'" := (inst_worklist' θ Γᵃ Γᵈ θ').
+
+
 (* Hint Constructors inst_typ : transfer.
 Hint Constructors inst_worklist : transfer.
 

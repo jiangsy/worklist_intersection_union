@@ -39,7 +39,10 @@ Ltac _apply_IH_a_wl_red :=
     | H : (⊢ᵃ ?Γ) -> ?P |- _ => destruct_a_wf_wl; 
       let H1 := fresh "H" in
       assert (H1 : ⊢ᵃ Γ) by auto with Hdb_a_wl_red_soundness;
-      apply H in H1
+      let H2 := fresh "IHHdred" in
+      apply H in H1 as H2;
+      destruct H2 as [Ω [Htrans Hdred]];
+      destruct Htrans as [θ Htrans]
     end.
 
 Lemma a_wf_wl_wf_ss : forall θ Γ Ω,  
@@ -47,37 +50,40 @@ Lemma a_wf_wl_wf_ss : forall θ Γ Ω,
 Proof.
 Admitted.
 
+Lemma a_wf_typ_trans_typ : forall θ Γ Ω Aᵃ,
+  a_wf_typ (awl_to_aenv Γ) Aᵃ -> nil ⫦ Γ ⇝ Ω ⫣ θ -> exists Aᵈ,
+    inst_typ θ Aᵃ Aᵈ.
+Admitted.
+
+
 
 Theorem d_a_wl_red_soundness: forall Γ,
   ⊢ᵃ Γ -> Γ ⟶ᵃʷ⁎⋅ -> exists Ω, transfer Γ Ω /\ Ω ⟶ᵈ⁎⋅.
-Proof with auto with Hdb_a_wl_red_soundness.
-  intros. induction H0; auto; unfold transfer in *.
+Proof with eauto with Hdb_a_wl_red_soundness.
+  intros * Hwfa Hared. induction Hared; auto; unfold transfer in *.
   - exists dworklist_empty. intuition...
-    exists nil... 
-  - dependent destruction H.
-    apply IHa_wl_red in H1.
-    destruct H1 as [Ω [Htr Hd_red]].
-    admit.
+  - _apply_IH_a_wl_red. 
+    eapply a_wf_typ_trans_typ in H0...
+    destruct H0 as [Aᵈ].
+    exists (dworklist_consvar Ω x (dbind_typ Aᵈ))...
   - _apply_IH_a_wl_red.
-    destruct H2 as [Ω [Htrans Hd_red]].
-    destruct Htrans as [θ Htrans].
-    exists (dworklist_constvar Ω X dbind_tvar_empty).
-    split. exists ((X, ss_bind__tvar_empty) :: θ).
-    apply inst_wl__cons_tvar; auto.
-    econstructor...
-  - admit.
-  - _apply_IH_a_wl_red. 
-    destruct H4 as [Ω [Htrans Hd_red]].
-    destruct Htrans as [θ Htrans].
-    dependent destruction Htrans.
-    dependent destruction H5.
-    admit.
+    exists (dworklist_constvar Ω X dbind_tvar_empty)...
+    split... exists ((X, ss_bind__tvar_empty) :: θ)...
+  - _apply_IH_a_wl_red. admit.
+  - destruct_a_wf_wl; intuition.
+    + admit.
+    + admit.
+    + admit.
+    + subst. _apply_IH_a_wl_red.
+      admit.
   - admit.
   - admit.
   - _apply_IH_a_wl_red. 
-    destruct H3 as [Ω [Htrans Hd_red]].
-    destruct Htrans as [θ Htrans].
     exists (dworklist_conswork Ω (work_sub typ_unit typ_unit)).
     split... exists θ... econstructor; eauto... econstructor. econstructor. admit.
-
+    admit.
+    admit.
+  - _apply_IH_a_wl_red.
+    admit.
+  -
 Admitted.
