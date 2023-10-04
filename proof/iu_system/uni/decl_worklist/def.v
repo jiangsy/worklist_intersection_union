@@ -17,38 +17,38 @@ Fixpoint dwl_app (Ω1 Ω2 : dworklist) :=
 Inductive apply_cont : cont -> typ -> work -> Prop :=
   (* | applycont__done : forall T1,  
       apply_cont cont_done (some T1) dworklist_empty *)
-  | applycont__infabs: forall T1 c,
+  | applycont__infabs: forall A c,
       apply_cont (cont_infabs c) 
-                   T1
-                   (work_infabs T1 c)
+                   A
+                   (work_infabs A c)
   | applycont__infabsunion : forall A2 B1 C1 c, 
       apply_cont (cont_infabsunion A2 c) 
                    (typ_arrow B1 C1)
                    (work_infabsunion (typ_arrow B1 C1) A2 c)
-  | applycont__unioninfabs : forall B2 C2 B1 C1 c,
+  | applycont__unioninfabs : forall B1 B2 C1 C2 c,
       apply_cont (cont_unioninfabs (typ_arrow B1 C1) c) 
                    (typ_arrow B2 C2)
                    (work_unioninfabs (typ_arrow B1 C1) (typ_arrow B2 C2) c)
-  | d_applycont_infapp : forall A1 e c,
+  | d_applycont_infapp : forall A e c,
       apply_cont (cont_infapp e c) 
-                   A1
-                  (work_infapp A1 e c)
-  | applycont__tapp : forall A1 B1 c,
-      apply_cont (cont_inftapp B1 c) 
-                   A1
-                   (work_inftapp A1 B1 c)
-  | applycont__tappunion : forall A2 B2 C1 c,
-      apply_cont (cont_inftappunion A2 B2 c) 
-                   C1 
-                   (work_inftappunion C1 A2 B2 c)
+                   A
+                  (work_infapp A e c)
+  | applycont__tapp : forall A B c,
+      apply_cont (cont_inftapp B c) 
+                   A
+                   (work_inftapp A B c)
+  | applycont__tappunion : forall A2 B C1 c,
+      apply_cont (cont_inftappunion A2 B c) 
+                   C1
+                   (work_inftappunion C1 A2 B c)
   | applycont__unioninftapp : forall A1 A2 c,
       apply_cont (cont_unioninftapp A1 c) 
                    A2
                    (work_unioninftapp A1 A2 c)
-  | applycont__sub : forall A1 B1,
-      apply_cont (cont_sub A1) 
-                   B1
-                   (work_sub B1 A1)
+  | applycont__sub : forall A B,
+      apply_cont (cont_sub B) 
+                   A
+                   (work_sub A B)
 .
 
 (* decl worklist delegated reduction, corresponds to Jimmy's dc *)
