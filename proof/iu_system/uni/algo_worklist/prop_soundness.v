@@ -23,8 +23,8 @@ Theorem a_mono_typ_wf : forall aE A,
   a_mono_typ aE A -> a_wf_typ aE A.
 Proof.
   intros. induction H; auto.
-  econstructor. admit.
-Admitted.
+  eapply a_wf_typ__etvar; eauto.
+Qed.
 
 Hint Resolve a_mono_typ_wf : Hdb_a_wl_red_soundness.
 

@@ -1525,6 +1525,8 @@ Inductive a_mono_typ : aenv -> typ -> Prop :=    (* defn a_mono_typ *)
       binds ( X )  ( abind_tvar_empty ) ( aE )  ->
      a_mono_typ aE (typ_var_f X)
  | a_mono_typ__etvar : forall (aE:aenv) (X:typvar) (A B:typ),
+     a_wf_typ aE A ->
+     a_wf_typ aE B ->
       binds ( X )  ( (abind_bound A B) ) ( aE )  ->
      a_mono_typ aE (typ_var_f X)
  | a_mono_typ__arrow : forall (aE:aenv) (A1 A2:typ),
