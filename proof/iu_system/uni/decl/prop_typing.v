@@ -690,6 +690,7 @@ Lemma d_chk_inf_wf_env: forall Ψ e mode A,
 Proof.
   intros. induction H; auto.
   - inst_cofinites_by L. inversion H1; auto.
+  - inst_cofinites_by L. inversion H1; auto.
   - inst_cofinites_by L. inversion H0; auto.
   - inst_cofinites_by L. inversion H1; auto.
 Qed.
@@ -699,6 +700,7 @@ Lemma d_chk_inf_wft: forall Ψ e mode A,
   Ψ ⊢ A.
 Proof.
   intros. induction H; auto.
+  - admit.
   - admit. 
   - apply d_infabs_wft in H0; intuition.
   - apply d_inftapp_wft in H1; intuition.
@@ -745,6 +747,12 @@ Proof with auto with typing.
       (* () => 1 *)
       * exists typ_unit. split; auto.
         econstructor. eapply d_subenv_wf_env; eauto.
+      * exists (typ_arrow A1 A2); split...
+        apply d_mono_typ_d_wf_typ in H.
+        apply dsub_refl... inst_cofinites_by L. admit.
+        econstructor...
+        admit.
+        admit.
       (* e1 e2 => A *)
       * eapply IHn1 in Hty1; eauto...
         destruct Hty1 as [A2]. inversion H0.
@@ -846,7 +854,7 @@ Proof with auto with typing.
       * intros.
         refine (IHn3 _ _ _ _ _ _ _ _ Hty _ _ _); eauto...
         apply dsub_union_inversion in H0. intros. intuition.
-Qed.
+Admitted.
 
 Corollary d_chk_subsumption : forall Ψ e A A',
   ⊢ Ψ ->
