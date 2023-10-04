@@ -127,7 +127,7 @@ Proof.
   intros * H. generalize dependent Ψ'. induction H; intros; auto.
   - econstructor.
     eapply d_subenv_same_tvar; eauto.
-  - eapply d_wf_typ__stvar. 
+  - eapply d_wf_typ__stvar.
     eapply d_subenv_same_stvar; eauto.
   - eapply d_wf_typ__all with (L:=L).
     + intros. inst_cofinites_with X. auto.
@@ -135,6 +135,7 @@ Proof.
       econstructor. auto.
 Qed.
 
+#[local] Hint Resolve d_subenv_wf_typ : core.
 
 Lemma d_subenv_wf_env : forall Ψ,
   ⊢ Ψ ->
@@ -176,9 +177,25 @@ Ltac solve_wf_subenv := match goal with
   | H : d_subenv ?Ψ' ?Ψ |- ⊢ ?Ψ' => eapply d_subenv_wf_env; eauto
 end.
 
+Lemma binds_subenv: forall Ψ X Ψ',
+    X ~ ▫ ∈ Ψ -> d_subenv Ψ' Ψ -> X ~ ▫ ∈ Ψ'.
+Proof with try solve_by_invert.
+  intros* HD HS. induction* HS.
+  - forwards* [?|?]: binds_app_1 HD.
+  - forwards* [?|?]: binds_app_1 HD.
+  - forwards* [(?&?)|?]: binds_cons_1 HD...
+Qed.
+
+Lemma d_mono_typ_subenv: forall Ψ A Ψ',
+    d_mono_typ Ψ A -> d_subenv Ψ' Ψ -> d_mono_typ Ψ' A.
+Proof with eauto using binds_subenv.
+  intros* HD HS. gen HS.
+  induction HD; intros...
+Qed.
+
 Lemma d_sub_subenv: forall Ψ A B,
   Ψ ⊢ A <: B -> forall Ψ', d_subenv Ψ' Ψ -> Ψ' ⊢ A <: B.
-Proof.
+Proof with eauto using d_mono_typ_subenv.
   intros Ψ A B Hsub.
   induction Hsub; try solve [econstructor; solve_wf_subenv].
   - econstructor; auto.
@@ -188,8 +205,8 @@ Proof.
       constructor. auto. }
     specialize (H2 H5).
     auto.
-  - intros. eapply d_sub__alll with (T:=T); auto. 
-    admit.
+  - intros. forwards: IHHsub H4.
+    pick fresh X and apply d_sub__alll; try applys H5...
   - intros.
     apply d_sub__intersection1; auto.
   - intros.
@@ -206,7 +223,7 @@ Proof.
     eapply d_subenv_wf_typ; eauto.
   - intros.
     apply d_sub__union3; auto.
-Admitted.
+Qed.
 
 
 Hint Resolve d_subenv_wf_typ : typing.
@@ -487,13 +504,12 @@ Qed.
 
 #[export] Hint Immediate d_infabs_wft_0 d_infabs_wft_1 d_infabs_wft_2 d_infabs_wft_3 : core.
 
-
 (* @shengyi:todo *** *)
 Theorem d_infabs_subsumption_same_env : forall Ψ A A' B C,
   Ψ ⊢ A ▹ B → C ->
   Ψ ⊢ A' <: A ->
   exists B' C', Ψ ⊢ typ_arrow B' C' <: typ_arrow B C /\ Ψ ⊢ A' ▹ B' → C'.
-Proof with auto with typing.
+Proof with auto using d_mono_typ_d_wf_typ with typing.
   intros. generalize dependent A'. induction H; intros.
   - dependent induction H0...
     + exists typ_top typ_bot. auto...
@@ -523,14 +539,12 @@ Proof with auto with typing.
     + specialize (IHd_sub _ _ H H0 H1 (eq_refl _)).
       destruct IHd_sub as [B2 [C2]].
       exists B2 C2; intuition...
-      econstructor. eauto. eauto.
-      * admit.
+      econstructor. eauto. auto...
       * pick fresh Y and apply d_wf_typ__all.
          ** forwards: H2 Y...
          ** forwards: d_sub_dwft_1 H4.
             rewrite_env (nil++Ψ) in H8.
-            admit.
-            (* forwards*: d_wf_typ_open_tvar_subst_mono H9. *)
+            forwards*: d_wf_typ_open_tvar_subst_mono H8.
       * eauto.
     + specialize (IHd_sub _ _ H H0 H1 (eq_refl _)).
       destruct IHd_sub as [B2 [C2]].
@@ -560,14 +574,18 @@ Proof with auto with typing.
         rewrite subst_tvar_in_typ_open_typ_wrt_typ in H8...
         simpl in H8. case_if in H8...
         rewrite subst_tvar_in_typ_fresh_eq in H8...
-          admit.
-         admit.
+        all: eauto.
       }
       specialize (IHd_infabs _ H7).
       destruct IHd_infabs as [B2 [C2]].
       exists B2 C2. intuition...
-      eapply d_infabs__all with (T:=T). eauto. eauto. admit.
-       eauto...
+      eapply d_infabs__all with (T:=T). eauto. eauto.
+      pick fresh Y and apply d_wf_typ__all.
+      ** forwards: H3 Y...
+      ** forwards: d_sub_dwft_1 H7.
+         rewrite_env (nil++Ψ) in H8.
+         forwards*: d_wf_typ_open_tvar_subst_mono Y H8 H.
+      ** eauto...
     + inversion H5.
     + specialize (IHd_sub _ H H0 H1 H2 IHd_infabs (eq_refl _)).
       destruct IHd_sub as [B2 [C2]].
@@ -614,7 +632,7 @@ Proof with auto with typing.
       intuition...
       dependent destruction H1. dependent destruction H3.
       intuition...
-Admitted.
+Qed.
 
 
 Lemma d_infabs_subenv : forall Ψ Ψ' A B C,
@@ -624,10 +642,8 @@ Lemma d_infabs_subenv : forall Ψ Ψ' A B C,
 Proof with eauto using d_subenv_wf_env, d_subenv_wf_typ with typing.
   intros * HA HE.
   induction HA; intuition eauto...
-  eapply d_infabs__all with (T:=T); eauto.
-  admit. admit. admit.
-Admitted.
-
+  eapply d_infabs__all with (T:=T); eauto using d_mono_typ_subenv.
+Qed.
 
 Corollary d_infabs_subsumption: forall Ψ Ψ' A A' B C,
   Ψ ⊢ A ▹ B → C ->
@@ -638,7 +654,7 @@ Proof with eauto.
   intros * HA HS HE.
   forwards (?&?&HA'): d_infabs_subsumption_same_env HA HS.
   forwards : d_infabs_subenv HA' HE.
-  exists*. 
+  exists*.
 Qed.
 
 Hint Extern 1 (_ < _) => lia : typing.
@@ -698,14 +714,17 @@ Lemma d_chk_inf_wft: forall Ψ e mode A,
   d_typing Ψ e mode A ->
   Ψ ⊢ A.
 Proof.
-  intros. induction H; auto.
-  - admit. 
+  intros. induction~ H.
+  - induction H; try solve_by_invert.
+    all: forwards[(?&Heq)|?]: binds_cons_1 H0; try inverts Heq; subst; eauto.
   - apply d_infabs_wft in H0; intuition.
   - apply d_inftapp_wft in H1; intuition.
-  - admit.
-Admitted.
+  - pick fresh X. forwards*: H1 X.
+    rewrite_env (nil ++ (X, dbind_typ A1) :: Ψ ) in H2.
+    forwards*: d_wf_typ_strengthen_var H2.
+  - eauto using d_sub_dwft_2.
+Qed.
 
-#[export] Hint Immediate d_sub_dwft_0 d_sub_dwft_1 d_sub_dwft_2 : core.
 #[export] Hint Resolve d_sub_dwft_0 d_sub_dwft_1 d_sub_dwft_2 : subtyping.
 
 Theorem d_chk_inf_subsumption : forall n1 n2 n3 Ψ Ψ' e A mode,
@@ -760,7 +779,12 @@ Proof with auto with typing.
       * exists (typ_all A); split.
         -- eapply dsub_refl; auto.
            now eauto using d_chk_inf_wf_env.
-        -- dependent destruction H. pick fresh X and apply d_typing__inftabs. auto...
+        -- dependent destruction H.
+           pick fresh X and apply d_typing__inftabs.
+           ++ econstructor. now applys H.
+              intros. eapply d_subenv_wf_typ. now applys H0.
+              auto...
+           ++
            intros. inst_cofinites_with X.
            refine (IHn1 _ _ _ _ _ _ _ _ _ _ H1 _ _ _); eauto...
            simpl. rewrite <- d_exp_size_open_typ; lia.
