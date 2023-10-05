@@ -49,6 +49,24 @@ Definition update_upper_bound (A1 B1:typ) :=
   | _ => typ_intersection B1 A1
   end.
 
+  
+Inductive a_update_bound_atomic :
+    aworklist -> list (typvar * typvar) -> aworklist -> Prop :=
+  | a_upd_bound_atomic__empty : forall Γ,
+    a_update_bound_atomic Γ nil Γ
+  | a_upd_bound_atomic__cons1 : forall Γ ls X Y Γ' Γ'1 Γ'2 A B,
+    a_update_bound_atomic Γ ls Γ' ->
+    a_evs_in_wl Γ' X Y ->
+    Γ' = awl_app Γ'2 (aworklist_constvar Γ'1 Y (abind_bound A B)) ->
+    a_update_bound_atomic Γ ((X ~ Y) ++ ls) (awl_app Γ'2 (aworklist_constvar Γ'1 Y (abind_bound (update_lower_bound A (typ_var_f X)) B)))
+  | a_upd_bound_atomic__cons2 : forall Γ ls X Y Γ' Γ'1 Γ'2 A B,
+    a_update_bound_atomic Γ ls Γ' ->
+    a_evs_in_wl Γ' Y X ->
+    Γ' = awl_app Γ'2 (aworklist_constvar Γ'1 X (abind_bound A B)) ->
+    a_update_bound_atomic Γ ((X ~ Y) ++ ls) (awl_app Γ'2 (aworklist_constvar Γ'1 Y (abind_bound A (update_upper_bound B (typ_var_f X)))))
+.
+
+
 Inductive a_update_bound
   : aworklist ->  list (atom*abind) -> typvar -> typ -> amode_update_bound -> aworklist -> aworklist -> Prop :=
   | a_ub__lb_stop : forall Γ1 E X A B1 A1, 
