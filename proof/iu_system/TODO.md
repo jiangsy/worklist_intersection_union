@@ -1,26 +1,26 @@
 # Rules
 
 - finish algo rules
-  - reorder def/use
-  - check apply_cont, wfj for cont?
+  - [ ] reorder def/use
+  - [x] check apply_cont, wfj for cont?
   - check a_wl_red in algo/def_worklist
-- do we need a non-overlapping sys?
+    - [x] implement the two phase update_bound
+- [x] do we need a non-overlapping sys?
   - check non overlapping
-- update reduction rules
+- [x] update reduction rules
 
 
 # Proofs
 
-- finish subsumption
+- [ ] try a less-overlapping sys @snow
+- [x] finish subsumption
 - big theorems
-  + soundness
-    @shengyi
-  + completeness
-    @shengyi
-  + @chen type safety
-  + decidability
+  + [ ] soundness @shengyi
+  + [ ] completeness @shengyi
+  + [x] type safety @chen
+  + [ ] decidability @chen
 
 # Code and Technical Things
 
-- ln related lemmas in prop_subtyping.v
-- @Chen system F defs
+- [x] ln related lemmas in prop_subtyping.v 
+- [x] system F defs @chen
