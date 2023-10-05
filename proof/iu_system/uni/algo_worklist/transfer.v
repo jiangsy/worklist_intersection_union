@@ -4,6 +4,7 @@ Require Import Metalib.Metatheory.
 Require Import List.
 
 Require Import uni.notations.
+Require Import uni.prop_basic.
 Require Import uni.algo_worklist.def_extra.
 Require Import ln_utils.
 
@@ -84,59 +85,59 @@ Inductive inst_typ : subst_set -> typ -> typ -> Prop :=
   | inst_typ__top : forall θ,
       wf_ss θ ->
       inst_typ θ typ_top typ_top
-  | instyp_arrow : forall θ A1ᵃ A2ᵃ A1ᵈ A2ᵈ,
+  | inst_typ__arrow : forall θ A1ᵃ A2ᵃ A1ᵈ A2ᵈ,
       inst_typ θ A1ᵃ A1ᵈ ->
       inst_typ θ A2ᵃ A2ᵈ ->
       inst_typ θ (typ_arrow A1ᵃ A2ᵃ) (typ_arrow A1ᵈ A2ᵈ)
-  | instyp_all : forall θ L A1ᵃ A1ᵈ,
+  | inst_typ__all : forall θ L A1ᵃ A1ᵈ,
       (forall X, X `notin` L -> 
         inst_typ ((X, ss_bind__tvar_empty) :: θ) (open_typ_wrt_typ A1ᵃ (typ_var_f X)) (open_typ_wrt_typ A1ᵈ (typ_var_f X))
       ) ->
       inst_typ θ (typ_all A1ᵃ) (typ_all A1ᵈ)
-  | instyp_intersection : forall θ A1ᵃ A2ᵃ A1ᵈ A2ᵈ,
+  | ins_typ__intersection : forall θ A1ᵃ A2ᵃ A1ᵈ A2ᵈ,
       inst_typ θ A1ᵃ A1ᵈ ->
       inst_typ θ A2ᵃ A2ᵈ ->
       inst_typ θ (typ_intersection A1ᵃ A2ᵃ) (typ_intersection A1ᵈ A2ᵈ)
-  | instyp_union : forall θ A1ᵃ A2ᵃ A1ᵈ A2ᵈ,
+  | inst_typ__union : forall θ A1ᵃ A2ᵃ A1ᵈ A2ᵈ,
       inst_typ θ A1ᵃ A1ᵈ ->
       inst_typ θ A2ᵃ A2ᵈ ->
       inst_typ θ (typ_union A1ᵃ A2ᵃ) (typ_union A1ᵈ A2ᵈ)
   . 
 
 Inductive inst_exp : subst_set -> exp -> exp -> Prop :=
-  | inste_unit : forall θ,
+  | inst_exp__unit : forall θ,
       wf_ss θ ->
       inst_exp θ exp_unit exp_unit
-  | inste_var : forall θ x,
+  | inst_exp__var : forall θ x,
       wf_ss θ ->
       inst_exp θ (exp_var_f x) (exp_var_f x)
-  | inste_abs : forall L θ eᵃ eᵈ,
+  | inst_exp__abs : forall L θ eᵃ eᵈ,
       (forall x, x `notin` L -> 
         inst_exp θ (open_exp_wrt_exp eᵃ (exp_var_f x))
                    (open_exp_wrt_exp eᵈ (exp_var_f x))
         ) ->
       inst_exp θ (exp_abs eᵃ) (exp_abs eᵈ)
-  | inste_app : forall θ e1ᵃ e2ᵃ e1ᵈ e2ᵈ,
+  | inst_exp__app : forall θ e1ᵃ e2ᵃ e1ᵈ e2ᵈ,
       inst_exp θ e1ᵃ e1ᵈ ->
       inst_exp θ e2ᵃ e2ᵈ ->
       inst_exp θ (exp_app e1ᵃ e2ᵃ) (exp_app e1ᵈ e2ᵈ)
-  | inste_tabs : forall L θ bᵃ bᵈ,
+  | inst_exp__tabs : forall L θ bᵃ bᵈ,
       (forall X, X \notin L -> 
         inst_body ((X, ss_bind__tvar_empty) :: θ) 
                   (open_body_wrt_typ bᵃ (typ_var_f X))
                   (open_body_wrt_typ bᵈ (typ_var_f X))
       ) ->
       inst_exp θ (exp_tabs bᵃ) (exp_tabs bᵈ)
-  | inste_tapp : forall θ eᵃ eᵈ A1ᵃ A1ᵈ,
+  | inst_exp__tapp : forall θ eᵃ eᵈ A1ᵃ A1ᵈ,
       inst_exp θ eᵃ eᵈ ->
       inst_typ θ A1ᵃ A1ᵈ ->
       inst_exp θ (exp_tapp eᵃ A1ᵃ) (exp_tapp eᵈ A1ᵈ)
-  | inste_anno : forall θ eᵃ eᵈ A1ᵃ A1ᵈ, 
+  | inst_exp__anno : forall θ eᵃ eᵈ A1ᵃ A1ᵈ, 
       inst_exp θ eᵃ eᵈ ->
       inst_typ θ A1ᵃ A1ᵈ ->
       inst_exp θ (exp_anno eᵃ A1ᵃ) (exp_anno eᵈ A1ᵈ) 
 with inst_body : subst_set -> body -> body -> Prop :=
-  | inst_bodyanno : forall θ eᵃ eᵈ A1ᵃ A1ᵈ,
+  | inst_body__anno : forall θ eᵃ eᵈ A1ᵃ A1ᵈ,
       inst_exp θ eᵃ eᵈ ->
       inst_typ θ A1ᵃ A1ᵈ ->
       inst_body θ (body_anno eᵃ A1ᵃ) (body_anno eᵈ A1ᵈ)
@@ -264,10 +265,34 @@ where "θ ⫦ Γᵃ ⇝ Γᵈ ⫣ θ'" := (inst_worklist θ Γᵃ Γᵈ θ').
 
 Hint Constructors inst_typ : Hdb_transfer.
 
+
+
+Lemma inst_work_not_in_ss : forall θ Γ Ω X,
+  nil ⫦ Γ ⇝ Ω ⫣ θ -> X ∉ dom (awl_to_aenv Γ) -> X ∉ dom θ.
+Proof with auto.
+  intros. dependent induction H; simpl in *...
+Qed.
+
+
+Lemma a_wf_wl_wf_ss : forall θ Γ Ω,  
+  ⊢ᵃ Γ -> nil ⫦ Γ ⇝ Ω ⫣ θ -> wf_ss θ.
+Proof with eauto.
+  intros. dependent induction H0; dependent destruction H...
+  - econstructor... eapply inst_work_not_in_ss...
+  - econstructor... eapply inst_work_not_in_ss...
+  - econstructor... eapply inst_work_not_in_ss... admit.
+Admitted.
+
+Hint Resolve a_wf_wl_wf_ss : Hdb_transfer.
+
+Notation "θ ⫦ᵗ Aᵃ ⇝ Aᵈ" := (inst_typ θ Aᵃ Aᵈ)
+  (at level 65, Aᵃ at next level, no associativity).
+
+
 Lemma inst_typ_det : forall θ Aᵃ A₁ᵈ A₂ᵈ,
   uniq θ -> 
-  inst_typ θ Aᵃ A₁ᵈ -> 
-  inst_typ θ Aᵃ A₂ᵈ -> 
+  θ ⫦ᵗ Aᵃ ⇝ A₁ᵈ -> 
+  θ ⫦ᵗ Aᵃ ⇝ A₂ᵈ -> 
   A₁ᵈ = A₂ᵈ.
 Proof with eauto with Hdb_transfer.
   intros. generalize dependent A₂ᵈ.
@@ -287,26 +312,6 @@ Proof with eauto with Hdb_transfer.
       admit.
 Admitted.
 
-Notation "θ ⫦ Aᵃ ⇝ Aᵈ" := (inst_typ θ Aᵃ Aᵈ)
-  (at level 65, Aᵃ at next level, no associativity).
-
-Lemma inst_work_not_in_ss : forall θ Γ Ω X,
-  nil ⫦ Γ ⇝ Ω ⫣ θ -> X ∉ dom (awl_to_aenv Γ) -> X ∉ dom θ.
-Proof with auto.
-  intros. dependent induction H; simpl in *...
-Qed.
-
-  
-Lemma a_wf_wl_wf_ss : forall θ Γ Ω,  
-  ⊢ᵃ Γ -> nil ⫦ Γ ⇝ Ω ⫣ θ -> wf_ss θ.
-Proof with eauto.
-  intros. dependent induction H0; dependent destruction H...
-  - econstructor... eapply inst_work_not_in_ss...
-  - econstructor... eapply inst_work_not_in_ss...
-  - econstructor... eapply inst_work_not_in_ss... admit.
-Admitted.
-
-Hint Resolve a_wf_wl_wf_ss : Hdb_transfer.
 
 Theorem a_mono_typ_wf : forall aE A,
   a_mono_typ aE A -> a_wf_typ aE A.
@@ -339,54 +344,39 @@ Proof with eauto with Hdb_transfer.
 Admitted. 
 
 
-Lemma inst_subst : forall θ X T Aᵃ Aᵈ, 
+Lemma inst_subst : forall θ θ' X T Aᵃ Aᵈ, 
   lc_typ Aᵃ ->
-  X `notin` (ftvar_in_typ Aᵃ)->
-  (X, ss_bind__typ T) :: θ ⫦ Aᵃ ⇝ Aᵈ -> 
-  θ ⫦ {T /ᵗ X} Aᵃ ⇝ Aᵈ.
+  θ' ++ (X, ss_bind__typ T) :: θ ⫦ᵗ Aᵃ ⇝ Aᵈ -> 
+  (* X cannot appear in θ', so we don't need to do any subst for it *)
+  θ' ++ θ ⫦ᵗ {T /ᵗ X} Aᵃ ⇝ Aᵈ.
 Proof with eauto with Hdb_transfer.
-  intros * Hlc Hfv Hinst.
-  generalize dependent Aᵈ.
-  dependent induction Hlc; simpl in *; intros.
+  intros * Hlc Hinst.
+  generalize dependent θ'. generalize dependent Aᵈ.
+  dependent induction Hlc; simpl in *; intros; try solve 
+    [dependent destruction Hinst; eauto with Hdb_transfer; dependent destruction H; eauto with Hdb_transfer].
   - dependent destruction Hinst...
-    dependent destruction H...
+    admit.
   - dependent destruction Hinst...
-    dependent destruction H...
+    admit.
   - dependent destruction Hinst...
-    dependent destruction H...
-  (* - dependent destruction Hinst...
-    eapply inst_t_forall with (L:=singleton x `union` fx_la_type t `union` fex_la_type t `union` L). intros.
-    + intros.
-      rewrite la_type_ex_subst_open_comm.
-      * eapply H0.
-        apply fx_la_type_open_la_type_notin; auto.
-        auto.
-      * inst_cofinites_with x0.
-        apply inst_wf in H1.
-        inversion H1.
-        apply ld_type_to_la_type_keeps_lc. apply ld_mono_is_ld_lc. auto.
-      * auto.
-  - dependent destruction Hinstopen.
-    econstructor; auto.
-  - destruct (x5 == x).
-    + subst.
-      apply notin_singleton_1 in Hfv. 
-      contradiction.
-    + dependent destruction Hinstopen.
-      constructor. inversion H. auto. 
-  - dependent destruction Hinstopen. 
-    destruct (ex5 == x). 
-    + subst.
-      apply binds_unique with (a:=sse_ev tᵈ) in H0. inversion H0. subst. inversion H.
-      * apply inst_ld_type_to_la_type; auto. 
-        apply ld_mono_is_ld_lc. auto.
-      * constructor; auto.
-      * apply wf_uniq. auto.
-    + inversion H0. 
-      * dependent destruction H1.
-        contradiction.
-      * econstructor; auto.      
-        dependent destruction H. auto. *)
+    admit.
+  - destruct (X0 == X); subst.
+    + dependent destruction Hinst. 
+      * admit.
+      * admit.
+      * admit.
+    + dependent destruction Hinst.
+      * econstructor... admit. admit.
+      * eapply inst_typ__stvar... admit. admit.
+      * econstructor.
+        admit.
+        admit.
+  - dependent destruction Hinst... 
+    eapply inst_typ__all with (L:=L `union` singleton X). intros.
+    inst_cofinites_with X0.
+    rewrite typ_subst_open_comm...
+    rewrite_env (((X0, ss_bind__tvar_empty) :: θ') ++ θ).
+    eapply H0...
 Admitted.
 
 (* Hint Constructors inst_typ : transfer.
@@ -570,52 +560,7 @@ Proof.
   auto.
 Qed.
 
-
-Lemma inst_subst : forall θ x tᵈ Aᵃ Aᵈ, 
-  lc_la_type Aᵃ ->
-  x `notin` (fx_la_type Aᵃ)->
-  (θ; x : tᵈ) ⫦ Aᵃ ⇝ Aᵈ -> 
-  θ ⫦ [ld_type_to_la_type tᵈ /^ᵃ x] Aᵃ ⇝ Aᵈ.
-Proof.
-  intros * Hlc Hfv Hinstopen.
-  generalize dependent Aᵈ.
-  dependent induction Hlc; simpl in *; intros.
-  - inversion Hinstopen. econstructor.
-    inversion H. auto.
-  - dependent destruction Hinstopen.
-    eapply inst_t_forall with (L:=singleton x `union` fx_la_type t `union` fex_la_type t `union` L). intros.
-    + intros.
-      rewrite la_type_ex_subst_open_comm.
-      * eapply H0.
-        apply fx_la_type_open_la_type_notin; auto.
-        auto.
-      * inst_cofinites_with x0.
-        apply inst_wf in H1.
-        inversion H1.
-        apply ld_type_to_la_type_keeps_lc. apply ld_mono_is_ld_lc. auto.
-      * auto.
-  - dependent destruction Hinstopen.
-    econstructor; auto.
-  - destruct (x5 == x).
-    + subst.
-      apply notin_singleton_1 in Hfv. 
-      contradiction.
-    + dependent destruction Hinstopen.
-      constructor. inversion H. auto. 
-  - dependent destruction Hinstopen. 
-    destruct (ex5 == x). 
-    + subst.
-      apply binds_unique with (a:=sse_ev tᵈ) in H0. inversion H0. subst. inversion H.
-      * apply inst_ld_type_to_la_type; auto. 
-        apply ld_mono_is_ld_lc. auto.
-      * constructor; auto.
-      * apply wf_uniq. auto.
-    + inversion H0. 
-      * dependent destruction H1.
-        contradiction.
-      * econstructor; auto.      
-        dependent destruction H. auto.
-Qed. *)
+*)
 
 
 (* Lemma transfer_reorder: forall Γᵃ Γ'ᵈ θ' x t m Γ'ᵃ,
