@@ -143,7 +143,13 @@ Proof with eauto with Hdb_a_wl_red_soundness.
     admit.
     admit.
     admit.  
-  - admit. 
+  - inst_cofinites_by L.
+    assert ( ⊢ᵃ (work_sub (B1 ^ᵈ x) A1 ⫤ aworklist_constvar Γ x (abind_bound typ_bot typ_top))) by admit.
+    apply H3 in H4.
+    destruct H4 as [Ω].
+    destruct H4 as [[θ Htrans] Hdred].
+    dependent destruction Htrans. dependent destruction Htrans.
+
   - admit.
   - inst_cofinites_by L using_name X.
     inst_cofinites_by (L `union` singleton X0) using_name X.
@@ -153,7 +159,15 @@ Proof with eauto with Hdb_a_wl_red_soundness.
   - admit.
   - admit.
   - admit.
-  - admit.
+  - _apply_IH_a_wl_red.
+    dependent destruction Htrans. dependent destruction H1.
+    dependent destruction Htrans. dependent destruction H1.
+    eapply inst_typ_det in H1... subst.
+    exists (work_sub A1ᵈ (typ_intersection B1ᵈ B1ᵈ0) ⫤ Ω)%dworklist. split...
+    dependent destruction Hdred.
+    dependent destruction Hdred.
+    econstructor... 
+    admit.
   - admit.
   - admit.
   - admit.

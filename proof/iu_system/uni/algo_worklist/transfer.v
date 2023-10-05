@@ -4,6 +4,7 @@ Require Import Metalib.Metatheory.
 Require Import List.
 
 Require Import uni.notations.
+Require Import uni.algo_worklist.def_extra.
 Require Import ln_utils.
 
 
@@ -258,8 +259,81 @@ Inductive inst_worklist : subst_set -> aworklist -> dworklist -> subst_set -> Pr
       dwl_to_denv Ω ⊢ Aᵈ <: T ->
       dwl_to_denv Ω ⊢ T <: Bᵈ ->
       (* TODO: check A1 < T1, T1 < B1  *)
-      θ ⫦ aworklist_consvar Γ X (abind_bound Aᵃ Bᵃ) ⇝ Ω ⫣  (X, ss_bind__typ T) :: θ'
+      θ ⫦ aworklist_constvar Γ X (abind_bound Aᵃ Bᵃ) ⇝ Ω ⫣  (X, ss_bind__typ T) :: θ'
 where "θ ⫦ Γᵃ ⇝ Γᵈ ⫣ θ'" := (inst_worklist θ Γᵃ Γᵈ θ').
+
+Hint Constructors inst_typ : Hdb_transfer.
+
+Lemma inst_typ_det : forall θ Aᵃ A₁ᵈ A₂ᵈ,
+  uniq θ -> 
+  inst_typ θ Aᵃ A₁ᵈ -> 
+  inst_typ θ Aᵃ A₂ᵈ -> 
+  A₁ᵈ = A₂ᵈ.
+Proof with eauto with Hdb_transfer.
+  intros. generalize dependent A₂ᵈ.
+  induction H0; (intros A₂ᵈ H2; dependent destruction H2; auto).
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - specialize (IHinst_typ1 H _ H2_).
+    specialize (IHinst_typ2 H _ H2_0).
+    subst...
+  - inst_cofinites_by (L `union` L0 `union` (ftvar_in_typ A1ᵈ) `union` (ftvar_in_typ A1ᵈ0)) using_name X.  
+    apply f_equal.
+    + eapply open_typ_wrt_typ_inj with (X1:=X); auto.
+      apply H1 in H2...
+      admit.
+Admitted.
+
+
+Lemma inst_work_not_in_ss : forall θ Γ Ω X,
+  nil ⫦ Γ ⇝ Ω ⫣ θ -> X ∉ dom (awl_to_aenv Γ) -> X ∉ dom θ.
+Proof with auto.
+  intros. dependent induction H; simpl in *...
+Qed.
+
+  
+Lemma a_wf_wl_wf_ss : forall θ Γ Ω,  
+  ⊢ᵃ Γ -> nil ⫦ Γ ⇝ Ω ⫣ θ -> wf_ss θ.
+Proof with eauto.
+  intros. dependent induction H0; dependent destruction H...
+  - econstructor... eapply inst_work_not_in_ss...
+  - econstructor... eapply inst_work_not_in_ss...
+Qed.
+
+Hint Resolve a_wf_wl_wf_ss : Hdb_transfer.
+
+Theorem a_mono_typ_wf : forall aE A,
+  a_mono_typ aE A -> a_wf_typ aE A.
+Proof.
+  intros. induction H; auto.
+  eapply a_wf_typ__etvar; eauto.
+Qed.
+
+Hint Constructors inst_typ : Hdb_transfer.
+Hint Constructors inst_cont : Hdb_transfer.
+Hint Constructors inst_work : Hdb_transfer.
+Hint Constructors inst_worklist : Hdb_transfer.
+Hint Constructors wf_ss : Hdb_transfer.
+
+
+Hint Resolve a_wf_wl_wf_ss : Hdb_a_wl_red_soundness.
+
+Lemma a_wf_typ_trans_typ : forall θ Γ Ω Aᵃ,
+  a_wf_typ (awl_to_aenv Γ) Aᵃ ->  ⊢ᵃ Γ -> nil ⫦ Γ ⇝ Ω ⫣ θ -> exists Aᵈ,
+    inst_typ θ Aᵃ Aᵈ.
+Proof with eauto with Hdb_transfer.
+  intros. dependent induction H...
+  - exists (`ᵈ X). econstructor... admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+Admitted. 
 
 
 (* Hint Constructors inst_typ : transfer.
@@ -319,25 +393,6 @@ Proof.
     + eapply IHθ; eauto. inversion H; auto.
       destruct a; destruct s; simpl in *. auto. auto.
 Qed.
-
-Lemma inst_t_lc : forall θ Aᵃ Aᵈ, 
-  θ ⫦ Aᵃ ⇝ Aᵈ -> 
-  lc_la_type Aᵃ /\ lc_ld_type Aᵈ.
-Proof.
-  intros.
-  induction H; try (split; destruct_conjs; auto; fail).
-  - split. auto. 
-    induction θ.
-    + inversion H0.
-    + destruct a. inversion H0.
-      * inversion H1. subst. inversion H.
-        subst. now apply ld_mono_is_ld_lc.
-      * inversion H. apply IHθ; auto. auto.
-  - split; inst_cofinites_by L.
-    + apply lc_la_t_forall_exists with (x1:=x). intuition.
-    + apply lc_ld_t_forall_exists with (x1:=x). intuition.
-Qed.
-
 
 Ltac inversion_eq :=
   repeat

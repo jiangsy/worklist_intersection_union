@@ -49,21 +49,22 @@ Definition update_upper_bound (A1 B1:typ) :=
   | _ => typ_intersection B1 A1
   end.
 
-  
-Inductive a_update_bound_atomic :
+
+(* add ^X < ^Y back *)
+Inductive a_add_contraint_sub_etvars :
     aworklist -> list (typvar * typvar) -> aworklist -> Prop :=
-  | a_upd_bound_atomic__empty : forall Γ,
-    a_update_bound_atomic Γ nil Γ
-  | a_upd_bound_atomic__cons1 : forall Γ ls X Y Γ' Γ'1 Γ'2 A B,
-    a_update_bound_atomic Γ ls Γ' ->
+  | a_add_contraint_sub_etvars__empty : forall Γ,
+    a_add_contraint_sub_etvars Γ nil Γ
+  | a_add_constraint_sub_etvars__cons1 : forall Γ ls X Y Γ' Γ'1 Γ'2 A B,
+    a_add_contraint_sub_etvars Γ ls Γ' ->
     a_evs_in_wl Γ' X Y ->
     Γ' = awl_app Γ'2 (aworklist_constvar Γ'1 Y (abind_bound A B)) ->
-    a_update_bound_atomic Γ ((X ~ Y) ++ ls) (awl_app Γ'2 (aworklist_constvar Γ'1 Y (abind_bound (update_lower_bound A (typ_var_f X)) B)))
-  | a_upd_bound_atomic__cons2 : forall Γ ls X Y Γ' Γ'1 Γ'2 A B,
-    a_update_bound_atomic Γ ls Γ' ->
+    a_add_contraint_sub_etvars Γ ((X ~ Y) ++ ls) (awl_app Γ'2 (aworklist_constvar Γ'1 Y (abind_bound (update_lower_bound A (typ_var_f X)) B)))
+  | a_add_contraint_sub_etvars__cons2 : forall Γ ls X Y Γ' Γ'1 Γ'2 A B,
+    a_add_contraint_sub_etvars Γ ls Γ' ->
     a_evs_in_wl Γ' Y X ->
     Γ' = awl_app Γ'2 (aworklist_constvar Γ'1 X (abind_bound A B)) ->
-    a_update_bound_atomic Γ ((X ~ Y) ++ ls) (awl_app Γ'2 (aworklist_constvar Γ'1 Y (abind_bound A (update_upper_bound B (typ_var_f X)))))
+    a_add_contraint_sub_etvars Γ ((X ~ Y) ++ ls) (awl_app Γ'2 (aworklist_constvar Γ'1 Y (abind_bound A (update_upper_bound B (typ_var_f X)))))
 .
 
 
@@ -181,7 +182,8 @@ Inductive a_wl_red : aworklist -> Prop :=    (* defn a_wl_red *)
  | d_wl_del__sub_etvarmono2 : forall (L:vars) (Γ Γ2 Γ3:aworklist) (X:typvar) (B1 A1 A2:typ),
       binds ( X )  ( (abind_bound A1 A2) ) (  ( awl_to_aenv  Γ  )  )  ->
      a_smono_typ  ( awl_to_aenv  Γ  )  B1 ->
-     (a_update_bound  Γ   nil   X   B1  a_mode_ub__upper  Γ2   Γ3 ) /\  a_wl_red  (   ( awl_app  Γ3   Γ2  )   ) ->
+     a_update_bound  Γ   nil   X   B1  a_mode_ub__upper  Γ2   Γ3 ->
+      a_wl_red  (   ( awl_app  Γ3   Γ2  )   ) ->
      a_wl_red (aworklist_conswork Γ (work_sub (typ_var_f X) B1))
  | d_wl_del__sub_intersection1 : forall (Γ:aworklist) (A1 B1 B2:typ),
      a_wl_red (aworklist_conswork (aworklist_conswork Γ (work_sub A1 B1)) (work_sub A1 B2)) ->
