@@ -725,19 +725,73 @@ Proof.
 Qed.
 
 
-Lemma d_mono_typ_subst_mono_mono : forall Ψ A T X,
-  d_mono_typ Ψ A ->
-  d_mono_typ Ψ T ->
-  d_mono_typ Ψ ({T /ᵗ X} A).
+Lemma d_mono_typ_weaken_head: forall Ψ T a,
+    d_mono_typ Ψ T -> d_mono_typ (a ++ Ψ) T.
 Proof.
-  intros. induction A; try solve [simpl; eauto].
-  - simpl. destruct (X0 == X); auto.
-  - simpl. dependent destruction H. auto.
-  - inversion H.
-  - simpl. dependent destruction H. auto.
-  - simpl. dependent destruction H. auto.
+  intros. induction* H.
 Qed.
 
+Lemma d_mono_typ_weakening : forall Ψ1 Ψ2 Ψ3 A,
+  d_mono_typ  (Ψ3 ++ Ψ1) A -> d_mono_typ (Ψ3 ++ Ψ2 ++ Ψ1) A.
+Proof.
+  intros.
+  dependent induction H; auto.
+Qed.
+
+
+Lemma d_mono_typ_subst_mono_mono : forall F Ψ A T X,
+  d_mono_typ (F ++ X ~ ▫ ++ Ψ) A ->
+  d_mono_typ Ψ T ->
+  d_mono_typ (map (subst_tvar_in_dbind T X) F ++ Ψ) ({T /ᵗ X} A).
+Proof with eauto using d_mono_typ_weaken_head; try solve_by_invert; try solve [exfalso; jauto].
+  intros. induction A; simpl in *...
+  1: { simpl. destruct (X0 == X); subst; auto...
+       inverts H.
+       forwards* [?|?]: binds_app_1 H3. forwards*: binds_map_2 (subst_tvar_in_dbind T X) H.
+       forwards[(?&Heq)|?]: binds_cons_1 H; try inverts Heq; subst; eauto...
+  }
+  all: simpl; dependent destruction H; auto.
+Qed.
+
+
+
+Lemma binds_two_thing_false : forall X Ψ,
+    X ~ ▪ ∈ Ψ -> ⊢ Ψ -> X ~ ▫ ∈ Ψ -> False.
+Proof.
+  intros.
+  forwards: d_wf_env_uniq H0.
+  forwards*: binds_unique H H2. inverts H3.
+Qed.
+
+Theorem d_sub_mono_stvar_false : forall Ψ A X,
+  X ~ ▪ ∈ Ψ ->
+  Ψ ⊢ A <: typ_var_f X ->
+  d_mono_typ Ψ A ->
+  False.
+Proof.
+  intros.
+  induction H1; dependent destruction H0; auto.
+  applys* binds_two_thing_false.
+Qed.
+
+
+Lemma d_mono_typ_subst_stvar : forall F Ψ A T X,
+    d_mono_typ (F ++ X ~ ▪ ++ Ψ) A ->
+    ⊢ F ++ X ~ ▪ ++ Ψ ->
+    Ψ ⊢ T ->
+    d_mono_typ (map (subst_tvar_in_dbind T X) F ++ Ψ) ({T /ᵗ X} A).
+Proof with eauto using d_mono_typ_weaken_head; try solve_by_invert; try solve [exfalso; jauto].
+  intros. induction A; simpl in *...
+  1: { simpl. destruct (X0 == X); subst; auto...
+       - inverts H.
+         assert (X ~ ▪ ∈ (F ++ (X, ▪) :: Ψ)) by eauto.
+         exfalso. forwards*: binds_two_thing_false X.
+       - inverts H.
+         forwards* [?|?]: binds_app_1 H4... forwards*: binds_map_2 (subst_tvar_in_dbind T X) H.
+       forwards[(?&Heq)|?]: binds_cons_1 H; try inverts Heq; subst; eauto...
+  }
+  all: simpl; dependent destruction H; auto.
+Qed.
 
 Lemma d_sub_dwft : forall Ψ A B,
   Ψ ⊢ A <: B -> ⊢ Ψ /\ Ψ ⊢ A /\ Ψ ⊢ B.
@@ -1112,12 +1166,6 @@ Proof with try solve_notin; try solve_by_invert; simpl in *; eauto using lc_typ_
            inverts H0; inverts HM;
                   forwards*: IHHD1 (typ_var_b 0) T1;
                   forwards*: IHHD2 (typ_var_b 0) T2 ].
-Qed.
-
-Lemma d_mono_typ_weaken_head: forall Ψ T a,
-    d_mono_typ Ψ T -> d_mono_typ (a ++ Ψ) T.
-Proof.
-  intros. induction* H.
 Qed.
 
 Lemma d_wf_typ_open_tvar_subst_mono : forall Ψ1 Ψ2 S T SY,

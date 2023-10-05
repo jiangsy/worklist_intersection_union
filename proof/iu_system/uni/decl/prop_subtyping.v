@@ -398,7 +398,7 @@ Qed.
 
 
 Inductive d_ord_mono : denv -> typ -> Prop :=
-| d_ordmono__tvar : forall Ψ X, 
+| d_ordmono__tvar : forall Ψ X,
     d_mono_typ Ψ (typ_var_f X) ->
     d_ord_mono Ψ (typ_var_f X)
 | d_ordmono__unit : forall Ψ, d_ord_mono Ψ typ_unit
@@ -509,12 +509,12 @@ Proof with auto with subtyping weakening.
     eapply H2 with (Ψ1 := Ψ1) (Ψ3 := (x, ▪) :: Ψ3); simpl; auto.
     constructor; auto.
   - apply d_sub__alll with (T := T) (L :=  L `union` dom (Ψ3 ++ Ψ2 ++ Ψ1)); auto...
-    admit.
+    eauto using d_mono_typ_weakening.
   - apply d_sub__intersection2; eauto...
   - apply d_sub__intersection3; auto...
   - apply d_sub__union1; auto...
   - apply d_sub__union2; auto...
-Admitted.
+Qed.
 
 
 Corollary d_sub_weakening_cons: forall Ψ x b A B,
@@ -578,6 +578,22 @@ Proof.
 Qed.
 
 
+
+Lemma d_mono_typ_map : forall F X Ψ T A,
+    d_mono_typ (F ++ X ~ ▫ ++ Ψ) T -> d_mono_typ (map (subst_tvar_in_dbind A X) F ++ Ψ) T.
+Proof.
+  intros.
+  dependent induction H; auto.
+  - induction F.
+    + simpl in *.
+      forwards[(?&Heq)|?]: binds_cons_1 H; try inverts Heq; subst; eauto.
+Abort.
+(*       forwards: binds_iff H. forwards Hb: binds_In H. *)
+(*   econstructor. Search binds. applys binds_In_inv. *)
+(*   rewrite dom_subst_id in Hb. *)
+(*   Search (map). *)
+(* Qed. *)
+
 Theorem  d_sub_subst_mono : forall Ψ1 X Ψ2 A B T,
   ⊢ Ψ2 ++ (X ~ dbind_tvar_empty) ++ Ψ1 ->
   Ψ2 ++ (X ~ dbind_tvar_empty) ++ Ψ1 ⊢ A <: B ->
@@ -590,9 +606,9 @@ Proof with eauto with subtyping.
   - eapply dsub_refl; auto...
   - simpl. eapply d_sub__all with (L:=L `union` singleton X `union` dom Ψ `union` dom F); intros X0 Hfr; inst_cofinites_with X.
     + rewrite typ_subst_open_comm; auto...
-      admit.
+      applys* ftv_sin_typ_subst_inv.
     + rewrite typ_subst_open_comm; auto...
-      admit.
+      applys* ftv_sin_typ_subst_inv.
     + inst_cofinites_with X0. repeat rewrite typ_subst_open_comm; eauto...
       replace (X0 ~ dbind_stvar_empty ++ map (subst_tvar_in_dbind T1 X) F ++ Ψ) with
       (map (subst_tvar_in_dbind T1 X) (X0 ~ dbind_stvar_empty ++ F) ++ Ψ) by auto.
@@ -602,22 +618,26 @@ Proof with eauto with subtyping.
       * intros. inst_cofinites_with X0. rewrite typ_subst_open_comm; auto...
         apply ftv_sin_typ_subst_inv; auto...
       * apply d_mono_typ_subst_mono_mono; auto.
-        admit. admit. 
       * rewrite <- subst_tvar_in_typ_open_typ_wrt_typ; eauto...
     + eapply d_sub__alll with (L:=L `union` singleton X) (T:={T1 /ᵗ X} T); eauto...
       * intros. inst_cofinites_with X0. rewrite typ_subst_open_comm; auto...
         apply ftv_sin_typ_subst_inv; auto...
       * apply d_mono_typ_subst_mono_mono; auto.
-        admit. admit.
       * rewrite <- subst_tvar_in_typ_open_typ_wrt_typ; eauto...
     + eapply d_sub__alll with (L:=L `union` singleton X) (T:={T1 /ᵗ X} T); auto...
       * intros. inst_cofinites_with X0. rewrite typ_subst_open_comm; auto...
         apply ftv_sin_typ_subst_inv; auto...
       * apply d_mono_typ_subst_mono_mono; auto.
-        admit. admit.
       * rewrite <- subst_tvar_in_typ_open_typ_wrt_typ; eauto...
     + apply d_sub_dwft in Hsub as Hwft1. destruct Hwft1 as [_ [HwftS HwftT]]. inversion HwftT.
-    + simpl.
+    + simpl. case_if.
+      2: { eapply d_sub__alll with (L:=L `union` singleton X) (T:={T1 /ᵗ X} T); auto...
+           * intros. inst_cofinites_with X0. rewrite typ_subst_open_comm; auto...
+             apply ftv_sin_typ_subst_inv; auto...
+           * apply d_mono_typ_subst_mono_mono; auto.
+           * rewrite <- subst_tvar_in_typ_open_typ_wrt_typ; eauto...
+             forwards*: IHHsub. simpl in H4. case_if*.
+      }
       apply d_sub_dwft in Hsub as Hwft1. destruct Hwft1 as [_ [HwftS HwftT]].
       apply d_sub_tvar_ind_sub_all.
       -- eapply d_wf_env_subst_tvar_typ; auto.
@@ -628,26 +648,22 @@ Proof with eauto with subtyping.
          apply d_wft_typ_subst; auto.
          inst_cofinites_for d_wf_typ__all.
          ++ auto.
-         ++ intros. eapply dwf_typ_open_inv with (X:=X1) (T1:=T); auto.
-            admit.
-            rewrite subst_tvar_in_typ_open_typ_wrt_typ; auto.
-            simpl. rewrite (subst_tvar_in_typ_fresh_eq); auto.
-            unfold eq_dec. destruct (EqDec_eq_of_X X1 X1); auto.
+         ++ intros. eapply dwf_typ_open_inv with (X:=X1) (T1:=T); eauto.
+            rewrite subst_tvar_in_typ_open_typ_wrt_typ; eauto.
+            simpl. rewrite (subst_tvar_in_typ_fresh_eq); eauto.
+            unfold eq_dec. destruct (EqDec_eq_of_X X1 X1); eauto.
             ** apply dwf_typ_weakening_cons; auto.
             ** contradiction.
-            ** admit.
-      -- unfold eq_dec. destruct (EqDec_eq_of_X X0 X); auto.
-         admit. admit.
-      -- replace (if X0 == X then T1 else `ᵈ X0) with ( {T1 /ᵗ X} `ᵈ X0) by auto.
-         apply d_wft_typ_subst; auto.
+      -- unfold eq_dec. destruct (EqDec_eq_of_X X0 X); eauto.
+         ++ applys* d_mono_typ_weaken_head.
+         ++ contradiction.
+      -- applys* dwf_typ_weaken_head.
     + apply d_sub_dwft in Hsub as Hwft1. destruct Hwft1 as [_ [HwftS HwftT]]. inversion HwftT.
       eapply d_sub__alll with (L:=L `union` singleton X) (T:={T1 /ᵗ X} T); eauto...
-      * admit.
-      * admit.
-      * admit.
+      1-3: simpl; econstructor; applys* lc_typ_subst.
       * intros. inst_cofinites_with X0. rewrite typ_subst_open_comm; auto...
         apply ftv_sin_typ_subst_inv; auto...
-      * apply d_mono_typ_subst_mono_mono; auto. admit. admit.
+      * apply d_mono_typ_subst_mono_mono; auto.
       * rewrite <- subst_tvar_in_typ_open_typ_wrt_typ; eauto...
     + eapply d_sub__alll with (L:=L `union` singleton X) (T:={T1 /ᵗ X} T); eauto...
       * simpl. dependent destruction H.
@@ -656,23 +672,21 @@ Proof with eauto with subtyping.
       * intros. inst_cofinites_with X0. rewrite typ_subst_open_comm; auto...
         apply ftv_sin_typ_subst_inv; auto...
       * apply d_mono_typ_subst_mono_mono; auto.
-        admit. admit.
       * rewrite <- subst_tvar_in_typ_open_typ_wrt_typ; eauto...
     + inversion H1.
     + inversion H0.
-Admitted.
-
+Qed.
 
 Hint Resolve d_wft_typ_subst_stvar : subtyping.
 Hint Resolve d_wf_env_subst_stvar_typ : subtyping.
 (* Hint Resolve d_subst_stv_lc_typ : lngen. *)
 
-(* Lemma dneq_all_intersection_union_subst_stv : forall T1 T2 X,
+Lemma dneq_all_intersection_union_subst_stv : forall T1 T2 X,
   lc_typ T1 -> lc_typ T2 ->
-  dneq_all T1 -> dneq_intersection T1 -> dneq_union T1 ->
-  (dneq_all ({T2 /ᵗ X} T1) /\
-   dneq_intersection ({T2 /ᵗ X} T1) /\
-   dneq_union ({T2 /ᵗ X} T1)) \/ T1 = typ_svar X.
+  neq_all T1 -> neq_intersection T1 -> neq_union T1 ->
+  (neq_all ({T2 /ᵗ X} T1) /\
+   neq_intersection ({T2 /ᵗ X} T1) /\
+   neq_union ({T2 /ᵗ X} T1)) \/ T1 = `ᵈ X.
 Proof with eauto with lngen.
   intros. destruct T1; simpl in *; auto...
   - destruct (X0 == X); subst; auto.
@@ -682,20 +696,7 @@ Proof with eauto with lngen.
   - inversion H1.
   - inversion H3.
   - inversion H2.
-Qed. *)
-
-Theorem d_sub_mono_stvar_false : forall Ψ A X,
-  X ~ ▪ ∈ Ψ ->
-  Ψ ⊢ A <: typ_var_f X ->
-  d_mono_typ Ψ A ->
-  False.
-Proof.
-  intros. 
-  induction H1; dependent destruction H0; auto.
-  - admit.
-Admitted.
-
-
+Qed.
 
 Theorem d_sub_open_mono_stvar_false: forall n1 n2 Ψ A T X L,
     d_typ_order (A ^^ᵈ T) < n1 ->
@@ -721,11 +722,11 @@ Proof.
       * destruct A; simpl in *; try solve [inversion Heq].
         -- destruct n.
           ++ unfold open_typ_wrt_typ in Heq. simpl in *.
-            subst. dependent destruction H5. admit.
+            subst. dependent destruction H5. applys* binds_two_thing_false X.
           ++ unfold open_typ_wrt_typ in Heq. simpl in *.
             inversion Heq.
         -- inst_cofinites_by (L `union` singleton X0) using_name X. inversion H4.
-           admit.
+           subst. solve_notin.
       * destruct A; simpl in *; try solve [inversion Heq].
         -- destruct n.
           ++ unfold open_typ_wrt_typ in Heq. simpl in Heq.
@@ -764,19 +765,22 @@ Proof.
         -- dependent destruction Heq. unfold open_typ_wrt_typ in *.
            eapply IHn2 with (L:=L); eauto. lia. lia.
            intros. inst_cofinites_with X0. dependent destruction H3; auto.
-Admitted.
+Qed.
 
 Theorem d_mono_notin_stvar : forall Ψ2 Ψ1 A X,
-  Ψ2 ++ (X ~ dbind_stvar_empty) ++ Ψ1 ⊢ A -> 
+  Ψ2 ++ (X ~ dbind_stvar_empty) ++ Ψ1 ⊢ A ->
   d_mono_typ (Ψ2 ++ (X ~ dbind_stvar_empty) ++ Ψ1) A ->
+  ⊢ (Ψ2 ++ (X ~ dbind_stvar_empty) ++ Ψ1) ->
   X `notin` ftvar_in_typ A.
 Proof.
   intros. dependent induction H0; simpl in *; auto.
-  - admit.
+  - case_eq (X0 == X); intros; subst*; try solve_notin.
+    assert (X ~ ▪ ∈ (Ψ2 ++ (X, ▪) :: Ψ1)) by eauto.
+    exfalso. forwards*: binds_two_thing_false X.
   - dependent destruction H; auto... apply notin_union; eauto.
   - dependent destruction H; auto... apply notin_union; eauto.
   - dependent destruction H; auto... apply notin_union; eauto.
-Admitted.
+Qed.
 
 (* bookmark *)
 
@@ -795,17 +799,14 @@ Proof with subst; eauto using dwf_typ_weaken_head with subtyping.
     + repeat rewrite typ_subst_open_comm; eauto...
       rewrite_env (map (subst_tvar_in_dbind T X) (X1 ~ ▪ ++ Ψ2) ++ Ψ1).
       eapply H2; auto...
-  - admit.
-  (* - simpl. destruct (dneq_all_intersection_union_subst_stv T1 T2 X) as [[? [? ?]] | ?]; eauto...
-    + eapply d_sub_alll with (L:=L `union` singleton X) (T2:={T2 /ᵗ X} T0); eauto...
-      * intros. inst_cofinites_with X0. rewrite d_subst_stv_in_typ_open_comm; auto...
-        apply fstv_sins_typ_subst_stv; auto...
-      * apply d_wft_typ_subst_stvar; auto...
-        destruct (d_sub_dwft _ _ _ H5) as [? [? ?]]. auto.
-      * rewrite d_subst_stv_in_typ_fresh_eq; auto.
-        eapply d_mono_notin_stvar with (F := F) (Ψ := Ψ); auto.
-      * rewrite <- d_subst_stv_in_typ_open_typ_wrt_typ; eauto...
-    + eapply d_sub_open_mono_stvar_false in H5; eauto. contradiction. *)
+  - simpl. destruct (dneq_all_intersection_union_subst_stv B T X) as [[? [? ?]] | ?]; eauto...
+    + eapply d_sub__alll with (L:=L `union` singleton X) (T:={T /ᵗ X} T0); auto...
+      * intros. rewrite typ_subst_open_comm; auto...
+        apply ftv_sin_typ_subst_inv; auto...
+      * applys* d_mono_typ_subst_stvar... eauto using d_sub_dwft_0.
+      *
+        (* lets: d_subst_stv_in_typ_open_typ_wrt_typ. *) admit.
+    + admit.
   - simpl. apply d_sub__intersection2. eauto with subtyping.
     apply d_wft_typ_subst_stvar; auto...
     destruct (d_sub_dwft _ _ _ H) as [? [? ?]]. auto.
@@ -1030,7 +1031,7 @@ Proof with (simpl in *; eauto using d_wf_env_subst_tvar_typ with sub).
     forwards: d_wf_typ_rename_stvar Y H...
   - applys d_subs__union2; forwards: IHHS...
     forwards: d_wf_typ_rename_stvar Y H...
-    Unshelve. all: eauto. 
+    Unshelve. all: eauto.
 Admitted.
 
 Corollary d_sub_size_rename : forall n X Y Ψ1 Ψ2 A B,
