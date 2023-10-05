@@ -149,6 +149,7 @@ Proof with eauto with Hdb_a_wl_red_soundness.
     destruct H4 as [Ω].
     destruct H4 as [[θ Htrans] Hdred].
     dependent destruction Htrans. dependent destruction Htrans.
+    dependent destruction H9.
 
   - admit.
   - inst_cofinites_by L using_name X.

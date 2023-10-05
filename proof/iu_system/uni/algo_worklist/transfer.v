@@ -256,9 +256,9 @@ Inductive inst_worklist : subst_set -> aworklist -> dworklist -> subst_set -> Pr
       θ ⫦ Γ ⇝ Ω ⫣ θ' -> 
       inst_typ θ' Aᵃ Aᵈ ->
       inst_typ θ' Bᵃ Bᵈ ->
+      d_mono_typ (dwl_to_denv Ω ) T ->
       dwl_to_denv Ω ⊢ Aᵈ <: T ->
       dwl_to_denv Ω ⊢ T <: Bᵈ ->
-      (* TODO: check A1 < T1, T1 < B1  *)
       θ ⫦ aworklist_constvar Γ X (abind_bound Aᵃ Bᵃ) ⇝ Ω ⫣  (X, ss_bind__typ T) :: θ'
 where "θ ⫦ Γᵃ ⇝ Γᵈ ⫣ θ'" := (inst_worklist θ Γᵃ Γᵈ θ').
 
@@ -287,6 +287,8 @@ Proof with eauto with Hdb_transfer.
       admit.
 Admitted.
 
+Notation "θ ⫦ Aᵃ ⇝ Aᵈ" := (inst_typ θ Aᵃ Aᵈ)
+  (at level 65, Aᵃ at next level, no associativity).
 
 Lemma inst_work_not_in_ss : forall θ Γ Ω X,
   nil ⫦ Γ ⇝ Ω ⫣ θ -> X ∉ dom (awl_to_aenv Γ) -> X ∉ dom θ.
@@ -301,7 +303,8 @@ Proof with eauto.
   intros. dependent induction H0; dependent destruction H...
   - econstructor... eapply inst_work_not_in_ss...
   - econstructor... eapply inst_work_not_in_ss...
-Qed.
+  - econstructor... eapply inst_work_not_in_ss... admit.
+Admitted.
 
 Hint Resolve a_wf_wl_wf_ss : Hdb_transfer.
 
@@ -335,6 +338,56 @@ Proof with eauto with Hdb_transfer.
   - admit.
 Admitted. 
 
+
+Lemma inst_subst : forall θ X T Aᵃ Aᵈ, 
+  lc_typ Aᵃ ->
+  X `notin` (ftvar_in_typ Aᵃ)->
+  (X, ss_bind__typ T) :: θ ⫦ Aᵃ ⇝ Aᵈ -> 
+  θ ⫦ {T /ᵗ X} Aᵃ ⇝ Aᵈ.
+Proof with eauto with Hdb_transfer.
+  intros * Hlc Hfv Hinst.
+  generalize dependent Aᵈ.
+  dependent induction Hlc; simpl in *; intros.
+  - dependent destruction Hinst...
+    dependent destruction H...
+  - dependent destruction Hinst...
+    dependent destruction H...
+  - dependent destruction Hinst...
+    dependent destruction H...
+  (* - dependent destruction Hinst...
+    eapply inst_t_forall with (L:=singleton x `union` fx_la_type t `union` fex_la_type t `union` L). intros.
+    + intros.
+      rewrite la_type_ex_subst_open_comm.
+      * eapply H0.
+        apply fx_la_type_open_la_type_notin; auto.
+        auto.
+      * inst_cofinites_with x0.
+        apply inst_wf in H1.
+        inversion H1.
+        apply ld_type_to_la_type_keeps_lc. apply ld_mono_is_ld_lc. auto.
+      * auto.
+  - dependent destruction Hinstopen.
+    econstructor; auto.
+  - destruct (x5 == x).
+    + subst.
+      apply notin_singleton_1 in Hfv. 
+      contradiction.
+    + dependent destruction Hinstopen.
+      constructor. inversion H. auto. 
+  - dependent destruction Hinstopen. 
+    destruct (ex5 == x). 
+    + subst.
+      apply binds_unique with (a:=sse_ev tᵈ) in H0. inversion H0. subst. inversion H.
+      * apply inst_ld_type_to_la_type; auto. 
+        apply ld_mono_is_ld_lc. auto.
+      * constructor; auto.
+      * apply wf_uniq. auto.
+    + inversion H0. 
+      * dependent destruction H1.
+        contradiction.
+      * econstructor; auto.      
+        dependent destruction H. auto. *)
+Admitted.
 
 (* Hint Constructors inst_typ : transfer.
 Hint Constructors inst_worklist : transfer.
