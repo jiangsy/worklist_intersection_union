@@ -354,11 +354,11 @@ Proof with eauto with Hdb_transfer.
   generalize dependent θ'. generalize dependent Aᵈ.
   dependent induction Hlc; simpl in *; intros; try solve 
     [dependent destruction Hinst; eauto with Hdb_transfer; dependent destruction H; eauto with Hdb_transfer].
-  - dependent destruction Hinst...
+  - dependent destruction Hinst.
     admit.
-  - dependent destruction Hinst...
+  - dependent destruction Hinst.
     admit.
-  - dependent destruction Hinst...
+  - dependent destruction Hinst.
     admit.
   - destruct (X0 == X); subst.
     + dependent destruction Hinst. 
@@ -366,12 +366,12 @@ Proof with eauto with Hdb_transfer.
       * admit.
       * admit.
     + dependent destruction Hinst.
-      * econstructor... admit. admit.
-      * eapply inst_typ__stvar... admit. admit.
+      * econstructor. admit. admit.
+      * eapply inst_typ__stvar. admit. admit.
       * econstructor.
         admit.
         admit.
-  - dependent destruction Hinst... 
+  - dependent destruction Hinst.
     eapply inst_typ__all with (L:=L `union` singleton X). intros.
     inst_cofinites_with X0.
     rewrite typ_subst_open_comm...
