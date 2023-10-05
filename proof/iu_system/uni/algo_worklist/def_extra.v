@@ -129,14 +129,14 @@ Inductive a_wl_red : aworklist -> Prop :=    (* defn a_wl_red *)
  | d_wl_del__sub_arrow1 : forall (L:vars) (Γ:aworklist) (X:typvar) (A1 A2 B1 B2:typ),
       binds ( X )  ( (abind_bound B1 B2) ) (  ( awl_to_aenv  Γ  )  )  ->
       ( a_smono_typ   ( awl_to_aenv  Γ  )     ( (typ_arrow A1 A2) )   -> False )  ->
-      (forall X1 X2 Γ2 Γ3, X1 `notin` L -> X2 `notin` (L `union` singleton X1) -> 
+      (forall X1, X1 `notin` L -> forall X2, X2 `notin` (L `union` singleton X1) -> forall Γ2 Γ3,
         (a_update_bound  (aworklist_constvar (aworklist_constvar Γ X1 (abind_bound typ_bot typ_top)) X2 (abind_bound typ_bot typ_top))   nil   X   (typ_arrow (typ_var_f X1) (typ_var_f X2))  a_mode_ub__upper  Γ2   Γ3 ) ->
         (a_wl_red (aworklist_conswork  (   ( awl_app  Γ3   Γ2  )   )  (work_sub (typ_arrow (typ_var_f X1) (typ_var_f X2)) (typ_arrow A1 A2)))) ) ->
      a_wl_red (aworklist_conswork Γ (work_sub (typ_var_f X) (typ_arrow A1 A2)))
  | d_wl_del__sub_arrow2 : forall (L:vars) (Γ:aworklist) (A1 A2:typ) (X:typvar) (B1 B2:typ),
       binds ( X )  ( (abind_bound B1 B2) ) (  ( awl_to_aenv  Γ  )  )  ->
       ( a_smono_typ   ( awl_to_aenv  Γ  )     ( (typ_arrow A1 A2) )   -> False )  ->
-      (  forall X1 X2 Γ2 Γ3, X1 `notin` L -> X2 `notin` (L `union` singleton X1) ->
+      (forall X1, X1 `notin` L -> forall X2, X2 `notin` (L `union` singleton X1) -> forall Γ2 Γ3,
              (a_update_bound  (aworklist_constvar (aworklist_constvar Γ X1 (abind_bound typ_bot typ_top)) X2 (abind_bound typ_bot typ_top))   nil   X   (typ_arrow (typ_var_f X1) (typ_var_f X2))  a_mode_ub__lower  Γ2   Γ3 ) ->
             a_wl_red (aworklist_conswork  (  ( awl_app  Γ3   Γ2  )    )  (work_sub (typ_arrow A1 A2) (typ_arrow (typ_var_f X1) (typ_var_f X2)))) )->
      a_wl_red (aworklist_conswork Γ (work_sub (typ_arrow A1 A2) (typ_var_f X)))
@@ -254,8 +254,8 @@ Inductive a_wl_red : aworklist -> Prop :=    (* defn a_wl_red *)
      a_wl_red (aworklist_conswork Γ (work_unioninfabs (typ_arrow B2 C2) (typ_arrow B1 C1) c))
  | d_wl_del__infabs_evar : forall (L:vars) (Γ:aworklist) (X:typvar) (c:cont) (A1 A2:typ) (X1 X2:typvar),
      binds ( X )  ( (abind_bound A1 A2) ) (  ( awl_to_aenv  Γ  )  )  ->
-     (forall X1 X2 Γ2 Γ3, X1 `notin` L -> X2 `notin` (L `union` singleton X1) -> 
-       (a_update_bound  (aworklist_constvar (aworklist_constvar Γ X1 (abind_bound typ_bot typ_top)) X2 (abind_bound typ_bot typ_top))   nil   X   (typ_arrow (typ_var_f X1) (typ_var_f X2))  a_mode_ub__both  Γ2   Γ3 )  /\
+     (forall X1, X1 `notin` L -> forall X2, X2 `notin` (L `union` singleton X1) -> forall Γ2 Γ3,
+         (a_update_bound  (aworklist_constvar (aworklist_constvar Γ X1 (abind_bound typ_bot typ_top)) X2 (abind_bound typ_bot typ_top))   nil   X   (typ_arrow (typ_var_f X1) (typ_var_f X2))  a_mode_ub__both  Γ2   Γ3 )  /\
        a_wl_red (aworklist_conswork  (   ( awl_app  Γ3   Γ2  )   )  (work_infabs (typ_arrow (typ_var_f X1) (typ_var_f X2)) c))
      ) ->
     a_wl_red (aworklist_conswork Γ (work_infabs (typ_var_f X) c))
