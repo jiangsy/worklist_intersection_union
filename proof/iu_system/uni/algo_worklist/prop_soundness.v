@@ -63,10 +63,21 @@ Proof with eauto.
   - econstructor... admit.
 Admitted.
 
+Hint Resolve a_wf_wl_wf_ss : Hdb_a_wl_red_soundness.
+
 Lemma a_wf_typ_trans_typ : forall θ Γ Ω Aᵃ,
-  a_wf_typ (awl_to_aenv Γ) Aᵃ -> nil ⫦ Γ ⇝ Ω ⫣ θ -> exists Aᵈ,
+  a_wf_typ (awl_to_aenv Γ) Aᵃ ->  ⊢ᵃ Γ -> nil ⫦ Γ ⇝ Ω ⫣ θ -> exists Aᵈ,
     inst_typ θ Aᵃ Aᵈ.
-Admitted.
+Proof with eauto with Hdb_a_wl_red_soundness.
+  intros. dependent induction H...
+  - exists (`ᵈ X). econstructor... admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+Admitted. 
 
 Ltac trans_all_typ :=
   match goal with 
@@ -89,7 +100,7 @@ Ltac trans_all_typ :=
 Theorem d_a_wl_red_soundness: forall Γ,
   ⊢ᵃ Γ -> Γ ⟶ᵃʷ⁎⋅ -> exists Ω, transfer Γ Ω /\ Ω ⟶ᵈ⁎⋅.
 Proof with eauto with Hdb_a_wl_red_soundness.
-  intros * Hwfa Hared. induction Hared; auto; unfold transfer in *.
+  intros * Hwfa Hared. dependent induction Hared; auto; unfold transfer in *.
   - exists dworklist_empty. intuition...
   - _apply_IH_a_wl_red.   
     trans_all_typ. admit.
@@ -109,9 +120,8 @@ Proof with eauto with Hdb_a_wl_red_soundness.
   - _apply_IH_a_wl_red.
     trans_all_typ.
     exists (dworklist_conswork Ω (work_sub B1ᵈ typ_top)); split...
-    exists θ... econstructor... econstructor... econstructor...
-    eauto... admit.
-    econstructor; eauto... admit.
+    exists θ... econstructor... econstructor... admit.
+    admit.
   - admit.
   - _apply_IH_a_wl_red. 
     exists (dworklist_conswork Ω (work_sub typ_unit typ_unit)).
@@ -133,9 +143,12 @@ Proof with eauto with Hdb_a_wl_red_soundness.
     admit.
     admit.
     admit.  
-  - exists ((work_sub (typ_arrow B1ᵈ A1ᵈ0) (typ_arrow A1ᵈ B1ᵈ0) ⫤ Ω)%dworklist).
+  - admit. 
+  - admit.
+  - inst_cofinites_by L using_name X.
+    inst_cofinites_by (L `union` singleton X0) using_name X.
+    admit.  
   - admit.
   - admit.
   - admit.
-  -
 Admitted.
