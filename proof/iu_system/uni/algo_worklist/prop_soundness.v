@@ -55,13 +55,6 @@ Ltac _apply_IH_a_wl_red :=
       destruct Htrans as [θ Htrans]
     end.
 
-Lemma a_wf_wl_wf_ss : forall θ Γ Ω,  
-  ⊢ᵃ Γ -> nil ⫦ Γ ⇝ Ω ⫣ θ -> wf_ss θ.
-Proof with eauto.
-  intros. dependent induction H0; dependent destruction H...
-  - econstructor... admit.
-  - econstructor... admit.
-Admitted.
 
 Hint Resolve a_wf_wl_wf_ss : Hdb_a_wl_red_soundness.
 
@@ -104,7 +97,6 @@ Proof with eauto with Hdb_a_wl_red_soundness.
   - exists dworklist_empty. intuition...
   - _apply_IH_a_wl_red.   
     trans_all_typ. admit.
-     (* exists (dworklist_consvar Ω x (dbind_typ Aᵈ))... *)
   - _apply_IH_a_wl_red.
     exists (dworklist_constvar Ω X dbind_tvar_empty)...
     split... exists ((X, ss_bind__tvar_empty) :: θ)...
@@ -149,7 +141,8 @@ Proof with eauto with Hdb_a_wl_red_soundness.
     destruct H4 as [Ω].
     destruct H4 as [[θ Htrans] Hdred].
     dependent destruction Htrans. dependent destruction Htrans.
-
+    dependent destruction H9.
+    admit.
   - admit.
   - inst_cofinites_by L using_name X.
     inst_cofinites_by (L `union` singleton X0) using_name X.
@@ -168,12 +161,19 @@ Proof with eauto with Hdb_a_wl_red_soundness.
     dependent destruction Hdred.
     econstructor... 
     admit.
+  (* simple *)
   - admit.
+  (* simple *)
   - admit.
+  (* simpl *)
   - admit.
+  (* simpl *)
   - admit.
+  (* simpl *)
   - admit.
-  - admit.
+  - _apply_IH_a_wl_red.
+    dependent destruction H1. dependent destruction H1.
+    econstructor.
   - admit.
   - admit.
   - admit.
