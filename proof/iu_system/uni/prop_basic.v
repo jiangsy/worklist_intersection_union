@@ -774,6 +774,33 @@ Proof.
   applys* binds_two_thing_false.
 Qed.
 
+Lemma d_mono_typ_no_stvar : forall F Ψ A X,
+    d_mono_typ (F ++ X ~ ▪ ++ Ψ) A ->
+    ⊢ F ++ X ~ ▪ ++ Ψ ->
+    X `notin` ftvar_in_typ A.
+Proof with eauto using d_mono_typ_weaken_head; try solve_by_invert; try solve [exfalso; jauto].
+  intros. induction A; simpl in *...
+  1: { simpl. destruct (X0 == X); subst; auto...
+       - inverts H.
+         assert (X ~ ▪ ∈ (F ++ (X, ▪) :: Ψ)) by eauto.
+         exfalso. forwards*: binds_two_thing_false X.
+  }
+  all: simpl; dependent destruction H; auto.
+Qed.
+
+Lemma d_mono_typ_drop_stvar : forall F Ψ A X,
+    d_mono_typ (F ++ X ~ ▪ ++ Ψ) A ->
+    d_mono_typ (F ++ Ψ) A.
+Proof with eauto using d_mono_typ_weaken_head; try solve_by_invert; try solve [exfalso; jauto].
+  intros. induction A; simpl in *...
+  1: { simpl. destruct (X0 == X); subst; auto...
+       - inverts H. forwards* [?|?]: binds_app_1 H2.
+         forwards[(?&Heq)|?]: binds_cons_1 H; try inverts Heq; subst; eauto...
+       - inverts H. forwards* [?|?]: binds_app_1 H2.
+         forwards[(?&Heq)|?]: binds_cons_1 H; try inverts Heq; subst; eauto...
+  }
+  all: simpl; dependent destruction H; auto.
+Qed.
 
 Lemma d_mono_typ_subst_stvar : forall F Ψ A T X,
     d_mono_typ (F ++ X ~ ▪ ++ Ψ) A ->
