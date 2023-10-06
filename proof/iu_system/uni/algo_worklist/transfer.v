@@ -253,7 +253,7 @@ Inductive inst_worklist : subst_set -> aworklist -> dworklist -> subst_set -> Pr
       θ ⫦ Γ ⇝ Ω ⫣ θ' -> 
       inst_typ θ' Aᵃ Aᵈ ->
       inst_typ θ' Bᵃ Bᵈ ->
-      d_mono_typ (dwl_to_denv Ω ) T ->
+      d_mono_typ (ss_to_denv θ' ) T ->
       dwl_to_denv Ω ⊢ Aᵈ <: T ->
       dwl_to_denv Ω ⊢ T <: Bᵈ ->
       θ ⫦ aworklist_constvar Γ X (abind_bound Aᵃ Bᵃ) ⇝ Ω ⫣  (X, dbind_typ T) :: θ'
@@ -270,19 +270,44 @@ Proof with auto.
 Qed.
 
 
+Lemma wf_ss_uniq : forall θ,
+  wf_ss θ -> uniq θ.
+Proof.
+  intros. induction H; auto.
+Qed.
+
+Lemma wf_ss_etvar_tvar_false : forall θ X A,
+  wf_ss θ -> X ~ A ∈ θ -> X ~ ▫ ∈ θ -> False.
+Proof.
+  intros. apply wf_ss_uniq in H.
+  specialize (binds_unique _ _ _ _ _ H0 H1 H).
+  intros. inversion H2.
+Qed.
+
+Lemma wf_ss_etvar_stvar_false : forall θ X A,
+  wf_ss θ -> X ~ A ∈ θ -> X ~ ▪ ∈ θ -> False.
+Proof.
+  intros. apply wf_ss_uniq in H.
+  specialize (binds_unique _ _ _ _ _ H0 H1 H).
+  intros. inversion H2.
+Qed.
+
+
 Lemma a_wf_wl_wf_ss : forall θ Γ Ω,  
   ⊢ᵃ Γ -> nil ⫦ Γ ⇝ Ω ⫣ θ -> wf_ss θ.
 Proof with eauto.
   intros. dependent induction H0; dependent destruction H...
   - econstructor... eapply inst_work_not_in_ss...
   - econstructor... eapply inst_work_not_in_ss...
-  - econstructor... eapply inst_work_not_in_ss... admit.
-Admitted.
+  - econstructor... eapply inst_work_not_in_ss... 
+Qed.
 
 Hint Resolve a_wf_wl_wf_ss : Hdb_transfer.
 
 Notation "θ ⫦ᵗ Aᵃ ⇝ Aᵈ" := (inst_typ θ Aᵃ Aᵈ)
   (at level 65, Aᵃ at next level, no associativity).
+
+
 
 
 Lemma inst_typ_det : forall θ Aᵃ A₁ᵈ A₂ᵈ,
@@ -293,20 +318,25 @@ Lemma inst_typ_det : forall θ Aᵃ A₁ᵈ A₂ᵈ,
 Proof with eauto with Hdb_transfer.
   intros. generalize dependent A₂ᵈ.
   induction H0; (intros A₂ᵈ H2; dependent destruction H2; auto).
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
+  - exfalso. eapply wf_ss_etvar_tvar_false... 
+  - exfalso. eapply wf_ss_etvar_stvar_false... 
+  - exfalso. eapply wf_ss_etvar_tvar_false...
+  - exfalso. eapply wf_ss_etvar_stvar_false... 
+  - specialize (binds_unique _ _ _ _ _ H1 H3 H). intros.
+    dependent destruction H4... 
   - specialize (IHinst_typ1 H _ H2_).
     specialize (IHinst_typ2 H _ H2_0).
     subst...
-  - inst_cofinites_by (L `union` L0 `union` (ftvar_in_typ A1ᵈ) `union` (ftvar_in_typ A1ᵈ0)) using_name X.  
+  - inst_cofinites_by (L `union` L0 `union` (ftvar_in_typ A1ᵈ) `union` (ftvar_in_typ A1ᵈ0) `union`  dom θ) using_name X.  
     apply f_equal.
     + eapply open_typ_wrt_typ_inj with (X1:=X); auto.
-      apply H1 in H2...
-      admit.
-Admitted.
+  - specialize (IHinst_typ1 H _ H2_).
+    specialize (IHinst_typ2 H _ H2_0).
+    subst...
+  - specialize (IHinst_typ1 H _ H2_).
+    specialize (IHinst_typ2 H _ H2_0).
+    subst...
+Qed.
 
 
 Theorem a_mono_typ_wf : forall aE A,
@@ -325,13 +355,46 @@ Hint Constructors wf_ss : Hdb_transfer.
 
 Hint Resolve a_wf_wl_wf_ss : Hdb_a_wl_red_soundness.
 
+
+Lemma etvar_in_awl_in_ss : forall θ θ' Γ Ω X A B,
+   ⊢ᵃ Γ -> θ ⫦ Γ ⇝ Ω ⫣ θ' -> binds X (abind_bound A B) (awl_to_aenv Γ) ->
+   exists Tᵈ, binds X Tᵈ θ'.
+Proof with eauto with Hdb_transfer.
+  intros. 
+  generalize dependent Ω. generalize dependent θ. generalize dependent θ'.
+    induction H; intros.
+  - inversion H1.
+  - simpl in H1. inversion H1.
+    inversion H4. dependent destruction H3.
+    eapply IHa_wf_wl...
+  - simpl in H1. inversion H1. inversion H3.
+    dependent destruction H2.
+    apply IHa_wf_wl in H2... destruct H2 as [Tᵈ].
+    exists Tᵈ. apply binds_cons...
+  - simpl in H1. inversion H1. inversion H3.
+    dependent destruction H2.
+    apply IHa_wf_wl in H2... destruct H2 as [Tᵈ].
+    exists Tᵈ. apply binds_cons...
+  - simpl in H1. inversion H1. 
+    + dependent destruction H5.
+      dependent destruction H4.
+      exists (dbind_typ T)...
+    + dependent destruction H4.
+      apply IHa_wf_wl in H4... destruct H4 as [Tᵈ].
+      exists Tᵈ. apply binds_cons...
+  - simpl in H1. dependent destruction H2.
+    apply IHa_wf_wl in H2...
+Qed.
+    
+
+
 Lemma a_wf_typ_trans_typ : forall θ Γ Ω Aᵃ,
   a_wf_typ (awl_to_aenv Γ) Aᵃ ->  ⊢ᵃ Γ -> nil ⫦ Γ ⇝ Ω ⫣ θ -> exists Aᵈ,
     inst_typ θ Aᵃ Aᵈ.
 Proof with eauto with Hdb_transfer.
   intros. dependent induction H...
   - exists (`ᵈ X). econstructor... admit.
-  - admit.
+  - exists (`ᵈ X). eapply inst_typ__stvar... admit. 
   - admit.
   - admit.
   - admit.
