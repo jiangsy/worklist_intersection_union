@@ -9,36 +9,32 @@ Require Import uni.algo_worklist.def_extra.
 Require Import ln_utils.
 
 
-Inductive ss_bind := 
-  | ss_bind__tvar_empty
-  | ss_bind__stvar_empty
-  | ss_bind__typ (T : typ).
 
-Definition subst_set := list (atom * ss_bind).
+Definition subst_set := denv.
 
-Fixpoint ss_to_denv (θ : list (atom * ss_bind)) : denv := 
+Fixpoint ss_to_denv (θ : subst_set) : denv := 
   match θ with 
   | nil => nil
-  | (X , ss_bind__tvar_empty) :: θ' => (X ~ dbind_tvar_empty) ++ ss_to_denv θ'
-  | (X , ss_bind__stvar_empty) :: θ' => (X ~ dbind_stvar_empty) ++ ss_to_denv θ'
-  | (X , ss_bind__typ T) :: θ' => ss_to_denv θ'
+  | (X , dbind_tvar_empty) :: θ' => (X ~ dbind_tvar_empty) ++ ss_to_denv θ'
+  | (X , dbind_stvar_empty) :: θ' => (X ~ dbind_stvar_empty) ++ ss_to_denv θ'
+  | (X , dbind_typ T) :: θ' => ss_to_denv θ'
   end.
 
 Inductive wf_ss : subst_set -> Prop :=
-  | wfss_nil : wf_ss nil
-  | wfss_tvar : forall θ X,
+  | wfss__nil : wf_ss nil
+  | wfss__tvar : forall θ X,
       wf_ss θ -> 
       X `notin` dom θ ->
-      wf_ss ((X , ss_bind__tvar_empty) :: θ)
-  | wf_ss_stvar : forall θ X,
+      wf_ss ((X , dbind_tvar_empty) :: θ)
+  | wf_ss__stvar : forall θ X,
     wf_ss θ ->
     X `notin` dom θ ->
-    wf_ss ((X, ss_bind__stvar_empty) :: θ)
-  | wf_ss_ev : forall θ X T, 
+    wf_ss ((X, dbind_stvar_empty) :: θ)
+  | wf_ss__etvar : forall θ X T, 
     wf_ss θ  -> 
     X `notin` dom θ  ->
     d_mono_typ (ss_to_denv θ) T -> 
-    wf_ss ((X , ss_bind__typ T) :: θ)
+    wf_ss ((X , dbind_typ T) :: θ)
 .
 
 Lemma wf_uniq : forall Θ,
@@ -66,15 +62,15 @@ Qed. *)
 Inductive inst_typ : subst_set -> typ -> typ -> Prop := 
   | inst_typ__tvar : forall θ X, 
       wf_ss θ -> 
-      binds X (ss_bind__tvar_empty) θ ->
+      binds X (dbind_tvar_empty) θ ->
       inst_typ θ (typ_var_f X) (typ_var_f X)
   | inst_typ__stvar : forall θ X, 
       wf_ss θ -> 
-      binds X (ss_bind__stvar_empty) θ ->
+      binds X (dbind_stvar_empty) θ ->
       inst_typ θ (typ_var_f X) (typ_var_f X)
   | inst_typ__etvar : forall θ X A1,
       wf_ss θ ->
-      binds X (ss_bind__typ A1) θ ->
+      binds X (dbind_typ A1) θ ->
       inst_typ θ (typ_var_f X) A1
   | inst_typ_unit : forall θ,
       wf_ss θ ->
@@ -91,7 +87,7 @@ Inductive inst_typ : subst_set -> typ -> typ -> Prop :=
       inst_typ θ (typ_arrow A1ᵃ A2ᵃ) (typ_arrow A1ᵈ A2ᵈ)
   | inst_typ__all : forall θ L A1ᵃ A1ᵈ,
       (forall X, X `notin` L -> 
-        inst_typ ((X, ss_bind__tvar_empty) :: θ) (open_typ_wrt_typ A1ᵃ (typ_var_f X)) (open_typ_wrt_typ A1ᵈ (typ_var_f X))
+        inst_typ ((X, dbind_tvar_empty) :: θ) (open_typ_wrt_typ A1ᵃ (typ_var_f X)) (open_typ_wrt_typ A1ᵈ (typ_var_f X))
       ) ->
       inst_typ θ (typ_all A1ᵃ) (typ_all A1ᵈ)
   | ins_typ__intersection : forall θ A1ᵃ A2ᵃ A1ᵈ A2ᵈ,
@@ -123,7 +119,7 @@ Inductive inst_exp : subst_set -> exp -> exp -> Prop :=
       inst_exp θ (exp_app e1ᵃ e2ᵃ) (exp_app e1ᵈ e2ᵈ)
   | inst_exp__tabs : forall L θ bᵃ bᵈ,
       (forall X, X \notin L -> 
-        inst_body ((X, ss_bind__tvar_empty) :: θ) 
+        inst_body ((X, dbind_tvar_empty) :: θ) 
                   (open_body_wrt_typ bᵃ (typ_var_f X))
                   (open_body_wrt_typ bᵈ (typ_var_f X))
       ) ->
@@ -245,10 +241,10 @@ Inductive inst_worklist : subst_set -> aworklist -> dworklist -> subst_set -> Pr
       θ ⫦ aworklist_conswork Γ wᵃ ⇝ dworklist_conswork Ω wᵈ ⫣ θ'
   | inst_wl__cons_tvar : forall θ θ' Γ Ω X, 
       θ ⫦ Γ ⇝ Ω ⫣ θ' ->
-      θ ⫦ aworklist_constvar Γ X abind_tvar_empty ⇝ dworklist_constvar Ω X dbind_tvar_empty ⫣  (X, ss_bind__tvar_empty) :: θ'
+      θ ⫦ aworklist_constvar Γ X abind_tvar_empty ⇝ dworklist_constvar Ω X dbind_tvar_empty ⫣  (X, dbind_tvar_empty) :: θ'
   | inst_wl__cons_stvar : forall θ θ' Γ Ω X, 
       θ ⫦ Γ ⇝ Ω ⫣ θ' ->
-      θ ⫦ aworklist_constvar Γ X abind_stvar_empty ⇝ dworklist_constvar Ω X dbind_stvar_empty ⫣  (X, ss_bind__stvar_empty) :: θ'
+      θ ⫦ aworklist_constvar Γ X abind_stvar_empty ⇝ dworklist_constvar Ω X dbind_stvar_empty ⫣  (X, dbind_stvar_empty) :: θ'
   | inst_wl__cons_var : forall θ θ' Γ Ω A1ᵃ A1ᵈ x, 
       θ ⫦ Γ ⇝ Ω ⫣ θ' ->
       inst_typ θ' A1ᵃ A1ᵈ ->
@@ -260,7 +256,7 @@ Inductive inst_worklist : subst_set -> aworklist -> dworklist -> subst_set -> Pr
       d_mono_typ (dwl_to_denv Ω ) T ->
       dwl_to_denv Ω ⊢ Aᵈ <: T ->
       dwl_to_denv Ω ⊢ T <: Bᵈ ->
-      θ ⫦ aworklist_constvar Γ X (abind_bound Aᵃ Bᵃ) ⇝ Ω ⫣  (X, ss_bind__typ T) :: θ'
+      θ ⫦ aworklist_constvar Γ X (abind_bound Aᵃ Bᵃ) ⇝ Ω ⫣  (X, dbind_typ T) :: θ'
 where "θ ⫦ Γᵃ ⇝ Γᵈ ⫣ θ'" := (inst_worklist θ Γᵃ Γᵈ θ').
 
 Hint Constructors inst_typ : Hdb_transfer.
@@ -346,7 +342,7 @@ Admitted.
 
 Lemma inst_subst : forall θ θ' X T Aᵃ Aᵈ, 
   lc_typ Aᵃ ->
-  θ' ++ (X, ss_bind__typ T) :: θ ⫦ᵗ Aᵃ ⇝ Aᵈ -> 
+  θ' ++ (X, dbind_typ T) :: θ ⫦ᵗ Aᵃ ⇝ Aᵈ -> 
   (* X cannot appear in θ', so we don't need to do any subst for it *)
   θ' ++ θ ⫦ᵗ {T /ᵗ X} Aᵃ ⇝ Aᵈ.
 Proof with eauto with Hdb_transfer.
@@ -375,9 +371,159 @@ Proof with eauto with Hdb_transfer.
     eapply inst_typ__all with (L:=L `union` singleton X). intros.
     inst_cofinites_with X0.
     rewrite typ_subst_open_comm...
-    rewrite_env (((X0, ss_bind__tvar_empty) :: θ') ++ θ).
+    rewrite_env (((X0, dbind_tvar_empty) :: θ') ++ θ).
     eapply H0...
 Admitted.
+
+
+Lemma wf_subst_set_strength_etvar_same_denv: forall θ θ' X T,
+  ss_to_denv (θ' ++ θ) = ss_to_denv (θ' ++ (X, dbind_typ T) :: θ).
+Proof.
+  intros. induction θ'.
+  - auto.
+  - destruct a. destruct d; auto; simpl; now rewrite IHθ'.
+Qed.
+
+
+Lemma wf_subst_set_strength_etvar: forall θ θ' T X,
+  wf_ss (θ' ++ θ) ->
+  d_mono_typ (ss_to_denv θ) T ->
+  X `notin` dom (θ' ++ θ) ->
+  wf_ss (θ' ++ (X, dbind_typ T) :: θ).
+Proof with auto with Hdb_transfer.
+  intros. induction θ'.
+  - simpl in *. constructor...
+  - destruct a. destruct d; simpl in *.
+    + dependent destruction H. econstructor...
+    + dependent destruction H. econstructor...
+    + dependent destruction H. econstructor...
+      rewrite <- wf_subst_set_strength_etvar_same_denv...
+Qed.
+
+(* 
+
+Lemma inst_typ_rev_subst' : forall θ T X Aᵃ A'ᵈ,
+  lc_typ Aᵃ -> 
+  X `notin` dom θ ->
+  (ss_to_denv θ) ⊢ T ->
+  θ ⫦ᵗ {T /ᵗ X} Aᵃ ⇝ A'ᵈ -> 
+  exists Aᵈ, {T /ᵗ X} Aᵈ = A'ᵈ /\ (X, dbind_typ T) :: θ ⫦ᵗ Aᵃ ⇝ Aᵈ.
+Proof with eauto with Hdb_transfer.
+  intros * Hlc Hfv Hwft Hinst.
+  generalize dependent A'ᵈ.
+  dependent induction Hlc; simpl in *; intros.
+  - dependent destruction Hinst. 
+    exists typ_unit... intuition... econstructor... *)
+
+Hint Resolve wf_subst_set_strength_etvar : Hdb_transfer.
+
+
+(* Lemma inst_typ_weaken  *)
+
+Lemma inst_typ_rename : forall θ1 θ2 Aᵃ Aᵈ X X', 
+  θ2 ++ (X, dbind_tvar_empty) :: θ1 ⫦ᵗ Aᵃ ⇝ Aᵈ ->
+  map (subst_tvar_in_dbind (`ᵈ X') X) θ2  ++ (X', dbind_tvar_empty) :: θ1 ⫦ᵗ {`ᵈ X' /ᵗ X} Aᵃ ⇝ {`ᵈ X' /ᵗ X} Aᵈ.
+Proof with auto with Hdb_transfer.
+  intros. dependent induction H; simpl; auto...
+  - unfold eq_dec. destruct (EqDec_eq_of_X X0 X); subst.
+    + econstructor... admit.
+    + econstructor... admit. admit.
+  - unfold eq_dec. destruct (EqDec_eq_of_X X0 X); subst.
+    + econstructor... admit.
+    + admit.
+  - unfold eq_dec. destruct (EqDec_eq_of_X X0 X); subst.
+    + admit.
+    + admit.
+  - econstructor... admit.
+  - econstructor... admit.
+  - econstructor... admit.
+  - eapply inst_typ__all with (L := L `union` singleton X).
+    intros. inst_cofinites_with X0.
+    rewrite typ_subst_open_comm...
+    rewrite typ_subst_open_comm...
+    rewrite_env (map (subst_tvar_in_dbind `ᵈ X' X) ((X0, ▫) :: θ2) ++ (X', ▫) :: θ1).
+    eapply H0...
+Admitted.
+
+Corollary inst_typ_rename_cons : forall θ Aᵃ Aᵈ X X', 
+  (X, dbind_tvar_empty) :: θ ⫦ᵗ Aᵃ ⇝ Aᵈ ->
+  (X', dbind_tvar_empty) :: θ ⫦ᵗ {`ᵈ X' /ᵗ X} Aᵃ ⇝ {`ᵈ X' /ᵗ X} Aᵈ.
+Proof.
+  intros. 
+  rewrite_env (map (subst_tvar_in_dbind (`ᵈ X') X) nil  ++ (X', dbind_tvar_empty) :: θ).
+  eapply inst_typ_rename. auto.
+Qed.
+
+Lemma inst_typ_rev_subst : forall θ1 θ2 T X Aᵃ A'ᵈ,
+  lc_typ Aᵃ -> 
+  X `notin` dom (θ2 ++ θ1) ->
+  d_mono_typ (ss_to_denv θ1) T ->
+  θ2 ++ θ1 ⫦ᵗ {T /ᵗ X} Aᵃ ⇝ A'ᵈ -> 
+  exists Aᵈ, {T /ᵗ X} Aᵈ = A'ᵈ /\ θ2 ++ (X, dbind_typ T) :: θ1 ⫦ᵗ Aᵃ ⇝ Aᵈ.
+Proof with eauto with Hdb_transfer.
+  intros * Hlc Hfv Hwft Hinst.
+  generalize dependent θ2. generalize dependent X. generalize dependent A'ᵈ.
+  dependent induction Hlc; simpl in *; intros.
+  - dependent destruction Hinst. 
+    exists typ_unit... 
+  - dependent destruction Hinst. 
+    exists typ_top... 
+  - dependent destruction Hinst;
+    exists typ_bot...
+  - destruct (X0 == X).
+    (* - exists (ld_t_var_f x5).
+    destruct (x5 == x).  
+    + subst. simpl. destruct (x == x).
+      * split.
+        -- assert (uniq θ) as Huniq by (apply wf_uniq; eapply inst_t_wf_ss; eauto).
+          specialize (inst_A_det _ _ _ Huniq Hinstt). intros.
+          specialize (H _ HinstA). auto.
+        -- constructor. eapply inst_t_wf_ss. eauto.
+      * contradiction.
+    + simpl. unfold eq_dec. destruct (EqDec_eq_of_X x5 x).
+      * contradiction.
+      * inversion HinstA; split; auto...  *)
+    + (* T and  A'ᵈ is the same and does not contain X *)
+      exists T. split.
+      * admit.
+      * econstructor... admit.
+    + exists A'ᵈ. split.
+      * admit.
+      * admit.
+  - dependent destruction Hinst.
+    apply IHHlc1 in Hinst1... destruct Hinst1 as [A1'ᵈ]. 
+    apply IHHlc2 in Hinst2... destruct Hinst2 as [A2'ᵈ]. 
+    exists (typ_arrow A1'ᵈ A2'ᵈ); simpl...
+    intuition... subst...
+  - dependent destruction Hinst.  
+    pick fresh X0. inst_cofinites_with X0.
+    rewrite typ_subst_open_comm in H1...
+    rewrite_env (((X0, dbind_tvar_empty) :: θ2) ++ θ1) in H1.
+    apply H0 in H1...
+    destruct H1 as [Aᵈ].
+    exists (typ_all (close_typ_wrt_typ X0 Aᵈ)). simpl. 
+    rewrite subst_tvar_in_typ_close_typ_wrt_typ... 
+    split.
+    + apply f_equal. erewrite typ_open_r_close_l... intuition.
+    + eapply inst_typ__all with (L:=L); intros.
+      intuition.
+      erewrite subst_tvar_in_typ_intro by auto.
+      erewrite (subst_tvar_in_typ_intro X0 (close_typ_wrt_typ X0 Aᵈ)) by apply close_typ_notin.
+      apply inst_typ_rename_cons...
+      rewrite open_typ_wrt_typ_close_typ_wrt_typ...
+  - dependent destruction Hinst.
+    apply IHHlc1 in Hinst1... destruct Hinst1 as [A1'ᵈ]. 
+    apply IHHlc2 in Hinst2... destruct Hinst2 as [A2'ᵈ]. 
+    exists (typ_union A1'ᵈ A2'ᵈ); simpl...
+    intuition... subst...
+  - dependent destruction Hinst.
+    apply IHHlc1 in Hinst1... destruct Hinst1 as [A1'ᵈ]. 
+    apply IHHlc2 in Hinst2... destruct Hinst2 as [A2'ᵈ]. 
+    exists (typ_intersection A1'ᵈ A2'ᵈ); simpl...
+    intuition... subst...
+Admitted.
+
+
 
 (* Hint Constructors inst_typ : transfer.
 Hint Constructors inst_worklist : transfer.
@@ -442,24 +588,6 @@ Ltac inversion_eq :=
     match goal with 
         | H : ?a = ?b |-  _ => dependent destruction H
       end.
-
-Lemma inst_A_det : forall θ Aᵃ A₁ᵈ,
-  uniq θ -> 
-  θ ⫦ Aᵃ ⇝ A₁ᵈ -> 
-  forall A₂ᵈ, θ ⫦ Aᵃ ⇝ A₂ᵈ -> 
-    A₁ᵈ = A₂ᵈ.
-Proof.
-  induction 2; (intros e₂ᵈ H2; dependent destruction H2; auto). 
-  - specialize (binds_unique _ _ _ _ _ H1 H3).
-    intros. specialize (H4 H). inversion_eq. auto.
-  - specialize (IHinst_type1 H _ H2_).
-    specialize (IHinst_type2 H _ H2_0).
-    subst. auto.
-  - inst_cofinites_by (L `union` L0 `union` (fv_ld_type A) `union` (fv_ld_type A0)).  
-    assert (A = A0).
-    + eapply open_ld_type_wrt_ld_type_inj with (x1:=x); auto.
-    + subst. auto. 
-Qed.
 
 
 Lemma not_in_dom_not_in_fv_ss: forall x θ,
