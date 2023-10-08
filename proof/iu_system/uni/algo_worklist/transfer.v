@@ -302,12 +302,11 @@ Proof with eauto.
   - econstructor... eapply inst_work_not_in_ss... 
 Qed.
 
+
 Hint Resolve a_wf_wl_wf_ss : Hdb_transfer.
 
 Notation "θ ⫦ᵗ Aᵃ ⇝ Aᵈ" := (inst_typ θ Aᵃ Aᵈ)
   (at level 65, Aᵃ at next level, no associativity).
-
-
 
 
 Lemma inst_typ_det : forall θ Aᵃ A₁ᵈ A₂ᵈ,
@@ -401,6 +400,18 @@ Proof with eauto with Hdb_transfer.
   - admit.
   - admit.
 Admitted. 
+
+
+Lemma a_wf_wl_d_wf_wl : forall θ Γ Ω,  
+  ⊢ᵃ Γ -> nil ⫦ Γ ⇝ Ω ⫣ θ -> ⊢ᵈ Ω.
+Proof with eauto.
+  intros. dependent induction H0; dependent destruction H...
+  - admit.
+  - econstructor... admit.
+  - econstructor... admit.
+  - econstructor... admit. 
+    admit.
+Admitted.
 
 
 Lemma inst_subst : forall θ θ' X T Aᵃ Aᵈ, 
@@ -517,12 +528,55 @@ Proof.
   eapply inst_typ_rename. auto.
 Qed.
 
-Lemma inst_typ_rev_subst : forall θ1 θ2 T X Aᵃ A'ᵈ,
+Lemma wf_ss_etvar_tvar : forall θ1 θ2 T X,
+  wf_ss (θ2 ++ (X, dbind_typ T) :: θ1) ->
+  wf_ss (θ2 ++ (X, ▫) :: θ1).
+Proof with auto with Hdb_transfer.
+  intros. induction θ2; simpl in *.
+  - dependent destruction H...
+  - destruct a. destruct d.
+    dependent destruction H...
+    dependent destruction H...
+    dependent destruction H...
+    econstructor...
+    admit.
+Admitted.
+
+Hint Resolve wf_ss_etvar_tvar : Hdb_transfer.
+
+
+Lemma inst_typ_weaken : forall θ1 θ2 θ3 Aᵃ Aᵈ,
+  θ3 ++ θ1 ⫦ᵗ Aᵃ ⇝ Aᵈ ->
+  wf_ss (θ3 ++ θ2 ++ θ1) ->
+  (θ3 ++ θ2 ++ θ1) ⫦ᵗ Aᵃ ⇝ Aᵈ.
+Proof with eauto with Hdb_transfer.
+  intros. generalize dependent θ2.
+  dependent induction H; intros...
+  - inst_cofinites_for inst_typ__all. intros.
+    inst_cofinites_with X.
+    rewrite_env (((X, ▫) :: θ3) ++ θ2 ++ θ1).
+    eapply H0; simpl...
+Qed.
+
+
+Lemma inst_typ_refl: forall θ A,
+  ss_to_denv θ ⊢ A ->
+  wf_ss θ ->
+  θ ⫦ᵗ A ⇝ A.
+Proof with eauto with Hdb_transfer.
+  intros. dependent induction H...
+  - econstructor... admit.
+  - eapply inst_typ__stvar... admit.
+  - econstructor. admit.
+Admitted.
+
+
+Lemma inst_typ_etvar_tvar_subst : forall θ1 θ2 T X Aᵃ A'ᵈ,
   lc_typ Aᵃ -> 
   X `notin` dom (θ2 ++ θ1) ->
   d_mono_typ (ss_to_denv θ1) T ->
-  θ2 ++ θ1 ⫦ᵗ {T /ᵗ X} Aᵃ ⇝ A'ᵈ -> 
-  exists Aᵈ, {T /ᵗ X} Aᵈ = A'ᵈ /\ θ2 ++ (X, dbind_typ T) :: θ1 ⫦ᵗ Aᵃ ⇝ Aᵈ.
+  θ2 ++ (X, dbind_typ T) :: θ1 ⫦ᵗ {T /ᵗ X} Aᵃ ⇝ A'ᵈ -> 
+  exists Aᵈ, {T /ᵗ X} Aᵈ = A'ᵈ /\ θ2 ++ (X, dbind_tvar_empty) :: θ1 ⫦ᵗ Aᵃ ⇝ Aᵈ.
 Proof with eauto with Hdb_transfer.
   intros * Hlc Hfv Hwft Hinst.
   generalize dependent θ2. generalize dependent X. generalize dependent A'ᵈ.
@@ -531,28 +585,25 @@ Proof with eauto with Hdb_transfer.
     exists typ_unit... 
   - dependent destruction Hinst. 
     exists typ_top... 
-  - dependent destruction Hinst;
+  - dependent destruction Hinst.
     exists typ_bot...
-  - destruct (X0 == X).
-    (* - exists (ld_t_var_f x5).
-    destruct (x5 == x).  
-    + subst. simpl. destruct (x == x).
-      * split.
-        -- assert (uniq θ) as Huniq by (apply wf_uniq; eapply inst_t_wf_ss; eauto).
-          specialize (inst_A_det _ _ _ Huniq Hinstt). intros.
-          specialize (H _ HinstA). auto.
-        -- constructor. eapply inst_t_wf_ss. eauto.
-      * contradiction.
-    + simpl. unfold eq_dec. destruct (EqDec_eq_of_X x5 x).
-      * contradiction.
-      * inversion HinstA; split; auto...  *)
-    + (* T and  A'ᵈ is the same and does not contain X *)
-      exists T. split.
-      * admit.
+  - destruct (X == X0) in *.
+    + subst. exists (`ᵈ X0). split.
+      * simpl. unfold eq_dec. destruct (EqDec_eq_of_X X0 X0).
+        -- subst.
+           eapply inst_typ_det with (θ:=(θ2 ++ (X0, dbind_typ T) :: θ1)); eauto.
+           admit.
+           eapply inst_typ_refl...
+           admit. admit.
+        -- contradiction.
       * econstructor... admit.
-    + exists A'ᵈ. split.
-      * admit.
-      * admit.
+    + dependent destruction Hinst.
+      * exists `ᵈ X... admit.
+      * exists `ᵈ X... admit.
+      * exists A1. split.
+        -- admit.
+        -- econstructor...
+           admit.
   - dependent destruction Hinst.
     apply IHHlc1 in Hinst1... destruct Hinst1 as [A1'ᵈ]. 
     apply IHHlc2 in Hinst2... destruct Hinst2 as [A2'ᵈ]. 
@@ -561,7 +612,7 @@ Proof with eauto with Hdb_transfer.
   - dependent destruction Hinst.  
     pick fresh X0. inst_cofinites_with X0.
     rewrite typ_subst_open_comm in H1...
-    rewrite_env (((X0, dbind_tvar_empty) :: θ2) ++ θ1) in H1.
+    rewrite_env (((X0, dbind_tvar_empty) :: θ2) ++ (X, dbind_typ T) :: θ1) in H1.
     apply H0 in H1...
     destruct H1 as [Aᵈ].
     exists (typ_all (close_typ_wrt_typ X0 Aᵈ)). simpl. 
@@ -586,6 +637,15 @@ Proof with eauto with Hdb_transfer.
     intuition... subst...
 Admitted.
 
+
+Lemma inst_typ_etvar_tvar_subst_cons : forall θ1 T X Aᵃ A'ᵈ,
+  lc_typ Aᵃ -> 
+  X `notin` dom θ1 ->
+  d_mono_typ (ss_to_denv θ1) T ->
+  (X, dbind_typ T) :: θ1 ⫦ᵗ Aᵃ ⇝ A'ᵈ -> 
+  exists Aᵈ, {T /ᵗ X} Aᵈ = A'ᵈ /\ (X, dbind_tvar_empty) :: θ1 ⫦ᵗ Aᵃ ⇝ Aᵈ.
+Proof.
+Admitted.
 
 
 (* Hint Constructors inst_typ : transfer.
@@ -660,75 +720,6 @@ Proof.
   induction θ; auto.
   destruct a. destruct s; simpl; 
   intros; apply notin_union; auto.
-Qed.
-
-
-Lemma inst_e_rename : forall θ Aᵃ Aᵈ x x'
-  , θ ⫦ Aᵃ ⇝ Aᵈ 
-  -> x `notin` dom θ
-  -> θ ⫦ [`ᵃ x' /ᵃ x] Aᵃ ⇝ [`ᵈ x' /ᵗ x] Aᵈ.
-Proof with auto with transfer.
-  intros. induction H; simpl; auto...
-  - unfold eq_dec. destruct (EqDec_eq_of_X x0 x); auto...
-  - rewrite subst_ld_type_fresh_eq. auto...
-    eapply notin_ss_notin_inst; eauto.
-    now apply not_in_dom_not_in_fv_ss. 
-  - eapply inst_t_forall with (L := L `union` singleton x). intros.
-    rewrite_la_subst_open_var. rewrite_ld_subst_open_var. auto.
-Qed.
-
-
-Lemma inst_e_rev_subst' : forall tᵃ tᵈ x θ Aᵃ,
-  lc_la_type Aᵃ -> 
-  x `notin` (fx_la_type tᵃ `union` fv_ss θ) -> 
-  θ ⫦ tᵃ ⇝ tᵈ -> 
-  forall A'ᵈ, θ ⫦ [tᵃ /ᵃ x] Aᵃ ⇝ A'ᵈ
-    -> exists Aᵈ, [tᵈ /ᵗ x] Aᵈ = A'ᵈ /\ θ ⫦ Aᵃ ⇝ Aᵈ.
-Proof with auto with transfer.
-  intros * Hlc Hfv Hinstt.
-  induction Hlc; intros * HinstA; simpl in *.
-  - inversion HinstA. exists ld_t_int. simpl. split; auto...
-  - specialize (inst_t_lc _ _ _ Hinstt). intros.
-    dependent destruction HinstA.
-    inst_cofinites_by (L `union` singleton x `union` fv_ld_type tᵈ `union`  fv_ld_type A `union` dom θ `union` fx_la_type t). 
-    replace (`ᵃ x0) with ([tᵃ /ᵃ x] (`ᵃ x0)) in H1 by (apply subst_la_type_fresh_eq; auto).
-    rewrite <- subst_la_type_open_la_type_wrt_la_type in H1.
-    specialize (H0 _ _ H1).
-    destruct H0 as [A'ᵈ HinstA'ᵈ].
-    exists (ld_t_forall (close_ld_type_wrt_ld_type x0 A'ᵈ)). simpl.
-    rewrite subst_ld_type_close_ld_type_wrt_ld_type. 
-    + split.
-      * f_equal. destruct_conjs. apply ld_type_open_r_close_l; auto. 
-      * eapply inst_t_forall with (L:=L); intros.
-        rewrite (subst_la_type_intro x0) by auto.
-        rewrite (subst_ld_type_intro x0) by (apply close_dtyp_notin).
-        apply inst_e_rename; auto.
-        rewrite open_ld_type_wrt_ld_type_close_ld_type_wrt_ld_type. intuition.
-    + intuition. 
-    + auto.
-    + auto.
-    + intuition.
-  - dependent destruction HinstA.
-    specialize (IHHlc1 _ HinstA1). destruct IHHlc1 as [t₁ᵈ HinstA1inv].
-    specialize (IHHlc2 _ HinstA2). destruct IHHlc2 as [t₂ᵈ HinstA2inv].
-    exists (ld_t_arrow t₁ᵈ t₂ᵈ). destruct_conjs. split; simpl; subst; auto...
-  - exists (ld_t_var_f x5).
-    destruct (x5 == x).  
-    + subst. simpl. destruct (x == x).
-      * split.
-        -- assert (uniq θ) as Huniq by (apply wf_uniq; eapply inst_t_wf_ss; eauto).
-           specialize (inst_A_det _ _ _ Huniq Hinstt). intros.
-           specialize (H _ HinstA). auto.
-        -- constructor. eapply inst_t_wf_ss. eauto.
-      * contradiction.
-    + simpl. unfold eq_dec. destruct (EqDec_eq_of_X x5 x).
-      * contradiction.
-      * inversion HinstA; split; auto... 
-  - simpl in *. exists A'ᵈ. split.
-    + rewrite subst_ld_type_fresh_eq. auto.
-      inversion HinstA.
-      eapply notin_ss_notin_inst; eauto.
-    + auto.
 Qed.
 
 Lemma inst_wf : forall θ tᵃ tᵈ,

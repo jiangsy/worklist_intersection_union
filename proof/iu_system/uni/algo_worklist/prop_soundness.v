@@ -5,6 +5,7 @@ Require Import List.
 
 
 Require Import uni.notations.
+Require Import uni.prop_basic.
 Require Import uni.algo_worklist.def_extra.
 Require Import uni.algo_worklist.transfer.
 Require Import ln_utils.
@@ -58,19 +59,7 @@ Ltac _apply_IH_a_wl_red :=
 
 Hint Resolve a_wf_wl_wf_ss : Hdb_a_wl_red_soundness.
 
-Lemma a_wf_typ_trans_typ : forall θ Γ Ω Aᵃ,
-  a_wf_typ (awl_to_aenv Γ) Aᵃ ->  ⊢ᵃ Γ -> nil ⫦ Γ ⇝ Ω ⫣ θ -> exists Aᵈ,
-    inst_typ θ Aᵃ Aᵈ.
-Proof with eauto with Hdb_a_wl_red_soundness.
-  intros. dependent induction H...
-  - exists (`ᵈ X). econstructor... admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-Admitted. 
+
 
 Ltac trans_all_typ :=
   match goal with 
@@ -96,11 +85,14 @@ Proof with eauto with Hdb_a_wl_red_soundness.
   intros * Hwfa Hared. dependent induction Hared; auto; unfold transfer in *.
   - exists dworklist_empty. intuition...
   - _apply_IH_a_wl_red.   
-    trans_all_typ. admit.
+    trans_all_typ.
+    exists (dworklist_consvar Ω x (dbind_typ Aᵈ))...
   - _apply_IH_a_wl_red.
     exists (dworklist_constvar Ω X dbind_tvar_empty)...
-    split... exists ((X, ss_bind__tvar_empty) :: θ)...
-  - _apply_IH_a_wl_red. admit.
+    split... exists ((X, dbind_tvar_empty) :: θ)...
+  - _apply_IH_a_wl_red.
+    exists (dworklist_constvar Ω X dbind_stvar_empty)...
+    split... exists ((X, dbind_stvar_empty) :: θ)...
   - destruct_a_wf_wl; intuition; subst; _apply_IH_a_wl_red.
     + apply a_mono_typ_wf in H2.
       apply a_mono_typ_wf in H0.
@@ -114,11 +106,16 @@ Proof with eauto with Hdb_a_wl_red_soundness.
     exists (dworklist_conswork Ω (work_sub B1ᵈ typ_top)); split...
     exists θ... econstructor... econstructor... admit.
     admit.
-  - admit.
+  - _apply_IH_a_wl_red.
+    trans_all_typ.
+    exists (dworklist_conswork Ω (work_sub typ_bot Aᵈ)); split...
+    exists θ... econstructor... econstructor... admit. admit.
   - _apply_IH_a_wl_red. 
     exists (dworklist_conswork Ω (work_sub typ_unit typ_unit)).
-    split... exists θ... econstructor; eauto... econstructor. econstructor. admit.
-    admit.
+    split... exists θ... 
+    econstructor; eauto... econstructor... 
+    econstructor...
+    econstructor...
     admit.
   - _apply_IH_a_wl_red.
     dependent destruction H.
@@ -135,28 +132,70 @@ Proof with eauto with Hdb_a_wl_red_soundness.
     admit.
     admit.
     admit.  
-  - inst_cofinites_by L.
-    assert ( ⊢ᵃ (work_sub (B1 ^ᵈ x) A1 ⫤ aworklist_constvar Γ x (abind_bound typ_bot typ_top))) by admit.
+  (* forall x. A < B  *)
+  - inst_cofinites_by (L) using_name X.
+    assert ( ⊢ᵃ (work_sub (B1 ^ᵈ X) A1 ⫤ aworklist_constvar Γ X (abind_bound typ_bot typ_top))) by admit.
     apply H3 in H4.
     destruct H4 as [Ω].
     destruct H4 as [[θ Htrans] Hdred].
     dependent destruction Htrans. dependent destruction Htrans.
     dependent destruction H9.
-    admit.
-  - admit.
+    rename A1ᵈ into B1tᵈ. rename B1ᵈ into A1ᵈ.
+    apply inst_typ_etvar_tvar_subst_cons in H9...
+    destruct H9 as [B1xᵈ].
+    exists (work_sub (typ_all (close_typ_wrt_typ X B1xᵈ)) A1ᵈ ⫤ Ω)%dworklist.
+    split.
+    + exists θ'. econstructor...
+      econstructor... econstructor.
+      admit. admit.
+    + econstructor. 
+      dependent destruction Hwfa. 
+      dependent destruction H.
+      dependent destruction H.
+      eapply d_sub__alll with (T:=T) (L:=L)...
+      * admit.
+      * admit.
+      * admit.
+      * intros. inst_cofinites_with X0.
+        erewrite (subst_tvar_in_typ_intro X (close_typ_wrt_typ X B1xᵈ)) by apply close_typ_notin.
+        rewrite open_typ_wrt_typ_close_typ_wrt_typ.
+        admit.
+      * admit.
+      * erewrite (subst_tvar_in_typ_intro X (close_typ_wrt_typ X B1xᵈ)) by apply close_typ_notin.
+        rewrite open_typ_wrt_typ_close_typ_wrt_typ.
+        admit.
+      * dependent destruction Hdred...
+    + admit.
+    + admit.
+  - inst_cofinites_by L using_name X.
+    assert ( ⊢ᵃ (work_sub (B1 ^ᵈ X) (A1 ^ᵈ X) ⫤ aworklist_constvar Γ X abind_stvar_empty) ) by admit.
+    apply H0 in H1.
+    destruct H1 as [Ω].
+    destruct H1 as [[θ Htrans] Hdred]...
+    dependent destruction Htrans...
+    dependent destruction Htrans...
+    dependent destruction H1.
+    rename A1ᵈ into B1xᵈ. rename B1ᵈ into A1xᵈ.
+    exists (work_sub (typ_all (close_typ_wrt_typ X B1xᵈ)) (typ_all (close_typ_wrt_typ X A1xᵈ)) ⫤ Ω)%dworklist.
+    split.
+    + exists θ'. admit.
+    + dependent destruction Hdred. admit.
   - inst_cofinites_by L using_name X.
     inst_cofinites_by (L `union` singleton X0) using_name X.
     admit.  
   - admit.
   - admit.
   - admit.
+  (* tau < ^X *)
   - admit.
+
   - admit.
   - _apply_IH_a_wl_red.
     dependent destruction Htrans. dependent destruction H1.
     dependent destruction Htrans. dependent destruction H1.
     eapply inst_typ_det in H1... subst.
-    exists (work_sub A1ᵈ (typ_intersection B1ᵈ B1ᵈ0) ⫤ Ω)%dworklist. split...
+    rename B1ᵈ0 into B2ᵈ.
+    exists (work_sub A1ᵈ (typ_intersection B1ᵈ B2ᵈ) ⫤ Ω)%dworklist. split...
     dependent destruction Hdred.
     dependent destruction Hdred.
     econstructor... 
@@ -173,7 +212,7 @@ Proof with eauto with Hdb_a_wl_red_soundness.
   - admit.
   - _apply_IH_a_wl_red.
     dependent destruction H1. dependent destruction H1.
-    econstructor.
+    admit.
   - admit.
   - admit.
   - admit.
