@@ -86,7 +86,7 @@ Qed.
 
 Reserved Notation "θ ⫦ t ⇝ t'"
   (at level 65, t at next level, no associativity).
-Inductive inst_type : subst_set -> la_type -> ld_type -> Prop := 
+Inductive trans_type : subst_set -> la_type -> ld_type -> Prop := 
   | inst_t_tvar : forall θ x, 
       wf_ss θ -> 
       θ ⫦ (la_t_tvar_f x) ⇝ (ld_t_var_f x)
@@ -113,7 +113,7 @@ Inductive inst_type : subst_set -> la_type -> ld_type -> Prop :=
       (forall x, x `notin` L -> 
         θ ⫦ (open_la_type_wrt_la_type A' (la_t_tvar_f x)) ⇝ (open_ld_type_wrt_ld_type A (ld_t_var_f x))) ->
       θ ⫦ (la_t_forall A') ⇝ (ld_t_forall A)
-where "θ ⫦ t ⇝ t'" := (inst_type θ t t').
+where "θ ⫦ t ⇝ t'" := (trans_type θ t t').
 
 Lemma inst_t_wf_ss : forall θ t t',
   θ ⫦ t ⇝ t' -> wf_ss θ.
@@ -124,7 +124,7 @@ Qed.
 
 Reserved Notation "θ ⫦ Γᵃ ⇝ Γᵈ ⫣ θ'"
   (at level 65, Γᵃ at next level, Γᵈ at next level, no associativity).
-Inductive inst_worklist : subst_set -> la_worklist -> ld_worklist -> subst_set -> Prop := 
+Inductive trans_worklist : subst_set -> la_worklist -> ld_worklist -> subst_set -> Prop := 
   | inst_wl_nil : forall θ, 
       wf_ss θ -> 
       θ ⫦ la_wl_nil ⇝ ld_wl_nil ⫣ θ
@@ -141,11 +141,11 @@ Inductive inst_worklist : subst_set -> la_worklist -> ld_worklist -> subst_set -
       θ ⫦ lbᵃ ⇝ lbᵈ ->
       θ ⫦ ubᵃ ⇝ ubᵈ ->
       θ ⫦ (la_wl_cons_ev Γᵃ lbᵃ ex ubᵃ) ⇝ (ld_wl_cons_w Γᵈ (ld_w_sub lbᵈ ubᵈ)) ⫣ (θ' ; ex : lbᵈ)
-where "θ ⫦ Γᵃ ⇝ Γᵈ ⫣ θ'" := (inst_worklist θ Γᵃ Γᵈ θ').
+where "θ ⫦ Γᵃ ⇝ Γᵈ ⫣ θ'" := (trans_worklist θ Γᵃ Γᵈ θ').
 
 
-Hint Constructors inst_type : transfer.
-Hint Constructors inst_worklist : transfer.
+Hint Constructors trans_type : transfer.
+Hint Constructors trans_worklist : transfer.
 
 
 Lemma fv_ss_ld_ctx_dom: forall θ x,
@@ -234,8 +234,8 @@ Proof.
   induction 2; (intros e₂ᵈ H2; dependent destruction H2; auto). 
   - specialize (binds_unique _ _ _ _ _ H1 H3).
     intros. specialize (H4 H). inversion_eq. auto.
-  - specialize (IHinst_type1 H _ H2_).
-    specialize (IHinst_type2 H _ H2_0).
+  - specialize (IHtrans_type1 H _ H2_).
+    specialize (IHtrans_type2 H _ H2_0).
     subst. auto.
   - inst_cofinites_by (L `union` L0 `union` (fv_ld_type A) `union` (fv_ld_type A0)).  
     assert (A = A0).
@@ -479,8 +479,8 @@ Qed.
 
 (* Lemma transfer_reorder: forall Γᵃ Γ'ᵈ θ' x t m Γ'ᵃ,
   reorder Γᵃ x t m la_wl_nil Γ'ᵃ ->
-  inst_worklist nil Γ'ᵃ Γ'ᵈ θ' ->
-  exists Γᵈ θ, inst_worklist nil Γᵃ Γᵈ θ.
+  trans_worklist nil Γ'ᵃ Γ'ᵈ θ' ->
+  exists Γᵈ θ, trans_worklist nil Γᵃ Γᵈ θ.
 Proof.
   intros. 
   generalize dependent θ'.
@@ -509,8 +509,8 @@ Admitted.
 
 Lemma transfer_reorder': forall Γᵃ Γᵈ θ x t m Γ'ᵃ,
   reorder Γᵃ x t m la_wl_nil Γ'ᵃ ->
-  inst_worklist nil Γᵃ Γᵈ θ -> 
-  exists Γ'ᵈ θ', inst_worklist nil Γ'ᵃ Γ'ᵈ θ'.
+  trans_worklist nil Γᵃ Γᵈ θ -> 
+  exists Γ'ᵈ θ', trans_worklist nil Γ'ᵃ Γ'ᵈ θ'.
 Proof.
   intros. 
   generalize dependent θ.
@@ -542,4 +542,4 @@ Admitted. *)
 
 
 Definition transfer (Γ : la_worklist) (Γ' : ld_worklist) : Prop :=
-  exists θ', inst_worklist nil Γ Γ' θ'. *)
+  exists θ', trans_worklist nil Γ Γ' θ'. *)

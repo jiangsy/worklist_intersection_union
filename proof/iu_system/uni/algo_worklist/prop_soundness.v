@@ -12,10 +12,10 @@ Require Import ln_utils.
 
 
 Hint Constructors a_wf_wl : Hdb_a_wl_red_soundness.
-Hint Constructors inst_typ : Hdb_a_wl_red_soundness.
-Hint Constructors inst_cont : Hdb_a_wl_red_soundness.
-Hint Constructors inst_work : Hdb_a_wl_red_soundness.
-Hint Constructors inst_worklist : Hdb_a_wl_red_soundness.
+Hint Constructors trans_typ : Hdb_a_wl_red_soundness.
+Hint Constructors trans_cont : Hdb_a_wl_red_soundness.
+Hint Constructors trans_work : Hdb_a_wl_red_soundness.
+Hint Constructors trans_worklist : Hdb_a_wl_red_soundness.
 Hint Constructors wf_ss : Hdb_a_wl_red_soundness.
 Hint Constructors d_wl_del_red : Hdb_a_wl_red_soundness.
 
@@ -71,7 +71,7 @@ Ltac trans_all_typ :=
       let H4 := fresh "Htrans"  in
       let C1 := fresh C"ᵈ" in
         lazymatch goal with
-        | _ : inst_typ θ C ?Cᵈ |- _ => fail
+        | _ : trans_typ θ C ?Cᵈ |- _ => fail
         | _ : _ |- _ =>
         eapply a_wf_typ_trans_typ in H1 as H3; eauto with Hdb_a_wl_red_soundness
         end;
@@ -141,7 +141,7 @@ Proof with eauto with Hdb_a_wl_red_soundness.
     dependent destruction Htrans. dependent destruction Htrans.
     dependent destruction H9.
     rename A1ᵈ into B1tᵈ. rename B1ᵈ into A1ᵈ.
-    apply inst_typ_etvar_tvar_subst_cons in H9...
+    apply trans_typ_etvar_tvar_subst_cons in H9...
     destruct H9 as [B1xᵈ].
     exists (work_sub (typ_all (close_typ_wrt_typ X B1xᵈ)) A1ᵈ ⫤ Ω)%dworklist.
     split.
@@ -193,7 +193,7 @@ Proof with eauto with Hdb_a_wl_red_soundness.
   - _apply_IH_a_wl_red.
     dependent destruction Htrans. dependent destruction H1.
     dependent destruction Htrans. dependent destruction H1.
-    eapply inst_typ_det in H1... subst.
+    eapply trans_typ_det in H1... subst.
     rename B1ᵈ0 into B2ᵈ.
     exists (work_sub A1ᵈ (typ_intersection B1ᵈ B2ᵈ) ⫤ Ω)%dworklist. split...
     dependent destruction Hdred.
