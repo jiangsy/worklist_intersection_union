@@ -47,15 +47,15 @@ Qed.
 Inductive trans_typ : subst_set -> typ -> typ -> Prop := 
   | trans_typ__tvar : forall θ X, 
       wf_ss θ -> 
-      binds X (dbind_tvar_empty) θ ->
+      X ~ ▫ ∈ θ ->
       trans_typ θ (typ_var_f X) (typ_var_f X)
   | trans_typ__stvar : forall θ X, 
       wf_ss θ -> 
-      binds X (dbind_stvar_empty) θ ->
+      X ~ ▪ ∈ θ ->
       trans_typ θ (typ_var_f X) (typ_var_f X)
   | trans_typ__etvar : forall θ X A1,
       wf_ss θ ->
-      binds X (dbind_typ A1) θ ->
+      X ~ A1 ∈ θ ->
       trans_typ θ (typ_var_f X) A1
   | trans_typ_unit : forall θ,
       wf_ss θ ->
@@ -556,16 +556,17 @@ Lemma trans_typ_refl: forall θ A,
   θ ⫦ᵗ A ⇝ A.
 Proof with eauto with Hdb_transfer.
   intros. dependent induction H...
-  - econstructor... admit.
-  - eapply trans_typ__stvar... admit.
-  - econstructor. admit.
-Admitted.
-
+  - econstructor...
+    apply in_ss_denv_in_ss...
+  - eapply trans_typ__stvar...
+    apply in_ss_denv_in_ss...
+  - inst_cofinites_for trans_typ__all...
+Qed.
 
 Lemma wf_ss_typ_no_etvar: forall θ X A T,
   wf_ss θ ->
   ss_to_denv θ ⊢ A ->
-  binds X (dbind_typ T) θ ->
+  X ~ T ∈ θ ->
   X \notin ftvar_in_typ A.
 Proof with eauto with Hdb_transfer.
   intros. dependent induction H0...
@@ -582,19 +583,16 @@ Proof with eauto with Hdb_transfer.
     econstructor...
 Qed.
 
-Corollary etvar_bind_no_etvar: forall θ X Y A B,
+Corollary etvar_bind_no_etvar: forall θ X1 X2 A1 A2,
   wf_ss θ ->
-  binds X (dbind_typ A) θ ->
-  binds Y (dbind_typ B) θ ->
-  X \notin ftvar_in_typ B.
+  X1 ~ A1 ∈  θ ->
+  X2 ~ A2 ∈ θ ->
+  X1 \notin ftvar_in_typ A2.
 Proof with eauto with Hdb_transfer.
   intros; eapply wf_ss_typ_no_etvar...
 Admitted.
 
-
 Hint Resolve trans_typ_wf_ss : Hdb_transfer.
-
-
 
 Lemma trans_typ_etvar_tvar_subst : forall θ1 θ2 T X Aᵃ A'ᵈ,
   lc_typ Aᵃ -> 

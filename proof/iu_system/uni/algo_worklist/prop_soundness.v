@@ -79,6 +79,24 @@ Ltac trans_all_typ :=
     end
   end.
 
+
+Lemma a_update_bound_transfer: forall Γ Ω θ X A E m Γ1 Γ2,
+  a_update_bound Γ X A E m Γ1 Γ2 ->
+  trans_worklist nil Γ Ω θ ->
+  exists θ', trans_worklist nil (awl_app Γ1 Γ2) Ω θ'.
+Proof.
+  intros. dependent induction H.
+  - admit.
+  - admit.
+  - admit.
+  - dependent destruction H1. admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+Admitted.
+
 Theorem d_a_wl_red_soundness: forall Γ,
   ⊢ᵃ Γ -> Γ ⟶ᵃʷ⁎⋅ -> exists Ω, transfer Γ Ω /\ Ω ⟶ᵈ⁎⋅.
 Proof with eauto with Hdb_a_wl_red_soundness.

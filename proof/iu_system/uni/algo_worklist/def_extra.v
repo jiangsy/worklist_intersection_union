@@ -70,34 +70,34 @@ Inductive a_add_contraint_sub_etvars :
 
 Inductive a_update_bound
   : aworklist ->  list (atom*abind) -> typvar -> typ -> amode_update_bound -> aworklist -> aworklist -> Prop :=
-  | a_ub__lb_stop : forall Γ1 E X A B1 A1, 
+  | a_ub__lb_stop : forall Γ1 E X A LB UB Γ3, 
     X `notin` ftvar_in_typ A -> 
     a_update_bound
-     (aworklist_constvar Γ1 X (abind_bound B1 A1)) E X A a_mode_ub__lower (aworklist_constvar (awl_app (aenv_to_awl E) Γ1) X (abind_bound (update_lower_bound A B1) A1)) aworklist_empty
-  | a_ub__ub_stop : forall Γ1 E X A B1 A1, 
+     (aworklist_constvar Γ1 X (abind_bound LB UB)) E X A a_mode_ub__lower (aworklist_constvar (awl_app (aenv_to_awl E) Γ1) X (abind_bound (update_lower_bound A LB) UB)) Γ3
+  | a_ub__ub_stop : forall Γ1 E X A LB UB Γ3, 
     X `notin` ftvar_in_typ A -> 
     a_update_bound
-     (aworklist_constvar Γ1 X (abind_bound B1 A1)) E X A a_mode_ub__upper (aworklist_constvar (awl_app (aenv_to_awl E) Γ1) X (abind_bound B1 (update_upper_bound A A1))) aworklist_empty
-  | a_ub__bb_stop : forall Γ1 E X A B1 A1, 
+     (aworklist_constvar Γ1 X (abind_bound LB UB)) E X A a_mode_ub__upper (aworklist_constvar (awl_app (aenv_to_awl E) Γ1) X (abind_bound LB (update_upper_bound A UB))) Γ3
+  | a_ub__bb_stop : forall Γ1 E X A LB UB Γ3, 
     X `notin` ftvar_in_typ A -> 
     a_update_bound
-     (aworklist_constvar Γ1 X (abind_bound B1 A1)) E X A a_mode_ub__both (aworklist_constvar (awl_app (aenv_to_awl E) Γ1) X (abind_bound (update_lower_bound A B1) (update_upper_bound A A1))) aworklist_empty
-  | a_ub__etvar_move : forall Γ1 X1 b1 E X A m Γ2 Γ3,
-    X `notin` ftvar_in_abind b1 ->
+     (aworklist_constvar Γ1 X (abind_bound LB UB)) E X A a_mode_ub__both (aworklist_constvar (awl_app (aenv_to_awl E) Γ1) X (abind_bound (update_lower_bound A LB) (update_upper_bound A UB))) Γ3
+  | a_ub__etvar_move : forall Γ1 X1 LB1 UB1 E X A m Γ2 Γ3,
+    X `notin` ftvar_in_abind (abind_bound LB1 UB1) ->
     a_update_bound Γ1 E X A m Γ2 Γ3 ->
-    a_update_bound (aworklist_constvar Γ1 X1 b1) ( (X1 , b1) :: E ) X A m Γ2 Γ3
-  | a_ub__etvar_stay : forall Γ1 X1 b1 E X A m Γ2 Γ3,
+    a_update_bound (aworklist_constvar Γ1 X1 (abind_bound LB1 UB1)) ( (X1 , (abind_bound LB1 UB1)) :: E ) X A m Γ2 Γ3
+  | a_ub__etvar_stay : forall Γ1 X1 LB1 UB1 E X A m Γ2 Γ3,
     X1 `notin` ftvar_in_typ A /\ X1 `notin` ftvar_in_aenv E ->
     a_update_bound Γ1 E X A m Γ2 Γ3 ->
-    a_update_bound (aworklist_constvar Γ1 X1 b1) E X A m Γ2 (aworklist_constvar Γ3 X1 b1)
-  | a_ub__tvar_stay : forall Γ1 X1 b1 E X A m Γ2 Γ3,
+    a_update_bound (aworklist_constvar Γ1 X1 (abind_bound LB1 UB1)) E X A m Γ2 (aworklist_constvar Γ3 X1 (abind_bound LB1 UB1))
+  | a_ub__tvar_stay : forall Γ1 X1 E X A m Γ2 Γ3,
     X1 `notin` ftvar_in_typ A /\ X1 `notin` ftvar_in_aenv E ->
     a_update_bound Γ1 E X A m Γ2 Γ3 ->
-    a_update_bound (aworklist_constvar Γ1 X1 abind_tvar_empty) E X A m Γ2 (aworklist_constvar Γ3 X1 b1)
-  | a_ub__stvar_stay : forall Γ1 X1 b1 E X A m Γ2 Γ3,
+    a_update_bound (aworklist_constvar Γ1 X1 abind_tvar_empty) E X A m Γ2 (aworklist_constvar Γ3 X1 abind_tvar_empty)
+  | a_ub__stvar_stay : forall Γ1 X1 E X A m Γ2 Γ3,
     X1 `notin` ftvar_in_typ A /\ X1 `notin` ftvar_in_aenv E ->
     a_update_bound Γ1 E X A m Γ2 Γ3 ->
-    a_update_bound (aworklist_constvar Γ1 X1 abind_stvar_empty) E X A m Γ2 (aworklist_constvar Γ3 X1 b1)
+    a_update_bound (aworklist_constvar Γ1 X1 abind_stvar_empty) E X A m Γ2 (aworklist_constvar Γ3 X1 abind_stvar_empty)
   | a_ub__w_stay : forall Γ1 w1 E X A m Γ2 Γ3,
     a_update_bound Γ1 E X A m Γ2 Γ3 ->
     a_update_bound (aworklist_conswork Γ1 w1) E X A m Γ2 (aworklist_conswork Γ3 w1)
