@@ -4,7 +4,7 @@ Require Import Metalib.Metatheory.
 Require Import List.
 
 Require Import uni.notations.
-Require Import uni.prop_basic.
+Require Import uni.decl.prop_basic.
 Require Import uni.algo_worklist.def_extra.
 Require Import ln_utils.
 
@@ -43,21 +43,6 @@ Proof.
   induction 1; eauto.
 Qed.
 
-
-(* Lemma wf_mono : forall θ X T, 
-  wf_ss θ -> binds X (sse_etvar T) θ -> dmono_typ T.
-Proof.
-  intros. induction H.
-  - inversion H0.
-  - inversion H0.
-    inversion H2.
-    auto.
-  - inversion H0.
-    + inversion H2.
-    + auto.
-  - inversion H0; auto.
-    dependent destruction H4. auto.
-Qed. *)
 
 Inductive trans_typ : subst_set -> typ -> typ -> Prop := 
   | trans_typ__tvar : forall θ X, 
@@ -262,7 +247,6 @@ where "θ ⫦ Γᵃ ⇝ Γᵈ ⫣ θ'" := (trans_worklist θ Γᵃ Γᵈ θ').
 Hint Constructors trans_typ : Hdb_transfer.
 
 
-
 Lemma trans_work_not_in_ss : forall θ Γ Ω X,
   nil ⫦ Γ ⇝ Ω ⫣ θ -> X ∉ dom (awl_to_aenv Γ) -> X ∉ dom θ.
 Proof with auto.
@@ -275,6 +259,8 @@ Lemma wf_ss_uniq : forall θ,
 Proof.
   intros. induction H; auto.
 Qed.
+
+Hint Resolve wf_ss_uniq : Hdb_transfer.
 
 Lemma wf_ss_etvar_tvar_false : forall θ X A,
   wf_ss θ -> X ~ A ∈ θ -> X ~ ▫ ∈ θ -> False.
@@ -307,6 +293,17 @@ Hint Resolve a_wf_wl_wf_ss : Hdb_transfer.
 
 Notation "θ ⫦ᵗ Aᵃ ⇝ Aᵈ" := (trans_typ θ Aᵃ Aᵈ)
   (at level 65, Aᵃ at next level, no associativity).
+
+
+
+Lemma trans_typ_wf_ss : forall θ Aᵃ Aᵈ,
+  θ ⫦ᵗ Aᵃ ⇝ Aᵈ ->
+  wf_ss θ.
+Proof with auto with Hdb_transfer.
+  intros. induction H...
+  - inst_cofinites_by L.
+    dependent destruction H0...
+Qed.
 
 
 Lemma trans_typ_det : forall θ Aᵃ A₁ᵈ A₂ᵈ,
@@ -407,7 +404,7 @@ Proof with eauto.
 Admitted.
 
 
-Lemma inst_subst : forall θ θ' X T Aᵃ Aᵈ, 
+(* Lemma inst_subst : forall θ θ' X T Aᵃ Aᵈ, 
   lc_typ Aᵃ ->
   θ' ++ (X, dbind_typ T) :: θ ⫦ᵗ Aᵃ ⇝ Aᵈ -> 
   (* X cannot appear in θ', so we don't need to do any subst for it *)
@@ -441,7 +438,7 @@ Proof with eauto with Hdb_transfer.
     rewrite_env (((X0, dbind_tvar_empty) :: θ') ++ θ).
     eapply H0...
 Admitted.
-
+ *)
 
 Lemma wf_subst_set_strength_etvar_same_denv: forall θ θ' X T,
   ss_to_denv (θ' ++ θ) = ss_to_denv (θ' ++ (X, dbind_typ T) :: θ).
@@ -565,7 +562,7 @@ Proof with eauto with Hdb_transfer.
 Admitted.
 
 
-Lemma etvar_bind_no_etvar: forall θ X A T,
+Lemma wf_ss_typ_no_etvar: forall θ X A T,
   wf_ss θ ->
   ss_to_denv θ ⊢ A ->
   binds X (dbind_typ T) θ ->
@@ -584,6 +581,19 @@ Proof with eauto with Hdb_transfer.
     eapply H1 with (θ:=(X0 ~ dbind_tvar_empty ++ θ))...
     econstructor...
 Qed.
+
+Corollary etvar_bind_no_etvar: forall θ X Y A B,
+  wf_ss θ ->
+  binds X (dbind_typ A) θ ->
+  binds Y (dbind_typ B) θ ->
+  X \notin ftvar_in_typ B.
+Proof with eauto with Hdb_transfer.
+  intros; eapply wf_ss_typ_no_etvar...
+Admitted.
+
+
+Hint Resolve trans_typ_wf_ss : Hdb_transfer.
+
 
 
 Lemma trans_typ_etvar_tvar_subst : forall θ1 θ2 T X Aᵃ A'ᵈ,
@@ -605,17 +615,16 @@ Proof with eauto with Hdb_transfer.
   - destruct (X == X0) in *.
     + subst. exists (` X0). split.
       * simpl. unfold eq_dec. destruct (EqDec_eq_of_X X0 X0).
-        -- subst.
-           eapply trans_typ_det with (θ:=(θ2 ++ (X0, dbind_typ T) :: θ1)); eauto.
-           admit.
-           admit. 
+        -- subst. eapply trans_typ_det with (θ:=(θ2 ++ (X0, dbind_typ T) :: θ1))...
         -- contradiction.
-      * econstructor... admit.
+      * econstructor...
     + dependent destruction Hinst.
-      * exists ` X... admit.
-      * exists ` X... admit.
+      * exists ` X. intuition...
+        econstructor... admit.
+      * exists ` X... intuition... admit.
       * exists A1. split.
-        -- admit.
+        -- rewrite subst_tvar_in_typ_fresh_eq...
+           eapply etvar_bind_no_etvar...
         -- econstructor...
            admit.
   - dependent destruction Hinst.

@@ -3,7 +3,7 @@ Require Import Coq.Unicode.Utf8.
 
 Require Import ln_utils.
 Require Import uni.decl.def_extra.
-Require Import uni.prop_basic.
+Require Import uni.decl.prop_basic.
 Require Import uni.def_ott.
 Require Import uni.notations.
 Require Import uni.decl_worklist.def.

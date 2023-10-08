@@ -5,7 +5,7 @@ Require Import List.
 
 
 Require Import uni.notations.
-Require Import uni.prop_basic.
+Require Import uni.decl.prop_basic.
 Require Import uni.algo_worklist.def_extra.
 Require Import uni.algo_worklist.transfer.
 Require Import ln_utils.

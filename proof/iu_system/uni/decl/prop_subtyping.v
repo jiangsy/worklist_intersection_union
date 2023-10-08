@@ -3,7 +3,7 @@ Require Import Lia.
 Require Import LibTactics.
 
 Require Import uni.notations.
-Require Import uni.prop_basic.
+Require Import uni.decl.prop_basic.
 Require Import ln_utils.
 
 Hint Constructors d_sub : sub.
@@ -862,71 +862,7 @@ Inductive d_sub_size : denv -> typ -> typ -> nat -> Prop :=    (* defn d_sub *)
      d_sub_size Ψ A1 B1 n1 ->
      d_sub_size Ψ A2 B1 n2 ->
      d_sub_size Ψ (typ_union A1 A2) B1 (S (n1 + n2)).
-
-
-(* Inductive d_sub_size : denv -> typ -> typ -> nat -> Prop :=
- | d_subs__top : forall (Ψ:denv) (S1:typ) (n:nat),
-     dwf_env Ψ ->
-     dwf_typ Ψ S1 ->
-     d_sub_size Ψ S1 typ_top n
- | d_subs__bot : forall (Ψ:denv) (T:typ) (n:nat),
-     dwf_env Ψ ->
-     dwf_typ Ψ T ->
-     d_sub_size Ψ typ_bot T n
- | d_subs__unit : forall (Ψ:denv) (n:nat),
-     dwf_env Ψ ->
-     d_sub_size Ψ typ_unit typ_unit n
- | d_subs__tvar : forall (Ψ:denv) (X:typvar) (n:nat),
-     dwf_env Ψ ->
-     dwf_typ Ψ (typ_var_f X) ->
-     d_sub_size Ψ (typ_var_f X) (typ_var_f X) n
- | d_subs__stvar : forall (Ψ:denv) (X:stypvar) (n:nat),
-     dwf_env Ψ ->
-     dwf_typ Ψ (typ_svar X) ->
-     d_sub_size Ψ (typ_svar X) (typ_svar X) n
- | d_subs__arrow : forall (Ψ:denv) (S1 S2 T1 T2:typ) (n1 n2:nat),
-     d_sub_size Ψ T1 S1 n1 ->
-     d_sub_size Ψ S2 T2 n2 ->
-     d_sub_size Ψ (typ_arrow S1 S2) (typ_arrow T1 T2) (S (n1 + n2))
- | d_subs__all : forall (L:vars) (Ψ:denv) (S1 T1:typ) (n:nat),
-     ( forall X , X \notin L -> ds_in_s X  (open_typ_wrt_typ  S1   (typ_svar X) ) ) ->
-     ( forall X , X \notin L -> ds_in_s X  (open_typ_wrt_typ  T1   (typ_svar X) ) ) ->
-     ( forall X , X \notin L -> d_sub_size  ( X ~ dbind_stvar_empty  ++  Ψ )   (open_typ_wrt_typ  S1   (typ_svar X) )   (open_typ_wrt_typ  T1  (typ_svar X) ) n) ->
-     d_sub_size Ψ (typ_all S1) (typ_all T1) (S n)
- | d_subs__alll : forall (L:vars) (Ψ:denv) (S1 T1 T2:typ) (n:nat),
-     dneq_all T1 ->
-     dneq_intersection T1 ->
-     dneq_union T1 ->
-     ( forall X , X \notin L -> ds_in X  (open_typ_wrt_typ  S1   (typ_var_f X) ) ) ->
-     dwf_typ Ψ T2 ->
-     dmono_typ T2 ->
-     d_sub_size Ψ  (open_typ_wrt_typ  S1   T2 )  T1 n ->
-     d_sub_size Ψ (typ_all S1) T1 (S n)
- | d_subs__intersection1 : forall (Ψ:denv) (S1 T1 T2:typ) (n1 n2:nat),
-     d_sub_size Ψ S1 T1 n1 ->
-     d_sub_size Ψ S1 T2 n2 ->
-     d_sub_size Ψ S1 (typ_intersection T1 T2) (S (n1 + n2))
- | d_subs__intersection2 : forall (Ψ:denv) (S1 S2 T:typ) (n:nat),
-     d_sub_size Ψ S1 T n ->
-     dwf_typ Ψ S2 ->
-     d_sub_size Ψ (typ_intersection S1 S2) T (S n)
- | d_subs__intersection3 : forall (Ψ:denv) (S1 S2 T:typ) (n:nat),
-     d_sub_size Ψ S2 T n ->
-     dwf_typ Ψ S1 ->
-     d_sub_size Ψ (typ_intersection S1 S2) T (S n)
- | d_subs__union1 : forall (Ψ:denv) (S1 T1 T2:typ) (n:nat),
-     d_sub_size Ψ S1 T1 n ->
-     dwf_typ Ψ T2 ->
-     d_sub_size Ψ S1 (typ_union T1 T2) (S n)
- | d_subs__union2 : forall (Ψ:denv) (S1 T1 T2:typ) (n:nat),
-     d_sub_size Ψ S1 T2 n ->
-     dwf_typ Ψ T1 ->
-     d_sub_size Ψ S1 (typ_union T1 T2) (S n)
- | d_subs__union3 : forall (Ψ:denv) (S1 S2 T:typ) (n1 n2:nat),
-     d_sub_size Ψ S1 T n1 ->
-     d_sub_size Ψ S2 T n2 ->
-     d_sub_size Ψ (typ_union S1 S2) T (S (n1 + n2)). *)
-
+     
 Notation "Ψ ⊢ S1 <: T1 | n" :=
   (d_sub_size Ψ S1 T1 n)
     (at level 65, S1 at next level, T1 at next level, no associativity) : type_scope.
