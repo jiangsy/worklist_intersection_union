@@ -39,7 +39,7 @@ Inductive d_wf_typ_s : denv -> typ -> Prop :=    (* defn d_wf_typ_s *)
      d_wf_typ_s Ψ A2 ->
      d_wf_typ_s Ψ (typ_arrow A1 A2)
  | d_wf_typ_s__all : forall (L:vars) (Ψ:denv) (A:typ),
-     ( forall X , X \notin L -> ds_in X  (open_typ_wrt_typ  A   (typ_var_f X) ) ) ->
+     ( forall X , X \notin L -> s_in X  (open_typ_wrt_typ  A   (typ_var_f X) ) ) ->
      ( forall X , X \notin L -> d_wf_typ_s  ( X ~ dbind_stvar_empty  ++  Ψ )   (open_typ_wrt_typ  A   (typ_var_f X) ) ) ->
      d_wf_typ_s Ψ (typ_all A)
  | d_wf_typ_s__union : forall (Ψ:denv) (A1 A2:typ),

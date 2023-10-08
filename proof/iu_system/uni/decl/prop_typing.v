@@ -88,21 +88,21 @@ Proof.
       specialize (IHd_subenv H H3).
       destruct IHd_subenv as [A'].
       exists A'; intuition.
-      eapply d_sub_weakening_cons; eauto.
+      eapply d_sub_weaken_cons; eauto.
   - inversion H1; auto.
     + inversion H2.
     + dependent destruction H. specialize (IHd_subenv H H3).
       destruct IHd_subenv as [A'].
       exists A'; intuition.
-      eapply d_sub_weakening_cons; eauto.
+      eapply d_sub_weaken_cons; eauto.
   - inversion H1; auto.
     + dependent destruction H3.
       exists A0; intuition.
-      eapply d_sub_weakening_cons; eauto.
+      eapply d_sub_weaken_cons; eauto.
     + dependent destruction H. specialize (IHd_subenv H H5).
       destruct IHd_subenv as [A''].
       exists A''; intuition.
-      eapply d_sub_weakening_cons; eauto.
+      eapply d_sub_weaken_cons; eauto.
 Qed.
 
 
@@ -231,7 +231,7 @@ Hint Resolve d_subenv_wf_env : typing.
 Hint Resolve d_wft_typ_subst : typing.
 Hint Resolve d_wf_env_subst_tvar_typ : typing.
 Hint Resolve bind_typ_subst : typing.
-Hint Resolve dwf_typ_dlc_type : typing.
+Hint Resolve d_wf_typ_dlc_type : typing.
 
 
 (* for the e <= forall a. A, not used now*)
@@ -821,13 +821,13 @@ Proof with auto with typing.
               refine (IHn1 _ _ _ _ _ _ _ _ _ _ H0 _ _ _); eauto...
               rewrite <- d_exp_size_open_var. lia.
               econstructor; eauto.
-              inverts H2. eauto using dwf_typ_weakening_cons.
+              inverts H2. eauto using d_wf_typ_weaken_cons.
            ++ inst_cofinites_for d_typing__chkabs.
               eauto using d_subenv_wf_typ, d_sub_dwft_1.
               intros. inst_cofinites_with x.
               refine (IHn1 _ _ _ _ _ _ _ _ _ _ H0 _ _ _); eauto...
               rewrite <- d_exp_size_open_var. lia.
-              applys~ d_sub_weakening_cons.
+              applys~ d_sub_weaken_cons.
               applys d_chk_inf_wf_env H0.
            ++ inversion H2.
            ++ inversion H3.

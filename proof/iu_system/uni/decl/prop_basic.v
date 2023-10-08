@@ -118,7 +118,7 @@ Proof.
   apply d_wf_typ_subst_stvar_tvar; eauto.
 Qed.
 
-Lemma dwf_typ_dwf_typ_s : forall Ψ A,
+Lemma d_wf_typ_d_wf_typ_s : forall Ψ A,
   Ψ ⊢ A -> Ψ ⊢ₛ A.
 Proof.
   intros.
@@ -128,7 +128,7 @@ Proof.
     + apply d_wf_typ_subst_stvar_tvar_cons; auto.
 Qed.
 
-Lemma dwf_typ_s_dwf_typ : forall Ψ A,
+Lemma d_wf_typ_s_d_wf_typ : forall Ψ A,
   Ψ ⊢ₛ A -> Ψ ⊢ A.
 Proof.
   intros. induction H; auto.
@@ -139,31 +139,31 @@ Proof.
 Qed.
 
 Hint Constructors d_sub : core.
-Hint Immediate dwf_typ_dwf_typ_s : core.
-Hint Immediate dwf_typ_s_dwf_typ : core.
+Hint Immediate d_wf_typ_d_wf_typ_s : core.
+Hint Immediate d_wf_typ_s_d_wf_typ : core.
 
-Lemma dwf_typ_dlc_type : forall Ψ A,
+Lemma d_wf_typ_dlc_type : forall Ψ A,
   Ψ ⊢ A -> lc_typ A.
 Proof.
   intros; induction H; auto.
 Qed.
 
-Lemma dwf_typ_s_dlc_type : forall Ψ A,
+Lemma d_wf_typ_s_dlc_type : forall Ψ A,
   Ψ ⊢ₛ A -> lc_typ A.
 Proof.
   intros.
-  eapply dwf_typ_dlc_type.
-  apply dwf_typ_s_dwf_typ.
+  eapply d_wf_typ_dlc_type.
+  apply d_wf_typ_s_d_wf_typ.
   eauto.
 Qed.
 
-Hint Resolve dwf_typ_s_dlc_type : core.
+Hint Resolve d_wf_typ_s_dlc_type : core.
 
 Hint Constructors neq_union : Core.
 Hint Constructors neq_intersection : Core.
 
 
-Lemma dwf_typ_open_inv : forall Ψ1 A1 T1 X,
+Lemma d_wf_typ_open_inv : forall Ψ1 A1 T1 X,
   lc_typ T1 ->
   Ψ1 ⊢ {T1 /ᵗ X} A1 ->
   binds X dbind_tvar_empty Ψ1 ->
@@ -224,7 +224,7 @@ Hint Constructors d_wf_env: core.
 Hint Constructors d_wf_typ_s: core.
 
 
-Lemma dwf_typ_weakening : forall Ψ1 Ψ2 Ψ3 A,
+Lemma d_wf_typ_weaken : forall Ψ1 Ψ2 Ψ3 A,
   Ψ3 ++ Ψ1 ⊢ A ->
   (* uniq (E3 ++ Ψ2 ++ Ψ1) -> *)
   Ψ3 ++ Ψ2 ++ Ψ1 ⊢ A.
@@ -238,24 +238,24 @@ Proof.
       eapply H1; eauto.
 Qed.
 
-Corollary dwf_typ_weakening_cons : forall Ψ X b A,
+Corollary d_wf_typ_weaken_cons : forall Ψ X b A,
   Ψ ⊢ A ->
   (* uniq ((X ~ b) ++ Ψ1) -> *)
   ((X ~ b) ++ Ψ) ⊢ A.
 Proof.
   intros.
   replace (X ~ b ++ Ψ) with (nil ++ X ~ b ++ Ψ) by auto.
-  apply dwf_typ_weakening; auto.
+  apply d_wf_typ_weaken; auto.
 Qed.
 
-Corollary dwf_typ_weaken_head: forall Ψ1 Ψ2 T,
+Corollary d_wf_typ_weaken_head: forall Ψ1 Ψ2 T,
     Ψ1 ⊢ T ->
   (* uniq (Ψ2 ++ Ψ1) -> *)
   Ψ2 ++ Ψ1 ⊢ T.
 Proof.
   intros.
   rewrite_env (nil++Ψ2++Ψ1).
-  applys* dwf_typ_weakening.
+  applys* d_wf_typ_weaken.
 Qed.
 
 Lemma d_wf_env_uniq: forall Ψ,
@@ -279,9 +279,9 @@ Proof with auto.
 Qed.
 
 Hint Resolve d_wf_env_uniq : core.
-Hint Resolve dwf_typ_weakening_cons : core.
+Hint Resolve d_wf_typ_weaken_cons : core.
 
-Lemma dwf_env_binds_dwf_typ : forall Ψ x A,
+Lemma dwf_env_binds_d_wf_typ : forall Ψ x A,
   ⊢ Ψ ->
   x ~ A ∈ Ψ ->
   Ψ ⊢ A.
@@ -298,7 +298,7 @@ Proof.
   - inversion H2.
     + dependent destruction H3. auto.
     + simpl in *. apply IHd_wf_env in H3.
-      apply dwf_typ_weakening_cons; auto.
+      apply d_wf_typ_weaken_cons; auto.
 Qed.
 
 
@@ -330,13 +330,13 @@ Proof with simpl in *; try solve_by_invert; eauto using uniq_app_1, uniq_app_2.
   intros * Hwfenv Hwft1 Hwft2.
   inductions Hwft1; intros; forwards: d_wf_env_uniq Hwfenv; try solve [simpl; auto]...
   - destruct (X0 == X).
-    + subst. simpl. applys* dwf_typ_weaken_head.
+    + subst. simpl. applys* d_wf_typ_weaken_head.
       (* solve_uniq. *)
     + forwards* [?|?]: binds_app_1 H.
       * forwards: binds_map_2 (subst_tvar_in_dbind T2 X) H1...
       * apply binds_cons_iff in H1. iauto.
   - destruct (X0 == X).
-    + apply dwf_typ_weaken_head. auto.
+    + apply d_wf_typ_weaken_head. auto.
     + eapply d_wf_typ__stvar.
       forwards* [?|?]: binds_app_1 H. forwards*: binds_map_2 (subst_tvar_in_dbind T2 X) H1.
       forwards* [(?&?&?)|?]: binds_cons_uniq_1 H1...
@@ -375,12 +375,12 @@ Proof with simpl in *; try solve_by_invert; eauto using uniq_app_1, uniq_app_2, 
   intros * Hwfenv Hwft1 Hwft2.
   inductions Hwft1; intros; forwards: d_wf_env_uniq Hwfenv; try solve [simpl; auto]...
   - destruct (X0 == X); subst...
-    + apply dwf_typ_weaken_head. auto.
+    + apply d_wf_typ_weaken_head. auto.
     + eapply d_wf_typ__tvar.
       forwards* [?|?]: binds_app_1 H. forwards*: binds_map_2 (subst_tvar_in_dbind T2 X) H1.
       forwards* [(?&?&?)|?]: binds_cons_uniq_1 H1...
   - destruct (X0 == X); subst...
-    + subst. simpl. applys* dwf_typ_weaken_head.
+    + subst. simpl. applys* d_wf_typ_weaken_head.
       (* solve_uniq. *)
     + forwards* [?|?]: binds_app_1 H.
       * forwards: binds_map_2 (subst_tvar_in_dbind T2 X) H1...
@@ -466,7 +466,7 @@ Proof.
   - inversion H0.
     + inversion H2.
     + assert (Ψ1 ⊢ T1).
-      { eapply dwf_env_binds_dwf_typ; eauto. inversion H. auto. }
+      { eapply dwf_env_binds_d_wf_typ; eauto. inversion H. auto. }
       rewrite subst_tvar_in_typ_fresh_eq; auto.
       eapply d_new_tv_notin_wf_typ; eauto.
   - destruct a. inversion H0.
@@ -483,7 +483,7 @@ Proof.
   intros. induction* H.
 Qed.
 
-Lemma d_mono_typ_weakening : forall Ψ1 Ψ2 Ψ3 A,
+Lemma d_mono_typ_weaken : forall Ψ1 Ψ2 Ψ3 A,
   d_mono_typ  (Ψ3 ++ Ψ1) A -> d_mono_typ (Ψ3 ++ Ψ2 ++ Ψ1) A.
 Proof.
   intros.
@@ -588,10 +588,10 @@ Proof with auto.
       * intros. inst_cofinites_with X. auto.
       * intros. inst_cofinites_with X.
         destruct IHd_sub. auto.
-        eapply dwf_typ_open_inv with (X:=X) (T1:=T); auto.
+        eapply d_wf_typ_open_inv with (X:=X) (T1:=T); auto.
         -- eapply d_mono_typ_lc; eauto.
         -- replace (X ~ dbind_tvar_empty ++ Ψ) with (nil ++ X ~ dbind_tvar_empty ++ Ψ) by auto.
-           apply dwf_typ_weakening. simpl. rewrite  subst_tvar_in_typ_open_typ_wrt_typ.
+           apply d_wf_typ_weaken. simpl. rewrite  subst_tvar_in_typ_open_typ_wrt_typ.
            ++ simpl. unfold eq_dec. destruct ( EqDec_eq_of_X X X ).
               ** rewrite subst_tvar_in_typ_fresh_eq; intuition.
               ** contradiction.
@@ -617,7 +617,7 @@ Proof.
   intros. forwards*: d_sub_dwft H.
 Qed.
 
-Lemma dwf_typ_strengthening : forall Ψ1 Ψ2 X A b,
+Lemma d_wf_typ_strengthening : forall Ψ1 Ψ2 X A b,
     ⊢ Ψ2 ++ X ~ b ++ Ψ1 ->
     Ψ2 ++ X ~ b ++ Ψ1 ⊢ A ->
     X \notin ftvar_in_typ A ->
@@ -631,7 +631,7 @@ Proof with eauto.
       auto.
     + destruct a. inversion H.
       * dependent destruction H1. auto.
-      * simpl. apply dwf_typ_weakening_cons. apply IHΨ2; auto.
+      * simpl. apply d_wf_typ_weaken_cons. apply IHΨ2; auto.
         rewrite_env ((a, d) :: (Ψ2 ++ X ~ b ++ Ψ1)) in Hwfenv. applys* d_wf_env_strenthening_head.
         (* forwards: d_wf_env_uniq Hwfenv. solve_uniq. *)
   - induction Ψ2.
@@ -640,7 +640,7 @@ Proof with eauto.
       * auto.
     + destruct a. inversion H.
       * dependent destruction H1. auto.
-      * simpl. apply dwf_typ_weakening_cons; auto. apply IHΨ2; auto.
+      * simpl. apply d_wf_typ_weaken_cons; auto. apply IHΨ2; auto.
         rewrite_env ((a, d) :: (Ψ2 ++ X ~ b ++ Ψ1)) in Hwfenv. applys* d_wf_env_strenthening_head.
         (* forwards: d_wf_env_uniq Hwfenv. solve_uniq. *)
   - simpl in *. constructor.
@@ -715,7 +715,7 @@ Proof with eauto.
     3: rewrite_env ((a, dbind_typ A) :: (Ψ2 ++ Ψ1)) in HE.
     all: forwards HE': d_wf_env_strenthening_head HE; inverts HE.
     all: econstructor; try solve_notin.
-    applys dwf_typ_weakening...
+    applys d_wf_typ_weaken...
 Qed.
 
 Corollary d_wf_env_weaken_stvar : forall Ψ1 Ψ2 X,
@@ -731,7 +731,7 @@ Proof with eauto.
     3: rewrite_env ((a, dbind_typ A) :: (Ψ2 ++ Ψ1)) in HE.
     all: forwards HE': d_wf_env_strenthening_head HE; inverts HE.
     all: econstructor; try solve_notin.
-    applys dwf_typ_weakening...
+    applys d_wf_typ_weaken...
 Qed.
 
 
@@ -778,7 +778,7 @@ Proof with try solve_notin; simpl in *; eauto.
     + remember (let (x, a0) := a in (x, subst_tvar_in_dbind (typ_var_f Y) X a0)).
       remember (map (subst_tvar_in_dbind (typ_var_f Y) X) Ψ1 ++ (Y, ▪) :: Ψ2).
       destruct p.
-      apply dwf_typ_weakening_cons.
+      apply d_wf_typ_weaken_cons.
       applys IHΨ2...
   - case_if... induction Ψ2...
     + eapply d_wf_typ__stvar. case_eq (X0==Y); intros; subst...
@@ -788,7 +788,7 @@ Proof with try solve_notin; simpl in *; eauto.
       * forwards: IHΨ2...
         remember (map (subst_tvar_in_dbind (typ_var_f Y) X) Ψ2 ++ (Y, ▪) :: Ψ1).
         rewrite_env ([(a, subst_tvar_in_dbind (typ_var_f Y) X d)] ++ l).
-        applys* dwf_typ_weaken_head.
+        applys* d_wf_typ_weaken_head.
   - eapply d_wf_typ__all with (L:=L `union` singleton X); intros; inst_cofinites_with X0.
     + rewrite typ_subst_open_comm; eauto.
       apply ftv_sin_typ_subst_inv; auto.
@@ -924,8 +924,8 @@ Proof with eauto.
   intros. exists* (Y ~ ▫ ++ nil).
 Qed.
 
-Lemma ds_in_open_stvar_subst_mono : forall S T Ψ SY SZ,
-    ds_in SY (S ^^ᵈ T) -> d_mono_typ Ψ T -> SY ∉ ftvar_in_typ T -> ds_in SY (S ^ᵈ SZ).
+Lemma s_in_open_stvar_subst_mono : forall S T Ψ SY SZ,
+    s_in SY (S ^^ᵈ T) -> d_mono_typ Ψ T -> SY ∉ ftvar_in_typ T -> s_in SY (S ^ᵈ SZ).
 Proof with try solve_notin; try solve_by_invert; simpl in *; eauto using lc_typ_open_stvar_subst_mono.
   intros * HD HM HN.
   inductions HD.
@@ -936,7 +936,7 @@ Proof with try solve_notin; try solve_by_invert; simpl in *; eauto using lc_typ_
                   try solve [forwards*: IHHD (typ_var_b 0) T1];
                   try solve [forwards*: IHHD (typ_var_b 0) T2]].
   all: try solve [
-           pick fresh Y and apply dsin_all; inst_cofinites_with Y;
+           pick fresh Y and apply s_in__all; inst_cofinites_with Y;
            rewrite open_typ_wrt_typ_twice in H0;
            [ forwards*: H0 | ];
            unfold open_typ_wrt_typ; try rewrite open_typ_wrt_typ_twice;
@@ -965,13 +965,13 @@ Proof with try solve_notin; simpl in *; eauto.
       | Hx:` _ = ` _ ^^ᵈ _ |- _ =>
           try solve [
               unfold open_typ_wrt_typ in *; simpl in *; inverts x;
-              rewrite_env (Ψ1 ++ [(SY, ▫)] ++ Ψ2); applys* dwf_typ_weakening;
-              eauto using dwf_typ_weakening]
+              rewrite_env (Ψ1 ++ [(SY, ▫)] ++ Ψ2); applys* d_wf_typ_weaken;
+              eauto using d_wf_typ_weaken]
       (* | Hx: dtyp_svar _ = dtyp_svar _ ^^ᵈ _ |- _ => *)
       (*     try solve [ *)
       (*         unfold open_typ_wrt_typ in *; simpl in *; inverts x; *)
-      (*         rewrite_env (Ψ1 ++ [(SY, ▫)] ++ Ψ2); applys* dwf_typ_weakening; *)
-      (*         eauto using dwf_typ_weakening] *)
+      (*         rewrite_env (Ψ1 ++ [(SY, ▫)] ++ Ψ2); applys* d_wf_typ_weaken; *)
+      (*         eauto using d_wf_typ_weaken] *)
       | Hx: _ = _ ^^ᵈ _ |- _ =>
           try solve [unfold open_typ_wrt_typ in Hx; simpl in x; inverts x];
           try solve [unfold open_typ_wrt_typ; simpl; eauto using d_wf_env_weaken_tvar];
@@ -983,7 +983,7 @@ Proof with try solve_notin; simpl in *; eauto.
       inverts* x;
       [ (forwards H': H SZ;
        try rewrite open_typ_wrt_typ_twice in H';
-       try applys* ds_in_open_stvar_subst_mono H'; eauto) |
+       try applys* s_in_open_stvar_subst_mono H'; eauto) |
         (match goal with
         HD: d_mono_typ _ ?A |- _ => assert (HE:
                open_typ_wrt_typ_rec 0 ` SZ (open_typ_wrt_typ_rec 1 A S)
@@ -1010,30 +1010,30 @@ Proof.
     + destruct a. destruct d.
       inversion H.
         dependent destruction H1. econstructor; eauto.
-        apply dwf_typ_weakening_cons; auto.
+        apply d_wf_typ_weaken_cons; auto.
       inversion H. inversion H1.
-        apply dwf_typ_weakening_cons; auto.
+        apply d_wf_typ_weaken_cons; auto.
       inversion H. inversion H1.
-        apply dwf_typ_weakening_cons; auto.
+        apply d_wf_typ_weaken_cons; auto.
   - induction Ψ2; simpl. auto.
     + simpl in H. inversion H. inversion H1.
       eauto.
     + destruct a. destruct d.
       inversion H.
         dependent destruction H1.
-        apply dwf_typ_weakening_cons; auto.
+        apply d_wf_typ_weaken_cons; auto.
       inversion H. inversion H1.
         eauto...
-        apply dwf_typ_weakening_cons; auto.
+        apply d_wf_typ_weaken_cons; auto.
       inversion H. inversion H1.
-        apply dwf_typ_weakening_cons; auto.
+        apply d_wf_typ_weaken_cons; auto.
   - eapply d_wf_typ__all with (L:=L); intros; inst_cofinites_with X.
     auto.
     rewrite_env ((X ~ ▫ ++ Ψ2) ++ x ~ dbind_typ B2 ++ Ψ1).
     eapply H1; simpl; eauto.
 Qed.
 
-Lemma d_wf_exp_weakening_head : forall (Ψ : denv) (X : atom) (b : dbind) (x : expvar),
+Lemma d_wf_exp_weaken_head : forall (Ψ : denv) (X : atom) (b : dbind) (x : expvar),
     d_wf_exp Ψ (exp_var_f x) → d_wf_exp (X ~ b ++ Ψ) (exp_var_f x).
 Proof.
   intros * H. inverts* H.
@@ -1056,7 +1056,7 @@ Proof with eauto using d_wf_typ_bound_typ.
       forwards[(?&Heq)|?]: binds_cons_1 H; try inverts Heq; subst; eauto.
     + rewrite_env (a::(Ψ2 ++ x ~ dbind_typ A1 ++ Ψ1)) in H. destruct a.
       forwards[(?&Heq)|?]: binds_cons_1 H; try inverts Heq; subst; eauto.
-      forwards*: IHΨ2. applys* d_wf_exp_weakening_head.
+      forwards*: IHΨ2. applys* d_wf_exp_weaken_head.
   - pick fresh Y and apply d_wf_exp__abs. applys* d_wf_typ_bound_typ.
     inst_cofinites_with Y.
     forwards: H1. rewrite_env ( (Y ~ dbind_typ T ++ Ψ2) ++ x ~ dbind_typ A1 ++ Ψ1)...

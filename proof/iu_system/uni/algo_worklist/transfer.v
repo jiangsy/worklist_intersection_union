@@ -685,35 +685,6 @@ Proof.
     + auto.
 Qed.
 
-
-
-
-
-Lemma notin_wf_t_notin_ss: forall t θ x,
-  ss_to_ctx θ ⊢ t -> x `notin` fv_ss θ -> x `notin` fv_ld_type t.
-Proof.
-  induction t; intros.
-  - auto.
-  - simpl. dependent destruction H.
-    inst_cofinites_by (L `union` singleton x).
-    eapply ld_wf_type_fv with (x:=x) in H.
-    rewrite fv_ld_type_open_ld_type_wrt_ld_type_lower.
-    eauto. simpl. auto.
-    apply notin_add; auto.
-    apply fv_ss_ld_ctx_dom. auto.
-  - simpl. dependent destruction H; apply notin_union; eauto.
-  - simpl. dependent destruction H; apply notin_union; eauto.
-  - simpl. dependent destruction H; apply notin_union; eauto.
-  - auto.
-  - dependent destruction H; auto.
-    clear H.
-    induction θ; auto.
-    + inversion H0.
-    + destruct a. destruct s; simpl in *.
-      inversion H0; subst; auto.
-      auto.
-Qed.
-
 Lemma notin_ss_notin_inst : forall θ x ex t,
     wf_ss θ ->
     ex : t ∈ θ -> 
@@ -737,15 +708,6 @@ Ltac inversion_eq :=
         | H : ?a = ?b |-  _ => dependent destruction H
       end.
 
-
-Lemma not_in_dom_not_in_fv_ss: forall x θ,
-  x `notin` dom θ -> 
-  x `notin` fv_ss θ.
-Proof.
-  induction θ; auto.
-  destruct a. destruct s; simpl; 
-  intros; apply notin_union; auto.
-Qed.
 
 (* Lemma transfer_reorder: forall Γᵃ Γ'ᵈ θ' x t m Γ'ᵃ,
   reorder Γᵃ x t m la_wl_nil Γ'ᵃ ->

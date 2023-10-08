@@ -130,22 +130,22 @@ Hint Resolve trans_env_wf_env : safety.
 Inductive sub_elab : denv -> dtyp -> dtyp -> fexp -> Prop :=
  | sub_elab_top : forall (E:denv) (S1:dtyp),
    dwf_env E ->
-   dwf_typ E S1 ->
+   d_wf_typ E S1 ->
    sub_elab E S1 dtyp_top (fexp_abs (trans_typ S1) fexp_unit)
  | sub_elab_bot : forall (E:denv) (T1:dtyp),
    dwf_env E ->
-   dwf_typ E T1 ->
+   d_wf_typ E T1 ->
    sub_elab E dtyp_bot T1 (fexp_abs (ftyp_all (ftyp_var_b 0)) (fexp_tapp (fexp_var_b 0) (trans_typ T1)))
  | sub_elab_unit : forall (E:denv),
    dwf_env E ->
    sub_elab E dtyp_unit dtyp_unit (fexp_abs ftyp_unit (fexp_var_b 0))
  | sub_elab_tvar : forall (E:denv) (X:typvar),
    dwf_env E ->
-   dwf_typ E (dtyp_var_f X) ->
+   d_wf_typ E (dtyp_var_f X) ->
    sub_elab E (dtyp_var_f X) (dtyp_var_f X) (fexp_abs (ftyp_var_f X) (fexp_var_b 0))
  | sub_elab_stvar : forall (E:denv) (SX:stypvar),
    dwf_env E ->
-   dwf_typ E (dtyp_svar SX) ->
+   d_wf_typ E (dtyp_svar SX) ->
    sub_elab E (dtyp_svar SX) (dtyp_svar SX) (fexp_abs (ftyp_var_f SX) (fexp_var_b 0))
  | sub_elab_arrow : forall (E:denv) (S1 S2 T1 T2:dtyp) (C1 C2:fexp),
    sub_elab E T1 S1 C1 ->
@@ -167,7 +167,7 @@ Inductive sub_elab : denv -> dtyp -> dtyp -> fexp -> Prop :=
    dneq_intersection T1 ->
    dneq_union T1 -> 
    ( forall X , X \notin L -> ds_in X  (open_dtyp_wrt_dtyp  S1   (dtyp_var_f X) ) ) ->
-   dwf_typ E T2 ->
+   d_wf_typ E T2 ->
    dmono_typ T2 ->
    sub_elab E  (open_dtyp_wrt_dtyp  S1   T2 )  T1 C ->
    sub_elab E (dtyp_all S1) T1
@@ -181,22 +181,22 @@ Inductive sub_elab : denv -> dtyp -> dtyp -> fexp -> Prop :=
                          (fexp_app C2 (fexp_var_b 0))))
  | sub_elab_intersection2 : forall (E:denv) (S1 S2 T1:dtyp) (C:fexp),
    sub_elab E S1 T1 C ->
-   dwf_typ E S2 ->
+   d_wf_typ E S2 ->
    sub_elab E (dtyp_intersection S1 S2) T1
     (fexp_abs (trans_typ (dtyp_intersection S1 S2)) (fexp_app C (fexp_proj1 (fexp_var_b 0))))
  | sub_elab_intersection3 : forall (E:denv) (S1 S2 T1:dtyp) (C:fexp),
    sub_elab E S2 T1 C ->
-   dwf_typ E S1 ->
+   d_wf_typ E S1 ->
    sub_elab E (dtyp_intersection S1 S2) T1
     (fexp_abs (trans_typ (dtyp_intersection S1 S2)) (fexp_app C (fexp_proj2 (fexp_var_b 0))))
  | sub_elab_union1 : forall (E:denv) (S1 T1 T2:dtyp) (C:fexp),
    sub_elab E S1 T1 C ->
-   dwf_typ E T2 ->
+   d_wf_typ E T2 ->
    sub_elab E S1 (dtyp_union T1 T2)
     (fexp_abs (trans_typ S1) (fexp_inl (fexp_app C (fexp_var_b 0))))
  | sub_elab_union2 : forall (E:denv) (S1 T1 T2:dtyp) (C:fexp),
    sub_elab E S1 T2 C ->
-   dwf_typ E T1 ->
+   d_wf_typ E T1 ->
    sub_elab E S1 (dtyp_union T1 T2)
     (fexp_abs (trans_typ S1) (fexp_inr (fexp_app C (fexp_var_b 0))))
  | sub_elab_union3 : forall (E:denv) (S1 S2 T1:dtyp) (C1 C2:fexp),
@@ -501,26 +501,26 @@ Inductive infabs_elab : denv -> dtyp -> dtyp -> dtyp -> fexp -> Prop :=
           (fexp_tapp (fexp_var_b 0) (ftyp_arrow ftyp_unit (ftyp_all (ftyp_var_b 0)))))
 | infabs_elab_arr : forall (E:denv) (T1 T2:dtyp),
   dwf_env E ->
-  dwf_typ E T1 ->
-  dwf_typ E T2 ->
+  d_wf_typ E T1 ->
+  d_wf_typ E T2 ->
   infabs_elab E (dtyp_arrow T1 T2) T1 T2
     (fexp_abs (trans_typ (dtyp_arrow T1 T2)) (fexp_var_b 0))
 | infabs_elab_all : forall (E:denv) (T1 T2 T3 T4:dtyp) (Co:fexp),
   dmono_typ T2 -> 
-  dwf_typ E T2 ->
-  dwf_typ E (dtyp_all T1) ->
+  d_wf_typ E T2 ->
+  d_wf_typ E (dtyp_all T1) ->
   infabs_elab E  (open_dtyp_wrt_dtyp  T1   T2 ) T3 T4 Co ->
   infabs_elab E (dtyp_all T1) T3 T4
     (fexp_abs (trans_typ (dtyp_all T1))
               (fexp_app Co (fexp_tapp (fexp_var_b 0) (trans_typ T2))))
 | infabs_elab_intersection1 : forall (E:denv) (T1 T2 T3 T4:dtyp) (Co:fexp),
-  dwf_typ E T2 ->
+  d_wf_typ E T2 ->
   infabs_elab E T1 T3 T4 Co ->
   infabs_elab E (dtyp_intersection T1 T2) T3 T4
     (fexp_abs (trans_typ (dtyp_intersection T1 T2))
               (fexp_app Co (fexp_proj1 (fexp_var_b 0))))
 | infabs_elab_intersection2 : forall (E:denv) (T1 T2 T3 T4:dtyp) (Co:fexp),
-  dwf_typ E T1 ->
+  d_wf_typ E T1 ->
   infabs_elab E T2 T3 T4 Co ->
   infabs_elab E (dtyp_intersection T1 T2) T3 T4
     (fexp_abs (trans_typ (dtyp_intersection T1 T2))
@@ -559,12 +559,12 @@ Proof.
     rewrite open_fexp_wrt_fexp_rec_lc_fexp; auto.
   - apply lc_ftyp_prod.
     + admit.
-    + apply trans_typ_lc_ftyp. apply dwf_typ_lc_dtyp with (E:=E); auto.
+    + apply trans_typ_lc_ftyp. apply d_wf_typ_lc_dtyp with (E:=E); auto.
   - unfold open_fexp_wrt_fexp. simpl. intros.
     apply lc_fexp_app; eauto with safety.
     rewrite open_fexp_wrt_fexp_rec_lc_fexp; auto.
   - apply lc_ftyp_prod.
-    + apply trans_typ_lc_ftyp. apply dwf_typ_lc_dtyp with (E:=E); auto.
+    + apply trans_typ_lc_ftyp. apply d_wf_typ_lc_dtyp with (E:=E); auto.
     + admit.
   - unfold open_fexp_wrt_fexp. simpl. intros.
     apply lc_fexp_app; eauto with safety.
@@ -651,19 +651,19 @@ Admitted.
 Inductive inftapp_elab : denv -> dtyp -> dtyp -> dtyp -> fexp -> fexp -> Prop := 
 | inftapp_elab_bot : forall (E:denv) (T1:dtyp),
   dwf_env E -> 
-  dwf_typ E T1 ->
+  d_wf_typ E T1 ->
   inftapp_elab E dtyp_bot T1 dtyp_bot
     (fexp_abs (ftyp_all (ftyp_var_b 0)) (fexp_var_b 0))
     (fexp_abs (ftyp_all (ftyp_var_b 0)) (fexp_var_b 0))
 | inftapp_elab_all : forall (E:denv) (T1 T2:dtyp),
   dwf_env E -> 
-  dwf_typ E (dtyp_all T1) ->
-  dwf_typ E T2 ->
+  d_wf_typ E (dtyp_all T1) ->
+  d_wf_typ E T2 ->
   inftapp_elab E (dtyp_all T1) T2 (open_dtyp_wrt_dtyp  T1   T2 )  
     (fexp_abs (trans_typ (dtyp_all T1)) (fexp_var_b 0))
     (fexp_abs (trans_typ (dtyp_all T1)) (fexp_tapp (fexp_var_b 0) (trans_typ T2)))
 | inftapp_elab_intersection1 : forall (E:denv) (A1 A2 B C1:dtyp) (Co1 Co2:fexp),
-  dwf_typ E A2 ->
+  d_wf_typ E A2 ->
   d_inftapp_false A2 ->
   inftapp_elab E A1 B C1 Co1 Co2 ->
   inftapp_elab E (dtyp_intersection A1 A2) B C1
@@ -671,7 +671,7 @@ Inductive inftapp_elab : denv -> dtyp -> dtyp -> dtyp -> fexp -> fexp -> Prop :=
               (fexp_app Co1 (fexp_proj1 (fexp_var_b 0))))
     Co2
 | inftapp_elab_intersection2 : forall (E:denv) (A1 A2 B C2:dtyp) (Co1 Co2:fexp),
-  dwf_typ E A1 ->
+  d_wf_typ E A1 ->
   d_inftapp_false A1 ->
   inftapp_elab E A2 B C2 Co1 Co2 ->
   inftapp_elab E (dtyp_intersection A1 A2) B C2
@@ -840,7 +840,7 @@ Inductive typing_elab : denv -> dexp -> d_typing_mode -> dtyp -> fexp -> Prop :=
   typing_elab E (dexp_var_f x) d_typingmode_inf T1
     (fexp_var_f x)
 | typing_elab_infanno : forall (E:denv) (e:dexp) (T1:dtyp) (C:fexp),
-  dwf_typ E T1 ->
+  d_wf_typ E T1 ->
   typing_elab E e d_typingmode_chk T1 C ->
   typing_elab E  ( (dexp_anno e T1) )  d_typingmode_inf T1
     C
@@ -855,12 +855,12 @@ Inductive typing_elab : denv -> dexp -> d_typing_mode -> dtyp -> fexp -> Prop :=
   typing_elab E  ( (dexp_app e1 e2) ) d_typingmode_inf T3
     (fexp_app (fexp_app C2 C1) C3)
 | typing_elab_inftabs : forall (L:vars) (E:denv) (e:dexp) (T1:dtyp) (C:fexp),
-  dwf_typ E (dtyp_all T1) ->
+  d_wf_typ E (dtyp_all T1) ->
   ( forall X , X \notin  L  -> typing_elab  ( X ~ dbind_tvar_empty  ++  E ) (dexp_anno  ( open_dexp_wrt_dtyp e (dtyp_var_f X) )  ( open_dtyp_wrt_dtyp T1 (dtyp_var_f X) ) ) d_typingmode_chk ( open_dtyp_wrt_dtyp T1 (dtyp_var_f X) ) C)  ->
   typing_elab E (dexp_tabs (dbody_anno e T1)) d_typingmode_inf (dtyp_all T1)
     (fexp_tabs C)
 | typing_elab_inftapp : forall (E:denv) (e1:dexp) (T1 T2 T3:dtyp) (C1 C2 C3:fexp),
-  dwf_typ E T2 ->
+  d_wf_typ E T2 ->
   typing_elab E e1 d_typingmode_inf T1 C1 ->
   inftapp_elab E T1 T2 T3 C2 C3 ->
   typing_elab E (dexp_tapp e1 T2) d_typingmode_inf T3
@@ -870,12 +870,12 @@ Inductive typing_elab : denv -> dexp -> d_typing_mode -> dtyp -> fexp -> Prop :=
   typing_elab E (dexp_abs e) d_typingmode_chk dtyp_top
     fexp_unit
 | typing_elab_chkabs : forall (L:vars) (E:denv) (e:dexp) (T1 T2:dtyp) (C:fexp),
-  dwf_typ E T1 ->
+  d_wf_typ E T1 ->
   ( forall x , x \notin  L  -> typing_elab  ( x ~ (dbind_typ T1)  ++  E )  ( open_dexp_wrt_dexp e (dexp_var_f x) ) d_typingmode_chk T2 C)  ->
   typing_elab E (dexp_abs e) d_typingmode_chk (dtyp_arrow T1 T2)
     (fexp_abs (trans_typ T1) C)
 | typing_elab_chkall : forall (L:vars) (E:denv) (e:dexp) (T1:dtyp) (C:fexp),
-  dwf_typ E (dtyp_all T1) ->
+  d_wf_typ E (dtyp_all T1) ->
   ( forall X , X \notin  L  -> typing_elab  ( X ~ dbind_tvar_empty  ++  E )  e  d_typingmode_chk ( open_dtyp_wrt_dtyp T1 (dtyp_var_f X) ) C)  ->
   typing_elab E e d_typingmode_chk (dtyp_all T1)
     (fexp_tabs C)
@@ -891,12 +891,12 @@ Inductive typing_elab : denv -> dexp -> d_typing_mode -> dtyp -> fexp -> Prop :=
     (fexp_pair C1 C2)
 | typing_elab_chkunion1 : forall (E:denv) (e:dexp) (S1 T1:dtyp) (C:fexp),
   typing_elab E e d_typingmode_chk S1 C ->
-  dwf_typ E T1 ->
+  d_wf_typ E T1 ->
   typing_elab E e d_typingmode_chk (dtyp_union S1 T1)
     (fexp_inl C)
 | typing_elab_chkunion2 : forall (E:denv) (e:dexp) (S1 T1:dtyp) (C:fexp),
   typing_elab E e d_typingmode_chk T1 C ->
-  dwf_typ E S1 ->
+  d_wf_typ E S1 ->
   typing_elab E e d_typingmode_chk (dtyp_union S1 T1)
     (fexp_inr C)
 .

@@ -159,10 +159,10 @@ Fixpoint awl_to_aenv (aW : aworklist) : aenv :=
 
 
 defns
-Jdstrong_in :: '' ::=
+J_strong_in :: '' ::=
 
 defn
-X ∈ₛ A :: :: ds_in :: 'dsin_' by
+X ∈ₛ A :: :: s_in :: 's_in__' by
 
 ------------------------ :: var
 X ∈ₛ X 

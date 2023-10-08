@@ -1055,29 +1055,29 @@ Fixpoint awl_to_aenv (aW : aworklist) : aenv :=
 
 (** definitions *)
 
-(* defns Jdstrong_in *)
-Inductive ds_in : typvar -> typ -> Prop :=    (* defn ds_in *)
- | dsin_var : forall (X:typvar),
-     ds_in X (typ_var_f X)
- | dsin_arrow1 : forall (X:typvar) (A1 A2:typ),
+(* defns J_strong_in *)
+Inductive s_in : typvar -> typ -> Prop :=    (* defn s_in *)
+ | s_in__var : forall (X:typvar),
+     s_in X (typ_var_f X)
+ | s_in__arrow1 : forall (X:typvar) (A1 A2:typ),
      lc_typ A2 ->
-     ds_in X A1 ->
-     ds_in X (typ_arrow A1 A2)
- | dsin_arrow2 : forall (X:typvar) (A1 A2:typ),
+     s_in X A1 ->
+     s_in X (typ_arrow A1 A2)
+ | s_in__arrow2 : forall (X:typvar) (A1 A2:typ),
      lc_typ A1 ->
-     ds_in X A2 ->
-     ds_in X (typ_arrow A1 A2)
- | dsin_all : forall (L:vars) (X:typvar) (A:typ),
-      ( forall Y , Y \notin  L  -> ds_in X  ( open_typ_wrt_typ A (typ_var_f Y) )  )  ->
-     ds_in X (typ_all A)
- | dsin_union : forall (X:typvar) (A1 A2:typ),
-     ds_in X A1 ->
-     ds_in X A2 ->
-     ds_in X (typ_union A1 A2)
- | dsin_intersection : forall (X:typvar) (A1 A2:typ),
-     ds_in X A1 ->
-     ds_in X A2 ->
-     ds_in X (typ_intersection A1 A2).
+     s_in X A2 ->
+     s_in X (typ_arrow A1 A2)
+ | s_in__all : forall (L:vars) (X:typvar) (A:typ),
+      ( forall Y , Y \notin  L  -> s_in X  ( open_typ_wrt_typ A (typ_var_f Y) )  )  ->
+     s_in X (typ_all A)
+ | s_in__union : forall (X:typvar) (A1 A2:typ),
+     s_in X A1 ->
+     s_in X A2 ->
+     s_in X (typ_union A1 A2)
+ | s_in__intersection : forall (X:typvar) (A1 A2:typ),
+     s_in X A1 ->
+     s_in X A2 ->
+     s_in X (typ_intersection A1 A2).
 
 (* defns J_neq_abs *)
 Inductive neq_abs : exp -> Prop :=    (* defn neq_abs *)
@@ -1211,7 +1211,7 @@ Inductive d_wf_typ : denv -> typ -> Prop :=    (* defn d_wf_typ *)
      d_wf_typ Ψ A2 ->
      d_wf_typ Ψ (typ_arrow A1 A2)
  | d_wf_typ__all : forall (L:vars) (Ψ:denv) (A:typ),
-      ( forall X , X \notin  L  -> ds_in X  ( open_typ_wrt_typ A (typ_var_f X) )  )  ->
+      ( forall X , X \notin  L  -> s_in X  ( open_typ_wrt_typ A (typ_var_f X) )  )  ->
       ( forall X , X \notin  L  -> d_wf_typ  ( X ~ dbind_tvar_empty  ++  Ψ )   ( open_typ_wrt_typ A (typ_var_f X) )  )  ->
      d_wf_typ Ψ (typ_all A)
  | d_wf_typ__union : forall (Ψ:denv) (A1 A2:typ),
@@ -1425,15 +1425,15 @@ Inductive d_sub : denv -> typ -> typ -> Prop :=    (* defn d_sub *)
      d_sub Ψ A2 B2 ->
      d_sub Ψ (typ_arrow A1 A2) (typ_arrow B1 B2)
  | d_sub__all : forall (L:vars) (Ψ:denv) (A B:typ),
-      ( forall X , X \notin  L  -> ds_in X  ( open_typ_wrt_typ A (typ_var_f X) )  )  ->
-      ( forall X , X \notin  L  -> ds_in X  ( open_typ_wrt_typ B (typ_var_f X) )  )  ->
+      ( forall X , X \notin  L  -> s_in X  ( open_typ_wrt_typ A (typ_var_f X) )  )  ->
+      ( forall X , X \notin  L  -> s_in X  ( open_typ_wrt_typ B (typ_var_f X) )  )  ->
       ( forall X , X \notin  L  -> d_sub  ( X ~ dbind_stvar_empty  ++  Ψ )   ( open_typ_wrt_typ A (typ_var_f X) )   ( open_typ_wrt_typ B (typ_var_f X) )  )  ->
      d_sub Ψ (typ_all A) (typ_all B)
  | d_sub__alll : forall (L:vars) (Ψ:denv) (A B T:typ),
      neq_all B ->
      neq_intersection B ->
      neq_union B ->
-      ( forall X , X \notin  L  -> ds_in X  ( open_typ_wrt_typ A (typ_var_f X) )  )  ->
+      ( forall X , X \notin  L  -> s_in X  ( open_typ_wrt_typ A (typ_var_f X) )  )  ->
      d_mono_typ Ψ T ->
      d_sub Ψ  (open_typ_wrt_typ  A   T )  B ->
      d_sub Ψ (typ_all A) B
@@ -1505,7 +1505,7 @@ Inductive a_wf_typ : aenv -> typ -> Prop :=    (* defn a_wf_typ *)
      a_wf_typ aE A2 ->
      a_wf_typ aE (typ_arrow A1 A2)
  | a_wf_typ__all : forall (L:vars) (aE:aenv) (A:typ),
-      ( forall X , X \notin  L  -> ds_in X  ( open_typ_wrt_typ A (typ_var_f X) )  )  ->
+      ( forall X , X \notin  L  -> s_in X  ( open_typ_wrt_typ A (typ_var_f X) )  )  ->
       ( forall X , X \notin  L  -> a_wf_typ  ( X ~ abind_tvar_empty  ++  aE )   ( open_typ_wrt_typ A (typ_var_f X) )  )  ->
      a_wf_typ aE (typ_all A)
  | a_wf_typ__union : forall (aE:aenv) (A1 A2:typ),
@@ -1692,6 +1692,6 @@ Inductive a_wf_wl : aworklist -> Prop :=    (* defn a_wf_wl *)
 
 
 (** infrastructure *)
-#[export] Hint Constructors ds_in neq_abs neq_all neq_intersection neq_union neq_bot d_wf_typ d_wf_exp d_wf_body d_wf_env d_mono_typ d_wf_cont d_wf_work d_wf_wl d_sub a_smono_typ a_evs_in_wl a_wf_typ a_mono_typ a_wf_exp a_wf_body a_wf_cont a_wf_work a_wf_wl lc_typ lc_exp lc_body lc_cont lc_dbind lc_work lc_abind lc_dworklist lc_dvalue lc_aworklist : core.
+#[export] Hint Constructors s_in neq_abs neq_all neq_intersection neq_union neq_bot d_wf_typ d_wf_exp d_wf_body d_wf_env d_mono_typ d_wf_cont d_wf_work d_wf_wl d_sub a_smono_typ a_evs_in_wl a_wf_typ a_mono_typ a_wf_exp a_wf_body a_wf_cont a_wf_work a_wf_wl lc_typ lc_exp lc_body lc_cont lc_dbind lc_work lc_abind lc_dworklist lc_dvalue lc_aworklist : core.
 
 

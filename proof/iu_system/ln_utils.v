@@ -82,5 +82,5 @@ Tactic Notation "inst_cofinites_for" constr(H) ident(argname1)":="constr(arg1) "
 
 (* 
 
-Tactic Notation "pick" "fresh" ident(x) "and" "apply" constr(H) "for" "weakening" :=
-  apply_fresh_base_fixed H gather_for_weakening x. *)
+Tactic Notation "pick" "fresh" ident(x) "and" "apply" constr(H) "for" "weaken" :=
+  apply_fresh_base_fixed H gather_for_weaken x. *)

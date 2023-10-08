@@ -21,7 +21,7 @@ Lemma dsub_refl : forall Ψ T,
 Proof.
   intros.
   apply dsub_refl'. auto.
-  apply dwf_typ_dwf_typ_s.
+  apply d_wf_typ_d_wf_typ_s.
   auto.
 Qed.
 
@@ -81,7 +81,7 @@ Proof.
 Qed.
 
 Theorem dsub_top_fv_false: forall Ψ X T,
-  ds_in X T ->
+  s_in X T ->
   Ψ ⊢ typ_top <: T ->
   False.
 Proof.
@@ -89,7 +89,7 @@ Proof.
 Qed.
 
 Theorem dsub_unit_fv_false: forall Ψ X T,
-  ds_in X T ->
+  s_in X T ->
   Ψ ⊢ typ_unit <: T ->
   False.
 Proof.
@@ -214,8 +214,8 @@ Qed.
 
 Theorem d_sub_tvar_inv_nested_all_false: forall L1 L2 L3 T1 S1,
   (forall X : atom, X `notin` L1 -> d_sub_tvar_open_inv X (open_typ_wrt_typ_rec 1 S1 T1 ^ᵈ X)) ->
-  (forall X : atom, X `notin` L2 -> ds_in X (typ_all (open_typ_wrt_typ_rec 1 ` X T1))) ->
-  (forall X : atom, X `notin` L3 -> ds_in X (open_typ_wrt_typ_rec 1 S1 T1 ^ᵈ X)) ->
+  (forall X : atom, X `notin` L2 -> s_in X (typ_all (open_typ_wrt_typ_rec 1 ` X T1))) ->
+  (forall X : atom, X `notin` L3 -> s_in X (open_typ_wrt_typ_rec 1 S1 T1 ^ᵈ X)) ->
   lc_typ S1 ->
   False.
 Proof.
@@ -249,12 +249,12 @@ Proof.
   - assert (forall X : atom, X `notin` L1 -> d_sub_tvar_open_inv X (open_typ_wrt_typ_rec 1 S1 T1_1 ^ᵈ X)). {
       intros. inst_cofinites_with X. inversion H; auto.
     }
-    assert (forall X : atom, X `notin` L2 -> ds_in X (typ_all (open_typ_wrt_typ_rec 1 ` X T1_1))).
+    assert (forall X : atom, X `notin` L2 -> s_in X (typ_all (open_typ_wrt_typ_rec 1 ` X T1_1))).
     { intros. inst_cofinites_with X. dependent destruction H0.
-      eapply dsin_all with (L:=L). intros. inst_cofinites_with Y.
+      eapply s_in__all with (L:=L). intros. inst_cofinites_with Y.
       inversion H0. auto.
     }
-    assert  (forall X : atom, X `notin` L3 -> ds_in X (open_typ_wrt_typ_rec 1 S1 T1_1 ^ᵈ X)).
+    assert  (forall X : atom, X `notin` L3 -> s_in X (open_typ_wrt_typ_rec 1 S1 T1_1 ^ᵈ X)).
     { intros. inst_cofinites_with X. inversion H1; auto.
     }
     auto.
@@ -281,21 +281,21 @@ Proof.
         unfold eq_dec. destruct (EqDec_eq_of_X x x); auto. contradiction.
     }
     inversion H3.
-    + assert (forall X : atom, X `notin` L2 -> ds_in X (typ_all (open_typ_wrt_typ_rec 1 ` X T1_1))).
+    + assert (forall X : atom, X `notin` L2 -> s_in X (typ_all (open_typ_wrt_typ_rec 1 ` X T1_1))).
       { intros. inst_cofinites_with X. dependent destruction H0.
-        eapply dsin_all with (L:=L). intros. inst_cofinites_with Y.
+        eapply s_in__all with (L:=L). intros. inst_cofinites_with Y.
         inversion H0. auto.
       }
-      assert  (forall X, X `notin` L3 -> ds_in X (open_typ_wrt_typ_rec 1 S1 T1_1 ^ᵈ X)).
+      assert  (forall X, X `notin` L3 -> s_in X (open_typ_wrt_typ_rec 1 S1 T1_1 ^ᵈ X)).
       { intros. inst_cofinites_with X. inversion H1; auto.
       }
       auto.
-    + assert (forall X, X `notin` L2 -> ds_in X (typ_all (open_typ_wrt_typ_rec 1 ` X T1_2))).
+    + assert (forall X, X `notin` L2 -> s_in X (typ_all (open_typ_wrt_typ_rec 1 ` X T1_2))).
       { intros. inst_cofinites_with X. dependent destruction H0.
-        eapply dsin_all with (L:=L). intros. inst_cofinites_with Y.
+        eapply s_in__all with (L:=L). intros. inst_cofinites_with Y.
         inversion H0. auto.
       }
-      assert  (forall X, X `notin` L3 -> ds_in X (open_typ_wrt_typ_rec 1 S1 T1_2 ^ᵈ X)).
+      assert  (forall X, X `notin` L3 -> s_in X (open_typ_wrt_typ_rec 1 S1 T1_2 ^ᵈ X)).
       { intros. inst_cofinites_with X. inversion H1; auto.
       }
       auto.
@@ -306,7 +306,7 @@ Theorem d_sub_tvar_ind_open_inv_complete: forall n1 n2 Ψ S1 T1 X L,
     d_typ_order (T1 ^^ᵈ S1) < n1 ->
     d_typ_size (T1 ^^ᵈ S1) < n2 ->
     Ψ ⊢ T1 ^^ᵈ S1 <: ` X ->
-    (forall X, X `notin` L -> ds_in X (T1 ^ᵈ X)) ->
+    (forall X, X `notin` L -> s_in X (T1 ^ᵈ X)) ->
     d_mono_typ Ψ S1 ->
     d_sub_tvar_inv (typ_all T1).
 Proof.
@@ -481,10 +481,10 @@ Proof with auto with subtyping.
   - simpl. dependent destruction H2. constructor; auto.
   - simpl. dependent destruction H1. constructor; auto.
     apply d_wft_typ_subst; auto.
-    apply dwf_typ_weakening with (Ψ3:=nil); auto.
+    apply d_wf_typ_weaken with (Ψ3:=nil); auto.
   - simpl. dependent destruction H1. apply d_sub__intersection3; auto.
     apply d_wft_typ_subst; auto.
-    apply dwf_typ_weakening with (Ψ3:=nil); auto.
+    apply d_wf_typ_weaken with (Ψ3:=nil); auto.
 Qed.
 
 
@@ -494,22 +494,22 @@ Qed.
   | ltac_Mark => clear H
   | _ => generalize H; clear H; gen_until_mark
   end end. *)
-Hint Resolve dwf_typ_weakening : weakening.
+Hint Resolve d_wf_typ_weaken : weaken.
 
-Theorem d_sub_weakening: forall Ψ1 Ψ2 Ψ3 A B,
+Theorem d_sub_weaken: forall Ψ1 Ψ2 Ψ3 A B,
   Ψ3 ++ Ψ1 ⊢ A <: B ->
   ⊢ Ψ3 ++ Ψ2 ++ Ψ1 ->
   Ψ3 ++ Ψ2 ++ Ψ1 ⊢ A <: B.
-Proof with auto with subtyping weakening.
+Proof with auto with subtyping weaken.
   intros Ψ1 Ψ2 Ψ3 A B Hsub Hwf.
   dependent induction Hsub;
     try solve [simpl in *];
-    try solve [eapply dwf_typ_weakening with (Ψ2 := Ψ2) in H0; auto]; auto.
+    try solve [eapply d_wf_typ_weaken with (Ψ2 := Ψ2) in H0; auto]; auto.
   - apply d_sub__all with (L :=  L `union` dom (Ψ3 ++ Ψ2 ++ Ψ1)); intros x Fr; inst_cofinites_with x; auto...
     eapply H2 with (Ψ1 := Ψ1) (Ψ3 := (x, ▪) :: Ψ3); simpl; auto.
     constructor; auto.
   - apply d_sub__alll with (T := T) (L :=  L `union` dom (Ψ3 ++ Ψ2 ++ Ψ1)); auto...
-    eauto using d_mono_typ_weakening.
+    eauto using d_mono_typ_weaken.
   - apply d_sub__intersection2; eauto...
   - apply d_sub__intersection3; auto...
   - apply d_sub__union1; auto...
@@ -517,14 +517,14 @@ Proof with auto with subtyping weakening.
 Qed.
 
 
-Corollary d_sub_weakening_cons: forall Ψ x b A B,
+Corollary d_sub_weaken_cons: forall Ψ x b A B,
   Ψ ⊢ A <: B ->
   ⊢ x ~ b ++ Ψ ->
   x ~ b ++ Ψ ⊢ A <: B.
 Proof.
   intros.
   rewrite_env (nil ++ (x ~ b) ++ Ψ).
-  eapply d_sub_weakening; eauto.
+  eapply d_sub_weaken; eauto.
 Qed.
 
 (* Theorem  d_sub_strenthening: forall Ψ F G S1 T1,
@@ -632,16 +632,16 @@ Proof with eauto with subtyping.
          apply d_wft_typ_subst; auto.
          inst_cofinites_for d_wf_typ__all.
          ++ auto.
-         ++ intros. eapply dwf_typ_open_inv with (X:=X1) (T1:=T); eauto.
+         ++ intros. eapply d_wf_typ_open_inv with (X:=X1) (T1:=T); eauto.
             rewrite subst_tvar_in_typ_open_typ_wrt_typ; eauto.
             simpl. rewrite (subst_tvar_in_typ_fresh_eq); eauto.
             unfold eq_dec. destruct (EqDec_eq_of_X X1 X1); eauto.
-            ** apply dwf_typ_weakening_cons; auto.
+            ** apply d_wf_typ_weaken_cons; auto.
             ** contradiction.
       -- unfold eq_dec. destruct (EqDec_eq_of_X X0 X); eauto.
          ++ applys* d_mono_typ_weaken_head.
          ++ contradiction.
-      -- applys* dwf_typ_weaken_head.
+      -- applys* d_wf_typ_weaken_head.
     + apply d_sub_dwft in Hsub as Hwft1. destruct Hwft1 as [_ [HwftS HwftT]]. inversion HwftT.
       eapply d_sub__alll with (L:=L `union` singleton X) (T:={T1 /ᵗ X} T); eauto...
       1-3: simpl; econstructor; applys* lc_typ_subst.
@@ -687,7 +687,7 @@ Theorem d_sub_open_mono_stvar_false: forall n1 n2 Ψ A T X L,
     d_typ_size (A ^^ᵈ T) < n2 ->
     X ~ ▪ ∈ Ψ ->
     Ψ ⊢ A ^^ᵈ T <: typ_var_f X ->
-    (forall X, X `notin` L -> ds_in X (A ^ᵈ X)) ->
+    (forall X, X `notin` L -> s_in X (A ^ᵈ X)) ->
     d_mono_typ Ψ T ->
     False.
 Proof.
@@ -772,7 +772,7 @@ Theorem d_sub_subst_stvar : forall Ψ1 X Ψ2 A B T,
   Ψ2 ++ (X ~ dbind_stvar_empty) ++ Ψ1 ⊢ A <: B ->
   Ψ1 ⊢ T ->
   map (subst_tvar_in_dbind T X) Ψ2 ++ Ψ1 ⊢ {T /ᵗ X} A <: {T /ᵗ X} B.
-Proof with subst; eauto using dwf_typ_weaken_head with subtyping.
+Proof with subst; eauto using d_wf_typ_weaken_head with subtyping.
   intros. dependent induction H; try solve [simpl in *; eauto with subtyping].
   - eapply dsub_refl; auto...
   - simpl. inst_cofinites_for d_sub__all; intros X1 Hfr; inst_cofinites_with X1.
@@ -788,7 +788,7 @@ Proof with subst; eauto using dwf_typ_weaken_head with subtyping.
       * intros. rewrite typ_subst_open_comm; auto...
         apply ftv_sin_typ_subst_inv; auto...
       * applys* d_mono_typ_subst_stvar... eauto using d_sub_dwft_0.
-      * rewrite <- subst_tvar_in_typ_open_typ_wrt_typ; eauto using dwf_typ_dlc_type.
+      * rewrite <- subst_tvar_in_typ_open_typ_wrt_typ; eauto using d_wf_typ_dlc_type.
     + eapply d_sub_open_mono_stvar_false in H3; eauto. contradiction.
   - simpl. apply d_sub__intersection2. eauto with subtyping.
     apply d_wft_typ_subst_stvar; auto...
@@ -826,15 +826,15 @@ Inductive d_sub_size : denv -> typ -> typ -> nat -> Prop :=    (* defn d_sub *)
      d_sub_size Ψ A2 B2 n2 ->
      d_sub_size Ψ (typ_arrow A1 A2) (typ_arrow B1 B2) (S (n1 + n2))
  | d_subs__all : forall (L:vars) (Ψ:denv) (A1 B1:typ) (n:nat),
-      ( forall X , X \notin  L  -> ds_in X  ( open_typ_wrt_typ A1 (typ_var_f X) )  )  ->
-      ( forall X , X \notin  L  -> ds_in X  ( open_typ_wrt_typ B1 (typ_var_f X) )  )  ->
+      ( forall X , X \notin  L  -> s_in X  ( open_typ_wrt_typ A1 (typ_var_f X) )  )  ->
+      ( forall X , X \notin  L  -> s_in X  ( open_typ_wrt_typ B1 (typ_var_f X) )  )  ->
       ( forall X , X \notin  L  -> d_sub_size  ( X ~ dbind_stvar_empty  ++  Ψ )   ( open_typ_wrt_typ A1 (typ_var_f X) )   ( open_typ_wrt_typ B1 (typ_var_f X) )  n )  ->
       d_sub_size Ψ (typ_all A1) (typ_all B1) (S n)
  | d_subs__alll : forall (L:vars) (Ψ:denv) (A1 B1 T1:typ) (n:nat),
      neq_all B1 ->
      neq_intersection B1 ->
      neq_union B1 ->
-      ( forall X , X \notin  L  -> ds_in X  ( open_typ_wrt_typ A1 (typ_var_f X) )  )  ->
+      ( forall X , X \notin  L  -> s_in X  ( open_typ_wrt_typ A1 (typ_var_f X) )  )  ->
      d_mono_typ Ψ T1 ->
      d_sub_size Ψ  (open_typ_wrt_typ  A1   T1 )  B1 n ->
      d_sub_size Ψ (typ_all A1) B1 (S n)
@@ -961,13 +961,13 @@ Proof with (simpl in *; eauto using d_wf_env_subst_tvar_typ with sub).
       repeat rewrite typ_subst_open_comm...
   - pick fresh SZ and apply d_subs__alll.
     6: forwards* H4: IHHS;
-    rewrite subst_tvar_in_typ_open_typ_wrt_typ in H4; eauto using dwf_typ_dlc_type.
+    rewrite subst_tvar_in_typ_open_typ_wrt_typ in H4; eauto using d_wf_typ_dlc_type.
     1-3: auto...
     + rewrite typ_subst_open_comm...
       applys~ ftv_sin_typ_subst_inv.
     + applys d_mono_typ_subst_stvar.
       * rewrite_env ((Ψ2 ++ X ~ ▪) ++ Y ~ ▪ ++ Ψ1).
-        applys* d_mono_typ_weakening. rewrite_env (Ψ2 ++ (X, ▪) :: Ψ1)...
+        applys* d_mono_typ_weaken. rewrite_env (Ψ2 ++ (X, ▪) :: Ψ1)...
       * rewrite_env ((Ψ2 ++ X ~ ▪) ++ Y ~ ▪ ++ Ψ1).
         applys d_wf_env_weaken_stvar.
         forwards: d_sub_dwft_sized_0 HS. rewrite_env (Ψ2 ++ (X, ▪) :: Ψ1)...
@@ -1162,7 +1162,7 @@ Theorem d_sub_open_mono_bot_false: forall n1 n2 Ψ A T L,
     d_typ_order (A ^^ᵈ T) < n1 ->
     d_typ_size (A ^^ᵈ T) < n2 ->
     Ψ ⊢ A ^^ᵈ T <: typ_bot ->
-    (forall X, X `notin` L -> ds_in X (A ^ᵈ X)) ->
+    (forall X, X `notin` L -> s_in X (A ^ᵈ X)) ->
     d_mono_typ Ψ T ->
     False.
 Proof.
