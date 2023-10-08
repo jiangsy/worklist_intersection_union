@@ -392,8 +392,8 @@ Lemma a_wf_typ_trans_typ : forall θ Γ Ω Aᵃ,
     inst_typ θ Aᵃ Aᵈ.
 Proof with eauto with Hdb_transfer.
   intros. dependent induction H...
-  - exists (`ᵈ X). econstructor... admit.
-  - exists (`ᵈ X). eapply inst_typ__stvar... admit. 
+  - exists (` X). econstructor... admit.
+  - exists (` X). eapply inst_typ__stvar... admit. 
   - admit.
   - admit.
   - admit.
@@ -403,7 +403,7 @@ Admitted.
 
 
 Lemma a_wf_wl_d_wf_wl : forall θ Γ Ω,  
-  ⊢ᵃ Γ -> nil ⫦ Γ ⇝ Ω ⫣ θ -> ⊢ᵈ Ω.
+  ⊢ᵃ Γ -> nil ⫦ Γ ⇝ Ω ⫣ θ -> ⊢ᵈʷ Ω.
 Proof with eauto.
   intros. dependent induction H0; dependent destruction H...
   - admit.
@@ -496,7 +496,7 @@ Hint Resolve wf_subst_set_strength_etvar : Hdb_transfer.
 
 Lemma inst_typ_rename : forall θ1 θ2 Aᵃ Aᵈ X X', 
   θ2 ++ (X, dbind_tvar_empty) :: θ1 ⫦ᵗ Aᵃ ⇝ Aᵈ ->
-  map (subst_tvar_in_dbind (`ᵈ X') X) θ2  ++ (X', dbind_tvar_empty) :: θ1 ⫦ᵗ {`ᵈ X' /ᵗ X} Aᵃ ⇝ {`ᵈ X' /ᵗ X} Aᵈ.
+  map (subst_tvar_in_dbind (` X') X) θ2  ++ (X', dbind_tvar_empty) :: θ1 ⫦ᵗ {` X' /ᵗ X} Aᵃ ⇝ {` X' /ᵗ X} Aᵈ.
 Proof with auto with Hdb_transfer.
   intros. dependent induction H; simpl; auto...
   - unfold eq_dec. destruct (EqDec_eq_of_X X0 X); subst.
@@ -515,18 +515,22 @@ Proof with auto with Hdb_transfer.
     intros. inst_cofinites_with X0.
     rewrite typ_subst_open_comm...
     rewrite typ_subst_open_comm...
-    rewrite_env (map (subst_tvar_in_dbind `ᵈ X' X) ((X0, ▫) :: θ2) ++ (X', ▫) :: θ1).
+    rewrite_env (map (subst_tvar_in_dbind ` X' X) ((X0, ▫) :: θ2) ++ (X', ▫) :: θ1).
     eapply H0...
 Admitted.
 
 Corollary inst_typ_rename_cons : forall θ Aᵃ Aᵈ X X', 
   (X, dbind_tvar_empty) :: θ ⫦ᵗ Aᵃ ⇝ Aᵈ ->
-  (X', dbind_tvar_empty) :: θ ⫦ᵗ {`ᵈ X' /ᵗ X} Aᵃ ⇝ {`ᵈ X' /ᵗ X} Aᵈ.
+  (X', dbind_tvar_empty) :: θ ⫦ᵗ {` X' /ᵗ X} Aᵃ ⇝ {` X' /ᵗ X} Aᵈ.
 Proof.
   intros. 
-  rewrite_env (map (subst_tvar_in_dbind (`ᵈ X') X) nil  ++ (X', dbind_tvar_empty) :: θ).
+  rewrite_env (map (subst_tvar_in_dbind (` X') X) nil  ++ (X', dbind_tvar_empty) :: θ).
   eapply inst_typ_rename. auto.
 Qed.
+
+
+
+
 
 Lemma wf_ss_etvar_tvar : forall θ1 θ2 T X,
   wf_ss (θ2 ++ (X, dbind_typ T) :: θ1) ->
@@ -539,6 +543,8 @@ Proof with auto with Hdb_transfer.
     dependent destruction H...
     dependent destruction H...
     econstructor...
+    rewrite <- wf_subst_set_strength_etvar_same_denv in H1.
+  
     admit.
 Admitted.
 
@@ -588,7 +594,7 @@ Proof with eauto with Hdb_transfer.
   - dependent destruction Hinst.
     exists typ_bot...
   - destruct (X == X0) in *.
-    + subst. exists (`ᵈ X0). split.
+    + subst. exists (` X0). split.
       * simpl. unfold eq_dec. destruct (EqDec_eq_of_X X0 X0).
         -- subst.
            eapply inst_typ_det with (θ:=(θ2 ++ (X0, dbind_typ T) :: θ1)); eauto.
@@ -598,8 +604,8 @@ Proof with eauto with Hdb_transfer.
         -- contradiction.
       * econstructor... admit.
     + dependent destruction Hinst.
-      * exists `ᵈ X... admit.
-      * exists `ᵈ X... admit.
+      * exists ` X... admit.
+      * exists ` X... admit.
       * exists A1. split.
         -- admit.
         -- econstructor...

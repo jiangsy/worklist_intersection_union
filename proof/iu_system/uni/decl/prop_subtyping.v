@@ -133,7 +133,7 @@ Qed.
 
 Lemma d_sub_tvar_open_inv_subst_var : forall X1 X2 T1,
   d_sub_tvar_open_inv X1 T1 ->
-  d_sub_tvar_open_inv X2 ({`ᵈ X2 /ᵗ X1} T1).
+  d_sub_tvar_open_inv X2 ({` X2 /ᵗ X1} T1).
 Proof.
   intros. induction H.
   - simpl. destruct (X == X).
@@ -214,7 +214,7 @@ Qed.
 
 Theorem d_sub_tvar_inv_nested_all_false: forall L1 L2 L3 T1 S1,
   (forall X : atom, X `notin` L1 -> d_sub_tvar_open_inv X (open_typ_wrt_typ_rec 1 S1 T1 ^ᵈ X)) ->
-  (forall X : atom, X `notin` L2 -> ds_in X (typ_all (open_typ_wrt_typ_rec 1 `ᵈ X T1))) ->
+  (forall X : atom, X `notin` L2 -> ds_in X (typ_all (open_typ_wrt_typ_rec 1 ` X T1))) ->
   (forall X : atom, X `notin` L3 -> ds_in X (open_typ_wrt_typ_rec 1 S1 T1 ^ᵈ X)) ->
   lc_typ S1 ->
   False.
@@ -249,7 +249,7 @@ Proof.
   - assert (forall X : atom, X `notin` L1 -> d_sub_tvar_open_inv X (open_typ_wrt_typ_rec 1 S1 T1_1 ^ᵈ X)). {
       intros. inst_cofinites_with X. inversion H; auto.
     }
-    assert (forall X : atom, X `notin` L2 -> ds_in X (typ_all (open_typ_wrt_typ_rec 1 `ᵈ X T1_1))).
+    assert (forall X : atom, X `notin` L2 -> ds_in X (typ_all (open_typ_wrt_typ_rec 1 ` X T1_1))).
     { intros. inst_cofinites_with X. dependent destruction H0.
       eapply dsin_all with (L:=L). intros. inst_cofinites_with Y.
       inversion H0. auto.
@@ -267,21 +267,21 @@ Proof.
       dependent destruction H.
       - left. intros. inst_cofinites_with X.
         assert (d_sub_tvar_open_inv x (open_typ_wrt_typ_rec 1 S1 T1_1 ^ᵈ x)) by auto.
-        replace (open_typ_wrt_typ_rec 1 S1 T1_1 ^ᵈ X) with ({`ᵈ X /ᵗ x}(open_typ_wrt_typ_rec 1 S1 T1_1 ^ᵈ x)).
+        replace (open_typ_wrt_typ_rec 1 S1 T1_1 ^ᵈ X) with ({` X /ᵗ x}(open_typ_wrt_typ_rec 1 S1 T1_1 ^ᵈ x)).
         now apply d_sub_tvar_open_inv_subst_var.
         rewrite subst_tvar_in_typ_open_typ_wrt_typ; auto.
         rewrite (subst_tvar_in_typ_fresh_eq); auto. simpl.
         unfold eq_dec. destruct (EqDec_eq_of_X x x); auto. contradiction.
       - right. intros. inst_cofinites_with X.
         assert (d_sub_tvar_open_inv x (open_typ_wrt_typ_rec 1 S1 T1_2 ^ᵈ x)) by auto.
-        replace (open_typ_wrt_typ_rec 1 S1 T1_2 ^ᵈ X) with ({`ᵈ X /ᵗ x}(open_typ_wrt_typ_rec 1 S1 T1_2 ^ᵈ x)).
+        replace (open_typ_wrt_typ_rec 1 S1 T1_2 ^ᵈ X) with ({` X /ᵗ x}(open_typ_wrt_typ_rec 1 S1 T1_2 ^ᵈ x)).
         now apply d_sub_tvar_open_inv_subst_var.
         rewrite subst_tvar_in_typ_open_typ_wrt_typ; auto.
         rewrite (subst_tvar_in_typ_fresh_eq); auto. simpl.
         unfold eq_dec. destruct (EqDec_eq_of_X x x); auto. contradiction.
     }
     inversion H3.
-    + assert (forall X : atom, X `notin` L2 -> ds_in X (typ_all (open_typ_wrt_typ_rec 1 `ᵈ X T1_1))).
+    + assert (forall X : atom, X `notin` L2 -> ds_in X (typ_all (open_typ_wrt_typ_rec 1 ` X T1_1))).
       { intros. inst_cofinites_with X. dependent destruction H0.
         eapply dsin_all with (L:=L). intros. inst_cofinites_with Y.
         inversion H0. auto.
@@ -290,7 +290,7 @@ Proof.
       { intros. inst_cofinites_with X. inversion H1; auto.
       }
       auto.
-    + assert (forall X, X `notin` L2 -> ds_in X (typ_all (open_typ_wrt_typ_rec 1 `ᵈ X T1_2))).
+    + assert (forall X, X `notin` L2 -> ds_in X (typ_all (open_typ_wrt_typ_rec 1 ` X T1_2))).
       { intros. inst_cofinites_with X. dependent destruction H0.
         eapply dsin_all with (L:=L). intros. inst_cofinites_with Y.
         inversion H0. auto.
@@ -305,7 +305,7 @@ Qed.
 Theorem d_sub_tvar_ind_open_inv_complete: forall n1 n2 Ψ S1 T1 X L,
     d_typ_order (T1 ^^ᵈ S1) < n1 ->
     d_typ_size (T1 ^^ᵈ S1) < n2 ->
-    Ψ ⊢ T1 ^^ᵈ S1 <: `ᵈ X ->
+    Ψ ⊢ T1 ^^ᵈ S1 <: ` X ->
     (forall X, X `notin` L -> ds_in X (T1 ^ᵈ X)) ->
     d_mono_typ Ψ S1 ->
     d_sub_tvar_inv (typ_all T1).
@@ -474,7 +474,7 @@ Proof with auto with subtyping.
   intros * Hwfenv H. induction H; intros.
   - simpl. destruct (X == X).
     + apply dsub_refl; auto...
-      replace B with ({B /ᵗ X} `ᵈ X) at 2.
+      replace B with ({B /ᵗ X} ` X) at 2.
       apply d_wft_typ_subst; auto.
       simpl. destruct (X == X); auto. contradiction.
     + contradiction.
@@ -670,7 +670,7 @@ Lemma dneq_all_intersection_union_subst_stv : forall T1 T2 X,
   neq_all T1 -> neq_intersection T1 -> neq_union T1 ->
   (neq_all ({T2 /ᵗ X} T1) /\
    neq_intersection ({T2 /ᵗ X} T1) /\
-   neq_union ({T2 /ᵗ X} T1)) \/ T1 = `ᵈ X.
+   neq_union ({T2 /ᵗ X} T1)) \/ T1 = ` X.
 Proof with eauto with lngen.
   intros. destruct T1; simpl in *; auto...
   - destruct (X0 == X); subst; auto.
@@ -1370,13 +1370,13 @@ Proof with auto with trans.
         auto.
     + dependent destruction Hsub2...
       * econstructor.
-        eapply IHn_dsub_size with (B:=`ᵈ X) (n1:=n2); eauto...
-        eapply IHn_dsub_size with (B:=`ᵈ X) (n1:=n1); eauto...
+        eapply IHn_dsub_size with (B:=` X) (n1:=n2); eauto...
+        eapply IHn_dsub_size with (B:=` X) (n1:=n1); eauto...
       * simpl in H. eapply d_sub__union1.
-        eapply IHn_dsub_size with (B:=`ᵈ X) (n1:=n); eauto...
+        eapply IHn_dsub_size with (B:=` X) (n1:=n); eauto...
         auto.
       * simpl in H. eapply d_sub__union2.
-        eapply IHn_dsub_size with (B:=`ᵈ X) (n1:=n); eauto...
+        eapply IHn_dsub_size with (B:=` X) (n1:=n); eauto...
         auto.
     + simpl in *. dependent destruction Hsub2...
       * econstructor... apply d_sub_size_sound in Hsub1_1. apply d_sub_size_sound in Hsub1_2.

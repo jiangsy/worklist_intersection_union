@@ -51,7 +51,7 @@ Notation "X ~ ▪ ∈ E" := (binds X (dbind_stvar_empty) E)
 Notation "x ~ T ∈ E" := (binds x (dbind_typ T) E)
   (at level 50, T at next level, no associativity) : type_scope.
 
-Notation "`ᵈ X" := (typ_var_f X)
+Notation "` X" := (typ_var_f X)
   (at level 0, X at level 0, no associativity) : type_scope.
 Notation "↑ n" := (typ_var_b n)
   (at level 0, n at level 0, no associativity) : type_scope.

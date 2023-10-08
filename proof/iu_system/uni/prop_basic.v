@@ -25,7 +25,7 @@ Ltac solve_by_invert :=
 
 
 Lemma subst_same_tvar_eq : forall A X,
-  A = {`ᵈ X /ᵗ X} A.
+  A = {` X /ᵗ X} A.
 Proof.
   intros.
   induction A; auto; simpl.
@@ -63,8 +63,8 @@ Qed.
 
 Lemma open_typ_wrt_typ_twice : forall n X Y A,
     lc_typ Y ->
-    open_typ_wrt_typ_rec n `ᵈ X (open_typ_wrt_typ_rec (n+1) Y A)
-    = open_typ_wrt_typ_rec n Y (open_typ_wrt_typ_rec n `ᵈ X A).
+    open_typ_wrt_typ_rec n ` X (open_typ_wrt_typ_rec (n+1) Y A)
+    = open_typ_wrt_typ_rec n Y (open_typ_wrt_typ_rec n ` X A).
 Proof with subst; simpl in *; eauto; try lia.
   introv HL. gen n. induction A; intros...
   all: try congruence.
@@ -88,10 +88,10 @@ Qed.
 
 Lemma typ_open_r_close_l : forall T1 T2 X
   , X `notin` ftvar_in_typ T2
-  -> T1 = open_typ_wrt_typ T2 `ᵈ X -> close_typ_wrt_typ X T1 = T2.
+  -> T1 = open_typ_wrt_typ T2 ` X -> close_typ_wrt_typ X T1 = T2.
 Proof.
   intros * Fr H.
-  assert (close_typ_wrt_typ X T1 = close_typ_wrt_typ X (open_typ_wrt_typ T2 `ᵈ X)) by now rewrite H.
+  assert (close_typ_wrt_typ X T1 = close_typ_wrt_typ X (open_typ_wrt_typ T2 ` X)) by now rewrite H.
   now rewrite close_typ_wrt_typ_open_typ_wrt_typ in H0.
 Qed.
 
@@ -1042,7 +1042,7 @@ Proof with try solve_notin; simpl in *; eauto.
       apply ftv_sin_typ_subst_inv; auto.
     + intros.
       rewrite typ_subst_open_comm; eauto.
-      rewrite_env (map (subst_tvar_in_dbind `ᵈ Y X) (X0 ~ ▫ ++ Ψ2) ++ (Y, ▪) :: Ψ1).
+      rewrite_env (map (subst_tvar_in_dbind ` Y X) (X0 ~ ▫ ++ Ψ2) ++ (Y, ▪) :: Ψ1).
       auto.
 Qed.
 
@@ -1167,7 +1167,7 @@ Proof with try solve_notin; try solve_by_invert; simpl in *; eauto.
 Qed.
 
 Lemma d_mono_typ_for_any_var : forall Y,
-  exists E, d_mono_typ E `ᵈ Y.
+  exists E, d_mono_typ E ` Y.
 Proof with eauto.
   intros. exists* (Y ~ ▫ ++ nil).
 Qed.
@@ -1210,7 +1210,7 @@ Proof with try solve_notin; simpl in *; eauto.
       | n : nat, Hx: _ = ↑ (S ?n) ^^ᵈ _ |- _ =>
         try solve [
             induction n; unfold open_typ_wrt_typ in Hx; simpl in Hx; inverts Hx]
-      | Hx:`ᵈ _ = `ᵈ _ ^^ᵈ _ |- _ =>
+      | Hx:` _ = ` _ ^^ᵈ _ |- _ =>
           try solve [
               unfold open_typ_wrt_typ in *; simpl in *; inverts x;
               rewrite_env (Ψ1 ++ [(SY, ▫)] ++ Ψ2); applys* dwf_typ_weakening;
@@ -1234,8 +1234,8 @@ Proof with try solve_notin; simpl in *; eauto.
        try applys* ds_in_open_stvar_subst_mono H'; eauto) |
         (match goal with
         HD: d_mono_typ _ ?A |- _ => assert (HE:
-               open_typ_wrt_typ_rec 0 `ᵈ SZ (open_typ_wrt_typ_rec 1 A S)
-               = open_typ_wrt_typ_rec 0 A (open_typ_wrt_typ_rec 0 `ᵈ SZ S) )
+               open_typ_wrt_typ_rec 0 ` SZ (open_typ_wrt_typ_rec 1 A S)
+               = open_typ_wrt_typ_rec 0 A (open_typ_wrt_typ_rec 0 ` SZ S) )
           by rewrite* open_typ_wrt_typ_twice;
                                     forwards*: H1 SZ ((SZ, ▫) :: Ψ1) Ψ2 HE;
                                     rewrite_env ( SZ ~ ▫ ++ (Ψ1 ++ Ψ2));

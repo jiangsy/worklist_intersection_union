@@ -34,7 +34,7 @@ Ltac destruct_wf :=
 
 
 Lemma d_wf_wl_wf_env : forall Ω,
-  ⊢ᵈ Ω -> ⊢ (dwl_to_denv Ω).
+  ⊢ᵈʷ Ω -> ⊢ (dwl_to_denv Ω).
 Proof.
   intros. induction H; simpl; auto; econstructor; auto.
 Qed.
@@ -168,8 +168,8 @@ Hint Resolve d_wf_wl_wf_env : Hdb_dworklist_equiv.
 
 
 Theorem d_wf_work_apply_cont : forall Ω c A1 w,
-  ⊢ᵈ Ω -> d_wf_cont (dwl_to_denv Ω) c -> dwl_to_denv Ω ⊢ A1 -> apply_cont c A1 w ->
-  ⊢ᵈ dworklist_conswork Ω w.
+  ⊢ᵈʷ Ω -> d_wf_cont (dwl_to_denv Ω) c -> dwl_to_denv Ω ⊢ A1 -> apply_cont c A1 w ->
+  ⊢ᵈʷ dworklist_conswork Ω w.
 Proof.
   intros. induction H2; simpl; auto;
     dependent destruction H0; auto.
@@ -191,9 +191,9 @@ Ltac destruct_d_wl_del_red :=
 Ltac _apply_IH_d_wl_red :=
   let H := fresh "H" in
     match goal with 
-    | H : (⊢ᵈ ?Ω) -> (?Ω ⟶ᵈ⁎⋅) |- _ => destruct_wf; 
+    | H : (⊢ᵈʷ ?Ω) -> (?Ω ⟶ᵈ⁎⋅) |- _ => destruct_wf; 
       let H1 := fresh "H" in
-      assert (H1 : ⊢ᵈ Ω) by auto;
+      assert (H1 : ⊢ᵈʷ Ω) by auto;
       apply H in H1
     end.
 
@@ -202,7 +202,7 @@ Hint Constructors d_typing : typing.
 
 (* This direction is not so important because soundness is proven against decl system directly *)
 Theorem d_wl_red_sound: forall Ω, 
-    ⊢ᵈ Ω -> Ω ⟶ᵈʷ⁎⋅ -> Ω ⟶ᵈ⁎⋅.
+    ⊢ᵈʷ Ω -> Ω ⟶ᵈʷ⁎⋅ -> Ω ⟶ᵈ⁎⋅.
 Proof with auto with Hdb_dworklist_equiv typing.
   intros. induction H0; try solve [dependent destruction H; auto with Hdb_dworklist_equiv];
     try solve [destruct_wf; _apply_IH_d_wl_red; destruct_d_wl_del_red; eauto with Hdb_dworklist_equiv].
@@ -263,7 +263,7 @@ Admitted.
 
 
 Lemma d_wl_red_sub_complete: forall Ω A B,
-  dwl_to_denv Ω ⊢ A <: B -> ⊢ᵈ (work_sub A B ⫤ Ω) -> 
+  dwl_to_denv Ω ⊢ A <: B -> ⊢ᵈʷ (work_sub A B ⫤ Ω) -> 
   Ω ⟶ᵈʷ⁎⋅ -> (work_sub A B ⫤ Ω) ⟶ᵈʷ⁎⋅.
 Proof with auto with Hdb_dworklist_equiv.
   intros * Hsub Hwfwl Hred.
@@ -437,8 +437,8 @@ Admitted.
 Lemma d_wl_red_chk_inf_complete: forall Ω e A mode,
   d_typing (dwl_to_denv Ω) e mode A -> 
   match mode with 
-  | typingmode__chk => ⊢ᵈ (work_check e A ⫤ Ω) -> Ω ⟶ᵈʷ⁎⋅ -> (work_check e A ⫤ Ω) ⟶ᵈʷ⁎⋅
-  | typingmode__inf => forall c, ⊢ᵈ (work_infer e c ⫤ Ω) -> (work_apply c A ⫤ Ω) ⟶ᵈʷ⁎⋅ -> (work_infer e c ⫤ Ω) ⟶ᵈʷ⁎⋅
+  | typingmode__chk => ⊢ᵈʷ (work_check e A ⫤ Ω) -> Ω ⟶ᵈʷ⁎⋅ -> (work_check e A ⫤ Ω) ⟶ᵈʷ⁎⋅
+  | typingmode__inf => forall c, ⊢ᵈʷ (work_infer e c ⫤ Ω) -> (work_apply c A ⫤ Ω) ⟶ᵈʷ⁎⋅ -> (work_infer e c ⫤ Ω) ⟶ᵈʷ⁎⋅
   end.
 Proof with auto with Hdb_dworklist_equiv.
   intros. dependent induction H; intros; eauto...
@@ -498,7 +498,7 @@ Qed.
 
 
 Theorem d_wl_red_complete: forall Ω, 
-    ⊢ᵈ Ω -> Ω ⟶ᵈ⁎⋅ -> Ω ⟶ᵈʷ⁎⋅.
+    ⊢ᵈʷ Ω -> Ω ⟶ᵈ⁎⋅ -> Ω ⟶ᵈʷ⁎⋅.
 Proof with auto with Hdb_dworklist_equiv.
   intros. induction H0; auto;
   try solve [destruct_wf; econstructor; eauto with Hdb_dworklist_equiv].

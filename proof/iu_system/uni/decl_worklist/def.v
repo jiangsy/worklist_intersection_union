@@ -287,7 +287,7 @@ Notation " x ~ T ; Ω " :=
     (d_wl_del_red Ω)
         (at level 58, no associativity) : type_scope.
   
-  Notation " ⊢ᵈ Ω " :=
+  Notation " ⊢ᵈʷ Ω " :=
     (d_wf_wl Ω)
         (at level 58, no associativity) : type_scope.
       

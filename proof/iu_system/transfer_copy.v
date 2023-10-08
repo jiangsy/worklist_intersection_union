@@ -257,7 +257,7 @@ Qed.
 Lemma inst_e_rename : forall θ Aᵃ Aᵈ x x'
   , θ ⫦ Aᵃ ⇝ Aᵈ 
   -> x `notin` dom θ
-  -> θ ⫦ [`ᵃ x' /ᵃ x] Aᵃ ⇝ [`ᵈ x' /ᵗ x] Aᵈ.
+  -> θ ⫦ [`ᵃ x' /ᵃ x] Aᵃ ⇝ [` x' /ᵗ x] Aᵈ.
 Proof with auto with transfer.
   intros. induction H; simpl; auto...
   - unfold eq_dec. destruct (EqDec_eq_of_X x0 x); auto...
@@ -415,7 +415,7 @@ Lemma ld_type_to_la_type_open_var_distr: forall t1ᵈ x ,
   ld_type_to_la_type (t1ᵈ ^ᵈ x) = (ld_type_to_la_type t1ᵈ) ^ᵃ x.
 Proof.
   intros. 
-  replace (`ᵃ x) with (ld_type_to_la_type (`ᵈ x)) by auto.
+  replace (`ᵃ x) with (ld_type_to_la_type (` x)) by auto.
   rewrite ld_type_to_la_type_open_distr.
   auto.
 Qed.
