@@ -71,7 +71,6 @@ Ltac _apply_IH_a_wl_red :=
 Hint Resolve a_wf_wl_wf_ss : Hdb_a_wl_red_soundness.
 
 
-
 Ltac trans_all_typ :=
   match goal with 
   | H5 : nil ⫦ ?Γ ⇝ ?Ω ⫣ ?θ |- _ => 
@@ -217,23 +216,27 @@ Proof with eauto with Hdb_a_wl_red_soundness.
     split.
     + exists θ'. admit.
     + dependent destruction Hdred. admit.
+  (* ^X < A1 -> A2 *)
   - inst_cofinites_by L using_name X.
     inst_cofinites_by (L `union` singleton X0) using_name X.
     admit.  
+  (* A1 -> A2 < ^X  *)
   - admit.
-  - assert ( ⊢ᵃ awl_rev_app Γ3
-  (aworklist_constvar (awl_rev_app (aenv_to_awl E) Γ2) X (abind_bound LB UB))) by admit.
+  (* ^X < ^Y  *)
+  - assert ( ⊢ᵃ awl_rev_app Γ3 (aworklist_constvar (awl_rev_app (aenv_to_awl E) Γ2) X (abind_bound LB UB))) by admit.
     apply IHHared in H4.
     destruct H4 as [Ω [Htrans Hdred]].
     destruct Htrans as [θ].
     eapply a_update_bound_transfer_same_dworklist in H3...
     exists Ω... split... 
     admit.
+  (* ^X < ^Y  *)
   - admit.
-  (* tau < ^X *)
+  (* ^Y < ^X *)
   - admit.
-  (* ^X < tau *)
+  (* ^X < τ *)
   - admit.
+  (* τ < ^X *)
   - _apply_IH_a_wl_red.
     destruct_trans.
     eapply trans_typ_det in H1... subst.
