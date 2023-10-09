@@ -882,6 +882,3 @@ Proof.
   refine (d_chk_inf_subsumption _ _ _ _ _ _ _ _ _ _ _ H0 _ _ _); eauto.
   now apply d_subenv_refl.
 Qed.
-
-
-Print Assumptions d_chk_inf_subsumption.
