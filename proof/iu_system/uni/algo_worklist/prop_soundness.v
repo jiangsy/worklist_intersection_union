@@ -100,13 +100,13 @@ Lemma a_update_bound_transfer_same_dworklist: forall Γ Ω θ X A E m Γ1 Γ2 LB
   exists θ', trans_worklist nil Γ Ω θ' /\ (forall X b, binds X b θ <-> binds X b θ').
 Proof.
   intros. generalize dependent θ. generalize dependent Ω. dependent induction H.
-  - intros. admit.
+  - intros. simpl in *. admit.
   - admit.
   - admit.
   - intros. admit.
   - admit.
   - admit.
-  - admit.
+  - intros. admit.
   - intros. simpl in *. exists θ.
      admit.
   - intros. simpl in H0. dependent destruction H0.

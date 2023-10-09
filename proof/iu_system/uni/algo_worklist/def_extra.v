@@ -78,18 +78,18 @@ Inductive a_add_contraint_sub_etvars :
 
 Inductive a_update_bound
   : aworklist -> typvar -> typ -> amode_update_bound ->  list (atom*abind) -> aworklist -> aworklist -> typ -> typ -> Prop :=
-  | a_ub__lb_stop : forall Γ1 E X A LB UB Γ3, 
+  | a_ub__lb_stop : forall Γ1 X A LB UB, 
     X `notin` ftvar_in_typ A -> 
     a_update_bound
-     (aworklist_constvar Γ1 X (abind_bound LB UB)) X A a_mode_ub__lower E Γ1 Γ3 (update_lower_bound A LB) UB
-  | a_ub__ub_stop : forall Γ1 E X A LB UB Γ3, 
+     (aworklist_constvar Γ1 X (abind_bound LB UB)) X A a_mode_ub__lower nil Γ1 aworklist_empty (update_lower_bound A LB) UB
+  | a_ub__ub_stop : forall Γ1 X A LB UB, 
     X `notin` ftvar_in_typ A -> 
     a_update_bound
-     (aworklist_constvar Γ1 X (abind_bound LB UB)) X A a_mode_ub__upper E Γ1 Γ3 LB (update_upper_bound A UB)
-  | a_ub__bb_stop : forall Γ1 E X A LB UB Γ3, 
+     (aworklist_constvar Γ1 X (abind_bound LB UB)) X A a_mode_ub__upper nil Γ1 aworklist_empty LB (update_upper_bound A UB)
+  | a_ub__bb_stop : forall Γ1 X A LB UB, 
     X `notin` ftvar_in_typ A -> 
     a_update_bound
-     (aworklist_constvar Γ1 X (abind_bound LB UB)) X A a_mode_ub__both E Γ1 Γ3 (update_lower_bound A LB) (update_upper_bound A UB)
+     (aworklist_constvar Γ1 X (abind_bound LB UB)) X A a_mode_ub__both nil Γ1 aworklist_empty (update_lower_bound A LB) (update_upper_bound A UB)
   | a_ub__etvar_move : forall Γ1 X1 LB1 UB1 E X A m Γ2 Γ3 LB UB,
     X `notin` ftvar_in_abind (abind_bound LB1 UB1) ->
     a_update_bound Γ1 X A m E Γ2 Γ3 LB UB ->
