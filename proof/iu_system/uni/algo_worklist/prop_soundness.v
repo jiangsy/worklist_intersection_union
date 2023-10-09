@@ -6,6 +6,8 @@ Require Import List.
 
 Require Import uni.notations.
 Require Import uni.decl.prop_basic.
+Require Import uni.decl.prop_typing.
+Require Import uni.decl_worklist.prop_equiv.
 Require Import uni.algo_worklist.def_extra.
 Require Import uni.algo_worklist.transfer.
 Require Import ln_utils.
@@ -136,6 +138,15 @@ Proof.
 Admitted.
 
 
+(* Hint Resolve d_chk_inf_wft : Hdb_a_wl_red_soundness. *)
+
+Hint Constructors trans_typ : Hdb_a_wl_red_soundness.
+Hint Constructors trans_exp : Hdb_a_wl_red_soundness.
+Hint Constructors trans_cont : Hdb_a_wl_red_soundness.
+Hint Constructors trans_work : Hdb_a_wl_red_soundness.
+Hint Constructors trans_worklist : Hdb_a_wl_red_soundness.
+
+Hint Resolve trans_typ_lc_typ : Hdb_a_wl_red_soundness.
 
 Theorem d_a_wl_red_soundness: forall Γ,
   ⊢ᵃ Γ -> Γ ⟶ᵃʷ⁎⋅ -> exists Ω, transfer Γ Ω /\ Ω ⟶ᵈ⁎⋅.
@@ -190,7 +201,7 @@ Proof with eauto with Hdb_a_wl_red_soundness.
     admit.
     admit.  
   (* forall x. A < B  *)
-  - inst_cofinites_by (L) using_name X.
+  - inst_cofinites_by (L `union` ftvar_in_typ A1) using_name X.
     assert ( ⊢ᵃ (work_sub (B1 ^ᵈ X) A1 ⫤ aworklist_constvar Γ X (abind_bound typ_bot typ_top))) by admit.
     destruct_a_wf_wl.
     _apply_IH_a_wl_red.
@@ -220,7 +231,6 @@ Proof with eauto with Hdb_a_wl_red_soundness.
         admit.
       * dependent destruction Hdred...
     + admit.
-    + admit.
   - destruct_a_wf_wl.
     dependent destruction H. dependent destruction H1.
     inst_cofinites_by (L `union` L0 `union` L1 `union` dom (awl_to_aenv Γ)) using_name X.
@@ -246,19 +256,23 @@ Proof with eauto with Hdb_a_wl_red_soundness.
     admit.
   (* ^X < ^Y  *)
   - admit.
-  (* ^Y < ^X *)
+  (* τ < ^X *)
   - admit.
   (* ^X < τ *)
   - admit.
-  (* τ < ^X *)
+  (* A < B1 /\ B2 *)
   - _apply_IH_a_wl_red; destruct_trans.
     rename B1ᵈ0 into B2ᵈ.
     exists (work_sub A1ᵈ (typ_intersection B1ᵈ B2ᵈ) ⫤ Ω)%dworklist. split...
-    dependent destruction Hdred.
-    dependent destruction Hdred.
-    econstructor... 
+    destruct_d_wl_del_red...
   (* simple *)
-  - admit.
+  - _apply_IH_a_wl_red; destruct_trans.
+    trans_all_typ.
+    rename A1ᵈ into Bᵈ. rename B1ᵈ into Aᵈ.
+    exists (work_sub (typ_intersection Bᵈ B2ᵈ) Aᵈ ⫤ Ω)%dworklist. split...
+    destruct_d_wl_del_red...
+    econstructor... econstructor...
+    eapply tran_wl_wf_trans_typ with (Aᵃ:=B2)...
   (* simple *)
   - admit.
   (* simpl *)
@@ -281,11 +295,10 @@ Proof with eauto with Hdb_a_wl_red_soundness.
     destruct_trans.
     exists (work_infer (exp_anno eᵈ A1ᵈ) cᵈ ⫤ Ω)%dworklist...
     split. exists θ...
-    econstructor... econstructor... econstructor...
-    dependent destruction Hdred...
+    destruct_d_wl_del_red.
     econstructor...
     eapply d_typing__infanno...
-    admit.
+    eapply d_chk_inf_wft...
   - admit.
   - admit.
   - admit.
