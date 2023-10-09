@@ -80,22 +80,25 @@ Ltac trans_all_typ :=
   end.
 
 
-Lemma a_update_bound_transfer: forall Γ Ω θ X A E m Γ1 Γ2,
-  a_update_bound Γ X A E m Γ1 Γ2 ->
-  trans_worklist nil Γ Ω θ ->
-  exists θ', trans_worklist nil (awl_app Γ1 Γ2) Ω θ'.
+(* does not work  *)
+Lemma a_update_bound_transfer_same_dworklist: forall Γ Ω θ X A E m Γ1 Γ2 LB UB,
+  a_update_bound Γ X A m E Γ1 Γ2 LB UB ->
+  trans_worklist nil (awl_rev_app Γ2 (aworklist_constvar (awl_rev_app (aenv_to_awl E) Γ1) X (abind_bound LB UB)) )  Ω θ ->
+  exists θ', trans_worklist nil Γ Ω θ'.
 Proof.
-  intros. dependent induction H.
+  intros. generalize dependent θ. dependent induction H.
+  - intros. admit.
+  - admit.
+  - admit.
+  - intros. admit.
   - admit.
   - admit.
   - admit.
-  - dependent destruction H1. admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
+  - intros. admit.
+  - intros. simpl in H0. dependent destruction H0.
 Admitted.
+
+
 
 Theorem d_a_wl_red_soundness: forall Γ,
   ⊢ᵃ Γ -> Γ ⟶ᵃʷ⁎⋅ -> exists Ω, transfer Γ Ω /\ Ω ⟶ᵈ⁎⋅.
@@ -202,7 +205,14 @@ Proof with eauto with Hdb_a_wl_red_soundness.
     inst_cofinites_by (L `union` singleton X0) using_name X.
     admit.  
   - admit.
-  - admit.
+  - assert ( ⊢ᵃ awl_rev_app Γ3
+  (aworklist_constvar (awl_rev_app (aenv_to_awl E) Γ2) X (abind_bound LB UB))) by admit.
+    apply IHHared in H4.
+    destruct H4 as [Ω [Htrans Hdred]].
+    destruct Htrans as [θ].
+    eapply a_update_bound_transfer_same_dworklist in H3...
+    exists Ω... split... 
+    admit.
   - admit.
   (* tau < ^X *)
   - admit.
