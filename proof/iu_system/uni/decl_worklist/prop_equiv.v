@@ -4,6 +4,7 @@ Require Import Coq.Unicode.Utf8.
 Require Import ln_utils.
 Require Import uni.decl.def_extra.
 Require Import uni.decl.prop_basic.
+Require Import uni.decl.prop_typing.
 Require Import uni.def_ott.
 Require Import uni.notations.
 Require Import uni.decl_worklist.def.
@@ -196,9 +197,9 @@ Ltac _apply_IH_d_wl_red :=
       assert (H1 : ⊢ᵈʷ Ω) by auto;
       apply H in H1
     end.
-
+(* 
 (* remove later *)
-Hint Constructors d_typing : typing.
+Hint Constructors d_typing : typing. *)
 
 (* This direction is not so important because soundness is proven against decl system directly *)
 Theorem d_wl_red_sound: forall Ω, 
@@ -238,23 +239,18 @@ Proof with auto with Hdb_dworklist_equiv typing.
   - admit.
   - destruct_wf.
     econstructor...
-    econstructor...
   - destruct_wf.
-    econstructor...
     econstructor...
   - admit.
   - _apply_IH_d_wl_red.
     destruct_d_wl_del_red.
     econstructor; eauto...
-    econstructor...
   - destruct_wf. 
     _apply_IH_d_wl_red.
     destruct_d_wl_del_red.
     econstructor; eauto...
-    apply d_infabs__intersection2...
   - _apply_IH_d_wl_red.
     destruct_d_wl_del_red.
-    econstructor; eauto...
     econstructor; eauto...
   - econstructor; eauto.
     destruct_wf.
@@ -282,15 +278,6 @@ Proof with auto with Hdb_dworklist_equiv.
     apply d_wft_all_open; eauto; auto.
     eapply d_sub_dwft; eauto.
     eapply d_mono_typ_d_wf_typ; auto.
-Qed.
-
-
-(* remove later *)
-Lemma d_infabs_wft : forall E A1 B1 C1,
-  E ⊢ A1 ▹ B1 → C1 ->
-  ⊢ E /\ E ⊢ A1 /\ E ⊢ B1 /\ E ⊢ C1.
-Proof.
-  intros. induction H; intuition.
 Qed.
 
 
@@ -368,10 +355,6 @@ Proof with auto with Hdb_dworklist_equiv.
   try solve [destruct_wf; econstructor; auto with Hdb_dworklist_equiv].
   - destruct_wf.
     eapply d_wl_red__infabs_all with (T:=T); eauto.
-    apply IHd_infabs; auto.
-    econstructor; auto. econstructor; auto.
-    apply d_wft_all_open; eauto.
-    eapply d_infabs_wft; eauto.
   - destruct_wf.
     apply d_infabs_wft in H.
     apply d_wl_red__infabs_union.
@@ -390,15 +373,6 @@ Proof with auto with Hdb_dworklist_equiv.
     auto.  
 Qed.
 
-
-(* remove later *)
-Lemma d_inftapp_wft : forall E A B C,
-  d_inftapp E A B C ->
-  ⊢ E /\ E ⊢ A /\ E ⊢ B /\ E ⊢ C.
-Proof.
-  intros. induction H; intuition.
-  - eapply d_wft_all_open; eauto.
-Qed.
 
 Lemma d_wl_red_inftapp_complete: forall Ω A B C c,
   dwl_to_denv Ω ⊢ A ○ B ⇒⇒ C -> d_wf_wl (dworklist_conswork Ω (work_inftapp A B c)) ->
@@ -419,19 +393,6 @@ Proof with auto with Hdb_dworklist_equiv.
     eapply applycont__unioninftapp...
     econstructor...
 Qed.
-
-
-(* remove later *)
-Lemma d_chk_inf_wft: forall E e m A1,
-  d_typing E e m A1 ->
-  E ⊢ A1.
-Proof.
-  intros. induction H; auto.
-  - admit. 
-  - apply d_infabs_wft in H0; intuition.
-  - apply d_inftapp_wft in H1; intuition.
-  - admit.
-Admitted.
 
 
 Lemma d_wl_red_chk_inf_complete: forall Ω e A mode,
@@ -508,8 +469,6 @@ Proof with auto with Hdb_dworklist_equiv.
     apply d_chk_inf_wft in H2.
     apply IHd_wl_del_red. auto.
   - destruct_wf. eapply d_wl_red_infabs_complete; eauto...
-    apply d_infabs_wft in H2. 
-    intuition.
   - destruct_wf. 
     apply d_wl_red__infabsunion.
     eapply d_wl_red_infabs_complete; eauto.
@@ -524,7 +483,6 @@ Proof with auto with Hdb_dworklist_equiv.
     apply d_wl_red__infapp. 
     apply IHd_wl_del_red...
   - destruct_wf. eapply d_wl_red_inftapp_complete; eauto.
-    apply d_inftapp_wft in H3. intuition.
   - destruct_wf. econstructor. 
     eapply d_wl_red_inftapp_complete; eauto...
     eapply d_wl_red__applycont with (w:=(work_unioninftapp C1 C2 c))...

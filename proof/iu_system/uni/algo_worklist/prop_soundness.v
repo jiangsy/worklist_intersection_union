@@ -79,6 +79,19 @@ Ltac trans_all_typ :=
     end
   end.
 
+
+(* Ltac destruct_wf :=
+  repeat
+    match goal with
+    | H : d_wf_wl (dworklist_conswork ?Ω ?w) |- _ => dependent destruction H
+    | H : d_wf_wl (dworklist_consvar ?Ω ?w ?b) |- _ => dependent destruction H
+    | H : d_wf_wl (dworklist_constvar ?Ω ?w ?b) |- _ => dependent destruction H
+    | H : d_wf_work ?Ω ?w |- _ => dependent destruction H
+    | H : d_wf_typ ?E (?Ct ?A1 ?A2) |- _ => dependent destruction H
+    | H : d_wf_exp ?E (?Ce ?b) |- _ => dependent destruction H
+    | H : d_wf_exp ?E (?Ce ?e1 ?e2) |- _ => dependent destruction H
+    end. *)
+
 (* define a extended relation of a_update_bound extended with Ω and θ ? *)
 
 
@@ -120,8 +133,12 @@ Proof with eauto with Hdb_a_wl_red_soundness.
   - destruct_a_wf_wl; intuition; subst; _apply_IH_a_wl_red.
     + apply a_mono_typ_wf in H2.
       apply a_mono_typ_wf in H0.
-      dependent destruction Htrans.
-      trans_all_typ. admit.
+      dependent destruction Htrans. 
+      dependent destruction H3.
+      dependent destruction Hdred.
+      exists Ω. split...
+      exists (X ~ (dbind_typ A1ᵈ) ++ θ).
+      econstructor... admit. admit.
     + dependent destruction Htrans. trans_all_typ. admit.
     + admit.
     + admit.
