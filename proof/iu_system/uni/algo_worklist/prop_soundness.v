@@ -43,6 +43,17 @@ Ltac destruct_a_wf_wl :=
     | H : a_wf_exp ?E (?Ce ?e1 ?e2) |- _ => dependent destruction H
     end.
 
+Ltac destruct_trans :=
+  repeat
+    match goal with
+    | H : trans_worklist ?θ (aworklist_conswork ?Γ ?w) ?Ω ?θ' |- _ => dependent destruction H
+    | H : trans_worklist ?θ (aworklist_consvar ?Γ ?w ?b) ?Ω ?θ' |- _ => dependent destruction H
+    | H : trans_worklist ?θ  (aworklist_constvar ?Γ ?X ?b) ?Ω ?θ' |- _ => dependent destruction H
+    | H : trans_work ?θ (?wᵃ _) ?wᵈ |- _ => dependent destruction H
+    | H : trans_work ?θ (?wᵃ _ _) ?wᵈ |- _ => dependent destruction H
+    | H : trans_work ?θ (?wᵃ _ _ _) ?wᵈ |- _ => dependent destruction H
+    end.
+  
 
 Ltac _apply_IH_a_wl_red :=
   let H := fresh "H" in
@@ -79,18 +90,6 @@ Ltac trans_all_typ :=
     end
   end.
 
-
-(* Ltac destruct_wf :=
-  repeat
-    match goal with
-    | H : d_wf_wl (dworklist_conswork ?Ω ?w) |- _ => dependent destruction H
-    | H : d_wf_wl (dworklist_consvar ?Ω ?w ?b) |- _ => dependent destruction H
-    | H : d_wf_wl (dworklist_constvar ?Ω ?w ?b) |- _ => dependent destruction H
-    | H : d_wf_work ?Ω ?w |- _ => dependent destruction H
-    | H : d_wf_typ ?E (?Ct ?A1 ?A2) |- _ => dependent destruction H
-    | H : d_wf_exp ?E (?Ce ?b) |- _ => dependent destruction H
-    | H : d_wf_exp ?E (?Ce ?e1 ?e2) |- _ => dependent destruction H
-    end. *)
 
 (* define a extended relation of a_update_bound extended with Ω and θ ? *)
 
@@ -133,8 +132,7 @@ Proof with eauto with Hdb_a_wl_red_soundness.
   - destruct_a_wf_wl; intuition; subst; _apply_IH_a_wl_red.
     + apply a_mono_typ_wf in H2.
       apply a_mono_typ_wf in H0.
-      dependent destruction Htrans. 
-      dependent destruction H3.
+      destruct_trans.
       dependent destruction Hdred.
       exists Ω. split...
       exists (X ~ (dbind_typ A1ᵈ) ++ θ).
@@ -164,8 +162,7 @@ Proof with eauto with Hdb_a_wl_red_soundness.
     + admit.
     + admit.
   - _apply_IH_a_wl_red.
-    dependent destruction Htrans. dependent destruction Htrans.
-    dependent destruction H2. dependent destruction H4.
+    destruct_trans.
     exists ((work_sub (typ_arrow B1ᵈ A1ᵈ0) (typ_arrow A1ᵈ B1ᵈ0) ⫤ Ω)%dworklist).
     split. exists θ. auto...
     econstructor.
@@ -179,8 +176,9 @@ Proof with eauto with Hdb_a_wl_red_soundness.
     apply H3 in H4.
     destruct H4 as [Ω].
     destruct H4 as [[θ Htrans] Hdred].
-    dependent destruction Htrans. dependent destruction Htrans.
-    dependent destruction H9.
+    destruct_trans.
+    (* dependent destruction Htrans. dependent destruction Htrans. *)
+    (* dependent destruction H9. *)
     rename A1ᵈ into B1tᵈ. rename B1ᵈ into A1ᵈ.
     apply trans_typ_etvar_tvar_subst_cons in H9...
     destruct H9 as [B1xᵈ].
@@ -213,9 +211,7 @@ Proof with eauto with Hdb_a_wl_red_soundness.
     apply H0 in H1.
     destruct H1 as [Ω].
     destruct H1 as [[θ Htrans] Hdred]...
-    dependent destruction Htrans...
-    dependent destruction Htrans...
-    dependent destruction H1.
+    destruct_trans...
     rename A1ᵈ into B1xᵈ. rename B1ᵈ into A1xᵈ.
     exists (work_sub (typ_all (close_typ_wrt_typ X B1xᵈ)) (typ_all (close_typ_wrt_typ X A1xᵈ)) ⫤ Ω)%dworklist.
     split.
@@ -239,8 +235,7 @@ Proof with eauto with Hdb_a_wl_red_soundness.
   (* ^X < tau *)
   - admit.
   - _apply_IH_a_wl_red.
-    dependent destruction Htrans. dependent destruction H1.
-    dependent destruction Htrans. dependent destruction H1.
+    destruct_trans.
     eapply trans_typ_det in H1... subst.
     rename B1ᵈ0 into B2ᵈ.
     exists (work_sub A1ᵈ (typ_intersection B1ᵈ B2ᵈ) ⫤ Ω)%dworklist. split...
