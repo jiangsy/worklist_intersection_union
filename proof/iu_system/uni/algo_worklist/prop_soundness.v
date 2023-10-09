@@ -18,7 +18,7 @@ Hint Constructors trans_work : Hdb_a_wl_red_soundness.
 Hint Constructors trans_worklist : Hdb_a_wl_red_soundness.
 Hint Constructors wf_ss : Hdb_a_wl_red_soundness.
 Hint Constructors d_wl_del_red : Hdb_a_wl_red_soundness.
-
+Hint Resolve wf_ss_uniq : Hdb_a_wl_red_soundness.
 
 Theorem a_mono_typ_wf : forall aE A,
   a_mono_typ aE A -> a_wf_typ aE A.
@@ -96,7 +96,7 @@ Proof.
   - admit.
   - admit.
   - admit.
-  - intros. exists θ.
+  - intros. simpl in *. exists θ.
      admit.
   - intros. simpl in H0. dependent destruction H0.
 Admitted.
@@ -219,7 +219,7 @@ Proof with eauto with Hdb_a_wl_red_soundness.
   - admit.
   (* tau < ^X *)
   - admit.
-
+  (* ^X < tau *)
   - admit.
   - _apply_IH_a_wl_red.
     dependent destruction Htrans. dependent destruction H1.
@@ -230,7 +230,6 @@ Proof with eauto with Hdb_a_wl_red_soundness.
     dependent destruction Hdred.
     dependent destruction Hdred.
     econstructor... 
-    admit.
   (* simple *)
   - admit.
   (* simple *)
