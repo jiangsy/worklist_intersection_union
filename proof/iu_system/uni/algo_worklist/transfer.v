@@ -37,12 +37,6 @@ Inductive wf_ss : subst_set -> Prop :=
     wf_ss ((X , dbind_typ T) :: θ)
 .
 
-Lemma wf_uniq : forall Θ,
-    wf_ss Θ -> uniq Θ.
-Proof.
-  induction 1; eauto.
-Qed.
-
 
 Inductive trans_typ : subst_set -> typ -> typ -> Prop := 
   | trans_typ__tvar : forall θ X, 
