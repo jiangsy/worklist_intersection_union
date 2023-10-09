@@ -252,7 +252,7 @@ Inductive a_wl_red : aworklist -> Prop :=    (* defn a_wl_red *)
      a_wl_red (aworklist_conswork Γ (work_infer e1  (  (cont_infabs  (  (cont_infapp e2 c)  ) )  ) )) ->
      a_wl_red (aworklist_conswork Γ (work_infer  ( (exp_app e1 e2) )  c))
  | a_wl_red__infapp : forall (Γ:aworklist) (A1 A2:typ) (e:exp) (c:cont),
-     a_wl_red (aworklist_conswork (aworklist_conswork Γ (work_apply c A2)) (work_check e A1)) ->
+     a_wl_red (aworklist_conswork (aworklist_conswork Γ (work_check e A1)) (work_apply c A2)) ->
      a_wl_red (aworklist_conswork Γ (work_infapp (typ_arrow A1 A2) e c))
  | a_wl_red__infabs_arr : forall (Γ:aworklist) (A1 B1:typ) (c:cont),
      a_wl_red (aworklist_conswork Γ (work_apply c (typ_arrow A1 B1))) ->

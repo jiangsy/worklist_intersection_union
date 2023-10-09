@@ -93,7 +93,7 @@ Inductive d_wl_del_red : dworklist -> Prop :=
       d_inftapp (dwl_to_denv Ω) A2 B2 C2 ->
       d_wl_del_red (dworklist_conswork Ω (work_apply c (typ_union C1 C2))) -> 
       d_wl_del_red (dworklist_conswork Ω (work_inftappunion C1 A2 B2 c))
-  | d_wldelred_unioninftapp : forall Ω A1 A2 c,
+  | d_wl_del_red__unioninftapp : forall Ω A1 A2 c,
       d_wl_del_red (dworklist_conswork Ω (work_apply c (typ_union A1 A2))) -> 
       d_wl_del_red (dworklist_conswork Ω (work_unioninftapp A1 A2 c))
   | d_wl_del_red__sub : forall Ω S1 T1,
@@ -109,16 +109,16 @@ Inductive d_wl_del_red : dworklist -> Prop :=
 (* defns Jdworklist_reduction *)
 Inductive d_wl_red : dworklist -> Prop :=    (* defn d_wl_red *)
  | d_wl_red__empty : d_wl_red dworklist_empty
- | d_wl_red__var : forall (Ω:dworklist) (x:atom) (A:typ),
+ | d_wl_red__gc_var : forall (Ω:dworklist) (x:atom) (A:typ),
     d_wl_red Ω ->
     d_wl_red (dworklist_consvar Ω x (dbind_typ A))
- | d_wl_red__tvar : forall (Ω:dworklist) (X:atom),
+ | d_wl_red__gc_tvar : forall (Ω:dworklist) (X:atom),
     d_wl_red Ω ->
     d_wl_red (dworklist_constvar Ω X dbind_tvar_empty)
- | d_wl_red__stvar : forall (Ω:dworklist) (X:atom),
+ | d_wl_red__gc_stvar : forall (Ω:dworklist) (X:atom),
     d_wl_red Ω ->
     d_wl_red (dworklist_constvar Ω X dbind_stvar_empty)
- | d_wl_red__subtop : forall (Ω:dworklist) (A:typ),
+ | d_wl_red__sub_top : forall (Ω:dworklist) (A:typ),
      d_wl_red Ω ->
      d_wl_red (dworklist_conswork Ω (work_sub A typ_top))
  | d_wl_red__sub_bot : forall (Ω:dworklist) (B:typ),
@@ -127,10 +127,10 @@ Inductive d_wl_red : dworklist -> Prop :=    (* defn d_wl_red *)
  | d_wl_red__sub_unit : forall (Ω:dworklist),
      d_wl_red Ω ->
      d_wl_red (dworklist_conswork Ω (work_sub typ_unit typ_unit))
- | d_wl_red__subtvar : forall (Ω:dworklist) (X:typvar),
+ | d_wl_red__sub_tvar : forall (Ω:dworklist) (X:typvar),
      d_wl_red Ω ->
      d_wl_red (dworklist_conswork Ω (work_sub (typ_var_f X) (typ_var_f X)))
- | d_wl_red__subarrow : forall (Ω:dworklist) (A1 A2 B1 B2:typ),
+ | d_wl_red__sub_arrow : forall (Ω:dworklist) (A1 A2 B1 B2:typ),
      d_wl_red (dworklist_conswork (dworklist_conswork Ω (work_sub B1 A1)) (work_sub A2 B2)) ->
      d_wl_red (dworklist_conswork Ω (work_sub (typ_arrow A1 A2) (typ_arrow B1 B2)))
  | d_wl_red__sub_all : forall (L:vars) (Ω:dworklist) (A B:typ),

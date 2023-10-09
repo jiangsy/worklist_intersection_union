@@ -67,6 +67,9 @@ Ltac destruct_trans :=
     | H : trans_work ?θ (?wᵃ _) ?wᵈ |- _ => dependent destruction H
     | H : trans_work ?θ (?wᵃ _ _) ?wᵈ |- _ => dependent destruction H
     | H : trans_work ?θ (?wᵃ _ _ _) ?wᵈ |- _ => dependent destruction H
+    | H : trans_typ ?θ typ_unit ?Aᵈ |- _ => dependent destruction H
+    | H : trans_typ ?θ typ_bot ?Aᵈ |- _ => dependent destruction H
+    | H : trans_typ ?θ typ_top ?Aᵈ |- _ => dependent destruction H
     end;
     try unify_trans_typ.
   
@@ -213,7 +216,7 @@ Proof with eauto with Hdb_a_wl_red_soundness.
     destruct H18 as [B1xᵈ].
     exists (work_sub (typ_all (close_typ_wrt_typ X B1xᵈ)) A1ᵈ ⫤ Ω)%dworklist.
     split.
-    + exists θ'. econstructor...
+    + exists θ. econstructor...
       econstructor... econstructor.
       admit. admit.
     + econstructor. 
@@ -300,9 +303,18 @@ Proof with eauto with Hdb_a_wl_red_soundness.
     eapply d_typing__infanno...
     eapply d_chk_inf_wft...
   - admit.
+  - _apply_IH_a_wl_red.
+    destruct_trans.
+    exists (work_infer exp_unit cᵈ ⫤ Ω)%dworklist...
+    split. exists θ... 
+    econstructor...
   - admit.
-  - admit.
-  - admit.
+  - _apply_IH_a_wl_red.
+    destruct_trans. 
+    rename A1ᵈ0 into A2ᵈ.
+    exists (work_infapp  (typ_arrow A1ᵈ A2ᵈ) eᵈ cᵈ ⫤ Ω)%dworklist...
+    split. destruct_d_wl_del_red. exists Θ...
+    econstructor...
   - admit.
   - admit.
   - admit.
