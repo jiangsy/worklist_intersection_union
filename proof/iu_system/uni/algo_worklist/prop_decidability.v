@@ -106,7 +106,20 @@ Proof.
 Admitted.
 
 Inductive split_size : aworklist -> typ -> nat -> Prop :=
-  | split_size_arrow : forall Γ A1 A2 n1 n2,
+  | split_size_unit : forall Γ,
+      split_size Γ typ_unit 0
+  | split_size_bot : forall Γ,
+      split_size Γ typ_bot 0
+  | split_size_top : forall Γ,
+      split_size Γ typ_top 0
+  | split_size_var_f : forall Γ X,
+      split_size Γ (typ_var_f X) 0
+  | split_size_var_b : forall Γ n,
+      split_size Γ (typ_var_b n) 0
+  | split_size_arrow : forall Γ A1 A2,
+      a_smono_typ (awl_to_aenv Γ) (typ_arrow A1 A2) ->
+      split_size Γ (typ_arrow A1 A2) 0
+  | split_size_arrow_s : forall Γ A1 A2 n1 n2,
       ~ a_smono_typ (awl_to_aenv Γ) (typ_arrow A1 A2) ->
       split_size Γ A1 n1 -> split_size Γ A2 n2 ->
       split_size Γ (typ_arrow A1 A2) (1 + n1 + n2)
@@ -114,17 +127,6 @@ Inductive split_size : aworklist -> typ -> nat -> Prop :=
       ( forall X , X \notin L ->
         split_size (aworklist_constvar Γ X abind_stvar_empty) (open_typ_wrt_typ A (typ_var_f X)) n) ->
       split_size Γ (typ_all A) n
-  | split_size_smono : forall Γ A1 A2,
-      a_smono_typ (awl_to_aenv Γ) (typ_arrow A1 A2) ->
-      split_size Γ (typ_arrow A1 A2) 0
-  | split_size_top : forall Γ,
-      split_size Γ typ_top 0
-  | split_size_bot : forall Γ,
-      split_size Γ typ_bot 0
-  | split_size_var_f : forall Γ X,
-      split_size Γ (typ_var_f X) 0
-  | split_size_var_b : forall Γ n,
-      split_size Γ (typ_var_b n) 0
   | split_size_union : forall Γ A1 A2 n1 n2,
       split_size Γ A1 n1 ->
       split_size Γ A2 n2 ->
@@ -133,8 +135,7 @@ Inductive split_size : aworklist -> typ -> nat -> Prop :=
       split_size Γ A1 n1 ->
       split_size Γ A2 n2 ->
       split_size Γ (typ_intersection A1 A2) (n1 + n2)
-  | split_size_unit : forall Γ,
-      split_size Γ typ_unit 0.
+.
 
 Hint Constructors split_size : core.
 Hint Constructors a_smono_typ : core.
@@ -182,29 +183,17 @@ Theorem split_size_det : forall Γ A n1 n2,
 Proof.
   intros Γ A n1 n2 Hss1.
   generalize dependent n2.
-  dependent induction Hss1.
+  dependent induction Hss1;
+  try solve [intros n' Hss; dependent destruction Hss; auto].
+  - intros n' Hss. dependent destruction Hss; auto.
+    unfold not in H0. apply H0 in H. contradiction.
   - intros n' Hss.
     dependent destruction Hss.
+    + unfold not in H. apply H in H0. contradiction.
     + apply IHHss1_1 in Hss1. apply IHHss1_2 in Hss2.
       subst. auto.
-    + unfold not in H. apply H in H0. contradiction.
   - intros n' Hss.
     dependent destruction Hss.
     pick fresh X. inst_cofinites_with X.
     apply H0 in H1. subst. auto.
-  - intros n' Hss. dependent destruction Hss; auto.
-    unfold not in H0. apply H0 in H. contradiction.
-  - intros n' Hss. dependent destruction Hss; auto.
-  - intros n' Hss. dependent destruction Hss; auto.
-  - intros n' Hss. dependent destruction Hss; auto.
-  - intros n' Hss. dependent destruction Hss; auto.
-  - intros n' Hss.
-    dependent destruction Hss.
-    apply IHHss1_1 in Hss1. apply IHHss1_2 in Hss2.
-    subst. auto.
-  - intros n' Hss.
-    dependent destruction Hss.
-    apply IHHss1_1 in Hss1. apply IHHss1_2 in Hss2.
-    subst. auto.
-  - intros n' Hss. dependent destruction Hss; auto.
 Qed.
