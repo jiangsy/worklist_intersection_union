@@ -79,6 +79,8 @@ Ltac trans_all_typ :=
     end
   end.
 
+(* define a extended relation of a_update_bound extended with Ω and θ ? *)
+
 
 (* does not work  *)
 Lemma a_update_bound_transfer_same_dworklist: forall Γ Ω θ X A E m Γ1 Γ2 LB UB,
