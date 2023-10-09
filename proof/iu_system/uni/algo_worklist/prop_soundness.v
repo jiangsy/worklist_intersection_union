@@ -33,6 +33,12 @@ Qed.
 
 Hint Resolve a_mono_typ_wf : Hdb_a_wl_red_soundness.
 
+Ltac unify_trans_typ :=
+  match goal with
+  | H_1 : trans_typ ?θ ?Aᵃ ?A1ᵈ, H_2 : trans_typ ?θ ?Aᵃ ?A2ᵈ |- _ => eapply trans_typ_det in H_1; 
+      eauto with Hdb_a_wl_red_soundness; subst
+  end.
+
 
 
 Ltac destruct_a_wf_wl :=
@@ -49,6 +55,7 @@ Ltac destruct_a_wf_wl :=
     end.
 
 
+
 Ltac destruct_trans :=
   repeat
     match goal with
@@ -58,7 +65,8 @@ Ltac destruct_trans :=
     | H : trans_work ?θ (?wᵃ _) ?wᵈ |- _ => dependent destruction H
     | H : trans_work ?θ (?wᵃ _ _) ?wᵈ |- _ => dependent destruction H
     | H : trans_work ?θ (?wᵃ _ _ _) ?wᵈ |- _ => dependent destruction H
-    end.
+    end;
+    try unify_trans_typ.
   
 
 Ltac _apply_IH_a_wl_red :=
@@ -243,9 +251,7 @@ Proof with eauto with Hdb_a_wl_red_soundness.
   (* ^X < τ *)
   - admit.
   (* τ < ^X *)
-  - _apply_IH_a_wl_red.
-    destruct_trans.
-    eapply trans_typ_det in H1... subst.
+  - _apply_IH_a_wl_red; destruct_trans.
     rename B1ᵈ0 into B2ᵈ.
     exists (work_sub A1ᵈ (typ_intersection B1ᵈ B2ᵈ) ⫤ Ω)%dworklist. split...
     dependent destruction Hdred.
@@ -271,7 +277,15 @@ Proof with eauto with Hdb_a_wl_red_soundness.
   - admit.
   - admit.
   - admit.
-  - admit.
+  - _apply_IH_a_wl_red.
+    destruct_trans.
+    exists (work_infer (exp_anno eᵈ A1ᵈ) cᵈ ⫤ Ω)%dworklist...
+    split. exists θ...
+    econstructor... econstructor... econstructor...
+    dependent destruction Hdred...
+    econstructor...
+    eapply d_typing__infanno...
+    admit.
   - admit.
   - admit.
   - admit.
