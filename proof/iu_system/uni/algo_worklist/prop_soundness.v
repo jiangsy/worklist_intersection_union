@@ -56,11 +56,10 @@ Ltac destruct_a_wf_wl :=
     | H : a_wf_exp ?E (?Ce ?e1 ?e2) |- _ => dependent destruction H
     end.
 
-
-
+    
 Ltac destruct_trans :=
   repeat
-    match goal with
+    lazymatch goal with
     | H : trans_worklist ?θ (aworklist_conswork ?Γ ?w) ?Ω ?θ' |- _ => dependent destruction H
     | H : trans_worklist ?θ (aworklist_consvar ?Γ ?w ?b) ?Ω ?θ' |- _ => dependent destruction H
     | H : trans_worklist ?θ  (aworklist_constvar ?Γ ?X ?b) ?Ω ?θ' |- _ => dependent destruction H
@@ -70,9 +69,10 @@ Ltac destruct_trans :=
     | H : trans_typ ?θ typ_unit ?Aᵈ |- _ => dependent destruction H
     | H : trans_typ ?θ typ_bot ?Aᵈ |- _ => dependent destruction H
     | H : trans_typ ?θ typ_top ?Aᵈ |- _ => dependent destruction H
+    | H : trans_typ ?θ (open_typ_wrt_typ _ _) ?Aᵈ |- _ => fail
+    | H : trans_typ ?θ (?C_T _ _) ?Aᵈ |- _ => dependent destruction H
     end;
     try unify_trans_typ.
-  
 
 Ltac _apply_IH_a_wl_red :=
   let H := fresh "H" in
@@ -315,8 +315,17 @@ Proof with eauto with Hdb_a_wl_red_soundness.
     exists (work_infapp  (typ_arrow A1ᵈ A2ᵈ) eᵈ cᵈ ⫤ Ω)%dworklist...
     split. destruct_d_wl_del_red. exists Θ...
     econstructor...
-  - admit.
-  - admit.
+  - _apply_IH_a_wl_red.
+    destruct_trans. 
+    rename A2ᵈ into B1ᵈ.
+    exists (work_infabs (typ_arrow A1ᵈ B1ᵈ) cᵈ ⫤ Ω)%dworklist...
+    split. destruct_d_wl_del_red. exists θ... 
+    econstructor... clear H2.
+    econstructor... 
+    eapply tran_wl_wf_trans_typ with (Γ:=Γ) (Aᵃ:=A1)...
+    eapply tran_wl_wf_trans_typ with (Γ:=Γ) (Aᵃ:=B1)...
+  - _apply_IH_a_wl_red.
+    destruct_trans. 
   - admit.
   - admit.
   - admit.
