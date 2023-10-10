@@ -598,6 +598,34 @@ Proof with auto with Hdb_transfer.
     + econstructor; auto.
 Qed.
 
+
+Lemma trans_exp_rename_tvar : forall θ1 θ2 eᵃ eᵈ X X', 
+  θ2 ++ (X, dbind_tvar_empty) :: θ1 ⫦ᵉ eᵃ ⇝ eᵈ ->
+  X' \notin dom (θ2 ++ θ1) ->
+  map (subst_tvar_in_dbind (` X') X) θ2 ++ (X', dbind_tvar_empty) :: θ1 ⫦ᵉ subst_tvar_in_exp (` X') X eᵃ ⇝ subst_tvar_in_exp (` X') X eᵈ
+with trans_body_rename_tvar : forall θ1 θ2 bᵃ bᵈ X X', 
+  θ2 ++ (X, dbind_tvar_empty) :: θ1 ⫦ᵇ bᵃ ⇝ bᵈ ->
+  X' \notin dom (θ2 ++ θ1) ->
+  map (subst_tvar_in_dbind (` X') X) θ2 ++ (X', dbind_tvar_empty) :: θ1 ⫦ᵇ subst_tvar_in_body (` X') X bᵃ ⇝ subst_tvar_in_body (` X') X bᵈ.
+Proof with auto with Hdb_transfer.
+  - intros. dependent induction H; simpl; auto...
+    + admit.
+    + econstructor. admit.
+    + admit.
+    + admit.
+    + econstructor.
+      apply IHtrans_exp...
+      apply trans_typ_rename...
+    + econstructor.
+      apply IHtrans_exp...
+      apply trans_typ_rename...
+  - intros. dependent induction H; simpl; auto...
+    + econstructor.
+      eapply trans_exp_rename_tvar...
+      apply trans_typ_rename...
+Admitted.
+
+
 Lemma a_wf_exp_trans_exp : forall θ Γ Ω eᵃ,
   a_wf_exp (awl_to_aenv Γ) eᵃ ->  
   ⊢ᵃ Γ -> 
@@ -615,7 +643,7 @@ Proof with eauto with Hdb_transfer.
     dependent induction H; intros.
     + exists exp_unit...
     + exists (exp_var_f x)... 
-    + inst_cofinites_by (L `union` dom (awl_to_aenv Γ)).
+    + inst_cofinites_by (L `union` (fvar_in_exp e) `union` dom (awl_to_aenv Γ)).
       assert (⊢ᵃ aworklist_consvar Γ x (abind_typ T)) by auto.
       eapply a_wf_typ_trans_typ in H...
       destruct H as [Tᵈ].
@@ -623,18 +651,23 @@ Proof with eauto with Hdb_transfer.
       destruct H4 as [eᵈ].
       exists (exp_abs (close_exp_wrt_exp x eᵈ)). 
       eapply trans_exp__abs with (L:=L `union` fvar_in_exp e `union` fvar_in_exp eᵈ). intros.
-      admit.
+      erewrite (subst_var_in_exp_intro x)...
+      erewrite (subst_var_in_exp_intro x ((close_exp_wrt_exp x eᵈ) )) by apply close_exp_notin.
+      apply trans_exp_rename_var...
+      rewrite open_exp_wrt_exp_close_exp_wrt_exp...
     + apply IHa_wf_exp1 in H2 as Htrans_e1; auto.
       apply IHa_wf_exp2 in H2 as Htrans_e2; auto.
       destruct Htrans_e1 as [e1ᵈ].
       destruct Htrans_e2 as [e2ᵈ].  
       exists (exp_app e1ᵈ e2ᵈ)...
-    + inst_cofinites_by (L `union` dom (awl_to_aenv Γ)) using_name X.
+    + inst_cofinites_by (L `union` dom (awl_to_aenv Γ) `union` ftvar_in_body body5) using_name X.
       assert (⊢ᵃ aworklist_constvar Γ X abind_tvar_empty) by auto.
       eapply a_wf_body_trans_body with (Ω:=dworklist_constvar Ω X dbind_tvar_empty) (θ:=(X, dbind_tvar_empty)::θ) in H2...
       destruct H2 as [bᵈ].
       exists (exp_tabs (close_body_wrt_typ X bᵈ)).
       eapply trans_exp__tabs with (L:=L). intros.
+      erewrite (subst_tvar_in_body_intro X)...
+      erewrite (subst_tvar_in_body_intro X (close_body_wrt_typ X bᵈ)) by apply close_body_tvar_notin.
       admit.
     + apply IHa_wf_exp in H2 as Htrans_e; auto.
       eapply a_wf_typ_trans_typ with (θ:=θ) (Ω:=Ω) in H as Htrans_A; auto.  
@@ -656,7 +689,7 @@ Proof with eauto with Hdb_transfer.
       destruct H as [Aᵈ].
       exists (body_anno eᵈ Aᵈ)...
       econstructor...
-Admitted.
+Abort.
 
 Fixpoint denv_no_var (Ψ : denv) :=
   match Ψ with 

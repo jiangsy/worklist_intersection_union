@@ -48,6 +48,13 @@ Ltac unify_trans_typ :=
       eauto with Hdb_a_wl_red_soundness; subst
   end.
 
+Ltac unify_trans_exp :=
+  match goal with
+  | H_1 : trans_exp ?θ ?eᵃ ?e1ᵈ, H_2 : trans_exp ?θ ?eᵃ ?e2ᵈ |- _ => eapply trans_exp_det in H_1; 
+      eauto with Hdb_a_wl_red_soundness; subst
+  end.
+  
+
 
 (* depedent destruction all non-atomic trans_* relation *)
 Ltac destruct_trans :=
@@ -59,6 +66,7 @@ Ltac destruct_trans :=
     | H : trans_work ?θ (?wᵃ _) ?wᵈ |- _ => dependent destruction H
     | H : trans_work ?θ (?wᵃ _ _) ?wᵈ |- _ => dependent destruction H
     | H : trans_work ?θ (?wᵃ _ _ _) ?wᵈ |- _ => dependent destruction H
+    | H : trans_cont ?θ (?C_C _) ?wᵈ |- _ => dependent destruction H
     | H : trans_cont ?θ (?C_C _ _) ?wᵈ |- _ => dependent destruction H
     | H : trans_typ ?θ typ_unit ?Aᵈ |- _ => dependent destruction H
     | H : trans_typ ?θ typ_bot ?Aᵈ |- _ => dependent destruction H
@@ -66,13 +74,31 @@ Ltac destruct_trans :=
     | H : trans_typ ?θ (open_typ_wrt_typ _ _) ?Aᵈ |- _ => fail
     | H : trans_typ ?θ (?C_T _ _) ?Aᵈ |- _ => dependent destruction H
     end;
-    try unify_trans_typ.
+    try unify_trans_typ;
+    try unify_trans_exp.
 
 (* match the name of a_typ and d_typ in trans_typ *)
 Ltac rename_typ :=
   lazymatch goal with
   | H : trans_typ ?θ (open_typ_wrt_typ _ _) ?Aᵈ |- _ => fail
   | H : trans_typ ?θ (?C_T _ _) ?Aᵈ |- _ => fail
+  | _ : trans_typ ?θ ?A1ᵃ ?A1ᵈ, _ : trans_typ ?θ ?A2ᵃ ?A2ᵈ, _ : trans_typ ?θ ?A3ᵃ ?A3ᵈ, _ : trans_typ ?θ ?A4ᵃ ?A4ᵈ |- _ => 
+    let A1ᵃ1 := fresh A1ᵃ"ᵈ0" in 
+    rename A1ᵈ into A1ᵃ1;
+    let A2ᵃ1 := fresh A2ᵃ"ᵈ0" in
+    rename A2ᵈ into A2ᵃ1;
+    let A3ᵃ1 := fresh A3ᵃ"ᵈ0" in
+    rename A3ᵈ into A3ᵃ1;
+    let A4ᵃ1 := fresh A4ᵃ"ᵈ0" in
+    rename A4ᵈ into A4ᵃ1;
+    let A1ᵃ2 := fresh A1ᵃ"ᵈ" in 
+    rename A1ᵃ1 into A1ᵃ2;
+    let A2ᵃ2 := fresh A2ᵃ"ᵈ" in
+    rename A2ᵃ1 into A2ᵃ2;
+    let A3ᵃ2 := fresh A3ᵃ"ᵈ" in
+    rename A3ᵃ1 into A3ᵃ2;
+    let A4ᵃ2 := fresh A4ᵃ"ᵈ" in
+    rename A4ᵃ1 into A4ᵃ2
   | _ : trans_typ ?θ ?A1ᵃ ?A1ᵈ, _ : trans_typ ?θ ?A2ᵃ ?A2ᵈ, _ : trans_typ ?θ ?A3ᵃ ?A3ᵈ |- _ => 
     let A1ᵃ1 := fresh A1ᵃ"ᵈ0" in 
     rename A1ᵈ into A1ᵃ1;
@@ -300,10 +326,26 @@ Proof with eauto with Hdb_a_wl_red_soundness.
     admit.
   - admit.
   - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
+  - destruct_a_wf_wl. inst_cofinites_by (L `union` L0).
+    assert ( ⊢ᵃ (work_check (open_exp_wrt_exp e (exp_var_f x)) typ_top ⫤ (aworklist_consvar Γ x (abind_typ typ_bot)))) by admit.
+    apply H3 in H4. 
+    destruct H4 as [Ω [Htrans Hdred]].
+    destruct Htrans as [θ].
+    destruct_trans.
+    admit.
+  - exists (work_check eᵈ (typ_intersection A1ᵈ A2ᵈ) ⫤ Ω)%dworklist...
+    split...
+    destruct_d_wl_del_red...
+  - exists (work_check eᵈ (typ_union A1ᵈ A2ᵈ) ⫤ Ω)%dworklist...
+    split...
+    destruct_d_wl_del_red...
+    econstructor... eapply d_typing__chkunion1...
+    eapply tran_wl_wf_trans_typ with (Γ:=Γ) (Aᵃ:=A2)...
+  - exists (work_check eᵈ (typ_union A1ᵈ A2ᵈ) ⫤ Ω)%dworklist...
+    split...
+    destruct_d_wl_del_red...
+    econstructor... eapply d_typing__chkunion2...
+    eapply tran_wl_wf_trans_typ with (Γ:=Γ) (Aᵃ:=A1)...
   - admit.
   - exists (work_infer (exp_anno eᵈ Aᵈ) cᵈ ⫤ Ω)%dworklist...
     split. exists θ...
@@ -342,11 +384,15 @@ Proof with eauto with Hdb_a_wl_red_soundness.
     econstructor...
     eapply d_infabs__intersection2...
     eapply tran_wl_wf_trans_typ with (Γ:=Γ) (Aᵃ:=A1)...
-  - admit.
+  - exists (work_infabs (typ_union A1ᵈ A2ᵈ) cᵈ ⫤ Ω)%dworklist.
+    split...
+    destruct_d_wl_del_red...
   - exists (work_infabsunion (typ_arrow B1ᵈ C1ᵈ) A2ᵈ cᵈ ⫤ Ω)%dworklist.
     split...
     destruct_d_wl_del_red...
-  - admit.
+  - exists (work_unioninfabs (typ_arrow B1ᵈ C1ᵈ) (typ_arrow B2ᵈ C2ᵈ) cᵈ ⫤ Ω)%dworklist.
+    split...
+    exists θ...
   (* ^X ▹ _ *)
   - admit.
   - exists (work_infer (exp_tapp eᵈ Bᵈ) cᵈ ⫤ Ω)%dworklist.
