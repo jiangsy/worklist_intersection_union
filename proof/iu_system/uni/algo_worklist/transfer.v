@@ -242,7 +242,7 @@ where "θ ⫦ Γᵃ ⇝ Γᵈ ⫣ θ'" := (trans_worklist θ Γᵃ Γᵈ θ').
 Hint Constructors trans_typ : Hdb_transfer.
 
 
-Lemma trans_work_not_in_ss : forall θ Γ Ω X,
+Lemma trans_wl_not_in_ss : forall θ Γ Ω X,
   nil ⫦ Γ ⇝ Ω ⫣ θ -> X ∉ dom (awl_to_aenv Γ) -> X ∉ dom θ.
 Proof with auto.
   intros. dependent induction H; simpl in *...
@@ -278,9 +278,9 @@ Lemma a_wf_wl_wf_ss : forall θ Γ Ω,
   ⊢ᵃ Γ -> nil ⫦ Γ ⇝ Ω ⫣ θ -> wf_ss θ.
 Proof with eauto.
   intros. dependent induction H0; dependent destruction H...
-  - econstructor... eapply trans_work_not_in_ss...
-  - econstructor... eapply trans_work_not_in_ss...
-  - econstructor... eapply trans_work_not_in_ss... 
+  - econstructor... eapply trans_wl_not_in_ss...
+  - econstructor... eapply trans_wl_not_in_ss...
+  - econstructor... eapply trans_wl_not_in_ss... 
 Qed.
 
 
@@ -288,7 +288,6 @@ Hint Resolve a_wf_wl_wf_ss : Hdb_transfer.
 
 Notation "θ ⫦ᵗ Aᵃ ⇝ Aᵈ" := (trans_typ θ Aᵃ Aᵈ)
   (at level 65, Aᵃ at next level, no associativity).
-
 
 
 Lemma trans_typ_wf_ss : forall θ Aᵃ Aᵈ,
@@ -307,6 +306,14 @@ Lemma trans_typ_wf_typ : forall θ Aᵃ Aᵈ,
   (ss_to_denv θ) ⊢ Aᵈ.
 Proof with auto with Hdb_transfer.
 Abort.
+
+
+Lemma trans_typ_lc_typ : forall θ Aᵃ Aᵈ,
+  θ ⫦ᵗ Aᵃ ⇝ Aᵈ ->
+  lc_typ Aᵃ.
+Proof with auto with Hdb_transfer.
+  intros. induction H...
+Qed.
 
 
 Lemma trans_typ_det : forall θ Aᵃ A₁ᵈ A₂ᵈ,
@@ -613,6 +620,7 @@ Proof with auto with Hdb_transfer.
 Qed.
 
 
+(* not used now *)
 Lemma a_wf_wl_d_wf_wl : forall θ Γ Ω,  
   ⊢ᵃ Γ -> nil ⫦ Γ ⇝ Ω ⫣ θ -> ⊢ᵈʷ Ω.
 Proof with eauto.
@@ -626,8 +634,23 @@ Proof with eauto.
   - econstructor... 
     rewrite trans_wl_dom_upper_bound... 
     eapply tran_wl_wf_trans_typ with (Aᵃ:=A1ᵃ)...
-    admit.
+    eapply trans_typ_lc_typ...
 Admitted.
+
+
+Lemma a_wf_wl_d_wf_env : forall θ Γ Ω,  
+  ⊢ᵃ Γ -> nil ⫦ Γ ⇝ Ω ⫣ θ -> ⊢ dwl_to_denv Ω.
+Proof with eauto.
+  intros. dependent induction H0; dependent destruction H; simpl...
+  - econstructor...
+    rewrite trans_wl_dom_upper_bound...
+  - econstructor...
+    rewrite trans_wl_dom_upper_bound...
+  - econstructor... 
+    eapply tran_wl_wf_trans_typ with (Aᵃ:=A1ᵃ)...
+    eapply trans_typ_lc_typ... 
+    rewrite trans_wl_dom_upper_bound...
+Qed.
 
 
 (* Lemma inst_subst : forall θ θ' X T Aᵃ Aᵈ, 
