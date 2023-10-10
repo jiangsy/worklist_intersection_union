@@ -195,6 +195,8 @@ Hint Constructors trans_worklist : Hdb_a_wl_red_soundness.
 
 Hint Resolve trans_typ_lc_typ : Hdb_a_wl_red_soundness.
 
+
+
 Theorem d_a_wl_red_soundness: forall Γ,
   ⊢ᵃ Γ -> Γ ⟶ᵃʷ⁎⋅ -> exists Ω, transfer Γ Ω /\ Ω ⟶ᵈ⁎⋅.
 Proof with eauto with Hdb_a_wl_red_soundness.
@@ -231,18 +233,16 @@ Proof with eauto with Hdb_a_wl_red_soundness.
   - exists ((work_sub (typ_arrow B1ᵈ B2ᵈ) (typ_arrow A1ᵈ A2ᵈ) ⫤ Ω)%dworklist).
     split. exists θ. auto...
     econstructor.
-    econstructor. 
-    admit.
-    admit.
-    admit.  
+    econstructor.
+    + apply d_wl_red_weaken_work1 in Hdred. dependent destruction Hdred...
+    + apply d_wl_red_weaken_work2 in Hdred. dependent destruction Hdred...
+    + dependent destruction Hdred. dependent destruction Hdred...
   (* forall x. A < B  *)
   - inst_cofinites_by (L `union` ftvar_in_typ A1) using_name X.
     assert ( ⊢ᵃ (work_sub (B1 ^ᵈ X) A1 ⫤ aworklist_constvar Γ X (abind_bound typ_bot typ_top))) by admit.
     destruct_a_wf_wl.
     _apply_IH_a_wl_red.
     destruct_trans.
-    (* dependent destruction Htrans. dependent destruction Htrans. *)
-    (* dependent destruction H9. *)
     rename A1ᵈ into B1tᵈ. rename B1ᵈ into A1ᵈ.
     apply trans_typ_etvar_tvar_subst_cons in H18...
     destruct H18 as [B1xᵈ].
@@ -277,12 +277,12 @@ Proof with eauto with Hdb_a_wl_red_soundness.
     split.
     + exists θ'. econstructor...
       econstructor...
-      econstructor...
-      admit. admit.
+      * econstructor... admit.
+      * admit.
     + dependent destruction Hdred. 
       econstructor...
       admit.
-      admit.
+      * dependent destruction Hdred...
   (* ^X < A1 -> A2 *)
   - inst_cofinites_by L using_name X.
     inst_cofinites_by (L `union` singleton X0) using_name X.
@@ -423,7 +423,21 @@ Proof with eauto with Hdb_a_wl_red_soundness.
     split...
     destruct_d_wl_del_red...
   (* ∀ a. A ∘ B =>=> _ *)
-  - admit.
+  - assert (⊢ᵃ (work_apply c (A ^^ᵈ B) ⫤ Γ)) by admit.
+    _apply_IH_a_wl_red.
+    destruct_trans.
+    inst_cofinites_by (dom (awl_to_aenv Γ) `union` dom θ) using_name X.
+    replace (A ^^ᵈ B) with ({B /ᵗ X} A ^ᵈ X) in H7 by admit.
+    apply inst_typ_rev_subs_cons in H7...
+    destruct H7 as [Axᵈ [Bᵈ]]. intuition.
+    exists (work_inftapp (typ_all (close_typ_wrt_typ X Axᵈ )) Bᵈ cᵈ ⫤ Ω)%dworklist.
+    split.
+    exists θ.
+    + econstructor...
+      econstructor...
+      admit.
+    + eapply d_wl_del_red__inftapp with (T3:=A1ᵈ)...
+      admit.
   - exists (work_inftapp typ_bot Bᵈ cᵈ ⫤ Ω)%dworklist.
     split...
     econstructor... econstructor...
