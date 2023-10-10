@@ -10,8 +10,8 @@ Require Import uni.algo_worklist.def_extra.
 Require Import ln_utils.
 
 
-
 Definition subst_set := denv.
+
 
 Fixpoint ss_to_denv (θ : subst_set) : denv := 
   match θ with 
@@ -37,6 +37,40 @@ Inductive wf_ss : subst_set -> Prop :=
     d_mono_typ (ss_to_denv θ) T -> 
     wf_ss ((X , dbind_typ T) :: θ)
 .
+
+
+Inductive ss_wf_typ : subst_set -> typ -> Prop :=
+  | ss_wf_typ__unit : forall (θ:subst_set),
+    ss_wf_typ θ typ_unit
+  | ss_wf_typ__bot : forall (θ:subst_set),
+    ss_wf_typ θ typ_bot
+  | ss_wf_typ__top : forall (θ:subst_set),
+    ss_wf_typ θ typ_top
+  | ss_wf_typ__tvar : forall (θ:subst_set) (X:typvar),
+    binds ( X )  ( dbind_tvar_empty ) ( θ )  ->
+    ss_wf_typ θ (typ_var_f X)
+  | ss_wf_typ__stvar : forall (θ:subst_set) (X:typvar),
+    binds ( X )  ( dbind_stvar_empty ) ( θ )  ->
+    ss_wf_typ θ (typ_var_f X)
+  | ss_wf_typ__etvar : forall (θ:subst_set) (X:typvar) (T:typ),
+    binds ( X )  ( dbind_typ T ) ( θ )  ->
+    ss_wf_typ θ (typ_var_f X)
+  | ss_wf_typ__arrow : forall (θ:subst_set) (A1 A2:typ),
+    ss_wf_typ θ A1 ->
+    ss_wf_typ θ A2 ->
+    ss_wf_typ θ (typ_arrow A1 A2)
+  | ss_wf_typ__all : forall (L:vars) (θ:subst_set) (A:typ),
+    ( forall X , X \notin  L  -> s_in X  ( open_typ_wrt_typ A (typ_var_f X) )  )  ->
+    ( forall X , X \notin  L  -> ss_wf_typ  ( X ~ dbind_tvar_empty  ++  θ )   ( open_typ_wrt_typ A (typ_var_f X) )  )  ->
+    ss_wf_typ θ (typ_all A)
+  | ss_wf_typ__union : forall (θ:subst_set) (A1 A2:typ),
+    ss_wf_typ θ A1 ->
+    ss_wf_typ θ A2 ->
+    ss_wf_typ θ (typ_union A1 A2)
+  | ss_wf_typ__intersection : forall (θ:subst_set) (A1 A2:typ),
+    ss_wf_typ θ A1 ->
+    ss_wf_typ θ A2 ->
+    ss_wf_typ θ (typ_intersection A1 A2).
 
 
 Inductive trans_typ : subst_set -> typ -> typ -> Prop := 
@@ -335,14 +369,29 @@ Proof with auto with Hdb_transfer.
   intros. induction H...
 Qed.
 
+Lemma wf_ss_binds_typ_lc : forall θ X T,
+  wf_ss θ ->
+  binds X (dbind_typ T) θ ->
+  lc_typ T.
+Proof with auto with Hdb_transfer.
+  intros. induction H.
+  - inversion H0.
+  - inversion H0; subst...
+    inversion H2.
+  - inversion H0; subst...
+    inversion H2.
+  - inversion H0; subst...
+     dependent destruction H3.
+     eapply d_mono_typ_lc; eauto.
+Qed.
 
 Lemma trans_typ_lc_dtyp : forall θ Aᵃ Aᵈ,
   θ ⫦ᵗ Aᵃ ⇝ Aᵈ ->
   lc_typ Aᵈ.
 Proof with auto with Hdb_transfer.
   intros. induction H...
-Admitted.
-
+  eapply wf_ss_binds_typ_lc; eauto.
+Qed.
 
 Lemma trans_typ_det : forall θ Aᵃ A₁ᵈ A₂ᵈ,
   uniq θ -> 
@@ -1091,11 +1140,10 @@ Proof with auto with Hdb_transfer.
 Qed.
 
 
-(* incorrect, Bᵃ should be wf in aenv, not denv *)
 Lemma inst_typ_rev_subst : forall θ1 θ2 Bᵃ X Aᵃ A'ᵈ,
   lc_typ Aᵃ -> 
   X `notin` dom (θ2 ++ θ1) ->
-  (ss_to_aenv θ1) ⊢ Bᵃ ->
+  ss_wf_typ θ1 Bᵃ ->
   θ2 ++ θ1 ⫦ᵗ {Bᵃ /ᵗ X} Aᵃ ⇝ A'ᵈ -> 
   exists Aᵈ Bᵈ, {Bᵈ /ᵗ X} Aᵈ = A'ᵈ /\ θ2 ++ (X, dbind_tvar_empty) :: θ1 ⫦ᵗ Aᵃ ⇝ Aᵈ /\ θ1 ⫦ᵗ Bᵃ ⇝ Bᵈ.
 Proof with eauto with Hdb_transfer.
@@ -1162,11 +1210,10 @@ Proof with eauto with Hdb_transfer.
 Admitted.
 
 
-(* incorrect, Bᵃ should be wf in aenv, not denv *)
 Lemma inst_typ_rev_subs_cons : forall θ Bᵃ X Aᵃ A'ᵈ,
   lc_typ Aᵃ -> 
   X `notin` dom θ ->
-  (ss_to_denv θ) ⊢ Bᵃ ->
+  ss_wf_typ θ Bᵃ ->
   θ ⫦ᵗ {Bᵃ /ᵗ X} Aᵃ ⇝ A'ᵈ -> 
   exists Aᵈ Bᵈ, {Bᵈ /ᵗ X} Aᵈ = A'ᵈ /\ (X, dbind_tvar_empty) :: θ ⫦ᵗ Aᵃ ⇝ Aᵈ /\ θ ⫦ᵗ Bᵃ ⇝ Bᵈ.
 Proof with eauto with Hdb_transfer.
