@@ -3,7 +3,6 @@ Require Import uni.def_ott.
 Require Import uni.decl.def_extra.
 Require Import uni.notations.
 Require Import uni.prop_basic.
-Require Import uni.prop_basic.
 Require Import uni.decl.prop_subtyping.
 
 

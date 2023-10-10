@@ -613,8 +613,8 @@ Proof with eauto with Hdb_transfer.
     generalize dependent Ω. 
     generalize dependent θ. 
     dependent induction H; intros.
-    + exists exp_unit... econstructor. eapply a_wf_wl_wf_ss...
-    + exists (exp_var_f x)... econstructor. eapply a_wf_wl_wf_ss...
+    + exists exp_unit...
+    + exists (exp_var_f x)... 
     + inst_cofinites_by (L `union` dom (awl_to_aenv Γ)).
       assert (⊢ᵃ aworklist_consvar Γ x (abind_typ T)) by auto.
       eapply a_wf_typ_trans_typ in H...
@@ -628,8 +628,7 @@ Proof with eauto with Hdb_transfer.
       apply IHa_wf_exp2 in H2 as Htrans_e2; auto.
       destruct Htrans_e1 as [e1ᵈ].
       destruct Htrans_e2 as [e2ᵈ].  
-      exists (exp_app e1ᵈ e2ᵈ).
-      econstructor...
+      exists (exp_app e1ᵈ e2ᵈ)...
     + inst_cofinites_by (L `union` dom (awl_to_aenv Γ)) using_name X.
       assert (⊢ᵃ aworklist_constvar Γ X abind_tvar_empty) by auto.
       eapply a_wf_body_trans_body with (Ω:=dworklist_constvar Ω X dbind_tvar_empty) (θ:=(X, dbind_tvar_empty)::θ) in H2...
@@ -641,12 +640,12 @@ Proof with eauto with Hdb_transfer.
       eapply a_wf_typ_trans_typ with (θ:=θ) (Ω:=Ω) in H as Htrans_A; auto.  
       destruct Htrans_e as [eᵈ].
       destruct Htrans_A as [Aᵈ].
-      exists (exp_tapp eᵈ Aᵈ). econstructor...
+      exists (exp_tapp eᵈ Aᵈ)...
     + apply IHa_wf_exp in H2 as Htrans_e; auto.
       eapply a_wf_typ_trans_typ with (θ:=θ) (Ω:=Ω) in H as Htrans_A; auto.  
       destruct Htrans_e as [eᵈ].
       destruct Htrans_A as [Aᵈ].
-      exists (exp_anno eᵈ Aᵈ). econstructor...
+      exists (exp_anno eᵈ Aᵈ)...
   - intros. 
     generalize dependent Ω. 
     generalize dependent θ. 
@@ -657,8 +656,7 @@ Proof with eauto with Hdb_transfer.
       destruct H as [Aᵈ].
       exists (body_anno eᵈ Aᵈ)...
       econstructor...
-Qed.
-
+Admitted.
 
 Fixpoint denv_no_var (Ψ : denv) :=
   match Ψ with 
@@ -774,7 +772,7 @@ Proof with eauto.
     rewrite trans_wl_dom_upper_bound... 
     eapply tran_wl_wf_trans_typ with (Aᵃ:=A1ᵃ)...
     eapply trans_typ_lc_typ...
-Admitted.
+Abort.
 
 
 Lemma a_wf_wl_d_wf_env : forall θ Γ Ω,  
@@ -818,41 +816,6 @@ Proof with eauto with Hdb_transfer.
   intros. induction H1; try solve [destruct_a_wf_wl; constructor; eauto with Hdb_transfer].
 Qed.
 
-(* Lemma inst_subst : forall θ θ' X T Aᵃ Aᵈ, 
-  lc_typ Aᵃ ->
-  θ' ++ (X, dbind_typ T) :: θ ⫦ᵗ Aᵃ ⇝ Aᵈ -> 
-  (* X cannot appear in θ', so we don't need to do any subst for it *)
-  θ' ++ θ ⫦ᵗ {T /ᵗ X} Aᵃ ⇝ Aᵈ.
-Proof with eauto with Hdb_transfer.
-  intros * Hlc Hinst.
-  generalize dependent θ'. generalize dependent Aᵈ.
-  dependent induction Hlc; simpl in *; intros; try solve 
-    [dependent destruction Hinst; eauto with Hdb_transfer; dependent destruction H; eauto with Hdb_transfer].
-  - dependent destruction Hinst.
-    admit.
-  - dependent destruction Hinst.
-    admit.
-  - dependent destruction Hinst.
-    admit.
-  - destruct (X0 == X); subst.
-    + dependent destruction Hinst. 
-      * admit.
-      * admit.
-      * admit.
-    + dependent destruction Hinst.
-      * econstructor. admit. admit.
-      * eapply trans_typ__stvar. admit. admit.
-      * econstructor.
-        admit.
-        admit.
-  - dependent destruction Hinst.
-    eapply trans_typ__all with (L:=L `union` singleton X). intros.
-    inst_cofinites_with X0.
-    rewrite typ_subst_open_comm...
-    rewrite_env (((X0, dbind_tvar_empty) :: θ') ++ θ).
-    eapply H0...
-Admitted.
- *)
 
 Lemma wf_subst_set_strength_etvar_same_denv: forall θ θ' X T,
   ss_to_denv (θ' ++ θ) = ss_to_denv (θ' ++ (X, dbind_typ T) :: θ).
