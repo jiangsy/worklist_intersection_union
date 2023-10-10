@@ -99,7 +99,7 @@ Inductive trans_exp : subst_set -> exp -> exp -> Prop :=
       trans_exp θ (exp_app e1ᵃ e2ᵃ) (exp_app e1ᵈ e2ᵈ)
   | trans_exp__tabs : forall L θ bᵃ bᵈ,
       (forall X, X \notin L -> 
-        inst_body ((X, dbind_tvar_empty) :: θ) 
+        trans_body ((X, dbind_tvar_empty) :: θ) 
                   (open_body_wrt_typ bᵃ (typ_var_f X))
                   (open_body_wrt_typ bᵈ (typ_var_f X))
       ) ->
@@ -112,11 +112,11 @@ Inductive trans_exp : subst_set -> exp -> exp -> Prop :=
       trans_exp θ eᵃ eᵈ ->
       trans_typ θ A1ᵃ A1ᵈ ->
       trans_exp θ (exp_anno eᵃ A1ᵃ) (exp_anno eᵈ A1ᵈ) 
-with inst_body : subst_set -> body -> body -> Prop :=
-  | inst_body__anno : forall θ eᵃ eᵈ A1ᵃ A1ᵈ,
+with trans_body : subst_set -> body -> body -> Prop :=
+  | trans_body__anno : forall θ eᵃ eᵈ A1ᵃ A1ᵈ,
       trans_exp θ eᵃ eᵈ ->
       trans_typ θ A1ᵃ A1ᵈ ->
-      inst_body θ (body_anno eᵃ A1ᵃ) (body_anno eᵈ A1ᵈ)
+      trans_body θ (body_anno eᵃ A1ᵃ) (body_anno eᵈ A1ᵈ)
 .
 
 Inductive trans_cont : subst_set -> cont -> cont -> Prop :=
@@ -208,6 +208,21 @@ Inductive trans_work : subst_set -> work -> work -> Prop :=
       trans_work θ (work_apply cᵃ A1ᵃ) (work_apply cᵈ A1ᵈ)
 .
 
+Notation "θ ⫦ᵗ Aᵃ ⇝ Aᵈ" := (trans_typ θ Aᵃ Aᵈ)
+  (at level 65, Aᵃ at next level, no associativity).
+
+Notation "θ ⫦ᵉ eᵃ ⇝ eᵈ" := (trans_exp θ eᵃ eᵈ)
+  (at level 65, eᵃ at next level, no associativity).
+
+Notation "θ ⫦ᵇ bᵃ ⇝ bᵈ" := (trans_body θ bᵃ bᵈ)
+  (at level 65, bᵃ at next level, no associativity).
+
+Notation "θ ⫦ᶜ cᵃ ⇝ cᵈ" := (trans_cont θ cᵃ cᵈ)
+  (at level 65, cᵃ at next level, no associativity).
+
+Notation "θ ⫦ʷ wᵃ ⇝ wᵈ" := (trans_work θ wᵃ wᵈ)
+  (at level 65, wᵃ at next level, no associativity).
+
 
 Reserved Notation "θ ⫦ Ω ⇝ Γ ⫣ θ'"
   (at level 65, Ω at next level, Γ at next level, no associativity).
@@ -286,9 +301,6 @@ Qed.
 
 Hint Resolve a_wf_wl_wf_ss : Hdb_transfer.
 
-Notation "θ ⫦ᵗ Aᵃ ⇝ Aᵈ" := (trans_typ θ Aᵃ Aᵈ)
-  (at level 65, Aᵃ at next level, no associativity).
-
 
 Lemma trans_typ_wf_ss : forall θ Aᵃ Aᵈ,
   θ ⫦ᵗ Aᵃ ⇝ Aᵈ ->
@@ -344,6 +356,43 @@ Proof with eauto with Hdb_transfer.
     subst...
 Qed.
 
+
+Lemma trans_exp_det : forall θ eᵃ e₁ᵈ e₂ᵈ,
+  uniq θ -> 
+  θ ⫦ᵉ eᵃ ⇝ e₁ᵈ -> 
+  θ ⫦ᵉ eᵃ ⇝ e₂ᵈ -> 
+  e₁ᵈ = e₂ᵈ
+with trans_body_det : forall θ bᵃ b₁ᵈ b₂ᵈ,
+  uniq θ -> 
+  θ ⫦ᵇ bᵃ ⇝ b₁ᵈ -> 
+  θ ⫦ᵇ bᵃ ⇝ b₂ᵈ -> 
+  b₁ᵈ = b₂ᵈ.
+Proof with eauto with Hdb_transfer.
+  - intros. generalize dependent e₂ᵈ.
+    induction H0; (intros e₂ᵈ H2; dependent destruction H2; auto).
+    + inst_cofinites_by (L `union` L0 `union` (fvar_in_exp eᵈ) `union` (fvar_in_exp eᵈ0) `union`  dom θ) using_name x.
+      apply f_equal.
+      eapply open_exp_wrt_exp_inj with (x1:=x); auto.  
+    + specialize (IHtrans_exp1 H _ H2_).
+      specialize (IHtrans_exp2 H _ H2_0).
+      subst...
+    + inst_cofinites_by (L `union` L0 `union` (ftvar_in_body bᵈ) `union` (ftvar_in_body bᵈ0) `union`  dom θ) using_name X.
+      apply f_equal.
+      eapply open_body_wrt_typ_inj with (X1:=X); auto.
+      eapply trans_body_det with (θ:=(X, ▫) :: θ)...
+    + specialize (IHtrans_exp H _ H2).
+      eapply trans_typ_det with (A₂ᵈ:=A1ᵈ0) in H1; auto.
+      subst...
+    + specialize (IHtrans_exp H _ H2).
+      eapply trans_typ_det with (A₂ᵈ:=A1ᵈ0) in H1; auto.
+      subst...
+  - intros. generalize dependent b₂ᵈ.
+    induction H0; intros.
+    dependent destruction H2.
+    apply trans_exp_det with (e₂ᵈ:=eᵈ0) in H0; auto.
+    eapply trans_typ_det with (A₂ᵈ:=A1ᵈ0) in H1; auto.
+    subst. auto.
+Qed.
 
 Hint Constructors trans_typ : Hdb_transfer.
 Hint Constructors trans_cont : Hdb_transfer.
