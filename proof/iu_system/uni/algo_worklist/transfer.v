@@ -394,7 +394,9 @@ Proof with eauto with Hdb_transfer.
     subst. auto.
 Qed.
 
+
 Hint Constructors trans_typ : Hdb_transfer.
+Hint Constructors trans_exp : Hdb_transfer.
 Hint Constructors trans_cont : Hdb_transfer.
 Hint Constructors trans_work : Hdb_transfer.
 Hint Constructors trans_worklist : Hdb_transfer.
@@ -569,6 +571,94 @@ Proof with eauto with Hdb_transfer.
     exists (typ_intersection A1ᵈ A2ᵈ). econstructor...  
 Qed.
 
+Lemma trans_exp_rename_var : forall θ eᵃ eᵈ x x', 
+  θ ⫦ᵉ eᵃ ⇝ eᵈ ->
+  θ ⫦ᵉ {(exp_var_f x') /ᵉ x} eᵃ ⇝ {(exp_var_f x') /ᵉ x} eᵈ
+with trans_body_rename_var : forall θ bᵃ bᵈ x x', 
+  θ ⫦ᵇ bᵃ ⇝ bᵈ ->
+  θ ⫦ᵇ {(exp_var_f x') /ᵇ x} bᵃ ⇝ {(exp_var_f x') /ᵇ x} bᵈ.
+Proof with auto with Hdb_transfer.
+  - intros. dependent induction H; simpl; auto...
+    + unfold eq_dec. destruct (EqDec_eq_of_X x0 x); subst.
+      * econstructor... 
+      * econstructor... 
+    + eapply trans_exp__abs with (L:=L `union` singleton x). intros.
+      inst_cofinites_with x0.
+      erewrite subst_var_in_exp_open_exp_wrt_exp in H0...
+      erewrite subst_var_in_exp_open_exp_wrt_exp in H0...
+      simpl in H0...
+      unfold eq_dec in H0. destruct (EqDec_eq_of_X x0 x).
+      * subst. apply notin_union_2 in H1. apply notin_singleton_1 in H1. contradiction.
+      * auto.
+    + eapply trans_exp__tabs with (L:=L). intros.
+      inst_cofinites_with X.
+      erewrite <- subst_var_in_body_open_body_wrt_typ...
+      erewrite <- subst_var_in_body_open_body_wrt_typ...
+  - intros. dependent induction H; simpl; auto...
+    + econstructor; auto.
+Qed.
+
+Lemma a_wf_exp_trans_exp : forall θ Γ Ω eᵃ,
+  a_wf_exp (awl_to_aenv Γ) eᵃ ->  
+  ⊢ᵃ Γ -> 
+  nil ⫦ Γ ⇝ Ω ⫣ θ -> 
+  exists eᵈ, trans_exp θ eᵃ eᵈ
+with a_wf_body_trans_body : forall θ Γ Ω bᵃ,
+  a_wf_body (awl_to_aenv Γ) bᵃ ->  
+  ⊢ᵃ Γ -> 
+  nil ⫦ Γ ⇝ Ω ⫣ θ -> 
+  exists bᵈ, trans_body θ bᵃ bᵈ.
+Proof with eauto with Hdb_transfer.
+  - intros. 
+    generalize dependent Ω. 
+    generalize dependent θ. 
+    dependent induction H; intros.
+    + exists exp_unit... econstructor. eapply a_wf_wl_wf_ss...
+    + exists (exp_var_f x)... econstructor. eapply a_wf_wl_wf_ss...
+    + inst_cofinites_by (L `union` dom (awl_to_aenv Γ)).
+      assert (⊢ᵃ aworklist_consvar Γ x (abind_typ T)) by auto.
+      eapply a_wf_typ_trans_typ in H...
+      destruct H as [Tᵈ].
+      eapply H1 with (θ:=θ) in H4...
+      destruct H4 as [eᵈ].
+      exists (exp_abs (close_exp_wrt_exp x eᵈ)). 
+      eapply trans_exp__abs with (L:=L `union` fvar_in_exp e `union` fvar_in_exp eᵈ). intros.
+      admit.
+    + apply IHa_wf_exp1 in H2 as Htrans_e1; auto.
+      apply IHa_wf_exp2 in H2 as Htrans_e2; auto.
+      destruct Htrans_e1 as [e1ᵈ].
+      destruct Htrans_e2 as [e2ᵈ].  
+      exists (exp_app e1ᵈ e2ᵈ).
+      econstructor...
+    + inst_cofinites_by (L `union` dom (awl_to_aenv Γ)) using_name X.
+      assert (⊢ᵃ aworklist_constvar Γ X abind_tvar_empty) by auto.
+      eapply a_wf_body_trans_body with (Ω:=dworklist_constvar Ω X dbind_tvar_empty) (θ:=(X, dbind_tvar_empty)::θ) in H2...
+      destruct H2 as [bᵈ].
+      exists (exp_tabs (close_body_wrt_typ X bᵈ)).
+      eapply trans_exp__tabs with (L:=L). intros.
+      admit.
+    + apply IHa_wf_exp in H2 as Htrans_e; auto.
+      eapply a_wf_typ_trans_typ with (θ:=θ) (Ω:=Ω) in H as Htrans_A; auto.  
+      destruct Htrans_e as [eᵈ].
+      destruct Htrans_A as [Aᵈ].
+      exists (exp_tapp eᵈ Aᵈ). econstructor...
+    + apply IHa_wf_exp in H2 as Htrans_e; auto.
+      eapply a_wf_typ_trans_typ with (θ:=θ) (Ω:=Ω) in H as Htrans_A; auto.  
+      destruct Htrans_e as [eᵈ].
+      destruct Htrans_A as [Aᵈ].
+      exists (exp_anno eᵈ Aᵈ). econstructor...
+  - intros. 
+    generalize dependent Ω. 
+    generalize dependent θ. 
+    dependent induction H; intros.
+    + eapply a_wf_exp_trans_exp in H0...
+      eapply a_wf_typ_trans_typ in H...
+      destruct H0 as [eᵈ].
+      destruct H as [Aᵈ].
+      exists (body_anno eᵈ Aᵈ)...
+      econstructor...
+Qed.
+
 
 Fixpoint denv_no_var (Ψ : denv) :=
   match Ψ with 
@@ -701,6 +791,32 @@ Proof with eauto.
     rewrite trans_wl_dom_upper_bound...
 Qed.
 
+
+(* depedent destruction all non-atomic ⊢ᵃ relation *)
+Ltac destruct_a_wf_wl :=
+  repeat
+    lazymatch goal with
+    | H : a_wf_wl (aworklist_conswork ?Γ ?w) |- _ => dependent destruction H
+    | H : a_wf_wl (aworklist_consvar ?Γ ?w ?b) |- _ => dependent destruction H
+    | H : a_wf_wl (aworklist_constvar ?Γ ?X ?b) |- _ => dependent destruction H
+    | H : a_wf_work ?Ω ?w |- _ => dependent destruction H
+    | H : a_wf_typ ?E (open_typ_wrt_typ ?A ?T) |- _ => fail
+    | H : a_wf_typ ?E (?Ct ?A1 ?A2) |- _ => dependent destruction H
+    | H : a_wf_exp ?E (?Ce ?b) |- _ => dependent destruction H
+    | H : a_wf_exp ?E (?Ce ?e1 ?e2) |- _ => dependent destruction H
+    | H : a_wf_cont ?E (?C_C _) |- _ => dependent destruction H
+    | H : a_wf_cont ?E (?C_C _ _) |- _ => dependent destruction H
+    | H : a_wf_cont ?E (?C_C _ _ _) |- _ => dependent destruction H
+    end.
+
+Lemma a_wf_work_applied : forall Γ c A w,
+  a_wf_cont Γ c ->
+  a_wf_typ Γ A ->
+  apply_cont c A w ->
+  a_wf_work Γ w.
+Proof with eauto with Hdb_transfer.
+  intros. induction H1; try solve [destruct_a_wf_wl; constructor; eauto with Hdb_transfer].
+Qed.
 
 (* Lemma inst_subst : forall θ θ' X T Aᵃ Aᵈ, 
   lc_typ Aᵃ ->
