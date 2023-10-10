@@ -354,6 +354,7 @@ Proof with eauto with Hdb_a_wl_red_soundness.
   - admit.
   - admit.
   - admit.
-  - admit.
+  - exists ( work_unioninftapp C1ᵈ C2ᵈ cᵈ ⫤ Ω)%dworklist.
+    split...
   - admit.
 Admitted.
