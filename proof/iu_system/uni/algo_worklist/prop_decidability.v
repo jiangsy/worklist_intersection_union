@@ -2,6 +2,7 @@ Require Import Coq.Program.Equality.
 Require Import Program.Tactics.
 Require Import Metalib.Metatheory.
 Require Import List.
+Require Import Coq.micromega.Lia.
 
 
 Require Import uni.notations.
@@ -69,17 +70,17 @@ Fixpoint judge_size_cont (c : cont) : nat :=
 
 Definition judge_size_work (w : work) : nat :=
   match w with
-  | work_infer e c => 1 + exp_size_cont c
+  | work_infer e c => 1 + judge_size_cont c
   | work_check e _ => 2 + exp_size e
-  | work_infabs _ c => 1 + exp_size_cont c
-  | work_infabsunion _ _ c => 1 + exp_size_cont c
-  | work_infapp _ e c => 3 + exp_size_cont c
-  | work_inftapp _ _ c => 1 + exp_size_cont c
+  | work_infabs _ c => 1 + judge_size_cont c
+  | work_infabsunion _ _ c => 1 + judge_size_cont c
+  | work_infapp _ e c => 3 + judge_size_cont c
+  | work_inftapp _ _ c => 1 + judge_size_cont c
   | work_sub _ _ => 0
-  | work_inftappunion _ _ _ c => 1 + exp_size_cont c
-  | work_unioninftapp _ _ c => 1 + exp_size_cont c
-  | work_unioninfabs _ _ c => 1 + exp_size_cont c
-  | work_apply c _ => exp_size_cont c
+  | work_inftappunion _ _ _ c => 1 + judge_size_cont c
+  | work_unioninftapp _ _ c => 1 + judge_size_cont c
+  | work_unioninfabs _ _ c => 1 + judge_size_cont c
+  | work_apply c _ => judge_size_cont c
   end.
 
 Fixpoint judge_size_wl (Γ : aworklist) : nat :=
@@ -91,19 +92,6 @@ Fixpoint judge_size_wl (Γ : aworklist) : nat :=
   end.
 
 Hint Constructors a_wl_red : core.
-
-Lemma decidablity_lemma : forall ne nj Γ,
-  ⊢ᵃ Γ ->
-  exp_size_wl Γ < ne ->
-  judge_size_wl Γ < nj ->
-  Γ ⟶ᵃʷ⁎⋅ \/ ¬ Γ ⟶ᵃʷ⁎⋅.
-Proof.
-  intros ne. induction ne; intro nj; induction nj.
-  - intros. inversion H0.
-  - intros. inversion H0.
-  - intros. inversion H1.
-  - intros. dependent destruction H; auto.
-Admitted.
 
 Inductive split_size : aworklist -> typ -> nat -> Prop :=
   | split_size_unit : forall Γ,
@@ -336,16 +324,16 @@ Fixpoint all_size_wl (Γ : aworklist) : nat :=
   | aworklist_conswork Γ' w => all_size_work w + all_size_wl Γ'
   end.
 
-Inductive measure : aworklist -> typ -> nat -> Prop :=
-  | measure_typ : forall Γ A n,
+Inductive measure1 : aworklist -> typ -> nat -> Prop :=
+  | measure1_typ : forall Γ A n,
       split_size Γ A n -> 
-      measure Γ A (3 * n + all_size A).
+      measure1 Γ A (3 * n + all_size A).
 
-Hint Constructors measure : core.
+Hint Constructors measure1 : core.
 
-Theorem measure_det : forall Γ A n1 n2,
-  measure Γ A n1 ->
-  measure Γ A n2 ->
+Theorem measure1_det : forall Γ A n1 n2,
+  measure1 Γ A n1 ->
+  measure1 Γ A n2 ->
   n1 = n2.
 Proof.
   intros Γ A n1 n2 Hm1.
@@ -355,13 +343,13 @@ Proof.
     eapply split_size_det in H; eauto.
 Qed.
 
-Theorem measure_total : forall Γ A,
+Theorem measure1_total : forall Γ A,
   a_wf_typ (awl_to_aenv Γ) A ->
-  exists n, measure Γ A n.
+  exists n, measure1 Γ A n.
 Proof.
   intros Γ A Hwf.
   dependent induction Hwf; auto;
-  try solve [exists (3 * 0 + 0); apply measure_typ; auto].
+  try solve [exists (3 * 0 + 0); apply measure1_typ; auto].
   - specialize (IHHwf1 Γ).
     specialize (IHHwf2 Γ).
     destruct IHHwf1 as [n1 Hm1]; auto.
@@ -376,7 +364,7 @@ Proof.
     destruct H1 as [n Hm]; auto.
     inversion Hm. subst.
     exists (3 * n0 + all_size (typ_all A)).
-    apply measure_typ. admit.
+    apply measure1_typ. admit.
   - specialize (IHHwf1 Γ).
     specialize (IHHwf2 Γ).
     destruct IHHwf1 as [n1 Hm1]; auto.
@@ -393,37 +381,37 @@ Proof.
     exists (3 * (n + n0) + all_size (typ_intersection A1 A2)). auto.
 Admitted.
 
-Inductive measure_work : aworklist -> work -> nat -> Prop :=
-  | measure_work_infer : forall Γ e c,
-      measure_work Γ (work_infer e c) 0
-  | measure_work_check : forall Γ e A,
-      measure_work Γ (work_check e A) 0
-  | measure_work_infabs : forall Γ A c n,
-      measure Γ A n ->
-      measure_work Γ (work_infabs A c) n
-  | measure_work_infabsunion : forall Γ A1 A2 c,
-      measure_work Γ (work_infabsunion A1 A2 c) 0
-  | measure_work_infapp : forall Γ A e c,
-      measure_work Γ (work_infapp A e c) 0
-  | measure_work_inftapp : forall Γ A1 A2 c,
-      measure_work Γ (work_inftapp A1 A2 c) 0
-  | measure_work_sub : forall Γ A1 A2 n1 n2,
-      measure Γ A1 n1 -> measure Γ A2 n2 ->
-      measure_work Γ (work_sub A1 A2) (n1 + n2)
-  | measure_work_inftappunion : forall Γ A1 A2 A3 c,
-      measure_work Γ (work_inftappunion A1 A2 A3 c) 0
-  | measure_work_unioninftapp : forall Γ A1 A2 c,
-      measure_work Γ (work_unioninftapp A1 A2 c) 0
-  | measure_work_unioninfabs : forall Γ A1 A2 c,
-      measure_work Γ (work_unioninfabs A1 A2 c) 0
-  | measure_work_apply : forall Γ c A,
-      measure_work Γ (work_apply c A) 0.
+Inductive measure1_work : aworklist -> work -> nat -> Prop :=
+  | measure1_work_infer : forall Γ e c,
+      measure1_work Γ (work_infer e c) 0
+  | measure1_work_check : forall Γ e A,
+      measure1_work Γ (work_check e A) 0
+  | measure1_work_infabs : forall Γ A c n,
+      measure1 Γ A n ->
+      measure1_work Γ (work_infabs A c) n
+  | measure1_work_infabsunion : forall Γ A1 A2 c,
+      measure1_work Γ (work_infabsunion A1 A2 c) 0
+  | measure1_work_infapp : forall Γ A e c,
+      measure1_work Γ (work_infapp A e c) 0
+  | measure1_work_inftapp : forall Γ A1 A2 c,
+      measure1_work Γ (work_inftapp A1 A2 c) 0
+  | measure1_work_sub : forall Γ A1 A2 n1 n2,
+      measure1 Γ A1 n1 -> measure1 Γ A2 n2 ->
+      measure1_work Γ (work_sub A1 A2) (n1 + n2)
+  | measure1_work_inftappunion : forall Γ A1 A2 A3 c,
+      measure1_work Γ (work_inftappunion A1 A2 A3 c) 0
+  | measure1_work_unioninftapp : forall Γ A1 A2 c,
+      measure1_work Γ (work_unioninftapp A1 A2 c) 0
+  | measure1_work_unioninfabs : forall Γ A1 A2 c,
+      measure1_work Γ (work_unioninfabs A1 A2 c) 0
+  | measure1_work_apply : forall Γ c A,
+      measure1_work Γ (work_apply c A) 0.
 
-Hint Constructors measure_work : core.
+Hint Constructors measure1_work : core.
 
-Theorem measure_work_det : forall Γ w n1 n2,
-  measure_work Γ w n1 ->
-  measure_work Γ w n2 ->
+Theorem measure1_work_det : forall Γ w n1 n2,
+  measure1_work Γ w n1 ->
+  measure1_work Γ w n2 ->
   n1 = n2.
 Proof.
   intros Γ w n1 n2 Hm1.
@@ -431,53 +419,53 @@ Proof.
   dependent induction Hm1;
   try solve [intros n' Hm; dependent destruction Hm; auto].
   - intros n' Hm. dependent destruction Hm; auto.
-    eapply measure_det in H; eauto.
+    eapply measure1_det in H; eauto.
   - intros n' Hm. dependent destruction Hm; auto.
-    eapply measure_det in H; eauto.
-    eapply measure_det in H0; eauto.
+    eapply measure1_det in H; eauto.
+    eapply measure1_det in H0; eauto.
 Qed.
 
-Theorem measure_work_total : forall Γ w,
+Theorem measure1_work_total : forall Γ w,
   a_wf_work (awl_to_aenv Γ) w ->
-  exists n, measure_work Γ w n.
+  exists n, measure1_work Γ w n.
 Proof.
   intros Γ w Hwf.
   dependent induction Hwf; auto;
   try solve [exists 0; auto].
-  - apply measure_total in H; auto.
+  - apply measure1_total in H; auto.
     destruct H as [n Hm].
     exists n. auto.
-  - apply measure_total in H; auto.
-    apply measure_total in H0; auto.
+  - apply measure1_total in H; auto.
+    apply measure1_total in H0; auto.
     destruct H as [n1 Hm1].
     destruct H0 as [n2 Hm2].
     exists (n1 + n2). auto.
 Qed.
 
-Inductive measure_wl : aworklist -> nat -> Prop :=
-  | measure_wl_empty : measure_wl aworklist_empty 0
-  | measure_wl_consevar : forall Γ X A1 A2 n,
-      measure_wl Γ n ->
-      measure_wl (aworklist_constvar Γ X (abind_bound A1 A2)) (1 + n)
-  | measure_wl_constvar : forall Γ X n,
-      measure_wl Γ n ->
-      measure_wl (aworklist_constvar Γ X abind_tvar_empty) n
-  | measure_wl_conssvar : forall Γ X n,
-      measure_wl Γ n ->
-      measure_wl (aworklist_constvar Γ X abind_stvar_empty) n
-  | measure_wl_consvar : forall Γ X A n,
-      measure_wl Γ n ->
-      measure_wl (aworklist_consvar Γ X A) n
-  | measure_wl_conswork : forall Γ w m n,
-      measure_work Γ w m ->
-      measure_wl Γ n ->
-      measure_wl (aworklist_conswork Γ w) (m + n).
+Inductive measure1_wl : aworklist -> nat -> Prop :=
+  | measure1_wl_empty : measure1_wl aworklist_empty 0
+  | measure1_wl_consevar : forall Γ X A1 A2 n,
+      measure1_wl Γ n ->
+      measure1_wl (aworklist_constvar Γ X (abind_bound A1 A2)) (1 + n)
+  | measure1_wl_constvar : forall Γ X n,
+      measure1_wl Γ n ->
+      measure1_wl (aworklist_constvar Γ X abind_tvar_empty) n
+  | measure1_wl_conssvar : forall Γ X n,
+      measure1_wl Γ n ->
+      measure1_wl (aworklist_constvar Γ X abind_stvar_empty) n
+  | measure1_wl_consvar : forall Γ X A n,
+      measure1_wl Γ n ->
+      measure1_wl (aworklist_consvar Γ X A) n
+  | measure1_wl_conswork : forall Γ w m n,
+      measure1_work Γ w m ->
+      measure1_wl Γ n ->
+      measure1_wl (aworklist_conswork Γ w) (m + n).
 
-Hint Constructors measure_wl : core.
+Hint Constructors measure1_wl : core.
 
-Theorem measure_wl_det : forall Γ n1 n2,
-  measure_wl Γ n1 ->
-  measure_wl Γ n2 ->
+Theorem measure1_wl_det : forall Γ n1 n2,
+  measure1_wl Γ n1 ->
+  measure1_wl Γ n2 ->
   n1 = n2.
 Proof.
   intros Γ n1 n2 Hm1.
@@ -485,11 +473,11 @@ Proof.
   dependent induction Hm1;
   try solve [intros n' Hm; dependent destruction Hm; auto].
   - intros n' Hm. dependent destruction Hm; auto.
-    eapply measure_work_det in H; eauto.
+    eapply measure1_work_det in H; eauto.
 Qed.
 
-Theorem measure_wl_total : forall Γ,
-  a_wf_wl Γ -> exists n, measure_wl Γ n.
+Theorem measure1_wl_total : forall Γ,
+  a_wf_wl Γ -> exists n, measure1_wl Γ n.
 Proof.
   intros Γ Hwf.
   dependent induction Hwf; auto;
@@ -497,7 +485,86 @@ Proof.
   - exists 0. auto.
   - destruct IHHwf as [n Hm]. exists (1 + n). auto.
   - destruct IHHwf as [n Hm].
-    apply measure_work_total in H; auto.
+    apply measure1_work_total in H; auto.
     destruct H as [m Hm'].
     exists (m + n). auto.
 Qed.
+
+Fixpoint measure2_wl (Γ : aworklist) : nat :=
+  match Γ with
+  | aworklist_empty => 0 
+  | aworklist_constvar Γ' _ _ => 1 + measure2_wl Γ'
+  | aworklist_consvar Γ' _ _ => 1 + measure2_wl Γ'
+  | aworklist_conswork Γ' _ => measure2_wl Γ'
+  end.
+
+Lemma decidablity_lemma : forall ne nj nm nmm Γ m,
+  ⊢ᵃ Γ ->
+  exp_size_wl Γ < ne ->
+  judge_size_wl Γ < nj ->
+  measure1_wl Γ m -> m < nm ->
+  measure2_wl Γ < nmm ->
+  Γ ⟶ᵃʷ⁎⋅ \/ ¬ Γ ⟶ᵃʷ⁎⋅.
+Proof.
+  intros ne; induction ne;
+  intro nj; induction nj;
+  intros nm; induction nm;
+  intros nmm; induction nmm;
+  try solve [intros; inversion H0];
+  try solve [intros; inversion H1];
+  try solve [intros; inversion H4].
+  intros. inversion H3.
+  intros Γ m Hwf He Hj Hm Hle Hmm.
+  dependent destruction Hwf; auto.
+  - simpl in Hmm. apply lt_S_n in Hmm.
+    dependent destruction Hm.
+    eapply IHnmm in Hmm as Jg; eauto.
+    destruct Jg as [Jg | Jg]; auto.
+    right. intro Hcontra.
+    dependent destruction Hcontra.
+    eapply Jg in Hcontra; eauto.
+  - simpl in Hmm. apply lt_S_n in Hmm.
+    dependent destruction Hm.
+    eapply IHnmm in Hmm as Jg; eauto.
+    destruct Jg as [Jg | Jg]; auto.
+    right. intro Hcontra.
+    dependent destruction Hcontra.
+    eapply Jg in Hcontra; eauto.
+  - simpl in Hmm. apply lt_S_n in Hmm.
+    dependent destruction Hm.
+    eapply IHnmm in Hmm as Jg; eauto.
+    destruct Jg as [Jg | Jg]; auto.
+    right. intro Hcontra.
+    dependent destruction Hcontra.
+    eapply Jg in Hcontra; eauto.
+  - simpl in Hmm. apply lt_S_n in Hmm.
+    dependent destruction Hm. apply lt_S_n in Hle.
+    eapply IHnmm in Hmm as Jg; eauto.
+    (* destruct Jg as [Jg | Jg]; auto. *)
+    admit. (* TODO *)
+  - dependent destruction H.
+    + simpl in He.
+      simpl in Hj. apply lt_S_n in Hj.
+      dependent destruction Hm.
+      simpl in Hmm.
+      dependent destruction H.
+      * simpl in He. apply lt_S_n in He.
+        dependent destruction H1. simpl in Hle.
+        assert (Hm': measure1_wl (aworklist_conswork Γ (work_apply c typ_unit)) n).
+        { replace n with (0 + n); auto. }
+        eapply IHne in Hm' as Jg; eauto.
+        destruct Jg as [Jg | Jg]; auto.
+        right. intro Hcontra.
+        dependent destruction Hcontra.
+        eapply Jg in Hcontra; eauto.
+      * simpl in He. apply lt_S_n in He.
+        dependent destruction H1. simpl in Hle.
+        assert (Hm': measure1_wl (aworklist_conswork Γ (work_apply c A)) n).
+        { replace n with (0 + n); auto. }
+        eapply IHne in Hm' as Jg; eauto.
+        destruct Jg as [Jg | Jg]; auto.
+        right. intro Hcontra.
+        dependent destruction Hcontra.
+        admit.
+        (* eapply Jg in Hcontra; eauto. *)
+Admitted.
