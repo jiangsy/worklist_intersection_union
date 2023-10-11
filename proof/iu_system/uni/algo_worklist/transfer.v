@@ -1139,24 +1139,34 @@ Proof with auto with Hdb_transfer.
   apply trans_typ_etvar_tvar_subst...
 Qed.
 
+Lemma ss_wf_typ_trans_typ : forall θ Aᵃ,
+  ss_wf_typ θ Aᵃ ->
+  exists Aᵈ, θ ⫦ᵗ Aᵃ ⇝ Aᵈ.
+Proof with eauto with Hdb_transfer.
+  intros. induction H...
+  - admit.
+  - admit.
+  - admit.
+Admitted.
 
-Lemma inst_typ_rev_subst : forall θ1 θ2 Bᵃ X Aᵃ A'ᵈ,
+
+Lemma trans_typ_rev_subst : forall θ1 θ2 Bᵃ Bᵈ X Aᵃ A'ᵈ,
   lc_typ Aᵃ -> 
   X `notin` dom (θ2 ++ θ1) ->
-  ss_wf_typ θ1 Bᵃ ->
+  θ1 ⫦ᵗ Bᵃ ⇝ Bᵈ ->
   θ2 ++ θ1 ⫦ᵗ {Bᵃ /ᵗ X} Aᵃ ⇝ A'ᵈ -> 
-  exists Aᵈ Bᵈ, {Bᵈ /ᵗ X} Aᵈ = A'ᵈ /\ θ2 ++ (X, dbind_tvar_empty) :: θ1 ⫦ᵗ Aᵃ ⇝ Aᵈ /\ θ1 ⫦ᵗ Bᵃ ⇝ Bᵈ.
+  exists Aᵈ, {Bᵈ /ᵗ X} Aᵈ = A'ᵈ /\ θ2 ++ (X, dbind_tvar_empty) :: θ1 ⫦ᵗ Aᵃ ⇝ Aᵈ.
 Proof with eauto with Hdb_transfer.
   intros * Hlc Hfv Hwft Hinst. 
   generalize dependent θ2. generalize dependent X. generalize dependent A'ᵈ.
   dependent induction Hlc; simpl in *; intros.
-  (* - dependent destruction Hinst. 
+  - dependent destruction Hinst. 
     exists typ_unit...  
   - dependent destruction Hinst. 
     exists typ_top... 
   - dependent destruction Hinst;
     exists typ_bot...
-  - destruct (X0 == X).
+  (* - destruct (X0 == X).
     (* - exists (ld_t_var_f x5).
     destruct (x5 == x).  
     + subst. simpl. destruct (x == x).
@@ -1175,7 +1185,8 @@ Proof with eauto with Hdb_transfer.
       * econstructor... 
     + exists A'ᵈ. split.
       * admit.
-      * admit.
+      * admit. *)
+  - admit.
   - dependent destruction Hinst.
     apply IHHlc1 in Hinst1... destruct Hinst1 as [A1'ᵈ]. 
     apply IHHlc2 in Hinst2... destruct Hinst2 as [A2'ᵈ]. 
@@ -1191,12 +1202,15 @@ Proof with eauto with Hdb_transfer.
     rewrite subst_tvar_in_typ_close_typ_wrt_typ... 
     split.
     + apply f_equal. erewrite typ_open_r_close_l... intuition.
-    + eapply inst_typ__all with (L:=L); intros.
+    + eapply trans_typ__all with (L:=L); intros.
       intuition.
       erewrite subst_tvar_in_typ_intro by auto.
       erewrite (subst_tvar_in_typ_intro X0 (close_typ_wrt_typ X0 Aᵈ)) by apply close_typ_notin.
-      apply inst_typ_rename_cons...
+      apply trans_typ_rename_cons...
       rewrite open_typ_wrt_typ_close_typ_wrt_typ...
+      admit.
+    + admit.
+    + admit.
   - dependent destruction Hinst.
     apply IHHlc1 in Hinst1... destruct Hinst1 as [A1'ᵈ]. 
     apply IHHlc2 in Hinst2... destruct Hinst2 as [A2'ᵈ]. 
@@ -1206,20 +1220,20 @@ Proof with eauto with Hdb_transfer.
     apply IHHlc1 in Hinst1... destruct Hinst1 as [A1'ᵈ]. 
     apply IHHlc2 in Hinst2... destruct Hinst2 as [A2'ᵈ]. 
     exists (typ_intersection A1'ᵈ A2'ᵈ); simpl...
-    intuition... subst... *)
+    intuition... subst...
 Admitted.
 
 
-Lemma inst_typ_rev_subs_cons : forall θ Bᵃ X Aᵃ A'ᵈ,
+Lemma trans_typ_rev_subs_cons : forall θ Bᵃ Bᵈ X Aᵃ A'ᵈ,
   lc_typ Aᵃ -> 
   X `notin` dom θ ->
-  ss_wf_typ θ Bᵃ ->
+  θ ⫦ᵗ Bᵃ ⇝ Bᵈ ->
   θ ⫦ᵗ {Bᵃ /ᵗ X} Aᵃ ⇝ A'ᵈ -> 
-  exists Aᵈ Bᵈ, {Bᵈ /ᵗ X} Aᵈ = A'ᵈ /\ (X, dbind_tvar_empty) :: θ ⫦ᵗ Aᵃ ⇝ Aᵈ /\ θ ⫦ᵗ Bᵃ ⇝ Bᵈ.
+  exists Aᵈ, {Bᵈ /ᵗ X} Aᵈ = A'ᵈ /\ (X, dbind_tvar_empty) :: θ ⫦ᵗ Aᵃ ⇝ Aᵈ.
 Proof with eauto with Hdb_transfer.
   intros.
   rewrite_env (nil ++ θ) in H2.
-  apply inst_typ_rev_subst in H2...
+  eapply trans_typ_rev_subst in H2...
 Qed.
 
 
