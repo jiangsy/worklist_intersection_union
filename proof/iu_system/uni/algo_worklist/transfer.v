@@ -1150,6 +1150,10 @@ Proof with eauto with Hdb_transfer.
 Admitted.
 
 
+Hint Resolve trans_typ_lc_atyp : Hdb_transfer.
+Hint Resolve trans_typ_lc_dtyp : Hdb_transfer.
+
+
 Lemma trans_typ_rev_subst : forall θ1 θ2 Bᵃ Bᵈ X Aᵃ A'ᵈ,
   lc_typ Aᵃ -> 
   X `notin` dom (θ2 ++ θ1) ->
@@ -1166,6 +1170,12 @@ Proof with eauto with Hdb_transfer.
     exists typ_top... 
   - dependent destruction Hinst;
     exists typ_bot...
+  - destruct (X0 == X) in *; destruct (X == X0) in *; subst; try contradiction.
+    + exists (` X0). simpl. unfold eq_dec. destruct (EqDec_eq_of_X X0 X0).
+      * split. admit. econstructor... 
+      * contradiction.
+    + exists A'ᵈ. 
+      admit.
   (* - destruct (X0 == X).
     (* - exists (ld_t_var_f x5).
     destruct (x5 == x).  
@@ -1186,7 +1196,6 @@ Proof with eauto with Hdb_transfer.
     + exists A'ᵈ. split.
       * admit.
       * admit. *)
-  - admit.
   - dependent destruction Hinst.
     apply IHHlc1 in Hinst1... destruct Hinst1 as [A1'ᵈ]. 
     apply IHHlc2 in Hinst2... destruct Hinst2 as [A2'ᵈ]. 
@@ -1200,17 +1209,14 @@ Proof with eauto with Hdb_transfer.
     destruct H1 as [Aᵈ].
     exists (typ_all (close_typ_wrt_typ X0 Aᵈ)). simpl. 
     rewrite subst_tvar_in_typ_close_typ_wrt_typ... 
-    split.
+    split...
     + apply f_equal. erewrite typ_open_r_close_l... intuition.
-    + eapply trans_typ__all with (L:=L); intros.
+    + eapply trans_typ__all with (L:=L `union` dom (θ2 ++ (X, ▫) :: θ1)); intros.
       intuition.
       erewrite subst_tvar_in_typ_intro by auto.
       erewrite (subst_tvar_in_typ_intro X0 (close_typ_wrt_typ X0 Aᵈ)) by apply close_typ_notin.
       apply trans_typ_rename_cons...
       rewrite open_typ_wrt_typ_close_typ_wrt_typ...
-      admit.
-    + admit.
-    + admit.
   - dependent destruction Hinst.
     apply IHHlc1 in Hinst1... destruct Hinst1 as [A1'ᵈ]. 
     apply IHHlc2 in Hinst2... destruct Hinst2 as [A2'ᵈ]. 

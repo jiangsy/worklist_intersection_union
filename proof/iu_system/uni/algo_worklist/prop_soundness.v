@@ -165,15 +165,15 @@ Ltac trans_all_typ :=
 
 (* define a extended relation of a_update_bound extended with Ω and θ ? *)
 
-(* does not know if it works  *)
+▹
 Lemma a_update_bound_transfer_same_dworklist: forall Γ Ω θ X A E m Γ1 Γ2 LB UB,
   a_update_bound Γ X A m E Γ1 Γ2 LB UB ->
   trans_worklist nil (awl_rev_app Γ2 (aworklist_constvar (awl_rev_app (aenv_to_awl E) Γ1) X (abind_bound LB UB)) )  Ω θ ->
-  exists θ', trans_worklist nil Γ Ω θ' /\ (forall X b, binds X b θ <-> binds X b θ').
-Proof.
+  exists θ', trans_worklist nil Γ Ω θ'.
+Proof with auto with Hdb_a_wl_red_soundness.
   intros. generalize dependent θ. generalize dependent Ω. dependent induction H.
+  - intros. simpl in *. exists θ. auto. admit. 
   - intros. simpl in *. admit.
-  - admit.
   - admit.
   - intros. admit.
   - admit.
@@ -284,16 +284,17 @@ Proof with eauto with Hdb_a_wl_red_soundness.
       admit.
       * dependent destruction Hdred...
   (* ^X < A1 -> A2 *)
-  - inst_cofinites_by L using_name X.
-    inst_cofinites_by (L `union` singleton X0) using_name X.
+  - inst_cofinites_by L using_name X1.
+    inst_cofinites_by (L `union` singleton X1) using_name X2.
     admit.  
   (* A1 -> A2 < ^X  *)
-  - admit.
+  - inst_cofinites_by L using_name X1.
+    inst_cofinites_by (L `union` singleton X1) using_name X2.
+    admit.
   (* ^X < ^Y  *)
   - assert ( ⊢ᵃ awl_rev_app Γ3 (aworklist_constvar (awl_rev_app (aenv_to_awl E) Γ2) X (abind_bound LB UB))) by admit.
     _apply_IH_a_wl_red.
     eapply a_update_bound_transfer_same_dworklist in Htrans...
-    exists Ω... split... 
     admit.
   (* ^X < ^Y  *)
   - admit.
@@ -418,7 +419,9 @@ Proof with eauto with Hdb_a_wl_red_soundness.
     split...
     exists θ...
   (* ^X ▹ _ *)
-  - admit.
+  - inst_cofinites_by L using_name X1.
+    inst_cofinites_by (L `union` singleton X1) using_name X2.
+    admit.
   - exists (work_infer (exp_tapp eᵈ Bᵈ) cᵈ ⫤ Ω)%dworklist.
     split...
     destruct_d_wl_del_red...
