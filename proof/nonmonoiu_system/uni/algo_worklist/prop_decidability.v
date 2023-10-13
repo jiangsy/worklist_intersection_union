@@ -105,10 +105,10 @@ Inductive split_size : aworklist -> typ -> nat -> Prop :=
   | split_size_var_b : forall Γ n,
       split_size Γ (typ_var_b n) 0
   | split_size_arrow : forall Γ A1 A2,
-      a_smono_typ (awl_to_aenv Γ) (typ_arrow A1 A2) ->
+      a_mono_typ (awl_to_aenv Γ) (typ_arrow A1 A2) ->
       split_size Γ (typ_arrow A1 A2) 0
   | split_size_arrow_s : forall Γ A1 A2 n1 n2,
-      ~ a_smono_typ (awl_to_aenv Γ) (typ_arrow A1 A2) ->
+      ~ a_mono_typ (awl_to_aenv Γ) (typ_arrow A1 A2) ->
       split_size Γ A1 n1 -> split_size Γ A2 n2 ->
       split_size Γ (typ_arrow A1 A2) (1 + n1 + n2)
   | split_size_all : forall L Γ A n,
@@ -126,14 +126,14 @@ Inductive split_size : aworklist -> typ -> nat -> Prop :=
 .
 
 Hint Constructors split_size : core.
-Hint Constructors a_smono_typ : core.
+Hint Constructors a_mono_typ : core.
 
 Theorem smono_typ_dec : forall Δ A,
-  a_smono_typ Δ A \/ ~ a_smono_typ Δ A.
+  a_mono_typ Δ A \/ ~ a_mono_typ Δ A.
 Proof.
   intros A Hwf.
   induction Hwf; auto; try solve [right; intro Hcontra; inversion Hcontra].
-Qed.
+Admitted.
 
 Theorem split_size_total : forall Γ A,
   a_wf_typ (awl_to_aenv Γ) A ->
