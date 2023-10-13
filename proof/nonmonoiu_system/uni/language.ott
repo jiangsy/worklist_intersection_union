@@ -527,15 +527,15 @@ dE |-m A2
 --------------- :: arrow
 dE |-m A1 -> A2
 
-dE |-m A1 
-dE |-m A2 
---------------- :: intersection
-dE |-m A1 ⊓ A2
+% dE |-m A1 
+% dE |-m A2 
+% --------------- :: intersection
+% dE |-m A1 ⊓ A2
 
-dE |-m A1 
-dE |-m A2 
---------------- :: union
-dE |-m A1 ⊔ A2
+% dE |-m A1 
+% dE |-m A2 
+% --------------- :: union
+% dE |-m A1 ⊔ A2
 
 
 
@@ -765,14 +765,14 @@ dE ||- A2 <: B
 dE ||- A1 ⊔ A2 <: B
 
 
-defns 
-J_a_strong_mono_typ :: '' ::= 
+% defns 
+% J_a_strong_mono_typ :: '' ::= 
 
-defn 
-smono aE A :: :: a_smono_typ :: 'a_s_monotyp__' by 
+% defn 
+% smono aE A :: :: a_smono_typ :: 'a_s_monotyp__' by 
 
----------------- :: unit
-smono aE UNIT
+% ---------------- :: unit
+% smono aE UNIT
 
 defns
 J_a_etvars_in_worklist :: '' ::=
@@ -864,15 +864,15 @@ aE |-m A2
 --------------- :: arrow
 aE |-m A1 -> A2
 
-aE |-m A1 
-aE |-m A2 
---------------- :: intersection
-aE |-m A1 ⊓ A2
+% aE |-m A1 
+% aE |-m A2 
+% --------------- :: intersection
+% aE |-m A1 ⊓ A2
 
-aE |-m A1 
-aE |-m A2 
---------------- :: union
-aE |-m A1 ⊔ A2
+% aE |-m A1 
+% aE |-m A2 
+% --------------- :: union
+% aE |-m A1 ⊔ A2
 
 
 defns

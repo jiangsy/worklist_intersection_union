@@ -174,8 +174,6 @@ Lemma d_mono_type_order_0 : forall Ψ A,
 Proof.
   intros; induction H; simpl; auto.
   - rewrite IHd_mono_typ1. rewrite IHd_mono_typ2. auto.
-  - rewrite IHd_mono_typ1. rewrite IHd_mono_typ2. auto.
-  - rewrite IHd_mono_typ1. rewrite IHd_mono_typ2. auto.
 Qed.
 
 Lemma d_open_rec_mono_same_order : forall Ψ T1 T2 n,
@@ -444,8 +442,6 @@ Proof.
   intros. induction H; try solve [constructor; constructor].
   - econstructor. econstructor. eapply d_mono_typ__tvar; auto.
   - apply d_monoord__base. apply d_ordmono__arr; auto.
-  - apply d_monoord__inter; auto.
-  - apply d_monoord__union; auto.
 Qed.
 
 
@@ -455,12 +451,12 @@ Proof.
   intros. induction H; auto.
 Qed.
 
-Lemma d_mono_ordiu_sound : forall Ψ A1,
+(* Lemma d_mono_ordiu_sound : forall Ψ A1,
   d_mono_ordiu Ψ A1 -> d_mono_typ Ψ A1.
 Proof.
   intros. induction H; auto.
   - apply d_ord_mono_sound. auto.
-Qed.
+Qed. *)
 
 
 Theorem d_sub_tvar_ind_open_subst : forall Ψ F X A B,
@@ -573,8 +569,8 @@ Proof.
       apply d_sub_tvar_ind_open_subst with (Ψ:= Ψ) (B:=T1) (F:=nil) in H; auto.
       * rewrite typ_subst_open_var in H; eauto.
       * simpl. constructor; auto.
-  - inversion Hmono. inversion Hwft2. auto.
-  - inversion Hmono. inversion Hwft2. auto.
+  - inversion Hmono.
+  - inversion Hmono.
 Qed.
 
 
@@ -723,7 +719,6 @@ Proof.
         -- destruct n.
            ++ unfold open_typ_wrt_typ in H, H0, Heq. simpl in *.
               subst. dependent destruction H5.
-              eapply d_sub_mono_stvar_false in H2; auto.
            ++ unfold open_typ_wrt_typ in Heq. simpl in Heq.
               inversion Heq.
         -- dependent destruction Heq. unfold open_typ_wrt_typ in *.
@@ -733,7 +728,6 @@ Proof.
         -- destruct n.
            ++ unfold open_typ_wrt_typ in H, H0, Heq. simpl in *.
               subst. dependent destruction H5.
-              apply d_sub_mono_stvar_false in H2; auto.
            ++ unfold open_typ_wrt_typ in Heq. simpl in Heq.
              inversion Heq.
         -- dependent destruction Heq. unfold open_typ_wrt_typ in *.
@@ -743,7 +737,6 @@ Proof.
         -- destruct n.
            ++ unfold open_typ_wrt_typ in H, H0, Heq. simpl in *.
               subst. dependent destruction H4.
-              apply d_sub_mono_stvar_false in H2_; auto.
            ++ unfold open_typ_wrt_typ in Heq. simpl in Heq.
              inversion Heq.
         -- dependent destruction Heq. unfold open_typ_wrt_typ in *.
@@ -761,8 +754,6 @@ Proof.
   - case_eq (X0 == X); intros; subst*; try solve_notin.
     assert (X ~ ▪ ∈ (Ψ2 ++ (X, ▪) :: Ψ1)) by eauto.
     exfalso. forwards*: binds_two_thing_false X.
-  - dependent destruction H; auto... apply notin_union; eauto.
-  - dependent destruction H; auto... apply notin_union; eauto.
   - dependent destruction H; auto... apply notin_union; eauto.
 Qed.
 
@@ -1190,7 +1181,6 @@ Proof.
         -- destruct n.
            ++ unfold open_typ_wrt_typ in Heq. simpl in Heq.
               subst. dependent destruction H4.
-              eapply d_sub_mono_bot_false with (A:=A1); eauto.
            ++ inversion Heq.
         -- inversion Heq. subst. eapply IHn2 with (L:=L); eauto.
            ++ unfold open_typ_wrt_typ. lia.
@@ -1200,7 +1190,6 @@ Proof.
         -- destruct n.
            ++ unfold open_typ_wrt_typ in Heq. simpl in Heq.
               subst. dependent destruction H4.
-              eapply d_sub_mono_bot_false with (A:=A2); eauto.
            ++ inversion Heq.
         -- inversion Heq. subst. eapply IHn2 with (L:=L); eauto.
            ++ unfold open_typ_wrt_typ. lia.
@@ -1210,7 +1199,6 @@ Proof.
         -- destruct n.
            ++ unfold open_typ_wrt_typ in Heq. simpl in Heq.
               subst. dependent destruction H3.
-              eapply d_sub_mono_bot_false with (A:=A1); eauto.
            ++ inversion Heq.
         -- inversion Heq. subst. eapply IHn2 with (L:=L); eauto.
            ++ unfold open_typ_wrt_typ. lia.
