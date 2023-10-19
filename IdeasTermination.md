@@ -7,7 +7,7 @@ I think that this makes it easier to formaly state some theorems. I think it is 
 formulate things in a big-step style, but this may require some more thought and maybe refactoring.
 
 Secondly there are a few  different, possibly complementary ideas. Maybe not all ideas are useful. 
-I wish to talk talk about 2 things below:
+I wish to talk about 2 things below:
 
 1. First, is a high-level sketch of the proof structure.
 
