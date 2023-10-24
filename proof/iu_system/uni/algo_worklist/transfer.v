@@ -1456,18 +1456,67 @@ Lemma ss_wf_typ_trans_typ : forall θ Aᵃ,
   exists Aᵈ, θ ⫦ᵗ Aᵃ ⇝ Aᵈ.
 Proof with eauto with Hdb_transfer.
   intros. induction H...
+  - exists*. econstructor. admit.
   - admit.
   - admit.
   - admit.
-Admitted.
+Admitted. (* The lemma does not hold without wf_ss θ condition *)
 
 
 Hint Resolve trans_typ_lc_atyp : Hdb_transfer.
 Hint Resolve trans_typ_lc_dtyp : Hdb_transfer.
 
+Lemma ss_to_denv_smaller_dom : forall θ,
+    dom (ss_to_denv θ) [<=] dom θ.
+Proof with simpl; try fsetdec.
+  intros. induction θ... destruct a. destruct d...
+Qed.
+
+Lemma d_mono_typ_ftvar : forall θ A,
+    d_mono_typ θ A -> ftvar_in_typ A [<=] dom θ.
+Proof with simpl; try fsetdec.
+  intros * Hd. inductions Hd...
+  - apply binds_In in H...
+Qed.
+
+Corollary d_mono_typ_in_ss_to_denv_ftvar : forall θ A,
+    d_mono_typ (ss_to_denv θ) A -> ftvar_in_typ A [<=] dom θ.
+Proof with simpl; try fsetdec.
+  intros * Hd.
+  lets: ss_to_denv_smaller_dom θ.
+  forwards~: d_mono_typ_ftvar (ss_to_denv θ) A...
+Qed.
+
+Lemma wf_ss_ftvar : forall θ X A,
+    wf_ss θ -> X ~ A ∈ θ -> ftvar_in_typ A [<=] dom θ.
+Proof with simpl; fsetdec.
+  intros * Hw Hb. induction Hw; intros; try solve_by_invert.
+  - inverts Hb.
+    + inverts H0.
+    + forwards~: IHHw...
+  - inverts Hb.
+    + inverts H0.
+    + forwards~: IHHw...
+  - inverts Hb.
+    + inverts H1. forwards: d_mono_typ_in_ss_to_denv_ftvar H0...
+    + forwards~: IHHw...
+Qed.
+
 Lemma trans_typ_ftvar : forall θ X A,
     θ ⫦ᵗ ` X ⇝ A -> ftvar_in_typ A [<=] dom θ.
-Admitted.
+Proof with simpl; try fsetdec.
+  introv Ht. induction Ht...
+  - apply binds_In in H0...
+  - apply binds_In in H0...
+  - applys* wf_ss_ftvar.
+  - pick fresh Y. inst_cofinites_with Y.
+    forwards: ftvar_in_typ_open_typ_wrt_typ_lower A1ᵈ ` Y.
+    forwards Ha: KeySetProperties.remove_equal (ftvar_in_typ A1ᵈ) Y. solve_notin.
+    assert (Hl: ftvar_in_typ A1ᵈ [<=] dom ((Y, ▫) :: θ)) by fsetdec.
+    forwards* Hr: AtomSetNotin.D.F.remove_s_m Y Y Hl.
+    forwards He: KeySetProperties.remove_add (dom θ) Y. solve_notin.
+    simpl in Hr. clear H H0 H1 Fr Hl. fsetdec.
+Qed.
 
 Lemma trans_typ_rev_subst : forall θ1 θ2 Bᵃ Bᵈ X Aᵃ A'ᵈ,
   lc_typ Aᵃ ->
