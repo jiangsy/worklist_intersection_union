@@ -1002,47 +1002,49 @@ Qed.
 
 Inductive D : nat -> aworklist -> Prop :=
   | D_base : forall n Γ, judge_size_wl Γ <= n -> D n Γ
-  | D_step : forall n Γ,
-      (forall Γ', a_wl_red_ss Γ Γ' -> D n Γ') -> D n Γ.
+  | D_step : forall n n' Γ,
+      (forall Γ', a_wl_red_ss Γ Γ' -> D n Γ') -> D n' Γ.
 
 Theorem test1 : forall N A B Γ,
   typ_size A + typ_size B < N ->
   a_wf_typ (awl_to_aenv Γ) A -> a_wf_typ (awl_to_aenv Γ) B ->
   a_wf_wl Γ -> D (judge_size_wl Γ) (aworklist_conswork Γ (work_sub A B)).
 Proof.
-  intros N; dependent induction N;
+  intros N; induction N;
   intros A B Γ Hsize HwfA HwfB Hwfl;
   try solve [inversion Hsize]. destruct A.
   - destruct B.
-    + apply D_step. intros Γ' Hred.
+    + eapply D_step. intros Γ' Hred.
       dependent destruction Hred.
       apply D_base. auto.
-    + apply D_step. intros Γ' Hred.
+    + eapply D_step. intros Γ' Hred.
       dependent destruction Hred.
-      apply D_base. auto.
-    + apply D_step. intros Γ' Hred.
+      eapply D_base. auto.
+    + eapply D_step. intros Γ' Hred.
       dependent destruction Hred.
-    + apply D_step. intros Γ' Hred.
+    + eapply D_step. intros Γ' Hred.
       dependent destruction Hred.
     + admit.
-    + apply D_step. intros Γ' Hred.
+    + eapply D_step. intros Γ' Hred.
       dependent destruction Hred.
-    + apply D_step. intros Γ' Hred.
+    + eapply D_step. intros Γ' Hred.
       dependent destruction Hred.
-    + apply D_step. intros Γ' Hred.
+    + eapply D_step. intros Γ' Hred.
       dependent destruction Hred.
       eapply IHN; eauto. simpl in *. lia.
       dependent destruction HwfB. auto.
       eapply IHN; eauto. simpl in *. lia.
       dependent destruction HwfB. auto.
-    + apply D_step. intros Γ' Hred.
+    + eapply D_step. intros Γ' Hred.
       dependent destruction Hred.
       simpl in *.
       eapply IHN. eauto. simpl in *. lia.
-      eapply IHN; eauto. simpl in *. lia.
-      dependent destruction HwfB. auto.
-      eapply IHN; eauto. simpl in *. lia.
-      dependent destruction HwfB. auto.
+      admit.
+      admit.
+      admit.
+Admitted.
+
+
 
 
 Inductive all_br_dec_infabs : typ -> Prop :=
