@@ -890,6 +890,92 @@ Proof.
         -- apply H0 in H2. contradiction.
 Admitted. *)
 
+Inductive D_infabs : nat -> aworklist -> Prop :=
+  | D_infabs_apply : forall n Γ c T1 T2,
+      judge_size_wl Γ <= n ->
+      D_infabs n (aworklist_conswork Γ (work_apply c (typ_arrow T1 T2)))
+  | D_infabs_step : forall n Γ,
+      (forall Γ', a_wl_red_ss Γ Γ' -> D_infabs n Γ') -> D_infabs n Γ.
+
+Theorem test :
+  forall A, lc_typ A ->
+  forall Γ, a_wf_wl Γ ->
+  forall c, D_infabs (judge_size_wl Γ) (aworklist_conswork Γ (work_infabs A c)).
+Proof.
+  induction 1; intros Γ Hwfl c.
+  - apply D_infabs_step. intros Γ' Hred.
+    dependent destruction Hred.
+  - apply D_infabs_step. intros Γ' Hred.
+    dependent destruction Hred.
+  - apply D_infabs_step. intros Γ' Hred.
+    dependent destruction Hred.
+    apply D_infabs_step. intros Γ' Hred.
+    dependent destruction Hred.
+    apply D_infabs_apply. simpl. lia.
+  - admit.
+  - apply D_infabs_step. intros Γ' Hred.
+    dependent destruction Hred.
+    apply D_infabs_apply. simpl. lia.
+  - apply D_infabs_step. intros Γ' Hred.
+    dependent destruction Hred.
+    assert (Heq: judge_size_wl Γ = judge_size_wl (aworklist_constvar Γ X (abind_bound typ_bot typ_top))).
+      { simpl. auto. }
+    rewrite Heq.
+    apply H0. admit.
+  - apply D_infabs_step. intros Γ' Hred.
+    dependent destruction Hred.
+    apply IHlc_typ1. auto.
+  - apply D_infabs_step. intros Γ' Hred.
+    dependent destruction Hred.
+    apply IHlc_typ1. auto.
+    apply IHlc_typ2. auto.
+Admitted.
+
+Inductive D : nat -> aworklist -> Prop :=
+  | D_base : forall n Γ, judge_size_wl Γ <= n -> D n Γ
+  | D_step : forall n Γ,
+      (forall Γ', a_wl_red_ss Γ Γ' -> D n Γ') -> D n Γ.
+
+Theorem test1 : forall N A B Γ,
+  typ_size A + typ_size B < N ->
+  a_wf_typ (awl_to_aenv Γ) A -> a_wf_typ (awl_to_aenv Γ) B ->
+  a_wf_wl Γ -> D (judge_size_wl Γ) (aworklist_conswork Γ (work_sub A B)).
+Proof.
+  intros N; dependent induction N;
+  intros A B Γ Hsize HwfA HwfB Hwfl;
+  try solve [inversion Hsize]. destruct A.
+  - destruct B.
+    + apply D_step. intros Γ' Hred.
+      dependent destruction Hred.
+      apply D_base. auto.
+    + apply D_step. intros Γ' Hred.
+      dependent destruction Hred.
+      apply D_base. auto.
+    + apply D_step. intros Γ' Hred.
+      dependent destruction Hred.
+    + apply D_step. intros Γ' Hred.
+      dependent destruction Hred.
+    + admit.
+    + apply D_step. intros Γ' Hred.
+      dependent destruction Hred.
+    + apply D_step. intros Γ' Hred.
+      dependent destruction Hred.
+    + apply D_step. intros Γ' Hred.
+      dependent destruction Hred.
+      eapply IHN; eauto. simpl in *. lia.
+      dependent destruction HwfB. auto.
+      eapply IHN; eauto. simpl in *. lia.
+      dependent destruction HwfB. auto.
+    + apply D_step. intros Γ' Hred.
+      dependent destruction Hred.
+      simpl in *.
+      eapply IHN. eauto. simpl in *. lia.
+      eapply IHN; eauto. simpl in *. lia.
+      dependent destruction HwfB. auto.
+      eapply IHN; eauto. simpl in *. lia.
+      dependent destruction HwfB. auto.
+
+
 Inductive all_br_dec_infabs : typ -> Prop :=
   | all_br_dec_infabs_A : forall A,
       (forall A1 A2, A <> typ_intersection A1 A2) ->
