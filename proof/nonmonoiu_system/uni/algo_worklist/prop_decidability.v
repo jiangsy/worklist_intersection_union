@@ -931,6 +931,75 @@ Proof.
     apply IHlc_typ2. auto.
 Admitted.
 
+Theorem test2 : forall A, lc_typ A ->
+  forall Γ c,
+  D_infabs (judge_size_wl Γ) (aworklist_conswork Γ (work_infabs A c)) ->
+  (exists Γ' c' T1 T2,
+      a_wl_mul_red (aworklist_conswork Γ (work_infabs A c))
+                   (aworklist_conswork Γ' (work_apply c' (typ_arrow T1 T2))) /\
+      judge_size_wl Γ' <= judge_size_wl Γ) \/
+    (a_wl_red (aworklist_conswork Γ (work_infabs A c)) -> False).
+Proof.
+  intros A Hlct. dependent induction Hlct; intros Γ c Hwfl.
+  - right. intros Hcontra. dependent destruction Hcontra.
+  - right. intros Hcontra. dependent destruction Hcontra.
+  - left. exists Γ, c, typ_top, typ_bot.
+    split; auto. eapply a_wl_mul_red__step; eauto.
+  - admit. (* I need to write the right small-step version first. *)
+  - left. exists Γ, c, A1, A2.
+    split; auto. eapply a_wl_mul_red__step; eauto.
+  - dependent destruction Hwfl.
+    inst_cofinites_by (dom (awl_to_aenv Γ)).
+    assert (H': D_infabs (judge_size_wl Γ) (aworklist_conswork  (aworklist_constvar Γ x (abind_bound typ_bot typ_top)) (work_infabs (open_typ_wrt_typ A (typ_var_f x)) c))).
+      { apply H1. eapply a_wl_red_ss__infabs_all with (L:=dom (awl_to_aenv Γ)). auto. }
+    assert (Heq: judge_size_wl Γ = judge_size_wl (aworklist_constvar Γ x (abind_bound typ_bot typ_top))).
+      { simpl. auto. }
+    rewrite Heq in H'.
+    eapply H0 in H'. destruct H' as [[Γ' [c' [T1 [T2 []]]]]| ]; auto.
+    + left. exists Γ', c', T1, T2. split; auto.
+      eapply a_wl_mul_red__step; eauto.
+    + right. intros Hcontra. dependent destruction Hcontra.
+      specialize H3 with x.
+      apply H2 in H3. contradiction. admit.
+  - dependent destruction Hwfl.
+    (* specialize H with (Γ' := (aworklist_conswork Γ (work_infabs A1  (  (cont_infabsunion A2 c)  ) ))). *)
+    assert (H': D_infabs (judge_size_wl Γ) (work_infabs A1 (cont_infabsunion A2 c) ⫤ Γ)).
+      { auto. }
+    apply IHHlct1 in H'. destruct H' as [[Γ' [c' [T1 [T2 []]]]]| ]; auto.
+    + left. exists Γ', c', T1, T2. split; auto.
+      eapply a_wl_mul_red__step; eauto.
+    + right. intros Hcontra. dependent destruction Hcontra.
+      apply H0 in Hcontra. contradiction.
+  - dependent destruction Hwfl.
+    assert (H': D_infabs (judge_size_wl Γ) (work_infabs A1 c ⫤ Γ)).
+      { auto. }
+      assert (H'': D_infabs (judge_size_wl Γ) (work_infabs A2 c ⫤ Γ)).
+      { auto. }
+    apply IHHlct1 in H'. destruct H' as [[Γ' [c' [T1 [T2 []]]]]| ]; auto.
+    + left. exists Γ', c', T1, T2. split; auto.
+      eapply a_wl_mul_red__step with (Γ2 := (aworklist_conswork Γ (work_infabs A1 c))); eauto.
+    + apply IHHlct2 in H''. destruct H'' as [[Γ' [c' [T1 [T2 []]]]]| ]; auto.
+      * left. exists Γ', c', T1, T2. split; auto.
+        eapply a_wl_mul_red__step with (Γ2 := (aworklist_conswork Γ (work_infabs A2 c))); eauto.
+      * right. intros Hcontra. dependent destruction Hcontra.
+        -- apply H0 in Hcontra. contradiction.
+        -- apply H1 in Hcontra. contradiction.
+Admitted.
+
+Theorem test3: forall A Γ c,
+  lc_typ A -> a_wf_wl Γ ->
+  (exists Γ' c' T1 T2,
+      a_wl_mul_red (aworklist_conswork Γ (work_infabs A c))
+                   (aworklist_conswork Γ' (work_apply c' (typ_arrow T1 T2))) /\
+      judge_size_wl Γ' <= judge_size_wl Γ) \/
+    (a_wl_red (aworklist_conswork Γ (work_infabs A c)) -> False).
+Proof.
+  intros A Γ c Hlct Hwfl.
+  eapply test2; eauto.
+  eapply test; eauto.
+Qed.
+
+
 Inductive D : nat -> aworklist -> Prop :=
   | D_base : forall n Γ, judge_size_wl Γ <= n -> D n Γ
   | D_step : forall n Γ,
