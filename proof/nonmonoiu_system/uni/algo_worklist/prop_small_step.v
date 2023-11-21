@@ -67,4 +67,4 @@ Proof.
     eapply a_wl_mul_red__step; eauto.
   - pick fresh x1. inst_cofinites_with x1.
     pick fresh x2. inst_cofinites_with x2.
-    
+Admitted.
