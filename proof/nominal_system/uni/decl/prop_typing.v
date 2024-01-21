@@ -205,24 +205,8 @@ Proof with eauto using d_mono_typ_subenv.
       constructor. auto. }
     specialize (H2 H5).
     auto.
-  - intros. forwards: IHHsub H4.
-    pick fresh X and apply d_sub__alll; try applys H5...
-  - intros.
-    apply d_sub__intersection1; auto.
-  - intros.
-    apply d_sub__intersection2; auto.
-    eapply d_subenv_wf_typ; eauto.
-  - intros.
-    apply d_sub__intersection3; auto.
-    eapply d_subenv_wf_typ; eauto.
-  - intros.
-    apply d_sub__union1; auto.
-    eapply d_subenv_wf_typ; eauto.
-  - intros.
-    apply d_sub__union2; auto.
-    eapply d_subenv_wf_typ; eauto.
-  - intros.
-    apply d_sub__union3; auto.
+  - intros. forwards: IHHsub H2.
+    pick fresh X and apply d_sub__alll; try applys H3...
 Qed.
 
 
@@ -314,13 +298,6 @@ Fixpoint
   .
 
 
-Fixpoint typ_size (T:typ) : nat :=
-  match T with
-  | typ_intersection T1 T2 => typ_size T1 + typ_size T2 + 1
-  | typ_union T1 T2 => typ_size T1 + typ_size T2 + 1
-  | _ => 0
-  end.
-
 
 Hint Constructors d_inftapp : inftapp.
 
@@ -343,15 +320,7 @@ Proof with auto with typing.
   intros. generalize dependent A'. dependent induction H.
   - intros. dependent induction H1.
     + exists typ_bot. split; auto... constructor; auto.
-    + eapply d_sub_open_mono_bot_false in H6; eauto. contradiction.
-    + specialize (IHd_sub H H0 (eq_refl _)). destruct IHd_sub as [C1 Hc1].
-      exists C1; intuition...
-    + specialize (IHd_sub H H0 (eq_refl _)). destruct IHd_sub as [C1 Hc1].
-      exists C1; intuition...
-    + specialize (IHd_sub1 H H0 (eq_refl _)). destruct IHd_sub1 as [C1 Hc1].
-      specialize (IHd_sub2 H H0 (eq_refl _)). destruct IHd_sub2 as [C2 Hc2].
-      exists (typ_union C1 C2). split.
-      intuition... intuition...
+    + eapply d_sub_open_mono_bot_false in H4; eauto. contradiction.
   - intros. dependent induction H2.
     + exists typ_bot. intuition...
       econstructor...
@@ -373,49 +342,7 @@ Proof with auto with typing.
       * inst_cofinites_with X.
         apply d_wf_typ_subst_tvar_stvar_cons; eauto...
         apply d_sub_dwft in H5; intuition.
-    + inversion H5.
-    + specialize (IHd_sub _ H H0 H1 (eq_refl _)).
-      destruct IHd_sub as [C1 Hc1].
-      exists C1; intuition...
-    + specialize (IHd_sub _ H H0 H1 (eq_refl _)).
-      destruct IHd_sub as [C1 Hc1].
-      exists C1; intuition...
-    + specialize (IHd_sub1 _ H H0 H1 (eq_refl _)).
-      specialize (IHd_sub2 _ H H0 H1 (eq_refl _)).
-      destruct IHd_sub1 as [C1].
-      destruct IHd_sub2 as [C2].
-      exists (typ_union C1 C2); intuition.
-  - intros. apply dsub_intersection_inversion in H1.
-    intuition.
-  - intros. apply dsub_intersection_inversion in H1.
-    intuition.
-  - intros. dependent induction H1.
-    + exists typ_bot.
-      apply d_inftapp_wft in H.
-      apply d_inftapp_wft in H0.
-      intuition...
-    + inversion H1.
-    + specialize (IHd_sub _ _ H H0 IHd_inftapp1 IHd_inftapp2 (eq_refl _)).
-      apply d_inftapp_wft in H. intuition.
-      destruct IHd_sub as [C3]. exists C3. intuition.
-    + specialize (IHd_sub _ _ H H0 IHd_inftapp1 IHd_inftapp2 (eq_refl _)).
-      apply d_inftapp_wft in H. intuition.
-      destruct IHd_sub as [C3]. exists C3. intuition.
-    + specialize (IHd_inftapp1 _ H1).
-      destruct IHd_inftapp1 as [C3].
-      exists C3. intuition...
-      apply d_sub__union1; eauto...
-      apply d_inftapp_wft in H0. intuition.
-    + specialize (IHd_inftapp2 _ H1).
-      destruct IHd_inftapp2 as [C3].
-      exists C3. intuition...
-      apply d_sub__union2; eauto...
-      apply d_inftapp_wft in H. intuition.
-    + specialize (IHd_sub1 _ _ H H0 IHd_inftapp1 IHd_inftapp2 (eq_refl _)).
-      specialize (IHd_sub2 _ _ H H0 IHd_inftapp1 IHd_inftapp2 (eq_refl _)).
-      destruct IHd_sub1 as [C1'].
-      destruct IHd_sub2 as [C2'].
-      exists (typ_union C1' C2'). intuition...
+    + inversion H3.
 Qed.
 
 Corollary d_inftapp_wft_0 : forall Ψ A B C,
@@ -514,21 +441,6 @@ Proof with auto using d_mono_typ_d_wf_typ with typing.
   - dependent induction H0...
     + exists typ_top typ_bot. auto...
     + exfalso. eapply d_sub_open_mono_bot_false; eauto.
-    + specialize (IHd_sub H (eq_refl _)).
-      destruct IHd_sub as [B2 [C2]].
-      exists B2 C2; intuition...
-    + specialize (IHd_sub H (eq_refl _)).
-      destruct IHd_sub as [B2 [C2]].
-      exists B2 C2; intuition...
-    + specialize (IHd_sub1 H (eq_refl _)).
-      specialize (IHd_sub2 H (eq_refl _)).
-      destruct IHd_sub1 as [B1 [C1]].
-      destruct IHd_sub2 as [B2 [C2]].
-      exists (typ_intersection B1 B2) (typ_union C1 C2).
-      destruct H0. destruct H1.
-      split; intuition...
-      dependent destruction H0. dependent destruction H1.
-      eauto...
   - dependent induction H2...
     + exists typ_top typ_bot. dependent destruction H2.
       eauto...
@@ -541,25 +453,11 @@ Proof with auto using d_mono_typ_d_wf_typ with typing.
       exists B2 C2; intuition...
       econstructor. eauto. auto...
       * pick fresh Y and apply d_wf_typ__all.
-         ** forwards: H2 Y...
-         ** forwards: d_sub_dwft_1 H4.
-            rewrite_env (nil++Ψ) in H8.
-            forwards*: d_wf_typ_open_tvar_subst_mono H8.
+         ** forwards: H4 Y...
+         ** forwards: d_sub_dwft_1 H2.
+            rewrite_env (nil++Ψ) in H6.
+            forwards*: d_wf_typ_open_tvar_subst_mono H6.
       * eauto.
-    + specialize (IHd_sub _ _ H H0 H1 (eq_refl _)).
-      destruct IHd_sub as [B2 [C2]].
-      exists B2 C2; intuition...
-    + specialize (IHd_sub _ _ H H0 H1 (eq_refl _)).
-      destruct IHd_sub as [B2 [C2]].
-      exists B2 C2; intuition...
-    + specialize (IHd_sub1 _ _ H H0 H1 (eq_refl _)).
-      specialize (IHd_sub2 _ _ H H0 H1 (eq_refl _)).
-      destruct IHd_sub1 as [B2 [C2]].
-      destruct IHd_sub2 as [B3 [C3]].
-      exists (typ_intersection B2 B3) (typ_union C2 C3).
-      split; intuition...
-      dependent destruction H2. dependent destruction H4.
-      eauto...
   - dependent induction H3.
     + exists typ_top typ_bot.
       econstructor; eauto...
@@ -586,52 +484,7 @@ Proof with auto using d_mono_typ_d_wf_typ with typing.
          rewrite_env (nil++Ψ) in H8.
          forwards*: d_wf_typ_open_tvar_subst_mono Y H8 H.
       ** eauto...
-    + inversion H5.
-    + specialize (IHd_sub _ H H0 H1 H2 IHd_infabs (eq_refl _)).
-      destruct IHd_sub as [B2 [C2]].
-      exists B2 C2. intuition.
-    + specialize (IHd_sub _ H H0 H1 H2 IHd_infabs (eq_refl _)).
-      destruct IHd_sub as [B2 [C2]].
-      exists B2 C2. intuition.
-    + specialize (IHd_sub1 _ H H0 H1 H2 IHd_infabs (eq_refl _)).
-      specialize (IHd_sub2 _ H H0 H1 H2 IHd_infabs (eq_refl _)).
-      destruct IHd_sub1 as [B2 [C2]].
-      destruct IHd_sub2 as [B3 [C3]].
-      exists (typ_intersection B2 B3) (typ_union C2 C3).
-      intuition...
-      dependent destruction H5. dependent destruction H3.
-      eauto...
-  - apply dsub_intersection_inversion in H1.
-    intuition.
-  - apply dsub_intersection_inversion in H1.
-    intuition.
-  - dependent induction H1.
-    + exists typ_top typ_bot. intuition.
-      econstructor; econstructor; eauto.
-      all: eauto using d_infabs_wft_2, d_infabs_wft_3.
-    + inversion H1.
-    + specialize (IHd_sub _ _ H H0 IHd_infabs1 IHd_infabs2 (eq_refl _)).
-      destruct IHd_sub as [B2' [C2']].
-      exists B2' C2'. intuition.
-    + specialize (IHd_sub _ _ H H0 IHd_infabs1 IHd_infabs2 (eq_refl _)).
-      destruct IHd_sub as [B2' [C2']].
-      exists B2' C2'. intuition.
-    + specialize (IHd_infabs1 _ H1).
-      destruct IHd_infabs1 as [B2' [C2']].
-      exists B2' C2'. intuition.
-      dependent destruction H4. eauto...
-    + specialize (IHd_infabs2 _ H1).
-      destruct IHd_infabs2 as [B2' [C2']].
-      exists B2' C2'. intuition.
-      dependent destruction H4. eauto...
-    + specialize (IHd_sub1 _ _ H H0 IHd_infabs1 IHd_infabs2 (eq_refl _)).
-      specialize (IHd_sub2 _ _ H H0 IHd_infabs1 IHd_infabs2 (eq_refl _)).
-      destruct IHd_sub1 as [B2' [C2']].
-      destruct IHd_sub2 as [B3' [C3']].
-      exists (typ_intersection B2' B3') (typ_union C2' C3').
-      intuition...
-      dependent destruction H1. dependent destruction H3.
-      intuition...
+    + inversion H6.
 Qed.
 
 
@@ -706,6 +559,7 @@ Lemma d_chk_inf_wf_env: forall Ψ e mode A,
 Proof.
   intros. induction H; auto.
   - inst_cofinites_by L. inversion H1; auto.
+  - inst_cofinites_by L. inversion H1; auto.
   - inst_cofinites_by L. inversion H0; auto.
   - inst_cofinites_by L. inversion H1; auto.
 Qed.
@@ -719,6 +573,7 @@ Proof.
     all: forwards[(?&Heq)|?]: binds_cons_1 H0; try inverts Heq; subst; eauto.
   - apply d_infabs_wft in H0; intuition.
   - apply d_inftapp_wft in H1; intuition.
+  - apply d_mono_typ_d_wf_typ; auto.
   - pick fresh X. forwards*: H1 X.
     rewrite_env (nil ++ (X, dbind_typ A1) :: Ψ ) in H2.
     forwards*: d_wf_typ_strengthen_var H2.
@@ -727,10 +582,9 @@ Qed.
 
 #[export] Hint Resolve d_sub_dwft_0 d_sub_dwft_1 d_sub_dwft_2 : subtyping.
 
-Theorem d_chk_inf_subsumption : forall n1 n2 n3 Ψ Ψ' e A mode,
+Theorem d_chk_inf_subsumption : forall n1 n2 Ψ Ψ' e A mode,
   exp_size e < n1 ->
   dmode_size mode < n2 ->
-  typ_size A < n3 ->
   d_typing Ψ e mode A ->
   d_subenv Ψ' Ψ ->
     match mode with
@@ -738,17 +592,13 @@ Theorem d_chk_inf_subsumption : forall n1 n2 n3 Ψ Ψ' e A mode,
     | typingmode__inf => exists A', Ψ ⊢ A' <: A /\ Ψ' ⊢ e ⇒ A'
     end.
 Proof with auto with typing.
-  intro n1; induction n1; intro n2; induction n2; intros n3; induction n3; intros * Hn1 Hn2 Hn3 Hty Hsubenv.
-  - inversion Hn1.
-  - inversion Hn1.
+  intro n1; induction n1; intro n2; induction n2; intros * Hn1 Hn2 Hty Hsubenv.
   - inversion Hn1.
   - inversion Hn1.
   - inversion Hn2.
-  - inversion Hn2.
-  - inversion Hn3.
   - destruct mode.
     (* e => A *)
-    + dependent destruction Hty; simpl in Hn1, Hn2, Hn3.
+    + dependent destruction Hty; simpl in Hn1, Hn2.
       * eapply d_subenv_same_var in Hsubenv as Hsubenvvar; eauto.
         destruct Hsubenvvar as [S1 [Hbind Hsub]]. exists S1; intuition.
         constructor. auto...
@@ -758,7 +608,7 @@ Proof with auto with typing.
       * exists A. split; auto. apply dsub_refl; auto.
         now eauto using d_chk_inf_wf_env.
         econstructor. eapply d_subenv_wf_typ; eauto.
-        refine (IHn1 _ _ _ _ _ _ _ _ _ _  Hty _ _ _); eauto... simpl in *...
+        refine (IHn1 _ _ _ _ _ _ _ _ Hty _ _ _); eauto... simpl in *...
         apply dsub_refl; auto.
         now eauto using d_chk_inf_wf_env.
       (* () => 1 *)
@@ -773,7 +623,7 @@ Proof with auto with typing.
         dependent destruction H0...
         dependent destruction H0...
         econstructor; eauto...
-        refine (IHn1 _ _ _ _ _ _ _ _ _ _ Hty2 _ _ _); eauto...
+        refine (IHn1 _ _ _ _ _ _ _ _  Hty2 _ _ _); eauto...
       (* d_infabs_subsumption @shengyi:todo *** *)
       (* /\ a. e : A => forall a. A *)
       * exists (typ_all A); split.
@@ -784,12 +634,11 @@ Proof with auto with typing.
            ++ econstructor. now applys H.
               intros. eapply d_subenv_wf_typ. now applys H0.
               auto...
-           ++
-           intros. inst_cofinites_with X.
-           refine (IHn1 _ _ _ _ _ _ _ _ _ _ H1 _ _ _); eauto...
-           simpl. rewrite <- d_exp_size_open_typ; lia.
-           apply dsub_refl.
-           now applys d_chk_inf_wf_env H1. auto.
+           ++ intros. inst_cofinites_with X.
+              refine (IHn1 _ _ _ _ _ _ _ _ H1 _ _ _); eauto...
+              simpl. rewrite <- d_exp_size_open_typ; lia.
+              apply dsub_refl.
+              now applys d_chk_inf_wf_env H1. auto.
       (* e @T *)
       * eapply IHn1 in Hty; eauto...
         destruct Hty as [A1 [Hsuba1 Hinfa1]].
@@ -797,43 +646,54 @@ Proof with auto with typing.
         destruct H0 as [C2 Hc2].
         exists C2. intuition...
         econstructor; eauto...
+      * exists (typ_arrow A B).
+        inst_cofinites_by (L `union` dom Ψ).
+        eapply IHn1 with (Ψ':=x ~ dbind_typ A ++ Ψ') in H0 as Hty; eauto... 
+        -- split. eapply dsub_refl; auto.
+           ++ assert (x ~ dbind_typ A ++ Ψ ⊢ B <: B). 
+              apply dsub_refl...
+              now apply d_chk_inf_wf_env in H0.
+              dependent destruction H.
+              apply d_mono_typ_d_wf_typ in H0.
+              apply d_wf_typ_weaken_cons...
+              apply d_chk_inf_wf_env in H0. dependent destruction H0...
+           ++ apply d_mono_typ_d_wf_typ...
+           ++ eapply d_typing__infmonoabs with (L:=L).
+              eapply d_mono_typ_subenv; eauto.
+              intros. admit.
+        -- rewrite <- d_exp_size_open_var. lia.
+        -- econstructor...
+           apply dsub_refl...
+           apply d_chk_inf_wf_env in H0. dependent destruction H0...
+           apply d_mono_typ_d_wf_typ in H. dependent destruction H...
     (* e <= *)
-    + dependent destruction Hty; simpl in Hn1, Hn2, Hn3.
+    + dependent destruction Hty; simpl in Hn1, Hn2.
       (* \x. e <= Top *)
       * intros.
         dependent induction H0; eauto...
         -- eapply d_typing__chkabstop with (L:=L `union` dom Ψ)... intros.
            inst_cofinites_with x.
            simpl in H.
-           refine (IHn1 _ _ _ _ _ _ _ _ _ _ H _ _ _); eauto...
+           refine (IHn1 _ _ _ _ _ _ _ _ H _ _ _); eauto...
            rewrite <- d_exp_size_open_var. lia.
            econstructor; auto.
            econstructor. econstructor; eauto.
            econstructor.
       (* \x. e <= T1 -> T2 *)
-      * intros.
-        assert (d_wft_ord A') as Hwford.
-        { eapply d_wft_ord_complete. eauto with subtyping. }
-        induction Hwford.
-        -- dependent destruction H1.
-           ++ inst_cofinites_for d_typing__chkabstop. intros.
-              inst_cofinites_with x.
-              refine (IHn1 _ _ _ _ _ _ _ _ _ _ H0 _ _ _); eauto...
-              rewrite <- d_exp_size_open_var. lia.
-              econstructor; eauto.
-              inverts H2. eauto using d_wf_typ_weaken_cons.
-           ++ inst_cofinites_for d_typing__chkabs.
-              eauto using d_subenv_wf_typ, d_sub_dwft_1.
-              intros. inst_cofinites_with x.
-              refine (IHn1 _ _ _ _ _ _ _ _ _ _ H0 _ _ _); eauto...
-              rewrite <- d_exp_size_open_var. lia.
-              applys~ d_sub_weaken_cons.
-              applys d_chk_inf_wf_env H0.
-           ++ inversion H2.
-           ++ inversion H3.
-           ++ inversion H3.
-        -- dependent destruction H1; auto...
-        -- dependent destruction H1; auto...
+      * intros. dependent destruction H1.
+        -- inst_cofinites_for d_typing__chkabstop. intros.
+          inst_cofinites_with x.
+          refine (IHn1 _ _ _ _ _ _ _ _ H0 _ _ _); eauto...
+          rewrite <- d_exp_size_open_var. lia.
+          econstructor; eauto.
+          inverts H2. eauto using d_wf_typ_weaken_cons.
+        -- inst_cofinites_for d_typing__chkabs.
+          eauto using d_subenv_wf_typ, d_sub_dwft_1.
+          intros. inst_cofinites_with x.
+          refine (IHn1 _ _ _ _ _ _ _ _ H0 _ _ _); eauto...
+          rewrite <- d_exp_size_open_var. lia.
+          applys~ d_sub_weaken_cons.
+          applys d_chk_inf_wf_env H0.
       (* e <= forall a. A *)
       (*  * admit. ignore for now *** *)
       (* e <= A *)
@@ -846,31 +706,7 @@ Proof with auto with typing.
         eapply d_sub_subenv; eauto.
         eapply d_sub_subenv; eauto.
         simpl. lia.
-      * intros. assert (d_wft_ord A') as Hwford.
-        { eapply d_wft_ord_complete. eauto with subtyping. }
-        induction Hwford.
-        -- dependent destruction H.
-           ++ dependent destruction H0. refine (IHn3 _ _ _ _ _ _ _ _ Hty1 _ _ _); eauto...
-           ++ inversion H1.
-           ++ refine (IHn3 _ _ _ _ _ _ _ _ Hty1 _ _ _); eauto...
-           ++ refine (IHn3 _ _ _ _ _ _ _ _ Hty2 _ _ _); eauto...
-           ++ inversion H1.
-           ++ inversion H1.
-        -- dependent destruction H; auto...
-           ++ refine (IHn3 _ _ _ _ _ _ _ _ Hty1 _ _ _); eauto...
-           ++ refine (IHn3 _ _ _ _ _ _ _ _ Hty2 _ _ _); eauto...
-        -- dependent destruction H.
-           ++ refine (IHn3 _ _ _ _ _ _ _ _ Hty1 _ _ _); eauto...
-           ++ refine (IHn3 _ _ _ _ _ _ _ _ Hty2 _ _ _); eauto...
-           ++ eauto...
-           ++ eauto...
-      * intros.
-        refine (IHn3 _ _ _ _ _ _ _ _ Hty _ _ _); eauto...
-        apply dsub_union_inversion in H0. intuition.
-      * intros.
-        refine (IHn3 _ _ _ _ _ _ _ _ Hty _ _ _); eauto...
-        apply dsub_union_inversion in H0. intros. intuition.
-Qed.
+Admitted.
 
 Corollary d_chk_subsumption : forall Ψ e A A',
   ⊢ Ψ ->
@@ -879,6 +715,6 @@ Corollary d_chk_subsumption : forall Ψ e A A',
   Ψ ⊢ e ⇐ A'.
 Proof.
   intros.
-  refine (d_chk_inf_subsumption _ _ _ _ _ _ _ _ _ _ _ H0 _ _ _); eauto.
+  refine (d_chk_inf_subsumption _ _ _ _ _ _ _ _ _ H0 _ _ _); eauto.
   now apply d_subenv_refl.
 Qed.
