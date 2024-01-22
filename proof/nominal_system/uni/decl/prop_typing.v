@@ -582,6 +582,53 @@ Qed.
 
 #[export] Hint Resolve d_sub_dwft_0 d_sub_dwft_1 d_sub_dwft_2 : subtyping.
 
+Theorem d_chk_inf_rename : forall Ψ1 Ψ2 x y T e A mode, 
+  d_typing (Ψ2 ++ x ~ T ++ Ψ1) e mode A ->
+  y `notin` (dom Ψ1 `union` dom Ψ2) ->
+  d_typing (Ψ2 ++ y ~ T ++ Ψ1) (subst_var_in_exp (exp_var_f y) x e) mode A 
+  .
+Proof.
+  intros. dependent induction H.
+  - simpl. case_if; admit.
+  - simpl. econstructor. admit.
+    apply IHd_typing; auto.
+  - simpl. apply d_typing__inf_unit. admit.
+  - simpl. eapply d_typing__infapp; eauto.
+    apply IHd_typing1; auto.
+    admit.
+    apply IHd_typing2; auto.
+  - simpl. eapply d_typing__inftabs with (L:=L `union` singleton y); eauto.
+    admit.
+    intros. inst_cofinites_with X.
+    rewrite_env ((X ~ ▫ ++ Ψ2) ++ (y, T) :: Ψ1).
+    replace (exp_anno (open_exp_wrt_typ ({exp_var_f y /ᵉ x} e) ` X) (A ^ᵈ X)) with 
+            ({exp_var_f y /ᵉ x} exp_anno (open_exp_wrt_typ e ` X) (A ^ᵈ X)).
+    eapply H1; auto.
+    simpl. rewrite subst_var_in_exp_open_exp_wrt_typ; auto.
+  - simpl. eapply d_typing__inftapp; eauto.
+    admit.
+    eapply IHd_typing; eauto.
+    admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+Admitted.
+
+
+Theorem d_chk_inf_rename_cons : forall Ψ1 x y T e A mode, 
+  d_typing (x ~ T ++ Ψ1) e mode A ->
+  y `notin` (dom Ψ1) ->
+  d_typing (y ~ T ++ Ψ1) (subst_var_in_exp (exp_var_f y) x e) mode A 
+  .
+Proof.
+  intros.
+  rewrite_env (nil ++ y ~ T ++ Ψ1).
+  eapply  d_chk_inf_rename; eauto.
+Qed.
+
+
+
 Theorem d_chk_inf_subsumption : forall n1 n2 Ψ Ψ' e A mode,
   exp_size e < n1 ->
   dmode_size mode < n2 ->
@@ -647,7 +694,7 @@ Proof with auto with typing.
         exists C2. intuition...
         econstructor; eauto...
       * exists (typ_arrow A B).
-        inst_cofinites_by (L `union` dom Ψ).
+        inst_cofinites_by (L `union` dom Ψ `union` fvar_in_exp e).
         eapply IHn1 with (Ψ':=x ~ dbind_typ A ++ Ψ') in H0 as Hty; eauto... 
         -- split. eapply dsub_refl; auto.
            ++ assert (x ~ dbind_typ A ++ Ψ ⊢ B <: B). 
@@ -658,9 +705,18 @@ Proof with auto with typing.
               apply d_wf_typ_weaken_cons...
               apply d_chk_inf_wf_env in H0. dependent destruction H0...
            ++ apply d_mono_typ_d_wf_typ...
-           ++ eapply d_typing__infmonoabs with (L:=L).
+           ++ eapply d_typing__infmonoabs with (L:=L `union` dom Ψ').
               eapply d_mono_typ_subenv; eauto.
-              intros. admit.
+              intros.
+              replace (open_exp_wrt_exp e (exp_var_f x0)) with ({exp_var_f x0 /ᵉ x} open_exp_wrt_exp e (exp_var_f x)).
+              apply d_chk_inf_rename_cons. apply Hty; eauto. 
+              ** apply dsub_refl. eapply d_chk_inf_wf_env; eauto.
+                 dependent destruction H. apply d_mono_typ_d_wf_typ in H0.
+                 apply d_wf_typ_weaken_cons...
+              ** solve_notin. 
+              ** simpl. rewrite subst_var_in_exp_open_exp_wrt_exp...
+                 rewrite (subst_var_in_exp_fresh_eq e); eauto...
+                 simpl. case_if; auto...
         -- rewrite <- d_exp_size_open_var. lia.
         -- econstructor...
            apply dsub_refl...
@@ -706,7 +762,7 @@ Proof with auto with typing.
         eapply d_sub_subenv; eauto.
         eapply d_sub_subenv; eauto.
         simpl. lia.
-Admitted.
+Qed.
 
 Corollary d_chk_subsumption : forall Ψ e A A',
   ⊢ Ψ ->
