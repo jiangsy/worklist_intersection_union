@@ -126,21 +126,11 @@ Proof with auto with Hdb_dworklist_equiv.
   - rewrite dwl_app_cons_work in H. rewrite d_wl_app_all_work_same_env in H...
     econstructor; eauto.
     rewrite_dwl_app. eapply IHHred; eauto...
-  - rewrite dwl_app_cons_work in H. rewrite d_wl_app_all_work_same_env in H...
-    econstructor; eauto.
-    rewrite_dwl_app. eapply IHHred; eauto...
-  - econstructor; rewrite_dwl_app;
-    eapply IHHred; simpl; eauto...
-  - econstructor; rewrite_dwl_app;
-    eapply IHHred; simpl; eauto...
-  - rewrite dwl_app_cons_work in H. rewrite d_wl_app_all_work_same_env in H...
-    econstructor; eauto.
+  - econstructor; eauto.
     rewrite_dwl_app. eapply IHHred; eauto...
   - rewrite dwl_app_cons_work in H. rewrite d_wl_app_all_work_same_env in H...
     econstructor; eauto.
     rewrite_dwl_app. eapply IHHred; eauto...
-  - econstructor; rewrite_dwl_app;
-    eapply IHHred; simpl; eauto...
   - rewrite dwl_app_cons_work in H. rewrite d_wl_app_all_work_same_env in H...
     econstructor; eauto.
     rewrite_dwl_app. eapply IHHred; eauto...
@@ -227,31 +217,20 @@ Proof with auto with Hdb_dworklist_equiv typing.
     econstructor... admit.
     apply IHd_wl_red. admit.
   - admit.
-  - destruct_wf. _apply_IH_d_wl_red.
-    destruct_d_wl_del_red.
+  - admit.
+  (* - destruct_wf. _apply_IH_d_wl_red.
+    destruct_d_wl_del_red. *)
+  -
     admit.
   - admit.
   - destruct_wf.
     econstructor...
     econstructor...
-  - admit.
-  - admit.
-  - admit.
-  - destruct_wf.
-    econstructor...
-  - destruct_wf.
-    econstructor...
-  - admit.
-  - _apply_IH_d_wl_red.
-    destruct_d_wl_del_red.
-    econstructor; eauto...
   - destruct_wf. 
-    _apply_IH_d_wl_red.
-    destruct_d_wl_del_red.
-    econstructor; eauto...
-  - _apply_IH_d_wl_red.
-    destruct_d_wl_del_red.
-    econstructor; eauto...
+    econstructor...
+  - destruct_wf. 
+    econstructor...
+  - admit.
   - econstructor; eauto.
     destruct_wf.
     eapply d_wf_work_apply_cont in H0; eauto.
@@ -339,12 +318,13 @@ Proof.
   - eapply d_wl_red__inf_tabs with (L:=L).
     intros. inst_cofinites_with X.
     rewrite_dwl_app. auto.
+  - admit.
   - eapply d_wl_red__infabs_all with (T:=T).
     rewrite d_wl_app_cons_work_same_env. auto.
     rewrite_dwl_app. auto.
   - econstructor; eauto.
     rewrite_dwl_app. auto.
-Qed.
+Admitted.
 
 
 Lemma d_wl_red_infabs_complete: forall Ω A B C c,
@@ -355,22 +335,6 @@ Proof with auto with Hdb_dworklist_equiv.
   try solve [destruct_wf; econstructor; auto with Hdb_dworklist_equiv].
   - destruct_wf.
     eapply d_wl_red__infabs_all with (T:=T); eauto.
-  - destruct_wf.
-    apply d_infabs_wft in H.
-    apply d_wl_red__infabs_union.
-    apply IHd_infabs1; auto.
-    eapply d_wl_red__applycont with 
-      (w:=((work_infabsunion (typ_arrow B1 C1) A2 c))).
-    eapply applycont__infabsunion.
-    simpl.
-    eapply d_wl_red__infabsunion.
-    apply IHd_infabs2; intuition.
-    eapply d_wl_red__applycont with 
-      (w:=(work_unioninfabs (typ_arrow B1 C1) (typ_arrow B2 C2) c)).
-    econstructor.
-    simpl.
-    econstructor.
-    auto.  
 Qed.
 
 
@@ -380,18 +344,6 @@ Lemma d_wl_red_inftapp_complete: forall Ω A B C c,
 Proof with auto with Hdb_dworklist_equiv.
   intros. generalize dependent c. dependent induction H; intros; eauto;
   try solve [destruct_wf; econstructor; eauto with Hdb_dworklist_equiv].
-  - apply d_inftapp_wft in H.
-    destruct_wf.
-    econstructor.
-    eapply IHd_inftapp1...
-    eapply d_wl_red__applycont with (w:=work_inftappunion C1 A2 B c).
-    econstructor.
-    simpl.
-    econstructor. 
-    eapply IHd_inftapp2... intuition.
-    eapply d_wl_red__applycont with (w:=work_unioninftapp C1 C2 c).
-    eapply applycont__unioninftapp...
-    econstructor...
 Qed.
 
 
@@ -433,6 +385,7 @@ Proof with auto with Hdb_dworklist_equiv.
     econstructor.
     simpl.
     eapply d_wl_red_inftapp_complete; eauto.
+  - admit.
   - destruct_wf.
     eapply d_wl_red__chk_abstop with (L:=L `union` L0 `union` dom (dwl_to_denv Ω)).
     intros. inst_cofinites_with x.
@@ -452,10 +405,7 @@ Proof with auto with Hdb_dworklist_equiv.
     constructor; auto. simpl.
     apply d_wl_red_sub_complete; auto.
     apply d_chk_inf_wft in H. auto.
-  - destruct_wf. eapply d_wl_red__chk_inter...
-  - destruct_wf. eauto...
-  - destruct_wf. eauto... 
-Qed.
+Admitted.
 
 
 Theorem d_wl_red_complete: forall Ω, 
@@ -469,26 +419,18 @@ Proof with auto with Hdb_dworklist_equiv.
     apply d_chk_inf_wft in H2.
     apply IHd_wl_del_red. auto.
   - destruct_wf. eapply d_wl_red_infabs_complete; eauto...
-  - destruct_wf. 
+  (* - destruct_wf. 
     apply d_wl_red__infabsunion.
     eapply d_wl_red_infabs_complete; eauto.
     eapply d_wl_red__applycont with (w:=(work_unioninfabs (typ_arrow B1 C1)  (typ_arrow B2 C2) c)).
     apply applycont__unioninfabs.
     simpl. econstructor.
     apply d_infabs_wft in H4. 
-    apply IHd_wl_del_red. intuition.
-  - destruct_wf.
-    econstructor. apply IHd_wl_del_red...
+    apply IHd_wl_del_red. intuition. *)
   - destruct_wf.
     apply d_wl_red__infapp. 
     apply IHd_wl_del_red...
   - destruct_wf. eapply d_wl_red_inftapp_complete; eauto.
-  - destruct_wf. econstructor. 
-    eapply d_wl_red_inftapp_complete; eauto...
-    eapply d_wl_red__applycont with (w:=(work_unioninftapp C1 C2 c))...
-    econstructor. simpl.
-    apply d_inftapp_wft in H4.
-    econstructor. intuition.
   - destruct_wf. apply d_wl_red_sub_complete; eauto.
   - destruct_wf. econstructor; eauto.
     apply IHd_wl_del_red. eapply d_wf_work_apply_cont; eauto.

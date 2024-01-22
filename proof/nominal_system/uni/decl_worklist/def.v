@@ -59,6 +59,9 @@ Inductive d_wl_del_red : dworklist -> Prop :=
       d_infabs (dwl_to_denv Ω) T1 T2 T3 ->
       d_wl_del_red (dworklist_conswork Ω (work_apply c (typ_arrow T2 T3))) ->
       d_wl_del_red (dworklist_conswork Ω (work_infabs T1 c))
+  | d_wl_del_red__infapp : forall Ω e T1 T2 c,
+      d_wl_del_red (dworklist_conswork (dworklist_conswork Ω (work_check e T1)) (work_apply c T2)) ->
+      d_wl_del_red (dworklist_conswork Ω (work_infapp (typ_arrow T1 T2) e c))
   | d_wl_del_red__inftapp : forall Ω T1 T2 T3 c,
       d_inftapp (dwl_to_denv Ω) T1 T2 T3 ->
       d_wl_del_red (dworklist_conswork Ω (work_apply c T3)) -> 
