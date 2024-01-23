@@ -63,14 +63,7 @@ Inductive ss_wf_typ : subst_set -> typ -> Prop :=
     ( forall X , X \notin  L  -> s_in X  ( open_typ_wrt_typ A (typ_var_f X) )  )  ->
     ( forall X , X \notin  L  -> ss_wf_typ  ( X ~ dbind_tvar_empty  ++  θ )   ( open_typ_wrt_typ A (typ_var_f X) )  )  ->
     ss_wf_typ θ (typ_all A)
-  | ss_wf_typ__union : forall (θ:subst_set) (A1 A2:typ),
-    ss_wf_typ θ A1 ->
-    ss_wf_typ θ A2 ->
-    ss_wf_typ θ (typ_union A1 A2)
-  | ss_wf_typ__intersection : forall (θ:subst_set) (A1 A2:typ),
-    ss_wf_typ θ A1 ->
-    ss_wf_typ θ A2 ->
-    ss_wf_typ θ (typ_intersection A1 A2).
+.
 
 
 Inductive trans_typ : subst_set -> typ -> typ -> Prop := 
@@ -104,14 +97,6 @@ Inductive trans_typ : subst_set -> typ -> typ -> Prop :=
         trans_typ ((X, dbind_tvar_empty) :: θ) (open_typ_wrt_typ A1ᵃ (typ_var_f X)) (open_typ_wrt_typ A1ᵈ (typ_var_f X))
       ) ->
       trans_typ θ (typ_all A1ᵃ) (typ_all A1ᵈ)
-  | ins_typ__intersection : forall θ A1ᵃ A2ᵃ A1ᵈ A2ᵈ,
-      trans_typ θ A1ᵃ A1ᵈ ->
-      trans_typ θ A2ᵃ A2ᵈ ->
-      trans_typ θ (typ_intersection A1ᵃ A2ᵃ) (typ_intersection A1ᵈ A2ᵈ)
-  | trans_typ__union : forall θ A1ᵃ A2ᵃ A1ᵈ A2ᵈ,
-      trans_typ θ A1ᵃ A1ᵈ ->
-      trans_typ θ A2ᵃ A2ᵈ ->
-      trans_typ θ (typ_union A1ᵃ A2ᵃ) (typ_union A1ᵈ A2ᵈ)
   . 
 
 Inductive trans_exp : subst_set -> exp -> exp -> Prop :=
@@ -157,10 +142,6 @@ Inductive trans_cont : subst_set -> cont -> cont -> Prop :=
   | trans_cont__infabs : forall θ cᵃ cᵈ,
     trans_cont θ cᵃ cᵈ ->
     trans_cont θ (cont_infabs cᵃ) (cont_infabs cᵈ)
-  | trans_cont__infabs_union : forall θ A1ᵃ A1ᵈ cᵃ cᵈ,
-    trans_typ θ A1ᵃ A1ᵈ ->
-    trans_cont θ cᵃ cᵈ ->
-    trans_cont θ (cont_infabsunion A1ᵃ cᵃ) (cont_infabsunion A1ᵈ cᵈ)
   | trans_cont__infapp : forall θ eᵃ eᵈ cᵃ cᵈ,
     trans_exp θ eᵃ eᵈ ->
     trans_cont θ cᵃ cᵈ ->
@@ -169,19 +150,6 @@ Inductive trans_cont : subst_set -> cont -> cont -> Prop :=
     trans_typ θ A1ᵃ A1ᵈ ->
     trans_cont θ cᵃ cᵈ ->
     trans_cont θ (cont_inftapp A1ᵃ cᵃ) (cont_inftapp A1ᵈ cᵈ)
-  | trans_cont__inftappunion : forall θ A1ᵃ A1ᵈ A2ᵃ A2ᵈ cᵃ cᵈ,
-    trans_typ θ A1ᵃ A1ᵈ ->
-    trans_typ θ A2ᵃ A2ᵈ ->
-    trans_cont θ cᵃ cᵈ ->
-    trans_cont θ (cont_inftappunion A1ᵃ A2ᵃ cᵃ) (cont_inftappunion A1ᵈ A2ᵈ cᵈ)
-  | trans_cont__unioninftapp : forall θ A1ᵃ A1ᵈ cᵃ cᵈ,
-    trans_typ θ A1ᵃ A1ᵈ ->
-    trans_cont θ cᵃ cᵈ ->
-    trans_cont θ (cont_unioninftapp A1ᵃ cᵃ) (cont_unioninftapp A1ᵈ cᵈ)
-  | trans_cont__unioninfabs : forall θ A1ᵃ A1ᵈ cᵃ cᵈ,
-    trans_typ θ A1ᵃ A1ᵈ ->
-    trans_cont θ cᵃ cᵈ ->
-    trans_cont θ (cont_unioninfabs A1ᵃ cᵃ) (cont_unioninfabs A1ᵈ cᵈ)    
   | trans_cont__sub : forall θ A1ᵃ A1ᵈ,
     trans_typ θ A1ᵃ A1ᵈ ->
     trans_cont θ (cont_sub A1ᵃ) (cont_sub A1ᵈ)
@@ -201,11 +169,6 @@ Inductive trans_work : subst_set -> work -> work -> Prop :=
       trans_typ Θ A1ᵃ A1ᵈ ->
       trans_cont Θ cᵃ cᵈ ->
       trans_work Θ (work_infabs A1ᵃ cᵃ ) (work_infabs A1ᵈ cᵈ)
-  | trans_work__infabsunion : forall Θ A1ᵃ A1ᵈ A2ᵃ A2ᵈ cᵃ cᵈ,
-      trans_typ Θ A1ᵃ A1ᵈ ->
-      trans_typ Θ A2ᵃ A2ᵈ ->
-      trans_cont Θ cᵃ cᵈ ->
-      trans_work Θ (work_infabsunion A1ᵃ A2ᵃ cᵃ) (work_infabsunion A1ᵈ A2ᵈ cᵈ)
   | trans_work__infapp : forall Θ A1ᵃ A1ᵈ eᵃ eᵈ cᵃ cᵈ,
       trans_typ Θ A1ᵃ A1ᵈ ->
       trans_exp Θ eᵃ eᵈ ->
@@ -220,22 +183,6 @@ Inductive trans_work : subst_set -> work -> work -> Prop :=
       trans_typ θ A1ᵃ A1ᵈ ->
       trans_typ θ B1ᵃ B1ᵈ ->
       trans_work θ (work_sub A1ᵃ B1ᵃ) (work_sub A1ᵈ B1ᵈ)
-  | trans_work__inftappunion : forall Θ A1ᵃ A1ᵈ A2ᵃ A2ᵈ B1ᵃ B1ᵈ cᵃ cᵈ,
-      trans_typ Θ A1ᵃ A1ᵈ ->
-      trans_typ Θ A2ᵃ A2ᵈ ->
-      trans_typ Θ B1ᵃ B1ᵈ ->
-      trans_cont Θ cᵃ cᵈ ->
-      trans_work Θ (work_inftappunion A1ᵃ A2ᵃ B1ᵃ cᵃ) (work_inftappunion A1ᵈ A2ᵈ B1ᵈ cᵈ)
-  | trans_work__unioninftapp : forall Θ A1ᵃ A1ᵈ A2ᵃ A2ᵈ cᵃ cᵈ,
-      trans_typ Θ A1ᵃ A1ᵈ ->
-      trans_typ Θ A2ᵃ A2ᵈ ->
-      trans_cont Θ cᵃ cᵈ ->
-      trans_work Θ (work_unioninftapp A1ᵃ A2ᵃ cᵃ) (work_unioninftapp A1ᵈ A2ᵈ cᵈ)
-  | trans_work__unioninfabs : forall Θ A1ᵃ A1ᵈ A2ᵃ A2ᵈ cᵃ cᵈ,
-      trans_typ Θ A1ᵃ A1ᵈ ->
-      trans_typ Θ A2ᵃ A2ᵈ ->
-      trans_cont Θ cᵃ cᵈ ->
-      trans_work Θ (work_unioninfabs A1ᵃ A2ᵃ cᵃ) (work_unioninfabs A1ᵈ A2ᵈ cᵈ)
   | trans_work__applycont : forall θ cᵃ cᵈ A1ᵃ A1ᵈ,
       trans_cont θ cᵃ cᵈ ->
       trans_typ θ A1ᵃ A1ᵈ ->
@@ -413,12 +360,6 @@ Proof with eauto with Hdb_transfer.
   - inst_cofinites_by (L `union` L0 `union` (ftvar_in_typ A1ᵈ) `union` (ftvar_in_typ A1ᵈ0) `union`  dom θ) using_name X.  
     apply f_equal.
     + eapply open_typ_wrt_typ_inj with (X1:=X); auto.
-  - specialize (IHtrans_typ1 H _ H2_).
-    specialize (IHtrans_typ2 H _ H2_0).
-    subst...
-  - specialize (IHtrans_typ1 H _ H2_).
-    specialize (IHtrans_typ2 H _ H2_0).
-    subst...
 Qed.
 
 
@@ -626,14 +567,6 @@ Proof with eauto with Hdb_transfer.
     erewrite (subst_tvar_in_typ_intro X (close_typ_wrt_typ X Axᵈ)) by apply close_typ_notin.
     apply trans_typ_rename_cons...
     rewrite open_typ_wrt_typ_close_typ_wrt_typ...
-  - apply IHa_wf_typ1 in H2 as Htrans_typ1...
-    apply IHa_wf_typ2 in H2 as Htrans_typ2...
-    destruct Htrans_typ1 as [A1ᵈ]. destruct Htrans_typ2 as [A2ᵈ].
-    exists (typ_union A1ᵈ A2ᵈ). econstructor...  
-  - apply IHa_wf_typ1 in H2 as Htrans_typ1...
-    apply IHa_wf_typ2 in H2 as Htrans_typ2...
-    destruct Htrans_typ1 as [A1ᵈ]. destruct Htrans_typ2 as [A2ᵈ].
-    exists (typ_intersection A1ᵈ A2ᵈ). econstructor...  
 Qed.
 
 (* Lemma ss_wf_typ_trans_typ  : forall θ Aᵃ,
@@ -830,8 +763,6 @@ Proof.
     intros. inst_cofinites_with Y.
     apply H2... apply binds_cons; auto.
     auto.
-  - econstructor; auto.
-  - econstructor; auto.
 Admitted.
 
 Lemma tran_wl_wf_trans_typ : forall Γ Ω θ Aᵃ Aᵈ,
@@ -863,10 +794,6 @@ Proof with eauto with Hdb_transfer.
     + rewrite_env (dwl_to_denv (dworklist_constvar Ω X dbind_tvar_empty)).
       eapply H0 with (Γ:=(aworklist_constvar Γ X abind_tvar_empty))...
       econstructor...
-  - dependent destruction H0...
-    dependent destruction H1...
-  - dependent destruction H0...
-    dependent destruction H1...
 Admitted.
 
 
@@ -1114,16 +1041,6 @@ Proof with eauto with Hdb_transfer.
       erewrite (subst_tvar_in_typ_intro X0 (close_typ_wrt_typ X0 Aᵈ)) by apply close_typ_notin.
       apply trans_typ_rename_cons...
       rewrite open_typ_wrt_typ_close_typ_wrt_typ...
-  - dependent destruction Hinst.
-    apply IHHlc1 in Hinst1... destruct Hinst1 as [A1'ᵈ]. 
-    apply IHHlc2 in Hinst2... destruct Hinst2 as [A2'ᵈ]. 
-    exists (typ_union A1'ᵈ A2'ᵈ); simpl...
-    intuition... subst...
-  - dependent destruction Hinst.
-    apply IHHlc1 in Hinst1... destruct Hinst1 as [A1'ᵈ]. 
-    apply IHHlc2 in Hinst2... destruct Hinst2 as [A2'ᵈ]. 
-    exists (typ_intersection A1'ᵈ A2'ᵈ); simpl...
-    intuition... subst...
 Admitted.
 
 
@@ -1217,16 +1134,6 @@ Proof with eauto with Hdb_transfer.
       erewrite (subst_tvar_in_typ_intro X0 (close_typ_wrt_typ X0 Aᵈ)) by apply close_typ_notin.
       apply trans_typ_rename_cons...
       rewrite open_typ_wrt_typ_close_typ_wrt_typ...
-  - dependent destruction Hinst.
-    apply IHHlc1 in Hinst1... destruct Hinst1 as [A1'ᵈ]. 
-    apply IHHlc2 in Hinst2... destruct Hinst2 as [A2'ᵈ]. 
-    exists (typ_union A1'ᵈ A2'ᵈ); simpl...
-    intuition... subst...
-  - dependent destruction Hinst.
-    apply IHHlc1 in Hinst1... destruct Hinst1 as [A1'ᵈ]. 
-    apply IHHlc2 in Hinst2... destruct Hinst2 as [A2'ᵈ]. 
-    exists (typ_intersection A1'ᵈ A2'ᵈ); simpl...
-    intuition... subst...
 Admitted.
 
 
