@@ -144,12 +144,12 @@ Inductive split_size : aworklist -> typ -> nat -> Prop :=
       split_size Γ A1 n1 ->
       split_size Γ A2 n2 ->
       n = n1 + n2 ->
-      split_size Γ (typ_union A1 A2) n
+      split_size Γ (typ_union A1 A2) (S n)
   | split_size_intersection : forall Γ A1 A2 n1 n2 n,
       split_size Γ A1 n1 ->
       split_size Γ A2 n2 ->
       n = n1 + n2 ->
-      split_size Γ (typ_intersection A1 A2) n.
+      split_size Γ (typ_intersection A1 A2) (S n).
 
 Theorem split_size_total : forall Γ A,
   a_wf_typ (awl_to_aenv Γ) A -> exists n, split_size Γ A n.
@@ -642,16 +642,16 @@ Proof.
                 a_wl_red (aworklist_conswork (aworklist_conswork Γ (work_sub A A1)) (work_sub A A2)) \/
               ~ a_wl_red (aworklist_conswork (aworklist_conswork Γ (work_sub A A1)) (work_sub A A2))).
       { intros A1 A2 Heq. subst. dependent destruction H3.
-        eapply IHnmb; eauto; try lia.
+        eapply IHnmb with (m := (3 * m + all_size A) * (3 * n2 + all_size A2) + (3 * m + all_size A) * (3 * n1 + all_size A1) + n); eauto; try lia.
         admit. (* safe: wf *)
         assert (HspA: split_size (aworklist_conswork Γ (work_sub A A1)) A m) by admit.
         assert (HspA2: split_size (aworklist_conswork Γ (work_sub A A1)) A2 n2) by admit.
         eapply measure1_wl_conswork with
           (m := (3 * m + all_size A) * (3 * n2 + all_size A2))
-          (n := (3 * m + all_size A) * (3 * n1 + all_size A1) + n); eauto.
-        assert (Heq: (3 * (n1 + n2) + all_size (typ_intersection A1 A2)) = (3 * n2 + all_size A2) + (3 * n1 + all_size A1)).
+          (n := (3 * m + all_size A) * (3 * n1 + all_size A1) + n); eauto; try lia.
+        assert (Hle: (3 * m + all_size A) * (3 * n2 + all_size A2) + (3 * m + all_size A) * (3 * n1 + all_size A1) + n <= (3 * m + all_size A) * (3 * S (n1 + n2) + all_size (typ_intersection A1 A2)) + n).
         { simpl. lia. }
-        rewrite Heq. lia. simpl in *. lia. }
+        lia. simpl in *. lia. }
       assert (JgInter2: forall A1 A2, A = typ_intersection A1 A2 ->
                 a_wl_red (aworklist_conswork Γ (work_sub A1 A0)) \/
               ~ a_wl_red (aworklist_conswork Γ (work_sub A1 A0))).
@@ -680,16 +680,16 @@ Proof.
                 a_wl_red (aworklist_conswork (aworklist_conswork Γ (work_sub A1 A0)) (work_sub A2 A0)) \/
               ~ a_wl_red (aworklist_conswork (aworklist_conswork Γ (work_sub A1 A0)) (work_sub A2 A0))).
       { intros A1 A2 Heq. subst. dependent destruction H1.
-        eapply IHnmb; eauto; try lia.
+        eapply IHnmb with (m := (3 * n2 + all_size A2) * (3 * m0 + all_size A0) + (3 * n1 + all_size A1) * (3 * m0 + all_size A0) + n); eauto; try lia.
         admit. (* safe: wf *)
         assert (HspA: split_size (aworklist_conswork Γ (work_sub A1 A0)) A0 m0) by admit.
         assert (HspA2: split_size (aworklist_conswork Γ (work_sub A1 A0)) A2 n2) by admit.
         eapply measure1_wl_conswork with
           (m := (3 * n2 + all_size A2) * (3 * m0 + all_size A0))
-          (n := (3 * n1 + all_size A1) * (3 * m0 + all_size A0) + n); eauto.
-        assert (Heq: (3 * (n1 + n2) + all_size (typ_union A1 A2)) = (3 * n2 + all_size A2) + (3 * n1 + all_size A1)).
+          (n := (3 * n1 + all_size A1) * (3 * m0 + all_size A0) + n); eauto; try lia.
+        assert (Hle: (3 * n2 + all_size A2) * (3 * m0 + all_size A0) + (3 * n1 + all_size A1) * (3 * m0 + all_size A0) + n <= (3 * S (n1 + n2) + all_size (typ_union A1 A2)) * (3 * m0 + all_size A0) + n).
         { simpl. lia. }
-        rewrite Heq. lia. simpl in *. lia. }
+        lia. simpl in *. lia. }
       assert (JgAll: forall A1 X L, A = typ_all A1 ->
                 neq_all A0 ->
                 neq_intersection A0 ->
@@ -706,14 +706,7 @@ Proof.
         assert (Heq: all_size (typ_all A1) = all_size (A1 ^ᵈ X) + 1) by admit. (* safe *)
         rewrite Heq in Hlt.
         assert (Hlt': (3 * n0 + all_size (A1 ^ᵈ X)) * (3 * m0 + all_size A0) + S n <= (3 * n0 + (all_size (A1 ^ᵈ X) + 1)) * (3 * m0 + all_size A0) + n).
-        eapply measure1_work_sub.
-        eapply measure1_typ; eauto.
-        eapply measure1_wl_constvar with
-          (m := (3 * n2 + all_size A1) * (3 * m0 + all_size A0))
-          (n := (3 * n1 + all_size A) * (3 * m0 + all_size A0) + n); eauto.
-        assert (Heq: (3 * (n1 + n2) + all_size (typ_all A1)) = (3 * n2 + all_size A1) + (3 * n1 + all_size A)).
-        { simpl. lia. }
-        rewrite Heq. lia. simpl in *. lia. }
+      }
       dependent destruction H.
       * dependent destruction H0;
           try solve [right; intro Hcontra;
