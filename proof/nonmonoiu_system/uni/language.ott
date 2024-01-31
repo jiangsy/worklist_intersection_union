@@ -36,10 +36,11 @@ dbind, db :: dbind_ ::=
   | : A  ::   :: typ
 
 abind, ab :: abind_ ::=
-  | : ▪       ::   :: tvar_empty
-  | : ~▪      ::   :: stvar_empty
-  | : A       ::   :: typ
-  | : A1 < B1 ::   :: bound
+  | : ▪        ::   :: tvar_empty
+  | : ~▪       ::   :: stvar_empty
+  | : A        ::   :: var_typ
+  | := ^▪      ::   :: etvar_empty
+  | := A       ::   :: etvar_bound
 
 substitutions
   single A X  :: subst_tvar_in
@@ -780,9 +781,21 @@ J_a_etvars_in_worklist :: '' ::=
 defn 
 aW [ X1 ] [ X2 ] :: :: a_evs_in_wl :: 'a_etvars_in_wl__' by 
 
-( X1 : B1 < A1 ) in ⌊ aW ⌋ 
--------------------------------- :: in
-aW , X2 : B2 < A2 [ X1 ] [ X2 ] 
+( X1 := A1 ) in ⌊ aW ⌋ 
+-------------------------------- :: in1
+aW , X2 := A2 [ X1 ] [ X2 ] 
+
+( X1 := A ) in ⌊ aW ⌋ 
+-------------------------------- :: in2
+aW , X2 := ^▪ [ X1 ] [ X2 ] 
+
+( X1 := ^▪ ) in ⌊ aW ⌋ 
+-------------------------------- :: in3
+aW , X2 := A [ X1 ] [ X2 ] 
+
+( X1 := ^▪ ) in ⌊ aW ⌋ 
+-------------------------------- :: in4
+aW , X2 := ^▪ [ X1 ] [ X2 ] 
 
 aW [ X1 ] [ X2 ] 
 -------------------------------- :: var
@@ -816,7 +829,7 @@ aE |- X
 -------------- :: stvar 
 aE |- X
 
-(X : A < B) in aE 
+(X := A) in aE 
 -------------------- :: etvar 
 aE |- X
 
@@ -855,8 +868,14 @@ aE |-m X
 
 aE |- A
 aE |- B
-(X : A < B) in aE
+(X := A ) in aE
 ----------------- :: etvar
+aE |-m X
+
+aE |- A
+aE |- B
+(X := ^▪ ) in aE
+----------------- :: etvar_empty
 aE |-m X
 
 aE |-m A1
@@ -1064,11 +1083,15 @@ X `notin` dom ⌊ aW ⌋
 |- aW , X : ~▪
 
 X `notin` dom ⌊ aW ⌋
-⌊ aW ⌋ |-m A \/ A = BOT
-⌊ aW ⌋ |-m B \/ B = TOP
+⌊ aW ⌋ |-m A
 |- aW
 -------------------- :: consetvar
-|- aW , X : A < B
+|- aW , X := A
+
+X `notin` dom ⌊ aW ⌋
+|- aW
+-------------------- :: consetvar_empty
+|- aW , X := ^▪
 
 ⌊ aW ⌋ |- w
 |- aW

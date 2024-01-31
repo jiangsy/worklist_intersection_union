@@ -58,23 +58,6 @@ Definition update_upper_bound (A1 B1:typ) :=
   end.
 
 
-(* add ^X < ^Y back *)
-Inductive a_add_contraint_sub_etvars :
-    aworklist -> list (typvar * typvar) -> aworklist -> Prop :=
-  | a_add_contraint_sub_etvars__empty : forall Γ,
-    a_add_contraint_sub_etvars Γ nil Γ
-  | a_add_constraint_sub_etvars__cons1 : forall Γ ls X Y Γ' Γ'1 Γ'2 A B,
-    a_add_contraint_sub_etvars Γ ls Γ' ->
-    a_evs_in_wl Γ' X Y ->
-    Γ' = awl_app Γ'2 (aworklist_constvar Γ'1 Y (abind_bound A B)) ->
-    a_add_contraint_sub_etvars Γ ((X ~ Y) ++ ls) (awl_app Γ'2 (aworklist_constvar Γ'1 Y (abind_bound (update_lower_bound A (typ_var_f X)) B)))
-  | a_add_contraint_sub_etvars__cons2 : forall Γ ls X Y Γ' Γ'1 Γ'2 A B,
-    a_add_contraint_sub_etvars Γ ls Γ' ->
-    a_evs_in_wl Γ' Y X ->
-    Γ' = awl_app Γ'2 (aworklist_constvar Γ'1 X (abind_bound A B)) ->
-    a_add_contraint_sub_etvars Γ ((X ~ Y) ++ ls) (awl_app Γ'2 (aworklist_constvar Γ'1 Y (abind_bound A (update_upper_bound B (typ_var_f X)))))
-.
-
 
 Inductive a_update_bound
   : aworklist -> typvar -> typ -> amode_update_bound ->  list (atom*abind) -> aworklist -> aworklist -> typ -> typ -> Prop :=
