@@ -183,6 +183,180 @@ Proof with auto with Hdb_a_wl_red_soundness.
   - intros. simpl in H0. dependent destruction H0.
 Admitted. *)
 
+Inductive d_morew_worklist : dworklist -> dworklist -> Prop :=
+  | d_morew_worklist_empty : d_morew_worklist dworklist_empty dworklist_empty
+  | d_morew_worklist_consvar : forall Ω Ω' x b,
+    d_morew_worklist Ω Ω' ->
+    d_morew_worklist (dworklist_consvar Ω x b) (dworklist_consvar Ω' x b)
+  | d_morew_worklist_constvar : forall Ω Ω' X b,
+    d_morew_worklist Ω Ω' ->
+    d_morew_worklist (dworklist_constvar Ω X b) (dworklist_constvar Ω' X b)
+  | d_morew_worklist_conswork : forall Ω Ω' w,
+    d_morew_worklist Ω Ω' ->
+    d_morew_worklist (dworklist_conswork Ω w) (dworklist_conswork Ω' w)
+  | d_morew_worklist_skipwork : forall Ω Ω' w,
+    d_morew_worklist Ω Ω' ->
+    d_morew_worklist (w ⫤ Ω) Ω'.
+
+Inductive d_morew_worklist' : dworklist -> dworklist -> Prop :=
+  | d_morew_worklist'_refl : forall Ω, d_morew_worklist' Ω Ω
+  | d_morew_worklist'_w : forall Ω1 Ω2 Ω1' Ω2' w,
+    d_morew_worklist' (dwl_app Ω2 Ω1) (dwl_app Ω2' Ω1') ->
+    d_morew_worklist' (dwl_app Ω2 (w ⫤ Ω1)) (dwl_app Ω2' (w ⫤ Ω1')).
+
+
+Lemma d_morew_worklist_refl : forall Ω, d_morew_worklist Ω Ω.
+Proof.
+  intros. induction Ω; try constructor; auto.
+Qed.
+
+
+Lemma d_morew_worklist'_red_weakeing : forall Ω' Ω,
+  d_morew_worklist' Ω' Ω ->
+  Ω'⟶ᵈ⁎⋅ ->
+  Ω ⟶ᵈ⁎⋅.
+Proof.
+  intros. induction H.
+  - auto.
+Admitted.
+
+Lemma d_morew_worklist_red_weakeing : forall Ω' Ω,
+  d_morew_worklist Ω' Ω ->
+  Ω'⟶ᵈ⁎⋅ ->
+  Ω ⟶ᵈ⁎⋅.
+Proof.
+  intros. generalize dependent Ω. induction Ω'; intros.
+  - dependent destruction H. 
+    constructor.
+  - dependent destruction H.
+    dependent destruction H0. 
+    constructor. eauto.
+  - dependent destruction H.
+    dependent destruction H0. 
+    constructor. eauto.
+    constructor. eauto.
+  - 
+Admitted.
+
+
+Lemma d_morew_worklist_red_weakeing' : forall Ω' Ω,
+  d_morew_worklist Ω' Ω ->
+  Ω'⟶ᵈ⁎⋅ ->
+  Ω ⟶ᵈ⁎⋅.
+Proof.
+  intros. generalize dependent Ω'. induction Ω; intros.
+  - constructor.
+  - dependent induction H. 
+    + dependent destruction H0.
+      constructor. eauto.
+    + eapply IHd_morew_worklist; eauto. 
+      admit.
+  - dependent induction H. 
+    + dependent destruction H0.
+      constructor. eauto.
+      constructor. eauto.
+    + eapply IHd_morew_worklist; eauto. 
+      admit.
+  - dependent destruction H.
+Admitted.
+
+Lemma d_morew_worklist_red_weakeing'' : forall Ω' Ω,
+  d_morew_worklist Ω' Ω ->
+  Ω'⟶ᵈ⁎⋅ ->
+  Ω ⟶ᵈ⁎⋅.
+Proof.
+  intros. dependent destruction H; auto.
+  - admit.
+  - admit.
+  - 
+Admitted.
+
+Lemma d_morew_worklist_trans : forall Ω1 Ω2 Ω3, d_morew_worklist Ω3 Ω2 -> d_morew_worklist Ω2 Ω1 ->
+  d_morew_worklist Ω3 Ω1.
+Proof.
+  intros. generalize dependent Ω1. generalize dependent Ω2. induction Ω3; intros. 
+  - dependent destruction H. 
+    dependent destruction H0. constructor. 
+  - dependent destruction H. 
+    dependent induction H0. 
+    constructor. eapply IHΩ3; eauto.
+  - dependent destruction H. 
+    dependent induction H0. 
+    constructor. eapply IHΩ3; eauto.
+  - dependent induction H. 
+    + dependent induction H0. 
+      * apply d_morew_worklist_conswork. eapply IHΩ3; eauto.
+      * apply d_morew_worklist_skipwork. eapply IHΩ3; eauto.
+    + econstructor. eapply IHΩ3; eauto.
+Qed.
+
+(* inversion lemma for θ *)
+
+Lemma a_a_insert_fresh_evar_before_similar_worklist : forall Γ Γ' Γ'' X A B Ω' θ' m,
+  a_insert_fresh_evar_before Γ X Y Γ' Γ'' ->
+  trans_worklist nil (awl_app Γ' Γ'') Ω' θ ->
+  exists θ Ω, trans_worklist nil Γ Ω θ /\ d_morew_worklist Ω' Ω.
+
+
+Lemma a_update_transfer_similar_worklist : forall Γ Γ' X A B Ω' θ' m,
+  a_bound_update m Γ X A Γ' B ->
+  trans_worklist nil Γ' Ω' θ' ->
+  exists θ Ω, trans_worklist nil Γ Ω θ /\ d_morew_worklist Ω' Ω.
+Proof.
+  intros. generalize dependent θ'. generalize dependent Ω'. dependent induction H.
+  - intros. exists θ'. exists Ω'. split; auto. apply d_morew_worklist_refl.
+  - intros. exists θ'. exists Ω'. split; auto. apply d_morew_worklist_refl.
+  - intros. exists θ'. exists Ω'. split; auto. apply d_morew_worklist_refl.
+  - intros. apply IHa_bound_update2 in H1. 
+    destruct H1 as [θ1 [Ω1 [Htrans1 Hmw1]]].
+    apply IHa_bound_update1 in Htrans1.
+    destruct Htrans1 as [θ2 [Ω2 [Htrans2 Hmw2]]].
+    exists θ2, Ω2. split; auto.
+    eapply d_morew_worklist_trans; eauto.
+  - intros. exists θ'. exists Ω'. split; auto. apply d_morew_worklist_refl.
+  - intros.
+    dependent destruction H4.
+    dependent destruction H4.
+    dependent destruction H5.
+    dependent destruction H7.
+    admit.
+  - intros. admit.
+  - intros. admit.
+  - intros. admit.
+  - intros. exists θ'. exists Ω'. split; auto. apply d_morew_worklist_refl.
+  - intros. exists θ'. exists Ω'. split; auto. apply d_morew_worklist_refl.
+  - intros. exists θ'. exists Ω'. split; auto. apply d_morew_worklist_refl.
+  - intros. apply IHa_bound_update2 in H1. 
+    destruct H1 as [θ1 [Ω1 [Htrans1 Hmw1]]].
+    apply IHa_bound_update1 in Htrans1.
+    destruct Htrans1 as [θ2 [Ω2 [Htrans2 Hmw2]]].
+    exists θ2, Ω2. split; auto.
+    eapply d_morew_worklist_trans; eauto.
+  - intros. exists θ'. exists Ω'. split; auto. apply d_morew_worklist_refl.
+  - intros. admit.
+  - intros. admit.
+  - intros. admit.
+  - intros. admit.
+Admitted.
+
+Lemma a_reorder_transfer_similar_worklist: forall Γ Ω θ X A E m Γ1 Γ2 LB UB,
+  a_reorder Γ X A m E Γ1 Γ2 LB UB ->
+  trans_worklist nil (awl_rev_app Γ2 (aworklist_constvar (awl_rev_app (aenv_to_awl E) Γ1) X (abind_bound LB UB)) ) Ω θ ->
+  exists θ' Ω', trans_worklist nil Γ Ω' θ' /\ d_morew_worklist Ω Ω'.
+Proof with auto with Hdb_a_wl_red_soundness.
+  intros. generalize dependent θ. generalize dependent Ω. dependent induction H.
+  - intros. simpl in *. admit.
+  - intros. simpl in *. admit.
+  - admit.
+  - intros. admit.
+  - admit.
+  - admit.
+  - intros. admit.
+  - intros. simpl in *. exists θ.
+     admit.
+Admitted.
+
+
 
 (* Hint Resolve d_chk_inf_wft : Hdb_a_wl_red_soundness. *)
 
@@ -193,8 +367,6 @@ Hint Constructors trans_work : Hdb_a_wl_red_soundness.
 Hint Constructors trans_worklist : Hdb_a_wl_red_soundness.
 
 Hint Resolve trans_typ_lc_atyp : Hdb_a_wl_red_soundness.
-
-
 
 Theorem d_a_wl_red_soundness: forall Γ,
   ⊢ᵃ Γ -> Γ ⟶ᵃʷ⁎⋅ -> exists Ω, transfer Γ Ω /\ Ω ⟶ᵈ⁎⋅.
