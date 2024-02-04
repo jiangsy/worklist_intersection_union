@@ -36,12 +36,18 @@ Fixpoint aenv_to_awl (E : list (atom*abind)) :=
   | (X, b) :: E'  => aworklist_constvar (aenv_to_awl E') X b
   end.
 
+
+(* TODO *)
+(* Inductive a_smono_typ :  list (atom*abind)  -> typ -> Prop  :=
+  | a_smono_typ__unit : forall E, a_smono_typ E typ_unit. *)
+  
+
 Inductive a_update_bound
-  : aworklist -> typvar -> typ ->  list (atom*abind) -> aworklist -> aworklist -> typ  -> Prop :=
+  : aworklist -> typvar -> typ ->  list (atom*abind) -> aworklist -> aworklist -> typ -> typ -> Prop :=
   | a_ub__stop : forall Γ1 X A B, 
     X `notin` ftvar_in_typ A -> 
     a_update_bound
-     (aworklist_constvar Γ1 X (abind_etvar_typ B)) X A nil Γ1 aworklist_empty B
+     (aworklist_constvar Γ1 X (abind_etvar_typ B)) X A nil Γ1 aworklist_empty B.
   | a_ub__etvar_move : forall Γ1 X1 B1 E X A Γ2 Γ3 LB UB,
     X `notin` ftvar_in_abind (abind_bound LB1 UB1) ->
     a_update_bound Γ1 X A  E Γ2 Γ3 LB UB ->

@@ -60,9 +60,8 @@ Inductive work : Set :=
 Inductive abind : Set := 
  | abind_tvar_empty : abind
  | abind_stvar_empty : abind
- | abind_var_typ (A:typ)
  | abind_etvar_empty : abind
- | abind_etvar_typ (A:typ).
+ | abind_var_typ (A:typ).
 
 Inductive dvalue : Set := 
  | dvalue_unit : dvalue
@@ -189,9 +188,8 @@ Definition open_abind_wrt_typ_rec (k:nat) (A5:typ) (ab5:abind) : abind :=
   match ab5 with
   | abind_tvar_empty => abind_tvar_empty 
   | abind_stvar_empty => abind_stvar_empty 
-  | (abind_var_typ A) => abind_var_typ (open_typ_wrt_typ_rec k A5 A)
   | abind_etvar_empty => abind_etvar_empty 
-  | (abind_etvar_typ A) => abind_etvar_typ (open_typ_wrt_typ_rec k A5 A)
+  | (abind_var_typ A) => abind_var_typ (open_typ_wrt_typ_rec k A5 A)
 end.
 
 Definition open_work_wrt_exp_rec (k:nat) (e5:exp) (w5:work) : work :=
@@ -376,9 +374,8 @@ Definition close_abind_wrt_typ_rec (k:nat) (A5:var) (ab5:abind) : abind :=
   match ab5 with
   | abind_tvar_empty => abind_tvar_empty 
   | abind_stvar_empty => abind_stvar_empty 
-  | (abind_var_typ A) => abind_var_typ (close_typ_wrt_typ_rec k A5 A)
   | abind_etvar_empty => abind_etvar_empty 
-  | (abind_etvar_typ A) => abind_etvar_typ (close_typ_wrt_typ_rec k A5 A)
+  | (abind_var_typ A) => abind_var_typ (close_typ_wrt_typ_rec k A5 A)
 end.
 
 Definition close_work_wrt_typ_rec (k:nat) (A_5:var) (w5:work) : work :=
@@ -661,14 +658,11 @@ Inductive lc_abind : abind -> Prop :=    (* defn lc_abind *)
      (lc_abind abind_tvar_empty)
  | lc_abind_stvar_empty : 
      (lc_abind abind_stvar_empty)
- | lc_abind_var_typ : forall (A:typ),
-     (lc_typ A) ->
-     (lc_abind (abind_var_typ A))
  | lc_abind_etvar_empty : 
      (lc_abind abind_etvar_empty)
- | lc_abind_etvar_typ : forall (A:typ),
+ | lc_abind_var_typ : forall (A:typ),
      (lc_typ A) ->
-     (lc_abind (abind_etvar_typ A)).
+     (lc_abind (abind_var_typ A)).
 
 (* defns LC_dvalue *)
 Inductive lc_dvalue : dvalue -> Prop :=    (* defn lc_dvalue *)
@@ -825,9 +819,8 @@ Definition ftvar_in_abind (ab5:abind) : vars :=
   match ab5 with
   | abind_tvar_empty => {}
   | abind_stvar_empty => {}
-  | (abind_var_typ A) => (ftvar_in_typ A)
   | abind_etvar_empty => {}
-  | (abind_etvar_typ A) => (ftvar_in_typ A)
+  | (abind_var_typ A) => (ftvar_in_typ A)
 end.
 
 Fixpoint ftvar_in_dworklist (Ω5:dworklist) : vars :=
@@ -946,11 +939,12 @@ Fixpoint subst_var_in_cont (e5:exp) (x5:expvar) (c5:cont) {struct c5} : cont :=
   | (cont_sub A) => cont_sub A
 end.
 
-Definition subst_tvar_in_dbind (A5:typ) (X5:typvar) (db5:dbind) : dbind :=
-  match db5 with
-  | dbind_tvar_empty => dbind_tvar_empty 
-  | dbind_stvar_empty => dbind_stvar_empty 
-  | (dbind_typ A) => dbind_typ (subst_tvar_in_typ A5 X5 A)
+Definition subst_tvar_in_abind (A5:typ) (X5:typvar) (ab5:abind) : abind :=
+  match ab5 with
+  | abind_tvar_empty => abind_tvar_empty 
+  | abind_stvar_empty => abind_stvar_empty 
+  | abind_etvar_empty => abind_etvar_empty 
+  | (abind_var_typ A) => abind_var_typ (subst_tvar_in_typ A5 X5 A)
 end.
 
 Definition subst_tvar_in_work (A_5:typ) (X5:typvar) (w5:work) : work :=
@@ -968,6 +962,13 @@ Definition subst_tvar_in_work (A_5:typ) (X5:typvar) (w5:work) : work :=
   | (work_apply c A) => work_apply (subst_tvar_in_cont A_5 X5 c) (subst_tvar_in_typ A_5 X5 A)
 end.
 
+Definition subst_tvar_in_dbind (A5:typ) (X5:typvar) (db5:dbind) : dbind :=
+  match db5 with
+  | dbind_tvar_empty => dbind_tvar_empty 
+  | dbind_stvar_empty => dbind_stvar_empty 
+  | (dbind_typ A) => dbind_typ (subst_tvar_in_typ A5 X5 A)
+end.
+
 Definition subst_var_in_work (e5:exp) (x5:expvar) (w5:work) : work :=
   match w5 with
   | (work_infer e c) => work_infer (subst_var_in_exp e5 x5 e) (subst_var_in_cont e5 x5 c)
@@ -983,27 +984,12 @@ Definition subst_var_in_work (e5:exp) (x5:expvar) (w5:work) : work :=
   | (work_apply c A) => work_apply (subst_var_in_cont e5 x5 c) A
 end.
 
-Definition subst_tvar_in_abind (A5:typ) (X5:typvar) (ab5:abind) : abind :=
-  match ab5 with
-  | abind_tvar_empty => abind_tvar_empty 
-  | abind_stvar_empty => abind_stvar_empty 
-  | (abind_var_typ A) => abind_var_typ (subst_tvar_in_typ A5 X5 A)
-  | abind_etvar_empty => abind_etvar_empty 
-  | (abind_etvar_typ A) => abind_etvar_typ (subst_tvar_in_typ A5 X5 A)
-end.
-
-Definition subst_tvar_in_dvalue (A5:typ) (X5:typvar) (v5:dvalue) : dvalue :=
-  match v5 with
-  | dvalue_unit => dvalue_unit 
-  | (dvalue_abs e) => dvalue_abs (subst_tvar_in_exp A5 X5 e)
-  | (dvalue_tabs body5) => dvalue_tabs (subst_tvar_in_body A5 X5 body5)
-end.
-
-Definition subst_var_in_dvalue (e5:exp) (x5:expvar) (v5:dvalue) : dvalue :=
-  match v5 with
-  | dvalue_unit => dvalue_unit 
-  | (dvalue_abs e) => dvalue_abs (subst_var_in_exp e5 x5 e)
-  | (dvalue_tabs body5) => dvalue_tabs (subst_var_in_body e5 x5 body5)
+Fixpoint subst_tvar_in_aworklist (A5:typ) (X5:typvar) (aW_5:aworklist) {struct aW_5} : aworklist :=
+  match aW_5 with
+  | aworklist_empty => aworklist_empty 
+  | (aworklist_consvar aW x ab) => aworklist_consvar (subst_tvar_in_aworklist A5 X5 aW) x (subst_tvar_in_abind A5 X5 ab)
+  | (aworklist_constvar aW X ab) => aworklist_constvar (subst_tvar_in_aworklist A5 X5 aW) X (subst_tvar_in_abind A5 X5 ab)
+  | (aworklist_conswork aW w) => aworklist_conswork (subst_tvar_in_aworklist A5 X5 aW) (subst_tvar_in_work A5 X5 w)
 end.
 
 Fixpoint subst_tvar_in_dworklist (A5:typ) (X5:typvar) (Ω5:dworklist) {struct Ω5} : dworklist :=
@@ -1014,6 +1000,21 @@ Fixpoint subst_tvar_in_dworklist (A5:typ) (X5:typvar) (Ω5:dworklist) {struct Ω
   | (dworklist_conswork Ω w) => dworklist_conswork (subst_tvar_in_dworklist A5 X5 Ω) (subst_tvar_in_work A5 X5 w)
 end.
 
+Fixpoint subst_var_in_aworklist (e5:exp) (x5:expvar) (aW_5:aworklist) {struct aW_5} : aworklist :=
+  match aW_5 with
+  | aworklist_empty => aworklist_empty 
+  | (aworklist_consvar aW x ab) => aworklist_consvar (subst_var_in_aworklist e5 x5 aW) x ab
+  | (aworklist_constvar aW X ab) => aworklist_constvar (subst_var_in_aworklist e5 x5 aW) X ab
+  | (aworklist_conswork aW w) => aworklist_conswork (subst_var_in_aworklist e5 x5 aW) (subst_var_in_work e5 x5 w)
+end.
+
+Definition subst_var_in_dvalue (e5:exp) (x5:expvar) (v5:dvalue) : dvalue :=
+  match v5 with
+  | dvalue_unit => dvalue_unit 
+  | (dvalue_abs e) => dvalue_abs (subst_var_in_exp e5 x5 e)
+  | (dvalue_tabs body5) => dvalue_tabs (subst_var_in_body e5 x5 body5)
+end.
+
 Fixpoint subst_var_in_dworklist (e5:exp) (x5:expvar) (Ω5:dworklist) {struct Ω5} : dworklist :=
   match Ω5 with
   | dworklist_empty => dworklist_empty 
@@ -1022,20 +1023,11 @@ Fixpoint subst_var_in_dworklist (e5:exp) (x5:expvar) (Ω5:dworklist) {struct Ω5
   | (dworklist_conswork Ω w) => dworklist_conswork (subst_var_in_dworklist e5 x5 Ω) (subst_var_in_work e5 x5 w)
 end.
 
-Fixpoint subst_tvar_in_aworklist (A5:typ) (X5:typvar) (aW_5:aworklist) {struct aW_5} : aworklist :=
-  match aW_5 with
-  | aworklist_empty => aworklist_empty 
-  | (aworklist_consvar aW x ab) => aworklist_consvar (subst_tvar_in_aworklist A5 X5 aW) x (subst_tvar_in_abind A5 X5 ab)
-  | (aworklist_constvar aW X ab) => aworklist_constvar (subst_tvar_in_aworklist A5 X5 aW) X (subst_tvar_in_abind A5 X5 ab)
-  | (aworklist_conswork aW w) => aworklist_conswork (subst_tvar_in_aworklist A5 X5 aW) (subst_tvar_in_work A5 X5 w)
-end.
-
-Fixpoint subst_var_in_aworklist (e5:exp) (x5:expvar) (aW_5:aworklist) {struct aW_5} : aworklist :=
-  match aW_5 with
-  | aworklist_empty => aworklist_empty 
-  | (aworklist_consvar aW x ab) => aworklist_consvar (subst_var_in_aworklist e5 x5 aW) x ab
-  | (aworklist_constvar aW X ab) => aworklist_constvar (subst_var_in_aworklist e5 x5 aW) X ab
-  | (aworklist_conswork aW w) => aworklist_conswork (subst_var_in_aworklist e5 x5 aW) (subst_var_in_work e5 x5 w)
+Definition subst_tvar_in_dvalue (A5:typ) (X5:typvar) (v5:dvalue) : dvalue :=
+  match v5 with
+  | dvalue_unit => dvalue_unit 
+  | (dvalue_abs e) => dvalue_abs (subst_tvar_in_exp A5 X5 e)
+  | (dvalue_tabs body5) => dvalue_tabs (subst_tvar_in_body A5 X5 body5)
 end.
 
 
@@ -1462,18 +1454,7 @@ Inductive d_sub : denv -> typ -> typ -> Prop :=    (* defn d_sub *)
 
 (* defns J_a_etvars_in_worklist *)
 Inductive a_evs_in_wl : aworklist -> typvar -> typvar -> Prop :=    (* defn a_evs_in_wl *)
- | a_etvars_in_wl__in1 : forall (aW:aworklist) (X2:typvar) (A2:typ) (X1:typvar) (A1:typ),
-     lc_typ A2 ->
-      binds ( X1 )  ( (abind_etvar_typ A1) ) (  ( awl_to_aenv  aW  )  )  ->
-     a_evs_in_wl (aworklist_constvar aW X2 (abind_etvar_typ A2)) X1 X2
- | a_etvars_in_wl__in2 : forall (aW:aworklist) (X2 X1:typvar) (A:typ),
-      binds ( X1 )  ( (abind_etvar_typ A) ) (  ( awl_to_aenv  aW  )  )  ->
-     a_evs_in_wl (aworklist_constvar aW X2 abind_etvar_empty) X1 X2
- | a_etvars_in_wl__in3 : forall (aW:aworklist) (X2:typvar) (A:typ) (X1:typvar),
-     lc_typ A ->
-      binds ( X1 )  ( abind_etvar_empty ) (  ( awl_to_aenv  aW  )  )  ->
-     a_evs_in_wl (aworklist_constvar aW X2 (abind_etvar_typ A)) X1 X2
- | a_etvars_in_wl__in4 : forall (aW:aworklist) (X2 X1:typvar),
+ | a_etvars_in_wl__in : forall (aW:aworklist) (X2 X1:typvar),
       binds ( X1 )  ( abind_etvar_empty ) (  ( awl_to_aenv  aW  )  )  ->
      a_evs_in_wl (aworklist_constvar aW X2 abind_etvar_empty) X1 X2
  | a_etvars_in_wl__var : forall (aW:aworklist) (X:typvar) (ab:abind) (X1 X2:typvar),
@@ -1499,8 +1480,8 @@ Inductive a_wf_typ : aenv -> typ -> Prop :=    (* defn a_wf_typ *)
  | a_wf_typ__stvar : forall (aE:aenv) (X:typvar),
       binds ( X )  ( abind_stvar_empty ) ( aE )  ->
      a_wf_typ aE (typ_var_f X)
- | a_wf_typ__etvar : forall (aE:aenv) (X:typvar) (A:typ),
-      binds ( X )  ( (abind_etvar_typ A) ) ( aE )  ->
+ | a_wf_typ__etvar : forall (aE:aenv) (X:typvar),
+      binds ( X )  ( abind_etvar_empty ) ( aE )  ->
      a_wf_typ aE (typ_var_f X)
  | a_wf_typ__arrow : forall (aE:aenv) (A1 A2:typ),
      a_wf_typ aE A1 ->
@@ -1527,11 +1508,6 @@ Inductive a_mono_typ : aenv -> typ -> Prop :=    (* defn a_mono_typ *)
       binds ( X )  ( abind_tvar_empty ) ( aE )  ->
      a_mono_typ aE (typ_var_f X)
  | a_mono_typ__etvar : forall (aE:aenv) (X:typvar) (A B:typ),
-     a_wf_typ aE A ->
-     a_wf_typ aE B ->
-      binds ( X )  ( (abind_etvar_typ A) ) ( aE )  ->
-     a_mono_typ aE (typ_var_f X)
- | a_mono_typ__etvar_empty : forall (aE:aenv) (X:typvar) (A B:typ),
      a_wf_typ aE A ->
      a_wf_typ aE B ->
       binds ( X )  ( abind_etvar_empty ) ( aE )  ->
@@ -1678,12 +1654,7 @@ Inductive a_wf_wl : aworklist -> Prop :=    (* defn a_wf_wl *)
       ( X   `notin` dom (  ( awl_to_aenv  aW  )  ))  ->
      a_wf_wl aW ->
      a_wf_wl (aworklist_constvar aW X abind_stvar_empty)
- | a_wf_wl__consetvar : forall (aW:aworklist) (X:typvar) (A:typ),
-      ( X   `notin` dom (  ( awl_to_aenv  aW  )  ))  ->
-     a_mono_typ  ( awl_to_aenv  aW  )  A ->
-     a_wf_wl aW ->
-     a_wf_wl (aworklist_constvar aW X (abind_etvar_typ A))
- | a_wf_wl__consetvar_empty : forall (aW:aworklist) (X:typvar),
+ | a_wf_wl__consetvar : forall (aW:aworklist) (X:typvar),
       ( X   `notin` dom (  ( awl_to_aenv  aW  )  ))  ->
      a_wf_wl aW ->
      a_wf_wl (aworklist_constvar aW X abind_etvar_empty)
