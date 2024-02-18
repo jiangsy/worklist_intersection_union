@@ -43,9 +43,6 @@ Fixpoint etvar_list_to_awl (E : list typvar) :=
   end.
 
 
-(* TODO *)
-(* Inductive a_smono_typ :  list (atom*abind)  -> typ -> Prop  :=
-  | a_smono_typ__unit : forall E, a_smono_typ E typ_unit. *)
 Inductive aworklist_subst : aworklist -> typvar -> typ ->  list typvar -> aworklist -> aworklist -> Prop :=
     | a_ws__stop : forall Γ X A , 
       aworklist_subst (aworklist_constvar Γ X (abind_etvar_empty)) X A nil aworklist_empty Γ
@@ -79,15 +76,9 @@ Inductive a_wl_red : aworklist -> Prop :=    (* defn a_wl_red *)
  | a_wl_red__gc_var : forall (Γ:aworklist) (x:expvar) (A:typ),
      a_wl_red Γ ->
      a_wl_red (aworklist_consvar Γ x (abind_var_typ A))
- | a_wl_red__gc_tvar : forall (Γ:aworklist) (X:typvar),
+ | a_wl_red__gc_tvar : forall (Γ:aworklist) (X:typvar) (b:abind),
      a_wl_red Γ ->
-     a_wl_red (aworklist_constvar Γ X abind_tvar_empty)
- | a_wl_red__gc_stvar : forall (Γ:aworklist) (X:typvar),
-     a_wl_red Γ ->
-     a_wl_red (aworklist_constvar Γ X abind_stvar_empty)
- | a_wl_red__gc_etvar : forall (Γ:aworklist) (X:typvar) (A B:typ),
-     a_wl_red Γ ->
-     a_wl_red (aworklist_constvar Γ X abind_etvar_empty)
+     a_wl_red (aworklist_constvar Γ X b)
  | a_wl_red__sub_top : forall (Γ:aworklist) (B1:typ),
      a_wl_red Γ ->
      a_wl_red (aworklist_conswork Γ (work_sub B1 typ_top))
@@ -262,10 +253,12 @@ Inductive a_wl_red : aworklist -> Prop :=    (* defn a_wl_red *)
      a_wl_red (aworklist_conswork Γ w) ->
      a_wl_red (aworklist_conswork Γ (work_apply c T1))   
 .
+
+     
      
 
-(* defns Jaworklist_reduction *)
-(* Inductive a_wl_red_ss : aworklist -> aworklist -> Prop :=    (* defn a_wl_red_ss *)
+(* defns Jaworklist_reduction
+Inductive a_wl_red_ss : aworklist -> aworklist -> Prop :=    (* defn a_wl_red_ss *)
  | a_wl_red_ss__empty : a_wl_red_ss aworklist_empty aworklist_empty
  | a_wl_red_ss__gc_var : forall (Γ:aworklist) (x:expvar) (A:typ),
      a_wl_red_ss (aworklist_consvar Γ x (abind_var_typ A)) Γ
@@ -438,13 +431,13 @@ Inductive a_wl_red : aworklist -> Prop :=    (* defn a_wl_red *)
                  (aworklist_conswork Γ w)
 . *)
 
-Inductive a_wl_mul_red : aworklist -> aworklist -> Prop :=
+(* Inductive a_wl_mul_red : aworklist -> aworklist -> Prop :=
   | a_wl_mul_red__refl : forall (Γ:aworklist), a_wl_mul_red Γ Γ
   | a_wl_mul_red__step : forall (Γ1 Γ2 Γ3:aworklist),
       a_wl_red_ss Γ1 Γ2 ->
       a_wl_mul_red Γ2 Γ3 ->
       a_wl_mul_red Γ1 Γ3
-.
+. *)
 
 Declare Scope aworklist_scope.
 Delimit Scope aworklist_scope with aworklist.
@@ -453,7 +446,7 @@ Bind Scope aworklist_scope with aworklist.
 
 
 Notation " x ~ A ; Γ " :=
-  (aworklist_consvar Γ x (abind_typ A))
+  (aworklist_consvar Γ x (abind_var_typ A))
       (at level 58, A at next level, right associativity) : aworklist_scope.
     
 Notation " X ~ ▫ ; Γ " :=
@@ -472,13 +465,13 @@ Notation " Γ ⟶ᵃʷ⁎⋅ " :=
   (a_wl_red Γ)
       (at level 58, no associativity) : type_scope.
 
-Notation " Γ1 ⟶ᵃʷ Γ2 " :=
+(* Notation " Γ1 ⟶ᵃʷ Γ2 " :=
   (a_wl_red_ss Γ1 Γ2)
       (at level 58, no associativity) : type_scope.
 
 Notation " Γ1 ⟶ᵃʷ⁎ Γ2 " :=
   (a_wl_mul_red Γ1 Γ2)
-      (at level 58, no associativity) : type_scope.
+      (at level 58, no associativity) : type_scope. *)
 
 Notation " ⊢ᵃ Γ " :=
   (a_wf_wl Γ)

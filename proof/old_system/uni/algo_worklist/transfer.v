@@ -277,15 +277,11 @@ Inductive trans_worklist : subst_set -> aworklist -> dworklist -> subst_set -> P
   | inst_wl__cons_var : forall θ θ' Γ Ω A1ᵃ A1ᵈ x, 
       θ ⫦ Γ ⇝ Ω ⫣ θ' ->
       trans_typ θ' A1ᵃ A1ᵈ ->
-      θ ⫦ aworklist_consvar Γ x (abind_typ A1ᵃ) ⇝ dworklist_consvar Ω x (dbind_typ A1ᵈ) ⫣ θ'
-  | inst_wl_ev : forall θ θ' Γ Ω Aᵃ Aᵈ Bᵃ Bᵈ T X, 
+      θ ⫦ aworklist_consvar Γ x (abind_var_typ A1ᵃ) ⇝ dworklist_consvar Ω x (dbind_typ A1ᵈ) ⫣ θ'
+  | inst_wl_ev : forall θ θ' Γ Ω T X, 
       θ ⫦ Γ ⇝ Ω ⫣ θ' -> 
-      trans_typ θ' Aᵃ Aᵈ ->
-      trans_typ θ' Bᵃ Bᵈ ->
       d_mono_typ (ss_to_denv θ' ) T ->
-      dwl_to_denv Ω ⊢ Aᵈ <: T ->
-      dwl_to_denv Ω ⊢ T <: Bᵈ ->
-      θ ⫦ aworklist_constvar Γ X (abind_bound Aᵃ Bᵃ) ⇝ Ω ⫣  (X, dbind_typ T) :: θ'
+      θ ⫦ aworklist_constvar Γ X abind_etvar_empty ⇝ Ω ⫣  (X, dbind_typ T) :: θ'
 where "θ ⫦ Γᵃ ⇝ Γᵈ ⫣ θ'" := (trans_worklist θ Γᵃ Γᵈ θ').
 
 Hint Constructors trans_typ : Hdb_transfer.
@@ -471,8 +467,8 @@ Hint Constructors wf_ss : Hdb_transfer.
 Hint Resolve a_wf_wl_wf_ss : Hdb_a_wl_red_soundness.
 
 
-Lemma etvar_in_awl_in_ss : forall θ θ' Γ Ω X A B,
-   ⊢ᵃ Γ -> θ ⫦ Γ ⇝ Ω ⫣ θ' -> binds X (abind_bound A B) (awl_to_aenv Γ) ->
+Lemma etvar_in_awl_in_ss : forall θ θ' Γ Ω X,
+   ⊢ᵃ Γ -> θ ⫦ Γ ⇝ Ω ⫣ θ' -> binds X abind_etvar_empty (awl_to_aenv Γ) ->
    exists Tᵈ, binds X Tᵈ θ'.
 Proof with eauto with Hdb_transfer.
   intros. 
@@ -491,11 +487,11 @@ Proof with eauto with Hdb_transfer.
     apply IHa_wf_wl in H2... destruct H2 as [Tᵈ].
     exists Tᵈ. apply binds_cons...
   - simpl in H1. inversion H1. 
-    + dependent destruction H5.
-      dependent destruction H4.
+    + dependent destruction H3.
+      dependent destruction H2.
       exists (dbind_typ T)...
-    + dependent destruction H4.
-      apply IHa_wf_wl in H4... destruct H4 as [Tᵈ].
+    + dependent destruction H2.
+      eapply IHa_wf_wl in H2... destruct H2 as [Tᵈ].
       exists Tᵈ. apply binds_cons...
   - simpl in H1. dependent destruction H2.
     apply IHa_wf_wl in H2...
@@ -514,7 +510,7 @@ Proof with eauto with Hdb_transfer.
     eauto...
   - inversion H1. inversion H2; subst...
     eauto...
-  - inversion H5. inversion H6; subst...
+  - inversion H1. inversion H2; subst...
     eauto...
 Qed.
 
@@ -530,14 +526,14 @@ Proof with eauto with Hdb_transfer.
     eauto...
   - inversion H1. inversion H2; subst...
     eauto...
-  - inversion H5. inversion H6; subst...
+  - inversion H1. inversion H2; subst...
     eauto...
 Qed.
 
 
-Lemma trans_wl_in_ss_etvar : forall Γ X Ω θ A B,
+Lemma trans_wl_in_ss_etvar : forall Γ X Ω θ,
   nil ⫦ Γ ⇝ Ω ⫣ θ ->
-  binds X (abind_bound A B) (awl_to_aenv Γ) ->
+  binds X abind_etvar_empty (awl_to_aenv Γ) ->
   exists T, X ~ T ∈ θ.
 Proof with eauto with Hdb_transfer.
   intros. dependent induction H.
@@ -551,9 +547,9 @@ Proof with eauto with Hdb_transfer.
     destruct H1 as [T]. exists T...
   - inversion H1. inversion H2; subst...
     apply IHtrans_worklist in H2...
-  - inversion H5. inversion H6; subst...
-    apply IHtrans_worklist in H6...
-    destruct H6 as [T']. exists T'...
+  - inversion H1. inversion H2; subst...
+    apply IHtrans_worklist in H2...
+    destruct H2 as [T']. exists T'...
 Qed.
 
 
@@ -716,7 +712,7 @@ Proof with eauto with Hdb_transfer.
     + exists exp_unit...
     + exists (exp_var_f x)... 
     + inst_cofinites_by (L `union` (fvar_in_exp e) `union` dom (awl_to_aenv Γ)).
-      assert (⊢ᵃ aworklist_consvar Γ x (abind_typ T)) by auto.
+      assert (⊢ᵃ aworklist_consvar Γ x (abind_var_typ T)) by auto.
       eapply a_wf_typ_trans_typ in H...
       destruct H as [Tᵈ].
       eapply H1 with (θ:=θ) in H4...
@@ -806,11 +802,12 @@ Proof.
     dependent destruction H1.
     simpl. apply d_wf_typ_weaken_cons. auto.
   - simpl. apply d_wf_typ_weaken_cons. auto.
-  - simpl. inversion H5.
-    dependent destruction H6.
-    eapply d_sub_dwft; eauto.
+  - simpl. inversion H1.
+    dependent destruction H2.
+    admit.
+    (* eapply d_sub_dwft; eauto. *)
     auto.
-Qed.
+Admitted.
 
 Lemma trans_typ_s_in : forall θ X Aᵃ Aᵈ,
   θ ⫦ᵗ Aᵃ ⇝ Aᵈ ->
@@ -832,7 +829,7 @@ Proof.
     auto.
   - econstructor; auto.
   - econstructor; auto.
-Admitted.
+Qed.
 
 Lemma tran_wl_wf_trans_typ : forall Γ Ω θ Aᵃ Aᵈ,
   lc_typ Aᵃ ->
