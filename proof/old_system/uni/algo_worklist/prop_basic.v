@@ -14,5 +14,4 @@ Theorem a_mono_typ_wf : forall aE A,
   a_mono_typ aE A -> a_wf_typ aE A.
 Proof.
   intros. induction H; auto.
-  eapply a_wf_typ__etvar; eauto.
 Qed.
