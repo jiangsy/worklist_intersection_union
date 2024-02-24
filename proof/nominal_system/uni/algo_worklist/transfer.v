@@ -232,7 +232,7 @@ Inductive trans_worklist : subst_set -> aworklist -> dworklist -> subst_set -> P
       d_mono_typ (ss_to_denv θ' ) T ->
       dwl_to_denv Ω ⊢ Aᵈ <: T ->
       dwl_to_denv Ω ⊢ T <: Bᵈ ->
-      θ ⫦ aworklist_constvar Γ X (abind_bound Aᵃ Bᵃ) ⇝ Ω ⫣  (X, dbind_typ T) :: θ'
+      θ ⫦ aworklist_constvar Γ X (abind_bound Aᵃ Bᵃ) ⇝ dworklist_conswork Ω (work_sub Aᵈ Bᵈ) ⫣  (X, dbind_typ T) :: θ'
 where "θ ⫦ Γᵃ ⇝ Γᵈ ⫣ θ'" := (trans_worklist θ Γᵃ Γᵈ θ').
 
 Hint Constructors trans_typ : Hdb_transfer.

@@ -74,7 +74,7 @@ Inductive a_bound_update : a_bound_mode -> aworklist -> typ -> typ -> aworklist 
       Y `notin` dom (awl_to_aenv Γ) ->
       a_insert_fresh_evar_before Γ X1 Y Γ' Γ'' ->
       a_bound_update a_bound_mode__lower Γ (typ_var_f X1) (typ_var_f X2) 
-        (aworklist_conswork (aworklist_conswork (awl_app Γ' Γ'') 
+        (aworklist_conswork (aworklist_conswork (awl_app Γ'' Γ') 
             (work_sub (typ_var_f X1) (typ_var_f Y))) 
             (work_sub (typ_var_f X2) (typ_var_f Y))) (typ_var_f Y)
   | a_bu__lub_evar_r : forall (L:vars) Γ Γ' Γ'' X1 X2 Y A1 A2 B1 B2, 
@@ -84,7 +84,7 @@ Inductive a_bound_update : a_bound_mode -> aworklist -> typ -> typ -> aworklist 
       Y `notin` dom (awl_to_aenv Γ) ->
       a_insert_fresh_evar_before Γ X1 Y Γ' Γ'' ->
       a_bound_update a_bound_mode__lower Γ (typ_var_f X2) (typ_var_f X1) 
-        (aworklist_conswork (aworklist_conswork (awl_app Γ' Γ'') 
+        (aworklist_conswork (aworklist_conswork (awl_app Γ'' Γ') 
             (work_sub (typ_var_f X1) (typ_var_f Y))) 
             (work_sub (typ_var_f X2) (typ_var_f Y))) (typ_var_f Y)
   | a_bu__lub_evar_mono_l : forall (L:vars) Γ Γ' Γ'' X Y T A B, 
@@ -93,7 +93,7 @@ Inductive a_bound_update : a_bound_mode -> aworklist -> typ -> typ -> aworklist 
       (* TODO: check T is not evar *)
       a_insert_fresh_evar_before Γ X Y Γ' Γ'' ->
       a_bound_update a_bound_mode__lower Γ (typ_var_f X) T
-        (aworklist_conswork (aworklist_conswork (awl_app Γ' Γ'') 
+        (aworklist_conswork (aworklist_conswork (awl_app Γ'' Γ') 
             (work_sub (typ_var_f X) (typ_var_f Y))) 
             (work_sub T (typ_var_f Y))) (typ_var_f Y)
   | a_bu__lub_evar_mono_r : forall (L:vars) Γ Γ' Γ'' X Y T A B, 
@@ -102,7 +102,7 @@ Inductive a_bound_update : a_bound_mode -> aworklist -> typ -> typ -> aworklist 
       (* TODO: check T is not evar *)
       a_insert_fresh_evar_before Γ X Y Γ' Γ'' ->
       a_bound_update a_bound_mode__lower Γ T (typ_var_f X)
-        (aworklist_conswork (aworklist_conswork (awl_app Γ' Γ'') 
+        (aworklist_conswork (aworklist_conswork (awl_app Γ'' Γ') 
             (work_sub (typ_var_f X) (typ_var_f Y))) 
             (work_sub T (typ_var_f Y))) (typ_var_f Y)
   | a_bu__glb_unit : forall Γ, a_bound_update a_bound_mode__upper Γ typ_unit typ_unit Γ typ_unit
@@ -119,38 +119,38 @@ Inductive a_bound_update : a_bound_mode -> aworklist -> typ -> typ -> aworklist 
       binds X (abind_bound A1 B1) (awl_to_aenv Γ) ->
       binds X (abind_bound A2 B2) (awl_to_aenv Γ) ->
       a_evs_in_wl Γ X Y ->
-      Z `notin` dom (awl_to_aenv Γ) ->
+      Y `notin` dom (awl_to_aenv Γ) ->
       a_insert_fresh_evar_before Γ X Z Γ' Γ'' ->
       a_bound_update a_bound_mode__upper Γ (typ_var_f X) (typ_var_f Y) 
-        (aworklist_conswork (aworklist_conswork (awl_app Γ' Γ'') 
+        (aworklist_conswork (aworklist_conswork (awl_app Γ'' Γ') 
             (work_sub (typ_var_f Z) (typ_var_f X))) 
             (work_sub (typ_var_f Z) (typ_var_f Y))) (typ_var_f Z)
   | a_bu__glb_evar_r : forall (L:vars)  Γ Γ' Γ'' X Y Z A1 A2 B1 B2, 
       binds X (abind_bound A1 B1) (awl_to_aenv Γ) ->
       binds X (abind_bound A2 B2) (awl_to_aenv Γ) ->
       a_evs_in_wl Γ X Y ->
-      Z `notin` dom (awl_to_aenv Γ) ->
+      Y `notin` dom (awl_to_aenv Γ) ->
       a_insert_fresh_evar_before Γ X Z Γ' Γ'' ->
       a_bound_update a_bound_mode__upper Γ (typ_var_f X) (typ_var_f Y) 
-        (aworklist_conswork (aworklist_conswork (awl_app Γ' Γ'') 
+        (aworklist_conswork (aworklist_conswork (awl_app Γ'' Γ') 
             (work_sub (typ_var_f Z) (typ_var_f X))) 
             (work_sub (typ_var_f Z) (typ_var_f Y))) (typ_var_f Z)
   | a_bu__glb_evar_mono_l : forall (L:vars) Γ Γ' Γ'' X Y T A B, 
       binds X (abind_bound A B) (awl_to_aenv Γ) ->
-      Y `notin` dom (awl_to_aenv Γ) ->
       (* TODO: check T is not evar *)
+      Y `notin` dom (awl_to_aenv Γ) ->
       a_insert_fresh_evar_before Γ X Y Γ' Γ'' ->
       a_bound_update a_bound_mode__upper Γ (typ_var_f X) T
-        (aworklist_conswork (aworklist_conswork (awl_app Γ' Γ'') 
+        (aworklist_conswork (aworklist_conswork (awl_app Γ'' Γ') 
             (work_sub (typ_var_f Y) (typ_var_f X))) 
             (work_sub (typ_var_f Y) T)) (typ_var_f Y)
   | a_bu__glb_evar_mono_r : forall (L:vars) Γ Γ' Γ'' X Y T A B, 
       binds X (abind_bound A B) (awl_to_aenv Γ) ->
-      Y `notin` dom (awl_to_aenv Γ) ->
       (* TODO: check T is not evar *)
+      Y `notin` dom (awl_to_aenv Γ) ->
       a_insert_fresh_evar_before Γ X Y Γ' Γ'' ->
       a_bound_update a_bound_mode__upper Γ T (typ_var_f X)
-        (aworklist_conswork (aworklist_conswork (awl_app Γ' Γ'') 
+        (aworklist_conswork (aworklist_conswork (awl_app Γ'' Γ') 
             (work_sub (typ_var_f Y) (typ_var_f X))) 
             (work_sub (typ_var_f Y) T)) (typ_var_f Y)
 .
@@ -326,6 +326,9 @@ Inductive a_wl_red : aworklist -> Prop :=    (* defn a_wl_red *)
  | a_wl_red__inf_app : forall (Γ:aworklist) (e1 e2:exp) (c:cont),
      a_wl_red (aworklist_conswork Γ (work_infer e1  (  (cont_infabs  (  (cont_infapp e2 c)  ) )  ) )) ->
      a_wl_red (aworklist_conswork Γ (work_infer  ( (exp_app e1 e2) )  c))
+ | a_wl_red__inf_abs : forall (Γ:aworklist) (e:exp) (c:cont),
+     a_wl_red (aworklist_conswork Γ (work_apply c (typ_arrow typ_top typ_bot))) ->
+     a_wl_red (aworklist_conswork Γ (work_infer  ( (exp_abs e) )  c))
  (* TODO: add inf_abs_mono  *)
  | a_wl_red__infapp : forall (Γ:aworklist) (A1 A2:typ) (e:exp) (c:cont),
      a_wl_red (aworklist_conswork (aworklist_conswork Γ (work_check e A1)) (work_apply c A2)) ->
