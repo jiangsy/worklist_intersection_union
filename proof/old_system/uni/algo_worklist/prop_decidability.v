@@ -397,15 +397,25 @@ Fixpoint infabs_depth (A : typ) : nat :=
   | typ_bot => 2
   | typ_all A => 1 + infabs_depth A
   | typ_intersection A1 A2 => 1 + infabs_depth A1 + infabs_depth A2
-  | typ_union A1 A2 => 1 + infabs_depth A1 + infabs_depth A2
+  | typ_union A1 A2 => 2 + infabs_depth A1 + infabs_depth A2
   | typ_var_f _ => 2
   | typ_var_b _ => 2
   | _ => 0
   end.
 
+Fixpoint infabs_depth_cont (c : cont) : nat :=
+  match c with
+  | cont_infabs c => 1 + infabs_depth_cont c
+  | cont_infabsunion A c => 1 + infabs_depth A + infabs_depth_cont c
+  | cont_unioninfabs _ c => 1 + infabs_depth_cont c
+  | _ => 0
+  end.
+
 Definition infabs_depth_work (w : work) : nat :=
   match w with
-  | work_infabs A c => infabs_depth A
+  | work_infabs A c => infabs_depth A + infabs_depth_cont c
+  | work_infabsunion _ A c => 1 + infabs_depth A + infabs_depth_cont c
+  | work_unioninfabs _ _ c => 1 + infabs_depth_cont c
   | _ => 0
   end.
 
@@ -723,7 +733,7 @@ Proof.
 Qed.
 
 Lemma apply_cont_infabs_depth_arr : forall c A B w,
-  apply_cont c (typ_arrow A B) w -> infabs_depth_work w <= 1.
+  apply_cont c (typ_arrow A B) w -> infabs_depth_work w <= infabs_depth_cont c.
 Proof.
   intros c A B w Happly.
   dependent destruction Happly; simpl; eauto.
@@ -1111,7 +1121,33 @@ Proof.
       * admit. (* TODO *)
     + admit. (* TODO *)
     + admit. (* TODO *)
-    + admit. (* TODO *)
+    + simpl in *. dependent destruction Hm. dependent destruction H2.
+      dependent destruction H;
+        try solve [right; intro Hcontra; dependent destruction Hcontra];
+      dependent destruction H1;
+        try solve [right; intro Hcontra; dependent destruction Hcontra].
+      destruct (apply_cont_dec c (typ_arrow  ( (typ_intersection A1 A2) )   ( (typ_union A0 A3) ) )) as [[w Happly] | Happly];
+      try solve [right; intro Hcontra; dependent destruction Hcontra; dependent destruction Hcontra;
+        eapply Happly; eauto].
+      assert (Jg: a_wl_red (aworklist_conswork Γ w) \/
+                ~ a_wl_red (aworklist_conswork Γ w)).
+      { destruct (measp_wl_total (aworklist_conswork Γ w)) as [m Hm'].
+        admit. (* safe: wf *)
+        eapply IHnaj; eauto; simpl in *; try lia.
+        admit. (* safe: wf *)
+        eapply apply_cont_exp_size in Happly; lia.
+        eapply apply_cont_judge_size in Happly; lia.
+        eapply apply_cont_inftapp_all_size_arr in Happly; lia.
+        eapply apply_cont_inftapp_depth_arr in Happly; lia.
+        eapply apply_cont_inftapp_judge_size in Happly; lia.
+        eapply apply_cont_infabs_depth_arr in Happly; lia.
+        eapply apply_cont_infabs_judge_size in Happly; lia. }
+      destruct Jg as [Jg | Jg]; eauto.
+      right. intro Hcontra.
+      dependent destruction Hcontra.
+      dependent destruction Hcontra.
+      eapply apply_cont_det in Happly; eauto.
+      subst. eauto.
     + simpl in *. dependent destruction Hm. dependent destruction H1.
       dependent destruction H1. dependent destruction H3.
       assert (Hw': weight A >= 1) by apply weight_gt_0.
