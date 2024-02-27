@@ -263,7 +263,8 @@ Inductive a_wl_red : aworklist -> Prop :=    (* defn a_wl_red *)
      
      
 
-(* defns Jaworklist_reduction
+(* defns Jaworklist_reduction *)
+(*
 Inductive a_wl_red_ss : aworklist -> aworklist -> Prop :=    (* defn a_wl_red_ss *)
  | a_wl_red_ss__empty : a_wl_red_ss aworklist_empty aworklist_empty
  | a_wl_red_ss__gc_var : forall (Γ:aworklist) (x:expvar) (A:typ),
