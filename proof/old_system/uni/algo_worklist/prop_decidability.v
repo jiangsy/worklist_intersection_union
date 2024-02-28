@@ -1187,7 +1187,7 @@ Proof.
         admit. (* safe: wf *)
         eapply apply_cont_exp_size in Happly; lia.
         eapply apply_cont_judge_size in Happly; lia.
-        eapply apply_cont_inftapp_all_size_arr in Happly; lia.
+        (* eapply apply_cont_inftapp_all_size_arr in Happly; lia. *)
         eapply apply_cont_inftapp_depth_arr in Happly; lia.
         eapply apply_cont_inftapp_judge_size in Happly; lia.
         eapply apply_cont_infabs_depth_arr in Happly; lia.
@@ -1210,6 +1210,7 @@ Proof.
       { intros A1 A2 Heq. subst. dependent destruction H3.
         eapply IHnw with (m := ((3 * m + all_size A) * (1 + iu_size A2) + (3 * n2 + all_size A2) * (1 + iu_size A)) + ((3 * m + all_size A) * (1 + iu_size A1) + (3 * n1 + all_size A1) * (1 + iu_size A)) + n); eauto; try lia.
         admit. (* safe: wf *)
+        admit. (* INCORRECT because of inftapp_work is 1 for work_sub *)
         assert (HspA: split_size (aworklist_conswork Γ (work_sub A A1)) A m) by admit.
         assert (HspA2: split_size (aworklist_conswork Γ (work_sub A A1)) A2 n2) by admit.
         eapply measp_wl_conswork with
@@ -1255,6 +1256,7 @@ Proof.
         eapply IHnw with (m := ((3 * n2 + all_size A2) * (1 + iu_size A0) + (3 * m0 + all_size A0) * (1 + iu_size A2)) +
                                 ((3 * n1 + all_size A1) * (1 + iu_size A0) + (3 * m0 + all_size A0) * (1 + iu_size A1)) + n); eauto; try lia.
         admit. (* safe: wf *)
+        admit. (* INCORRECT because of inftapp_work is 1 for work_sub *)
         assert (HspA: split_size (aworklist_conswork Γ (work_sub A1 A0)) A0 m0) by admit.
         assert (HspA2: split_size (aworklist_conswork Γ (work_sub A1 A0)) A2 n2) by admit.
         eapply measp_wl_conswork with
@@ -1406,6 +1408,7 @@ Proof.
                                     (3 * ns3 + all_size A3) * (1 + iu_size A2)) +
                                     ((3 * ns0 + all_size A0) * (1 + iu_size A1) +
                                     (3 * ns1 + all_size A1) * (1 + iu_size A0)) + n); eauto.
+            admit. (* INCORRECT because of inftapp_work is 1 for work_sub *)
             eapply measp_wl_conswork with (n := ((3 * ns0 + all_size A0) * (1 + iu_size A1) +
                                                     (3 * ns1 + all_size A1) * (1 + iu_size A0)) + n); eauto; try lia.
             lia. simpl in *. lia. }
