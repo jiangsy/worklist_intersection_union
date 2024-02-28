@@ -456,13 +456,34 @@ Fixpoint inftapp_depth (A : typ) : nat :=
   | typ_all A => 1 + inftapp_depth A
   | typ_union A1 A2 => 1 + inftapp_depth A1 + inftapp_depth A2
   | typ_intersection A1 A2 => 1 + inftapp_depth A1 + inftapp_depth A2
+  (* | typ_bot => 1 *)
+  | typ_var_b _ => 1
   | _ => 0
+  end.
+
+Fixpoint inftapp_depth_cont (c : cont) : nat :=
+  match c with
+  | cont_inftapp A c => (1 + inftapp_depth A) * inftapp_depth_cont c
+  | cont_infabs c => inftapp_depth_cont c
+  | cont_infabsunion _ c => inftapp_depth_cont c
+  | cont_infapp _ c => inftapp_depth_cont c
+  | cont_inftappunion _ _ c => inftapp_depth_cont c
+  | cont_unioninftapp _ c => inftapp_depth_cont c
+  | cont_unioninfabs _ c => inftapp_depth_cont c
+  | _ => 1
   end.
 
 Definition inftapp_depth_work (w : work) : nat :=
   match w with
-  | work_inftapp A _ _ => inftapp_depth A
-  | _ => 0
+  | work_inftapp A B c => (1 + inftapp_depth A) * (1 + inftapp_depth B) * inftapp_depth_cont c
+  | work_infer _ c => inftapp_depth_cont c
+  | work_infabs _ c => inftapp_depth_cont c
+  | work_infabsunion _ _ c => inftapp_depth_cont c
+  | work_infapp _ _ c => inftapp_depth_cont c
+  | work_inftappunion _ _ _ c => inftapp_depth_cont c
+  | work_unioninftapp _ _ c => inftapp_depth_cont c
+  | work_unioninfabs _ _ c => inftapp_depth_cont c
+  | _ => 1
   end.
 
 Fixpoint inftapp_depth_wl (Γ : aworklist) : nat :=
@@ -740,7 +761,7 @@ Proof.
 Qed.
 
 Lemma apply_cont_inftapp_depth_arr : forall c A B w,
-  apply_cont c (typ_arrow A B) w -> inftapp_depth_work w = 0.
+  apply_cont c (typ_arrow A B) w -> inftapp_depth_work w = inftapp_depth_cont c.
 Proof.
   intros c A B w Happly.
   dependent destruction Happly; simpl; eauto.
@@ -754,7 +775,7 @@ Proof.
 Qed.
 
 Lemma apply_cont_inftapp_depth_bot : forall c w,
-  apply_cont c typ_bot w -> inftapp_depth_work w = 0.
+  apply_cont c typ_bot w -> inftapp_depth_work w = inftapp_depth_cont c.
 Proof.
   intros c w Happly.
   dependent destruction Happly; simpl; eauto.
@@ -781,11 +802,24 @@ Proof.
   induction Happly; simpl; eauto.
 Qed.
 
-Lemma decidablity_lemma : forall ne nj nta nt ntj na naj nm nw Γ m,
+Lemma apply_cont_inftapp_depth : forall c A w,
+  apply_cont c A w -> inftapp_depth_work w <= (1 + inftapp_depth A) * inftapp_depth_cont c.
+Proof.
+  intros c A w Happly.
+  induction Happly; simpl; try lia.
+Qed.
+
+Lemma inftapp_depth_open_typ_wrt_typ : forall A B,
+  inftapp_depth (open_typ_wrt_typ A B) < (1 + inftapp_depth A) * (1 + inftapp_depth B).
+Proof.
+  intros A B.
+  induction A; simpl; eauto; try lia.
+Admitted. (* TODO: @jiangsy pls help me *)
+
+Lemma decidablity_lemma : forall ne nj nt ntj na naj nm nw Γ m,
   ⊢ᵃ Γ ->
   exp_size_wl Γ < ne ->
   judge_size_wl Γ < nj ->
-  inftapp_all_size_wl Γ < nta ->
   inftapp_depth_wl Γ < nt ->
   inftapp_judge_size_wl Γ < ntj ->
   infabs_depth_wl Γ < na ->
@@ -796,14 +830,13 @@ Lemma decidablity_lemma : forall ne nj nta nt ntj na naj nm nw Γ m,
 Proof.
   intros ne; induction ne;
   intros nj; induction nj;
-  intros nta; induction nta;
   intros nt; induction nt;
   intros ntj; induction ntj;
   intros na; induction na;
   intros naj; induction naj;
   intros nm; induction nm;
   intros nw; induction nw; try lia.
-  intros Γ m Hwf He Hj Hta Ht Htj Ha Haj Hm Hlt Hw.
+  intros Γ m Hwf He Hj Ht Htj Ha Haj Hm Hlt Hw.
   dependent destruction Hwf; auto.
   - dependent destruction Hm. simpl in *.
     assert (Jg: a_wl_red aW \/ ~ a_wl_red aW).
@@ -1024,7 +1057,6 @@ Proof.
           admit. (* safe: wf *)
           eapply apply_cont_exp_size in Happly; lia.
           eapply apply_cont_judge_size in Happly; lia.
-          eapply apply_cont_inftapp_all_size_arr in Happly; lia.
           eapply apply_cont_inftapp_depth_arr in Happly; lia.
           eapply apply_cont_inftapp_judge_size in Happly; lia.
           eapply apply_cont_infabs_depth_arr in Happly; lia.
@@ -1090,7 +1122,8 @@ Proof.
           admit. (* safe: wf *)
           eapply apply_cont_exp_size in Happly; lia.
           eapply apply_cont_judge_size in Happly; lia.
-          eapply apply_cont_inftapp_all_size_bot in Happly; lia.
+          assert (Hfact: weight A2 * inftapp_depth_cont c >= inftapp_depth_cont c) by admit.
+          (* oh my lia *)
           eapply apply_cont_inftapp_depth_bot in Happly; lia.
           eapply apply_cont_inftapp_judge_size in Happly; lia. }
         destruct Jg as [Jg | Jg]; eauto.
@@ -1106,11 +1139,16 @@ Proof.
                   ~ a_wl_red (aworklist_conswork Γ w)).
         { destruct (measp_wl_total (aworklist_conswork Γ w)) as [m Hm'].
           admit. (* safe: wf *)
-          eapply IHnta; eauto; simpl in *; try lia.
+          eapply IHnt; eauto; simpl in *; try lia.
           admit. (* safe: wf *)
           eapply apply_cont_exp_size in Happly; lia.
           eapply apply_cont_judge_size in Happly; lia.
-          admit. (* NOT TRUE!!!!!! *)  }
+          eapply apply_cont_inftapp_depth in Happly.
+          assert (Hfact: inftapp_depth (open_typ_wrt_typ A A2) < (1 + inftapp_depth A) * (1 + inftapp_depth A2))
+            by eapply inftapp_depth_open_typ_wrt_typ.
+          assert (Hfact'': inftapp_depth_work w <= (1 + inftapp_depth A) * (1 + inftapp_depth A2) * inftapp_depth_cont c)
+            by admit. (* oh my lia *)
+          admit. (* oh my lia *)  }
         destruct Jg as [Jg | Jg]; eauto.
         right. intro Hcontra.
         dependent destruction Hcontra.
