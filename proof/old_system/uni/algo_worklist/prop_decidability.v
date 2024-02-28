@@ -809,12 +809,24 @@ Proof.
   induction Happly; simpl; try lia.
 Qed.
 
+Lemma inftapp_depth_open_typ_wrt_typ_rec : forall A B n,
+  inftapp_depth (open_typ_wrt_typ_rec n B A) < (1 + inftapp_depth A) * (1 + inftapp_depth B).
+Proof.
+  induction A; intros; simpl; eauto; try lia.
+  - destruct (lt_eq_lt_dec n n0).
+    + destruct s; simpl; eauto; lia.
+    + simpl; eauto; lia.
+  - specialize (IHA B (S n)). lia.
+  - specialize (IHA1 B n). specialize (IHA2 B n). lia.
+  - specialize (IHA1 B n). specialize (IHA2 B n). lia.
+Qed.
+
 Lemma inftapp_depth_open_typ_wrt_typ : forall A B,
   inftapp_depth (open_typ_wrt_typ A B) < (1 + inftapp_depth A) * (1 + inftapp_depth B).
 Proof.
-  intros A B.
-  induction A; simpl; eauto; try lia.
-Admitted. (* TODO: @jiangsy pls help me *)
+  intros. unfold open_typ_wrt_typ.
+  apply inftapp_depth_open_typ_wrt_typ_rec.
+Qed.
 
 Lemma decidablity_lemma : forall ne nj nt ntj na naj nm nw Γ m,
   ⊢ᵃ Γ ->
