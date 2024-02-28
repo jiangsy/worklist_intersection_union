@@ -470,7 +470,7 @@ Fixpoint inftapp_depth_cont (c : cont) : nat :=
   | cont_inftappunion _ _ c => inftapp_depth_cont c
   | cont_unioninftapp _ c => inftapp_depth_cont c
   | cont_unioninfabs _ c => inftapp_depth_cont c
-  | _ => 1
+  | _ => 0
   end.
 
 Definition inftapp_depth_work (w : work) : nat :=
@@ -483,7 +483,7 @@ Definition inftapp_depth_work (w : work) : nat :=
   | work_inftappunion _ _ _ c => inftapp_depth_cont c
   | work_unioninftapp _ _ c => inftapp_depth_cont c
   | work_unioninfabs _ _ c => inftapp_depth_cont c
-  | _ => 1
+  | _ => 0
   end.
 
 Fixpoint inftapp_depth_wl (Γ : aworklist) : nat :=
@@ -1210,7 +1210,7 @@ Proof.
       { intros A1 A2 Heq. subst. dependent destruction H3.
         eapply IHnw with (m := ((3 * m + all_size A) * (1 + iu_size A2) + (3 * n2 + all_size A2) * (1 + iu_size A)) + ((3 * m + all_size A) * (1 + iu_size A1) + (3 * n1 + all_size A1) * (1 + iu_size A)) + n); eauto; try lia.
         admit. (* safe: wf *)
-        admit. (* INCORRECT because of inftapp_work is 1 for work_sub *)
+        (* admit. *) (* INCORRECT because of inftapp_work is 1 for work_sub *)
         assert (HspA: split_size (aworklist_conswork Γ (work_sub A A1)) A m) by admit.
         assert (HspA2: split_size (aworklist_conswork Γ (work_sub A A1)) A2 n2) by admit.
         eapply measp_wl_conswork with
@@ -1256,7 +1256,7 @@ Proof.
         eapply IHnw with (m := ((3 * n2 + all_size A2) * (1 + iu_size A0) + (3 * m0 + all_size A0) * (1 + iu_size A2)) +
                                 ((3 * n1 + all_size A1) * (1 + iu_size A0) + (3 * m0 + all_size A0) * (1 + iu_size A1)) + n); eauto; try lia.
         admit. (* safe: wf *)
-        admit. (* INCORRECT because of inftapp_work is 1 for work_sub *)
+        (* admit. *) (* INCORRECT because of inftapp_work is 1 for work_sub *)
         assert (HspA: split_size (aworklist_conswork Γ (work_sub A1 A0)) A0 m0) by admit.
         assert (HspA2: split_size (aworklist_conswork Γ (work_sub A1 A0)) A2 n2) by admit.
         eapply measp_wl_conswork with
@@ -1312,6 +1312,11 @@ Proof.
           eapply judge_size_wl_aworklist_subst in Hsub as Heq. lia.
         - admit.
         - admit. 
+        - admit.
+        - admit.
+        - admit.
+        - admit.
+        - admit.
       }
       dependent destruction H.
       * dependent destruction H0;
@@ -1408,7 +1413,7 @@ Proof.
                                     (3 * ns3 + all_size A3) * (1 + iu_size A2)) +
                                     ((3 * ns0 + all_size A0) * (1 + iu_size A1) +
                                     (3 * ns1 + all_size A1) * (1 + iu_size A0)) + n); eauto.
-            admit. (* INCORRECT because of inftapp_work is 1 for work_sub *)
+            (* admit. *) (* INCORRECT because of inftapp_work is 1 for work_sub *)
             eapply measp_wl_conswork with (n := ((3 * ns0 + all_size A0) * (1 + iu_size A1) +
                                                     (3 * ns1 + all_size A1) * (1 + iu_size A0)) + n); eauto; try lia.
             lia. simpl in *. lia. }
@@ -1485,7 +1490,9 @@ Proof.
                         ~ a_wl_red (aworklist_conswork (aworklist_constvar Γ X abind_stvar_empty) (work_sub  ( open_typ_wrt_typ A (typ_var_f X) )   ( open_typ_wrt_typ A0 (typ_var_f X) ) ))).
            { eapply IHnw with (m := (3 * n1 + all_size (A ^ᵈ X)) * iu_size (A0 ^ᵈ X) + (3 * n3 + all_size (A0 ^ᵈ X)) * iu_size (A ^ᵈ X) + n); eauto; simpl in *; try lia.
              admit. (* safe: wf *)
-             eapply measp_wl_conswork; eauto; try lia. }
+             eapply measp_wl_conswork; eauto; try lia. 
+             admit.
+             }
            destruct JgAll as [JgAll | JgAll]; eauto.
            ++ left. eapply a_wl_red__sub_all with (L := union L (union L0 (union L1 (union L2 (union (ftvar_in_typ A) (ftvar_in_typ A0)))))); eauto.
               intros X' Hnin. admit. (* safe: rename *)
