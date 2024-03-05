@@ -29,16 +29,19 @@ Fixpoint exp_size (e : exp) : nat :=
   | exp_var_f _ => 1
   | exp_abs e => 1 + exp_size e
   | exp_app e1 e2 => 1 + exp_size e1 + exp_size e2
-  | exp_tabs (body_anno e A) => 1 + exp_size e * (1 + iu_size A)
+  | exp_tabs b => 1 + body_size b
   | exp_tapp e _ => 1 + exp_size e
   | exp_anno e A => 1 + exp_size e * (1 + iu_size A)
+  end
+with body_size (b : body) : nat :=
+  match b with 
+  | body_anno e A => exp_size e * (1 + iu_size A)
   end.
 
 Lemma exp_size_gt_0 : forall e,
   exp_size e > 0.
 Proof.
   induction e; simpl; try lia.
-  destruct body5. lia.
 Qed.
 
 Fixpoint exp_size_cont (c : cont) : nat :=
@@ -610,13 +613,17 @@ Qed.
 
 Lemma exp_size_subst_tvar_in_exp_mono : forall Γ A X e,
   a_mono_typ Γ A ->
-  exp_size (subst_tvar_in_exp A X e) = exp_size e.
+  exp_size (subst_tvar_in_exp A X e) = exp_size e
+with body_size_subst_tvar_in_body_mono : forall Γ A X b,
+  a_mono_typ Γ A ->
+  body_size (subst_tvar_in_body A X b) = body_size b.
 Proof.
-  intros Γ A X e Hmono.
+  - intros Γ A X e Hmono.
   induction e; simpl; eauto.
-  admit.
-  rewrite IHe. erewrite iu_size_subst_mono; eauto. 
-Admitted.
+  erewrite iu_size_subst_mono; eauto.
+  - intros. destruct b. simpl. 
+  erewrite iu_size_subst_mono; eauto. 
+Qed.
 
 Lemma exp_size_cont_subst_tvar_in_cont_mono : forall Γ X A c,
   a_mono_typ Γ A ->
