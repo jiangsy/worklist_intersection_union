@@ -454,42 +454,34 @@ Fixpoint inftapp_all_size_wl (Γ : aworklist) : nat :=
 Fixpoint inftapp_depth (A : typ) : nat :=
   match A with
   | typ_all A => 1 + inftapp_depth A
-  | typ_union A1 A2 => 3 + inftapp_depth A1 + inftapp_depth A2
-  | typ_intersection A1 A2 => 3 + inftapp_depth A1 + inftapp_depth A2
+  | typ_union A1 A2 => 1 + inftapp_depth A1 + inftapp_depth A2
+  | typ_intersection A1 A2 => 1 + inftapp_depth A1 + inftapp_depth A2
   | typ_var_b _ => 1
   | _ => 0
   end.
 
-Definition norm_ans (mul ans : nat) : nat :=
-  match mul with
-  | 1 => ans
-  | _ => mul + ans
-  end.
-
-Fixpoint inftapp_depth_cont_tail_rec (c : cont) (mul ans : nat) : nat :=
+Fixpoint inftapp_depth_cont_tail_rec (c : cont) (ans : nat) : nat :=
   match c with
-  | cont_inftapp A c => inftapp_depth_cont_tail_rec c ((1 + inftapp_depth A) * mul) ans
-  | cont_inftappunion A B c => inftapp_depth_cont_tail_rec c ((1 + inftapp_depth A) * (1 + inftapp_depth B)) (norm_ans mul (1 + ans))
-  | cont_infabs c => inftapp_depth_cont_tail_rec c 1 (norm_ans mul ans)
-  | cont_infabsunion _ c => inftapp_depth_cont_tail_rec c 1 (norm_ans mul ans)
-  | cont_infapp _ c => inftapp_depth_cont_tail_rec c 1 (norm_ans mul ans)
-  | cont_unioninftapp A c => inftapp_depth_cont_tail_rec c 1 (norm_ans mul (inftapp_depth A + ans))
-  | cont_unioninfabs _ c => inftapp_depth_cont_tail_rec c 1 (norm_ans mul ans)
-  | _ => norm_ans mul ans
+  | cont_inftapp B c        => inftapp_depth_cont_tail_rec c ((2 + inftapp_depth B) * ans)
+  | cont_inftappunion A B c => inftapp_depth_cont_tail_rec c ((inftapp_depth A) * (2 + inftapp_depth B) + 1 + ans)
+  | cont_infabs c           => inftapp_depth_cont_tail_rec c ans
+  | cont_infabsunion _ c    => inftapp_depth_cont_tail_rec c ans
+  | cont_infapp _ c         => inftapp_depth_cont_tail_rec c ans
+  | cont_unioninftapp A c   => inftapp_depth_cont_tail_rec c (1 + inftapp_depth A + ans)
+  | cont_unioninfabs _ c    => inftapp_depth_cont_tail_rec c ans
+  | _                       => ans
   end.
-
-Definition inftapp_depth_cont (c : cont) : nat := inftapp_depth_cont_tail_rec c 1 0.
 
 Definition inftapp_depth_work (w : work) : nat :=
   match w with
-  | work_inftapp A B c => inftapp_depth_cont_tail_rec (cont_inftapp B c) (1 + inftapp_depth A) 0
-  | work_inftappunion A1 A2 B c => inftapp_depth_cont_tail_rec (cont_inftappunion A2 B c) 1 (inftapp_depth A1)
-  | work_infer _ c => inftapp_depth_cont c
-  | work_infabs _ c => inftapp_depth_cont c
-  | work_infabsunion _ _ c => inftapp_depth_cont c
-  | work_infapp _ _ c => inftapp_depth_cont c
-  | work_unioninftapp A1 A2 c => inftapp_depth_cont_tail_rec c 1 (inftapp_depth A1 + inftapp_depth A2)
-  | work_unioninfabs _ _ c => inftapp_depth_cont c
+  | work_inftapp A B c => inftapp_depth_cont_tail_rec (cont_inftapp B c) (inftapp_depth A)
+  | work_inftappunion A1 A2 B c => inftapp_depth_cont_tail_rec c (inftapp_depth A1 + (inftapp_depth A2) * (2 + inftapp_depth B) + 1)
+  | work_infer _ c => inftapp_depth_cont_tail_rec c 0
+  | work_infabs _ c => inftapp_depth_cont_tail_rec c 0
+  | work_infabsunion _ _ c => inftapp_depth_cont_tail_rec c 0
+  | work_infapp _ _ c => inftapp_depth_cont_tail_rec c 0
+  | work_unioninftapp A1 A2 c => inftapp_depth_cont_tail_rec c (1 + inftapp_depth A1 + inftapp_depth A2)
+  | work_unioninfabs _ _ c => inftapp_depth_cont_tail_rec c 0
   | _ => 0
   end.
 
@@ -501,7 +493,7 @@ Fixpoint inftapp_depth_wl (Γ : aworklist) : nat :=
   | aworklist_conswork Γ' w => inftapp_depth_work w + inftapp_depth_wl Γ'
   end.
 
-#[local] Hint Unfold inftapp_depth_cont_tail_rec inftapp_depth inftapp_depth_cont inftapp_depth_work inftapp_depth_wl : core.
+#[local] Hint Unfold inftapp_depth_cont_tail_rec inftapp_depth inftapp_depth_work inftapp_depth_wl : core.
 
 Fixpoint infabs_judge_size_cont (c : cont) : nat :=
   match c with
@@ -769,11 +761,32 @@ Proof.
   dependent destruction Happly; simpl; eauto.
 Qed.
 
+Lemma inftapp_depth_cont_tail_rec_le : forall c ans1 ans2,
+  ans1 <= ans2 ->
+  inftapp_depth_cont_tail_rec c ans1 <= inftapp_depth_cont_tail_rec c ans2.
+Proof.
+  intros c.
+  induction c; intros; simpl; eauto; try eapply IHc; try lia.
+  assert (inftapp_depth A * ans1 <= inftapp_depth A * ans2).
+  { eapply mult_le_compat; eauto. } lia.
+Qed.
+
+Lemma inftapp_depth_cont_tail_rec_lt : forall c ans1 ans2,
+  ans1 < ans2 ->
+  inftapp_depth_cont_tail_rec c ans1 < inftapp_depth_cont_tail_rec c ans2.
+Proof.
+  intros c.
+  induction c; intros; simpl; eauto; try eapply IHc; try lia.
+  assert (inftapp_depth A * ans1 <= inftapp_depth A * ans2).
+  { eapply mult_le_compat; eauto. lia. } lia.
+Qed.
+
 Lemma apply_cont_inftapp_depth_arr : forall c A B w,
-  apply_cont c (typ_arrow A B) w -> inftapp_depth_work w = inftapp_depth_cont c.
+  apply_cont c (typ_arrow A B) w -> inftapp_depth_work w <= inftapp_depth_cont_tail_rec c 0.
 Proof.
   intros c A B w Happly.
-  dependent destruction Happly; simpl; eauto.
+  dependent destruction Happly; try solve [simpl; eauto].
+  simpl. eapply inftapp_depth_cont_tail_rec_le; lia.
 Qed.
 
 Lemma apply_cont_inftapp_all_size_arr : forall c A B w,
@@ -784,10 +797,11 @@ Proof.
 Qed.
 
 Lemma apply_cont_inftapp_depth_bot : forall c w,
-  apply_cont c typ_bot w -> inftapp_depth_work w = inftapp_depth_cont c.
+  apply_cont c typ_bot w -> inftapp_depth_work w <= inftapp_depth_cont_tail_rec c 0.
 Proof.
   intros c w Happly.
   dependent destruction Happly; simpl; eauto.
+  simpl. eapply inftapp_depth_cont_tail_rec_le; lia.
 Qed.
 
 Lemma apply_cont_inftapp_all_size_bot : forall c w,
@@ -811,149 +825,12 @@ Proof.
   induction Happly; simpl; eauto.
 Qed.
 
-Lemma norm_ans_mul_le : forall mul1 mul2 ans,
-  mul1 <= mul2 -> norm_ans mul1 ans <= norm_ans mul2 ans.
-Proof.
-  intros mul1 mul2 ans Hle.
-  destruct mul1; destruct mul2; simpl; eauto; try lia.
-  - destruct mul2; simpl; eauto; try lia.
-  - destruct mul1; destruct mul2; simpl; eauto; try lia.
-Qed.
-
-Lemma norm_ans_ans_le : forall mul ans1 ans2,
-  ans1 <= ans2 -> norm_ans mul ans1 <= norm_ans mul ans2.
-Proof.
-  intros mul ans1 ans2 Hle.
-  destruct mul; simpl; eauto; try lia.
-  destruct mul; simpl; eauto; try lia.
-Qed.
-
-Lemma norm_ans_mul_lt : forall mul1 mul2 ans,
-  mul1 >= 1 -> mul1 < mul2 -> norm_ans mul1 ans < norm_ans mul2 ans.
-Proof.
-  intros mul1 mul2 ans Hgt Hlt.
-  destruct mul1; try lia.
-  destruct mul1; destruct mul2; simpl; eauto; try lia; destruct mul2; try lia.
-Qed.
-
-Lemma norm_ans_ans_lt : forall mul ans1 ans2,
-  ans1 < ans2 -> norm_ans mul ans1 < norm_ans mul ans2.
-Proof.
-  intros mul ans1 ans2 Hlt.
-  destruct mul; simpl; eauto; try lia.
-  destruct mul; simpl; eauto; try lia.
-Qed.
-
-Lemma inftapp_depth_cont_tail_rec_ans_le : forall c mul ans1 ans2,
-  ans1 <= ans2 -> inftapp_depth_cont_tail_rec c mul ans1 <= inftapp_depth_cont_tail_rec c mul ans2.
-Proof.
-  intros c.
-  induction c; intros; simpl; try solve [eapply norm_ans_ans_le in H; eauto];
-    apply IHc; eauto; eapply norm_ans_ans_le; eauto; try lia.
-Qed.
-
-Lemma inftapp_depth_cont_tail_rec_ans_lt : forall c mul ans1 ans2,
-  ans1 < ans2 -> inftapp_depth_cont_tail_rec c mul ans1 < inftapp_depth_cont_tail_rec c mul ans2.
-Proof.
-  intros c.
-  induction c; intros; simpl; try solve [eapply norm_ans_ans_lt in H; eauto];
-    apply IHc; eauto; eapply norm_ans_ans_lt; eauto; try lia.
-Qed.
-
-Lemma inftapp_depth_cont_tail_rec_mul_le : forall c mul1 mul2 ans,
-  mul1 <= mul2 -> inftapp_depth_cont_tail_rec c mul1 ans <= inftapp_depth_cont_tail_rec c mul2 ans.
-Proof.
-  intros c.
-  induction c; intros; simpl; try eapply inftapp_depth_cont_tail_rec_ans_le;
-    try eapply norm_ans_mul_le; eauto.
-  eapply IHc; eauto.
-  assert (Hle: inftapp_depth A * mul1 ≤ inftapp_depth A * mul2).
-  { eapply mult_le_compat; eauto. }
-  lia.
-Qed.
-
-Lemma inftapp_depth_cont_tail_rec_mul_lt : forall c mul1 mul2 ans,
-  mul1 >= 1 -> mul1 < mul2 -> inftapp_depth_cont_tail_rec c mul1 ans < inftapp_depth_cont_tail_rec c mul2 ans.
-Proof.
-  intros c.
-  induction c; intros; simpl; try eapply inftapp_depth_cont_tail_rec_ans_lt;
-    try eapply norm_ans_mul_lt; eauto.
-  eapply IHc; eauto. lia.
-  assert (Hle: inftapp_depth A * mul1 ≤ inftapp_depth A * mul2).
-  { eapply mult_le_compat; eauto. lia. }
-  lia.
-Qed.
-
-Lemma norm_ans_le : forall mul1 mul2 ans1 ans2,
-  mul1 >= 1 -> mul1 <= mul2 ->
-  mul1 + ans1 ≤ mul2 + ans2 -> norm_ans mul1 ans1 <= norm_ans mul2 ans2.
-Proof.
-  intros mul1 mul2 ans1 ans2 Hge Hle1 Hle2.
-  destruct mul1; destruct mul2; simpl; eauto; try lia.
-  destruct mul1; destruct mul2; try lia.
-Qed.
-
-Lemma norm_ans_lt : forall mul1 mul2 ans1 ans2,
-  mul1 >= 1 -> mul1 < mul2 ->
-  mul1 + ans1 < mul2 + ans2 -> norm_ans mul1 ans1 < norm_ans mul2 ans2.
-Proof.
-  intros mul1 mul2 ans1 ans2 Hgt Hlt1 Hlt2.
-  destruct mul1; destruct mul2; simpl; eauto; try lia.
-  destruct mul1; destruct mul2; try lia.
-Qed.
-
-Lemma inftapp_depth_cont_tail_rec_le : forall c mul1 mul2 ans1 ans2,
-  mul1 >= 1 ->
-  mul1 <= mul2 -> mul1 + ans1 <= mul2 + ans2 ->
-  inftapp_depth_cont_tail_rec c mul1 ans1 <= inftapp_depth_cont_tail_rec c mul2 ans2.
-Proof.
-  intros c.
-  induction c; intros; simpl; try eapply norm_ans_mul_le; try eapply IHc; eauto;
-    try solve [eapply le_n_S; eapply norm_ans_le; try lia];
-    try eapply norm_ans_le; try lia.
-  - assert (Hle: inftapp_depth A * mul1 ≤ inftapp_depth A * mul2).
-    { eapply mult_le_compat; eauto. } lia.
-  - assert (Hle: inftapp_depth A * mul1 ≤ inftapp_depth A * mul2).
-    { eapply mult_le_compat; eauto. } lia.
-  - assert (Hle: norm_ans mul1 (S ans1) <= norm_ans mul2 (S ans2)).
-    { eapply norm_ans_le; eauto. lia. } lia.
-Qed.
-
-Lemma inftapp_depth_cont_tail_rec_lt : forall c mul1 mul2 ans1 ans2,
-  mul1 >= 1 ->
-  mul1 < mul2 -> mul1 + ans1 < mul2 + ans2 ->
-  inftapp_depth_cont_tail_rec c mul1 ans1 < inftapp_depth_cont_tail_rec c mul2 ans2.
-Proof.
-  intros c.
-  induction c; intros; simpl; try eapply inftapp_depth_cont_tail_rec_ans_lt;
-    try eapply norm_ans_lt; eauto; try lia.
-  assert (Hle: inftapp_depth A * mul1 <= inftapp_depth A * mul2).
-  { eapply mult_le_compat; eauto. lia. }
-  eapply IHc; eauto; try lia.
-Qed.
-
-(* Lemma inftapp_depth_cont_tail_rec_eq : forall c n,
-  n >= 1 ->
-  inftapp_depth_cont_tail_rec c 1 n <= inftapp_depth_cont_tail_rec c n 0.
-Proof.
-  intros c.
-  induction c; intros; simpl.
-  destruct n; simpl. lia. *)
-
 Lemma apply_cont_inftapp_depth : forall c A w,
-  apply_cont c A w -> inftapp_depth_work w <= inftapp_depth_cont_tail_rec c (1 + inftapp_depth A) 0.
+  apply_cont c A w -> inftapp_depth_work w <= inftapp_depth_cont_tail_rec c (inftapp_depth A).
 Proof.
   intros c A w Happly.
-  induction Happly; simpl; unfold inftapp_depth_cont; unfold norm_ans; simpl; try lia.
-  - destruct (inftapp_depth A); simpl; try lia.
-    eapply inftapp_depth_cont_tail_rec_ans_le; eauto; lia.
-  - destruct (inftapp_depth A); simpl; try lia.
-    eapply inftapp_depth_cont_tail_rec_ans_le; eauto; lia.
-  - destruct (inftapp_depth A2); destruct (inftapp_depth C1); simpl; try lia.
-    eapply inftapp_depth_cont_tail_rec_ans_le; eauto; lia.
-    eapply inftapp_depth_cont_tail_rec_ans_le; eauto; lia.
-  - destruct (inftapp_depth A2); simpl; try lia.
-    eapply inftapp_depth_cont_tail_rec_ans_le; eauto; lia.
+  induction Happly; simpl;
+    try eapply inftapp_depth_cont_tail_rec_le; try lia.
 Qed.
 
 Lemma inftapp_depth_open_typ_wrt_typ_rec : forall A B n,
@@ -1282,8 +1159,7 @@ Proof.
           eapply apply_cont_exp_size in Happly; lia.
           eapply apply_cont_judge_size in Happly; lia.
           eapply apply_cont_inftapp_depth_bot in Happly.
-          specialize (inftapp_depth_cont_tail_rec_mul_le c 1 (S (inftapp_depth A2 * 1)) 0 ltac:(lia)) as H.
-          unfold inftapp_depth_cont in Happly. lia.
+          rewrite mult_0_r in Ht. lia.
           eapply apply_cont_inftapp_judge_size in Happly; lia. }
         destruct Jg as [Jg | Jg]; eauto.
         right. intro Hcontra.
@@ -1298,18 +1174,24 @@ Proof.
                   ~ a_wl_red (aworklist_conswork Γ w)).
         { destruct (measp_wl_total (aworklist_conswork Γ w)) as [m Hm'].
           admit. (* safe: wf *)
-          eapply IHnt; eauto; simpl in *; try lia.
+          eapply IHntj; eauto; simpl in *; try lia.
           admit. (* safe: wf *)
           eapply apply_cont_exp_size in Happly; lia.
           eapply apply_cont_judge_size in Happly; lia.
           eapply apply_cont_inftapp_depth in Happly.
           assert (Hfact: inftapp_depth (open_typ_wrt_typ A A2) < (1 + inftapp_depth A) * (1 + inftapp_depth A2))
             by eapply inftapp_depth_open_typ_wrt_typ.
-          assert (Hfact': inftapp_depth_work w <= inftapp_depth_cont_tail_rec c ((1 + inftapp_depth A) * (1 + inftapp_depth A2)) 0).
-          { eapply le_trans; eauto. eapply inftapp_depth_cont_tail_rec_mul_le. lia. }
-          assert (Hfact'': inftapp_depth_cont_tail_rec c ((1 + inftapp_depth A) * (1 + inftapp_depth A2)) 0 < inftapp_depth_cont_tail_rec c (S (S (inftapp_depth A + inftapp_depth A2 * S (S (inftapp_depth A))))) 0).
-          { eapply inftapp_depth_cont_tail_rec_mul_lt; eauto; lia. }
-          lia. }
+          assert (Hfact': inftapp_depth_work w <= inftapp_depth_cont_tail_rec c ((1 + inftapp_depth A) * (1 + inftapp_depth A2))).
+          { eapply le_trans; eauto. eapply inftapp_depth_cont_tail_rec_le. lia. }
+          assert (Hfact'': inftapp_depth_cont_tail_rec c ((1 + inftapp_depth A) * (1 + inftapp_depth A2)) <= inftapp_depth_cont_tail_rec c
+          (S
+             (inftapp_depth A +
+              S
+                (inftapp_depth A +
+                 inftapp_depth A2 * S (inftapp_depth A))))).
+          { eapply inftapp_depth_cont_tail_rec_le; eauto; lia. }
+          lia.
+          eapply apply_cont_inftapp_judge_size in Happly; lia. }
         destruct Jg as [Jg | Jg]; eauto.
         right. intro Hcontra.
         dependent destruction Hcontra.
@@ -1320,30 +1202,17 @@ Proof.
                   ~ a_wl_red (aworklist_conswork Γ (work_inftapp A1 A2  (  (cont_inftappunion A0 A2 c)  ) ))).
         { eapply IHnt; eauto; simpl in *; try lia.
           assert (inftapp_depth_cont_tail_rec c
-          (S (inftapp_depth A2 + inftapp_depth A0 * S (inftapp_depth A2)))
-          match
-            inftapp_depth A1 + inftapp_depth A2 * S (inftapp_depth A1)
-          with
-          | 0 => 1
-          | S _ =>
-              S
-                (inftapp_depth A1 + inftapp_depth A2 * S (inftapp_depth A1) +
-                 1)
-          end
-                    < inftapp_depth_cont_tail_rec c
-                    (S
-                       (S
-                          (S
-                             (S
-                                (inftapp_depth A1 + inftapp_depth A0 +
-                                 inftapp_depth A2 *
-                                 S
-                                   (S
-                                      (S
-                                         (S (inftapp_depth A1 + inftapp_depth A0)))))))))
-                    0).
-          { eapply inftapp_depth_cont_tail_rec_lt; eauto; try lia.
-            destruct (inftapp_depth A1); destruct (inftapp_depth A2); simpl; try lia. } 
+          (inftapp_depth A0 * S (S (inftapp_depth A2)) + 1 +
+           (inftapp_depth A1 +
+            (inftapp_depth A1 + inftapp_depth A2 * inftapp_depth A1)))
+            < inftapp_depth_cont_tail_rec c
+            (S
+               (inftapp_depth A1 + inftapp_depth A0 +
+                S
+                  (inftapp_depth A1 + inftapp_depth A0 +
+                   inftapp_depth A2 *
+                   S (inftapp_depth A1 + inftapp_depth A0))))).
+          { eapply inftapp_depth_cont_tail_rec_lt; eauto; try lia. }
           lia. }
         destruct Jg as [Jg | Jg]; eauto.
         right. intro Hcontra.
@@ -1353,38 +1222,30 @@ Proof.
                    ~ a_wl_red (aworklist_conswork Γ (work_inftapp A1 A2 c))).
         { eapply IHnt; eauto; simpl in *; try lia.
           assert (inftapp_depth_cont_tail_rec c
-                    (S (inftapp_depth A1 + inftapp_depth A2 * S (inftapp_depth A1))) 0
-                    < inftapp_depth_cont_tail_rec c
+          (inftapp_depth A1 +
+           (inftapp_depth A1 + inftapp_depth A2 * inftapp_depth A1))
+                    <  inftapp_depth_cont_tail_rec c
                     (S
-                       (S
-                          (S
-                             (S
-                                (inftapp_depth A1 + inftapp_depth A0 +
-                                 inftapp_depth A2 *
-                                 S
-                                   (S
-                                      (S
-                                         (S (inftapp_depth A1 + inftapp_depth A0)))))))))
-                    0).
+                       (inftapp_depth A1 + inftapp_depth A0 +
+                        S
+                          (inftapp_depth A1 + inftapp_depth A0 +
+                           inftapp_depth A2 *
+                           S (inftapp_depth A1 + inftapp_depth A0))))).
           { eapply inftapp_depth_cont_tail_rec_lt; eauto; try lia. }
           lia. }
         assert (Jg2: a_wl_red (aworklist_conswork Γ (work_inftapp A0 A2 c)) \/
                    ~ a_wl_red (aworklist_conswork Γ (work_inftapp A0 A2 c))).
         { eapply IHnt; eauto; simpl in *; try lia.
           assert (inftapp_depth_cont_tail_rec c
-                    (S (inftapp_depth A0 + inftapp_depth A2 * S (inftapp_depth A0))) 0
+          (inftapp_depth A0 +
+           (inftapp_depth A0 + inftapp_depth A2 * inftapp_depth A0))
                     < inftapp_depth_cont_tail_rec c
                     (S
-                       (S
-                          (S
-                             (S
-                                (inftapp_depth A1 + inftapp_depth A0 +
-                                 inftapp_depth A2 *
-                                 S
-                                   (S
-                                      (S
-                                         (S (inftapp_depth A1 + inftapp_depth A0)))))))))
-                    0).
+                       (inftapp_depth A1 + inftapp_depth A0 +
+                        S
+                          (inftapp_depth A1 + inftapp_depth A0 +
+                           inftapp_depth A2 *
+                           S (inftapp_depth A1 + inftapp_depth A0))))).
           { eapply inftapp_depth_cont_tail_rec_lt; eauto; try lia. }
           lia. }
         destruct Jg1 as [Jg1 | Jg1]; eauto.
@@ -1394,23 +1255,17 @@ Proof.
         apply Jg1; auto. apply Jg2; auto.
     + simpl in *. dependent destruction Hm. dependent destruction H3.
       assert (Jg: a_wl_red (aworklist_conswork Γ (work_inftapp A2 B  (  (cont_unioninftapp A1 c)  ) )) \/
-              ~ a_wl_red (aworklist_conswork Γ (work_inftapp A2 B  (  (cont_unioninftapp A1 c)  ) ))).
+                ~ a_wl_red (aworklist_conswork Γ (work_inftapp A2 B  (  (cont_unioninftapp A1 c)  ) ))).
       { eapply IHntj; eauto; simpl; try lia.
-        assert (inftapp_depth_cont_tail_rec c 1
-                  match
-                    inftapp_depth A2 + inftapp_depth B * S (inftapp_depth A2)
-                  with
-                  | 0 => inftapp_depth A1 + 0
-                  | S _ =>
-                      S
-                        (inftapp_depth A2 + inftapp_depth B * S (inftapp_depth A2) +
-                        (inftapp_depth A1 + 0))
-                  end
-                  <= inftapp_depth_cont_tail_rec c
-                  (S (inftapp_depth B + inftapp_depth A2 * S (inftapp_depth B)))
-                  (S (inftapp_depth A1))).
-        { eapply inftapp_depth_cont_tail_rec_le; eauto; try lia.
-          destruct (inftapp_depth A1); destruct (inftapp_depth A2); destruct (inftapp_depth B); simpl; try lia. }
+        assert (inftapp_depth_cont_tail_rec c
+        (S
+           (inftapp_depth A1 +
+            (inftapp_depth A2 +
+             (inftapp_depth A2 + inftapp_depth B * inftapp_depth A2))))
+             <= inftapp_depth_cont_tail_rec c
+             (inftapp_depth A1 +
+              inftapp_depth A2 * S (S (inftapp_depth B)) + 1)).
+          { eapply inftapp_depth_cont_tail_rec_le; eauto; try lia. }
         lia. }
       destruct Jg as [Jg | Jg]; eauto.
       right. intro Hcontra.
@@ -1424,13 +1279,17 @@ Proof.
                 ~ a_wl_red (aworklist_conswork Γ w)).
       { destruct (measp_wl_total (aworklist_conswork Γ w)) as [m Hm'].
         admit. (* safe: wf *)
-        eapply IHnt; eauto; simpl in *; try lia.
+        eapply IHntj; eauto; simpl in *; try lia.
         admit. (* safe: wf *)
         eapply apply_cont_exp_size in Happly; lia.
         eapply apply_cont_judge_size in Happly; lia.
         eapply apply_cont_inftapp_depth in Happly.
-        admit. (* @jiangsy PLEASE CHECK THIS. *)
-      }
+        assert (inftapp_depth_cont_tail_rec c
+        (inftapp_depth (typ_union A1 A2)) <= inftapp_depth_cont_tail_rec c
+        (S (inftapp_depth A1 + inftapp_depth A2))). 
+        { eapply inftapp_depth_cont_tail_rec_le; eauto; lia. }
+        lia.
+        eapply apply_cont_inftapp_judge_size in Happly; lia. }
       destruct Jg as [Jg | Jg]; eauto.
       right. intro Hcontra.
       dependent destruction Hcontra.
