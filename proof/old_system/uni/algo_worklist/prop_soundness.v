@@ -166,8 +166,8 @@ Ltac trans_all_typ :=
 (* define a extended relation of a_update_bound extended with Ω and θ ? *)
 
 Lemma a_update_bound_transfer_same_dworklist: forall Γ Ω θ X A E m Γ1 Γ2 LB UB,
-  a_update_bound Γ X A m E Γ1 Γ2 LB UB ->
-  trans_worklist nil (awl_rev_app Γ2 (aworklist_constvar (awl_rev_app (aenv_to_awl E) Γ1) X (abind_bound LB UB)) )  Ω θ ->
+  aworklist_subst Γ X T E Γ1 Γ2 ->
+  trans_worklist nil (awl_app Γ2 (aworklist_constvar (awl_app (aenv_to_awl E) Γ1) X (abind_bound LB UB)) )  Ω θ ->
   exists θ', trans_worklist nil Γ Ω θ'.
 Proof with auto with Hdb_a_wl_red_soundness.
   intros. generalize dependent θ. generalize dependent Ω. dependent induction H.
@@ -291,7 +291,7 @@ Proof with eauto with Hdb_a_wl_red_soundness.
     inst_cofinites_by (L `union` singleton X1) using_name X2.
     admit.
   (* ^X < ^Y  *)
-  - assert ( ⊢ᵃ awl_rev_app Γ3 (aworklist_constvar (awl_rev_app (aenv_to_awl E) Γ2) X (abind_bound LB UB))) by admit.
+  - assert ( ⊢ᵃ awl_app Γ3 (aworklist_constvar (awl_app (aenv_to_awl E) Γ2) X (abind_bound LB UB))) by admit.
     _apply_IH_a_wl_red.
     eapply a_update_bound_transfer_same_dworklist in Htrans...
     admit.

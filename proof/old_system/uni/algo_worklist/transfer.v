@@ -693,6 +693,19 @@ Proof with auto with Hdb_transfer.
       apply trans_typ_rename...
 Admitted.
 
+Lemma trans_exp_rename_tvar_cons : forall θ eᵃ eᵈ X X', 
+  (X, dbind_tvar_empty) :: θ ⫦ᵉ eᵃ ⇝ eᵈ ->
+  X' \notin dom θ ->
+  (X', dbind_tvar_empty) :: θ ⫦ᵉ subst_tvar_in_exp (` X') X eᵃ ⇝ subst_tvar_in_exp (` X') X eᵈ.
+Admitted.
+
+
+Lemma trans_body_rename_tvar_cons : forall θ bᵃ bᵈ X X', 
+  (X, dbind_tvar_empty) :: θ ⫦ᵇ bᵃ ⇝ bᵈ ->
+  X' \notin dom θ ->
+  (X', dbind_tvar_empty) :: θ ⫦ᵇ subst_tvar_in_body (` X') X bᵃ ⇝ subst_tvar_in_body (` X') X bᵈ.
+Admitted.
+
 
 Lemma a_wf_exp_trans_exp : forall θ Γ Ω eᵃ,
   a_wf_exp (awl_to_aenv Γ) eᵃ ->  
@@ -733,10 +746,11 @@ Proof with eauto with Hdb_transfer.
       eapply a_wf_body_trans_body with (Ω:=dworklist_constvar Ω X dbind_tvar_empty) (θ:=(X, dbind_tvar_empty)::θ) in H2...
       destruct H2 as [bᵈ].
       exists (exp_tabs (close_body_wrt_typ X bᵈ)).
-      eapply trans_exp__tabs with (L:=L). intros.
+      eapply trans_exp__tabs with (L:=L `union` dom θ). intros.
       erewrite (subst_tvar_in_body_intro X)...
       erewrite (subst_tvar_in_body_intro X (close_body_wrt_typ X bᵈ)) by apply close_body_tvar_notin.
-      admit.
+      rewrite open_body_wrt_typ_close_body_wrt_typ.
+      apply trans_body_rename_tvar_cons with (X':=X0) in H2; auto.
     + apply IHa_wf_exp in H2 as Htrans_e; auto.
       eapply a_wf_typ_trans_typ with (θ:=θ) (Ω:=Ω) in H as Htrans_A; auto.  
       destruct Htrans_e as [eᵈ].
@@ -757,7 +771,8 @@ Proof with eauto with Hdb_transfer.
       destruct H as [Aᵈ].
       exists (body_anno eᵈ Aᵈ)...
       econstructor...
-Abort.
+Qed.
+
 
 Fixpoint denv_no_var (Ψ : denv) :=
   match Ψ with 
@@ -1051,7 +1066,7 @@ Qed.
 
 Corollary etvar_bind_no_etvar: forall θ X1 X2 A1 A2,
   wf_ss θ ->
-  X1 ~ A1 ∈  θ ->
+  X1 ~ A1 ∈ θ ->
   X2 ~ A2 ∈ θ ->
   X1 \notin ftvar_in_typ A2.
 Proof with eauto with Hdb_transfer.
@@ -1169,9 +1184,12 @@ Proof with eauto with Hdb_transfer.
     exists typ_bot...
   - destruct (X0 == X) in *; destruct (X == X0) in *; subst; try contradiction.
     + exists (` X0). simpl. unfold eq_dec. destruct (EqDec_eq_of_X X0 X0).
-      * split. admit. econstructor... 
+      * split.
+        (* needs wf_ss *)
+        admit. econstructor... 
       * contradiction.
-    + exists A'ᵈ. 
+    + exists A'ᵈ. split.
+      (* X0 ∉ ftv A'ᵈ *)
       admit.
   (* - destruct (X0 == X).
     (* - exists (ld_t_var_f x5).

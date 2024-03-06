@@ -603,8 +603,8 @@ Proof.
   eapply iu_size_mono; eauto.
 Qed.
 
-Lemma exp_size_wl_awl_rev_app : forall Γ1 Γ2,
-  exp_size_wl (awl_rev_app Γ1 Γ2) = exp_size_wl Γ1 + exp_size_wl Γ2.
+Lemma exp_size_wl_awl_app : forall Γ1 Γ2,
+  exp_size_wl (awl_app Γ1 Γ2) = exp_size_wl Γ1 + exp_size_wl Γ2.
 Proof.
   intros Γ1.
   induction Γ1; simpl; auto;
@@ -668,8 +668,8 @@ Proof.
   induction E; simpl; auto.
 Qed.
 
-Lemma judge_size_wl_awl_rev_app : forall Γ1 Γ2,
-  judge_size_wl (awl_rev_app Γ1 Γ2) = judge_size_wl Γ1 + judge_size_wl Γ2.
+Lemma judge_size_wl_awl_app : forall Γ1 Γ2,
+  judge_size_wl (awl_app Γ1 Γ2) = judge_size_wl Γ1 + judge_size_wl Γ2.
 Proof.
   intros Γ1.
   induction Γ1; simpl; auto;
@@ -717,8 +717,8 @@ Lemma measp_wl_aworklist_subst : forall Γ X A E Γ1 Γ2 n,
   aworklist_subst Γ X A E Γ1 Γ2 ->
   measp_wl Γ n ->
   measp_wl
-    (awl_rev_app (subst_tvar_in_aworklist A X Γ2)
-      (awl_rev_app (etvar_list_to_awl E) Γ1)) n.
+    (awl_app (subst_tvar_in_aworklist A X Γ2)
+      (awl_app (etvar_list_to_awl E) Γ1)) n.
 Proof.
   intros Γ X A E Γ1 Γ2 n Hsubst Hmeas.
   induction Hsubst; simpl.
@@ -1425,18 +1425,18 @@ Proof.
                 binds X abind_etvar_empty (awl_to_aenv Γ) ->
                 a_mono_typ (awl_to_aenv Γ) A0 ->
                 aworklist_subst Γ X A0 E Γ1 Γ2 ->
-                a_wl_red (awl_rev_app (subst_tvar_in_aworklist A0 X Γ2) (awl_rev_app (etvar_list_to_awl E) Γ1)) \/
-                ~ a_wl_red (awl_rev_app (subst_tvar_in_aworklist A0 X Γ2) (awl_rev_app (etvar_list_to_awl E) Γ1))).
+                a_wl_red (awl_app (subst_tvar_in_aworklist A0 X Γ2) (awl_app (etvar_list_to_awl E) Γ1)) \/
+                ~ a_wl_red (awl_app (subst_tvar_in_aworklist A0 X Γ2) (awl_app (etvar_list_to_awl E) Γ1))).
       { intros E Γ1 Γ2 X Heq Hbin Hmono Hsub. subst.
         eapply IHnw.
         admit. (* safe: wf *)
-        - rewrite exp_size_wl_awl_rev_app.
-          rewrite exp_size_wl_awl_rev_app.
+        - rewrite exp_size_wl_awl_app.
+          rewrite exp_size_wl_awl_app.
           rewrite exp_size_wl_etvar_list.
           erewrite exp_size_wl_subst_tvar_in_aworklist_mono; eauto. simpl.
           eapply exp_size_wl_aworklist_subst in Hsub as Heq. lia.
-        - rewrite judge_size_wl_awl_rev_app.
-          rewrite judge_size_wl_awl_rev_app.
+        - rewrite judge_size_wl_awl_app.
+          rewrite judge_size_wl_awl_app.
           rewrite judge_size_wl_etvar_list.
           erewrite judge_size_wl_subst_tvar_in_aworklist; eauto. simpl.
           eapply judge_size_wl_aworklist_subst in Hsub as Heq. lia.
