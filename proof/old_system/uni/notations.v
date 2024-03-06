@@ -61,15 +61,25 @@ Notation "{ T' /ᵗ X } T" :=
     ( at level 49, T' at level 50, X at level 0
     , right associativity) : type_scope.
 
-Notation "{ e' /ᵉ x } e" :=
+Notation "{ e' /ᵉₑ x } e" :=
   (subst_var_in_exp e' x e)
     ( at level 49, e' at level 50, x at level 0
     , right associativity) : type_scope.
 
-Notation "{ b' /ᵇ x } b" :=
+Notation "{ b' /ᵇₑ x } b" :=
   (subst_var_in_body b' x b)
     ( at level 49, b' at level 50, x at level 0
     , right associativity) : type_scope.
+
+Notation "{ A /ᶜₜ X } c" :=
+  (subst_tvar_in_cont A X c)
+    ( at level 49, A at level 50, X at level 0
+    , right associativity) : type_scope. 
+
+Notation "{ A /ʷₜ X } w" :=
+  (subst_tvar_in_work A X w)
+    ( at level 49, A at level 50, X at level 0
+    , right associativity) : type_scope. 
 
 Notation "T ^ᵈ X" := (open_typ_wrt_typ T (typ_var_f X))
   (at level 48, left associativity) : type_scope.

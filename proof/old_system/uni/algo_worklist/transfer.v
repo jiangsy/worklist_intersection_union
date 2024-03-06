@@ -553,6 +553,12 @@ Proof with eauto with Hdb_transfer.
 Qed.
 
 
+Lemma wf_ss_rename : forall θ1 θ2 X X',
+  wf_ss (θ2 ++ (X, ▫) :: θ1) ->
+  X' ∉ dom (θ2 ++ θ1) ->
+  wf_ss (map (subst_tvar_in_dbind ` X' X) θ2 ++ (X', ▫) :: θ1).
+Admitted.
+
 Lemma trans_typ_rename : forall θ1 θ2 Aᵃ Aᵈ X X', 
   θ2 ++ (X, dbind_tvar_empty) :: θ1 ⫦ᵗ Aᵃ ⇝ Aᵈ ->
   X' `notin` dom (θ2 ++ θ1) ->
@@ -560,17 +566,27 @@ Lemma trans_typ_rename : forall θ1 θ2 Aᵃ Aᵈ X X',
 Proof with auto with Hdb_transfer.
   intros. dependent induction H; simpl; auto...
   - unfold eq_dec. destruct (EqDec_eq_of_X X0 X); subst.
-    + econstructor... admit.
-    + econstructor... admit. admit. 
+    + econstructor...
+      eapply wf_ss_rename; eauto.
+    + econstructor...
+      eapply wf_ss_rename; eauto.
+      admit.
   - unfold eq_dec. destruct (EqDec_eq_of_X X0 X); subst.
-    + econstructor... admit.
-    + econstructor... admit. admit.
+    + econstructor... 
+      eapply wf_ss_rename; eauto.
+    + econstructor... 
+      eapply wf_ss_rename; eauto.
+      admit.
   - unfold eq_dec. destruct (EqDec_eq_of_X X0 X); subst.
     + admit. (* false *)
-    + econstructor... admit. admit.
-  - econstructor... admit. (* wf_ss *)
-  - econstructor... admit. (* wf_ss *)
-  - econstructor... admit. (* wf_ss *)
+    + econstructor... 
+      eapply wf_ss_rename; eauto. admit. 
+  - econstructor...
+    eapply wf_ss_rename; eauto.  
+  - econstructor...
+    eapply wf_ss_rename; eauto.
+  - econstructor... 
+    eapply wf_ss_rename; eauto.
   - eapply trans_typ__all with (L := L `union` singleton X).
     intros. inst_cofinites_with X0.
     rewrite typ_subst_open_comm...
@@ -641,10 +657,10 @@ Qed.
 
 Lemma trans_exp_rename_var : forall θ eᵃ eᵈ x x', 
   θ ⫦ᵉ eᵃ ⇝ eᵈ ->
-  θ ⫦ᵉ {(exp_var_f x') /ᵉ x} eᵃ ⇝ {(exp_var_f x') /ᵉ x} eᵈ
+  θ ⫦ᵉ {(exp_var_f x') /ᵉₑ x} eᵃ ⇝ {(exp_var_f x') /ᵉₑ x} eᵈ
 with trans_body_rename_var : forall θ bᵃ bᵈ x x', 
   θ ⫦ᵇ bᵃ ⇝ bᵈ ->
-  θ ⫦ᵇ {(exp_var_f x') /ᵇ x} bᵃ ⇝ {(exp_var_f x') /ᵇ x} bᵈ.
+  θ ⫦ᵇ {(exp_var_f x') /ᵇₑ x} bᵃ ⇝ {(exp_var_f x') /ᵇₑ x} bᵈ.
 Proof with auto with Hdb_transfer.
   - intros. dependent induction H; simpl; auto...
     + unfold eq_dec. destruct (EqDec_eq_of_X x0 x); subst.
@@ -697,15 +713,22 @@ Lemma trans_exp_rename_tvar_cons : forall θ eᵃ eᵈ X X',
   (X, dbind_tvar_empty) :: θ ⫦ᵉ eᵃ ⇝ eᵈ ->
   X' \notin dom θ ->
   (X', dbind_tvar_empty) :: θ ⫦ᵉ subst_tvar_in_exp (` X') X eᵃ ⇝ subst_tvar_in_exp (` X') X eᵈ.
-Admitted.
+Proof.
+  intros. 
+  rewrite_env (map (subst_tvar_in_dbind (` X') X) nil  ++ (X', dbind_tvar_empty) :: θ).
+  apply trans_exp_rename_tvar; auto.
+Qed.
 
 
 Lemma trans_body_rename_tvar_cons : forall θ bᵃ bᵈ X X', 
   (X, dbind_tvar_empty) :: θ ⫦ᵇ bᵃ ⇝ bᵈ ->
   X' \notin dom θ ->
   (X', dbind_tvar_empty) :: θ ⫦ᵇ subst_tvar_in_body (` X') X bᵃ ⇝ subst_tvar_in_body (` X') X bᵈ.
-Admitted.
-
+Proof.
+  intros.
+  rewrite_env (map (subst_tvar_in_dbind (` X') X) nil  ++ (X', dbind_tvar_empty) :: θ).
+  apply trans_body_rename_tvar; eauto.
+Qed.
 
 Lemma a_wf_exp_trans_exp : forall θ Γ Ω eᵃ,
   a_wf_exp (awl_to_aenv Γ) eᵃ ->  
@@ -955,7 +978,7 @@ Proof with eauto with Hdb_transfer.
 Qed.
 
 
-Lemma wf_subst_set_strength_etvar_same_denv: forall θ θ' X T,
+Lemma wf_ss_etvar_same_denv: forall θ θ' X T,
   ss_to_denv (θ' ++ θ) = ss_to_denv (θ' ++ (X, dbind_typ T) :: θ).
 Proof.
   intros. induction θ'.
@@ -964,7 +987,7 @@ Proof.
 Qed.
 
 
-Lemma wf_subst_set_strength_etvar: forall θ θ' T X,
+Lemma wf_ss_weaken_etvar: forall θ θ' T X,
   wf_ss (θ' ++ θ) ->
   d_mono_typ (ss_to_denv θ) T ->
   X `notin` dom (θ' ++ θ) ->
@@ -976,12 +999,11 @@ Proof with auto with Hdb_transfer.
     + dependent destruction H. econstructor...
     + dependent destruction H. econstructor...
     + dependent destruction H. econstructor...
-      rewrite <- wf_subst_set_strength_etvar_same_denv...
+      rewrite <- wf_ss_etvar_same_denv...
 Qed.
 
 
-
-Hint Resolve wf_subst_set_strength_etvar : Hdb_transfer.
+Hint Resolve wf_ss_weaken_etvar : Hdb_transfer.
 
 
 
@@ -997,6 +1019,18 @@ Proof with auto with Hdb_transfer.
       dependent destruction H0...
 Qed.
 
+Lemma wf_ss_strengthen_etvar: forall θ1 θ2 T X,
+  wf_ss (θ2 ++ (X, dbind_typ T) :: θ1) ->
+  wf_ss (θ2 ++ θ1).
+Proof.
+  intros.
+  induction θ2; auto.
+  - dependent destruction H; auto.
+  - destruct a; destruct d; simpl; dependent destruction H; 
+    try constructor; auto.
+    rewrite <- wf_ss_etvar_same_denv in H1. auto.
+Qed.
+
 
 Lemma wf_ss_etvar_tvar : forall θ1 θ2 T X,
   wf_ss (θ2 ++ (X, dbind_typ T) :: θ1) ->
@@ -1009,8 +1043,7 @@ Proof with auto with Hdb_transfer.
     dependent destruction H...
     dependent destruction H...
     econstructor...
-    rewrite <- wf_subst_set_strength_etvar_same_denv in H1.
-  
+    rewrite <- wf_ss_etvar_same_denv in H1.
     admit.
 Admitted.
 
@@ -1029,6 +1062,44 @@ Proof with eauto with Hdb_transfer.
     rewrite_env (((X, ▫) :: θ3) ++ θ2 ++ θ1).
     eapply H0; simpl...
 Qed.
+
+Lemma trans_typ_strengthen_etvar : forall θ1 θ2 X T Aᵃ Aᵈ,
+  (θ2 ++ (X, dbind_typ T) :: θ1) ⫦ᵗ Aᵃ ⇝ Aᵈ ->
+  X \notin ftvar_in_typ Aᵃ ->
+  θ2 ++ θ1 ⫦ᵗ Aᵃ ⇝ Aᵈ.
+Proof with eauto with Hdb_transfer.
+  intros.
+  dependent induction H; intros...
+  - econstructor. 
+    eapply wf_ss_strengthen_etvar; eauto.
+    admit.
+  - apply trans_typ__stvar.
+    eapply wf_ss_strengthen_etvar; eauto.
+    admit.
+  - econstructor.
+    eapply wf_ss_strengthen_etvar; eauto.
+    admit.
+  - econstructor.
+    eapply wf_ss_strengthen_etvar; eauto.
+  - econstructor.
+    eapply wf_ss_strengthen_etvar; eauto.
+  - econstructor.
+    eapply wf_ss_strengthen_etvar; eauto.
+  - simpl in H1. econstructor.
+    eapply IHtrans_typ1; eauto. 
+    eapply IHtrans_typ2; eauto. 
+  - eapply trans_typ__all with (L:=L `union` singleton X); eauto.
+    intros. inst_cofinites_with X0.
+    rewrite_env (((X0, ▫) :: θ2) ++ θ1).
+    eapply H0 with (X:=X) (T:=T); eauto.
+    admit.
+  - simpl in H1. econstructor.
+    eapply IHtrans_typ1; eauto. 
+    eapply IHtrans_typ2; eauto. 
+  - simpl in H1. econstructor.
+    eapply IHtrans_typ1; eauto. 
+    eapply IHtrans_typ2; eauto. 
+Admitted.
 
 
 Lemma trans_typ_refl: forall θ A,
