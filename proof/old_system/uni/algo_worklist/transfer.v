@@ -1191,6 +1191,7 @@ Proof with eauto with Hdb_transfer.
     + exists A'ᵈ. split.
       (* X0 ∉ ftv A'ᵈ *)
       admit.
+      admit.
   (* - destruct (X0 == X).
     (* - exists (ld_t_var_f x5).
     destruct (x5 == x).  
