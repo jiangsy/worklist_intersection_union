@@ -452,16 +452,20 @@ Bind Scope aworklist_scope with aworklist.
 
 
 
-Notation " x ~ A ; Γ " :=
+Notation " x ~ᵃ A ;ᵃ Γ " :=
   (aworklist_consvar Γ x (abind_var_typ A))
       (at level 58, A at next level, right associativity) : aworklist_scope.
     
-Notation " X ~ ▫ ; Γ " :=
+Notation " X ~ᵃ □ ;ᵃ Γ " :=
   (aworklist_constvar Γ X abind_tvar_empty)
       (at level 58, right associativity) : aworklist_scope.
 
-Notation " X ~ ▪ ; Γ " :=
+Notation " X ~ᵃ ■;ᵃ Γ " :=
   (aworklist_constvar Γ X abind_stvar_empty)
+      (at level 58, right associativity) : aworklist_scope.
+
+Notation " X ~ᵃ ⬒;ᵃ Γ " :=
+  (aworklist_constvar Γ X abind_etvar_empty)
       (at level 58, right associativity) : aworklist_scope.
 
 Notation " W ⫤ Γ " :=

@@ -267,11 +267,11 @@ Notation " x ~ T ; Ω " :=
     (dworklist_consvar Ω x (dbind_typ T))
         (at level 58, T at next level, right associativity) : dworklist_scope.
       
-  Notation " X ~ ▫ ; Ω " :=
+  Notation " X ~ □ ; Ω " :=
     (dworklist_constvar Ω X dbind_tvar_empty)
         (at level 58, right associativity) : dworklist_scope.
   
-  Notation " X ~ ▪ ; Ω " :=
+  Notation " X ~ ■ ; Ω " :=
     (dworklist_constvar Ω X dbind_stvar_empty)
         (at level 58, right associativity) : dworklist_scope.
   

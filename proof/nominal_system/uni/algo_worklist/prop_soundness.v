@@ -370,30 +370,32 @@ Proof.
 Admitted.
 
 
-Lemma a_update_transfer_similar_worklist : forall Γ Γ' X A B Ω' θ' m,
-  a_bound_update m Γ X A Γ' B ->
+Lemma a_update_transfer_similar_worklist : forall Γ Γ' T1 T2 T3 Ω' θ' m,
+  a_bound_update m Γ T1 T2 Γ' T3 ->
   trans_worklist nil Γ' Ω' θ' ->
-  exists θ Ω, trans_worklist nil Γ Ω θ /\ d_more_constr_worklist Ω' Ω.
+  exists θ Ω, trans_worklist nil Γ Ω θ /\ d_more_constr_worklist Ω' Ω
+  (* /\ (forall X b, binds X b θ' -> binds X b θ) *)
+  .
 Proof.
   intros. generalize dependent θ'. generalize dependent Ω'. dependent induction H.
-  - intros. exists θ'. exists Ω'. split; auto. apply d_more_constr_worklist_refl.
-  - intros. exists θ'. exists Ω'. split; auto. apply d_more_constr_worklist_refl.
-  - intros. exists θ'. exists Ω'. split; auto. apply d_more_constr_worklist_refl.
+  - intros. exists θ'. exists Ω'. repeat split; auto. apply d_more_constr_worklist_refl.
+  - intros. exists θ'. exists Ω'. repeat split; auto. apply d_more_constr_worklist_refl.
+  - intros. exists θ'. exists Ω'. repeat split; auto. apply d_more_constr_worklist_refl.
   - intros. apply IHa_bound_update2 in H1. 
     destruct H1 as [θ1 [Ω1 [Htrans1 Hmw1]]].
     apply IHa_bound_update1 in Htrans1.
     destruct Htrans1 as [θ2 [Ω2 [Htrans2 Hmw2]]].
-    exists θ2, Ω2. split; auto.
+    exists θ2, Ω2. repeat split; auto.
     eapply d_morew_worklist_trans; eauto.
-  - intros. exists θ'. exists Ω'. split; auto. apply d_more_constr_worklist_refl.
+  - intros. exists θ'. exists Ω'. repeat split; auto. apply d_more_constr_worklist_refl.
   - intros.
     dependent destruction H4.
     dependent destruction H4.
     dependent destruction H5.
     dependent destruction H7.
-    eapply a_insert_fresh_evar_before_similar_worklist  with (Ω':=Ω) (θ':=θ) in H3; auto.
+    eapply a_insert_fresh_evar_before_similar_worklist with (Ω':=Ω) (θ':=θ) in H3; auto.
     destruct H3 as [θ'1 [Ω' [Htrans Hmw]]].
-    exists θ'1. exists Ω'. split. auto.
+    exists θ'1. exists Ω'. split; auto.
     apply d_mc_worklist__skipwork. apply d_mc_worklist__skipwork. auto.
   - intros. 
     dependent destruction H4.
@@ -402,7 +404,7 @@ Proof.
     dependent destruction H7.
     eapply a_insert_fresh_evar_before_similar_worklist  with (Ω':=Ω) (θ':=θ) in H3; auto.
     destruct H3 as [θ'1 [Ω' [Htrans Hmw]]].
-    exists θ'1. exists Ω'. split. auto.
+    exists θ'1. exists Ω'. split; auto.
     apply d_mc_worklist__skipwork. apply d_mc_worklist__skipwork. auto.
   - intros.    
     dependent destruction H2.
@@ -462,24 +464,181 @@ Proof.
     apply d_mc_worklist__skipwork. apply d_mc_worklist__skipwork. auto.
 Qed.
 
-Lemma a_reorder_transfer_similar_worklist: forall Γ Ω θ X A E m Γ1 Γ2 LB UB,
+Lemma a_update_transfer_similar_worklist' : forall Γ Γ' T1 T2 T3 Ω' θ' m,
+  a_bound_update m Γ T1 T2 Γ' T3 ->
+  trans_worklist nil Γ' Ω' θ' ->
+  exists θ Ω, trans_worklist nil Γ Ω θ /\ d_more_constr_worklist Ω' Ω
+  /\ (forall X b, binds X b θ' -> binds X b θ) /\ 
+  ( match m with 
+    | a_bound_mode__lower => forall T1ᵈ T2ᵈ T3ᵈ, trans_typ θ T1 T1ᵈ -> trans_typ θ' T3 T3ᵈ -> trans_typ θ' T2 T2ᵈ -> 
+                                             dwl_to_denv Ω' ⊢ T3ᵈ <: T1ᵈ /\ dwl_to_denv Ω' ⊢ T3ᵈ <: T2ᵈ 
+    | a_bound_mode__upper => forall T1ᵈ T2ᵈ T3ᵈ, trans_typ θ T1 T1ᵈ -> trans_typ θ' T3 T3ᵈ -> trans_typ θ' T2 T2ᵈ -> 
+                                             dwl_to_denv Ω' ⊢ T1ᵈ <: T3ᵈ /\ dwl_to_denv Ω' ⊢ T1ᵈ <: T3ᵈ 
+    end
+  )
+  .
+Proof.
+  (* intros. generalize dependent θ'. generalize dependent Ω'. dependent induction H.
+  - intros. exists θ'. exists Ω'. repeat split; auto. apply d_more_constr_worklist_refl.
+  - intros. exists θ'. exists Ω'. repeat split; auto. apply d_more_constr_worklist_refl.
+  - intros. exists θ'. exists Ω'. repeat split; auto. apply d_more_constr_worklist_refl.
+  - intros. apply IHa_bound_update2 in H1. 
+    destruct H1 as [θ1 [Ω1 [Htrans1 Hmw1]]].
+    apply IHa_bound_update1 in Htrans1.
+    destruct Htrans1 as [θ2 [Ω2 [Htrans2 Hmw2]]].
+    exists θ2, Ω2. repeat split; auto.
+    eapply d_morew_worklist_trans; intuition; eauto.
+    intuition.
+  - intros. exists θ'. exists Ω'. repeat split; auto. apply d_more_constr_worklist_refl.
+  - intros.
+    dependent destruction H4.
+    dependent destruction H4.
+    dependent destruction H5.
+    dependent destruction H7.
+    eapply a_insert_fresh_evar_before_similar_worklist'  with (Ω':=Ω) (θ':=θ) in H3; auto.
+    destruct H3 as [θ'1 [Ω' [Htrans Hmw]]].
+    exists θ'1. exists Ω'. repeat split; intuition; auto.
+    apply d_mc_worklist__skipwork. apply d_mc_worklist__skipwork. auto.
+    admit.
+  - intros. 
+    dependent destruction H4.
+    dependent destruction H4.
+    dependent destruction H5.
+    dependent destruction H7.
+    eapply a_insert_fresh_evar_before_similar_worklist'  with (Ω':=Ω) (θ':=θ) in H3; auto.
+    destruct H3 as [θ'1 [Ω' [Htrans Hmw]]].
+    exists θ'1. exists Ω'. repeat split; intuition; auto.
+    apply d_mc_worklist__skipwork. apply d_mc_worklist__skipwork. auto.
+    admit.
+  - intros.    
+    dependent destruction H2.
+    dependent destruction H2.
+    eapply a_insert_fresh_evar_before_similar_worklist'  with (Ω':=Ω) (θ':=θ') in H1; auto.
+    destruct H1 as [θ'1 [Ω' [Htrans Hmw]]].
+    exists θ'1. exists Ω'. split. auto.
+    apply d_mc_worklist__skipwork. apply d_mc_worklist__skipwork. auto.
+  - intros.    
+    dependent destruction H2.
+    dependent destruction H2.
+    eapply a_insert_fresh_evar_before_similar_worklist  with (Ω':=Ω) (θ':=θ') in H1; auto.
+    destruct H1 as [θ'1 [Ω' [Htrans Hmw]]].
+    exists θ'1. exists Ω'. split. auto.
+    apply d_mc_worklist__skipwork. apply d_mc_worklist__skipwork. auto.
+  - intros. exists θ'. exists Ω'. split; auto. apply d_more_constr_worklist_refl.
+  - intros. exists θ'. exists Ω'. split; auto. apply d_more_constr_worklist_refl.
+  - intros. exists θ'. exists Ω'. split; auto. apply d_more_constr_worklist_refl.
+  - intros. apply IHa_bound_update2 in H1. 
+    destruct H1 as [θ1 [Ω1 [Htrans1 Hmw1]]].
+    apply IHa_bound_update1 in Htrans1.
+    destruct Htrans1 as [θ2 [Ω2 [Htrans2 Hmw2]]].
+    exists θ2, Ω2. split; auto.
+    eapply d_morew_worklist_trans; eauto.
+  - intros. exists θ'. exists Ω'. split; auto. apply d_more_constr_worklist_refl.
+  - intros.
+    dependent destruction H4.
+    dependent destruction H4.
+    dependent destruction H5.
+    dependent destruction H7.
+    eapply a_insert_fresh_evar_before_similar_worklist  with (Ω':=Ω) (θ':=θ) in H3; auto.
+    destruct H3 as [θ'1 [Ω' [Htrans Hmw]]].
+    exists θ'1. exists Ω'. split. auto.
+    apply d_mc_worklist__skipwork. apply d_mc_worklist__skipwork. auto.
+  - intros. 
+    dependent destruction H4.
+    dependent destruction H4.
+    dependent destruction H5.
+    dependent destruction H7.
+    eapply a_insert_fresh_evar_before_similar_worklist  with (Ω':=Ω) (θ':=θ) in H3; auto.
+    destruct H3 as [θ'1 [Ω' [Htrans Hmw]]].
+    exists θ'1. exists Ω'. split. auto.
+    apply d_mc_worklist__skipwork. apply d_mc_worklist__skipwork. auto.
+  - intros.    
+    dependent destruction H2.
+    dependent destruction H2.
+    eapply a_insert_fresh_evar_before_similar_worklist  with (Ω':=Ω) (θ':=θ') in H1; auto.
+    destruct H1 as [θ'1 [Ω' [Htrans Hmw]]].
+    exists θ'1. exists Ω'. split. auto.
+    apply d_mc_worklist__skipwork. apply d_mc_worklist__skipwork. auto.
+  - intros.    
+    dependent destruction H2.
+    dependent destruction H2.
+    eapply a_insert_fresh_evar_before_similar_worklist  with (Ω':=Ω) (θ':=θ') in H1; auto.
+    destruct H1 as [θ'1 [Ω' [Htrans Hmw]]].
+    exists θ'1. exists Ω'. split. auto.
+    apply d_mc_worklist__skipwork. apply d_mc_worklist__skipwork. auto. *)
+Admitted.
+
+Lemma a_reorder_transfer_more_constr_worklist: forall Γ Ω θ X A E m Γ1 Γ2 LB UB,
   a_reorder Γ X A m E Γ1 Γ2 LB UB ->
   trans_worklist nil (awl_rev_app Γ2 (aworklist_constvar (awl_rev_app (aenv_to_awl E) Γ1) X (abind_bound LB UB)) ) Ω θ ->
-  exists θ' Ω', trans_worklist nil Γ Ω' θ' /\ d_morew_worklist Ω Ω'.
+  exists θ' Ω', trans_worklist nil Γ Ω' θ' /\ d_more_constr_worklist Ω Ω'.
 Proof with auto with Hdb_a_wl_red_soundness.
-  intros. generalize dependent θ. generalize dependent Ω. dependent induction H.
-  - intros. simpl in *. admit.
-  - intros. simpl in *. admit.
-  - admit.
+  intros. generalize dependent θ. generalize dependent Ω. dependent induction H; intros.
+  - simpl in *. 
+    dependent destruction H1.
+    eapply a_update_transfer_similar_worklist in H0 as H0'; eauto.
+    destruct H0' as [θ'1 [Ω' [Htrans Hmw]]].
+    exists ((X , dbind_typ T) :: θ'1).
+    exists (dworklist_conswork Ω' (work_sub Aᵈ Bᵈ)). split.
+    econstructor.
+    auto.
+    admit.
+    admit.
+    admit.
+    admit.
+    admit.
+    econstructor; auto.
+  - simpl in *. admit.
+  - simpl in H1. 
+    admit.
   - intros. admit.
-  - admit.
+  - simpl in *. admit.
   - admit.
   - intros. admit.
   - intros. simpl in *. exists θ.
      admit.
 Admitted.
 
+Lemma a_reorder_transfer_more_constr_worklist': forall Γ Ω θ X A E m Γ1 Γ2 LB UB,
+  a_reorder Γ X A m E Γ1 Γ2 LB UB ->
+  trans_worklist nil (awl_rev_app Γ2 (aworklist_constvar (awl_rev_app (aenv_to_awl E) Γ1) X (abind_bound LB UB)) ) Ω θ ->
+  exists θ' Ω', trans_worklist nil Γ Ω' θ' /\ d_more_constr_worklist Ω Ω' /\   
+  ( match m with 
+    | a_bound_mode__lower => forall A1ᵈ Tᵈ, trans_typ θ (typ_var_f X) Tᵈ -> trans_typ θ A A1ᵈ -> 
+                                            dwl_to_denv Ω' ⊢ Tᵈ <: A1ᵈ 
+    | a_bound_mode__upper => forall A1ᵈ Tᵈ, trans_typ θ (typ_var_f X) Tᵈ -> trans_typ θ A A1ᵈ -> 
+                                            dwl_to_denv Ω' ⊢ A1ᵈ <: Tᵈ 
+    end
+  ).
+Proof with auto with Hdb_a_wl_red_soundness.
+  intros. generalize dependent θ. generalize dependent Ω. dependent induction H; intros.
+  - simpl in *. 
+    dependent destruction H1.
+    eapply a_update_transfer_similar_worklist in H0 as H0'; eauto.
+    destruct H0' as [θ'1 [Ω' [Htrans Hmw]]].
+    exists ((X , dbind_typ T) :: θ'1).
+    exists (dworklist_conswork Ω' (work_sub Aᵈ Bᵈ)). split.
+    econstructor.
+    auto.
+    admit.
+    admit.
+    admit.
+    admit.
+    admit.
+    econstructor; auto.
+Admitted.
 
+
+Lemma a_reorder_transfer_more_constr_worklist'': forall Γ Ω θ X A E m Γ1 Γ2 LB UB,
+  a_reorder Γ X A m E Γ1 Γ2 LB UB ->
+  trans_worklist nil (awl_rev_app Γ2 (aworklist_constvar (awl_rev_app (aenv_to_awl E) Γ1) X (abind_bound LB UB)) ) Ω θ ->
+  exists θ' Ω', trans_worklist nil Γ Ω' θ' /\ d_more_constr_worklist Ω Ω' /\   
+  ( match m with 
+    | a_bound_mode__lower => exists A1ᵈ Tᵈ, trans_typ θ' (typ_var_f X) Tᵈ /\ trans_typ θ' A A1ᵈ /\ dwl_to_denv Ω' ⊢ A1ᵈ <: Tᵈ 
+    | a_bound_mode__upper => exists A1ᵈ Tᵈ, trans_typ θ' (typ_var_f X) Tᵈ /\ trans_typ θ' A A1ᵈ /\ dwl_to_denv Ω' ⊢ Tᵈ <: A1ᵈ 
+    end
+  ).
+Admitted.
 
 (* Hint Resolve d_chk_inf_wft : Hdb_a_wl_red_soundness. *)
 
@@ -507,7 +666,7 @@ Proof with eauto with Hdb_a_wl_red_soundness.
       apply a_mono_typ_wf in H0.
       destruct_trans.
       dependent destruction Hdred.
-      exists Ω. split...
+      exists (dworklist_conswork Ω (work_sub A1ᵈ B1ᵈ)). split...
       exists (X ~ (dbind_typ A1ᵈ) ++ θ).
       econstructor... admit. admit.
     + dependent destruction Htrans. trans_all_typ. admit.
@@ -589,7 +748,17 @@ Proof with eauto with Hdb_a_wl_red_soundness.
   (* ^X < ^Y  *)
   - admit.
   (* τ < ^X *)
-  - admit.
+  - assert (⊢ᵃ awl_rev_app Γ3
+  (aworklist_constvar
+     (awl_rev_app (aenv_to_awl E) Γ2) X
+     (abind_bound LB UB))) by admit.
+    apply IHHared in H2. 
+    destruct H2 as [Ω [[θ Htrans] Hdred]].
+    eapply a_reorder_transfer_more_constr_worklist'' in H1 as Hre; eauto.
+    destruct Hre as [θ' [Ω' [Htrans' [Hmw Htrans_typ]]]].
+    destruct Htrans_typ as [A1ᵈ [Tᵈ]].
+    exists (dworklist_conswork  Ω' (work_sub A1ᵈ Tᵈ)). split. exists θ'. intuition.
+    admit.
   (* ^X < τ *)
   - admit.
   (* e <= A *)

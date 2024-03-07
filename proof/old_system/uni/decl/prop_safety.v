@@ -81,7 +81,7 @@ Qed.
 Hint Resolve trans_env_notin_dom : safety.
 
 Theorem trans_env_tvar_in : forall (E:denv) X,
-  X ~ ▫ ∈ E -> binds X bind_tvar_empty (trans_env E).
+  X ~ □ ∈ E -> binds X bind_tvar_empty (trans_env E).
 Proof.
   intros E. induction E; auto.
   intros X H. inversion H; subst.
@@ -90,7 +90,7 @@ Proof.
 Qed.
 
 Theorem trans_env_svar_in : forall (E:denv) X,
-  X ~ ▪ ∈ E -> binds X bind_tvar_empty (trans_env E).
+  X ~ ■ ∈ E -> binds X bind_tvar_empty (trans_env E).
 Proof.
   intros E. induction E; auto.
   intros X H. inversion H; subst.

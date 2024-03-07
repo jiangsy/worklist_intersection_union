@@ -7,6 +7,7 @@ Require Import uni.notations.
 Require Import uni.decl.prop_basic.
 Require Import uni.decl.prop_subtyping.
 Require Import uni.algo_worklist.def_extra.
+Require Import uni.algo_worklist.prop_basic.
 Require Import ln_utils.
 
 
@@ -76,11 +77,11 @@ Inductive ss_wf_typ : subst_set -> typ -> Prop :=
 Inductive trans_typ : subst_set -> typ -> typ -> Prop := 
   | trans_typ__tvar : forall θ X, 
       wf_ss θ -> 
-      X ~ ▫ ∈ θ ->
+      X ~ □ ∈ θ ->
       trans_typ θ (typ_var_f X) (typ_var_f X)
   | trans_typ__stvar : forall θ X, 
       wf_ss θ -> 
-      X ~ ▪ ∈ θ ->
+      X ~ ■ ∈ θ ->
       trans_typ θ (typ_var_f X) (typ_var_f X)
   | trans_typ__etvar : forall θ X A1,
       wf_ss θ ->
@@ -303,7 +304,7 @@ Qed.
 Hint Resolve wf_ss_uniq : Hdb_transfer.
 
 Lemma wf_ss_etvar_tvar_false : forall θ X A,
-  wf_ss θ -> X ~ A ∈ θ -> X ~ ▫ ∈ θ -> False.
+  wf_ss θ -> X ~ A ∈ θ -> X ~ □ ∈ θ -> False.
 Proof.
   intros. apply wf_ss_uniq in H.
   specialize (binds_unique _ _ _ _ _ H0 H1 H).
@@ -311,7 +312,7 @@ Proof.
 Qed.
 
 Lemma wf_ss_etvar_stvar_false : forall θ X A,
-  wf_ss θ -> X ~ A ∈ θ -> X ~ ▪ ∈ θ -> False.
+  wf_ss θ -> X ~ A ∈ θ -> X ~ ■ ∈ θ -> False.
 Proof.
   intros. apply wf_ss_uniq in H.
   specialize (binds_unique _ _ _ _ _ H0 H1 H).
@@ -319,7 +320,7 @@ Proof.
 Qed.
 
 Lemma wf_ss_tvar_stvar_false : forall θ X,
-  wf_ss θ -> X ~ ▫ ∈ θ -> X ~ ▪ ∈ θ -> False.
+  wf_ss θ -> X ~ □ ∈ θ -> X ~ ■ ∈ θ -> False.
 Proof.
   intros. apply wf_ss_uniq in H.
   specialize (binds_unique _ _ _ _ _ H0 H1 H).
@@ -440,7 +441,7 @@ Proof with eauto with Hdb_transfer.
     + inst_cofinites_by (L `union` L0 `union` (ftvar_in_body bᵈ) `union` (ftvar_in_body bᵈ0) `union`  dom θ) using_name X.
       apply f_equal.
       eapply open_body_wrt_typ_inj with (X1:=X); auto.
-      eapply trans_body_det with (θ:=(X, ▫) :: θ)...
+      eapply trans_body_det with (θ:=(X, □) :: θ)...
     + specialize (IHtrans_exp H _ H2).
       eapply trans_typ_det with (A₂ᵈ:=A1ᵈ0) in H1; auto.
       subst...
@@ -501,7 +502,7 @@ Qed.
 Lemma trans_wl_in_ss_tvar : forall Γ X Ω θ,
   nil ⫦ Γ ⇝ Ω ⫣ θ ->
   binds X abind_tvar_empty (awl_to_aenv Γ) ->
-  X ~ ▫ ∈ θ.
+  X ~ □ ∈ θ.
 Proof with eauto with Hdb_transfer.
   intros. dependent induction H...
   - inversion H0. inversion H1; subst...
@@ -517,7 +518,7 @@ Qed.
 Lemma trans_wl_in_ss_stvar : forall Γ X Ω θ,
   nil ⫦ Γ ⇝ Ω ⫣ θ ->
   binds X abind_stvar_empty (awl_to_aenv Γ) ->
-  X ~ ▪ ∈ θ.
+  X ~ ■ ∈ θ.
 Proof with eauto with Hdb_transfer.
   intros. dependent induction H...
   - inversion H0. inversion H1; subst...
@@ -554,9 +555,9 @@ Qed.
 
 
 Lemma wf_ss_rename : forall θ1 θ2 X X',
-  wf_ss (θ2 ++ (X, ▫) :: θ1) ->
+  wf_ss (θ2 ++ (X, □) :: θ1) ->
   X' ∉ dom (θ2 ++ θ1) ->
-  wf_ss (map (subst_tvar_in_dbind ` X' X) θ2 ++ (X', ▫) :: θ1).
+  wf_ss (map (subst_tvar_in_dbind ` X' X) θ2 ++ (X', □) :: θ1).
 Admitted.
 
 Lemma trans_typ_rename : forall θ1 θ2 Aᵃ Aᵈ X X', 
@@ -591,7 +592,7 @@ Proof with auto with Hdb_transfer.
     intros. inst_cofinites_with X0.
     rewrite typ_subst_open_comm...
     rewrite typ_subst_open_comm...
-    rewrite_env (map (subst_tvar_in_dbind ` X' X) ((X0, ▫) :: θ2) ++ (X', ▫) :: θ1).
+    rewrite_env (map (subst_tvar_in_dbind ` X' X) ((X0, □) :: θ2) ++ (X', □) :: θ1).
     eapply H0...
 Admitted.
 
@@ -952,21 +953,7 @@ Qed.
 
 
 (* depedent destruction all non-atomic ⊢ᵃ relation *)
-Ltac destruct_a_wf_wl :=
-  repeat
-    lazymatch goal with
-    | H : a_wf_wl (aworklist_conswork ?Γ ?w) |- _ => dependent destruction H
-    | H : a_wf_wl (aworklist_consvar ?Γ ?w ?b) |- _ => dependent destruction H
-    | H : a_wf_wl (aworklist_constvar ?Γ ?X ?b) |- _ => dependent destruction H
-    | H : a_wf_work ?Ω ?w |- _ => dependent destruction H
-    | H : a_wf_typ ?E (open_typ_wrt_typ ?A ?T) |- _ => fail
-    | H : a_wf_typ ?E (?Ct ?A1 ?A2) |- _ => dependent destruction H
-    | H : a_wf_exp ?E (?Ce ?b) |- _ => dependent destruction H
-    | H : a_wf_exp ?E (?Ce ?e1 ?e2) |- _ => dependent destruction H
-    | H : a_wf_cont ?E (?C_C _) |- _ => dependent destruction H
-    | H : a_wf_cont ?E (?C_C _ _) |- _ => dependent destruction H
-    | H : a_wf_cont ?E (?C_C _ _ _) |- _ => dependent destruction H
-    end.
+
 
 Lemma a_wf_work_applied : forall Γ c A w,
   a_wf_cont Γ c ->
@@ -1034,7 +1021,7 @@ Qed.
 
 Lemma wf_ss_etvar_tvar : forall θ1 θ2 T X,
   wf_ss (θ2 ++ (X, dbind_typ T) :: θ1) ->
-  wf_ss (θ2 ++ (X, ▫) :: θ1).
+  wf_ss (θ2 ++ (X, □) :: θ1).
 Proof with auto with Hdb_transfer.
   intros. induction θ2; simpl in *.
   - dependent destruction H...
@@ -1059,7 +1046,7 @@ Proof with eauto with Hdb_transfer.
   dependent induction H; intros...
   - inst_cofinites_for trans_typ__all. intros.
     inst_cofinites_with X.
-    rewrite_env (((X, ▫) :: θ3) ++ θ2 ++ θ1).
+    rewrite_env (((X, □) :: θ3) ++ θ2 ++ θ1).
     eapply H0; simpl...
 Qed.
 
@@ -1090,7 +1077,7 @@ Proof with eauto with Hdb_transfer.
     eapply IHtrans_typ2; eauto. 
   - eapply trans_typ__all with (L:=L `union` singleton X); eauto.
     intros. inst_cofinites_with X0.
-    rewrite_env (((X0, ▫) :: θ2) ++ θ1).
+    rewrite_env (((X0, □) :: θ2) ++ θ1).
     eapply H0 with (X:=X) (T:=T); eauto.
     admit.
   - simpl in H1. econstructor.
@@ -1191,7 +1178,7 @@ Proof with eauto with Hdb_transfer.
     rewrite subst_tvar_in_typ_close_typ_wrt_typ... 
     split.
     + apply f_equal. erewrite typ_open_r_close_l... intuition.
-    + eapply trans_typ__all with (L:=L `union` (dom (θ2 ++ (X, ▫) :: θ1))); intros.
+    + eapply trans_typ__all with (L:=L `union` (dom (θ2 ++ (X, □) :: θ1))); intros.
       intuition.
       erewrite subst_tvar_in_typ_intro by auto.
       erewrite (subst_tvar_in_typ_intro X0 (close_typ_wrt_typ X0 Aᵈ)) by apply close_typ_notin.
@@ -1218,7 +1205,7 @@ Lemma trans_typ_etvar_tvar_subst_cons : forall θ1 T X Aᵃ A'ᵈ,
   exists Aᵈ, {T /ᵗ X} Aᵈ = A'ᵈ /\ (X, dbind_tvar_empty) :: θ1 ⫦ᵗ Aᵃ ⇝ Aᵈ.
 Proof with auto with Hdb_transfer. 
   intros. 
-  rewrite_env (nil ++ (X, ▫) :: θ1).  
+  rewrite_env (nil ++ (X, □) :: θ1).  
   apply trans_typ_etvar_tvar_subst...
 Qed.
 
@@ -1298,7 +1285,7 @@ Proof with eauto with Hdb_transfer.
     rewrite subst_tvar_in_typ_close_typ_wrt_typ... 
     split...
     + apply f_equal. erewrite typ_open_r_close_l... intuition.
-    + eapply trans_typ__all with (L:=L `union` dom (θ2 ++ (X, ▫) :: θ1)); intros.
+    + eapply trans_typ__all with (L:=L `union` dom (θ2 ++ (X, □) :: θ1)); intros.
       intuition.
       erewrite subst_tvar_in_typ_intro by auto.
       erewrite (subst_tvar_in_typ_intro X0 (close_typ_wrt_typ X0 Aᵈ)) by apply close_typ_notin.

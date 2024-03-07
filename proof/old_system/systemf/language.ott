@@ -32,7 +32,7 @@ fexp, e, f, g :: fexp_ ::=
   | { T2 / X } e1                       :: M :: subst2 {{ coq (open_fexp_wrt_ftyp [[X e1]] [[T2]]) }}
 
 fbind, fb :: fbind_ ::=
-  | : ▪  ::   :: tvar_empty
+  | : ■  ::   :: tvar_empty
   | : T  ::   :: typ
 
 substitutions
@@ -81,7 +81,7 @@ E |- T :: :: f_wf_typ :: 'f_wf_typ__' by
 --------- :: unit
 E |- UNIT
 
-(X : ▪) in E
+(X : ■) in E
 -------------- :: var
 E |- X
 
@@ -90,7 +90,7 @@ E |- T2
 -------------- :: arrow
 E |- T1 -> T2
 
-E, X : ▪ |- T
+E, X : ■ |- T
 -------------------- :: all
 E |- ∀ X . T
 
@@ -118,7 +118,7 @@ defn
 |- E
 X `notin` dom E
 ---------------- :: sub
-|- E , X : ▪
+|- E , X : ■
 
 |- E
 E |- T
@@ -183,7 +183,7 @@ E |- e2 : T1
 --------------------- :: app
 E |- e1 e2 : T2
 
-E, X : ▪ |- e : T
+E, X : ■ |- e : T
 -------------------------- :: tabs
 E |- \ X . e : ∀ X . T
 

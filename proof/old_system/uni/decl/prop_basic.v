@@ -46,7 +46,7 @@ Proof.
   - simpl. eapply d_wf_typ_s__all with (L:=L);
     intros X1 Hf; inst_cofinites_with X1.
     + auto.
-    + rewrite_env ((X1 ~ ▪ ++ Ψ2) ++ (X, ▪) :: Ψ1 ).
+    + rewrite_env ((X1 ~ ■ ++ Ψ2) ++ (X, ■) :: Ψ1 ).
       apply H1; eauto.
   - simpl. constructor.
     + apply IHd_wf_typ_s1; auto.
@@ -87,7 +87,7 @@ Proof.
   - simpl. eapply d_wf_typ__all with (L:=L);
     intros; inst_cofinites_with X.
     + auto.
-    + rewrite_env ((X0 ~ ▫ ++ Ψ2) ++ (X, ▫) :: Ψ1).
+    + rewrite_env ((X0 ~ □ ++ Ψ2) ++ (X, □) :: Ψ1).
       apply H1; eauto.
   - simpl. constructor.
     + apply IHd_wf_typ1; auto.
@@ -492,7 +492,7 @@ Qed.
 
 
 Lemma d_mono_typ_subst_mono_mono : forall F Ψ A T X,
-  d_mono_typ (F ++ X ~ ▫ ++ Ψ) A ->
+  d_mono_typ (F ++ X ~ □ ++ Ψ) A ->
   d_mono_typ Ψ T ->
   d_mono_typ (map (subst_tvar_in_dbind T X) F ++ Ψ) ({T /ᵗ X} A).
 Proof with eauto using d_mono_typ_weaken_head; try solve_by_invert; try solve [exfalso; jauto].
@@ -508,7 +508,7 @@ Qed.
 
 
 Lemma binds_two_thing_false : forall X Ψ,
-    X ~ ▪ ∈ Ψ -> ⊢ Ψ -> X ~ ▫ ∈ Ψ -> False.
+    X ~ ■ ∈ Ψ -> ⊢ Ψ -> X ~ □ ∈ Ψ -> False.
 Proof.
   intros.
   forwards: d_wf_env_uniq H0.
@@ -516,7 +516,7 @@ Proof.
 Qed.
 
 Theorem d_sub_mono_stvar_false : forall Ψ A X,
-  X ~ ▪ ∈ Ψ ->
+  X ~ ■ ∈ Ψ ->
   Ψ ⊢ A <: typ_var_f X ->
   d_mono_typ Ψ A ->
   False.
@@ -527,21 +527,21 @@ Proof.
 Qed.
 
 Lemma d_mono_typ_no_stvar : forall F Ψ A X,
-    d_mono_typ (F ++ X ~ ▪ ++ Ψ) A ->
-    ⊢ F ++ X ~ ▪ ++ Ψ ->
+    d_mono_typ (F ++ X ~ ■ ++ Ψ) A ->
+    ⊢ F ++ X ~ ■ ++ Ψ ->
     X `notin` ftvar_in_typ A.
 Proof with eauto using d_mono_typ_weaken_head; try solve_by_invert; try solve [exfalso; jauto].
   intros. induction A; simpl in *...
   1: { simpl. destruct (X0 == X); subst; auto...
        - inverts H.
-         assert (X ~ ▪ ∈ (F ++ (X, ▪) :: Ψ)) by eauto.
+         assert (X ~ ■ ∈ (F ++ (X, ■) :: Ψ)) by eauto.
          exfalso. forwards*: binds_two_thing_false X.
   }
   all: simpl; dependent destruction H; auto.
 Qed.
 
 Lemma d_mono_typ_drop_stvar : forall F Ψ A X,
-    d_mono_typ (F ++ X ~ ▪ ++ Ψ) A ->
+    d_mono_typ (F ++ X ~ ■ ++ Ψ) A ->
     d_mono_typ (F ++ Ψ) A.
 Proof with eauto using d_mono_typ_weaken_head; try solve_by_invert; try solve [exfalso; jauto].
   intros. induction A; simpl in *...
@@ -555,15 +555,15 @@ Proof with eauto using d_mono_typ_weaken_head; try solve_by_invert; try solve [e
 Qed.
 
 Lemma d_mono_typ_subst_stvar : forall F Ψ A T X,
-    d_mono_typ (F ++ X ~ ▪ ++ Ψ) A ->
-    ⊢ F ++ X ~ ▪ ++ Ψ ->
+    d_mono_typ (F ++ X ~ ■ ++ Ψ) A ->
+    ⊢ F ++ X ~ ■ ++ Ψ ->
     Ψ ⊢ T ->
     d_mono_typ (map (subst_tvar_in_dbind T X) F ++ Ψ) ({T /ᵗ X} A).
 Proof with eauto using d_mono_typ_weaken_head; try solve_by_invert; try solve [exfalso; jauto].
   intros. induction A; simpl in *...
   1: { simpl. destruct (X0 == X); subst; auto...
        - inverts H.
-         assert (X ~ ▪ ∈ (F ++ (X, ▪) :: Ψ)) by eauto.
+         assert (X ~ ■ ∈ (F ++ (X, ■) :: Ψ)) by eauto.
          exfalso. forwards*: binds_two_thing_false X.
        - inverts H.
          forwards* [?|?]: binds_app_1 H4... forwards*: binds_map_2 (subst_tvar_in_dbind T X) H.
@@ -705,13 +705,13 @@ Qed.
 Corollary d_wf_env_weaken_tvar : forall Ψ1 Ψ2 X,
   ⊢ Ψ2 ++ Ψ1 ->
   X ∉ dom (Ψ2 ++ Ψ1) ->
-  ⊢ Ψ2 ++ X ~ ▫ ++ Ψ1.
+  ⊢ Ψ2 ++ X ~ □ ++ Ψ1.
 Proof with eauto.
   intros * HE HT. induction Ψ2; intros.
   - econstructor...
-  - rewrite_env (a :: (Ψ2 ++ X ~ ▫ ++ Ψ1)). destruct a. destruct d.
-    1: rewrite_env ((a, ▫) :: (Ψ2 ++ Ψ1)) in HE.
-    2: rewrite_env ((a, ▪) :: (Ψ2 ++ Ψ1)) in HE.
+  - rewrite_env (a :: (Ψ2 ++ X ~ □ ++ Ψ1)). destruct a. destruct d.
+    1: rewrite_env ((a, □) :: (Ψ2 ++ Ψ1)) in HE.
+    2: rewrite_env ((a, ■) :: (Ψ2 ++ Ψ1)) in HE.
     3: rewrite_env ((a, dbind_typ A) :: (Ψ2 ++ Ψ1)) in HE.
     all: forwards HE': d_wf_env_strenthening_head HE; inverts HE.
     all: econstructor; try solve_notin.
@@ -721,13 +721,13 @@ Qed.
 Corollary d_wf_env_weaken_stvar : forall Ψ1 Ψ2 X,
   ⊢ Ψ2 ++ Ψ1 ->
   X ∉ dom (Ψ2 ++ Ψ1) ->
-  ⊢ Ψ2 ++ X ~ ▪ ++ Ψ1.
+  ⊢ Ψ2 ++ X ~ ■ ++ Ψ1.
 Proof with eauto.
   intros * HE HT. induction Ψ2; intros.
   - econstructor...
-  - rewrite_env (a :: (Ψ2 ++ X ~ ▪ ++ Ψ1)). destruct a. destruct d.
-    1: rewrite_env ((a, ▫) :: (Ψ2 ++ Ψ1)) in HE.
-    2: rewrite_env ((a, ▪) :: (Ψ2 ++ Ψ1)) in HE.
+  - rewrite_env (a :: (Ψ2 ++ X ~ ■ ++ Ψ1)). destruct a. destruct d.
+    1: rewrite_env ((a, □) :: (Ψ2 ++ Ψ1)) in HE.
+    2: rewrite_env ((a, ■) :: (Ψ2 ++ Ψ1)) in HE.
     3: rewrite_env ((a, dbind_typ A) :: (Ψ2 ++ Ψ1)) in HE.
     all: forwards HE': d_wf_env_strenthening_head HE; inverts HE.
     all: econstructor; try solve_notin.
@@ -765,8 +765,8 @@ Proof with simpl; eauto.
 Qed.
 
 Lemma d_wf_typ_rename_stvar : forall Ψ1 Ψ2 X Y A,
-  Ψ2 ++ X ~ ▪ ++ Ψ1  ⊢ A  ->
-  map (subst_tvar_in_dbind (typ_var_f Y) X ) Ψ2 ++ Y ~ ▪ ++ Ψ1 ⊢ { typ_var_f Y /ᵗ X } A.
+  Ψ2 ++ X ~ ■ ++ Ψ1  ⊢ A  ->
+  map (subst_tvar_in_dbind (typ_var_f Y) X ) Ψ2 ++ Y ~ ■ ++ Ψ1 ⊢ { typ_var_f Y /ᵗ X } A.
 Proof with try solve_notin; simpl in *; eauto.
   intros * HT.
   case_eq (X==Y); intros.
@@ -776,7 +776,7 @@ Proof with try solve_notin; simpl in *; eauto.
   - case_if... induction Ψ2...
     all: inverts H; try solve_by_invert...
     + remember (let (x, a0) := a in (x, subst_tvar_in_dbind (typ_var_f Y) X a0)).
-      remember (map (subst_tvar_in_dbind (typ_var_f Y) X) Ψ1 ++ (Y, ▪) :: Ψ2).
+      remember (map (subst_tvar_in_dbind (typ_var_f Y) X) Ψ1 ++ (Y, ■) :: Ψ2).
       destruct p.
       apply d_wf_typ_weaken_cons.
       applys IHΨ2...
@@ -786,7 +786,7 @@ Proof with try solve_notin; simpl in *; eauto.
     + destruct a. inverts H.
       * inverts H0...
       * forwards: IHΨ2...
-        remember (map (subst_tvar_in_dbind (typ_var_f Y) X) Ψ2 ++ (Y, ▪) :: Ψ1).
+        remember (map (subst_tvar_in_dbind (typ_var_f Y) X) Ψ2 ++ (Y, ■) :: Ψ1).
         rewrite_env ([(a, subst_tvar_in_dbind (typ_var_f Y) X d)] ++ l).
         applys* d_wf_typ_weaken_head.
   - eapply d_wf_typ__all with (L:=L `union` singleton X); intros; inst_cofinites_with X0.
@@ -794,7 +794,7 @@ Proof with try solve_notin; simpl in *; eauto.
       apply ftv_sin_typ_subst_inv; auto.
     + intros.
       rewrite typ_subst_open_comm; eauto.
-      rewrite_env (map (subst_tvar_in_dbind ` Y X) (X0 ~ ▫ ++ Ψ2) ++ (Y, ▪) :: Ψ1).
+      rewrite_env (map (subst_tvar_in_dbind ` Y X) (X0 ~ □ ++ Ψ2) ++ (Y, ■) :: Ψ1).
       auto.
 Qed.
 
@@ -807,23 +807,23 @@ Proof with try solve_notin; simpl; eauto.
   intros * HE HT.
   case_eq (Y == X); intros.
   1: { subst. rewrite* subst_same_tvar_map_id. } clear H.
-  rewrite_env ((Ψ2 ++ X ~ ▪) ++ Ψ1) in HE.
+  rewrite_env ((Ψ2 ++ X ~ ■) ++ Ψ1) in HE.
   forwards HE': d_wf_env_weaken_stvar Y HE. { solve_notin. }
   induction Ψ2; intros; simpl.
   - inverts~ HE. econstructor...
   - destruct a. destruct d...
-    + rewrite_env (((a, ▫) :: (Ψ2 ++ X ~ ▪) ++ Ψ1)) in HE. inverts~ HE.
-      rewrite_env ((a, ▫) :: (Ψ2 ++ X ~ ▪) ++ (Y, ▪) :: Ψ1) in HE'. inverts~ HE'.
+    + rewrite_env (((a, □) :: (Ψ2 ++ X ~ ■) ++ Ψ1)) in HE. inverts~ HE.
+      rewrite_env ((a, □) :: (Ψ2 ++ X ~ ■) ++ (Y, ■) :: Ψ1) in HE'. inverts~ HE'.
       econstructor...
-    + rewrite_env (((a, ▪) :: (Ψ2 ++ X ~ ▪) ++ Ψ1)) in HE. inverts~ HE.
-      rewrite_env ((a, ▪) :: (Ψ2 ++ X ~ ▪) ++ (Y, ▪) :: Ψ1) in HE'. inverts~ HE'.
+    + rewrite_env (((a, ■) :: (Ψ2 ++ X ~ ■) ++ Ψ1)) in HE. inverts~ HE.
+      rewrite_env ((a, ■) :: (Ψ2 ++ X ~ ■) ++ (Y, ■) :: Ψ1) in HE'. inverts~ HE'.
       econstructor...
-    + rewrite_env (((a, dbind_typ A) :: (Ψ2 ++ X ~ ▪) ++ Ψ1)) in HE. inverts~ HE.
-      rewrite_env ((a, dbind_typ A) :: (Ψ2 ++ X ~ ▪) ++ (Y, ▪) :: Ψ1) in HE'. inverts~ HE'.
+    + rewrite_env (((a, dbind_typ A) :: (Ψ2 ++ X ~ ■) ++ Ψ1)) in HE. inverts~ HE.
+      rewrite_env ((a, dbind_typ A) :: (Ψ2 ++ X ~ ■) ++ (Y, ■) :: Ψ1) in HE'. inverts~ HE'.
       econstructor...
       forwards*: IHΨ2. solve_notin.
       applys d_wf_typ_rename_stvar...
-      rewrite_env ((Ψ2 ++ X ~ ▪) ++ Ψ1)...
+      rewrite_env ((Ψ2 ++ X ~ ■) ++ Ψ1)...
 Qed.
 
 Lemma d_neq_all_rename: forall A X Y,
@@ -921,7 +921,7 @@ Qed.
 Lemma d_mono_typ_for_any_var : forall Y,
   exists E, d_mono_typ E ` Y.
 Proof with eauto.
-  intros. exists* (Y ~ ▫ ++ nil).
+  intros. exists* (Y ~ □ ++ nil).
 Qed.
 
 Lemma s_in_open_stvar_subst_mono : forall S T Ψ SY SZ,
@@ -949,7 +949,7 @@ Qed.
 
 Lemma d_wf_typ_open_tvar_subst_mono : forall Ψ1 Ψ2 S T SY,
     Ψ1 ++ Ψ2 ⊢ S ^^ᵈ T -> d_mono_typ (Ψ1 ++ Ψ2) T -> SY ∉ (dom Ψ2)
-    -> Ψ1 ++ SY ~ ▫ ++ Ψ2 ⊢ S ^ᵈ SY.
+    -> Ψ1 ++ SY ~ □ ++ Ψ2 ⊢ S ^ᵈ SY.
 Proof with try solve_notin; simpl in *; eauto.
   intros * HT HD HN.
   inductions HT...
@@ -965,12 +965,12 @@ Proof with try solve_notin; simpl in *; eauto.
       | Hx:` _ = ` _ ^^ᵈ _ |- _ =>
           try solve [
               unfold open_typ_wrt_typ in *; simpl in *; inverts x;
-              rewrite_env (Ψ1 ++ [(SY, ▫)] ++ Ψ2); applys* d_wf_typ_weaken;
+              rewrite_env (Ψ1 ++ [(SY, □)] ++ Ψ2); applys* d_wf_typ_weaken;
               eauto using d_wf_typ_weaken]
       (* | Hx: dtyp_svar _ = dtyp_svar _ ^^ᵈ _ |- _ => *)
       (*     try solve [ *)
       (*         unfold open_typ_wrt_typ in *; simpl in *; inverts x; *)
-      (*         rewrite_env (Ψ1 ++ [(SY, ▫)] ++ Ψ2); applys* d_wf_typ_weaken; *)
+      (*         rewrite_env (Ψ1 ++ [(SY, □)] ++ Ψ2); applys* d_wf_typ_weaken; *)
       (*         eauto using d_wf_typ_weaken] *)
       | Hx: _ = _ ^^ᵈ _ |- _ =>
           try solve [unfold open_typ_wrt_typ in Hx; simpl in x; inverts x];
@@ -989,8 +989,8 @@ Proof with try solve_notin; simpl in *; eauto.
                open_typ_wrt_typ_rec 0 ` SZ (open_typ_wrt_typ_rec 1 A S)
                = open_typ_wrt_typ_rec 0 A (open_typ_wrt_typ_rec 0 ` SZ S) )
           by rewrite* open_typ_wrt_typ_twice;
-                                    forwards*: H1 SZ ((SZ, ▫) :: Ψ1) Ψ2 HE;
-                                    rewrite_env ( SZ ~ ▫ ++ (Ψ1 ++ Ψ2));
+                                    forwards*: H1 SZ ((SZ, □) :: Ψ1) Ψ2 HE;
+                                    rewrite_env ( SZ ~ □ ++ (Ψ1 ++ Ψ2));
                                     eauto using d_mono_typ_weaken_head
       end) ]
       ].
@@ -1029,7 +1029,7 @@ Proof.
         apply d_wf_typ_weaken_cons; auto.
   - eapply d_wf_typ__all with (L:=L); intros; inst_cofinites_with X.
     auto.
-    rewrite_env ((X ~ ▫ ++ Ψ2) ++ x ~ dbind_typ B2 ++ Ψ1).
+    rewrite_env ((X ~ □ ++ Ψ2) ++ x ~ dbind_typ B2 ++ Ψ1).
     eapply H1; simpl; eauto.
 Qed.
 
@@ -1064,8 +1064,8 @@ Proof with eauto using d_wf_typ_bound_typ.
   - eauto.
   - pick fresh Y and apply d_wf_exp__tabs.
     inst_cofinites_with Y.
-    rewrite_env ( (Y ~ ▫ ++ Ψ2) ++ x ~ dbind_typ A1 ++ Ψ1) in H.
-    rewrite_env ( (Y ~ ▫ ++ Ψ2) ++ x ~ dbind_typ A2 ++ Ψ1).
+    rewrite_env ( (Y ~ □ ++ Ψ2) ++ x ~ dbind_typ A1 ++ Ψ1) in H.
+    rewrite_env ( (Y ~ □ ++ Ψ2) ++ x ~ dbind_typ A2 ++ Ψ1).
     applys* d_wf_body_bound_typ H.
   - econstructor. eapply d_wf_typ_bound_typ; eauto.
     eauto.
@@ -1098,6 +1098,6 @@ Proof with eauto.
     forwards[(?&Heq)|?]: binds_cons_1 H0; try inverts Heq; subst; eauto.
   - pick fresh Y and apply d_wf_typ__all; inst_cofinites_with Y.
     now eauto.
-    forwards: H1. rewrite_env ((Y ~ ▫ ++ Ψ2) ++ x ~ dbind_typ B ++ Ψ1)...
-    rewrite_env ((Y ~ ▫ ++ Ψ2)++ Ψ1)...
+    forwards: H1. rewrite_env ((Y ~ □ ++ Ψ2) ++ x ~ dbind_typ B ++ Ψ1)...
+    rewrite_env ((Y ~ □ ++ Ψ2)++ Ψ1)...
 Qed.

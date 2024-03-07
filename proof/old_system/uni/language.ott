@@ -31,14 +31,14 @@ exp, e, f, g :: exp_ ::=
   | { A2 / X } e1                       :: M :: subst2 {{ coq (open_exp_wrt_typ [[X e1]] [[A2]]) }}
 
 dbind, db :: dbind_ ::=
-  | : ▪  ::   :: tvar_empty
-  | : ~▪ ::   :: stvar_empty
+  | : ■  ::   :: tvar_empty
+  | : ~■ ::   :: stvar_empty
   | : A  ::   :: typ
 
 abind, ab :: abind_ ::=
-  | : ▪        ::   :: tvar_empty
-  | : ~▪       ::   :: stvar_empty
-  | : ^▪       ::   :: etvar_empty
+  | : ■        ::   :: tvar_empty
+  | : ~■       ::   :: stvar_empty
+  | : ^■       ::   :: etvar_empty
   | : A        ::   :: var_typ
 
 substitutions
@@ -376,12 +376,12 @@ A1 ⊓ A2 ¬= ⊥
 % |-dom dE
 % X `notin` dom dE
 % ---------------- :: tvar
-% |-dom dE , X : ▪
+% |-dom dE , X : ■
 
 % |-dom dE
 % SX `notin` dom dE 
 % ---------------- :: stvar
-% |-dom dE , SX : ~▪
+% |-dom dE , SX : ~■
 
 % |-dom dE
 % x `notin` dom dE
@@ -405,11 +405,11 @@ dE |- BOT
 --------- :: top
 dE |- TOP
 
-(X : ▪) in dE
+(X : ■) in dE
 -------------- :: tvar
 dE |- X
 
-(X : ~▪) in dE 
+(X : ~■) in dE 
 -------------- :: stvar 
 dE |- X
 
@@ -419,7 +419,7 @@ dE |- A2
 dE |- A1 -> A2
 
 X ∈ₛ A
-dE, X : ▪ |- A
+dE, X : ■ |- A
 -------------------- :: all
 dE |- ∀ X . A
 
@@ -457,7 +457,7 @@ dE |- e2
 ----------------- :: app
 dE |- e1 e2
 
-dE , X : ▪ |- body
+dE , X : ■ |- body
 ----------------- :: tabs 
 dE |- \ X . body
 
@@ -493,12 +493,12 @@ defn
 |- dE
 X `notin` dom dE
 ---------------- :: tvar
-|- dE , X : ▪
+|- dE , X : ■
 
 |- dE
 X `notin` dom dE 
 ---------------- :: stvar
-|- dE , X : ~▪
+|- dE , X : ~■
 
 |- dE
 dE |- A
@@ -518,7 +518,7 @@ dE |-m A :: :: d_mono_typ :: 'd_mono_typ__' by
 --------------- :: unit
 dE |-m UNIT
 
-(X : ▪) in dE
+(X : ■) in dE
 --------------- :: tvar
 dE |-m X
 
@@ -674,12 +674,12 @@ x `notin`  dom ⌊ dW ⌋
 X `notin`  dom ⌊ dW ⌋
 |- dW
 -------------------- :: constvar
-|- dW , X : ▪
+|- dW , X : ■
 
 X `notin` dom ⌊ dW ⌋
 |- dW
 -------------------- :: consstvar
-|- dW , X : ~▪
+|- dW , X : ~■
 
 ⌊ dW ⌋ |- w
 |- dW
@@ -721,7 +721,7 @@ dE ||- A1 -> A2 <: B1 -> B2
 
 X ∈ₛ A
 X ∈ₛ B
-dE , X : ~▪ ||- A <: B
+dE , X : ~■ ||- A <: B
 -------------------------------------------- :: all
 dE ||- ∀ X. A <: ∀ X. B
 
@@ -780,9 +780,9 @@ J_a_etvars_in_worklist :: '' ::=
 defn 
 aW [ X1 ] [ X2 ] :: :: a_evs_in_wl :: 'a_etvars_in_wl__' by 
 
-( X1 : ^▪ ) in ⌊ aW ⌋ 
+( X1 : ^■ ) in ⌊ aW ⌋ 
 -------------------------------- :: in
-aW , X2 : ^▪ [ X1 ] [ X2 ] 
+aW , X2 : ^■ [ X1 ] [ X2 ] 
 
 aW [ X1 ] [ X2 ] 
 -------------------------------- :: var
@@ -808,15 +808,15 @@ aE |- BOT
 --------- :: top
 aE |- TOP
 
-(X : ▪) in aE
+(X : ■) in aE
 -------------- :: tvar
 aE |- X
 
-(X : ~▪) in aE 
+(X : ~■) in aE 
 -------------- :: stvar 
 aE |- X
 
-(X : ^▪ ) in aE 
+(X : ^■ ) in aE 
 -------------------- :: etvar 
 aE |- X
 
@@ -826,7 +826,7 @@ aE |- A2
 aE |- A1 -> A2
 
 X ∈ₛ A
-aE, X : ▪ |- A
+aE, X : ■ |- A
 -------------------- :: all
 aE |- ∀ X . A
 
@@ -849,13 +849,13 @@ aE |-m A :: :: a_mono_typ :: 'a_mono_typ__' by
 --------------- :: unit
 aE |-m UNIT
 
-(X : ▪) in aE
+(X : ■) in aE
 --------------- :: tvar
 aE |-m X
 
 aE |- A
 aE |- B
-(X : ^▪ ) in aE
+(X : ^■ ) in aE
 ----------------- :: etvar
 aE |-m X
 
@@ -898,7 +898,7 @@ aE |- e2
 ----------------- :: app
 aE |- e1 e2
 
-aE , X : ▪ |- body
+aE , X : ■ |- body
 ----------------- :: tabs 
 aE |- \ X . body
 
@@ -1056,17 +1056,17 @@ x `notin`  dom ⌊ aW ⌋
 X `notin`  dom ⌊ aW ⌋
 |- aW
 -------------------- :: constvar
-|- aW , X : ▪
+|- aW , X : ■
 
 X `notin` dom ⌊ aW ⌋
 |- aW
 -------------------- :: consstvar
-|- aW , X : ~▪
+|- aW , X : ~■
 
 X `notin` dom ⌊ aW ⌋
 |- aW
 -------------------- :: consetvar
-|- aW , X : ^▪
+|- aW , X : ^■
 
 ⌊ aW ⌋ |- w
 |- aW

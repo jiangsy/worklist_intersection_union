@@ -178,7 +178,7 @@ Ltac solve_wf_subenv := match goal with
 end.
 
 Lemma binds_subenv: forall Ψ X Ψ',
-    X ~ ▫ ∈ Ψ -> d_subenv Ψ' Ψ -> X ~ ▫ ∈ Ψ'.
+    X ~ □ ∈ Ψ -> d_subenv Ψ' Ψ -> X ~ □ ∈ Ψ'.
 Proof with try solve_by_invert.
   intros* HD HS. induction* HS.
   - forwards* [?|?]: binds_app_1 HD.
@@ -565,7 +565,7 @@ Proof with auto using d_mono_typ_d_wf_typ with typing.
       econstructor; eauto...
     + assert (Ψ ⊢ A0 ^^ᵈ T <: A ^^ᵈ T). {
         pick fresh SZ. forwards*: H5 SZ.
-        rewrite_env (nil++ (SZ, ▪) :: Ψ ) in H7.
+        rewrite_env (nil++ (SZ, ■) :: Ψ ) in H7.
         forwards*: d_sub_subst_stvar T H7.
         simpl in H8.
         rewrite subst_tvar_in_typ_open_typ_wrt_typ in H8...

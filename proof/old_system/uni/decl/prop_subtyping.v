@@ -502,7 +502,7 @@ Proof with auto with subtyping weaken.
     try solve [simpl in *];
     try solve [eapply d_wf_typ_weaken with (Ψ2 := Ψ2) in H0; auto]; auto.
   - apply d_sub__all with (L :=  L `union` dom (Ψ3 ++ Ψ2 ++ Ψ1)); intros x Fr; inst_cofinites_with x; auto...
-    eapply H2 with (Ψ1 := Ψ1) (Ψ3 := (x, ▪) :: Ψ3); simpl; auto.
+    eapply H2 with (Ψ1 := Ψ1) (Ψ3 := (x, ■) :: Ψ3); simpl; auto.
     constructor; auto.
   - apply d_sub__alll with (T := T) (L :=  L `union` dom (Ψ3 ++ Ψ2 ++ Ψ1)); auto...
     eauto using d_mono_typ_weaken.
@@ -681,7 +681,7 @@ Qed.
 Theorem d_sub_open_mono_stvar_false: forall n1 n2 Ψ A T X L,
     d_typ_order (A ^^ᵈ T) < n1 ->
     d_typ_size (A ^^ᵈ T) < n2 ->
-    X ~ ▪ ∈ Ψ ->
+    X ~ ■ ∈ Ψ ->
     Ψ ⊢ A ^^ᵈ T <: typ_var_f X ->
     (forall X, X `notin` L -> s_in X (A ^ᵈ X)) ->
     d_mono_typ Ψ T ->
@@ -752,7 +752,7 @@ Theorem d_mono_notin_stvar : forall Ψ2 Ψ1 A X,
 Proof.
   intros. dependent induction H0; simpl in *; auto.
   - case_eq (X0 == X); intros; subst*; try solve_notin.
-    assert (X ~ ▪ ∈ (Ψ2 ++ (X, ▪) :: Ψ1)) by eauto.
+    assert (X ~ ■ ∈ (Ψ2 ++ (X, ■) :: Ψ1)) by eauto.
     exfalso. forwards*: binds_two_thing_false X.
   - dependent destruction H; auto... apply notin_union; eauto.
 Qed.
@@ -772,7 +772,7 @@ Proof with subst; eauto using d_wf_typ_weaken_head with subtyping.
     + rewrite typ_subst_open_comm; auto...
       apply ftv_sin_typ_subst_inv; auto...
     + repeat rewrite typ_subst_open_comm; eauto...
-      rewrite_env (map (subst_tvar_in_dbind T X) (X1 ~ ▪ ++ Ψ2) ++ Ψ1).
+      rewrite_env (map (subst_tvar_in_dbind T X) (X1 ~ ■ ++ Ψ2) ++ Ψ1).
       eapply H2; auto...
   - simpl. destruct (dneq_all_intersection_union_subst_stv B T X) as [[? [? ?]] | ?]; eauto...
     + eapply d_sub__alll with (L:=L `union` singleton X) (T:={T /ᵗ X} T0); auto...
@@ -894,9 +894,9 @@ Qed.
 
 
 Lemma d_sub_size_rename_stvar : forall Ψ1 Ψ2 X Y A B n,
-  Ψ2 ++ X ~ ▪ ++ Ψ1 ⊢ A <: B | n ->
+  Ψ2 ++ X ~ ■ ++ Ψ1 ⊢ A <: B | n ->
       Y ∉ (dom Ψ1 `union` dom Ψ2) ->
-      (map (subst_tvar_in_dbind (typ_var_f Y) X) Ψ2) ++ Y ~ ▪ ++ Ψ1 ⊢
+      (map (subst_tvar_in_dbind (typ_var_f Y) X) Ψ2) ++ Y ~ ■ ++ Ψ1 ⊢
         {typ_var_f Y /ᵗ X} A <: {typ_var_f Y /ᵗ X} B | n.
 Proof with (simpl in *; eauto using d_wf_env_subst_tvar_typ with sub).
   intros * HS HN.
@@ -908,29 +908,29 @@ Proof with (simpl in *; eauto using d_wf_env_subst_tvar_typ with sub).
   inductions HS; intros...
   - econstructor...
     applys d_wf_env_subst_stvar_typ...
-    rewrite_env ((Ψ2 ++ (X, ▪) :: nil ) ++ [(Y, ▪)] ++ Ψ1).
+    rewrite_env ((Ψ2 ++ (X, ■) :: nil ) ++ [(Y, ■)] ++ Ψ1).
     applys d_wf_env_weaken_stvar.
-    rewrite_env (Ψ2 ++ X ~ ▪ ++ Ψ1)...
+    rewrite_env (Ψ2 ++ X ~ ■ ++ Ψ1)...
     solve_notin.
     applys d_wf_typ_rename_stvar...
   - econstructor...
     applys d_wf_env_subst_stvar_typ...
-    rewrite_env ((Ψ2 ++ (X, ▪) :: nil ) ++ [(Y, ▪)] ++ Ψ1).
+    rewrite_env ((Ψ2 ++ (X, ■) :: nil ) ++ [(Y, ■)] ++ Ψ1).
     applys d_wf_env_weaken_stvar.
-    rewrite_env (Ψ2 ++ X ~ ▪ ++ Ψ1)...
+    rewrite_env (Ψ2 ++ X ~ ■ ++ Ψ1)...
     solve_notin.
     applys d_wf_typ_rename_stvar...
   - econstructor...
     applys d_wf_env_subst_stvar_typ...
-    rewrite_env ((Ψ2 ++ (X, ▪) :: nil ) ++ [(Y, ▪)] ++ Ψ1).
+    rewrite_env ((Ψ2 ++ (X, ■) :: nil ) ++ [(Y, ■)] ++ Ψ1).
     applys d_wf_env_weaken_stvar.
-    rewrite_env (Ψ2 ++ X ~ ▪ ++ Ψ1)...
+    rewrite_env (Ψ2 ++ X ~ ■ ++ Ψ1)...
     solve_notin.
   (* - econstructor...
     applys d_wf_env_subst_stvar_typ...
-    rewrite_env ((F ++ (X, ▪) :: nil ) ++ [(Y, ▪)] ++ Ψ).
+    rewrite_env ((F ++ (X, ■) :: nil ) ++ [(Y, ■)] ++ Ψ).
     applys d_wf_env_weaken_stvar.
-    rewrite_env (F ++ X ~ ▪ ++ Ψ)...
+    rewrite_env (F ++ X ~ ■ ++ Ψ)...
     solve_notin. inverts* H0.
     forwards* [?|?]: binds_app_1 H3.
     2: { forwards* [(?&?)|?]: binds_cons_1 H0. try solve_by_invert. }
@@ -948,7 +948,7 @@ Proof with (simpl in *; eauto using d_wf_env_subst_tvar_typ with sub).
       applys~ ftv_sin_typ_subst_inv.
     + rewrite typ_subst_open_comm...
       applys~ ftv_sin_typ_subst_inv.
-    + forwards~: H2 SZ Ψ1 ((SZ, ▪) :: Ψ2)...
+    + forwards~: H2 SZ Ψ1 ((SZ, ■) :: Ψ2)...
       repeat rewrite typ_subst_open_comm...
   - pick fresh SZ and apply d_subs__alll.
     6: forwards* H4: IHHS;
@@ -957,11 +957,11 @@ Proof with (simpl in *; eauto using d_wf_env_subst_tvar_typ with sub).
     + rewrite typ_subst_open_comm...
       applys~ ftv_sin_typ_subst_inv.
     + applys d_mono_typ_subst_stvar.
-      * rewrite_env ((Ψ2 ++ X ~ ▪) ++ Y ~ ▪ ++ Ψ1).
-        applys* d_mono_typ_weaken. rewrite_env (Ψ2 ++ (X, ▪) :: Ψ1)...
-      * rewrite_env ((Ψ2 ++ X ~ ▪) ++ Y ~ ▪ ++ Ψ1).
+      * rewrite_env ((Ψ2 ++ X ~ ■) ++ Y ~ ■ ++ Ψ1).
+        applys* d_mono_typ_weaken. rewrite_env (Ψ2 ++ (X, ■) :: Ψ1)...
+      * rewrite_env ((Ψ2 ++ X ~ ■) ++ Y ~ ■ ++ Ψ1).
         applys d_wf_env_weaken_stvar.
-        forwards: d_sub_dwft_sized_0 HS. rewrite_env (Ψ2 ++ (X, ▪) :: Ψ1)...
+        forwards: d_sub_dwft_sized_0 HS. rewrite_env (Ψ2 ++ (X, ■) :: Ψ1)...
         solve_notin.
       * now eauto.
   - applys d_subs__intersection2; forwards: IHHS...
@@ -978,8 +978,8 @@ Qed.
 Corollary d_sub_size_rename : forall n X Y Ψ1 Ψ2 A B,
     X `notin`  (ftvar_in_typ A `union` ftvar_in_typ B) ->
     Y `notin` ((dom Ψ1) `union` (dom Ψ2)) ->
-    Ψ2 ++ X ~ ▪ ++ Ψ1 ⊢ A ^^ᵈ typ_var_f X <: B ^^ᵈ typ_var_f X | n ->
-    map (subst_tvar_in_dbind (typ_var_f Y) X) Ψ2 ++ Y ~ ▪ ++ Ψ1 ⊢ A ^^ᵈ typ_var_f Y <: B ^^ᵈ typ_var_f Y | n.
+    Ψ2 ++ X ~ ■ ++ Ψ1 ⊢ A ^^ᵈ typ_var_f X <: B ^^ᵈ typ_var_f X | n ->
+    map (subst_tvar_in_dbind (typ_var_f Y) X) Ψ2 ++ Y ~ ■ ++ Ψ1 ⊢ A ^^ᵈ typ_var_f Y <: B ^^ᵈ typ_var_f Y | n.
 Proof with eauto.
   intros.
   forwards: d_sub_size_rename_stvar Y H1. solve_notin.
@@ -998,7 +998,7 @@ Proof with eauto with sub.
     destruct (H2 X) as [n]. solve_notin.
     exists (S n).
     eapply d_subs__all with (L:=L `union` ftvar_in_typ A `union` ftvar_in_typ B `union` (dom Ψ)); intros; eauto.
-    + rewrite_env (nil ++ X0 ~ ▪ ++ Ψ). rewrite_env (nil ++ X ~ ▪ ++ Ψ) in H3.
+    + rewrite_env (nil ++ X0 ~ ■ ++ Ψ). rewrite_env (nil ++ X ~ ■ ++ Ψ) in H3.
       applys d_sub_size_rename H3; solve_notin.
   - destruct IHd_sub as [n]. eauto...
   - destruct IHd_sub1 as [n1]. destruct IHd_sub2 as [n2].
@@ -1323,8 +1323,8 @@ Proof with auto with trans.
         ** forwards: H Y...
         ** forwards: H1 Y...
            forwards: d_sub_dwft_sized_1 H4.
-           rewrite_env (nil ++ Y ~ ▪ ++ Ψ) in H4.
-           rewrite_env (nil ++ Y ~ ▪ ++ Ψ) in H5.
+           rewrite_env (nil ++ Y ~ ■ ++ Ψ) in H4.
+           rewrite_env (nil ++ Y ~ ■ ++ Ψ) in H5.
            forwards: d_wf_typ_subst_stvar_tvar H5.
            simpl in H6. auto.
       * eapply d_sub__all with (L:=L `union` L0 `union` dom Ψ); auto.
@@ -1334,7 +1334,7 @@ Proof with auto with trans.
       * pick fresh Y and apply d_sub__alll. 5: applys H6. all: eauto.
         ** pick fresh X. inst_cofinites_with X.
         replace Ψ with (map (subst_tvar_in_dbind T1 X) nil ++ Ψ) by auto.
-        rewrite_env  (nil ++ (X, ▪) :: Ψ) in H1.
+        rewrite_env  (nil ++ (X, ■) :: Ψ) in H1.
         eapply d_sub_size_subst_stvar with (T:=T1) in H1; simpl; eauto.
         destruct H1 as [n' Hsub].
         eapply IHn_d_typ_order with (B:=B1 ^^ᵈ T1) (n1:=n'); eauto...
@@ -1367,7 +1367,7 @@ Proof with auto with trans.
            pick fresh Y and apply d_wf_typ__all. applys* H2.
            forwards HW: d_sub_dwft_sized_1 Hsub1.
            rewrite_env (nil ++ Ψ) in HW.
-           rewrite_env (nil ++ Y ~ ▫ ++ Ψ).
+           rewrite_env (nil ++ Y ~ □ ++ Ψ).
            applys* d_wf_typ_open_tvar_subst_mono.
         -- eapply d_sub__alll with (T:=T1); auto.
            eapply d_sub_size_sound; eauto.
@@ -1380,7 +1380,7 @@ Proof with auto with trans.
            pick fresh Y and apply d_wf_typ__all. applys* H2.
            forwards HW: d_sub_dwft_sized_1 Hsub1.
            rewrite_env (nil ++ Ψ) in HW.
-           rewrite_env (nil ++ Y ~ ▫ ++ Ψ).
+           rewrite_env (nil ++ Y ~ □ ++ Ψ).
            applys* d_wf_typ_open_tvar_subst_mono.
       (* forall a. A < X < C *)
       * dependent destruction Hsub2; try solve ord_inv; auto...
@@ -1388,7 +1388,7 @@ Proof with auto with trans.
            pick fresh Y and apply d_wf_typ__all. applys* H2.
            forwards HW: d_sub_dwft_sized_1 Hsub1.
            rewrite_env (nil ++ Ψ) in HW.
-           rewrite_env (nil ++ Y ~ ▫ ++ Ψ).
+           rewrite_env (nil ++ Y ~ □ ++ Ψ).
            applys* d_wf_typ_open_tvar_subst_mono.
         -- eapply d_sub__alll with (T:=T1); eauto...
             apply d_sub_size_sound in Hsub1. auto.
@@ -1401,7 +1401,7 @@ Proof with auto with trans.
            pick fresh Y and apply d_wf_typ__all. applys* H2.
            forwards HW: d_sub_dwft_sized_1 Hsub1.
            rewrite_env (nil ++ Ψ) in HW.
-           rewrite_env (nil ++ Y ~ ▫ ++ Ψ).
+           rewrite_env (nil ++ Y ~ □ ++ Ψ).
            applys* d_wf_typ_open_tvar_subst_mono.
         -- assert (Ψ ⊢ B1) by applys* d_sub_dwft_sized_1. assert (Ψ ⊢ B2) by applys* d_sub_dwft_sized_2.
           eapply d_sub__alll with (T:=T1); eauto...
