@@ -39,11 +39,6 @@ Inductive cont : Set :=
  | cont_unioninfabs (A2:typ) (c:cont)
  | cont_sub (A:typ).
 
-Inductive dbind : Set := 
- | dbind_tvar_empty : dbind
- | dbind_stvar_empty : dbind
- | dbind_typ (A:typ).
-
 Inductive work : Set := 
  | work_infer (e:exp) (c:cont)
  | work_check (e:exp) (A:typ)
@@ -57,16 +52,16 @@ Inductive work : Set :=
  | work_unioninfabs (A1:typ) (A2:typ) (c:cont)
  | work_apply (c:cont) (A:typ).
 
+Inductive dbind : Set := 
+ | dbind_tvar_empty : dbind
+ | dbind_stvar_empty : dbind
+ | dbind_typ (A:typ).
+
 Inductive abind : Set := 
  | abind_tvar_empty : abind
  | abind_stvar_empty : abind
  | abind_etvar_empty : abind
  | abind_var_typ (A:typ).
-
-Inductive dvalue : Set := 
- | dvalue_unit : dvalue
- | dvalue_abs (e:exp)
- | dvalue_tabs (body5:body).
 
 Inductive dworklist : Set := 
  | dworklist_empty : dworklist
@@ -83,6 +78,11 @@ Inductive aworklist : Set :=
  | aworklist_conswork (aW:aworklist) (w:work).
 
 Definition denv : Set := list (atom*dbind).
+
+Inductive dvalue : Set := 
+ | dvalue_unit : dvalue
+ | dvalue_abs (e:exp)
+ | dvalue_tabs (body5:body).
 
 (* EXPERIMENTAL *)
 (** auxiliary functions on the new list types *)
@@ -169,6 +169,14 @@ Fixpoint open_cont_wrt_exp_rec (k:nat) (e5:exp) (c5:cont) {struct c5}: cont :=
   | (cont_sub A) => cont_sub A
 end.
 
+Definition open_abind_wrt_typ_rec (k:nat) (A5:typ) (ab5:abind) : abind :=
+  match ab5 with
+  | abind_tvar_empty => abind_tvar_empty 
+  | abind_stvar_empty => abind_stvar_empty 
+  | abind_etvar_empty => abind_etvar_empty 
+  | (abind_var_typ A) => abind_var_typ (open_typ_wrt_typ_rec k A5 A)
+end.
+
 Definition open_work_wrt_typ_rec (k:nat) (A_5:typ) (w5:work) : work :=
   match w5 with
   | (work_infer e c) => work_infer (open_exp_wrt_typ_rec k A_5 e) (open_cont_wrt_typ_rec k A_5 c)
@@ -182,14 +190,6 @@ Definition open_work_wrt_typ_rec (k:nat) (A_5:typ) (w5:work) : work :=
   | (work_unioninftapp A1 A2 c) => work_unioninftapp (open_typ_wrt_typ_rec k A_5 A1) (open_typ_wrt_typ_rec k A_5 A2) (open_cont_wrt_typ_rec k A_5 c)
   | (work_unioninfabs A1 A2 c) => work_unioninfabs (open_typ_wrt_typ_rec k A_5 A1) (open_typ_wrt_typ_rec k A_5 A2) (open_cont_wrt_typ_rec k A_5 c)
   | (work_apply c A) => work_apply (open_cont_wrt_typ_rec k A_5 c) (open_typ_wrt_typ_rec k A_5 A)
-end.
-
-Definition open_abind_wrt_typ_rec (k:nat) (A5:typ) (ab5:abind) : abind :=
-  match ab5 with
-  | abind_tvar_empty => abind_tvar_empty 
-  | abind_stvar_empty => abind_stvar_empty 
-  | abind_etvar_empty => abind_etvar_empty 
-  | (abind_var_typ A) => abind_var_typ (open_typ_wrt_typ_rec k A5 A)
 end.
 
 Definition open_work_wrt_exp_rec (k:nat) (e5:exp) (w5:work) : work :=
@@ -237,19 +237,19 @@ Definition open_dvalue_wrt_typ_rec (k:nat) (A5:typ) (v5:dvalue) : dvalue :=
   | (dvalue_tabs body5) => dvalue_tabs (open_body_wrt_typ_rec (S k) A5 body5)
 end.
 
+Definition open_dvalue_wrt_exp_rec (k:nat) (e5:exp) (v5:dvalue) : dvalue :=
+  match v5 with
+  | dvalue_unit => dvalue_unit 
+  | (dvalue_abs e) => dvalue_abs (open_exp_wrt_exp_rec (S k) e5 e)
+  | (dvalue_tabs body5) => dvalue_tabs (open_body_wrt_exp_rec k e5 body5)
+end.
+
 Fixpoint open_aworklist_wrt_exp_rec (k:nat) (e5:exp) (aW_5:aworklist) {struct aW_5}: aworklist :=
   match aW_5 with
   | aworklist_empty => aworklist_empty 
   | (aworklist_consvar aW x ab) => aworklist_consvar (open_aworklist_wrt_exp_rec k e5 aW) x ab
   | (aworklist_constvar aW X ab) => aworklist_constvar (open_aworklist_wrt_exp_rec k e5 aW) X ab
   | (aworklist_conswork aW w) => aworklist_conswork (open_aworklist_wrt_exp_rec k e5 aW) (open_work_wrt_exp_rec k e5 w)
-end.
-
-Definition open_dvalue_wrt_exp_rec (k:nat) (e5:exp) (v5:dvalue) : dvalue :=
-  match v5 with
-  | dvalue_unit => dvalue_unit 
-  | (dvalue_abs e) => dvalue_abs (open_exp_wrt_exp_rec (S k) e5 e)
-  | (dvalue_tabs body5) => dvalue_tabs (open_body_wrt_exp_rec k e5 body5)
 end.
 
 Fixpoint open_dworklist_wrt_typ_rec (k:nat) (A5:typ) (Ω5:dworklist) {struct Ω5}: dworklist :=
@@ -270,27 +270,27 @@ Definition open_dworklist_wrt_exp e5 Ω5 := open_dworklist_wrt_exp_rec 0 Ω5 e5.
 
 Definition open_exp_wrt_typ A_5 e_5 := open_exp_wrt_typ_rec 0 e_5 A_5.
 
+Definition open_work_wrt_typ A_5 w5 := open_work_wrt_typ_rec 0 w5 A_5.
+
+Definition open_work_wrt_exp e5 w5 := open_work_wrt_exp_rec 0 w5 e5.
+
 Definition open_cont_wrt_typ A_5 c5 := open_cont_wrt_typ_rec 0 c5 A_5.
-
-Definition open_cont_wrt_exp e5 c5 := open_cont_wrt_exp_rec 0 c5 e5.
-
-Definition open_dvalue_wrt_typ A5 v5 := open_dvalue_wrt_typ_rec 0 v5 A5.
 
 Definition open_dbind_wrt_typ A5 db5 := open_dbind_wrt_typ_rec 0 db5 A5.
 
 Definition open_abind_wrt_typ A5 ab5 := open_abind_wrt_typ_rec 0 ab5 A5.
 
-Definition open_work_wrt_typ A_5 w5 := open_work_wrt_typ_rec 0 w5 A_5.
+Definition open_dvalue_wrt_typ A5 v5 := open_dvalue_wrt_typ_rec 0 v5 A5.
 
 Definition open_body_wrt_typ A5 body5 := open_body_wrt_typ_rec 0 body5 A5.
 
-Definition open_work_wrt_exp e5 w5 := open_work_wrt_exp_rec 0 w5 e5.
+Definition open_dvalue_wrt_exp e5 v5 := open_dvalue_wrt_exp_rec 0 v5 e5.
 
 Definition open_typ_wrt_typ A_5 A__6 := open_typ_wrt_typ_rec 0 A__6 A_5.
 
 Definition open_aworklist_wrt_exp e5 aW_5 := open_aworklist_wrt_exp_rec 0 aW_5 e5.
 
-Definition open_dvalue_wrt_exp e5 v5 := open_dvalue_wrt_exp_rec 0 v5 e5.
+Definition open_cont_wrt_exp e5 c5 := open_cont_wrt_exp_rec 0 c5 e5.
 
 Definition open_dworklist_wrt_typ A5 Ω5 := open_dworklist_wrt_typ_rec 0 Ω5 A5.
 
@@ -423,13 +423,6 @@ Fixpoint close_aworklist_wrt_typ_rec (k:nat) (A5:var) (aW_5:aworklist) {struct a
   | (aworklist_conswork aW w) => aworklist_conswork (close_aworklist_wrt_typ_rec k A5 aW) (close_work_wrt_typ_rec k A5 w)
 end.
 
-Definition close_dvalue_wrt_exp_rec (k:nat) (e5:var) (v5:dvalue) : dvalue :=
-  match v5 with
-  | dvalue_unit => dvalue_unit 
-  | (dvalue_abs e) => dvalue_abs (close_exp_wrt_exp_rec (S k) e5 e)
-  | (dvalue_tabs body5) => dvalue_tabs (close_body_wrt_exp_rec k e5 body5)
-end.
-
 Fixpoint close_dworklist_wrt_typ_rec (k:nat) (A5:var) (Ω5:dworklist) {struct Ω5}: dworklist :=
   match Ω5 with
   | dworklist_empty => dworklist_empty 
@@ -461,9 +454,16 @@ Definition close_dvalue_wrt_typ_rec (k:nat) (A5:var) (v5:dvalue) : dvalue :=
   | (dvalue_tabs body5) => dvalue_tabs (close_body_wrt_typ_rec (S k) A5 body5)
 end.
 
+Definition close_dvalue_wrt_exp_rec (k:nat) (e5:var) (v5:dvalue) : dvalue :=
+  match v5 with
+  | dvalue_unit => dvalue_unit 
+  | (dvalue_abs e) => dvalue_abs (close_exp_wrt_exp_rec (S k) e5 e)
+  | (dvalue_tabs body5) => dvalue_tabs (close_body_wrt_exp_rec k e5 body5)
+end.
+
 Definition close_exp_wrt_exp e__6 e_5 := close_exp_wrt_exp_rec 0 e__6 e_5.
 
-Definition close_cont_wrt_exp c5 e5 := close_cont_wrt_exp_rec 0 c5 e5.
+Definition close_work_wrt_exp w5 e5 := close_work_wrt_exp_rec 0 w5 e5.
 
 Definition close_exp_wrt_typ e_5 A_5 := close_exp_wrt_typ_rec 0 e_5 A_5.
 
@@ -471,7 +471,7 @@ Definition close_aworklist_wrt_typ aW_5 A5 := close_aworklist_wrt_typ_rec 0 aW_5
 
 Definition close_body_wrt_exp body5 e5 := close_body_wrt_exp_rec 0 body5 e5.
 
-Definition close_dvalue_wrt_exp v5 e5 := close_dvalue_wrt_exp_rec 0 v5 e5.
+Definition close_cont_wrt_exp c5 e5 := close_cont_wrt_exp_rec 0 c5 e5.
 
 Definition close_dworklist_wrt_typ Ω5 A5 := close_dworklist_wrt_typ_rec 0 Ω5 A5.
 
@@ -481,15 +481,15 @@ Definition close_body_wrt_typ body5 A5 := close_body_wrt_typ_rec 0 body5 A5.
 
 Definition close_aworklist_wrt_exp aW_5 e5 := close_aworklist_wrt_exp_rec 0 aW_5 e5.
 
-Definition close_dvalue_wrt_typ v5 A5 := close_dvalue_wrt_typ_rec 0 v5 A5.
-
 Definition close_cont_wrt_typ c5 A_5 := close_cont_wrt_typ_rec 0 c5 A_5.
 
 Definition close_work_wrt_typ w5 A_5 := close_work_wrt_typ_rec 0 w5 A_5.
 
+Definition close_dvalue_wrt_typ v5 A5 := close_dvalue_wrt_typ_rec 0 v5 A5.
+
 Definition close_abind_wrt_typ ab5 A5 := close_abind_wrt_typ_rec 0 ab5 A5.
 
-Definition close_work_wrt_exp w5 e5 := close_work_wrt_exp_rec 0 w5 e5.
+Definition close_dvalue_wrt_exp v5 e5 := close_dvalue_wrt_exp_rec 0 v5 e5.
 
 Definition close_dbind_wrt_typ db5 A5 := close_dbind_wrt_typ_rec 0 db5 A5.
 
@@ -588,16 +588,6 @@ Inductive lc_cont : cont -> Prop :=    (* defn lc_cont *)
      (lc_typ A) ->
      (lc_cont (cont_sub A)).
 
-(* defns LC_dbind *)
-Inductive lc_dbind : dbind -> Prop :=    (* defn lc_dbind *)
- | lc_dbind_tvar_empty : 
-     (lc_dbind dbind_tvar_empty)
- | lc_dbind_stvar_empty : 
-     (lc_dbind dbind_stvar_empty)
- | lc_dbind_typ : forall (A:typ),
-     (lc_typ A) ->
-     (lc_dbind (dbind_typ A)).
-
 (* defns LC_work *)
 Inductive lc_work : work -> Prop :=    (* defn lc_work *)
  | lc_work_infer : forall (e:exp) (c:cont),
@@ -652,6 +642,16 @@ Inductive lc_work : work -> Prop :=    (* defn lc_work *)
      (lc_typ A) ->
      (lc_work (work_apply c A)).
 
+(* defns LC_dbind *)
+Inductive lc_dbind : dbind -> Prop :=    (* defn lc_dbind *)
+ | lc_dbind_tvar_empty : 
+     (lc_dbind dbind_tvar_empty)
+ | lc_dbind_stvar_empty : 
+     (lc_dbind dbind_stvar_empty)
+ | lc_dbind_typ : forall (A:typ),
+     (lc_typ A) ->
+     (lc_dbind (dbind_typ A)).
+
 (* defns LC_abind *)
 Inductive lc_abind : abind -> Prop :=    (* defn lc_abind *)
  | lc_abind_tvar_empty : 
@@ -663,17 +663,6 @@ Inductive lc_abind : abind -> Prop :=    (* defn lc_abind *)
  | lc_abind_var_typ : forall (A:typ),
      (lc_typ A) ->
      (lc_abind (abind_var_typ A)).
-
-(* defns LC_dvalue *)
-Inductive lc_dvalue : dvalue -> Prop :=    (* defn lc_dvalue *)
- | lc_dvalue_unit : 
-     (lc_dvalue dvalue_unit)
- | lc_dvalue_abs : forall (e:exp),
-      ( forall x , lc_exp  ( open_exp_wrt_exp e (exp_var_f x) )  )  ->
-     (lc_dvalue (dvalue_abs e))
- | lc_dvalue_tabs : forall (body5:body),
-      ( forall X , lc_body  ( open_body_wrt_typ body5 (typ_var_f X) )  )  ->
-     (lc_dvalue (dvalue_tabs body5)).
 
 (* defns LC_dworklist *)
 Inductive lc_dworklist : dworklist -> Prop :=    (* defn lc_dworklist *)
@@ -708,6 +697,17 @@ Inductive lc_aworklist : aworklist -> Prop :=    (* defn lc_aworklist *)
      (lc_aworklist aW) ->
      (lc_work w) ->
      (lc_aworklist (aworklist_conswork aW w)).
+
+(* defns LC_dvalue *)
+Inductive lc_dvalue : dvalue -> Prop :=    (* defn lc_dvalue *)
+ | lc_dvalue_unit : 
+     (lc_dvalue dvalue_unit)
+ | lc_dvalue_abs : forall (e:exp),
+      ( forall x , lc_exp  ( open_exp_wrt_exp e (exp_var_f x) )  )  ->
+     (lc_dvalue (dvalue_abs e))
+ | lc_dvalue_tabs : forall (body5:body),
+      ( forall X , lc_body  ( open_body_wrt_typ body5 (typ_var_f X) )  )  ->
+     (lc_dvalue (dvalue_tabs body5)).
 (** free variables *)
 Fixpoint ftvar_in_typ (A_5:typ) : vars :=
   match A_5 with
@@ -831,11 +831,11 @@ Fixpoint ftvar_in_dworklist (Ω5:dworklist) : vars :=
   | (dworklist_conswork Ω w) => (ftvar_in_dworklist Ω) \u (ftvar_in_work w)
 end.
 
-Definition fvar_in_dvalue (v5:dvalue) : vars :=
+Definition ftvar_in_dvalue (v5:dvalue) : vars :=
   match v5 with
   | dvalue_unit => {}
-  | (dvalue_abs e) => (fvar_in_exp e)
-  | (dvalue_tabs body5) => (fvar_in_body body5)
+  | (dvalue_abs e) => (ftvar_in_exp e)
+  | (dvalue_tabs body5) => (ftvar_in_body body5)
 end.
 
 Fixpoint fvar_in_dworklist (Ω5:dworklist) : vars :=
@@ -854,19 +854,19 @@ Fixpoint ftvar_in_aworklist (aW_5:aworklist) : vars :=
   | (aworklist_conswork aW w) => (ftvar_in_aworklist aW) \u (ftvar_in_work w)
 end.
 
+Definition fvar_in_dvalue (v5:dvalue) : vars :=
+  match v5 with
+  | dvalue_unit => {}
+  | (dvalue_abs e) => (fvar_in_exp e)
+  | (dvalue_tabs body5) => (fvar_in_body body5)
+end.
+
 Fixpoint fvar_in_aworklist (aW_5:aworklist) : vars :=
   match aW_5 with
   | aworklist_empty => {}
   | (aworklist_consvar aW x ab) => (fvar_in_aworklist aW)
   | (aworklist_constvar aW X ab) => (fvar_in_aworklist aW)
   | (aworklist_conswork aW w) => (fvar_in_aworklist aW) \u (fvar_in_work w)
-end.
-
-Definition ftvar_in_dvalue (v5:dvalue) : vars :=
-  match v5 with
-  | dvalue_unit => {}
-  | (dvalue_abs e) => (ftvar_in_exp e)
-  | (dvalue_tabs body5) => (ftvar_in_body body5)
 end.
 
 (** substitutions *)
@@ -939,14 +939,6 @@ Fixpoint subst_var_in_cont (e5:exp) (x5:expvar) (c5:cont) {struct c5} : cont :=
   | (cont_sub A) => cont_sub A
 end.
 
-Definition subst_tvar_in_abind (A5:typ) (X5:typvar) (ab5:abind) : abind :=
-  match ab5 with
-  | abind_tvar_empty => abind_tvar_empty 
-  | abind_stvar_empty => abind_stvar_empty 
-  | abind_etvar_empty => abind_etvar_empty 
-  | (abind_var_typ A) => abind_var_typ (subst_tvar_in_typ A5 X5 A)
-end.
-
 Definition subst_tvar_in_work (A_5:typ) (X5:typvar) (w5:work) : work :=
   match w5 with
   | (work_infer e c) => work_infer (subst_tvar_in_exp A_5 X5 e) (subst_tvar_in_cont A_5 X5 c)
@@ -984,12 +976,19 @@ Definition subst_var_in_work (e5:exp) (x5:expvar) (w5:work) : work :=
   | (work_apply c A) => work_apply (subst_var_in_cont e5 x5 c) A
 end.
 
-Fixpoint subst_tvar_in_aworklist (A5:typ) (X5:typvar) (aW_5:aworklist) {struct aW_5} : aworklist :=
-  match aW_5 with
-  | aworklist_empty => aworklist_empty 
-  | (aworklist_consvar aW x ab) => aworklist_consvar (subst_tvar_in_aworklist A5 X5 aW) x (subst_tvar_in_abind A5 X5 ab)
-  | (aworklist_constvar aW X ab) => aworklist_constvar (subst_tvar_in_aworklist A5 X5 aW) X (subst_tvar_in_abind A5 X5 ab)
-  | (aworklist_conswork aW w) => aworklist_conswork (subst_tvar_in_aworklist A5 X5 aW) (subst_tvar_in_work A5 X5 w)
+Definition subst_tvar_in_abind (A5:typ) (X5:typvar) (ab5:abind) : abind :=
+  match ab5 with
+  | abind_tvar_empty => abind_tvar_empty 
+  | abind_stvar_empty => abind_stvar_empty 
+  | abind_etvar_empty => abind_etvar_empty 
+  | (abind_var_typ A) => abind_var_typ (subst_tvar_in_typ A5 X5 A)
+end.
+
+Definition subst_tvar_in_dvalue (A5:typ) (X5:typvar) (v5:dvalue) : dvalue :=
+  match v5 with
+  | dvalue_unit => dvalue_unit 
+  | (dvalue_abs e) => dvalue_abs (subst_tvar_in_exp A5 X5 e)
+  | (dvalue_tabs body5) => dvalue_tabs (subst_tvar_in_body A5 X5 body5)
 end.
 
 Fixpoint subst_tvar_in_dworklist (A5:typ) (X5:typvar) (Ω5:dworklist) {struct Ω5} : dworklist :=
@@ -1000,12 +999,20 @@ Fixpoint subst_tvar_in_dworklist (A5:typ) (X5:typvar) (Ω5:dworklist) {struct Ω
   | (dworklist_conswork Ω w) => dworklist_conswork (subst_tvar_in_dworklist A5 X5 Ω) (subst_tvar_in_work A5 X5 w)
 end.
 
-Fixpoint subst_var_in_aworklist (e5:exp) (x5:expvar) (aW_5:aworklist) {struct aW_5} : aworklist :=
+Fixpoint subst_var_in_dworklist (e5:exp) (x5:expvar) (Ω5:dworklist) {struct Ω5} : dworklist :=
+  match Ω5 with
+  | dworklist_empty => dworklist_empty 
+  | (dworklist_consvar Ω x db) => dworklist_consvar (subst_var_in_dworklist e5 x5 Ω) x db
+  | (dworklist_constvar Ω X db) => dworklist_constvar (subst_var_in_dworklist e5 x5 Ω) X db
+  | (dworklist_conswork Ω w) => dworklist_conswork (subst_var_in_dworklist e5 x5 Ω) (subst_var_in_work e5 x5 w)
+end.
+
+Fixpoint subst_tvar_in_aworklist (A5:typ) (X5:typvar) (aW_5:aworklist) {struct aW_5} : aworklist :=
   match aW_5 with
   | aworklist_empty => aworklist_empty 
-  | (aworklist_consvar aW x ab) => aworklist_consvar (subst_var_in_aworklist e5 x5 aW) x ab
-  | (aworklist_constvar aW X ab) => aworklist_constvar (subst_var_in_aworklist e5 x5 aW) X ab
-  | (aworklist_conswork aW w) => aworklist_conswork (subst_var_in_aworklist e5 x5 aW) (subst_var_in_work e5 x5 w)
+  | (aworklist_consvar aW x ab) => aworklist_consvar (subst_tvar_in_aworklist A5 X5 aW) x (subst_tvar_in_abind A5 X5 ab)
+  | (aworklist_constvar aW X ab) => aworklist_constvar (subst_tvar_in_aworklist A5 X5 aW) X (subst_tvar_in_abind A5 X5 ab)
+  | (aworklist_conswork aW w) => aworklist_conswork (subst_tvar_in_aworklist A5 X5 aW) (subst_tvar_in_work A5 X5 w)
 end.
 
 Definition subst_var_in_dvalue (e5:exp) (x5:expvar) (v5:dvalue) : dvalue :=
@@ -1015,19 +1022,12 @@ Definition subst_var_in_dvalue (e5:exp) (x5:expvar) (v5:dvalue) : dvalue :=
   | (dvalue_tabs body5) => dvalue_tabs (subst_var_in_body e5 x5 body5)
 end.
 
-Fixpoint subst_var_in_dworklist (e5:exp) (x5:expvar) (Ω5:dworklist) {struct Ω5} : dworklist :=
-  match Ω5 with
-  | dworklist_empty => dworklist_empty 
-  | (dworklist_consvar Ω x db) => dworklist_consvar (subst_var_in_dworklist e5 x5 Ω) x db
-  | (dworklist_constvar Ω X db) => dworklist_constvar (subst_var_in_dworklist e5 x5 Ω) X db
-  | (dworklist_conswork Ω w) => dworklist_conswork (subst_var_in_dworklist e5 x5 Ω) (subst_var_in_work e5 x5 w)
-end.
-
-Definition subst_tvar_in_dvalue (A5:typ) (X5:typvar) (v5:dvalue) : dvalue :=
-  match v5 with
-  | dvalue_unit => dvalue_unit 
-  | (dvalue_abs e) => dvalue_abs (subst_tvar_in_exp A5 X5 e)
-  | (dvalue_tabs body5) => dvalue_tabs (subst_tvar_in_body A5 X5 body5)
+Fixpoint subst_var_in_aworklist (e5:exp) (x5:expvar) (aW_5:aworklist) {struct aW_5} : aworklist :=
+  match aW_5 with
+  | aworklist_empty => aworklist_empty 
+  | (aworklist_consvar aW x ab) => aworklist_consvar (subst_var_in_aworklist e5 x5 aW) x ab
+  | (aworklist_constvar aW X ab) => aworklist_constvar (subst_var_in_aworklist e5 x5 aW) X ab
+  | (aworklist_conswork aW w) => aworklist_conswork (subst_var_in_aworklist e5 x5 aW) (subst_var_in_work e5 x5 w)
 end.
 
 
@@ -1665,6 +1665,6 @@ Inductive a_wf_wl : aworklist -> Prop :=    (* defn a_wf_wl *)
 
 
 (** infrastructure *)
-#[export] Hint Constructors s_in neq_abs neq_all neq_intersection neq_union neq_bot d_wf_typ d_wf_exp d_wf_body d_wf_env d_mono_typ d_wf_cont d_wf_work d_wf_wl d_sub a_evs_in_wl a_wf_typ a_mono_typ a_wf_exp a_wf_body a_wf_cont a_wf_work a_wf_wl lc_typ lc_exp lc_body lc_cont lc_dbind lc_work lc_abind lc_dvalue lc_dworklist lc_aworklist : core.
+#[export] Hint Constructors s_in neq_abs neq_all neq_intersection neq_union neq_bot d_wf_typ d_wf_exp d_wf_body d_wf_env d_mono_typ d_wf_cont d_wf_work d_wf_wl d_sub a_evs_in_wl a_wf_typ a_mono_typ a_wf_exp a_wf_body a_wf_cont a_wf_work a_wf_wl lc_typ lc_exp lc_body lc_cont lc_work lc_dbind lc_abind lc_dworklist lc_aworklist lc_dvalue : core.
 
 

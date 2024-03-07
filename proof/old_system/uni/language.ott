@@ -41,8 +41,35 @@ abind, ab :: abind_ ::=
   | : ^■       ::   :: etvar_empty
   | : A        ::   :: var_typ
 
+cont, c :: 'cont_' ::=
+  % | Done                :: :: done
+  | _ ▹ c                :: :: infabs
+  | _ ⊔▹ A1 ▹ c          :: :: infabsunion
+  | _ • e =>=> c         :: :: infapp
+  | _ ○ A =>=> c         :: :: inftapp
+  | _ ⊔∘ A1 ○ A2 =>=> c  :: :: inftappunion
+  | _ ⊔∘ A2 >> c         :: :: unioninftapp
+  | _ ⊔▹ A2 >> c         :: :: unioninfabs
+  | _ <: A               :: :: sub
+  | ( c )                  :: S :: app {{ coq ( [[c]] )}}
+
+work, w :: 'work_' ::=
+  | e => c                 ::   :: infer
+  | e <= A                 ::   :: check
+  | A ▹ c                  ::   :: infabs
+  | A1 ⊔▹ A2 ▹ c           ::   :: infabsunion
+  | A • e =>=> c           ::   :: infapp
+  | A1 ○ A2 =>=> c         ::   :: inftapp
+  | A1 <: A2               ::   :: sub
+  | A1 ⊔∘ A2 ○ B =>=> c    ::   :: inftappunion
+  | A1 ⊔∘ A2 >> c          ::   :: unioninftapp
+  | A1 ⊔▹ A2 >> c          ::   :: unioninfabs
+  | c $ A                  ::   :: apply
+
+
 substitutions
   single A X  :: subst_tvar_in
+  single w X  :: subst_tvar_in
   single e x  :: subst_var_in
 
 freevars
@@ -73,32 +100,6 @@ dvalue, v :: dvalue_ ::=
 % dmaybetyp, MT :: dmaybetyp_ ::=
 %   | none                 ::   :: none
 %   | some A               ::   :: some  
-
-cont, c :: 'cont_' ::=
-  % | Done                :: :: done
-  | _ ▹ c                :: :: infabs
-  | _ ⊔▹ A1 ▹ c          :: :: infabsunion
-  | _ • e =>=> c         :: :: infapp
-  | _ ○ A =>=> c         :: :: inftapp
-  | _ ⊔∘ A1 ○ A2 =>=> c  :: :: inftappunion
-  | _ ⊔∘ A2 >> c         :: :: unioninftapp
-  | _ ⊔▹ A2 >> c         :: :: unioninfabs
-  | _ <: A               :: :: sub
-  | ( c )                  :: S :: app {{ coq ( [[c]] )}}
-
-work, w :: 'work_' ::=
-  | e => c                 ::   :: infer
-  | e <= A                 ::   :: check
-  | A ▹ c                  ::   :: infabs
-  | A1 ⊔▹ A2 ▹ c           ::   :: infabsunion
-  | A • e =>=> c           ::   :: infapp
-  | A1 ○ A2 =>=> c         ::   :: inftapp
-  | A1 <: A2               ::   :: sub
-  | A1 ⊔∘ A2 ○ B =>=> c    ::   :: inftappunion
-  | A1 ⊔∘ A2 >> c          ::   :: unioninftapp
-  | A1 ⊔▹ A2 >> c          ::   :: unioninfabs
-  | c $ A                  ::   :: apply
-
 
 dworklist, dW :: 'dworklist_' ::=
   | empty      ::   :: empty

@@ -1135,8 +1135,6 @@ Proof.
         assert (Jg2: a_wl_red (aworklist_conswork Γ (work_infabs A2 c)) \/
                    ~ a_wl_red (aworklist_conswork Γ (work_infabs A2 c))).
         { eapply IHna; eauto; simpl in *; try lia. }
-        assert (Hlc1: lc_typ A1) by admit. (* safe: wf *)
-        assert (Hlc2: lc_typ A2) by admit. (* safe: wf *)
         destruct Jg1 as [Jg1 | Jg1]; eauto.
         destruct Jg2 as [Jg2 | Jg2]; eauto.
         right. intro Hcontra.
