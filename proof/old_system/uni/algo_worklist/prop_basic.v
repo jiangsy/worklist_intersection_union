@@ -221,7 +221,7 @@ Proof with eauto with Hdb_a_wl_red_basic.
     + admit.
     + admit.
     + intros. simpl in *. inst_cofinites_with X0.
-      assert (⊢ᵃ (work_sub (B1 ^ᵈ X0) A1 ⫤ aworklist_constvar Γ X0 abind_etvar_empty)) by admit. 
+      assert (⊢ᵃ (work_sub (B1 ^ᵗ X0) A1 ⫤ aworklist_constvar Γ X0 abind_etvar_empty)) by admit. 
       rewrite typ_subst_open_comm...
       unfold eq_dec in H6.
       destruct (EqDec_eq_of_X X0 X) in H6...
@@ -302,7 +302,7 @@ Proof with eauto with Hdb_a_wl_red_basic.
   - simpl in *.
     inst_cofinites_for  a_wl_red__inf_tabs...
     intros. inst_cofinites_with X0.
-    assert (⊢ᵃ (work_check (open_exp_wrt_typ e ` X0) (A ^ᵈ X0) ⫤ X0 ~ᵃ □ ;ᵃ work_apply c (typ_all A) ⫤ Γ)) by admit.
+    assert (⊢ᵃ (work_check (open_exp_wrt_typ e ` X0) (A ^ᵗ X0) ⫤ X0 ~ᵃ □ ;ᵃ work_apply c (typ_all A) ⫤ Γ)) by admit.
     apply H2 in H4.
     rewrite subst_tvar_in_exp_open_exp_wrt_typ in H4...
     simpl in H4.
@@ -325,7 +325,7 @@ Proof with eauto with Hdb_a_wl_red_basic.
       rewrite ftvar_in_typ_open_typ_wrt_typ_upper...
   - admit.
   - simpl in *. 
-    assert ( ⊢ᵃ (work_apply c (A ^^ᵈ B) ⫤ Γ)) by admit.
+    assert ( ⊢ᵃ (work_apply c (A ^^ᵗ B) ⫤ Γ)) by admit.
     apply IHa_wl_red in H2.
     eapply a_wl_red__inftapp_all.
     rewrite <- subst_tvar_in_typ_open_typ_wrt_typ...

@@ -361,7 +361,7 @@ Proof with auto with typing.
       rewrite_env ((map (subst_tvar_in_dbind B X) nil) ++ Ψ).
       eapply d_wft_typ_subst; eauto...
       econstructor; eauto.
-    + exists (A0 ^^ᵈ B). split; auto...
+    + exists (A0 ^^ᵗ B). split; auto...
       pick fresh X. inst_cofinites_with X.
       erewrite <- typ_subst_open_var; eauto.
       erewrite <- typ_subst_open_var with (A:=A); eauto.
@@ -563,7 +563,7 @@ Proof with auto using d_mono_typ_d_wf_typ with typing.
   - dependent induction H3.
     + exists typ_top typ_bot.
       econstructor; eauto...
-    + assert (Ψ ⊢ A0 ^^ᵈ T <: A ^^ᵈ T). {
+    + assert (Ψ ⊢ A0 ^^ᵗ T <: A ^^ᵗ T). {
         pick fresh SZ. forwards*: H5 SZ.
         rewrite_env (nil++ (SZ, ■) :: Ψ ) in H7.
         forwards*: d_sub_subst_stvar T H7.

@@ -39,7 +39,7 @@ Qed.
 Lemma typ_subst_open_comm : forall X A T B,
   lc_typ T ->
   X `notin` ftvar_in_typ B ->
-  ({T /ᵗ X} A) ^^ᵈ B = {T/ᵗ X} A ^^ᵈ B.
+  ({T /ᵗ X} A) ^^ᵗ B = {T/ᵗ X} A ^^ᵗ B.
 Proof.
   intros.
   rewrite subst_tvar_in_typ_open_typ_wrt_typ; auto.
@@ -50,7 +50,7 @@ Qed.
 Lemma typ_subst_open_var : forall X A T,
   lc_typ T ->
   X `notin` ftvar_in_typ A ->
-  {T /ᵗ X} A ^ᵈ X = A ^^ᵈ T.
+  {T /ᵗ X} A ^ᵗ X = A ^^ᵗ T.
 Proof.
   intros.
   rewrite subst_tvar_in_typ_open_typ_wrt_typ; auto.
@@ -196,7 +196,7 @@ Proof.
     inversion x.
     inst_cofinites_by (singleton X).
     eapply lc_typ_all_exists with (X1:=x0). intros.
-    specialize (H0 x0 (A ^ᵈ x0) X T). apply H0.
+    specialize (H0 x0 (A ^ᵗ x0) X T). apply H0.
     subst. rewrite <- typ_subst_open_comm; auto.
     auto.
   - destruct A; try solve [inversion x]; auto.
@@ -220,7 +220,7 @@ Proof.
   intros. induction H; simpl; auto.
   - destruct (X0 == X); auto.
   - inst_cofinites_by (singleton X) using_name X. eapply lc_typ_all_exists with (X1:=X0).
-    replace (({T /ᵗ X} A) ^ᵈ X0) with ({T /ᵗ X} A ^ᵈ X0); eauto.
+    replace (({T /ᵗ X} A) ^ᵗ X0) with ({T /ᵗ X} A ^ᵗ X0); eauto.
     rewrite typ_subst_open_comm; auto.
 Qed.
 

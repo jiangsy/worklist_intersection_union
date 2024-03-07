@@ -213,7 +213,7 @@ Proof with auto with Hdb_dworklist_equiv typing.
     dependent destruction H. dependent destruction H1.
     eapply d_sub__all with (L:=L `union` L0 `union` L1 `union` dom (dwl_to_denv Ω)); intros; auto.
     inst_cofinites_with X.
-    assert ( d_wf_wl  (dworklist_conswork (dworklist_consvar Ω X dbind_stvar_empty) (work_sub (A ^ᵈ X) (B ^ᵈ X)) ) ).
+    assert ( d_wf_wl  (dworklist_conswork (dworklist_consvar Ω X dbind_stvar_empty) (work_sub (A ^ᵗ X) (B ^ᵗ X)) ) ).
     admit.
     admit.
     admit.

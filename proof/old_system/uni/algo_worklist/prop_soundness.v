@@ -229,7 +229,7 @@ Proof with eauto with Hdb_a_wl_red_soundness.
     + dependent destruction Hdred. dependent destruction Hdred...
   (* forall x. A < B  *)
   - inst_cofinites_by (L `union` ftvar_in_typ A1) using_name X.
-    assert ( ⊢ᵃ (work_sub (B1 ^ᵈ X) A1 ⫤ aworklist_constvar Γ X abind_etvar_empty)) by admit.
+    assert ( ⊢ᵃ (work_sub (B1 ^ᵗ X) A1 ⫤ aworklist_constvar Γ X abind_etvar_empty)) by admit.
     destruct_a_wf_wl.
     _apply_IH_a_wl_red.
     destruct_trans.
@@ -259,7 +259,7 @@ Proof with eauto with Hdb_a_wl_red_soundness.
   - destruct_a_wf_wl.
     dependent destruction H. dependent destruction H1.
     inst_cofinites_by (L `union` L0 `union` L1 `union` dom (awl_to_aenv Γ)) using_name X.
-    assert ( ⊢ᵃ (work_sub (B1 ^ᵈ X) (A1 ^ᵈ X) ⫤ aworklist_constvar Γ X abind_stvar_empty) ) by admit.
+    assert ( ⊢ᵃ (work_sub (B1 ^ᵗ X) (A1 ^ᵗ X) ⫤ aworklist_constvar Γ X abind_stvar_empty) ) by admit.
     _apply_IH_a_wl_red.
     destruct_trans...
     rename A1ᵈ into B1xᵈ. rename B1ᵈ into A1xᵈ.
@@ -448,12 +448,12 @@ Proof with eauto with Hdb_a_wl_red_soundness.
     split...
     destruct_d_wl_del_red...
   (* ∀ a. A ∘ B =>=> _ *)
-  - assert (⊢ᵃ (work_apply c (A ^^ᵈ B) ⫤ Γ)) by admit.
+  - assert (⊢ᵃ (work_apply c (A ^^ᵗ B) ⫤ Γ)) by admit.
     _apply_IH_a_wl_red.
     destruct_trans.
     inst_cofinites_by (dom (awl_to_aenv Γ) `union` dom θ) using_name X.
     trans_all_typ.
-    replace (A ^^ᵈ B) with ({B /ᵗ X} A ^ᵈ X) in H7 by admit.
+    replace (A ^^ᵗ B) with ({B /ᵗ X} A ^ᵗ X) in H7 by admit.
     eapply trans_typ_rev_subs_cons in H7...
     admit.
     admit.
