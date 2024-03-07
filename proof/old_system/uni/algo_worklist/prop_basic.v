@@ -78,34 +78,6 @@ Fixpoint rename_tvar_in_aworklist (X' X:typvar) (Γ:aworklist) {struct Γ} : awo
   | (aworklist_conswork Γ' w) => aworklist_conswork (rename_tvar_in_aworklist X' X Γ') (subst_tvar_in_work (typ_var_f X') X w)
 end.
 
-Lemma worklist_subst_rename : forall Γ X X' A E Γ1 Γ2,
-  X `notin` ftvar_in_typ A `union` ftvar_in_aworklist Γ ->
-  aworklist_subst Γ X A E Γ1 Γ2 -> 
-  aworklist_subst (rename_tvar_in_aworklist X' X Γ) X' ({` X' /ᵗ X} A) 
-      (rename_tvar_in_etvar_list X' X E) (rename_tvar_in_aworklist X' X Γ1) (rename_tvar_in_aworklist X' X Γ2).
-Proof with auto with Hdb_a_wl_red_basic.
-  intros. induction H0; try solve [simpl; eauto with Hdb_a_wl_red_basic].
-  - simpl. destruct (X == X)...
-    contradiction.
-  - admit.
-  - simpl in *. unfold eq_dec. 
-    destruct (EqDec_eq_of_X Y X). 
-    + subst. econstructor; auto. admit.
-    + constructor; auto. admit.
-  - simpl in *. unfold eq_dec. 
-    destruct (EqDec_eq_of_X Y X). 
-    + subst. econstructor; auto. admit.
-    + constructor; auto. admit.
-  - admit.
-  - simpl in *. unfold eq_dec. 
-    destruct (EqDec_eq_of_X Y X). 
-    + subst. econstructor; auto. admit.
-    + constructor; auto. admit.
-  - simpl in *. unfold eq_dec. 
-    destruct (EqDec_eq_of_X Y X). 
-    + subst. econstructor; auto. 
-    + constructor; auto.
-Admitted.
 
 Fixpoint ftvar_in_aworklist' (aW_5:aworklist) : vars :=
   match aW_5 with
@@ -115,7 +87,37 @@ Fixpoint ftvar_in_aworklist' (aW_5:aworklist) : vars :=
   | (aworklist_conswork aW w) => (ftvar_in_aworklist' aW) \u (ftvar_in_work w)
 end.
 
-Lemma worklist_subst_rename' : forall Γ X1 X2 X' A E Γ1 Γ2,
+Ltac destruct_a_wf_wl :=
+  repeat
+    lazymatch goal with
+    | H : a_wf_wl (aworklist_conswork ?Γ ?w) |- _ => dependent destruction H
+    | H : a_wf_wl (aworklist_consvar ?Γ ?w ?b) |- _ => dependent destruction H
+    | H : a_wf_wl (aworklist_constvar ?Γ ?X ?b) |- _ => dependent destruction H
+    | H : a_wf_work ?Ω ?w |- _ => dependent destruction H
+    | H : a_wf_typ ?E (open_typ_wrt_typ ?A ?T) |- _ => fail
+    | H : a_wf_typ ?E (?Ct ?A1 ?A2) |- _ => dependent destruction H
+    | H : a_wf_exp ?E (?Ce ?b) |- _ => dependent destruction H
+    | H : a_wf_exp ?E (?Ce ?e1 ?e2) |- _ => dependent destruction H
+    | H : a_wf_cont ?E (?C_C _) |- _ => dependent destruction H
+    | H : a_wf_cont ?E (?C_C _ _) |- _ => dependent destruction H
+    | H : a_wf_cont ?E (?C_C _ _ _) |- _ => dependent destruction H
+    end.
+
+
+
+Ltac _apply_IH_a_wl_red :=
+  let H := fresh "H" in
+    match goal with 
+    | H : (⊢ᵃ ?Γ) -> ?P |- _ => destruct_a_wf_wl; 
+      let H1 := fresh "H" in
+      assert (H1 : ⊢ᵃ Γ) by auto with Hdb_a_wl_red_basic;
+      let H2 := fresh "IHHdred" in
+      apply H in H1 as H2
+    end.
+
+
+
+Lemma worklist_subst_rename : forall Γ X1 X2 X' A E Γ1 Γ2,
   ⊢ᵃ Γ ->
   X' `notin` ftvar_in_typ A `union` ftvar_in_aworklist' Γ ->
   aworklist_subst Γ X2 A E Γ1 Γ2 -> 
@@ -124,35 +126,39 @@ Lemma worklist_subst_rename' : forall Γ X1 X2 X' A E Γ1 Γ2,
 Proof with auto with Hdb_a_wl_red_basic.
   intros. induction H1; try solve [simpl; eauto with Hdb_a_wl_red_basic].
   - simpl in *. dependent destruction H. destruct (X == X1)...
-  - simpl in *. unfold eq_dec in *.
+  - simpl in *.  _apply_IH_a_wl_red...  unfold eq_dec in *.
     destruct (EqDec_eq_of_X Y X1); destruct (EqDec_eq_of_X X X1).
-    + subst. constructor. apply IHaworklist_subst... admit. admit.
-    + subst. constructor. apply IHaworklist_subst... admit. admit.
-    + subst. constructor. apply IHaworklist_subst... admit. admit.
-    + constructor. apply IHaworklist_subst... admit. admit.
-  - simpl in *. unfold eq_dec in *.
+    + subst. constructor. apply IHaworklist_subst... 
+      rewrite subst_tvar_in_typ_fresh_eq...
+    + subst. constructor. apply IHaworklist_subst... 
+      rewrite subst_tvar_in_typ_fresh_eq...
+    + subst. constructor. apply IHaworklist_subst...
+      rewrite ftvar_in_typ_subst_tvar_in_typ_upper...
+    + constructor. apply IHaworklist_subst...
+      rewrite ftvar_in_typ_subst_tvar_in_typ_upper...
+  - simpl in *.  _apply_IH_a_wl_red... unfold eq_dec in *.
     destruct (EqDec_eq_of_X Y X1); destruct (EqDec_eq_of_X X X1).
-    + subst. constructor. apply IHaworklist_subst... admit. admit. 
-    + subst. constructor. apply IHaworklist_subst... admit. admit.
-    + subst. constructor. apply IHaworklist_subst... admit. admit.
-    + constructor. apply IHaworklist_subst... admit. admit.
-  - simpl in *. unfold eq_dec in *.
-    destruct (EqDec_eq_of_X X X1).
-    + subst. constructor. apply IHaworklist_subst... admit. 
-    + constructor. apply IHaworklist_subst... admit. 
-  - simpl in *. unfold eq_dec in *.
+    + subst. constructor. apply IHaworklist_subst...
+      rewrite subst_tvar_in_typ_fresh_eq...
+    + subst. constructor. apply IHaworklist_subst... 
+      rewrite subst_tvar_in_typ_fresh_eq...
+    + subst. constructor. apply IHaworklist_subst...
+      rewrite ftvar_in_typ_subst_tvar_in_typ_upper...
+    + constructor. apply IHaworklist_subst...
+      rewrite ftvar_in_typ_subst_tvar_in_typ_upper...
+  - simpl in *. _apply_IH_a_wl_red... 
+  - simpl in *. _apply_IH_a_wl_red... unfold eq_dec in *.
     destruct (EqDec_eq_of_X Y X1); destruct (EqDec_eq_of_X X X1).
-    + subst. constructor. apply IHaworklist_subst... admit. admit.
-    + subst. constructor. apply IHaworklist_subst... admit. admit.
-    + subst. constructor. apply IHaworklist_subst... admit. admit.
-    + constructor. apply IHaworklist_subst... admit. admit.
-  - simpl in *. unfold eq_dec in *.
-    destruct (EqDec_eq_of_X Y X1); destruct (EqDec_eq_of_X X X1).
-    + constructor. apply IHaworklist_subst... admit. 
-    + constructor. apply IHaworklist_subst... admit.
-    + constructor. apply IHaworklist_subst... admit.
-    + constructor. apply IHaworklist_subst... admit.
-Admitted. 
+    + subst. constructor. apply IHaworklist_subst... 
+      rewrite subst_tvar_in_typ_fresh_eq...
+    + subst. constructor. apply IHaworklist_subst... 
+      rewrite subst_tvar_in_typ_fresh_eq...
+    + subst. constructor. apply IHaworklist_subst... 
+      rewrite ftvar_in_typ_subst_tvar_in_typ_upper...
+    + constructor. apply IHaworklist_subst...
+      rewrite ftvar_in_typ_subst_tvar_in_typ_upper...
+  - simpl in *. _apply_IH_a_wl_red... 
+Qed.
 
 
 Lemma binds_var_typ_rename : forall x A X X' Γ,
@@ -273,33 +279,6 @@ Proof with eauto with Hdb_a_wl_red_basic.
 Admitted. *)
 
 
-Ltac destruct_a_wf_wl :=
-  repeat
-    lazymatch goal with
-    | H : a_wf_wl (aworklist_conswork ?Γ ?w) |- _ => dependent destruction H
-    | H : a_wf_wl (aworklist_consvar ?Γ ?w ?b) |- _ => dependent destruction H
-    | H : a_wf_wl (aworklist_constvar ?Γ ?X ?b) |- _ => dependent destruction H
-    | H : a_wf_work ?Ω ?w |- _ => dependent destruction H
-    | H : a_wf_typ ?E (open_typ_wrt_typ ?A ?T) |- _ => fail
-    | H : a_wf_typ ?E (?Ct ?A1 ?A2) |- _ => dependent destruction H
-    | H : a_wf_exp ?E (?Ce ?b) |- _ => dependent destruction H
-    | H : a_wf_exp ?E (?Ce ?e1 ?e2) |- _ => dependent destruction H
-    | H : a_wf_cont ?E (?C_C _) |- _ => dependent destruction H
-    | H : a_wf_cont ?E (?C_C _ _) |- _ => dependent destruction H
-    | H : a_wf_cont ?E (?C_C _ _ _) |- _ => dependent destruction H
-    end.
-
-
-
-Ltac _apply_IH_a_wl_red :=
-  let H := fresh "H" in
-    match goal with 
-    | H : (⊢ᵃ ?Γ) -> ?P |- _ => destruct_a_wf_wl; 
-      let H1 := fresh "H" in
-      assert (H1 : ⊢ᵃ Γ) by auto with Hdb_a_wl_red_basic;
-      let H2 := fresh "IHHdred" in
-      apply H in H1 as H2
-    end.
 
 Ltac solve_notin_eq X :=
   repeat
@@ -356,7 +335,7 @@ Proof with eauto with Hdb_a_wl_red_basic.
       admit.
   - admit.
   - simpl in *. 
-    eapply worklist_subst_rename' with (X':=X') (X1:=X) in H3 as Hsubst.
+    eapply worklist_subst_rename with (X':=X') (X1:=X) in H3 as Hsubst.
     destruct (X0 == X); apply a_wl_red__sub_etvarmono1 with (E:=rename_tvar_in_etvar_list X' X E)
     (Γ1:=rename_tvar_in_aworklist X' X Γ1) (Γ2:=rename_tvar_in_aworklist X' X Γ2)...
     + admit.
@@ -368,7 +347,7 @@ Proof with eauto with Hdb_a_wl_red_basic.
     + admit.
     + admit. 
   - simpl. 
-    eapply worklist_subst_rename' with (X':=X') (X1:=X) in H3 as Hsubst.
+    eapply worklist_subst_rename with (X':=X') (X1:=X) in H3 as Hsubst.
     destruct (X0 == X); apply a_wl_red__sub_etvarmono2 with (E:=rename_tvar_in_etvar_list X' X E)
     (Γ1:=rename_tvar_in_aworklist X' X Γ1) (Γ2:=rename_tvar_in_aworklist X' X Γ2)...
     + admit.
