@@ -81,12 +81,22 @@ Lemma worklist_subst_rename : forall Γ X X' A E Γ1 Γ2,
   aworklist_subst Γ X A E Γ1 Γ2 -> 
   aworklist_subst (rename_tvar_in_aworklist X' X Γ) X' ({` X' /ᵗ X} A) 
       (subst_tvar_in_etvar_list X' X E) (rename_tvar_in_aworklist X' X Γ1) (rename_tvar_in_aworklist X' X Γ2).
-Proof.
-  intros. induction H.
-  - simpl. admit.
+Proof with auto with Hdb_a_wl_red_basic.
+  intros. induction H; try solve [simpl; eauto with Hdb_a_wl_red_basic].
+  - simpl. destruct (X == X)...
+    contradiction.
   - admit.
   - 
 Admitted.
+
+Lemma worklist_subst_rename' : forall Γ X1 X2 X' A E Γ1 Γ2,
+  aworklist_subst Γ X2 A E Γ1 Γ2 -> 
+  aworklist_subst (rename_tvar_in_aworklist X' X1 Γ) (if X2 == X1 then X' else X2) ({` X' /ᵗ X1} A) 
+      (subst_tvar_in_etvar_list X' X1 E) (rename_tvar_in_aworklist X' X1 Γ1) (rename_tvar_in_aworklist X' X1 Γ2).
+Proof with auto with Hdb_a_wl_red_basic.
+  intros. induction H; try solve [simpl; eauto with Hdb_a_wl_red_basic].
+Admitted.
+
 
 Theorem a_wl_red_rename_tvar : forall Γ X X',
   Γ ⟶ᵃʷ⁎⋅ ->
@@ -127,8 +137,10 @@ Proof with eauto with Hdb_a_wl_red_basic.
   - admit.
   - simpl. destruct (X0 == X).
     + subst.
-      eapply a_wl_red__sub_etvarmono1; auto. admit.
-      admit.
+      apply worklist_subst_rename with (X':=X') in H1 as Hsubst.
+      apply a_wl_red__sub_etvarmono1 with (E:=subst_tvar_in_etvar_list X' X E)
+        (Γ1:=rename_tvar_in_aworklist X' X Γ1) (Γ2:=rename_tvar_in_aworklist X' X Γ2)
+      ; auto... admit.
       admit.
       admit.
     + eapply a_wl_red__sub_etvarmono1; auto. admit.
@@ -145,12 +157,30 @@ Proof with eauto with Hdb_a_wl_red_basic.
       admit.
       admit.
       admit.
+  - simpl in *. 
+    eapply a_wl_red__chk_absarrow with (L:=L). intros.
+    inst_cofinites_with x.
+    rewrite subst_tvar_in_exp_open_exp_wrt_exp in H0...
   - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
+  - simpl in *. 
+    eapply a_wl_red__chk_abstop with (L:=L). intros.
+    inst_cofinites_with x.
+    rewrite subst_tvar_in_exp_open_exp_wrt_exp in H0...
+  - simpl in *.
+    eapply a_wl_red__inf_var with (A:=({` X' /ᵗ X} A))...
+    admit.
+  - simpl in *.
+    eapply a_wl_red__inf_tabs with (L:=L `union` singleton X)...
+    intros. inst_cofinites_with X0.
+    rewrite subst_tvar_in_exp_open_exp_wrt_typ in H0...
+    simpl in H0.
+    rewrite <- typ_subst_open_comm in H0...
+    unfold eq_dec in H0.
+    destruct (EqDec_eq_of_X X0 X) in H0...
+    + subst. apply notin_union_2 in H1. apply notin_singleton_1 in H1. contradiction.
+  - simpl in *.  
+    eapply a_wl_red__inf_abs_mono.
+    admit.
   - admit.
   - admit.
   - simpl in *. 

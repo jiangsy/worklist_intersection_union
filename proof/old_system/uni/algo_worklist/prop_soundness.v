@@ -315,7 +315,22 @@ Proof with eauto with Hdb_a_wl_red_soundness.
   - exists (work_check eᵈ A1ᵈ ⫤ Ω)%dworklist. split...
     destruct_d_wl_del_red...
   (* \ x. e <= A1 -> A2 *)
-  - admit.
+  - destruct_a_wf_wl. inst_cofinites_by (L `union` L0)... 
+    assert (⊢ᵃ (work_check (open_exp_wrt_exp e (exp_var_f x)) A2 ⫤ (aworklist_consvar Γ x (abind_var_typ A1)))) by admit.
+    apply H2 in H3.
+    destruct H3 as [Ω [Htrans Hdred]].
+    destruct Htrans as [θ].
+    destruct_trans. rename_typ.
+    exists (work_check (exp_abs (close_exp_wrt_exp x eᵈ)) (typ_arrow A1ᵈ A2ᵈ) ⫤ Ω)%dworklist. split.
+    + exists Θ.
+      econstructor...
+      econstructor...
+      eapply trans_exp__abs with (L:=fvar_in_exp e). intros.
+      admit.
+    + destruct_d_wl_del_red.
+      dependent destruction Hdred...  
+      econstructor; auto.
+      admit.
   (* \ x. e <= ^X *)
   - admit.
   - destruct_a_wf_wl. inst_cofinites_by (L `union` L0).
@@ -324,7 +339,16 @@ Proof with eauto with Hdb_a_wl_red_soundness.
     destruct H4 as [Ω [Htrans Hdred]].
     destruct Htrans as [θ].
     destruct_trans.
-    admit.
+    exists (work_check (exp_abs (close_exp_wrt_exp x eᵈ)) typ_top ⫤ Ω)%dworklist. split.
+    + exists θ. 
+      econstructor...
+      econstructor...
+      eapply trans_exp__abs with (L:=fvar_in_exp e). intros.
+      admit.
+    + destruct_d_wl_del_red.
+      dependent destruction Hdred...  
+      econstructor; auto.
+      admit.
   - exists (work_check eᵈ (typ_intersection A1ᵈ A2ᵈ) ⫤ Ω)%dworklist...
     split...
     destruct_d_wl_del_red...
@@ -356,7 +380,11 @@ Proof with eauto with Hdb_a_wl_red_soundness.
   (* /\ a. e : A => _ *)
   - admit.
   (* \x. e => _ *)
-  - admit. 
+  - destruct_a_wf_wl.
+    inst_cofinites_by (L `union` L0).
+    inst_cofinites_by (L0 `union` singleton x) using_name X1.
+    inst_cofinites_by (L0 `union` singleton x `union` singleton X1) using_name X2.
+    admit.
   - exists (work_infer exp_unit cᵈ ⫤ Ω)%dworklist...
     split. exists θ... 
     econstructor...

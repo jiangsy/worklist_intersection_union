@@ -185,7 +185,7 @@ Inductive a_wl_red : aworklist -> Prop :=    (* defn a_wl_red *)
       ( forall X , X \notin  L  -> 
         a_wl_red (aworklist_conswork (aworklist_constvar (aworklist_conswork Γ (work_apply c  ( (typ_all A) ) )) X abind_tvar_empty) (work_check  ( open_exp_wrt_typ e (typ_var_f X) )   ( open_typ_wrt_typ A (typ_var_f X) ) )) )  ->
      a_wl_red (aworklist_conswork Γ (work_infer (exp_tabs (body_anno e A)) c))
- | a_wl_red__inf_abs_mono : forall (L:vars) (Γ:aworklist) (e:exp) (A:typ) (c:cont),
+ | a_wl_red__inf_abs_mono : forall (L:vars) (Γ:aworklist) (e:exp) (c:cont),
     (forall x, x `notin` L -> forall X1, X1 `notin` (L `union` singleton x) -> forall X2, X2 `notin` (L `union` singleton x `union` singleton X1) ->
         a_wl_red (aworklist_conswork (aworklist_consvar (aworklist_conswork (aworklist_constvar (aworklist_constvar Γ X1 abind_etvar_empty) X2 abind_etvar_empty) (work_apply c (typ_arrow (typ_var_f X1) (typ_var_f X2)))) x (abind_var_typ (typ_var_f X1)) ) (work_check  ( open_exp_wrt_exp e (exp_var_f x) )  (typ_var_f X2)))
         ) ->
