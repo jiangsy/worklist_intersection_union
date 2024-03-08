@@ -5,6 +5,7 @@ Require Import List.
 Require Import Coq.micromega.Lia.
 
 Require Import uni.notations.
+Require Import uni.prop_basic.
 Require Import uni.algo_worklist.def_extra.
 Require Import uni.algo_worklist.prop_basic.
 Require Import ln_utils.
@@ -1025,7 +1026,8 @@ Proof.
              rewrite Hexp. lia. } 
            destruct JgArr as [JgArr | JgArr]; auto.
            ++ left. eapply a_wl_red__chk_absarrow with (L := union L (union (ftvar_in_typ T) (union (ftvar_in_typ A1) (ftvar_in_typ A2)))); eauto.
-              intros X' Hnin. admit. (* safe: rename *)
+              intros x' Hnin.              
+              admit. (* safe: rename *)
            ++ right. intro Hcontra. dependent destruction Hcontra.
               ** apply Jg; auto.
               ** admit. (* TODO: check this! I am suffering from bindings. (should be fine, I guess) *)
@@ -1118,11 +1120,32 @@ Proof.
           eapply IHna; eauto; simpl in *; try lia.
           admit. (* safe: wf *) }
         destruct Jg as [Jg | Jg]; eauto.
-        -- left. eapply a_wl_red__infabs_all with (L := L `union` (ftvar_in_typ A) `union` (ftvar_in_aworklist Γ)).
-           intros X' Hnin. admit. (* safe: rename *)
+        -- left. inst_cofinites_for a_wl_red__infabs_all.
+           intros X' Hnin. 
+           apply a_wl_red_rename_tvar with (X:=X) (X':=X') in Jg.
+           ++ simpl in Jg.
+              unfold eq_dec in Jg.
+              destruct (EqDec_eq_of_X X X) in Jg.
+              ** rewrite rename_tvar_in_aworklist_fresh_eq in Jg; auto.
+                 rewrite subst_tvar_in_cont_fresh_eq in Jg; auto.
+                 rewrite typ_subst_open_var in Jg; auto.
+              ** contradiction.
+            ++ admit. (* wf *)
+            ++ simpl. rewrite ftvar_in_typ_open_typ_wrt_typ_upper. auto.
         -- right. intro Hcontra.
            dependent destruction Hcontra.
-           admit. (* TODO: check this! I am suffering from bindings. (should be fine, I guess) *)
+           pick fresh X1.
+           inst_cofinites_with X1.
+           apply a_wl_red_rename_tvar with (X:=X1) (X':=X) in H2; auto.
+           ++ simpl in H2.
+              unfold eq_dec in H2.
+              destruct (EqDec_eq_of_X X1 X1) in H2.
+              ** rewrite rename_tvar_in_aworklist_fresh_eq in H2; auto.
+                  rewrite subst_tvar_in_cont_fresh_eq in H2; auto.
+                  rewrite typ_subst_open_var in H2; auto.
+              ** contradiction.
+            ++ admit. (* wf *)  
+            ++ simpl. rewrite ftvar_in_typ_open_typ_wrt_typ_upper. auto.
       * assert (Jg: a_wl_red (aworklist_conswork Γ (work_infabs A1  (  (cont_infabsunion A2 c)  ) )) \/
                   ~ a_wl_red (aworklist_conswork Γ (work_infabs A1  (  (cont_infabsunion A2 c)  ) ))).
         { eapply IHna; eauto; simpl in *; try lia. }

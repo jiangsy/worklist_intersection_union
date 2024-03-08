@@ -72,14 +72,6 @@ Fixpoint rename_tvar_in_etvar_list (X' X: typvar) (E:list typvar) :=
   end.
 
 
-Fixpoint ftvar_in_aworklist' (aW_5:aworklist) : vars :=
-  match aW_5 with
-  | aworklist_empty => {}
-  | (aworklist_consvar aW x ab) => (ftvar_in_aworklist' aW) \u (ftvar_in_abind ab)
-  | (aworklist_constvar aW X ab) => (ftvar_in_aworklist' aW) \u (ftvar_in_abind ab) \u (singleton X)
-  | (aworklist_conswork aW w) => (ftvar_in_aworklist' aW) \u (ftvar_in_work w)
-end.
-
 
 Fixpoint rename_tvar_in_aworklist (X' X:typvar) (Γ:aworklist) {struct Γ} : aworklist :=
   match Γ with
