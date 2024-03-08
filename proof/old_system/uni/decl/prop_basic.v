@@ -826,50 +826,6 @@ Proof with try solve_notin; simpl; eauto.
       rewrite_env ((Ψ2 ++ X ~ ■) ++ Ψ1)...
 Qed.
 
-Lemma d_neq_all_rename: forall A X Y,
-  lc_typ A ->
-  neq_all A ->
-  neq_all ({typ_var_f Y /ᵗ X} A).
-Proof with  simpl; eauto using lc_typ_subst; try solve_by_invert.
-  intros. destruct A...
-  - case_if; subst*.
-  - eapply neq_all__arrow;
-      applys lc_typ_subst...
-    all: inverts~ H.
-  - econstructor; applys lc_typ_subst; try inverts~ H...
-  - econstructor; applys lc_typ_subst; try inverts~ H...
-Qed.
-
-Lemma d_neq_intersection_rename: forall A X Y,
-  lc_typ A ->
-  neq_intersection A ->
-  neq_intersection ({typ_var_f Y /ᵗ X} A).
-Proof with  simpl; eauto using lc_typ_subst; try solve_by_invert.
-  intros. destruct A...
-  - case_if; subst*.
-  - eapply neq_intersection__arrow;
-      applys lc_typ_subst...
-    all: inverts~ H.
-  - econstructor.
-    forwards*: lc_typ_subst (typ_all A) (typ_var_f Y) X.
-  - econstructor; applys lc_typ_subst; try inverts~ H...
-Qed.
-
-
-Lemma d_neq_union_rename: forall A X Y,
-  lc_typ A ->
-  neq_union A ->
-  neq_union ({typ_var_f Y /ᵗ X} A).
-Proof with  simpl; eauto using lc_typ_subst; try solve_by_invert.
-  intros. destruct A...
-  - case_if; subst*.
-  - eapply neq_union__arrow;
-      applys lc_typ_subst...
-    all: inverts~ H.
-  - econstructor.
-    forwards*: lc_typ_subst (typ_all A) (typ_var_f Y) X.
-  - econstructor; applys lc_typ_subst; try inverts~ H...
-Qed.
 
 (* Lemma rename_mono_typ : forall T SX SY,
     dmono_typ T ->
@@ -880,7 +836,7 @@ Proof with simpl in *; eauto.
   all: try rewrite IHHM1; try rewrite IHHM2...
 Qed. *)
 
-#[export] Hint Resolve d_neq_all_rename d_neq_intersection_rename d_neq_union_rename : sub.
+#[export] Hint Resolve neq_all_rename neq_intersection_rename neq_union_rename : sub.
 
 
 Lemma neq_all_lc_typ : forall A,

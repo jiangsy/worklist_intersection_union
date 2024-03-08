@@ -925,8 +925,9 @@ Proof.
         destruct Jg as [Jg | Jg]; eauto.
         right. intro Hcontra.
         dependent destruction Hcontra.
-        assert (HA: A = A0) by admit. (* safe: wf *)
+        apply binds_unique with (b:= (abind_var_typ A0)) in H; auto. dependent destruction H.
         subst. apply Jg; auto.
+        admit.
       * right. intro Hcontra.
         dependent destruction Hcontra.
         admit. (* TODO *)
@@ -998,8 +999,8 @@ Proof.
       * dependent destruction H1; simpl in *;
           try solve [right; intro Hcontra; dependent destruction Hcontra; eapply Jg; eauto].
         -- inst_cofinites_by (L `union` (ftvar_in_typ T) `union` (ftvar_in_aworklist aW)).
-           assert (Jgt: a_wl_red (aworklist_conswork (aworklist_consvar aW x (abind_var_typ typ_bot)) (work_check  ( open_exp_wrt_exp e (exp_var_f x) )  typ_top)) \/
-                      ~ a_wl_red (aworklist_conswork (aworklist_consvar aW x (abind_var_typ typ_bot)) (work_check  ( open_exp_wrt_exp e (exp_var_f x) )  typ_top))).
+           assert (Jgt:   (work_check (e ^ᵉₑ exp_var_f x) typ_top ⫤ x ~ᵃ typ_bot;ᵃ aW) ⟶ᵃʷ⁎⋅ \/ 
+                        ¬ (work_check (e ^ᵉₑ exp_var_f x) typ_top ⫤ x ~ᵃ typ_bot;ᵃ aW) ⟶ᵃʷ⁎⋅).
            { eapply IHne; eauto; simpl; try lia. admit. (* safe: wf *)
              assert (Hexp: exp_size (open_exp_wrt_exp e (exp_var_f x)) = exp_size e) by admit. (* should be fine *)
              lia. }
@@ -1016,11 +1017,11 @@ Proof.
            ++ eapply Jg; eauto.
            ++ eapply abind_etvar_stvar_false; eauto.
         -- admit. (* TODO: two step reduction reduces exp_size *)
-        -- pick fresh X.
-           assert (JgArr: a_wl_red (aworklist_conswork (aworklist_consvar aW X (abind_var_typ A1)) (work_check  ( open_exp_wrt_exp e (exp_var_f X) )  A2)) \/
-                        ~ a_wl_red (aworklist_conswork (aworklist_consvar aW X (abind_var_typ A1)) (work_check  ( open_exp_wrt_exp e (exp_var_f X) )  A2))).
+        -- pick fresh x.
+           assert (JgArr:   (work_check (e ^ᵉₑ exp_var_f x) A2 ⫤ x ~ᵃ A1;ᵃ aW) ⟶ᵃʷ⁎⋅ \/ 
+                          ¬ (work_check (e ^ᵉₑ exp_var_f x) A2 ⫤ x ~ᵃ A1;ᵃ aW) ⟶ᵃʷ⁎⋅).
            { eapply IHne; eauto; simpl; try lia. admit. (* safe: wf *)
-             assert (Hexp: exp_size (open_exp_wrt_exp e (exp_var_f X)) = exp_size e) by admit. (* should be fine *)
+             assert (Hexp: exp_size (open_exp_wrt_exp e (exp_var_f x)) = exp_size e) by admit. (* should be fine *)
              rewrite Hexp. lia. } 
            destruct JgArr as [JgArr | JgArr]; auto.
            ++ left. eapply a_wl_red__chk_absarrow with (L := union L (union (ftvar_in_typ T) (union (ftvar_in_typ A1) (ftvar_in_typ A2)))); eauto.
@@ -1075,8 +1076,8 @@ Proof.
     + simpl in *. dependent destruction Hm. dependent destruction H1.
       dependent destruction H;
         try solve [right; intro Hcontra; dependent destruction Hcontra].
-      * assert (Jg: a_wl_red (aworklist_conswork Γ (work_infabs (typ_arrow typ_top typ_bot) c)) \/
-                  ~ a_wl_red (aworklist_conswork Γ (work_infabs (typ_arrow typ_top typ_bot) c))).
+      * assert (Jg:   (work_infabs (typ_arrow typ_top typ_bot) c ⫤ Γ) ⟶ᵃʷ⁎⋅ \/ 
+                    ¬ (work_infabs (typ_arrow typ_top typ_bot) c ⫤ Γ) ⟶ᵃʷ⁎⋅).
         { eapply IHna; eauto; simpl in *; try lia. }
         destruct Jg as [Jg | Jg]; eauto.
         right. intro Hcontra.
@@ -1280,8 +1281,7 @@ Proof.
       destruct (apply_cont_dec c (typ_union A1 A2)) as [[w Happly] | Happly];
       try solve [right; intro Hcontra; dependent destruction Hcontra; dependent destruction Hcontra;
         eapply Happly; eauto].
-      assert (Jg: a_wl_red (aworklist_conswork Γ w) \/
-                ~ a_wl_red (aworklist_conswork Γ w)).
+      assert (Jg: (w ⫤ Γ) ⟶ᵃʷ⁎⋅ \/ ¬ (w ⫤ Γ) ⟶ᵃʷ⁎⋅).
       { destruct (measp_wl_total (aworklist_conswork Γ w)) as [m Hm'].
         admit. (* safe: wf *)
         eapply IHntj; eauto; simpl in *; try lia.
@@ -1309,9 +1309,8 @@ Proof.
       destruct (apply_cont_dec c (typ_arrow  ( (typ_intersection A1 A2) )   ( (typ_union A0 A3) ) )) as [[w Happly] | Happly];
       try solve [right; intro Hcontra; dependent destruction Hcontra; dependent destruction Hcontra;
         eapply Happly; eauto].
-      assert (Jg: a_wl_red (aworklist_conswork Γ w) \/
-                ~ a_wl_red (aworklist_conswork Γ w)).
-      { destruct (measp_wl_total (aworklist_conswork Γ w)) as [m Hm'].
+      assert (Jg: (w ⫤ Γ) ⟶ᵃʷ⁎⋅ \/ ¬ (w ⫤ Γ) ⟶ᵃʷ⁎⋅).
+      { destruct (measp_wl_total (w ⫤ Γ)) as [m Hm'].
         admit. (* safe: wf *)
         eapply IHnaj; eauto; simpl in *; try lia.
         admit. (* safe: wf *)
@@ -1335,8 +1334,7 @@ Proof.
       assert (Jg: a_wl_red Γ \/ ~ a_wl_red Γ).
       { eapply IHnw; eauto; simpl; try lia. }
       assert (JgInter1: forall A1 A2, A0 = typ_intersection A1 A2 ->
-                a_wl_red (aworklist_conswork (aworklist_conswork Γ (work_sub A A1)) (work_sub A A2)) \/
-              ~ a_wl_red (aworklist_conswork (aworklist_conswork Γ (work_sub A A1)) (work_sub A A2))).
+          (work_sub A A2 ⫤ work_sub A A1 ⫤ Γ) ⟶ᵃʷ⁎⋅ \/ ¬ (work_sub A A2 ⫤ work_sub A A1 ⫤ Γ) ⟶ᵃʷ⁎⋅).
       { intros A1 A2 Heq. subst. dependent destruction H3.
         eapply IHnw with (m := ((3 * m + all_size A) * (1 + iu_size A2) + (3 * n2 + all_size A2) * (1 + iu_size A)) + ((3 * m + all_size A) * (1 + iu_size A1) + (3 * n1 + all_size A1) * (1 + iu_size A)) + n); eauto; try lia.
         admit. (* safe: wf *)
@@ -1668,10 +1666,11 @@ Proof.
     * eapply apply_cont_exp_size in Happly as Hes.
       eapply apply_cont_judge_size in Happly as Hjs.
       destruct (measp_wl_total (aworklist_conswork aW w)) as [m' Hms].
-      admit. (* safe: wf *) 
+      eapply a_wf_wl_apply_cont; eauto.
       assert (JgApply: a_wl_red (aworklist_conswork aW w) \/
                      ~ a_wl_red (aworklist_conswork aW w)).
-      { eapply IHnj with (m := m'); simpl; eauto; try lia. admit. (* safe: wf *) }
+      { eapply IHnj with (m := m'); simpl; eauto; try lia.
+        eapply a_wf_wl_apply_cont; eauto. }
       destruct JgApply as [JgApply | JgApply]; eauto.
       right. intro Hcontra. dependent destruction Hcontra.
       eapply apply_cont_det in Happly; eauto. subst. eapply JgApply; eauto.

@@ -263,15 +263,15 @@ Declare Scope dworklist_scope.
 Delimit Scope dworklist_scope with dworklist.
 Bind Scope dworklist_scope with dworklist.
     
-Notation " x ~ T ; Ω " :=
+Notation " x ~ᵈ T ;ᵈ Ω " :=
     (dworklist_consvar Ω x (dbind_typ T))
         (at level 58, T at next level, right associativity) : dworklist_scope.
       
-  Notation " X ~ □ ; Ω " :=
+  Notation " X ~ᵈ □ ;ᵈ Ω " :=
     (dworklist_constvar Ω X dbind_tvar_empty)
         (at level 58, right associativity) : dworklist_scope.
   
-  Notation " X ~ ■ ; Ω " :=
+  Notation " X ~ᵈ ■ ;ᵈ Ω " :=
     (dworklist_constvar Ω X dbind_stvar_empty)
         (at level 58, right associativity) : dworklist_scope.
   
