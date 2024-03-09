@@ -932,8 +932,8 @@ Proof.
       * right. intro Hcontra.
         dependent destruction Hcontra.
         admit. (* TODO *)
-      * assert (Jg: a_wl_red (aworklist_conswork aW (work_infer e1  (  (cont_infabs  (  (cont_infapp e2 c)  ) )  ) )) \/
-                  ~ a_wl_red (aworklist_conswork aW (work_infer e1  (  (cont_infabs  (  (cont_infapp e2 c)  ) )  ) ))).
+      * assert (Jg:   (work_infer e1 (cont_infabs (cont_infapp e2 c)) ⫤ aW) ⟶ᵃʷ⁎⋅ \/
+                    ¬ (work_infer e1 (cont_infabs (cont_infapp e2 c)) ⫤ aW) ⟶ᵃʷ⁎⋅).
         { eapply IHne; eauto; simpl; try lia. }
         destruct Jg as [Jg | Jg]; eauto.
         right. intro Hcontra.
@@ -942,16 +942,16 @@ Proof.
       * destruct body5. admit.
         (* TODO *)
       * simpl in *.
-        assert (Jg: a_wl_red (aworklist_conswork aW (work_infer e (cont_inftapp A c))) \/
-                  ~ a_wl_red (aworklist_conswork aW (work_infer e (cont_inftapp A c)))).
+        assert (Jg:   (work_infer e (cont_inftapp A c) ⫤ aW) ⟶ᵃʷ⁎⋅ \/
+                    ¬ (work_infer e (cont_inftapp A c) ⫤ aW) ⟶ᵃʷ⁎⋅).
         { eapply IHne; eauto; simpl; try lia. }
         destruct Jg as [Jg | Jg]; eauto.
         right. intro Hcontra.
         dependent destruction Hcontra.
         apply Jg; auto.
       * simpl in *.
-        assert (Jg: a_wl_red (aworklist_conswork (aworklist_conswork aW (work_apply c A)) (work_check e A)) \/
-                  ~ a_wl_red (aworklist_conswork (aworklist_conswork aW (work_apply c A)) (work_check e A))).
+        assert (Jg:   (work_check e A ⫤ work_apply c A ⫤ aW) ⟶ᵃʷ⁎⋅ \/
+                    ¬ (work_check e A ⫤ work_apply c A ⫤ aW) ⟶ᵃʷ⁎⋅).
         { eapply IHne; eauto; simpl; try lia. }
         destruct Jg as [Jg | Jg]; eauto.
         right. intro Hcontra.
@@ -959,22 +959,20 @@ Proof.
         apply Jg; auto.
     + dependent destruction Hm. simpl in *.
       assert (He': exp_size e >= 1) by apply exp_size_gt_0.
-      assert (Jg: a_wl_red (aworklist_conswork aW (work_infer e (cont_sub A))) \/
-                ~ a_wl_red (aworklist_conswork aW (work_infer e (cont_sub A)))).
+      assert (Jg:   (work_infer e (cont_sub A) ⫤ aW) ⟶ᵃʷ⁎⋅ \/
+                  ¬ (work_infer e (cont_sub A) ⫤ aW) ⟶ᵃʷ⁎⋅).
       { eapply IHnj; eauto; simpl; try lia. }
       assert (Jg1: forall A1 A2, A = typ_union A1 A2 ->
-                  a_wl_red (aworklist_conswork aW (work_check e A1)) \/
-                ~ a_wl_red (aworklist_conswork aW (work_check e A1))).
+                (work_check e A1 ⫤ aW) ⟶ᵃʷ⁎⋅ \/ ¬ (work_check e A1 ⫤ aW) ⟶ᵃʷ⁎⋅).
       { intros A1 A2 Heq. subst. dependent destruction H0. simpl in *.
         eapply IHne; eauto; simpl; try lia. }
       assert (Jg2: forall A1 A2, A = typ_union A1 A2 ->
-                  a_wl_red (aworklist_conswork aW (work_check e A2)) \/
-                ~ a_wl_red (aworklist_conswork aW (work_check e A2))).
+                (work_check e A2 ⫤ aW) ⟶ᵃʷ⁎⋅ \/ ¬ (work_check e A2 ⫤ aW) ⟶ᵃʷ⁎⋅).
       { intros A1 A2 Heq. subst. dependent destruction H0. simpl in *.
         eapply IHne; eauto; simpl; try lia. }
       assert (Jg': forall A1 A2, A = typ_intersection A1 A2 ->
-                  a_wl_red (aworklist_conswork (aworklist_conswork aW (work_check e A1)) (work_check e A2)) \/
-                ~ a_wl_red (aworklist_conswork (aworklist_conswork aW (work_check e A1)) (work_check e A2))).
+                 (work_check e A2 ⫤ work_check e A1 ⫤ aW) ⟶ᵃʷ⁎⋅
+            \/ ¬ (work_check e A2 ⫤ work_check e A1 ⫤ aW) ⟶ᵃʷ⁎⋅ ).
       { intros A1 A2 Heq. subst. dependent destruction H0. simpl in *.
         eapply IHne; eauto; simpl; try lia. }
       destruct Jg as [Jg | Jg]; eauto.
@@ -1007,10 +1005,10 @@ Proof.
              lia. }
            destruct Jgt as [Jgt | Jgt].
            ++ left. eapply a_wl_red__chk_abstop with (L := L `union` (ftvar_in_typ T) `union` (ftvar_in_aworklist aW)).
-              intros X' Hnin. admit. (* safe: rename *)
+              intros x' Hnin. admit. (* TODO: rename var *)
            ++ right. intro Hcontra. dependent destruction Hcontra.
               ** apply Jg; auto.
-              ** admit. (* TODO: check this! I am suffering from bindings. (should be fine, I guess) *) 
+              ** admit. (* TODO: rename var  *) 
         -- right. intro Hcontra. dependent destruction Hcontra.
            ++ eapply Jg; eauto.
            ++ admit. (* safe: wf *)
@@ -1027,10 +1025,10 @@ Proof.
            destruct JgArr as [JgArr | JgArr]; auto.
            ++ left. eapply a_wl_red__chk_absarrow with (L := union L (union (ftvar_in_typ T) (union (ftvar_in_typ A1) (ftvar_in_typ A2)))); eauto.
               intros x' Hnin.              
-              admit. (* safe: rename *)
+              admit. (* TODO: rename var *)
            ++ right. intro Hcontra. dependent destruction Hcontra.
               ** apply Jg; auto.
-              ** admit. (* TODO: check this! I am suffering from bindings. (should be fine, I guess) *)
+              ** admit. (* TODO: rename var *) 
         -- specialize (Jg1 A1 A2). destruct Jg1 as [Jg1 | Jg1]; eauto.
            specialize (Jg2 A1 A2). destruct Jg2 as [Jg2 | Jg2]; eauto.
            right. intro Hcontra. dependent destruction Hcontra.
@@ -1166,8 +1164,8 @@ Proof.
         apply Jg1; auto. apply Jg2; auto.
     + simpl in *. dependent destruction Hm. dependent destruction H;
         try solve [right; intro Hcontra; dependent destruction Hcontra].
-      assert (Jg: a_wl_red (aworklist_conswork aW (work_infabs A2  (  (cont_unioninfabs (typ_arrow A1 A0) c)  ) )) \/
-                  ~ a_wl_red (aworklist_conswork aW (work_infabs A2  (  (cont_unioninfabs (typ_arrow A1 A0) c)  ) ))).
+      assert (Jg:  (work_infabs A2 (cont_unioninfabs (typ_arrow A1 A0) c) ⫤ aW) ⟶ᵃʷ⁎⋅ \/
+                 ¬ (work_infabs A2 (cont_unioninfabs (typ_arrow A1 A0) c) ⫤ aW) ⟶ᵃʷ⁎⋅).
       { eapply IHnaj; eauto; simpl in *; try lia. }
       destruct Jg as [Jg | Jg]; eauto.
       right. intro Hcontra.
@@ -1199,8 +1197,7 @@ Proof.
       * destruct (apply_cont_dec c (open_typ_wrt_typ A A2)) as [[w Happly] | Happly];
         try solve [right; intro Hcontra; dependent destruction Hcontra; dependent destruction Hcontra;
           eapply Happly; eauto].
-        assert (Jg: a_wl_red (aworklist_conswork Γ w) \/
-                  ~ a_wl_red (aworklist_conswork Γ w)).
+        assert (Jg: (w ⫤ Γ) ⟶ᵃʷ⁎⋅ \/ ¬ (w ⫤ Γ) ⟶ᵃʷ⁎⋅).
         { destruct (measp_wl_total (aworklist_conswork Γ w)) as [m Hm'].
           admit. (* safe: wf *)
           eapply IHntj; eauto; simpl in *; try lia.
@@ -1227,8 +1224,8 @@ Proof.
         dependent destruction Hcontra.  
         eapply apply_cont_det in Happly; eauto.
         subst. eauto.
-      * assert (Jg: a_wl_red (aworklist_conswork Γ (work_inftapp A1 A2  (  (cont_inftappunion A0 A2 c)  ) )) \/
-                  ~ a_wl_red (aworklist_conswork Γ (work_inftapp A1 A2  (  (cont_inftappunion A0 A2 c)  ) ))).
+      * assert (Jg:   (work_inftapp A1 A2 (cont_inftappunion A0 A2 c) ⫤ Γ) ⟶ᵃʷ⁎⋅ \/
+                    ¬ (work_inftapp A1 A2 (cont_inftappunion A0 A2 c) ⫤ Γ) ⟶ᵃʷ⁎⋅).
         { eapply IHnt; eauto; simpl in *; try lia.
           assert (inftapp_depth_cont_tail_rec c
           (inftapp_depth A0 * S (S (inftapp_depth A2)) + 1 +
@@ -1247,8 +1244,7 @@ Proof.
         right. intro Hcontra.
         dependent destruction Hcontra.
         apply Jg; auto.
-      * assert (Jg1: a_wl_red (aworklist_conswork Γ (work_inftapp A1 A2 c)) \/
-                   ~ a_wl_red (aworklist_conswork Γ (work_inftapp A1 A2 c))).
+      * assert (Jg1: (work_inftapp A1 A2 c ⫤ Γ) ⟶ᵃʷ⁎⋅ \/ ¬ (work_inftapp A1 A2 c ⫤ Γ) ⟶ᵃʷ⁎⋅).
         { eapply IHnt; eauto; simpl in *; try lia.
           assert (inftapp_depth_cont_tail_rec c
           (inftapp_depth A1 +
@@ -1262,8 +1258,7 @@ Proof.
                            S (inftapp_depth A1 + inftapp_depth A0))))).
           { eapply inftapp_depth_cont_tail_rec_lt; eauto; try lia. }
           lia. }
-        assert (Jg2: a_wl_red (aworklist_conswork Γ (work_inftapp A0 A2 c)) \/
-                   ~ a_wl_red (aworklist_conswork Γ (work_inftapp A0 A2 c))).
+        assert (Jg2: (work_inftapp A0 A2 c ⫤ Γ) ⟶ᵃʷ⁎⋅ \/ ¬ (work_inftapp A0 A2 c ⫤ Γ) ⟶ᵃʷ⁎⋅).
         { eapply IHnt; eauto; simpl in *; try lia.
           assert (inftapp_depth_cont_tail_rec c
           (inftapp_depth A0 +
@@ -1283,8 +1278,8 @@ Proof.
         dependent destruction Hcontra.
         apply Jg1; auto. apply Jg2; auto.
     + simpl in *. dependent destruction Hm. dependent destruction H3.
-      assert (Jg: a_wl_red (aworklist_conswork Γ (work_inftapp A2 B  (  (cont_unioninftapp A1 c)  ) )) \/
-                ~ a_wl_red (aworklist_conswork Γ (work_inftapp A2 B  (  (cont_unioninftapp A1 c)  ) ))).
+      assert (Jg:  (work_inftapp A2 B (cont_unioninftapp A1 c) ⫤ Γ) ⟶ᵃʷ⁎⋅ \/ 
+                 ¬ (work_inftapp A2 B (cont_unioninftapp A1 c) ⫤ Γ) ⟶ᵃʷ⁎⋅).
       { eapply IHntj; eauto; simpl; try lia.
         assert (inftapp_depth_cont_tail_rec c
         (S
@@ -1580,52 +1575,52 @@ Proof.
         -- pick fresh X. inst_cofinites_with X.
            edestruct JgAlll as [JgAlll' | JgAlll']; eauto.
            ++ left. eapply a_wl_red__sub_alll with (L := union L (ftvar_in_typ A)); eauto.
-              intros X' Hnin. admit. (* safe: rename *)
+              intros X' Hnin. admit. (* TODO: rename tvar *)
            ++ right. intro Hcontra. dependent destruction Hcontra.
-              admit. (* TODO: check this! I am suffering from bindings. (should be fine, I guess) *)
+              admit. (* TODO: rename tvar *)
         -- pick fresh X. inst_cofinites_with X.
            edestruct JgAlll as [JgAlll' | JgAlll']; eauto.
            ++ left. eapply a_wl_red__sub_alll with (L := union L (ftvar_in_typ A)); eauto.
-              intros X' Hnin. admit. (* safe: rename *)
+              intros X' Hnin. admit. (* TODO: rename tvar *)
            ++ right. intro Hcontra. dependent destruction Hcontra.
-              admit. (* TODO: check this! I am suffering from bindings. (should be fine, I guess) *)
+              admit. (* TODO: rename tvar *)
         -- destruct Jg as [Jg | Jg]; eauto.
            pick fresh X. inst_cofinites_with X.
            edestruct JgAlll as [JgAlll' | JgAlll']; eauto.
            ++ left. eapply a_wl_red__sub_alll with (L := union L (ftvar_in_typ A)); eauto.
-              intros X' Hnin. admit. (* safe: rename *)
+              intros X' Hnin. admit. (* TODO: rename tvar *)
            ++ right. intro Hcontra. dependent destruction Hcontra.
               ** apply Jg; auto.
-              ** admit. (* TODO: check this! I am suffering from bindings. (should be fine, I guess) *)
-        -- pick fresh x. inst_cofinites_with x.
+              ** admit. (* TODO: rename tvar *)
+        -- pick fresh X1. inst_cofinites_with X1.
            edestruct JgAlll as [JgAlll' | JgAlll']; eauto.
            ++ left. eapply a_wl_red__sub_alll with (L := union L (union (singleton X) (ftvar_in_typ A))); eauto.
-              intros x' Hnin. admit. (* safe: rename *)
+              intros X' Hnin. admit. (* TODO: rename tvar *)
            ++ right. intro Hcontra. dependent destruction Hcontra.
-              ** admit. (* TODO: check this! I am suffering from bindings. (should be fine, I guess) *)
+              ** admit. (* TODO: rename tvar *)
               ** dependent destruction H7.
-        -- pick fresh x. inst_cofinites_with x.
+        -- pick fresh X1. inst_cofinites_with X1.
            edestruct JgAlll as [JgAlll' | JgAlll']; eauto.
            ++ left. eapply a_wl_red__sub_alll with (L := union L (union (singleton X) (ftvar_in_typ A))); eauto.
-              intros x' Hnin. admit. (* safe: rename *)
+              intros X' Hnin. admit. (* TODO: rename tvar *)
            ++ right. intro Hcontra. dependent destruction Hcontra.
-              ** admit. (* TODO: check this! I am suffering from bindings. (should be fine, I guess) *)
+              ** admit. (* TODO: rename tvar *)
               ** dependent destruction H7.
-        -- pick fresh x. inst_cofinites_with x.
+        -- pick fresh X1. inst_cofinites_with X1.
            edestruct JgAlll as [JgAlll' | JgAlll']; eauto.
            ++ left. eapply a_wl_red__sub_alll with (L := union L (union (singleton X) (ftvar_in_typ A))); eauto.
-              intros x' Hnin. admit. (* safe: rename *)
+              intros X' Hnin. admit. (* TODO: rename tvar *)
            ++ right. intro Hcontra. dependent destruction Hcontra.
-              ** admit. (* TODO: check this! I am suffering from bindings. (should be fine, I guess) *)
+              ** admit. (* TODO: rename tvar *)
               ** dependent destruction H7.
         -- pick fresh X. inst_cofinites_with X.
            edestruct JgAlll as [JgAlll' | JgAlll']; eauto.
            admit. admit. admit. (* safe *) 
            ++ left. eapply a_wl_red__sub_alll with (L := union L (union (ftvar_in_typ A) (union (ftvar_in_typ A1) (ftvar_in_typ A2)))); eauto.
               admit. admit. admit. (* safe *)
-              intros X' Hnin. admit. (* safe: rename *)
+              intros X' Hnin. admit. (* TODO: rename tvar *)
            ++ right. intro Hcontra. dependent destruction Hcontra.
-              admit. (* TODO: check this! I am suffering from bindings. (should be fine, I guess) *)
+              admit. (* TODO: rename tvar *)
         -- dependent destruction H3. dependent destruction H5.
            pick fresh X. inst_cofinites_with X.
            assert (Heq: all_size A = all_size (A ^ᵗ X)) by admit. (* safe *)
@@ -1643,10 +1638,10 @@ Proof.
              }
            destruct JgAll as [JgAll | JgAll]; eauto.
            ++ left. eapply a_wl_red__sub_all with (L := union L (union L0 (union L1 (union L2 (union (ftvar_in_typ A) (ftvar_in_typ A0)))))); eauto.
-              intros X' Hnin. admit. (* safe: rename *)
+              intros X' Hnin. admit. (* TODO: rename tvar *)
            ++ right. intro Hcontra. dependent destruction Hcontra.
               ** dependent destruction H7.
-              ** admit. (* TODO: check this! I am suffering from bindings. (should be fine, I guess) *)
+              ** admit.  (* TODO: rename tvar *)
         -- edestruct JgUnion1 as [JgUnion1' | JgUnion1']; eauto.
            edestruct JgUnion2 as [JgUnion2' | JgUnion2']; eauto.
            right. intro Hcontra. dependent destruction Hcontra.
