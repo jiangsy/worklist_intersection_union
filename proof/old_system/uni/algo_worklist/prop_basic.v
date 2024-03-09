@@ -57,7 +57,7 @@ Hint Constructors apply_cont : Hdb_a_wl_red_basic.
 Hint Constructors aworklist_subst : Hdb_a_wl_red_basic.
 
 
-Lemma apply_cont_rename : forall c A w X X',
+Lemma apply_cont_rename_tvar : forall c A w X X',
   apply_cont c A w ->
   apply_cont (subst_tvar_in_cont (typ_var_f X') X c) (subst_tvar_in_typ (typ_var_f X') X A) 
     (subst_tvar_in_work (typ_var_f X') X w).
@@ -80,6 +80,17 @@ Fixpoint rename_tvar_in_aworklist (X' X:typvar) (Γ:aworklist) {struct Γ} : awo
   | (aworklist_constvar Γ' X0 b) => aworklist_constvar (rename_tvar_in_aworklist X' X Γ') (if X0 == X then X' else X0) (subst_tvar_in_abind (typ_var_f X') X b)
   | (aworklist_conswork Γ' w) => aworklist_conswork (rename_tvar_in_aworklist X' X Γ') (subst_tvar_in_work (typ_var_f X') X w)
 end.
+
+
+
+Fixpoint rename_var_in_aworklist (x' x:expvar) (Γ:aworklist) {struct Γ} : aworklist :=
+  match Γ with
+  | aworklist_empty => aworklist_empty 
+  | (aworklist_consvar Γ' x0 b) => aworklist_consvar (rename_var_in_aworklist x' x Γ')  (if x0 == x then x' else x0) b
+  | (aworklist_constvar Γ' X b) => aworklist_constvar (rename_var_in_aworklist x' x Γ') X b
+  | (aworklist_conswork Γ' w) => aworklist_conswork (rename_var_in_aworklist x' x Γ') (subst_var_in_work (exp_var_f x') x w)
+end.
+
 
 
 Ltac solve_notin_eq X :=
@@ -665,10 +676,69 @@ Proof with eauto with Hdb_a_wl_red_basic.
     + admit. (* wf *)
     + rewrite ftvar_in_typ_open_typ_wrt_typ_upper...
   - simpl in *.
-    eapply apply_cont_rename with (X:=X) (X':=X') in H1 as Hac...
+    eapply apply_cont_rename_tvar with (X:=X) (X':=X') in H1 as Hac...
     eapply a_wl_red__applycont; eauto.
     apply IHa_wl_red.
     eapply a_wf_wl_apply_cont in H; eauto.
     + apply ftvar_in_work_apply_cont_eq in H1...
       fsetdec.
+Admitted.
+
+
+
+Theorem a_wl_red_rename_var : forall Γ x x',
+  ⊢ᵃ Γ -> 
+  x' `notin` fvar_in_aworklist' Γ ->
+  Γ ⟶ᵃʷ⁎⋅ ->
+  (rename_var_in_aworklist x' x Γ) ⟶ᵃʷ⁎⋅.
+Proof with eauto with Hdb_a_wl_red_basic.
+  intros. dependent induction H1; try solve [simpl in *; try _apply_IH_a_wl_red; eauto with Hdb_a_wl_red_basic].
+  - simpl.
+    dependent destruction H.
+    eapply a_wl_red__sub_alll with (L:=L); auto.
+    + intros. simpl in *. inst_cofinites_with X.
+      assert (⊢ᵃ (work_sub (B1 ^ᵗ X) A1 ⫤ X ~ᵃ ⬒;ᵃ Γ)) by admit.
+      auto.
+  - simpl in *.
+    inst_cofinites_for a_wl_red__sub_all.
+    intros. inst_cofinites_with X...
+    apply H2...
+    admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - simpl in *. 
+    inst_cofinites_for a_wl_red__chk_absarrow. intros.
+    inst_cofinites_with x0. admit.
+  - simpl in *. admit.
+  - simpl in *. 
+    inst_cofinites_for a_wl_red__chk_abstop. intros.
+    inst_cofinites_with x.
+    admit.
+  - simpl in *.
+    destruct (x0 == x).
+    + subst. admit.
+    + admit.
+  - simpl in *.
+    inst_cofinites_for  a_wl_red__inf_tabs...
+    intros. inst_cofinites_with X0.
+    admit.
+  - simpl in *.  
+    inst_cofinites_for a_wl_red__inf_abs_mono. 
+    intros. inst_cofinites_with x0. inst_cofinites_with X1. inst_cofinites_with X2.
+    admit.
+  - simpl in *. 
+    inst_cofinites_for a_wl_red__infabs_all.
+    intros. inst_cofinites_with X.
+    apply H2; auto. 
+    admit.
+  - simpl in *.
+    admit.
+  - simpl in *. 
+    eapply a_wl_red__inftapp_all.
+    apply IHa_wl_red; auto.
+    admit.
+  - simpl in *.
+    admit.
 Admitted.
