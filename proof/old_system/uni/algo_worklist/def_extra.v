@@ -227,7 +227,7 @@ Inductive a_wl_red : aworklist -> Prop :=    (* defn a_wl_red *)
  | a_wl_red__unioninfabs : forall (Γ:aworklist) (B2 C2 B1 C1:typ) (c:cont),
      a_wl_red (aworklist_conswork Γ (work_apply c (typ_arrow  ( (typ_intersection B1 B2) )   ( (typ_union C1 C2) ) ))) ->
      a_wl_red (aworklist_conswork Γ (work_unioninfabs (typ_arrow B1 C1) (typ_arrow B2 C2) c))
- | a_wl_red__infabs_etvar : forall (L:vars) (Γ:aworklist) (X:typvar) (c:cont) (X1 X2:typvar),
+ | a_wl_red__infabs_etvar : forall (L:vars) (Γ:aworklist) (X:typvar) (c:cont),
      binds ( X )  abind_etvar_empty (  ( awl_to_aenv  Γ  )  )  ->
      (forall X1, X1 `notin` L -> forall X2, X2 `notin` (L `union` singleton X1) -> forall E Γ1 Γ2,
          (aworklist_subst  (aworklist_constvar (aworklist_constvar Γ X1 abind_etvar_empty) X2 abind_etvar_empty)  X   (typ_arrow (typ_var_f X1) (typ_var_f X2))   E  Γ1 Γ2) ->

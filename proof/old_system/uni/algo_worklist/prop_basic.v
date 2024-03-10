@@ -237,6 +237,7 @@ Proof with auto with Hdb_a_wl_red_basic.
   - dependent destruction H. simpl in *...
 Qed.
 
+
 Lemma ftvar_in_work_apply_cont_eq : forall w A c,
   apply_cont c A w ->
   ftvar_in_work w [=] ftvar_in_typ A `union` ftvar_in_cont c.
@@ -266,8 +267,16 @@ Lemma tvar_notin_awl_notin_bind_typ : forall X Γ x A,
   X `notin` ftvar_in_aworklist' Γ ->
   binds x (abind_var_typ A) (awl_to_aenv Γ) ->
   X `notin` ftvar_in_typ A.
-Proof.
-Admitted.
+Proof. 
+  intros. induction Γ; simpl in *; auto.
+  - inversion H1.
+    + dependent destruction H2; auto.
+    + dependent destruction H; auto. 
+  - inversion H1.
+    + dependent destruction H2; auto.
+    + dependent destruction H; auto.
+  - dependent destruction H; auto.
+Qed.
 
 Lemma awl_app_rename_tvar_comm : forall Γ1 Γ2 X X',
   awl_app (rename_tvar_in_aworklist X' X Γ2) (rename_tvar_in_aworklist X' X Γ1) =
@@ -279,9 +288,8 @@ Qed.
 Lemma ftvar_in_aworklist'_awl_app : forall Γ1 Γ2,
   ftvar_in_aworklist' (awl_app Γ2 Γ1) [=] ftvar_in_aworklist' Γ2 `union` ftvar_in_aworklist' Γ1.
 Proof.
-  induction Γ2; simpl; try fsetdec.
+  induction Γ2; simpl; fsetdec.
 Qed.
-
 
 Lemma rename_tvar_in_aworklist_rename_tvar_in_etvar_list : forall X X' E,
   rename_tvar_in_aworklist X' X (etvar_list_to_awl E) = etvar_list_to_awl (rename_tvar_in_etvar_list X' X E).
@@ -289,6 +297,89 @@ Proof.
   induction E; auto.
   - simpl. rewrite IHE. auto.
 Qed. 
+
+
+Lemma rename_tvar_in_typ_rev_eq : forall X X' A,
+  X' `notin` ftvar_in_typ A ->
+  subst_tvar_in_typ (typ_var_f X) X' (subst_tvar_in_typ (typ_var_f X') X A) = A.
+Proof.
+  intros. induction A; simpl in *; auto; 
+    try rewrite IHA; try rewrite IHA1; try rewrite IHA2; auto.
+  - destruct (X0 == X).
+    + simpl. unfold eq_dec.
+      destruct (EqDec_eq_of_X X' X'); auto.
+      * subst; auto.
+      * subst. solve_notin_eq X'.
+    + simpl. unfold eq_dec.
+      destruct (EqDec_eq_of_X X0 X'); auto.
+      * subst. solve_notin_eq X'.
+Qed.
+
+Lemma rename_tvar_in_exp_rev_eq : forall X X' e,
+  X' `notin` ftvar_in_exp e ->
+  subst_tvar_in_exp (typ_var_f X) X' (subst_tvar_in_exp (typ_var_f X') X e) = e
+with rename_tvar_in_body_rev_eq : forall X X' b,
+  X' `notin` ftvar_in_body b ->
+  subst_tvar_in_body (typ_var_f X) X' (subst_tvar_in_body (typ_var_f X') X b) = b.
+Proof.
+  - intros. induction e; simpl in *; auto; 
+    try rewrite IHe; try rewrite IHe1; try rewrite IHe2; auto.
+    + rewrite rename_tvar_in_body_rev_eq; auto.
+    + rewrite rename_tvar_in_typ_rev_eq; auto.
+    + rewrite rename_tvar_in_typ_rev_eq; auto.
+  - intros. destruct b; simpl in *; auto.
+    + rewrite rename_tvar_in_typ_rev_eq; auto.
+      rewrite rename_tvar_in_exp_rev_eq; auto.
+Qed.
+
+Lemma rename_tvar_in_cont_rev_eq : forall X X' c,
+  X' `notin` ftvar_in_cont c ->
+  subst_tvar_in_cont (typ_var_f X) X' (subst_tvar_in_cont (typ_var_f X') X c) = c.
+Proof.
+  induction c; simpl in *; intros;
+    try repeat rewrite rename_tvar_in_typ_rev_eq; auto; 
+    try rewrite rename_tvar_in_exp_rev_eq; auto; 
+    try rewrite IHc; auto.
+Qed.
+
+Lemma rename_tvar_in_work_rev_eq : forall X X' w,
+  X' `notin` ftvar_in_work w ->
+  subst_tvar_in_work (typ_var_f X) X' (subst_tvar_in_work (typ_var_f X') X w) = w.
+Proof.
+  destruct w; intros; simpl in *;
+    try repeat rewrite rename_tvar_in_typ_rev_eq; auto; 
+    try rewrite rename_tvar_in_exp_rev_eq; auto; 
+    try rewrite rename_tvar_in_cont_rev_eq; auto.
+Qed.
+
+Lemma rename_tvar_in_abind_rev_eq : forall X X' b,
+  X' `notin` ftvar_in_abind b ->
+  subst_tvar_in_abind (typ_var_f X) X' (subst_tvar_in_abind (typ_var_f X') X b) = b.
+Proof.
+  intros. destruct b; auto.
+  - simpl. rewrite rename_tvar_in_typ_rev_eq; auto.
+Qed.
+
+Lemma rename_tvar_in_aworklist_rev_eq : forall X X' Γ,
+  X' `notin` ftvar_in_aworklist' Γ ->
+  rename_tvar_in_aworklist X X' (rename_tvar_in_aworklist X' X Γ) = Γ.
+Proof.
+  intros. induction Γ; simpl in *; auto.
+  - simpl. rewrite IHΓ; auto. rewrite rename_tvar_in_abind_rev_eq; auto. 
+  - unfold eq_dec.
+    destruct (EqDec_eq_of_X X0 X); destruct (EqDec_eq_of_X X' X'); 
+    destruct (EqDec_eq_of_X X0 X'); subst; try contradiction.
+    + rewrite IHΓ; auto. rewrite rename_tvar_in_abind_rev_eq; auto. 
+    + rewrite IHΓ; auto. rewrite rename_tvar_in_abind_rev_eq; auto. 
+    + solve_notin_eq X'.
+    + rewrite IHΓ; auto. rewrite rename_tvar_in_abind_rev_eq; auto. 
+  - rewrite IHΓ; auto. rewrite rename_tvar_in_work_rev_eq; auto.
+Qed.
+
+Lemma rename_tvar_in_etvar_list_rev_eq : forall X X' E,
+  rename_tvar_in_etvar_list X' X (rename_tvar_in_etvar_list X X' E) = E.
+Proof.
+Admitted.
 
 Lemma subst_tvar_in_typ_rename_tvar : forall X X' A B,
   X' `notin` ftvar_in_typ A ->
@@ -417,8 +508,8 @@ Lemma a_worklist_subst_wf_typ : forall Γ X A B E Γ1 Γ2,
   aworklist_subst Γ X A E Γ1 Γ2 ->
   a_wf_typ (awl_to_aenv (awl_app (subst_tvar_in_aworklist A X Γ2) (awl_app (etvar_list_to_awl E) Γ1))) B.
 Proof.
-  intros. generalize dependent Γ1. generalize dependent Γ2. dependent induction H1; auto.
-  - simpl. admit.
+  intros. generalize dependent Γ1. generalize dependent Γ2. dependent induction H1; auto; intros.
+  - admit.
   - admit.
   - simpl. admit.
   - simpl in *. constructor; eauto.
@@ -515,6 +606,16 @@ Proof.
     + admit.
 Admitted.
 
+Ltac destruct_eq_atom :=
+  match goal with
+  | H : context [?X0 == ?X] |- _ => unfold eq_dec in *
+  | H : _ |- _ => idtac
+  end;
+  repeat
+    match goal with
+    | H : context [EqDec_eq_of_X ?X0 ?X] |- _ => destruct (EqDec_eq_of_X X0 X); subst; try solve_notin_eq X0; try solve_notin_eq X
+    end.
+
 
 Theorem a_wl_red_rename_tvar : forall Γ X X',
   ⊢ᵃ Γ -> 
@@ -526,41 +627,34 @@ Proof with eauto with Hdb_a_wl_red_basic.
   - simpl in *. destruct (X0 == X); _apply_IH_a_wl_red... 
   - simpl.
     dependent destruction H.
-    eapply a_wl_red__sub_alll with (L:=L `union` singleton X `union` singleton X').
+    inst_cofinites_for a_wl_red__sub_alll.
     + apply neq_all_rename...
     + apply neq_intersection_rename... 
     + apply neq_union_rename...
     + intros. simpl in *. inst_cofinites_with X0.
-      assert (⊢ᵃ (work_sub (B1 ^ᵗ X0) A1 ⫤ X0 ~ᵃ ⬒;ᵃ Γ)) by admit. 
       rewrite typ_subst_open_comm...
-      unfold eq_dec in H6.
-      destruct (EqDec_eq_of_X X0 X) in H6...
-      * subst. solve_notin_eq X.  
-      * apply H6...
-        repeat rewrite ftvar_in_typ_open_typ_wrt_typ_upper...
+      destruct_eq_atom.
+      apply H6...
+      admit. (* wf *)
+      repeat rewrite ftvar_in_typ_open_typ_wrt_typ_upper...
   - simpl in *.
     inst_cofinites_for a_wl_red__sub_all.
     intros. inst_cofinites_with X0.
     simpl in H0.
     rewrite typ_subst_open_comm...
     rewrite typ_subst_open_comm...
-    unfold eq_dec in H2.
-    destruct (EqDec_eq_of_X X0 X) in H2...
-    + subst. solve_notin_eq X. 
-    + apply H2. admit.
-      repeat rewrite ftvar_in_typ_open_typ_wrt_typ_upper...
+    destruct_eq_atom.
+    apply H2. 
+    admit. (* wf *)
+    repeat rewrite ftvar_in_typ_open_typ_wrt_typ_upper...
   - simpl. 
-    destruct (X0 == X).
-    + subst.
-      eapply a_wl_red__sub_arrow1 with (L:=L)... admit.
-      admit.
-      intros.
-      inst_cofinites_with X1. inst_cofinites_with X2.
-      admit.
-    + eapply a_wl_red__sub_arrow1 with (L:=L)... admit.
-      admit.
-      intros.
-      inst_cofinites_with X1. inst_cofinites_with X2.
+    destruct (X0 == X); eapply a_wl_red__sub_arrow1 with (L:=L)...
+    + admit.
+    + admit.
+    + admit.
+    + admit.
+    + admit.
+    + intros. inst_cofinites_with X1. inst_cofinites_with X2.
       admit.
   - admit.
   - simpl in *. destruct_a_wf_wl.
@@ -590,7 +684,7 @@ Proof with eauto with Hdb_a_wl_red_basic.
       * rewrite a_worklist_subst_ftavr_in_aworklist; auto.
   - simpl in *. destruct_a_wf_wl.
     eapply worklist_subst_rename_tvar with (X':=X') (X1:=X) in H5 as Hsubst...
-    unfold eq_dec in *. destruct (EqDec_eq_of_X X0 X); 
+    destruct_eq_atom; 
       apply a_wl_red__sub_etvarmono2 with (E:=rename_tvar_in_etvar_list X' X E)
         (Γ1:=rename_tvar_in_aworklist X' X Γ1) (Γ2:=rename_tvar_in_aworklist X' X Γ2)...
     + admit.
@@ -642,9 +736,7 @@ Proof with eauto with Hdb_a_wl_red_basic.
     rewrite subst_tvar_in_exp_open_exp_wrt_typ in H2...
     simpl in H2.
     rewrite <- typ_subst_open_comm in H2...
-    unfold eq_dec in H2.
-    destruct (EqDec_eq_of_X X0 X) in H2...
-    + subst. solve_notin_eq X. 
+    destruct_eq_atom. 
     + apply H2.
       * admit. (* wf *)
       * rewrite ftvar_in_exp_open_exp_wrt_typ_upper.
@@ -661,14 +753,42 @@ Proof with eauto with Hdb_a_wl_red_basic.
     inst_cofinites_for a_wl_red__infabs_all.
     intros. inst_cofinites_with X0.
     rewrite typ_subst_open_comm...
-    unfold eq_dec in H2.
-    destruct (EqDec_eq_of_X X0 X) in H2...
-    + subst. solve_notin_eq X.
+    destruct_eq_atom. 
     + apply H2.  
       admit. (* wf *) 
       rewrite ftvar_in_typ_open_typ_wrt_typ_upper...
   - simpl in *.
-    admit.
+    destruct (X0 == X); inst_cofinites_for a_wl_red__infabs_etvar; auto.
+    + admit.
+    + intros. subst.
+      apply worklist_subst_rename_tvar with (X':=X) (X1:=X') (X2:=X') in H6 as Hws.
+      destruct_eq_atom.
+      * simpl in Hws. 
+        destruct_eq_atom. 
+        rewrite rename_tvar_in_aworklist_rev_eq in Hws; auto.
+        apply H3 in Hws as Hawlred; auto.
+        rewrite <- awl_app_rename_tvar_comm in Hawlred.
+        rewrite <- awl_app_rename_tvar_comm in Hawlred.
+        rewrite subst_tvar_in_awl_rename_tvar_comm_eq in Hawlred; auto.
+        rewrite <- rename_tvar_in_aworklist_rename_tvar_in_etvar_list in Hawlred.
+        rewrite rename_tvar_in_aworklist_rev_eq in Hawlred.
+        rewrite rename_tvar_in_aworklist_rev_eq in Hawlred.
+        rewrite rename_tvar_in_aworklist_rev_eq in Hawlred.
+        simpl in Hawlred. unfold eq_dec in Hawlred. 
+        destruct_eq_atom.
+        -- auto.
+        -- admit.
+        -- admit.
+        -- admit.
+        -- admit.
+        -- admit. (* wf *)
+        -- admit.
+      * admit.
+      * admit.
+      * simpl; assert (X `notin` ftvar_in_aworklist' (rename_tvar_in_aworklist X' X Γ)) by admit.
+        auto.
+    + admit.
+    + intros. admit.
   - simpl in *. 
     eapply a_wl_red__inftapp_all.
     rewrite <- subst_tvar_in_typ_open_typ_wrt_typ...
