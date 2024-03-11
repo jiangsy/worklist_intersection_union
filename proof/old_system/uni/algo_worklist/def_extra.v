@@ -159,7 +159,7 @@ Inductive a_wl_red : aworklist -> Prop :=    (* defn a_wl_red *)
  | a_wl_red__chk_absarrow : forall (L:vars) (Γ:aworklist) (e:exp) (A1 A2:typ),
       ( forall x , x \notin  L  -> a_wl_red (aworklist_conswork (aworklist_consvar Γ x (abind_var_typ A1)) (work_check  ( open_exp_wrt_exp e (exp_var_f x) )  A2)) )  ->
      a_wl_red (aworklist_conswork Γ (work_check (exp_abs e) (typ_arrow A1 A2)))
- | a_wl_red__chk_absevar : forall (L:vars) (Γ:aworklist) (e:exp) (X:typvar) (X1 X2:typvar),
+ | a_wl_red__chk_absetvar : forall (L:vars) (Γ:aworklist) (e:exp) (X:typvar),
       binds ( X )  abind_etvar_empty (  ( awl_to_aenv  Γ  )  )  ->
       (  forall x, x `notin` L -> forall X1, X1 `notin` (L `union` (singleton x)) -> forall X2, X2 `notin` (L `union` singleton x `union` singleton X1) -> forall Γ1 Γ2 E,
             (aworklist_subst  (aworklist_constvar (aworklist_constvar Γ X1 abind_etvar_empty) X2 abind_etvar_empty)  X  
@@ -464,11 +464,11 @@ Notation " X ~ᵃ □ ;ᵃ Γ " :=
   (aworklist_constvar Γ X abind_tvar_empty)
       (at level 58, right associativity) : aworklist_scope.
 
-Notation " X ~ᵃ ■;ᵃ Γ " :=
+Notation " X ~ᵃ ■ ;ᵃ Γ " :=
   (aworklist_constvar Γ X abind_stvar_empty)
       (at level 58, right associativity) : aworklist_scope.
 
-Notation " X ~ᵃ ⬒;ᵃ Γ " :=
+Notation " X ~ᵃ ⬒ ;ᵃ Γ " :=
   (aworklist_constvar Γ X abind_etvar_empty)
       (at level 58, right associativity) : aworklist_scope.
 

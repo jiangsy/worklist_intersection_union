@@ -165,7 +165,7 @@ Ltac trans_all_typ :=
 
 (* define a extended relation of a_update_bound extended with Ω and θ ? *)
 
-▹
+
 Lemma a_update_bound_transfer_same_dworklist: forall Γ Ω θ X A E m Γ1 Γ2 LB UB,
   a_update_bound Γ X A m E Γ1 Γ2 LB UB ->
   trans_worklist nil (awl_rev_app Γ2 (aworklist_constvar (awl_rev_app (aenv_to_awl E) Γ1) X (abind_bound LB UB)) )  Ω θ ->
