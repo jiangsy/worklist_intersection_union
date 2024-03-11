@@ -1128,6 +1128,7 @@ Proof.
                  rewrite subst_tvar_in_cont_fresh_eq in Jg; auto.
                  rewrite typ_subst_open_var in Jg; auto.
               ** contradiction.
+            ++ admit.
             ++ admit. (* wf *)
             ++ simpl. rewrite ftvar_in_typ_open_typ_wrt_typ_upper. auto.
         -- right. intro Hcontra.
