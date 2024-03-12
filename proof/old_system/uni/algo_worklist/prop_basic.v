@@ -361,7 +361,15 @@ Lemma a_wf_wl_wf_bind_typ : forall Γ x A,
   binds x (abind_var_typ A) (awl_to_aenv Γ) ->
   a_wf_typ (awl_to_aenv Γ) A.
 Proof.
-Admitted.
+  introv WF HB. induction* WF.
+  - inverts HB.
+  - simpl in HB. apply binds_cons_iff in HB.
+    + destruct HB. destruct H1. inverts H2. subst.
+      * Search a_wf_typ. Admitted.
+
+(* econstructor. eauto using binds_dom_contradiction. Search binds. constructor.
+
+Admitted.*)
 
 
 Lemma tvar_notin_awl_notin_bind_typ : forall X Γ x A,
@@ -808,6 +816,167 @@ Ltac rewrite_aworklist_rename :=
   rewrite_aworklist_rename';
   rewrite_aworklist_rename_subst'.
 
+(* destrcut conjunctions *)
+Ltac destruct_conj :=
+  repeat match goal with H: ?T |- _ =>
+                         lazymatch T with
+                         | exists _ , _ => destruct H
+                         | _ /\ _ => destruct H
+                         end
+    end.
+
+
+Ltac solve_by_inverts n :=
+  match goal with | H : ?T |- _ =>
+  match type of T with Prop =>
+    solve [
+      inversion H;
+      match n with S (S (?n')) => subst; solve_by_inverts (S n') end ]
+  end end.
+
+Ltac solve_by_invert :=
+  solve_by_inverts 1.
+
+
+(********************************************)
+(*                                          *)
+(*            Ltac solve_false              *)
+(*  try solve the goal by contradiction     *)
+(*                                          *)
+(********************************************)
+Create HintDb FalseHd.
+Ltac solve_false := let HF := fresh "HF" in
+                    try solve [ try intro HF; destruct_conj; try solve_by_invert;
+                                false; eauto 3 with FalseHd ].
+
+
+Lemma awl_to_aenv_app : forall Γ1 Γ2,
+    awl_to_aenv (awl_app Γ1 Γ2) = (awl_to_aenv Γ1) ++ (awl_to_aenv Γ2).
+Proof.
+  intros. induction Γ1; simpl; eauto.
+  all: rewrite* IHΓ1.
+Qed.
+
+Lemma awl_to_aenv_app_2 : forall Γ1 Γ2 X t,
+    awl_to_aenv (awl_app Γ1 (aworklist_constvar Γ2 X t)) = (awl_to_aenv Γ1 ++ [(X, t)] ++ awl_to_aenv Γ2).
+Proof.
+  intros. rewrite awl_to_aenv_app.
+  rewrite_env (awl_to_aenv Γ1 ++ [(X, t)] ++ awl_to_aenv Γ2).
+  reflexivity.
+Qed.
+
+Lemma awl_to_aenv_app_3 : forall Γ1 Γ2 X t,
+    (X, t) :: awl_to_aenv (awl_app Γ1 Γ2) = awl_to_aenv (awl_app (aworklist_constvar Γ1 X t) Γ2).
+Proof.
+  intros. simpl. auto.
+Qed.
+
+#[local] Hint Rewrite awl_to_aenv_app: core.
+
+Lemma a_wf_typ_weaken: forall Γ1 Γ2 X t A,
+    a_wf_typ (awl_to_aenv (awl_app Γ1 Γ2)) A ->
+    X ∉ (dom (awl_to_aenv Γ1) `union` dom (awl_to_aenv Γ2)) ->
+    (~ exists A, t = abind_var_typ A) ->
+    a_wf_typ (awl_to_aenv (awl_app Γ1 (aworklist_constvar Γ2 X t))) A.
+Proof with eauto; try autorewrite with core using simpl.
+  introv H HN HE. inductions H.
+  1-3: solve [destruct* t; solve_false].
+  1-3: rewrite awl_to_aenv_app_2; rewrite awl_to_aenv_app in H...
+  1,3-4: now eauto.
+  - pick fresh X0 and apply a_wf_typ__all.
+    + forwards*: H X0.
+    + forwards*: H X0. forwards*: H0 X0.
+      forwards: H1 X0 (aworklist_constvar Γ1 X0 abind_tvar_empty) Γ2...
+Qed.
+
+Lemma a_wf_exp_weaken: forall Γ1 Γ2 X t e,
+    a_wf_exp (awl_to_aenv (awl_app Γ1 Γ2)) e ->
+    X ∉ (dom (awl_to_aenv Γ1) `union` dom (awl_to_aenv Γ2)) ->
+    (~ exists A, t = abind_var_typ A) ->
+    a_wf_exp (awl_to_aenv (awl_app Γ1 (aworklist_constvar Γ2 X t))) e
+with a_wf_body_weaken: forall Γ1 Γ2 X t e,
+    a_wf_body (awl_to_aenv (awl_app Γ1 Γ2)) e ->
+    X ∉ (dom (awl_to_aenv Γ1) `union` dom (awl_to_aenv Γ2)) ->
+    (~ exists A, t = abind_var_typ A) ->
+    a_wf_body (awl_to_aenv (awl_app Γ1 (aworklist_constvar Γ2 X t))) e.
+Proof with try solve_notin; eauto using a_wf_typ_weaken;
+try autorewrite with core using simpl.
+
+* clear a_wf_exp_weaken.
+  introv H HN HE. inductions H.
+  1,4,6,7: econstructor...
+  - (* var *)
+    econstructor. rewrite awl_to_aenv_app_2; rewrite awl_to_aenv_app in H...
+  - (* abs *)
+    pick fresh X0 and apply a_wf_exp__abs.
+    + applys a_wf_typ_weaken H...
+    + forwards*: H0 X0.
+      applys H1 X0 (aworklist_constvar Γ1 X0 (abind_var_typ T)) Γ2...
+  - (* tabs *)
+    pick fresh X0 and apply a_wf_exp__tabs.
+    forwards H0: H X0...
+    rewrite awl_to_aenv_app_3 in H0.
+    forwards* H1: a_wf_body_weaken X t H0...
+    rewrite awl_to_aenv_app_2 in H1...
+
+* clear  a_wf_body_weaken.
+  introv H HN HE. inductions H.
+  - econstructor...
+Qed.
+
+Lemma a_wf_cont_weaken: forall Γ1 Γ2 X t c,
+    a_wf_cont (awl_to_aenv (awl_app Γ1 Γ2)) c ->
+    X ∉ (dom (awl_to_aenv Γ1) `union` dom (awl_to_aenv Γ2)) ->
+    (~ exists A, t = abind_var_typ A) ->
+    a_wf_cont (awl_to_aenv (awl_app Γ1 (aworklist_constvar Γ2 X t))) c.
+  Proof with eauto using a_wf_typ_weaken, a_wf_exp_weaken;
+try autorewrite with core using simpl.
+
+    introv H HN HE. inductions H.
+    all: econstructor...
+  Qed.
+
+Lemma a_wf_work_weaken: forall Γ1 Γ2 X t Ω,
+    a_wf_work (awl_to_aenv (awl_app Γ1 Γ2)) Ω ->
+    X ∉ (dom (awl_to_aenv Γ1) `union` dom (awl_to_aenv Γ2)) ->
+    (~ exists A, t = abind_var_typ A) ->
+    a_wf_work (awl_to_aenv (awl_app Γ1 (aworklist_constvar Γ2 X t))) Ω.
+Proof with eauto using a_wf_typ_weaken, a_wf_exp_weaken, a_wf_cont_weaken;
+try autorewrite with core using simpl.
+
+  introv H HN HE. inductions H.
+  all: econstructor...
+Qed.
+
+
+Lemma a_wf_wl_weaken: forall Γ1 Γ2 X t,
+    ⊢ᵃ awl_app Γ1 Γ2 -> X ∉ (dom (awl_to_aenv Γ1) `union` dom (awl_to_aenv Γ2)) ->
+    (~ exists A, t = abind_var_typ A) -> ⊢ᵃ awl_app Γ1 (aworklist_constvar Γ2 X t).
+Proof with eauto; try autorewrite with core using solve_notin.
+  introv H HN HE. induction Γ1; simpl in *.
+  - destruct* t. solve_false.
+  - inverts H. forwards~: IHΓ1.
+    rewrite awl_to_aenv_app in H3.
+    econstructor...
+    + applys* a_wf_typ_weaken...
+  - inverts H.
+    all: rewrite awl_to_aenv_app in H2; forwards~: IHΓ1; econstructor...
+  - inverts H.
+    econstructor...
+    + applys* a_wf_work_weaken...
+Qed.
+
+Corollary a_wf_wl_weaken_head: forall Γ X t,
+    ⊢ᵃ Γ ->
+    X ∉ (dom (awl_to_aenv Γ)) ->
+    (~ exists A, t = abind_var_typ A) -> ⊢ᵃ aworklist_constvar Γ X t.
+Proof with  simpl; solve_notin.
+  intros.
+  rewrite_env (awl_app aworklist_empty Γ) in H.
+  rewrite_env (awl_app aworklist_empty (aworklist_constvar Γ X t)).
+  applys* a_wf_wl_weaken...
+Qed.
+
 Lemma a_worklist_subst_wf_wl : forall Γ X A E Γ1 Γ2,
   ⊢ᵃʷ Γ ->
   binds X abind_etvar_empty (awl_to_aenv Γ) ->
@@ -849,7 +1018,9 @@ Proof.
         dependent destruction H; auto.
   - simpl in *. inversion H0.
     + dependent destruction H3. contradiction.
-    + admit. (* a_wf_wl_weaken *)
+    + apply* a_wf_wl_weaken.
+      apply* IHaworklist_subst. now inverts~ H.
+      solve_false.
 Admitted.
 
 
