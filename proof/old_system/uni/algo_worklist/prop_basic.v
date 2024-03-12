@@ -1160,30 +1160,6 @@ Proof.
     fsetdec.
 Qed.
 
-Ltac solve_notin_rename :=
-  repeat
-  match goal with
-  | H : _ |- context [?e1 ^ᵉₑ ?e2] => rewrite ftvar_in_exp_open_exp_wrt_exp_upper
-  | H : _ |- context [rename_tvar_in_aworklist ?X' ?X ?Γ] =>
-    (* assert True *)
-    match goal with
-    | H1 : X `notin` ftvar_in_aworklist' (rename_tvar_in_aworklist X' X Γ) |- _ => fail 1
-    | _ =>
-      assert (X `notin` ftvar_in_aworklist' (rename_tvar_in_aworklist X' X Γ)) by now apply notin_rename_tvar_in_aworklist
-    end
-  | H : _ |- context [subst_tvar_in_cont ?X' ?X ?c] =>
-    match goal with
-    | H1 : (X `notin` (ftvar_in_cont (subst_tvar_in_cont X' X c))) |- _ => fail 1
-    | _ =>
-      assert (X `notin` (ftvar_in_cont (subst_tvar_in_cont X' X c))) by (simpl; apply subst_tvar_in_cont_fresh_same; auto)
-    end
-  | H : _ |- context [subst_tvar_in_exp ?X' ?X ?e] =>
-    match goal with
-    | H1 : (X `notin` (ftvar_in_exp (subst_tvar_in_exp X' X e))) |- _ => fail 1
-    | _ =>
-      assert (X `notin` (ftvar_in_exp (subst_tvar_in_exp X' X e))) by (simpl; apply subst_tvar_in_exp_fresh_same; auto)
-    end
-  end.
 
 Lemma a_wf_wl_rename_tvar_in_awl : forall Γ X X',
   ⊢ᵃʷ Γ ->
