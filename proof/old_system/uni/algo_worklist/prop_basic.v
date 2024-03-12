@@ -1187,15 +1187,17 @@ Proof with eauto with Hdb_a_wl_red_basic.
         rewrite <- subst_tvar_in_exp_open_exp_wrt_exp in Hws.
         rewrite rename_tvar_in_exp_rev_eq in Hws.
         eapply H7 with (x:=x) in Hws as Hawlred; simpl in *; auto.
-        assert (X `notin`(ftvar_in_exp (subst_tvar_in_exp ` X' X e ^ᵉₑ exp_var_f x))) by admit.
+        assert (X `notin` (ftvar_in_exp (subst_tvar_in_exp ` X' X e ^ᵉₑ exp_var_f x))) by (solve_notin_rename; auto).
         destruct_eq_atom.
         rewrite_aworklist_rename; simpl; auto.
         rewrite_aworklist_rename_rev.
         simpl in Hawlred. destruct_eq_atom.
         -- auto.
         -- eapply a_worklist_subst_wf_wl in Hws; eauto. admit. admit. (* wf *)
-        -- admit.
-        --  admit. (* notin *) 
+        -- rewrite a_worklist_subst_ftavr_in_aworklist with 
+            (Γ:=(work_check (e ^ᵉₑ exp_var_f x) ` X2 ⫤ x ~ᵃ ` X1;ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ)%aworklist); auto. simpl.
+          solve_notin_rename; auto.
+        -- solve_notin_rename; auto. 
       * admit. (* wf *)
       * simpl. solve_notin_rename; auto. 
     + apply rename_tvar_in_aworklist_bind_same_neq; auto.
@@ -1209,7 +1211,7 @@ Proof with eauto with Hdb_a_wl_red_basic.
         rewrite <- subst_tvar_in_exp_open_exp_wrt_exp in Hws.
         rewrite rename_tvar_in_exp_rev_eq in Hws.
         eapply H7 with (x:=x) in Hws as Hawlred; simpl; auto.
-        assert (X `notin`(ftvar_in_exp (subst_tvar_in_exp ` X' X e ^ᵉₑ exp_var_f x))) by admit.
+        assert (X `notin`(ftvar_in_exp (subst_tvar_in_exp ` X' X e ^ᵉₑ exp_var_f x))) by (solve_notin_rename; auto).
         destruct_eq_atom.
         rewrite_aworklist_rename; simpl; auto.
         rewrite_aworklist_rename_rev.
@@ -1274,7 +1276,7 @@ Proof with eauto with Hdb_a_wl_red_basic.
         destruct_eq_atom.
         rewrite rename_tvar_in_aworklist_rev_eq in Hws; auto.
         rewrite rename_tvar_in_cont_rev_eq in Hws; auto.
-        assert (X `notin` (ftvar_in_cont ({` X' /ᶜₜ X} c))) by admit.
+        assert (X `notin` (ftvar_in_cont ({` X' /ᶜₜ X} c))) by (solve_notin_rename; auto).
         apply H6 in Hws as Hawlred; simpl; auto.
         destruct_eq_atom.
         rewrite_aworklist_rename; simpl; auto.
@@ -1282,7 +1284,9 @@ Proof with eauto with Hdb_a_wl_red_basic.
         simpl in Hawlred. destruct_eq_atom.
         -- auto.
         -- admit. (* wf *)
-        -- admit. (* notin *)
+        -- rewrite a_worklist_subst_ftavr_in_aworklist with 
+            (Γ:=(work_infabs (typ_arrow ` X1 ` X2) c ⫤ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ)%aworklist); 
+            auto. 
       * admit. (* wf *)
       * simpl; solve_notin_rename; auto. 
     + apply rename_tvar_in_aworklist_bind_same_neq; auto.
@@ -1301,7 +1305,8 @@ Proof with eauto with Hdb_a_wl_red_basic.
         simpl in Hawlred. destruct_eq_atom.
         -- auto.
         -- admit. (* wf *)
-        -- admit. (* notin *)
+        -- rewrite a_worklist_subst_ftavr_in_aworklist with 
+            (Γ:=(work_infabs (typ_arrow ` X1 ` X2) c ⫤ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ)%aworklist); auto.
       * admit. (* wf *)
       * simpl; solve_notin_rename; auto.
   - simpl in *. destruct_a_wf_wl. 
