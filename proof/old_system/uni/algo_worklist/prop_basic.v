@@ -959,7 +959,7 @@ Proof with eauto with Hdb_a_wl_red_basic.
   intros. dependent induction H2; try solve [simpl in *; try _apply_IH_a_wl_red; eauto with Hdb_a_wl_red_basic].
   - simpl in *. destruct (X0 == X); _apply_IH_a_wl_red... 
   - simpl.
-    destruct_a_wf_wl.
+    destruct_a_wf_wl. dependent destruction H0.
     inst_cofinites_for a_wl_red__sub_alll.
     + apply neq_all_rename...
     + apply neq_intersection_rename... 
@@ -970,7 +970,8 @@ Proof with eauto with Hdb_a_wl_red_basic.
       auto_apply.
       * admit. (* wf *)
       * repeat rewrite ftvar_in_typ_open_typ_wrt_typ_upper...
-  - simpl in *.
+  - simpl in *. destruct_a_wf_wl. 
+    dependent destruction H0. dependent destruction H2.
     inst_cofinites_for a_wl_red__sub_all.
     intros. inst_cofinites_with X0.
     simpl in H0.
@@ -1078,10 +1079,10 @@ Proof with eauto with Hdb_a_wl_red_basic.
       apply IHa_wl_red; auto.
       * eapply a_worklist_subst_wf_wl; eauto.
       * rewrite a_worklist_subst_ftavr_in_aworklist; auto.
-  - simpl in *. 
+  - simpl in *. destruct_a_wf_wl.
     inst_cofinites_for a_wl_red__chk_absarrow. intros.
     inst_cofinites_with x.
-    rewrite subst_tvar_in_exp_open_exp_wrt_exp in H3...
+    rewrite subst_tvar_in_exp_open_exp_wrt_exp in H5...
     auto_apply.
     + admit. (* wf *)
     + repeat rewrite ftvar_in_exp_open_exp_wrt_exp_upper...
@@ -1107,7 +1108,7 @@ Proof with eauto with Hdb_a_wl_red_basic.
         -- auto.
         -- eapply a_worklist_subst_wf_wl in Hws; eauto. admit. admit. (* wf *)
         -- admit. (* notin *) 
-        -- admit. 
+        -- admit. (* notin *) 
       * admit. (* wf *)
       * admit. (* notin *)
     + apply rename_tvar_in_aworklist_bind_same_neq; auto.
@@ -1127,9 +1128,10 @@ Proof with eauto with Hdb_a_wl_red_basic.
         rewrite_aworklist_rename_rev.
         simpl in Hawlred. destruct_eq_atom.
         -- auto.
-        -- eapply a_worklist_subst_wf_wl in Hws; eauto. admit. admit. (* wf *)
-        -- admit. (* notin *) 
-        -- admit. (* notin *) 
+        -- eapply a_worklist_subst_wf_wl in Hws; eauto. admit.
+           repeat (apply binds_cons). auto.
+        -- admit. (* wf *)
+        -- rewrite ftvar_in_exp_open_exp_wrt_exp_upper; auto.
       * admit. (* wf *)
       * admit. (* notin *)
   - simpl in *. 

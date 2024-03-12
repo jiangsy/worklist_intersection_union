@@ -1304,7 +1304,7 @@ Proof with eauto with Hdb_transfer.
 Admitted.
 
 
-Lemma trans_typ_rev_subs_cons : forall θ Bᵃ Bᵈ X Aᵃ A'ᵈ,
+Lemma trans_typ_rev_subst_cons : forall θ Bᵃ Bᵈ X Aᵃ A'ᵈ,
   lc_typ Aᵃ -> 
   X `notin` dom θ ->
   θ ⫦ᵗ Bᵃ ⇝ Bᵈ ->

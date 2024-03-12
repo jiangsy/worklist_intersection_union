@@ -454,7 +454,7 @@ Proof with eauto with Hdb_a_wl_red_soundness.
     inst_cofinites_by (dom (awl_to_aenv Γ) `union` dom θ) using_name X.
     trans_all_typ.
     replace (A ^^ᵗ B) with ({B /ᵗ X} A ^ᵗ X) in H7 by admit.
-    eapply trans_typ_rev_subs_cons in H7...
+    eapply trans_typ_rev_subst_cons in H7...
     admit.
     admit.
     (* destruct H7 as [Axᵈ]. intuition.
