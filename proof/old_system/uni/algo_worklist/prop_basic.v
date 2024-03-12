@@ -740,6 +740,33 @@ Ltac solve_tvar_notin_ftvarlist_helper :=
      assert (X `notin` ftvar_in_aworklist' (rename_tvar_in_aworklist X' X Γ)) by now apply notin_rename_tvar_in_aworklist
   end.
 
+
+Ltac solve_notin_rename :=
+  repeat
+  match goal with
+  | H : _ |- context [?e1 ^ᵉₑ ?e2] => rewrite ftvar_in_exp_open_exp_wrt_exp_upper
+  | H : _ |- context [rename_tvar_in_aworklist ?X' ?X ?Γ] =>
+    (* assert True *)
+    match goal with
+    | H1 : X `notin` ftvar_in_aworklist' (rename_tvar_in_aworklist X' X Γ) |- _ => fail 1
+    | _ =>
+      assert (X `notin` ftvar_in_aworklist' (rename_tvar_in_aworklist X' X Γ)) by now apply notin_rename_tvar_in_aworklist
+    end 
+  | H : _ |- context [subst_tvar_in_cont ?X' ?X ?c] =>
+    match goal with
+    | H1 : (X `notin` (ftvar_in_cont (subst_tvar_in_cont X' X c))) |- _ => fail 1
+    | _ =>
+      assert (X `notin` (ftvar_in_cont (subst_tvar_in_cont X' X c))) by (simpl; apply subst_tvar_in_cont_fresh_same; auto)    
+    end 
+  | H : _ |- context [subst_tvar_in_exp ?X' ?X ?e] =>
+    match goal with
+    | H1 : (X `notin` (ftvar_in_exp (subst_tvar_in_exp X' X e))) |- _ => fail 1
+    | _ =>
+      assert (X `notin` (ftvar_in_exp (subst_tvar_in_exp X' X e))) by (simpl; apply subst_tvar_in_exp_fresh_same; auto)
+    end 
+  end.
+  
+
 Ltac solve_tvar_notin_ftvarlist'' :=
   repeat
     match goal with
@@ -750,27 +777,13 @@ Ltac solve_tvar_notin_ftvarlist'' :=
       assert (X `notin` ftvar_in_aworklist' (rename_tvar_in_aworklist X' X Γ)) by now apply notin_rename_tvar_in_aworklist
     end *)
     | H : aworklist_subst ?Γ ?X' ?A ?E ?Γ1 ?Γ2 |- ?X ∉ ftvar_in_aworklist' ?Γ2 =>
-      rewrite a_worklist_subst_ftavr_in_aworklist_2; eauto; simpl; auto; solve_tvar_notin_ftvarlist_helper; auto
+      rewrite a_worklist_subst_ftavr_in_aworklist_2; eauto; simpl; auto; solve_notin_rename; auto
     | H : aworklist_subst ?Γ ?X' ?A ?E ?Γ1 ?Γ2 |- ?X ∉ ftvar_in_aworklist' ?Γ1 =>
-      rewrite a_worklist_subst_ftavr_in_aworklist_1; eauto; simpl; auto; solve_tvar_notin_ftvarlist_helper; auto
+      rewrite a_worklist_subst_ftavr_in_aworklist_1; eauto; simpl; auto; solve_notin_rename; auto
     | H : aworklist_subst ?Γ ?X' ?A ?E ?Γ1 ?Γ2 |- ?X ∉ ftvar_in_aworklist' (etvar_list_to_awl ?E) =>
-      rewrite a_worklist_subst_ftavr_in_etvar_list ; eauto; simpl; auto; solve_tvar_notin_ftvarlist_helper; auto
+      rewrite a_worklist_subst_ftavr_in_etvar_list ; eauto; simpl; auto; solve_notin_rename; auto
   end.
 
-(* Ltac solve_tvar_notin_ftvarlist''' :=
-  repeat
-  match goal with
-  | H : _ |- ?X `notin` ?L =>
-    match goal with
-    | H : _ |- context [rename_tvar_in_aworklist ?X' ?X ?Γ] =>
-    assert (X `notin` ftvar_in_aworklist' (rename_tvar_in_aworklist X' X Γ)) by now apply notin_rename_tvar_in_aworklist;
-    auto
-    end
-  | H : aworklist_subst ?Γ ?X' ?A ?E ?Γ1 ?Γ2 |- ?X ∉ ftvar_in_aworklist' ?Γ2 =>
-    rewrite a_worklist_subst_ftavr_in_aworklist_2; eauto; simpl; auto
-  | H : aworklist_subst ?Γ ?X' ?A ?E ?Γ1 ?Γ2 |- ?X ∉ ftvar_in_aworklist' ?Γ1 =>
-    rewrite a_worklist_subst_ftavr_in_aworklist_1; eauto; simpl; auto
-  end. *)
 
 Ltac rewrite_aworklist_rename_rev :=
   repeat
@@ -784,16 +797,7 @@ Ltac rewrite_aworklist_rename_rev :=
     assert (H1: X' `notin` ftvar_in_aworklist' (etvar_list_to_awl E)) by (try solve [solve_tvar_notin_ftvarlist'; solve_tvar_notin_ftvarlist'']);
     rewrite rename_tvar_in_etvar_list_rev_eq in H; auto
   end.
-(*
-Ltac rewrite_aworklist_rename_rev_test :=
-  (* repeat *)
-  match goal with
-  | H : context [rename_tvar_in_aworklist _ _ (rename_tvar_in_aworklist ?X' ?X ?Γ)] |- _ =>
-    assert (X' `notin` ftvar_in_aworklist' Γ) by
-      (try solve [solve_tvar_notin_ftvarlist'; solve_tvar_notin_ftvarlist'']);
-      rewrite rename_tvar_in_aworklist_rev_eq in H; eauto
-  end.
-   *)
+
 
 Ltac rewrite_aworklist_rename_subst' :=
   match goal with
@@ -970,31 +974,6 @@ Proof.
     fsetdec.
 Qed.
 
-Ltac solve_notin_rename :=
-  repeat
-  match goal with
-  | H : _ |- context [?e1 ^ᵉₑ ?e2] => rewrite ftvar_in_exp_open_exp_wrt_exp_upper
-  | H : _ |- context [rename_tvar_in_aworklist ?X' ?X ?Γ] =>
-    (* assert True *)
-    match goal with
-    | H1 : X `notin` ftvar_in_aworklist' (rename_tvar_in_aworklist X' X Γ) |- _ => fail 1
-    | _ =>
-      assert (X `notin` ftvar_in_aworklist' (rename_tvar_in_aworklist X' X Γ)) by now apply notin_rename_tvar_in_aworklist
-    end 
-  | H : _ |- context [subst_tvar_in_cont ?X' ?X ?c] =>
-    match goal with
-    | H1 : (X `notin` (ftvar_in_cont (subst_tvar_in_cont X' X c))) |- _ => fail 1
-    | _ =>
-      assert (X `notin` (ftvar_in_cont (subst_tvar_in_cont X' X c))) by (simpl; apply subst_tvar_in_cont_fresh_same; auto)    
-    end 
-  | H : _ |- context [subst_tvar_in_exp ?X' ?X ?e] =>
-    match goal with
-    | H1 : (X `notin` (ftvar_in_exp (subst_tvar_in_exp X' X e))) |- _ => fail 1
-    | _ =>
-      assert (X `notin` (ftvar_in_exp (subst_tvar_in_exp X' X e))) by (simpl; apply subst_tvar_in_exp_fresh_same; auto)
-    end 
-  end.
-
 Lemma a_wf_wl_rename_tvar_in_awl : forall Γ X X',
   ⊢ᵃʷ Γ ->
   X' `notin` dom (awl_to_aenv Γ) ->
@@ -1023,7 +1002,7 @@ Admitted.
 
 Theorem a_wl_red_rename_tvar : forall Γ X X',
   X <> X' ->
-  ⊢ᵃʷʷ Γ ->
+  ⊢ᵃʷ Γ ->
   (* needs to change to (dom (awl_to_aenv Γ))*)
   X' `notin` ftvar_in_aworklist' Γ ->
   Γ ⟶ᵃʷ⁎⋅ ->
@@ -1328,57 +1307,83 @@ Admitted.
 
 Theorem a_wl_red_rename_var : forall Γ x x',
   ⊢ᵃʷ Γ ->
-  x' `notin` fvar_in_aworklist' Γ ->
+  x' `notin` (dom (awl_to_aenv Γ)) ->
   Γ ⟶ᵃʷ⁎⋅ ->
   (rename_var_in_aworklist x' x Γ) ⟶ᵃʷ⁎⋅.
 Proof with eauto with Hdb_a_wl_red_basic.
   intros. dependent induction H1; try solve [simpl in *; try _apply_IH_a_wl_red; eauto with Hdb_a_wl_red_basic].
   - simpl.
     dependent destruction H.
-    eapply a_wl_red__sub_alll with (L:=L); auto.
+    inst_cofinites_for a_wl_red__sub_alll; auto.
     + intros. simpl in *. inst_cofinites_with X.
-      assert (⊢ᵃʷ (work_sub (B1 ^ᵗ X) A1 ⫤ X ~ᵃ ⬒;ᵃ Γ)) by admit.
-      auto.
+      auto_apply; auto.
+      admit. (* wf *)
   - simpl in *.
     inst_cofinites_for a_wl_red__sub_all.
     intros. inst_cofinites_with X...
-    apply H2...
-    admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
+    auto_apply; auto.
+    admit.  (* wf *)
+  - simpl in *.
+    inst_cofinites_for a_wl_red__sub_arrow1; auto.
+    + admit.
+    + admit.
+    + intros. admit.
+  - simpl in *. 
+    inst_cofinites_for a_wl_red__sub_arrow2; auto.
+    + admit.
+    + admit.
+    + intros. admit.
+  - simpl in *. 
+    eapply a_wl_red__sub_etvarmono1 with (Γ1:=(rename_var_in_aworklist x' x Γ))
+      (Γ2:=(rename_var_in_aworklist x' x Γ2)) (E:=E); admit.
+  - simpl in *. 
+    eapply a_wl_red__sub_etvarmono2 with (Γ1:=(rename_var_in_aworklist x' x Γ))
+      (Γ2:=(rename_var_in_aworklist x' x Γ2)) (E:=E); admit.
   - simpl in *.
     inst_cofinites_for a_wl_red__chk_absarrow. intros.
-    inst_cofinites_with x0. admit.
+    inst_cofinites_with x0.
+    destruct_eq_atom.
+    admit.
   - simpl in *. admit.
   - simpl in *.
     inst_cofinites_for a_wl_red__chk_abstop. intros.
     inst_cofinites_with x.
     admit.
   - simpl in *.
-    destruct (x0 == x).
-    + subst. admit.
+    destruct (x0 == x); subst; apply a_wl_red__inf_var with (A:=A).
     + admit.
+    + auto_apply; auto. admit.
+    + admit.
+    + auto_apply; auto. admit.
   - simpl in *.
     inst_cofinites_for  a_wl_red__inf_tabs...
-    intros. inst_cofinites_with X0.
-    admit.
-  - simpl in *.
+    intros. inst_cofinites_with X.
+    rewrite subst_var_in_exp_open_exp_wrt_typ in H2...
+    auto_apply...
+    admit. (* wf *)
+  - simpl in *. 
     inst_cofinites_for a_wl_red__inf_abs_mono.
-    intros. inst_cofinites_with x0. inst_cofinites_with X1. inst_cofinites_with X2.
-    admit.
+    intros. 
+    destruct_eq_atom. 
+    inst_cofinites_with x0. inst_cofinites_with X1. inst_cofinites_with X2.
+    destruct_eq_atom.
+    rewrite subst_var_in_exp_open_exp_wrt_exp in H2; auto; simpl in *.
+    destruct_eq_atom.
+    auto_apply; auto.
+    admit. (* wf *)
   - simpl in *.
     inst_cofinites_for a_wl_red__infabs_all.
     intros. inst_cofinites_with X.
-    apply H2; auto.
-    admit.
+    auto_apply; auto.
+    admit. (* wf *)
   - simpl in *.
-    admit.
+    inst_cofinites_for a_wl_red__infabs_etvar; auto.
+    + admit. (* binds *) 
+    + intros. admit.
   - simpl in *.
     eapply a_wl_red__inftapp_all.
-    apply IHa_wl_red; auto.
-    admit.
+    auto_apply; auto.
+    admit. (* wf *)
   - simpl in *.
     admit.
 Admitted.
