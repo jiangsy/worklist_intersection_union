@@ -861,7 +861,7 @@ Proof.
 Qed.
 
 Lemma decidablity_lemma : forall ne nj nt ntj na naj nm nw Γ m,
-  ⊢ᵃ Γ ->
+  ⊢ᵃʷ Γ ->
   exp_size_wl Γ < ne ->
   judge_size_wl Γ < nj ->
   inftapp_depth_wl Γ < nt ->

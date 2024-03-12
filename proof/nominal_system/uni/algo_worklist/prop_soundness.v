@@ -167,7 +167,7 @@ Ltac trans_all_typ :=
 
 (* Lemma a_update_bound_transfer_same_dworklist: forall Γ Ω θ X A E m Γ1 Γ2 LB UB,
   a_update_bound Γ X A m E Γ1 Γ2 LB UB ->
-  trans_worklist nil (awl_rev_app Γ2 (aworklist_constvar (awl_rev_app (aenv_to_awl E) Γ1) X (abind_bound LB UB)) )  Ω θ ->
+  trans_worklist nil (awl_app Γ2 (aworklist_constvar (awl_app (aenv_to_awl E) Γ1) X (abind_bound LB UB)) )  Ω θ ->
   exists θ', trans_worklist nil Γ Ω θ'.
 Proof with auto with Hdb_a_wl_red_soundness.
   intros. generalize dependent θ. generalize dependent Ω. dependent induction H.
@@ -570,7 +570,7 @@ Admitted.
 
 Lemma a_reorder_transfer_more_constr_worklist: forall Γ Ω θ X A E m Γ1 Γ2 LB UB,
   a_reorder Γ X A m E Γ1 Γ2 LB UB ->
-  trans_worklist nil (awl_rev_app Γ2 (aworklist_constvar (awl_rev_app (aenv_to_awl E) Γ1) X (abind_bound LB UB)) ) Ω θ ->
+  trans_worklist nil (awl_app Γ2 (aworklist_constvar (awl_app (aenv_to_awl E) Γ1) X (abind_bound LB UB)) ) Ω θ ->
   exists θ' Ω', trans_worklist nil Γ Ω' θ' /\ d_more_constr_worklist Ω Ω'.
 Proof with auto with Hdb_a_wl_red_soundness.
   intros. generalize dependent θ. generalize dependent Ω. dependent induction H; intros.
@@ -601,7 +601,7 @@ Admitted.
 
 Lemma a_reorder_transfer_more_constr_worklist': forall Γ Ω θ X A E m Γ1 Γ2 LB UB,
   a_reorder Γ X A m E Γ1 Γ2 LB UB ->
-  trans_worklist nil (awl_rev_app Γ2 (aworklist_constvar (awl_rev_app (aenv_to_awl E) Γ1) X (abind_bound LB UB)) ) Ω θ ->
+  trans_worklist nil (awl_app Γ2 (aworklist_constvar (awl_app (aenv_to_awl E) Γ1) X (abind_bound LB UB)) ) Ω θ ->
   exists θ' Ω', trans_worklist nil Γ Ω' θ' /\ d_more_constr_worklist Ω Ω' /\   
   ( match m with 
     | a_bound_mode__lower => forall A1ᵈ Tᵈ, trans_typ θ (typ_var_f X) Tᵈ -> trans_typ θ A A1ᵈ -> 
@@ -609,7 +609,9 @@ Lemma a_reorder_transfer_more_constr_worklist': forall Γ Ω θ X A E m Γ1 Γ2 
     | a_bound_mode__upper => forall A1ᵈ Tᵈ, trans_typ θ (typ_var_f X) Tᵈ -> trans_typ θ A A1ᵈ -> 
                                             dwl_to_denv Ω' ⊢ A1ᵈ <: Tᵈ 
     end
-  ).
+  )
+  (* more prop about θ' and θ transfers LB and UB *)
+  .
 Proof with auto with Hdb_a_wl_red_soundness.
   intros. generalize dependent θ. generalize dependent Ω. dependent induction H; intros.
   - simpl in *. 
@@ -626,18 +628,45 @@ Proof with auto with Hdb_a_wl_red_soundness.
     admit.
     admit.
     econstructor; auto.
+    admit. admit.
+  (* ub stop *)
+  - simpl in *. admit.
+  (* etvar move *)
+  - simpl in *.
+    admit.
+  (* etvar stay *)
+  - simpl in *. dependent destruction H1.
+    apply IHa_reorder in H1. destruct H1 as [θ'1 [Ω' [Htrans Hmw]]].
+    exists ((X1 , dbind_typ T) :: θ'1). exists (work_sub Aᵈ Bᵈ ⫤ Ω')%dworklist. 
+    split; auto.
+    econstructor; auto; admit.
+    admit.
+  - simpl in *. dependent destruction H1.
+    apply IHa_reorder in H1. destruct H1 as [θ'1 [Ω' [Htrans [Hmw Hinst]]]].
+    exists ((X1 , dbind_tvar_empty) :: θ'1). 
+    exists (dworklist_constvar Ω' X1 dbind_tvar_empty).
+    split; auto.
+    econstructor; auto.
+    split. econstructor; intuition.
+
 Admitted.
 
 
 Lemma a_reorder_transfer_more_constr_worklist'': forall Γ Ω θ X A E m Γ1 Γ2 LB UB,
   a_reorder Γ X A m E Γ1 Γ2 LB UB ->
-  trans_worklist nil (awl_rev_app Γ2 (aworklist_constvar (awl_rev_app (aenv_to_awl E) Γ1) X (abind_bound LB UB)) ) Ω θ ->
+  trans_worklist nil (awl_app Γ2 (aworklist_constvar (awl_app (aenv_to_awl E) Γ1) X (abind_bound LB UB)) ) Ω θ ->
   exists θ' Ω', trans_worklist nil Γ Ω' θ' /\ d_more_constr_worklist Ω Ω' /\   
   ( match m with 
     | a_bound_mode__lower => exists A1ᵈ Tᵈ, trans_typ θ' (typ_var_f X) Tᵈ /\ trans_typ θ' A A1ᵈ /\ dwl_to_denv Ω' ⊢ A1ᵈ <: Tᵈ 
     | a_bound_mode__upper => exists A1ᵈ Tᵈ, trans_typ θ' (typ_var_f X) Tᵈ /\ trans_typ θ' A A1ᵈ /\ dwl_to_denv Ω' ⊢ Tᵈ <: A1ᵈ 
     end
   ).
+Proof.
+  intros. generalize dependent θ. generalize dependent Ω. dependent induction H; intros.
+  - simpl in *.
+    dependent destruction H1.
+    eapply a_update_transfer_similar_worklist in H0 as H0'; eauto.
+    destruct H0' as [θ'1 [Ω' [Htrans Hmw]]].
 Admitted.
 
 (* Hint Resolve d_chk_inf_wft : Hdb_a_wl_red_soundness. *)
@@ -741,16 +770,16 @@ Proof with eauto with Hdb_a_wl_red_soundness.
     inst_cofinites_by (L `union` singleton X1) using_name X2.
     admit.
   (* ^X < ^Y  *)
-  - assert ( ⊢ᵃ awl_rev_app Γ3 (aworklist_constvar (awl_rev_app (aenv_to_awl E) Γ2) X (abind_bound LB UB))) by admit.
+  - assert ( ⊢ᵃ awl_app Γ3 (aworklist_constvar (awl_app (aenv_to_awl E) Γ2) X (abind_bound LB UB))) by admit.
     _apply_IH_a_wl_red.
     (* eapply a_update_bound_transfer_same_dworklist in Htrans... *)
     admit.
   (* ^X < ^Y  *)
   - admit.
   (* τ < ^X *)
-  - assert (⊢ᵃ awl_rev_app Γ3
+  - assert (⊢ᵃ awl_app Γ3
   (aworklist_constvar
-     (awl_rev_app (aenv_to_awl E) Γ2) X
+     (awl_app (aenv_to_awl E) Γ2) X
      (abind_bound LB UB))) by admit.
     apply IHHared in H2. 
     destruct H2 as [Ω [[θ Htrans] Hdred]].

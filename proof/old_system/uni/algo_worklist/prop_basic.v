@@ -59,9 +59,9 @@ Hint Constructors aworklist_subst : Hdb_a_wl_red_basic.
 Ltac _apply_IH_a_wl_red :=
   let H := fresh "H" in
     match goal with
-    | H : (⊢ᵃ ?Γ) -> ?P |- _ => destruct_a_wf_wl;
+    | H : (⊢ᵃʷ ?Γ) -> ?P |- _ => destruct_a_wf_wl;
       let H1 := fresh "H" in
-      assert (H1 : ⊢ᵃ Γ) by auto with Hdb_a_wl_red_basic;
+      assert (H1 : ⊢ᵃʷ Γ) by auto with Hdb_a_wl_red_basic;
       let H2 := fresh "IHHdred" in
       apply H in H1 as H2
     end.
@@ -156,7 +156,7 @@ Qed.
 
 
 Lemma worklist_subst_rename_tvar : forall Γ X1 X2 X' A E Γ1 Γ2,
-  ⊢ᵃ Γ ->
+  ⊢ᵃʷ Γ ->
   X' `notin` ftvar_in_typ A `union` ftvar_in_aworklist' Γ `union` singleton X2 ->
   aworklist_subst Γ X2 A E Γ1 Γ2 ->
   aworklist_subst (rename_tvar_in_aworklist X' X1 Γ) (if X2 == X1 then X' else X2) ({` X' /ᵗ X1} A)
@@ -214,7 +214,7 @@ Ltac auto_apply :=
 
 (* a group of rename lemmas for tvar *)
 Lemma rename_tvar_in_aworklist_bind_same : forall Γ X1 X2 X',
-  ⊢ᵃ Γ ->
+  ⊢ᵃʷ Γ ->
   X' `notin` ftvar_in_aworklist' Γ ->
   (* can generalize to abind_tvar_empty/abind_stvar_empty/abind_etvar_empty *)
   binds X1 abind_etvar_empty (awl_to_aenv Γ) ->
@@ -239,7 +239,7 @@ Proof.
 Qed.
 
 Corollary rename_tvar_in_aworklist_bind_same_neq : forall Γ X1 X2 X',
-  ⊢ᵃ Γ ->
+  ⊢ᵃʷ Γ ->
   X1 <> X2 ->
   X' `notin` ftvar_in_aworklist' Γ ->
   binds X1 abind_etvar_empty (awl_to_aenv Γ) ->
@@ -250,7 +250,7 @@ Proof.
 Qed.
 
 Corollary rename_tvar_in_aworklist_bind_same_eq : forall Γ X X',
-  ⊢ᵃ Γ ->
+  ⊢ᵃʷ Γ ->
   X' `notin` ftvar_in_aworklist' Γ ->
   binds X abind_etvar_empty (awl_to_aenv Γ) ->
   binds (X') abind_etvar_empty (awl_to_aenv (rename_tvar_in_aworklist X' X Γ)).
@@ -260,7 +260,7 @@ Proof.
 Qed.
 
 Lemma rename_tvar_in_aworklist_bind_same_tvar : forall Γ X1 X2 X',
-  ⊢ᵃ Γ ->
+  ⊢ᵃʷ Γ ->
   X' `notin` ftvar_in_aworklist' Γ ->
   binds X1 abind_tvar_empty (awl_to_aenv Γ) ->
   binds (if X1 == X2 then X' else X1) abind_tvar_empty
@@ -284,7 +284,7 @@ Proof.
 Qed.
 
 Corollary rename_tvar_in_aworklist_bind_same_neq_tvar : forall Γ X1 X2 X',
-  ⊢ᵃ Γ ->
+  ⊢ᵃʷ Γ ->
   X1 <> X2 ->
   X' `notin` ftvar_in_aworklist' Γ ->
   binds X1 abind_tvar_empty (awl_to_aenv Γ) ->
@@ -295,7 +295,7 @@ Proof.
 Qed.
 
 Corollary rename_tvar_in_aworklist_bind_same_eq_tvar : forall Γ X X',
-  ⊢ᵃ Γ ->
+  ⊢ᵃʷ Γ ->
   X' `notin` ftvar_in_aworklist' Γ ->
   binds X abind_tvar_empty (awl_to_aenv Γ) ->
   binds (X') abind_tvar_empty (awl_to_aenv (rename_tvar_in_aworklist X' X Γ)).
@@ -307,7 +307,7 @@ Qed.
 (* -- *)
 
 Lemma a_mono_typ_rename_tvar : forall Γ A X X',
-  ⊢ᵃ Γ ->  X' ∉ ftvar_in_aworklist' Γ ->
+  ⊢ᵃʷ Γ ->  X' ∉ ftvar_in_aworklist' Γ ->
   a_mono_typ (awl_to_aenv Γ) A ->
   a_mono_typ (awl_to_aenv (rename_tvar_in_aworklist X' X Γ)) ({` X' /ᵗ X} A).
 Proof.
@@ -321,7 +321,7 @@ Proof.
 Qed.
 
 Lemma binds_var_typ_rename_tvar : forall x A X X' Γ,
-  ⊢ᵃ Γ ->
+  ⊢ᵃʷ Γ ->
   binds x (abind_var_typ A) (awl_to_aenv Γ) ->
   binds x (abind_var_typ ({` X' /ᵗ X} A)) (awl_to_aenv (rename_tvar_in_aworklist X' X Γ)).
 Proof with auto with Hdb_a_wl_red_basic.
@@ -357,7 +357,7 @@ Qed.
 
 
 Lemma a_wf_wl_wf_bind_typ : forall Γ x A,
-  ⊢ᵃ Γ ->
+  ⊢ᵃʷ Γ ->
   binds x (abind_var_typ A) (awl_to_aenv Γ) ->
   a_wf_typ (awl_to_aenv Γ) A.
 Proof.
@@ -365,7 +365,7 @@ Admitted.
 
 
 Lemma tvar_notin_awl_notin_bind_typ : forall X Γ x A,
-  ⊢ᵃ Γ ->
+  ⊢ᵃʷ Γ ->
   X `notin` ftvar_in_aworklist' Γ ->
   binds x (abind_var_typ A) (awl_to_aenv Γ) ->
   X `notin` ftvar_in_typ A.
@@ -809,10 +809,10 @@ Ltac rewrite_aworklist_rename :=
   rewrite_aworklist_rename_subst'.
 
 Lemma a_worklist_subst_wf_wl : forall Γ X A E Γ1 Γ2,
-  ⊢ᵃ Γ ->
+  ⊢ᵃʷ Γ ->
   binds X abind_etvar_empty (awl_to_aenv Γ) ->
   aworklist_subst Γ X A E Γ1 Γ2 ->
-  ⊢ᵃ awl_app (subst_tvar_in_aworklist A X Γ2)
+  ⊢ᵃʷ awl_app (subst_tvar_in_aworklist A X Γ2)
      (awl_app (etvar_list_to_awl E) Γ1).
 Proof.
   intros. induction H1; auto.
@@ -957,7 +957,7 @@ Proof.
 Qed.
 
 Lemma ftvar_in_aworklist_upper : forall Γ ,
-  ⊢ᵃ Γ ->
+  ⊢ᵃʷ Γ ->
   ftvar_in_aworklist' Γ [<=] dom (awl_to_aenv Γ).
 Proof.
   intros; induction H; auto.
@@ -996,9 +996,9 @@ Ltac solve_notin_rename :=
   end.
 
 Lemma a_wf_wl_rename_tvar_in_awl : forall Γ X X',
-  ⊢ᵃ Γ ->
+  ⊢ᵃʷ Γ ->
   X' `notin` dom (awl_to_aenv Γ) ->
-  ⊢ᵃ (rename_tvar_in_aworklist X' X Γ).
+  ⊢ᵃʷ (rename_tvar_in_aworklist X' X Γ).
 Proof.
   intros. induction H; try solve [simpl in *; eauto with Hdb_a_wl_red_basic].
   - simpl in *. econstructor; auto.
@@ -1023,7 +1023,7 @@ Admitted.
 
 Theorem a_wl_red_rename_tvar : forall Γ X X',
   X <> X' ->
-  ⊢ᵃ Γ ->
+  ⊢ᵃʷʷ Γ ->
   (* needs to change to (dom (awl_to_aenv Γ))*)
   X' `notin` ftvar_in_aworklist' Γ ->
   Γ ⟶ᵃʷ⁎⋅ ->
@@ -1233,7 +1233,7 @@ Proof with eauto with Hdb_a_wl_red_basic.
   - simpl in *.
     dependent destruction H0.
     apply a_wf_wl_wf_bind_typ in H3 as Hwfa...
-    assert (⊢ᵃ (work_apply c A ⫤ Γ)) by now destruct_a_wf_wl; eauto with Hdb_a_wl_red_basic.
+    assert (⊢ᵃʷ (work_apply c A ⫤ Γ)) by now destruct_a_wf_wl; eauto with Hdb_a_wl_red_basic.
     eapply a_wl_red__inf_var with (A:=({` X' /ᵗ X} A))...
     apply binds_var_typ_rename_tvar...
     auto_apply.
@@ -1297,7 +1297,7 @@ Proof with eauto with Hdb_a_wl_red_basic.
         destruct_eq_atom.
         rewrite rename_tvar_in_aworklist_rev_eq in Hws; auto.
         rewrite rename_tvar_in_cont_rev_eq in Hws; auto.
-        assert (X `notin` (ftvar_in_cont ({` X' /ᶜₜ X} c))) by admit.
+        assert (X `notin` (ftvar_in_cont ({` X' /ᶜₜ X} c))) by now solve_notin_rename.
         apply H6 in Hws as Hawlred; simpl; auto.
         destruct_eq_atom.
         rewrite_aworklist_rename; simpl; auto.
@@ -1327,7 +1327,7 @@ Admitted.
 
 
 Theorem a_wl_red_rename_var : forall Γ x x',
-  ⊢ᵃ Γ ->
+  ⊢ᵃʷ Γ ->
   x' `notin` fvar_in_aworklist' Γ ->
   Γ ⟶ᵃʷ⁎⋅ ->
   (rename_var_in_aworklist x' x Γ) ⟶ᵃʷ⁎⋅.
@@ -1337,7 +1337,7 @@ Proof with eauto with Hdb_a_wl_red_basic.
     dependent destruction H.
     eapply a_wl_red__sub_alll with (L:=L); auto.
     + intros. simpl in *. inst_cofinites_with X.
-      assert (⊢ᵃ (work_sub (B1 ^ᵗ X) A1 ⫤ X ~ᵃ ⬒;ᵃ Γ)) by admit.
+      assert (⊢ᵃʷ (work_sub (B1 ^ᵗ X) A1 ⫤ X ~ᵃ ⬒;ᵃ Γ)) by admit.
       auto.
   - simpl in *.
     inst_cofinites_for a_wl_red__sub_all.

@@ -488,6 +488,6 @@ Notation " Γ1 ⟶ᵃʷ⁎ Γ2 " :=
   (a_wl_mul_red Γ1 Γ2)
       (at level 58, no associativity) : type_scope. *)
 
-Notation " ⊢ᵃ Γ " :=
+Notation " ⊢ᵃʷ Γ " :=
   (a_wf_wl Γ)
       (at level 58, no associativity) : type_scope.

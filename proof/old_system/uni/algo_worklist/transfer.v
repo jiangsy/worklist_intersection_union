@@ -329,7 +329,7 @@ Qed.
 
 
 Lemma a_wf_wl_wf_ss : forall θ Γ Ω,  
-  ⊢ᵃ Γ -> nil ⫦ Γ ⇝ Ω ⫣ θ -> wf_ss θ.
+  ⊢ᵃʷ Γ -> nil ⫦ Γ ⇝ Ω ⫣ θ -> wf_ss θ.
 Proof with eauto.
   intros. dependent induction H0; dependent destruction H...
   - econstructor... eapply trans_wl_not_in_ss...
@@ -469,7 +469,7 @@ Hint Resolve a_wf_wl_wf_ss : Hdb_a_wl_red_soundness.
 
 
 Lemma etvar_in_awl_in_ss : forall θ θ' Γ Ω X,
-   ⊢ᵃ Γ -> θ ⫦ Γ ⇝ Ω ⫣ θ' -> binds X abind_etvar_empty (awl_to_aenv Γ) ->
+   ⊢ᵃʷ Γ -> θ ⫦ Γ ⇝ Ω ⫣ θ' -> binds X abind_etvar_empty (awl_to_aenv Γ) ->
    exists Tᵈ, binds X Tᵈ θ'.
 Proof with eauto with Hdb_transfer.
   intros. 
@@ -610,7 +610,7 @@ Qed.
 
 Lemma a_wf_typ_trans_typ : forall θ Γ Ω Aᵃ,
   a_wf_typ (awl_to_aenv Γ) Aᵃ ->  
-  ⊢ᵃ Γ -> 
+  ⊢ᵃʷ Γ -> 
   nil ⫦ Γ ⇝ Ω ⫣ θ -> 
   exists Aᵈ, trans_typ θ Aᵃ Aᵈ.
 Proof with eauto with Hdb_transfer.
@@ -630,7 +630,7 @@ Proof with eauto with Hdb_transfer.
     destruct Htrans_typ1 as [A1ᵈ]. destruct Htrans_typ2 as [A2ᵈ].
     exists (typ_arrow A1ᵈ A2ᵈ). econstructor...  
   - inst_cofinites_by (L `union` dom (awl_to_aenv Γ)  `union` ftvar_in_typ A) using_name X.
-    assert (⊢ᵃ aworklist_constvar Γ X abind_tvar_empty)... 
+    assert (⊢ᵃʷ aworklist_constvar Γ X abind_tvar_empty)... 
     eapply H1 with (Ω:=dworklist_constvar Ω X dbind_tvar_empty) (θ:=(X, dbind_tvar_empty)::θ) in H4...
     destruct H4 as [Axᵈ].
     exists (typ_all (close_typ_wrt_typ X Axᵈ)).
@@ -651,7 +651,7 @@ Qed.
 
 (* Lemma ss_wf_typ_trans_typ  : forall θ Aᵃ,
   (ss_to_aenv θ) Aᵃ ->  
-  ⊢ᵃ Γ -> 
+  ⊢ᵃʷ Γ -> 
   nil ⫦ Γ ⇝ Ω ⫣ θ -> 
   exists Aᵈ, trans_typ θ Aᵃ Aᵈ. *)
 
@@ -733,12 +733,12 @@ Qed.
 
 Lemma a_wf_exp_trans_exp : forall θ Γ Ω eᵃ,
   a_wf_exp (awl_to_aenv Γ) eᵃ ->  
-  ⊢ᵃ Γ -> 
+  ⊢ᵃʷ Γ -> 
   nil ⫦ Γ ⇝ Ω ⫣ θ -> 
   exists eᵈ, trans_exp θ eᵃ eᵈ
 with a_wf_body_trans_body : forall θ Γ Ω bᵃ,
   a_wf_body (awl_to_aenv Γ) bᵃ ->  
-  ⊢ᵃ Γ -> 
+  ⊢ᵃʷ Γ -> 
   nil ⫦ Γ ⇝ Ω ⫣ θ -> 
   exists bᵈ, trans_body θ bᵃ bᵈ.
 Proof with eauto with Hdb_transfer.
@@ -749,7 +749,7 @@ Proof with eauto with Hdb_transfer.
     + exists exp_unit...
     + exists (exp_var_f x)... 
     + inst_cofinites_by (L `union` (fvar_in_exp e) `union` dom (awl_to_aenv Γ)).
-      assert (⊢ᵃ aworklist_consvar Γ x (abind_var_typ T)) by auto.
+      assert (⊢ᵃʷ aworklist_consvar Γ x (abind_var_typ T)) by auto.
       eapply a_wf_typ_trans_typ in H...
       destruct H as [Tᵈ].
       eapply H1 with (θ:=θ) in H4...
@@ -766,7 +766,7 @@ Proof with eauto with Hdb_transfer.
       destruct Htrans_e2 as [e2ᵈ].  
       exists (exp_app e1ᵈ e2ᵈ)...
     + inst_cofinites_by (L `union` dom (awl_to_aenv Γ) `union` ftvar_in_body body5) using_name X.
-      assert (⊢ᵃ aworklist_constvar Γ X abind_tvar_empty) by auto.
+      assert (⊢ᵃʷ aworklist_constvar Γ X abind_tvar_empty) by auto.
       eapply a_wf_body_trans_body with (Ω:=dworklist_constvar Ω X dbind_tvar_empty) (θ:=(X, dbind_tvar_empty)::θ) in H2...
       destruct H2 as [bᵈ].
       exists (exp_tabs (close_body_wrt_typ X bᵈ)).
@@ -921,7 +921,7 @@ Qed.
 
 (* not used now *)
 Lemma a_wf_wl_d_wf_wl : forall θ Γ Ω,  
-  ⊢ᵃ Γ -> nil ⫦ Γ ⇝ Ω ⫣ θ -> ⊢ᵈʷ Ω.
+  ⊢ᵃʷ Γ -> nil ⫦ Γ ⇝ Ω ⫣ θ -> ⊢ᵈʷ Ω.
 Proof with eauto.
   intros. dependent induction H0; dependent destruction H...
   - econstructor...
@@ -938,7 +938,7 @@ Abort.
 
 
 Lemma a_wf_wl_d_wf_env : forall θ Γ Ω,  
-  ⊢ᵃ Γ -> nil ⫦ Γ ⇝ Ω ⫣ θ -> ⊢ dwl_to_denv Ω.
+  ⊢ᵃʷ Γ -> nil ⫦ Γ ⇝ Ω ⫣ θ -> ⊢ dwl_to_denv Ω.
 Proof with eauto.
   intros. dependent induction H0; dependent destruction H; simpl...
   - econstructor...
@@ -952,7 +952,7 @@ Proof with eauto.
 Qed.
 
 
-(* depedent destruction all non-atomic ⊢ᵃ relation *)
+(* depedent destruction all non-atomic ⊢ᵃʷ relation *)
 
 
 Lemma a_wf_work_applied : forall Γ c A w,

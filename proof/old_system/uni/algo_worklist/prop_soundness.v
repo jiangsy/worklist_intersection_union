@@ -133,9 +133,9 @@ Ltac rename_typ :=
 Ltac _apply_IH_a_wl_red :=
   let H := fresh "H" in
     match goal with 
-    | H : (⊢ᵃ ?Γ) -> ?P |- _ => destruct_a_wf_wl; 
+    | H : (⊢ᵃʷ ?Γ) -> ?P |- _ => destruct_a_wf_wl; 
       let H1 := fresh "H" in
-      assert (H1 : ⊢ᵃ Γ) by auto with Hdb_a_wl_red_soundness;
+      assert (H1 : ⊢ᵃʷ Γ) by auto with Hdb_a_wl_red_soundness;
       let H2 := fresh "IHHdred" in
       apply H in H1 as H2;
       destruct H2 as [Ω [Htrans Hdred]];
@@ -197,7 +197,7 @@ Hint Resolve trans_typ_lc_atyp : Hdb_a_wl_red_soundness.
 
 
 Theorem d_a_wl_red_soundness: forall Γ,
-  ⊢ᵃ Γ -> Γ ⟶ᵃʷ⁎⋅ -> exists Ω, transfer Γ Ω /\ Ω ⟶ᵈ⁎⋅.
+  ⊢ᵃʷ Γ -> Γ ⟶ᵃʷ⁎⋅ -> exists Ω, transfer Γ Ω /\ Ω ⟶ᵈ⁎⋅.
 Proof with eauto with Hdb_a_wl_red_soundness.
   intros * Hwfa Hared. dependent induction Hared; auto; unfold transfer in *;
     try _apply_IH_a_wl_red; try destruct_trans; try trans_all_typ; try rename_typ.
@@ -229,7 +229,7 @@ Proof with eauto with Hdb_a_wl_red_soundness.
     + dependent destruction Hdred. dependent destruction Hdred...
   (* forall x. A < B  *)
   - inst_cofinites_by (L `union` ftvar_in_typ A1) using_name X.
-    assert ( ⊢ᵃ (work_sub (B1 ^ᵗ X) A1 ⫤ aworklist_constvar Γ X abind_etvar_empty)) by admit.
+    assert ( ⊢ᵃʷ (work_sub (B1 ^ᵗ X) A1 ⫤ aworklist_constvar Γ X abind_etvar_empty)) by admit.
     destruct_a_wf_wl.
     _apply_IH_a_wl_red.
     destruct_trans.
@@ -259,7 +259,7 @@ Proof with eauto with Hdb_a_wl_red_soundness.
   - destruct_a_wf_wl.
     dependent destruction H. dependent destruction H1.
     inst_cofinites_by (L `union` L0 `union` L1 `union` dom (awl_to_aenv Γ)) using_name X.
-    assert ( ⊢ᵃ (work_sub (B1 ^ᵗ X) (A1 ^ᵗ X) ⫤ aworklist_constvar Γ X abind_stvar_empty) ) by admit.
+    assert ( ⊢ᵃʷ (work_sub (B1 ^ᵗ X) (A1 ^ᵗ X) ⫤ aworklist_constvar Γ X abind_stvar_empty) ) by admit.
     _apply_IH_a_wl_red.
     destruct_trans...
     rename A1ᵈ into B1xᵈ. rename B1ᵈ into A1xᵈ.
@@ -282,7 +282,7 @@ Proof with eauto with Hdb_a_wl_red_soundness.
     inst_cofinites_by (L `union` singleton X1) using_name X2.
     admit.
   (* τ < ^X *)
-  - assert (⊢ᵃ awl_app (subst_tvar_in_aworklist A X Γ2) (awl_app (etvar_list_to_awl E) Γ1)) by admit.
+  - assert (⊢ᵃʷ awl_app (subst_tvar_in_aworklist A X Γ2) (awl_app (etvar_list_to_awl E) Γ1)) by admit.
     _apply_IH_a_wl_red. admit.
   (* ^X < τ *)
   - admit.
@@ -317,7 +317,7 @@ Proof with eauto with Hdb_a_wl_red_soundness.
     destruct_d_wl_del_red...
   (* \ x. e <= A1 -> A2 *)
   - destruct_a_wf_wl. inst_cofinites_by (L `union` L0)... 
-    assert (⊢ᵃ (work_check (open_exp_wrt_exp e (exp_var_f x)) A2 ⫤ (aworklist_consvar Γ x (abind_var_typ A1)))) by admit.
+    assert (⊢ᵃʷ (work_check (open_exp_wrt_exp e (exp_var_f x)) A2 ⫤ (aworklist_consvar Γ x (abind_var_typ A1)))) by admit.
     apply H2 in H3.
     destruct H3 as [Ω [Htrans Hdred]].
     destruct Htrans as [θ].
@@ -336,7 +336,7 @@ Proof with eauto with Hdb_a_wl_red_soundness.
   - admit.
   (* \ x. e <= ⊤ *)
   - destruct_a_wf_wl. inst_cofinites_by (L `union` L0).
-    assert ( ⊢ᵃ (work_check (open_exp_wrt_exp e (exp_var_f x)) typ_top ⫤ (aworklist_consvar Γ x (abind_var_typ typ_bot)))) by admit.
+    assert ( ⊢ᵃʷ (work_check (open_exp_wrt_exp e (exp_var_f x)) typ_top ⫤ (aworklist_consvar Γ x (abind_var_typ typ_bot)))) by admit.
     apply H3 in H4. 
     destruct H4 as [Ω [Htrans Hdred]].
     destruct Htrans as [θ].
@@ -369,7 +369,7 @@ Proof with eauto with Hdb_a_wl_red_soundness.
     eapply tran_wl_wf_trans_typ with (Γ:=Γ) (Aᵃ:=A1)...
   (* x => _ *)
   - destruct_a_wf_wl.
-    assert (⊢ᵃ (work_apply c A0 ⫤ Γ)). econstructor... econstructor...
+    assert (⊢ᵃʷ (work_apply c A0 ⫤ Γ)). econstructor... econstructor...
     admit.
     apply IHHared in H2. destruct H2 as [Ω [Htrans Hdred]].
     destruct Htrans as [θ].
@@ -448,7 +448,7 @@ Proof with eauto with Hdb_a_wl_red_soundness.
     split...
     destruct_d_wl_del_red...
   (* ∀ a. A ∘ B =>=> _ *)
-  - assert (⊢ᵃ (work_apply c (A ^^ᵗ B) ⫤ Γ)) by admit.
+  - assert (⊢ᵃʷ (work_apply c (A ^^ᵗ B) ⫤ Γ)) by admit.
     _apply_IH_a_wl_red.
     destruct_trans.
     inst_cofinites_by (dom (awl_to_aenv Γ) `union` dom θ) using_name X.
@@ -490,7 +490,7 @@ Proof with eauto with Hdb_a_wl_red_soundness.
     split...
   - destruct_a_wf_wl.
     eapply a_wf_work_applied in H1 as Hwf...
-    assert ( ⊢ᵃ (w ⫤ Γ) ) by auto.
+    assert ( ⊢ᵃʷ (w ⫤ Γ) ) by auto.
     apply IHHared in H2...
     destruct H2 as [Ω [Htrans Hdred]].
     destruct Htrans as [θ Htrans].
