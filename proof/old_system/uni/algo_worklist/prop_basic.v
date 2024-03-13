@@ -962,7 +962,6 @@ Proof with (autorewrite with core using simpl); eauto; solve_false; try solve_no
       with  ((awl_to_aenv (awl_app (subst_tvar_in_aworklist A X (aworklist_constvar Γ2 X0 abind_tvar_empty)) (awl_app (etvar_list_to_awl E) Γ1)))) by auto.
       eapply H1 with (Γ:=aworklist_constvar Γ X0 abind_tvar_empty); auto.
       applys~ binds_cons_3.
-      Search ((_ ^ᵗ _)).
       admit.
       (* a_wf_wl_weaken_head *)
       admit.
