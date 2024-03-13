@@ -385,7 +385,8 @@ Proof with auto with Hdb_dworklist_equiv.
     econstructor.
     simpl.
     eapply d_wl_red_inftapp_complete; eauto.
-  - admit.
+  - destruct_wf.
+    eapply d_wl_red__inf_abs_mono.
   - destruct_wf.
     eapply d_wl_red__chk_abstop with (L:=L `union` L0 `union` dom (dwl_to_denv Ω)).
     intros. inst_cofinites_with x.
