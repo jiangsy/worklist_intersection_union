@@ -220,12 +220,13 @@ Proof with auto with Hdb_dworklist_equiv typing.
   - admit.
   - admit.
   - econstructor.
-    eapply d_typing__chkabstop with (L:=L).
+    eapply d_typing__chk_abstop with (L:=L).
     intros. inst_cofinites_with x...
     admit. admit.
   - eapply d_wl_del_red__inf with (T1:=A)...
     econstructor... admit.
     apply IHd_wl_red. admit.
+  - admit.
   - admit.
   - destruct_wf. _apply_IH_d_wl_red.
     destruct_d_wl_del_red.
@@ -339,6 +340,9 @@ Proof.
   - eapply d_wl_red__inf_tabs with (L:=L).
     intros. inst_cofinites_with X.
     rewrite_dwl_app. auto.
+  - eapply d_wl_red__inf_abs_mono with (T1:=T1) (T2:=T2); auto.
+    rewrite d_wl_app_cons_work_same_env. auto.
+    rewrite_dwl_app. auto.
   - eapply d_wl_red__infabs_all with (T:=T).
     rewrite d_wl_app_cons_work_same_env. auto.
     rewrite_dwl_app. auto.
@@ -420,6 +424,8 @@ Proof with auto with Hdb_dworklist_equiv.
       apply d_wl_red_weaken_consw in H5; auto.
     replace (work_apply c C ⫤ work_check e2 B ⫤ Ω)%dworklist with (dwl_app (work_apply c C ⫤ dworklist_empty) (work_check e2 B ⫤ Ω)%dworklist) by auto.
     apply d_wl_red_strengthen_work; eauto.
+  - destruct_wf.
+    eapply d_wl_red__inf_abs_mono; eauto.
   - destruct_wf. 
     eapply d_wl_red__inf_tabs with (L:=L `union` L0 `union` dom (dwl_to_denv Ω)); eauto. 
     intros. inst_cofinites_with X. dependent destruction H2.

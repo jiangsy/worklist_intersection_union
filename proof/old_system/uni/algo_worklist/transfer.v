@@ -1079,7 +1079,7 @@ Proof with eauto with Hdb_transfer.
     intros. inst_cofinites_with X0.
     rewrite_env (((X0, □) :: θ2) ++ θ1).
     eapply H0 with (X:=X) (T:=T); eauto.
-    admit.
+    rewrite ftvar_in_typ_open_typ_wrt_typ_upper; auto.
   - simpl in H1. econstructor.
     eapply IHtrans_typ1; eauto. 
     eapply IHtrans_typ2; eauto. 
