@@ -243,7 +243,7 @@ Proof with auto with typing.
   (* intros.
   generalize dependent T2.
   dependent induction H; intros; try solve [simpl in *; eauto 5 with typing].
-  - simpl in *. eapply d_typing__inftabs with (L:=L `union` singleton X).
+  - simpl in *. eapply d_typing__inf_tabs with (L:=L `union` singleton X).
     + replace (typ_all ({T2 /ᵗ X} T1)) with ({T2 /ᵗ X}  typ_all T1) by auto.
       auto...
     + intros. specialize (notin_union_1 _ _ _ H4). intros.
@@ -256,14 +256,14 @@ Proof with auto with typing.
         contradiction.
       * rewrite <- H7. rewrite typ_subst_open_comm; auto.
   - simpl in *. rewrite d_subst_tv_in_typ_open_typ_wrt_typ; eauto...
-  - simpl in *. apply d_typing__chkabstop with (L:=L).
+  - simpl in *. apply d_typing__chk_abstop with (L:=L).
     intros x Hfr. inst_cofinites_with x.
     replace (exp_var_f x) with (d_subst_tv_in_exp T2 X (exp_var_f x)) by auto.
     rewrite <-  d_subst_tv_in_exp_open_exp_wrt_exp.
     replace (x ~ dbind_typ typ_bot ++ map (d_subst_tv_in_binding T2 X) F ++ Ψ) with
     ((map (d_subst_tv_in_binding T2 X) (x ~ dbind_typ typ_bot ++ F)) ++ Ψ) by auto.
     auto...
-  - simpl in *. eapply d_typing__chkabs with (L:=L); eauto...
+  - simpl in *. eapply d_typing__chk_abs with (L:=L); eauto...
     intros X1 Hfr.
     inst_cofinites_with X1.
     specialize (H1 Ψ ((X1, dbind_typ T1) :: F ) X (JMeq_refl _) T0 H2 H3).
@@ -278,9 +278,9 @@ Proof with auto with typing.
       (map (d_subst_tv_in_binding T2 X) (X0 ~ dbind_tvar_empty ++ F) ++ Ψ) by auto.
       auto.
   - simpl in *.
-    apply d_typing__chksub with (S1:=({T2 /ᵗ X} S1)); eauto.
+    apply d_typing__chk_sub with (S1:=({T2 /ᵗ X} S1)); eauto.
     eapply d_sub_subst_mono; eauto.
-  - simpl in *. eapply d_typing__infappall with (T3:={T0 /ᵗ X} T3); eauto...
+  - simpl in *. eapply d_typing__inf_appall with (T3:={T0 /ᵗ X} T3); eauto...
     + apply d_mono_typ_subst_mono_mono; auto.
     + replace (typ_all ({T0 /ᵗ X} T1)) with ({T0 /ᵗ X} typ_all T1) by auto.
       auto...
@@ -780,7 +780,7 @@ Proof with auto with typing.
         -- eapply dsub_refl; auto.
            now eauto using d_chk_inf_wf_env.
         -- dependent destruction H.
-           pick fresh X and apply d_typing__inftabs.
+           pick fresh X and apply d_typing__inf_tabs.
            ++ econstructor. now applys H.
               intros. eapply d_subenv_wf_typ. now applys H0.
               auto...
@@ -802,7 +802,7 @@ Proof with auto with typing.
       (* \x. e <= Top *)
       * intros.
         dependent induction H0; eauto...
-        -- eapply d_typing__chkabstop with (L:=L `union` dom Ψ)... intros.
+        -- eapply d_typing__chk_abstop with (L:=L `union` dom Ψ)... intros.
            inst_cofinites_with x.
            simpl in H.
            refine (IHn1 _ _ _ _ _ _ _ _ _ _ H _ _ _); eauto...
@@ -816,13 +816,13 @@ Proof with auto with typing.
         { eapply d_wft_ord_complete. eauto with subtyping. }
         induction Hwford.
         -- dependent destruction H1.
-           ++ inst_cofinites_for d_typing__chkabstop. intros.
+           ++ inst_cofinites_for d_typing__chk_abstop. intros.
               inst_cofinites_with x.
               refine (IHn1 _ _ _ _ _ _ _ _ _ _ H0 _ _ _); eauto...
               rewrite <- d_exp_size_open_var. lia.
               econstructor; eauto.
               inverts H2. eauto using d_wf_typ_weaken_cons.
-           ++ inst_cofinites_for d_typing__chkabs.
+           ++ inst_cofinites_for d_typing__chk_abs.
               eauto using d_subenv_wf_typ, d_sub_dwft_1.
               intros. inst_cofinites_with x.
               refine (IHn1 _ _ _ _ _ _ _ _ _ _ H0 _ _ _); eauto...
@@ -840,7 +840,7 @@ Proof with auto with typing.
       * intros.
         eapply IHn2 in Hty; eauto.
         destruct Hty as [A'' [Hsub Hinf]].
-        apply d_typing__chksub with (B := A''); auto.
+        apply d_typing__chk_sub with (B := A''); auto.
         apply sub_transitivity with (B := B); auto...
         eapply d_sub_subenv; eauto. apply sub_transitivity with (B := A); auto...
         eapply d_sub_subenv; eauto.

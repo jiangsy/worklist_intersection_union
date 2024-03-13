@@ -197,6 +197,10 @@ Inductive d_wl_red : dworklist -> Prop :=    (* defn d_wl_red *)
  | d_wl_red__inf_unit : forall (Ω:dworklist) (c:cont),
      d_wl_red (dworklist_conswork Ω (work_apply c typ_unit)) ->
      d_wl_red (dworklist_conswork Ω (work_infer exp_unit c))
+ | d_wl_red__inf_abs_mono : forall (Ω:dworklist) (e:exp) (T1 T2:typ) (c:cont),
+     d_mono_typ ( dwl_to_denv  Ω  )  (typ_arrow T1 T2) ->
+     d_wl_red (dworklist_conswork Ω (work_apply c (typ_arrow T1 T2))) ->
+     d_wl_red (dworklist_conswork Ω (work_infer (exp_abs e) c))
  | d_wl_red__inf_app : forall (Ω:dworklist) (e1 e2:exp) (c:cont),
      d_wl_red (dworklist_conswork Ω (work_infer e1 (cont_infabs (cont_infapp e2 c)))) ->
      d_wl_red (dworklist_conswork Ω (work_infer  ( (exp_app e1 e2) )  c))

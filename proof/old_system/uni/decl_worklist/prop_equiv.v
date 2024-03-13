@@ -220,7 +220,7 @@ Proof with auto with Hdb_dworklist_equiv typing.
   - admit.
   - admit.
   - econstructor.
-    eapply d_typing__chkabstop with (L:=L).
+    eapply d_typing__chk_abstop with (L:=L).
     intros. inst_cofinites_with x...
     admit. admit.
   - eapply d_wl_del_red__inf with (T1:=A)...

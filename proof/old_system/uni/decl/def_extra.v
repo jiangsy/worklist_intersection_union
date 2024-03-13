@@ -111,35 +111,39 @@ Inductive typing_mode :=
 | typingmode__chk.
 
 Inductive d_typing : denv -> exp -> typing_mode -> typ -> Prop :=
-| d_typing__infvar : forall (Ψ:denv) (x:expvar) (A:typ),
+| d_typing__inf_var : forall (Ψ:denv) (x:expvar) (A:typ),
     d_wf_env Ψ ->
     binds ( x )  ( (dbind_typ A) ) ( Ψ )  ->
     d_typing Ψ (exp_var_f x) typingmode__inf A
-| d_typing__infanno : forall (Ψ:denv) (e:exp) (A:typ),
+| d_typing__inf_anno : forall (Ψ:denv) (e:exp) (A:typ),
     d_wf_typ Ψ A ->
     d_typing Ψ e typingmode__chk A ->
     d_typing Ψ  ( (exp_anno e A) )  typingmode__inf A
-| d_typinginf_unit : forall (Ψ:denv),
+| d_typing__inf_unit : forall (Ψ:denv),
     d_wf_env Ψ ->
     d_typing Ψ exp_unit typingmode__inf typ_unit
-| d_typing__infapp : forall (Ψ:denv) (e1 e2:exp) (A B C:typ),
+| d_typing__inf_app : forall (Ψ:denv) (e1 e2:exp) (A B C:typ),
     d_typing Ψ e1 typingmode__inf A ->
     d_infabs Ψ A B C ->
     d_typing Ψ e2 typingmode__chk B ->
     d_typing Ψ  ( (exp_app e1 e2) ) typingmode__inf C
-| d_typing__inftabs : forall (L:vars) (Ψ:denv) (e:exp) (A:typ),
+| d_typing__inf_abs_mono : forall (L:vars) (Ψ:denv) (e:exp) (A B:typ),
+    d_mono_typ Ψ (typ_arrow A B) ->
+    ( forall x , x \notin  L  -> d_typing  ( x ~ (dbind_typ A)  ++  Ψ )   ( open_exp_wrt_exp e (exp_var_f x) ) typingmode__chk B ) ->
+    d_typing Ψ (exp_abs e) typingmode__inf (typ_arrow A B)
+| d_typing__inf_tabs : forall (L:vars) (Ψ:denv) (e:exp) (A:typ),
     d_wf_typ Ψ (typ_all A) ->
     ( forall X , X \notin  L  -> d_typing  ( X ~ dbind_tvar_empty  ++  Ψ ) (exp_anno  ( open_exp_wrt_typ e (typ_var_f X) )  ( open_typ_wrt_typ A (typ_var_f X) ) ) typingmode__chk ( open_typ_wrt_typ A (typ_var_f X) )  )  ->
     d_typing Ψ (exp_tabs (body_anno e A)) typingmode__inf (typ_all A)
-| d_typing__inftapp : forall (Ψ:denv) (e1:exp) (A B C:typ),
+| d_typing__inf_tapp : forall (Ψ:denv) (e1:exp) (A B C:typ),
     d_wf_typ Ψ B ->
     d_typing Ψ e1 typingmode__inf A ->
     d_inftapp Ψ A B C ->
     d_typing Ψ (exp_tapp e1 B) typingmode__inf C
-| d_typing__chkabstop : forall (L:vars) (Ψ:denv) (e:exp),
+| d_typing__chk_abstop : forall (L:vars) (Ψ:denv) (e:exp),
     ( forall x , x \notin  L  -> d_typing  ( x ~ (dbind_typ typ_bot)  ++  Ψ )   ( open_exp_wrt_exp e (exp_var_f x) ) typingmode__chk typ_top )  ->
     d_typing Ψ (exp_abs e) typingmode__chk typ_top
-| d_typing__chkabs : forall (L:vars) (Ψ:denv) (e:exp) (A1 A2:typ),
+| d_typing__chk_abs : forall (L:vars) (Ψ:denv) (e:exp) (A1 A2:typ),
     d_wf_typ Ψ A1 ->
     ( forall x , x \notin  L  -> d_typing  ( x ~ (dbind_typ A1)  ++  Ψ )  ( open_exp_wrt_exp e (exp_var_f x) ) typingmode__chk A2 )  ->
     d_typing Ψ (exp_abs e) typingmode__chk (typ_arrow A1 A2)
@@ -147,19 +151,19 @@ Inductive d_typing : denv -> exp -> typing_mode -> typ -> Prop :=
     d_wf_typ Ψ (typ_all T1) ->
     ( forall X , X \notin  L  -> d_typing  ( X ~ dbind_tvar_empty  ++  Ψ )  e  typingmode__chk ( open_typ_wrt_typ T1 (typ_var_f X) )  )  ->
     d_typing Ψ e typingmode__chk (typ_all T1) *)
-| d_typing__chksub : forall (Ψ:denv) (e:exp) (A B:typ),
+| d_typing__chk_sub : forall (Ψ:denv) (e:exp) (A B:typ),
     d_typing Ψ e typingmode__inf B ->
     d_sub Ψ B A ->
     d_typing Ψ e typingmode__chk A
-| d_typing__chkintersection : forall (Ψ:denv) (e:exp) (A1 A2:typ),
+| d_typing__chk_inter : forall (Ψ:denv) (e:exp) (A1 A2:typ),
     d_typing Ψ e typingmode__chk A1 ->
     d_typing Ψ e typingmode__chk A2 ->
     d_typing Ψ e typingmode__chk (typ_intersection A1 A2)
-| d_typing__chkunion1 : forall (Ψ:denv) (e:exp) (A1 A2:typ),
+| d_typing__chk_union1 : forall (Ψ:denv) (e:exp) (A1 A2:typ),
     d_typing Ψ e typingmode__chk A1 ->
     d_wf_typ Ψ A2 ->
     d_typing Ψ e typingmode__chk (typ_union A1 A2)
-| d_typing__chkunion2 : forall (Ψ:denv) (e:exp) (A1 A2:typ),
+| d_typing__chk_union2 : forall (Ψ:denv) (e:exp) (A1 A2:typ),
     d_typing Ψ e typingmode__chk A2 ->
     d_wf_typ Ψ A1 ->
     d_typing Ψ e typingmode__chk (typ_union A1 A2)
