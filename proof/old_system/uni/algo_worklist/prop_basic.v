@@ -100,6 +100,12 @@ Ltac solve_false := let HF := fresh "HF" in
                                 false; eauto 3 with FalseHd ].
 
 
+Lemma awl_to_aenv_cons: forall Γ X t,
+    awl_to_aenv (aworklist_constvar Γ X t) = (X,t) :: (awl_to_aenv Γ).
+Proof.
+  intros. simpl. auto.
+Qed.
+
 Lemma awl_to_aenv_app : forall Γ1 Γ2,
     awl_to_aenv (awl_app Γ1 Γ2) = (awl_to_aenv Γ1) ++ (awl_to_aenv Γ2).
 Proof.
@@ -121,10 +127,37 @@ Proof.
   intros. simpl. auto.
 Qed.
 
-#[local] Hint Rewrite awl_to_aenv_app: core.
+#[local] Hint Rewrite awl_to_aenv_cons awl_to_aenv_app: core.
 
 (* weakening *)
-Lemma a_wf_typ_weaken: forall Γ1 Γ2 X t A,
+Lemma a_wf_typ_weaken: forall E1 E2 X t A,
+    a_wf_typ (E1 ++ E2) A ->
+    X ∉ (dom E1 `union` dom E2) ->
+    a_wf_typ (E1 ++ (X,t)::E2) A.
+Proof.
+  introv H HN. inductions H.
+  1-3: solve [destruct* t; solve_false].
+  1-3: rewrite_env (E1 ++ [(X,t)] ++ E2); forwards*: binds_weaken H.
+  1,3-4: now eauto.
+  - pick fresh X0 and apply a_wf_typ__all.
+    + forwards*: H X0.
+    + forwards*: H X0. forwards*: H0 X0.
+      forwards*: H1 X0 (X0 ~ abind_tvar_empty ++ E1) E2. simpl; solve_notin.
+Qed.
+
+Corollary a_wf_typ_weaken_head: forall E X t A,
+    a_wf_typ E A ->
+    X ∉ dom E ->
+    a_wf_typ ((X, t) :: E) A.
+Proof with simpl in *; try solve_notin.
+  intros. simpl.
+  rewrite_env (nil ++ E) in H.
+  forwards*: a_wf_typ_weaken X H...
+Qed.
+
+(** the following lemmas are overcomplicated; they could be generalized like
+    the above ones **)
+Corollary a_wf_typ_weaken_awl_to_aenv: forall Γ1 Γ2 X t A,
     a_wf_typ (awl_to_aenv (awl_app Γ1 Γ2)) A ->
     X ∉ (dom (awl_to_aenv Γ1) `union` dom (awl_to_aenv Γ2)) ->
     a_wf_typ (awl_to_aenv (awl_app Γ1 (aworklist_constvar Γ2 X t))) A.
@@ -147,7 +180,7 @@ with a_wf_body_weaken: forall Γ1 Γ2 X t e,
     a_wf_body (awl_to_aenv (awl_app Γ1 Γ2)) e ->
     X ∉ (dom (awl_to_aenv Γ1) `union` dom (awl_to_aenv Γ2)) ->
     a_wf_body (awl_to_aenv (awl_app Γ1 (aworklist_constvar Γ2 X t))) e.
-Proof with try solve_notin; eauto using a_wf_typ_weaken;
+Proof with try solve_notin; eauto using a_wf_typ_weaken_awl_to_aenv;
 try autorewrite with core using simpl.
 
 * clear a_wf_exp_weaken.
@@ -157,7 +190,7 @@ try autorewrite with core using simpl.
     econstructor. rewrite awl_to_aenv_app_2; rewrite awl_to_aenv_app in H...
   - (* abs *)
     pick fresh X0 and apply a_wf_exp__abs.
-    + applys a_wf_typ_weaken H...
+    + applys a_wf_typ_weaken_awl_to_aenv H...
     + forwards*: H0 X0.
       applys H1 X0 (aworklist_constvar Γ1 X0 (abind_var_typ T)) Γ2...
   - (* tabs *)
@@ -176,7 +209,7 @@ Lemma a_wf_cont_weaken: forall Γ1 Γ2 X t c,
     a_wf_cont (awl_to_aenv (awl_app Γ1 Γ2)) c ->
     X ∉ (dom (awl_to_aenv Γ1) `union` dom (awl_to_aenv Γ2)) ->
     a_wf_cont (awl_to_aenv (awl_app Γ1 (aworklist_constvar Γ2 X t))) c.
-  Proof with eauto using a_wf_typ_weaken, a_wf_exp_weaken;
+  Proof with eauto using a_wf_typ_weaken_awl_to_aenv, a_wf_exp_weaken;
 try autorewrite with core using simpl.
 
     introv H HN. inductions H.
@@ -187,7 +220,7 @@ Lemma a_wf_work_weaken: forall Γ1 Γ2 X t Ω,
     a_wf_work (awl_to_aenv (awl_app Γ1 Γ2)) Ω ->
     X ∉ (dom (awl_to_aenv Γ1) `union` dom (awl_to_aenv Γ2)) ->
     a_wf_work (awl_to_aenv (awl_app Γ1 (aworklist_constvar Γ2 X t))) Ω.
-Proof with eauto using a_wf_typ_weaken, a_wf_exp_weaken, a_wf_cont_weaken;
+Proof with eauto using a_wf_typ_weaken_awl_to_aenv, a_wf_exp_weaken, a_wf_cont_weaken;
 try autorewrite with core using simpl.
 
   introv H HN. inductions H.
@@ -204,23 +237,12 @@ Proof with eauto; try autorewrite with core using solve_notin.
   - inverts H. forwards~: IHΓ1.
     rewrite awl_to_aenv_app in H3.
     econstructor...
-    + applys* a_wf_typ_weaken...
+    + applys* a_wf_typ_weaken_awl_to_aenv...
   - inverts H.
     all: rewrite awl_to_aenv_app in H2; forwards~: IHΓ1; econstructor...
   - inverts H.
     econstructor...
     + applys* a_wf_work_weaken...
-Qed.
-
-Lemma a_wf_typ_weaken_head: forall Γ X t A,
-    a_wf_typ (awl_to_aenv Γ) A ->
-    X ∉ ( dom (awl_to_aenv Γ)) ->
-    a_wf_typ (awl_to_aenv (aworklist_constvar Γ X t)) A.
-Proof with  simpl; solve_notin.
-  intros.
-  rewrite_env (awl_app aworklist_empty Γ) in H.
-  rewrite_env (awl_app aworklist_empty (aworklist_constvar Γ X t)).
-  applys* a_wf_typ_weaken...
 Qed.
 
 Corollary a_wf_wl_weaken_head: forall Γ X t,
@@ -818,18 +840,152 @@ Proof.
   intros. induction H; simpl; fsetdec.
 Qed.
 
+Lemma dom_aworklist_subst : forall Γ X A E Γ1 Γ2,
+    aworklist_subst Γ X A E Γ1 Γ2 -> dom (awl_to_aenv Γ) [=] dom (awl_to_aenv Γ1) `union` dom (awl_to_aenv (subst_tvar_in_aworklist A X Γ2)) `union` dom (awl_to_aenv (etvar_list_to_awl E))`union` (singleton X).
+Proof with simpl in *; fsetdec.
+  introv HS. induction HS.
+  1: auto...
+  -  simpl. rewrite KeySetProperties.union_add. rewrite IHHS.
+     repeat rewrite KeySetProperties.add_union_singleton.
+     fsetdec.
+  -  simpl. rewrite KeySetProperties.union_add. rewrite IHHS.
+     repeat rewrite KeySetProperties.add_union_singleton.
+     clear H H0.
+     fsetdec.
+  -  simpl. rewrite KeySetProperties.union_add. rewrite IHHS.
+     repeat rewrite KeySetProperties.add_union_singleton.
+     clear H H0.
+     fsetdec.
+  -  simpl. rewrite IHHS. fsetdec.
+  -  simpl. rewrite KeySetProperties.union_add. rewrite IHHS.
+     repeat rewrite KeySetProperties.add_union_singleton.
+     clear H H0.
+     fsetdec.
+  -  simpl. rewrite KeySetProperties.union_add. rewrite IHHS.
+     repeat rewrite KeySetProperties.add_union_singleton.
+     clear H.
+     fsetdec.
+Qed.
 
 Lemma a_worklist_subst_wf_typ : forall Γ X A B E Γ1 Γ2,
   binds X abind_etvar_empty (awl_to_aenv Γ) ->
   X `notin` ftvar_in_typ B ->
   a_wf_typ (awl_to_aenv Γ) B ->
+  ⊢ᵃʷ Γ ->
   aworklist_subst Γ X A E Γ1 Γ2 ->
   a_wf_typ (awl_to_aenv (awl_app (subst_tvar_in_aworklist A X Γ2) (awl_app (etvar_list_to_awl E) Γ1))) B.
-Proof.
-  intros. generalize dependent Γ1. generalize dependent Γ2. dependent induction H1; auto; intros.
-  - admit.
-  - admit.
-  - simpl. admit.
+Proof with (autorewrite with core using simpl); eauto; solve_false; try solve_notin.
+  introv HB HN WF HW HS.
+  generalize dependent Γ1. generalize dependent Γ2. dependent induction WF; auto; intros.
+  - case_eq (X==X0); intros. { subst. simpl in HN. solve_notin. }
+    clear HN. induction HS.
+    + autorewrite with core using simpl. inverts H...
+    + inverts HB; solve_false.
+      * inverts HW. inverts H...
+        forwards*: IHHS.
+        applys a_wf_typ_weaken_head Y. { autorewrite with core in H. auto. }
+        rewrite dom_aworklist_subst in H5; try apply HS.
+        solve_notin.
+    + inverts HB; solve_false.
+      * inverts HW. inverts H...
+        ** inverts H4. eauto.
+        ** forwards*: IHHS.
+           applys a_wf_typ_weaken_head Y. { autorewrite with core in H. auto. }
+           rewrite dom_aworklist_subst in H6; try apply HS.
+           solve_notin.
+    + inverts HB; solve_false.
+      * inverts HW. inverts H...
+        ** forwards*: IHHS.
+           applys a_wf_typ_weaken_head Y. { autorewrite with core in H. auto. }
+           rewrite dom_aworklist_subst in H6; try apply HS.
+           solve_notin.
+    + simpl in *. inverts HW.
+      forwards*: IHHS.
+    + inverts HB; solve_false.
+      * inverts HW. inverts H...
+        ** forwards*: IHHS.
+           applys a_wf_typ_weaken_head Y. { autorewrite with core in H. auto. }
+           rewrite dom_aworklist_subst in H6; try apply HS.
+           solve_notin.
+    + inverts HB; solve_false.
+      * inverts HW. inverts H...
+        ** forwards*: IHHS.
+           applys a_wf_typ_weaken Y. { autorewrite with core in H. auto. }
+           rewrite dom_aworklist_subst in H5; try apply HS.
+           solve_notin.
+  - case_eq (X==X0); intros. { subst. simpl in HN. solve_notin. }
+    clear HN. induction HS.
+    + autorewrite with core using simpl. inverts H...
+    + inverts HB; solve_false.
+      * inverts HW. inverts H...
+        forwards*: IHHS.
+        applys a_wf_typ_weaken_head Y. { autorewrite with core in H. auto. }
+        rewrite dom_aworklist_subst in H5; try apply HS.
+        solve_notin.
+    + inverts HB; solve_false.
+      * inverts HW. inverts H...
+        ** forwards*: IHHS.
+           applys a_wf_typ_weaken_head Y. { autorewrite with core in H. auto. }
+           rewrite dom_aworklist_subst in H6; try apply HS.
+           solve_notin.
+    + inverts HB; solve_false.
+      * inverts HW. inverts H...
+        ** inverts H4. eauto.
+        ** forwards*: IHHS.
+           applys a_wf_typ_weaken_head Y. { autorewrite with core in H. auto. }
+           rewrite dom_aworklist_subst in H6; try apply HS.
+           solve_notin.
+    + simpl in *. inverts HW.
+      forwards*: IHHS.
+    + inverts HB; solve_false.
+      * inverts HW. inverts H...
+        ** forwards*: IHHS.
+           applys a_wf_typ_weaken_head Y. { autorewrite with core in H. auto. }
+           rewrite dom_aworklist_subst in H6; try apply HS.
+           solve_notin.
+    + inverts HB; solve_false.
+      * inverts HW. inverts H...
+        ** forwards*: IHHS.
+           applys a_wf_typ_weaken Y. { autorewrite with core in H. auto. }
+           rewrite dom_aworklist_subst in H5; try apply HS.
+           solve_notin.
+  - case_eq (X==X0); intros. { subst. simpl in HN. solve_notin. }
+    clear HN. induction HS.
+    + autorewrite with core using simpl. inverts H...
+    + inverts HB; solve_false.
+      * inverts HW. inverts H...
+        forwards*: IHHS.
+        applys a_wf_typ_weaken_head Y. { autorewrite with core in H. auto. }
+        rewrite dom_aworklist_subst in H5; try apply HS.
+        solve_notin.
+    + inverts HB; solve_false.
+      * inverts HW. inverts H...
+        ** forwards*: IHHS.
+           applys a_wf_typ_weaken_head Y. { autorewrite with core in H. auto. }
+           rewrite dom_aworklist_subst in H6; try apply HS.
+           solve_notin.
+    + inverts HB; solve_false.
+      * inverts HW. inverts H...
+        ** forwards*: IHHS.
+           applys a_wf_typ_weaken_head Y. { autorewrite with core in H. auto. }
+           rewrite dom_aworklist_subst in H6; try apply HS.
+           solve_notin.
+    + simpl in *. inverts HW.
+      forwards*: IHHS.
+    + inverts HB; solve_false.
+      * inverts HW. inverts H...
+        ** inverts H4. eauto.
+        ** forwards*: IHHS.
+           applys a_wf_typ_weaken_head Y. { autorewrite with core in H. auto. }
+           rewrite dom_aworklist_subst in H6; try apply HS.
+           solve_notin.
+    + inverts HB; solve_false.
+      * inverts HW. inverts H...
+        ** inverts H3. eauto.
+        ** forwards*: IHHS.
+           applys a_wf_typ_weaken Y. { autorewrite with core in H. auto. }
+           rewrite dom_aworklist_subst in H5; try apply HS.
+           solve_notin.
   - simpl in *. constructor; eauto.
   - intros. inst_cofinites_for a_wf_typ__all.
     + intros. auto.
@@ -837,7 +993,10 @@ Proof.
       replace ((X0 ~ abind_tvar_empty ++ awl_to_aenv (awl_app (subst_tvar_in_aworklist A X Γ2) (awl_app (etvar_list_to_awl E) Γ1))))
       with  ((awl_to_aenv (awl_app (subst_tvar_in_aworklist A X (aworklist_constvar Γ2 X0 abind_tvar_empty)) (awl_app (etvar_list_to_awl E) Γ1)))) by auto.
       eapply H1 with (Γ:=aworklist_constvar Γ X0 abind_tvar_empty); auto.
+      applys~ binds_cons_3.
+      Search ((_ ^ᵗ _)).
       admit.
+      (* a_wf_wl_weaken_head *)
       admit.
       admit.
   - simpl in *. constructor; eauto.
@@ -934,21 +1093,21 @@ Ltac solve_notin_rename :=
     | H1 : X `notin` ftvar_in_aworklist' (rename_tvar_in_aworklist X' X Γ) |- _ => fail 1
     | _ =>
       assert (X `notin` ftvar_in_aworklist' (rename_tvar_in_aworklist X' X Γ)) by now apply notin_rename_tvar_in_aworklist
-    end 
+    end
   | H : _ |- context [subst_tvar_in_cont ?X' ?X ?c] =>
     match goal with
     | H1 : (X `notin` (ftvar_in_cont (subst_tvar_in_cont X' X c))) |- _ => fail 1
     | _ =>
-      assert (X `notin` (ftvar_in_cont (subst_tvar_in_cont X' X c))) by (simpl; apply subst_tvar_in_cont_fresh_same; auto)    
-    end 
+      assert (X `notin` (ftvar_in_cont (subst_tvar_in_cont X' X c))) by (simpl; apply subst_tvar_in_cont_fresh_same; auto)
+    end
   | H : _ |- context [subst_tvar_in_exp ?X' ?X ?e] =>
     match goal with
     | H1 : (X `notin` (ftvar_in_exp (subst_tvar_in_exp X' X e))) |- _ => fail 1
     | _ =>
       assert (X `notin` (ftvar_in_exp (subst_tvar_in_exp X' X e))) by (simpl; apply subst_tvar_in_exp_fresh_same; auto)
-    end 
+    end
   end.
-  
+
 
 Ltac solve_tvar_notin_ftvarlist'' :=
   repeat
@@ -1010,7 +1169,7 @@ Proof.
     + constructor; auto.
       * admit.
       * eapply a_worklist_subst_wf_typ; eauto.
-        admit. admit.
+        admit. admit. admit.
       * apply IHaworklist_subst; auto.
         dependent destruction H; auto.
   - simpl. inversion H0; auto.
@@ -1515,15 +1674,15 @@ Proof with eauto with Hdb_a_wl_red_basic.
     + admit.
     + admit.
     + intros. admit.
-  - simpl in *. 
+  - simpl in *.
     inst_cofinites_for a_wl_red__sub_arrow2; auto.
     + admit.
     + admit.
     + intros. admit.
-  - simpl in *. 
+  - simpl in *.
     eapply a_wl_red__sub_etvarmono1 with (Γ1:=(rename_var_in_aworklist x' x Γ))
       (Γ2:=(rename_var_in_aworklist x' x Γ2)) (E:=E); admit.
-  - simpl in *. 
+  - simpl in *.
     eapply a_wl_red__sub_etvarmono2 with (Γ1:=(rename_var_in_aworklist x' x Γ))
       (Γ2:=(rename_var_in_aworklist x' x Γ2)) (E:=E); admit.
   - simpl in *.
@@ -1548,10 +1707,10 @@ Proof with eauto with Hdb_a_wl_red_basic.
     rewrite subst_var_in_exp_open_exp_wrt_typ in H2...
     auto_apply...
     admit. (* wf *)
-  - simpl in *. 
+  - simpl in *.
     inst_cofinites_for a_wl_red__inf_abs_mono.
-    intros. 
-    destruct_eq_atom. 
+    intros.
+    destruct_eq_atom.
     inst_cofinites_with x0. inst_cofinites_with X1. inst_cofinites_with X2.
     destruct_eq_atom.
     rewrite subst_var_in_exp_open_exp_wrt_exp in H2; auto; simpl in *.
@@ -1565,7 +1724,7 @@ Proof with eauto with Hdb_a_wl_red_basic.
     admit. (* wf *)
   - simpl in *.
     inst_cofinites_for a_wl_red__infabs_etvar; auto.
-    + admit. (* binds *) 
+    + admit. (* binds *)
     + intros. admit.
   - simpl in *.
     eapply a_wl_red__inftapp_all.
