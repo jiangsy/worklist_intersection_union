@@ -309,7 +309,9 @@ Proof with eauto with Hdb_a_wl_red_soundness.
     admit.
   (* τ < ^X *)
   - assert (⊢ᵃʷ awl_app (subst_tvar_in_aworklist A X Γ2) (awl_app (etvar_list_to_awl E) Γ1)) by admit.
-    _apply_IH_a_wl_red. admit.
+    _apply_IH_a_wl_red. 
+    eapply a_worklist_subst_transfer_same_dworklist in Htrans; eauto.
+    admit.
   (* ^X < τ *)
   - admit.
   (* A < B1 /\ B2 *)

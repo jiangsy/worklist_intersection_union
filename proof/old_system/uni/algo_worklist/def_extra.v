@@ -126,12 +126,14 @@ Inductive a_wl_red : aworklist -> Prop :=    (* defn a_wl_red *)
  | a_wl_red__sub_etvarmono1 : forall (E:list typvar) (Γ Γ1 Γ2:aworklist) (X:typvar) (A:typ),
       binds ( X )  abind_etvar_empty (  ( awl_to_aenv  Γ  )  )  ->
       a_mono_typ  ( awl_to_aenv  Γ  )  A ->
+      X `notin` ftvar_in_typ A ->
       (aworklist_subst Γ X A E Γ1 Γ2) ->
       a_wl_red   (awl_app (subst_tvar_in_aworklist A X Γ2) (awl_app (etvar_list_to_awl E) Γ1) ) ->
      a_wl_red (aworklist_conswork Γ (work_sub A (typ_var_f X)))
  | a_wl_red__sub_etvarmono2 : forall (E:list typvar) (Γ Γ1 Γ2:aworklist) (X:typvar) (B:typ),
       binds ( X )  abind_etvar_empty (  ( awl_to_aenv  Γ  )  )  ->
      a_mono_typ  ( awl_to_aenv  Γ  )  B ->
+     X `notin` ftvar_in_typ B ->
      (aworklist_subst Γ X B E Γ1 Γ2) ->
      a_wl_red   (awl_app (subst_tvar_in_aworklist B X Γ2) (awl_app (etvar_list_to_awl E) Γ1) ) ->
      a_wl_red (aworklist_conswork Γ (work_sub (typ_var_f X) B))
