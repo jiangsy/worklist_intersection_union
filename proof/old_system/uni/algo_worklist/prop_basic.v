@@ -1378,12 +1378,13 @@ Proof with eauto with Hdb_a_wl_red_basic; solve_false.
       * admit. (* wf *)
       * solve_notin_rename_tvar; auto.
   - simpl in *. destruct_a_wf_wl.
-    eapply worklist_subst_rename_tvar with (X':=X') (X1:=X) in H6 as Hsubst...
+    eapply worklist_subst_rename_tvar with (X':=X') (X1:=X) in H7 as Hsubst...
     destruct_eq_atom;
       apply a_wl_red__sub_etvarmono1 with (E:=rename_tvar_in_etvar_list X' X E)
         (Γ1:=rename_tvar_in_aworklist X' X Γ1) (Γ2:=rename_tvar_in_aworklist X' X Γ2)...
     + apply rename_tvar_in_aworklist_bind_same_eq; eauto...
     + apply a_mono_typ_rename_tvar...
+    + admit. 
     + subst.
       rewrite_aworklist_rename.
       apply IHa_wl_red; auto.
@@ -1391,17 +1392,19 @@ Proof with eauto with Hdb_a_wl_red_basic; solve_false.
       rewrite a_worklist_subst_ftavr_in_aworklist with (Γ:=Γ); auto.
     + admit. (* bind *)
     + apply a_mono_typ_rename_tvar...
+    + admit.
     + rewrite_aworklist_rename.
       apply IHa_wl_red; auto.
       * eapply a_worklist_subst_wf_wl; eauto.
       * rewrite a_worklist_subst_ftavr_in_aworklist; auto...
   - simpl in *. destruct_a_wf_wl.
-    eapply worklist_subst_rename_tvar with (X':=X') (X1:=X) in H6 as Hsubst...
+    eapply worklist_subst_rename_tvar with (X':=X') (X1:=X) in H7 as Hsubst...
     destruct_eq_atom;
       apply a_wl_red__sub_etvarmono2 with (E:=rename_tvar_in_etvar_list X' X E)
         (Γ1:=rename_tvar_in_aworklist X' X Γ1) (Γ2:=rename_tvar_in_aworklist X' X Γ2)...
     + apply rename_tvar_in_aworklist_bind_same_eq; auto...
     + apply a_mono_typ_rename_tvar...
+    + admit.
     + subst.
       rewrite_aworklist_rename.
       apply IHa_wl_red; auto.
@@ -1409,6 +1412,7 @@ Proof with eauto with Hdb_a_wl_red_basic; solve_false.
       rewrite a_worklist_subst_ftavr_in_aworklist; auto.
     + apply rename_tvar_in_aworklist_bind_same_neq; auto...
     + apply a_mono_typ_rename_tvar...
+    + admit.
     + rewrite_aworklist_rename.
       apply IHa_wl_red; auto.
       * eapply a_worklist_subst_wf_wl; eauto.
@@ -1806,10 +1810,10 @@ Proof with eauto with Hdb_a_wl_red_basic.
       * solve_notin_rename_var.
   - simpl in *; destruct_a_wf_wl.
     eapply a_wl_red__sub_etvarmono1 with (Γ1:=(rename_var_in_aworklist x' x Γ1))
-      (Γ2:=(rename_var_in_aworklist x' x Γ2)) (E:=E).
+      (Γ2:=(rename_var_in_aworklist x' x Γ2)) (E:=E); auto.
     + admit. (* binds *)
     + admit. (* mono *)
-    + apply worklist_subst_rename_var with (x:=x) (x':=x') in H6 as Hws; eauto.
+    + apply worklist_subst_rename_var with (x:=x) (x':=x') in H7 as Hws; eauto.
       * rewrite fvar_in_aworklist_upper; auto.
     + rewrite_aworklist_rename_var.
       rewrite_aworklist_rename_var_rev.
@@ -1818,10 +1822,10 @@ Proof with eauto with Hdb_a_wl_red_basic.
       * admit. (* notin *)
   - simpl in *; destruct_a_wf_wl.
     eapply a_wl_red__sub_etvarmono2 with (Γ1:=(rename_var_in_aworklist x' x Γ1))
-      (Γ2:=(rename_var_in_aworklist x' x Γ2)) (E:=E).
+      (Γ2:=(rename_var_in_aworklist x' x Γ2)) (E:=E); auto.
     + admit. (* binds *)
     + admit. (* mono *)
-    + apply worklist_subst_rename_var with (x:=x) (x':=x') in H6 as Hws; eauto.
+    + apply worklist_subst_rename_var with (x:=x) (x':=x') in H7 as Hws; eauto.
       * rewrite fvar_in_aworklist_upper; auto.
     + rewrite_aworklist_rename_var.
       rewrite_aworklist_rename_var_rev.
