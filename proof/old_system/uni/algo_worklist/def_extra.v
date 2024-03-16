@@ -112,29 +112,31 @@ Inductive a_wl_red : aworklist -> Prop :=    (* defn a_wl_red *)
  | a_wl_red__sub_arrow1 : forall (L:vars) (Γ:aworklist) (X:typvar) (A1 A2:typ),
       binds ( X )  ( abind_etvar_empty ) (  ( awl_to_aenv  Γ  )  )  ->
       ( a_mono_typ   ( awl_to_aenv  Γ  )     ( (typ_arrow A1 A2) )   -> False )  ->
+      X `notin` ftvar_in_typ (typ_arrow A1 A2) ->
       (forall X1, X1 `notin` L -> forall X2, X2 `notin` (L `union` singleton X1) -> forall Γ1 Γ2 E,
-        (aworklist_subst (aworklist_conswork Γ (work_sub (typ_var_f X) (typ_arrow A1 A2))) X (typ_arrow (typ_var_f X1) (typ_var_f X2)) E Γ1 Γ2) ->
-        (a_wl_red  (awl_app (subst_tvar_in_aworklist (typ_arrow (typ_var_f X1) (typ_var_f X2)) X Γ2) (awl_app (etvar_list_to_awl E) Γ1) )   ) ) ->
+      (aworklist_subst (aworklist_conswork Γ (work_sub (typ_var_f X) (typ_arrow A1 A2))) X (typ_arrow (typ_var_f X1) (typ_var_f X2)) E Γ1 Γ2) ->
+      (a_wl_red  (awl_app (subst_tvar_in_aworklist (typ_arrow (typ_var_f X1) (typ_var_f X2)) X Γ2) (awl_app (etvar_list_to_awl E) Γ1) )   ) ) ->
      a_wl_red (aworklist_conswork Γ (work_sub (typ_var_f X) (typ_arrow A1 A2)))
  | a_wl_red__sub_arrow2 : forall (L:vars) (Γ:aworklist) (A1 A2:typ) (X:typvar),
       binds ( X )  ( abind_etvar_empty ) (  ( awl_to_aenv  Γ  )  )  ->
       ( a_mono_typ   ( awl_to_aenv  Γ  )     ( (typ_arrow A1 A2) )   -> False )  ->
+      X `notin` ftvar_in_typ (typ_arrow A1 A2) ->
       (forall X1, X1 `notin` L -> forall X2, X2 `notin` (L `union` singleton X1) -> forall Γ1 Γ2 E,
-        (aworklist_subst (aworklist_conswork Γ (work_sub (typ_var_f X) (typ_arrow A1 A2))) X (typ_arrow (typ_var_f X1) (typ_var_f X2)) E Γ1 Γ2) ->
-        (a_wl_red  (awl_app (subst_tvar_in_aworklist (typ_arrow (typ_var_f X1) (typ_var_f X2)) X Γ2) (awl_app (etvar_list_to_awl E) Γ1) )   ) ) ->
+      (aworklist_subst (aworklist_conswork Γ (work_sub (typ_arrow A1 A2) (typ_var_f X))) X (typ_arrow (typ_var_f X1) (typ_var_f X2)) E Γ1 Γ2) ->
+      (a_wl_red  (awl_app (subst_tvar_in_aworklist (typ_arrow (typ_var_f X1) (typ_var_f X2)) X Γ2) (awl_app (etvar_list_to_awl E) Γ1) )   ) ) ->
      a_wl_red (aworklist_conswork Γ (work_sub (typ_arrow A1 A2) (typ_var_f X)))
  | a_wl_red__sub_etvarmono1 : forall (E:list typvar) (Γ Γ1 Γ2:aworklist) (X:typvar) (A:typ),
       binds ( X )  abind_etvar_empty (  ( awl_to_aenv  Γ  )  )  ->
       a_mono_typ  ( awl_to_aenv  Γ  )  A ->
       X `notin` ftvar_in_typ A ->
-      (aworklist_subst (aworklist_conswork Γ (work_sub A (typ_var_f X)) X A E Γ1 Γ2)) ->
+      (aworklist_subst  Γ  X A E Γ1 Γ2) ->
       a_wl_red   (awl_app (subst_tvar_in_aworklist A X Γ2) (awl_app (etvar_list_to_awl E) Γ1) ) ->
      a_wl_red (aworklist_conswork Γ (work_sub A (typ_var_f X)))
  | a_wl_red__sub_etvarmono2 : forall (E:list typvar) (Γ Γ1 Γ2:aworklist) (X:typvar) (B:typ),
       binds ( X )  abind_etvar_empty (  ( awl_to_aenv  Γ  )  )  ->
      a_mono_typ  ( awl_to_aenv  Γ  )  B ->
      X `notin` ftvar_in_typ B ->
-     (aworklist_subst (aworklist_conswork Γ (work_sub (typ_var_f X) B)) X B E Γ1 Γ2) ->
+     (aworklist_subst  Γ  X B E Γ1 Γ2) ->
      a_wl_red   (awl_app (subst_tvar_in_aworklist B X Γ2) (awl_app (etvar_list_to_awl E) Γ1) ) ->
      a_wl_red (aworklist_conswork Γ (work_sub (typ_var_f X) B))
  | a_wl_red__sub_intersection1 : forall (Γ:aworklist) (A1 B1 B2:typ),

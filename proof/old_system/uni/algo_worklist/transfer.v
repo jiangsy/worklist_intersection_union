@@ -1317,6 +1317,28 @@ Proof with eauto with Hdb_transfer.
 Qed.
 
 
+Lemma trans_typ_reorder : forall θ θ' A,
+  wf_ss θ ->
+  wf_ss θ' ->
+  (forall x b, binds x b θ -> binds x b θ') ->
+  θ ⫦ᵗ A ⇝ A ->
+  θ' ⫦ᵗ A ⇝ A.
+Proof with eauto with Hdb_transfer.
+  intros. apply trans_typ_lc_atyp in H2 as Hlc. generalize dependent θ'. generalize dependent θ. 
+  induction Hlc; intros...
+  - dependent destruction H2...
+  - dependent destruction H2...
+  - dependent destruction H2.
+    inst_cofinites_for trans_typ__all. intros.
+    inst_cofinites_with X.
+    eapply H0 with (θ':=(X, dbind_tvar_empty) :: θ') in H2; auto...
+    + intros. inversion H6. 
+      * dependent destruction H7...
+      * apply binds_cons...
+  - dependent destruction H2...
+  - dependent destruction H2...
+Qed.
 
 Definition transfer (Γ : aworklist) (Ω : dworklist)  : Prop :=
   exists θ', trans_worklist nil Γ Ω θ'.
+
