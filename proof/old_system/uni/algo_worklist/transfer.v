@@ -1224,6 +1224,19 @@ Hint Resolve trans_typ_lc_atyp : Hdb_transfer.
 Hint Resolve trans_typ_lc_dtyp : Hdb_transfer.
 
 
+Lemma ftvar_in_trans_dtyp_upper : forall θ Aᵃ Aᵈ,
+  θ ⫦ᵗ Aᵃ ⇝ Aᵈ ->
+  ftvar_in_typ Aᵈ [<=] dom θ.
+Proof.
+  intros. induction H; simpl; try fsetdec.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+Admitted.
+  
+
+
 Lemma trans_typ_rev_subst : forall θ1 θ2 Bᵃ Bᵈ X Aᵃ A'ᵈ,
   lc_typ Aᵃ -> 
   X `notin` dom (θ2 ++ θ1) ->
@@ -1247,8 +1260,9 @@ Proof with eauto with Hdb_transfer.
         admit. econstructor... 
       * contradiction.
     + exists A'ᵈ. split.
-      (* X0 ∉ ftv A'ᵈ *)
-      admit.
+      rewrite <- ftvar_in_trans_dtyp_upper in Hfv; eauto.
+      * apply subst_tvar_in_typ_fresh_eq...
+      * apply 
       admit.
   (* - destruct (X0 == X).
     (* - exists (ld_t_var_f x5).
@@ -1317,7 +1331,7 @@ Proof with eauto with Hdb_transfer.
 Qed.
 
 
-Lemma trans_typ_reorder : forall θ θ' A,
+(* Lemma trans_typ_reorder : forall θ θ' A,
   wf_ss θ ->
   wf_ss θ' ->
   (forall x b, binds x b θ -> binds x b θ') ->
@@ -1337,6 +1351,44 @@ Proof with eauto with Hdb_transfer.
       * apply binds_cons...
   - dependent destruction H2...
   - dependent destruction H2...
+Qed. *)
+
+
+Lemma trans_typ_reorder : forall θ θ' A,
+  wf_ss θ ->
+  wf_ss θ' ->
+  (forall X b, X `in` ftvar_in_typ A -> binds X b θ -> binds X b θ') ->
+  θ ⫦ᵗ A ⇝ A ->
+  θ' ⫦ᵗ A ⇝ A.
+Proof with eauto with Hdb_transfer.
+  intros. apply trans_typ_lc_atyp in H2 as Hlc. generalize dependent θ'. generalize dependent θ. 
+  induction Hlc; intros...
+  - dependent destruction H2...
+    + apply trans_typ__tvar... 
+      apply H3... simpl...
+    + apply trans_typ__stvar...
+      apply H3... simpl... 
+    + apply trans_typ__etvar... 
+      apply H3... simpl...
+  - dependent destruction H2...
+    simpl in H1. econstructor...
+  - dependent destruction H2.
+    inst_cofinites_for trans_typ__all. intros.
+    inst_cofinites_with X.
+    eapply H0 with (θ':=(X, dbind_tvar_empty) :: θ') in H2; auto...
+    + intros. destruct (X0 == X).
+      * subst. inversion H7.
+        -- dependent destruction H8...
+        -- apply binds_dom_contradiction in H8... contradiction.
+      * rewrite ftvar_in_typ_open_typ_wrt_typ_upper in H6. 
+        apply union_iff in H6. inversion H6.
+        -- simpl in H8. apply singleton_iff in H8. subst. contradiction. 
+        -- inversion H7. dependent destruction H9...
+           ++ apply binds_cons...
+  - dependent destruction H2...
+    simpl in H1. econstructor...
+  - dependent destruction H2...
+    simpl in H1. econstructor...
 Qed.
 
 Definition transfer (Γ : aworklist) (Ω : dworklist)  : Prop :=
