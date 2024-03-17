@@ -523,28 +523,6 @@ Proof.
   eapply d_sub_weaken; eauto.
 Qed.
 
-(* Theorem  d_sub_strenthening: forall Ψ F G S1 T1,
-  F ++ G ++ Ψ ⊢ S1 <: T1 ->
-  F ++ Ψ ⊢ S1 ->
-  F ++ Ψ ⊢ T1 ->
-  F ++ Ψ ⊢ S1 <: T1.
-Proof.
-  introv HS HWS HWT.
-  remember (F++G++Ψ) as Ψ'.
-  induction HS.
-  all: auto.
-  - forwards~: IHHS1.
-    inverts~ HWT. inverts~ HWS.
-    forwards~: IHHS2.
-    now inversion HWS.
-    inverts~ HWS. inverts~ HWT.
-  - admit.
-  - forwards~: IHHS.
-    inverts~ HWS. pick fresh y. applys dwft_subst y H8. solve_notin.
-    (* wf for newly introduced mono type T2*)
-    admit.
-Admitted. *)
-
 
 Theorem d_sub_tvar_ind_sub_all : forall Ψ A B,
   ⊢ Ψ ->

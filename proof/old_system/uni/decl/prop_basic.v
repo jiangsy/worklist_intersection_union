@@ -827,14 +827,16 @@ Proof with try solve_notin; simpl; eauto.
 Qed.
 
 
-(* Lemma rename_mono_typ : forall T SX SY,
-    dmono_typ T ->
-    {typ_svar SY /ₛᵈ SX} T = T.
+Lemma d_mono_typ_rename_tvar : forall Ψ1 Ψ2 X X' T,
+    X' ∉ (dom (Ψ2 ++ Ψ1)) ->
+    d_mono_typ (Ψ2 ++ X ~ dbind_tvar_empty ++ Ψ1) T ->
+    d_mono_typ (map (subst_tvar_in_dbind ` X' X) Ψ2 ++ (X', □) :: Ψ1) ({`X' /ᵗ X} T).
 Proof with simpl in *; eauto.
-  intros * HM.
-  induction HM...
-  all: try rewrite IHHM1; try rewrite IHHM2...
-Qed. *)
+  intros. dependent induction H0...
+  - destruct (X0 == X). econstructor.
+    + subst.  admit. (* OK *)
+    + admit.
+Admitted.
 
 #[export] Hint Resolve neq_all_rename neq_intersection_rename neq_union_rename : sub.
 
