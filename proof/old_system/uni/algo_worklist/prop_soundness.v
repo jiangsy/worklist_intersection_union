@@ -304,70 +304,6 @@ Proof.
     + econstructor; eauto.
 Admitted. *)
 
-(* define a extended relation of a_update_bound extended with Ω and θ ? *)
-Lemma a_worklist_subst_transfer_same_dworklist: forall Γ Ω θ X T E Γ1 Γ2,
-  a_mono_typ (awl_to_aenv Γ) T ->
-  X `notin` ftvar_in_typ T ->
-  aworklist_subst Γ X T E Γ1 Γ2 ->
-  trans_worklist nil (awl_app (subst_tvar_in_aworklist T X Γ2) (awl_app (etvar_list_to_awl E) Γ1))  Ω θ ->
-  exists θ', trans_worklist nil Γ Ω θ' /\ (forall Y b, Y <> X -> binds Y b θ -> binds Y b θ') /\ 
-    (exists Tᵈ, θ ⫦ᵗ T ⇝ Tᵈ /\ binds X (dbind_typ Tᵈ) θ').
-Proof with auto with Hdb_a_wl_red_soundness.
-  intros. generalize dependent θ. generalize dependent Ω. dependent induction H1; intros.
-  - simpl in *.
-    assert (exists Aᵈ, θ ⫦ᵗ A ⇝ Aᵈ) by admit.
-    destruct H1 as [Aᵈ].
-    exists ((X ~ dbind_typ Aᵈ) ++ θ).
-    repeat split.
-    + econstructor; auto. admit. (* OK, mono *)
-    + intros. apply binds_cons...
-    + exists Aᵈ. split; auto.
-  - dependent destruction H2.
-    apply IHaworklist_subst in H2.
-    destruct H2 as [θ'1 [Htrans [Hbinds Htransx]]].
-    exists θ'1. repeat split; auto.
-    econstructor...
-    + admit.
-    + simpl in H. admit.
-    + auto.
-  - simpl in *. dependent destruction H4.
-    apply IHaworklist_subst in H4.
-    destruct H4 as [θ'1 [Htrans [Hbinds Htransx]]].
-    exists ((Y ~ dbind_tvar_empty) ++ θ'1). 
-    repeat split; auto.
-    econstructor; auto.
-    intros. 
-    + inversion H5.
-      * dependent destruction H6...
-      * apply binds_cons...
-    + destruct Htransx as [Tᵈ [Htransa Htransx]]. 
-      exists Tᵈ. split; auto.
-      admit. (* trans_weaken *)
-    + admit. (* OK, mono *)
-    + auto. 
-  - simpl in *. dependent destruction H4.
-    apply IHaworklist_subst in H4.
-    destruct H4 as [θ'1 [Htrans [Hbinds Htransx]]].
-    exists ((Y ~ dbind_stvar_empty) ++ θ'1). 
-    repeat split; auto.
-    econstructor; auto.
-    intros. 
-    + inversion H5.
-      * dependent destruction H6...
-      * apply binds_cons... 
-    + destruct Htransx as [Tᵈ [Htransa Htransx]]. 
-      exists Tᵈ. split; auto.
-      admit. (* trans_weaken *)   
-    + admit.
-    + auto. 
-  - simpl in *. dependent destruction H2.
-    apply IHaworklist_subst in H2...
-    + destruct H2 as [θ'1 [Htrans Htrans1]].
-      exists θ'1. repeat split; auto.
-      constructor; auto.
-      admit.
-Admitted.
-
 (* 
 Lemma a_worklist_subst_transfer_same_dworklist': forall Γ Ω θ X T E Γ1 Γ2,
   a_mono_typ (awl_to_aenv Γ) T ->
@@ -460,6 +396,295 @@ Proof with auto with Hdb_a_wl_red_soundness.
     auto.
     auto.
 Admitted. *)
+
+Lemma a_worklist_subst_transfer_same_dworklist': forall Γ Ω θ X T E Γ1 Γ2,
+  ⊢ᵃʷ Γ ->
+  a_mono_typ (awl_to_aenv Γ) T ->
+  X `notin` ftvar_in_typ T ->
+  aworklist_subst Γ X T E Γ1 Γ2 ->
+  trans_worklist nil (awl_app (subst_tvar_in_aworklist T X Γ2) (awl_app (etvar_list_to_awl E) Γ1))  Ω θ ->
+  exists θ'1 θ'2 Tᵈ, 
+      trans_worklist nil Γ Ω (θ'2 ++ (X ~ dbind_typ Tᵈ) ++ θ'1) /\ 
+      θ ⫦ᵗ T ⇝ Tᵈ /\ 
+      d_mono_typ (ss_to_denv θ'1) T  /\
+      (forall Y b, binds Y b θ <-> binds Y b (θ'2 ++ θ'1)) /\ 
+      θ'1 ⫦ᵗ T ⇝ Tᵈ /\
+      wf_ss (θ'2 ++ θ'1).
+Proof with auto with Hdb_a_wl_red_soundness.
+  intros. generalize dependent θ. generalize dependent Ω. dependent induction H2; intros.
+  - simpl in *.
+    assert (exists Aᵈ, θ ⫦ᵗ A ⇝ Aᵈ) by admit.
+    destruct H2 as [Aᵈ].
+    exists θ. exists nil. exists Aᵈ.
+    repeat split; auto.
+    + econstructor; auto. 
+      * admit. (* OK, mono *)
+    + admit.
+    + destruct_a_wf_wl. eapply a_wf_wl_wf_ss; eauto. 
+  - dependent destruction H3.
+    apply IHaworklist_subst in H3 as IH.
+    destruct IH as [θ'1 [θ'2 [Tᵈ [Htrans [Htranst [Hwft [Hbinds [Hinst1 Hwfss]]]]]]]].
+    exists θ'1. exists θ'2. exists Tᵈ. repeat split; auto.
+    econstructor...
+    + apply trans_typ_reorder with (θ':=(θ'2 ++ θ'1)) in H4...
+      * apply trans_typ_etvar_subst with (Tᵃ:=A); auto.
+        -- admit. (* lc *)
+        -- admit.
+        -- admit.
+      * admit.
+      * intros. apply Hbinds...
+    + intros. apply Hbinds...
+    + intros. apply Hbinds...
+    + destruct_a_wf_wl...
+    + simpl in H. admit.
+    + auto.
+  - simpl in *. dependent destruction H5.
+    apply IHaworklist_subst in H5 as IH.
+    destruct IH as [θ'1 [θ'2 [Tᵈ [Htrans [Htranst [Hwft [Hbinds [Hinst1 Hwfss]]]]]]]].
+    exists θ'1. exists ((Y ~ dbind_tvar_empty) ++ θ'2). exists Tᵈ. 
+    repeat split; auto.
+    + econstructor; auto.
+    + admit.
+    + intros. inversion H6.
+      * dependent destruction H7...
+      * simpl. apply binds_cons... apply Hbinds...
+    + intros.
+      admit.
+    + simpl. constructor...
+      admit.
+    + destruct_a_wf_wl...
+    + admit. (* OK, mono *)
+    + auto. 
+  - simpl in *. dependent destruction H5.
+    apply IHaworklist_subst in H5 as IH.
+    destruct IH as [θ'1 [θ'2 [Tᵈ [Htrans [Htranst [Hwft [Hbinds [Hinst1 Hwfss]]]]]]]].
+    exists θ'1. exists ((Y ~ dbind_stvar_empty) ++ θ'2). exists Tᵈ. 
+    repeat split; auto.
+    + econstructor; auto.
+    + rewrite_env (nil ++ (Y ~ dbind_stvar_empty) ++ θ').
+      apply trans_typ_weaken...
+      admit.
+    + intros. inversion H6.
+      * dependent destruction H7...
+      * simpl. apply binds_cons... apply Hbinds...
+    + simpl. intros.
+      admit.
+    + simpl. constructor...
+      admit.
+    + destruct_a_wf_wl...
+    + admit. (* OK, mono *)
+    + auto. 
+  - simpl in *. dependent destruction H3.
+    apply IHaworklist_subst in H3 as IH...
+    destruct IH as [θ'1 [θ'2 [Tᵈ [Htrans [Htranst [Hwft [Hbinds [Hinst1 Hwfss]]]]]]]].
+    exists θ'1. exists θ'2. exists Tᵈ. repeat split; auto.
+    constructor; auto.
+    + admit.
+    + intros. apply Hbinds...
+    + intros. apply Hbinds...
+    + destruct_a_wf_wl...
+  - simpl in *.  
+    dependent destruction H5.
+    apply IHaworklist_subst in H5 as IH...
+    destruct IH as [θ'1 [θ'2 [Tᵈ [Htrans [Htranst [Hwft [Hbinds [Hinst1 Hwfss]]]]]]]].
+    exists θ'1. exists ((Y ~ dbind_typ T) ++ θ'2). exists Tᵈ. repeat split; auto.
+    + simpl. econstructor; auto.
+      admit.
+    + admit.
+    + intros.
+      admit.
+    + intros. admit.
+    + admit.
+    + destruct_a_wf_wl...
+    + admit.
+  - simpl in H4.
+Admitted.
+
+
+
+
+Lemma a_worklist_subst_transfer_same_dworklist''': forall Γ Ω θ X T Γ1 Γ2,
+  ⊢ᵃʷ Γ ->
+  a_mono_typ (awl_to_aenv Γ) T ->
+  X `notin` ftvar_in_typ T ->
+  aworklist_subst' Γ X T Γ1 Γ2 ->
+  trans_worklist nil (awl_app (subst_tvar_in_aworklist T X Γ2) Γ1)  Ω θ ->
+  exists θ' θ'1 θ'2 Tᵈ, 
+      θ' = θ'2 ++ (X ~ dbind_typ Tᵈ) ++ θ'1 /\
+      trans_worklist nil Γ Ω θ' /\ 
+      θ ⫦ᵗ T ⇝ Tᵈ /\ 
+      θ'1 ⫦ᵗ T ⇝ Tᵈ /\
+      binds X (dbind_typ Tᵈ) θ' /\
+      (forall Y b, X <> Y -> binds Y b θ <-> binds Y b θ') /\ 
+      wf_ss θ'.
+Proof with auto with Hdb_a_wl_red_soundness.
+  intros. generalize dependent θ. generalize dependent Ω. dependent induction H2; intros.
+  - simpl in *.
+    assert (exists Aᵈ, θ ⫦ᵗ A ⇝ Aᵈ) by admit.
+    destruct H2 as [Aᵈ].
+    exists (X ~ dbind_typ Aᵈ ++ θ). exists θ. 
+    exists nil.
+    exists Aᵈ.
+    repeat split; auto.
+    + econstructor; auto.  
+      * admit. (* OK, mono *)
+    + intros. inversion H5. dependent destruction H6...
+      contradiction.
+      auto.
+    + admit.
+  - dependent destruction H3.
+    apply IHaworklist_subst' in H3 as IH.
+    destruct IH as [θ'0 [θ'1 [θ'2 [Tᵈ [Hss [Htrans [Htranst [Htranst' [Hbindsx [Hbinds Hwfss]]]]]]]]]].    
+    exists θ'0. exists θ'1. exists θ'2. exists Tᵈ. repeat split; auto.
+    + econstructor. auto. admit.
+    + apply Hbinds; auto.
+    + apply Hbinds; auto.
+    + destruct_a_wf_wl; auto.
+    + admit.
+    + auto.
+  - dependent destruction H5.
+    apply IHaworklist_subst' in H5 as IH.
+    destruct IH as [θ'0 [θ'1 [θ'2 [Tᵈ [Hss [Htrans [Htranst [Htranst' [Hbindsx [Hbinds Hwfss]]]]]]]]]].
+    exists (Y ~ dbind_tvar_empty ++ θ'0). exists θ'1. exists (Y ~ dbind_tvar_empty ++ θ'2). 
+    exists Tᵈ. repeat split; auto.
+    + rewrite Hss. auto.
+    + econstructor; auto.
+    + admit.
+    + intros. inversion H7.
+      * dependent destruction H8... 
+      * simpl. apply binds_cons... apply Hbinds...
+    + intros. admit.
+    + admit.
+    + destruct_a_wf_wl...
+    + admit.
+    + auto.
+  (* stvar_stay *)
+  - dependent destruction H5.
+    apply IHaworklist_subst' in H5 as IH.
+    destruct IH as [θ'0 [θ'1 [θ'2 [Tᵈ [Hss [Htrans [Htranst [Htranst' [Hbindsx [Hbinds Hwfss]]]]]]]]]].
+    exists (Y ~ dbind_stvar_empty ++ θ'0). exists θ'1. exists (Y ~ dbind_stvar_empty ++ θ'2). 
+    exists Tᵈ. repeat split; auto.
+    + rewrite Hss. auto.
+    + econstructor; auto.
+    + admit.
+    + intros. inversion H7.
+      * dependent destruction H8... 
+      * simpl. apply binds_cons... apply Hbinds...
+    + intros. admit.
+    + admit.
+    + destruct_a_wf_wl...
+    + admit.
+    + auto.
+  (* work_stay *)
+  - dependent destruction H3.
+    apply IHaworklist_subst' in H3 as IH.
+    destruct IH as [θ'0 [θ'1 [θ'2 [Tᵈ [Hss [Htrans [Htranst [Htranst' [Hbindsx [Hbinds Hwfss]]]]]]]]]].
+    exists θ'0. exists θ'1. exists θ'2. exists Tᵈ. repeat split; auto.
+    + constructor; auto.
+      admit.
+    + apply Hbinds...
+    + apply Hbinds...
+    + destruct_a_wf_wl...
+    + admit.
+    + auto.
+  (* etvar_move *)
+  - dependent destruction H5.
+    apply IHaworklist_subst' in H5 as IH.
+    destruct IH as [θ'0 [θ'1 [θ'2 [Tᵈ [Hss [Htrans [Htranst [Htranst' [Hbindsx [Hbinds Hwfss]]]]]]]]]].
+    exists (Y ~ dbind_typ T ++ θ'0). exists θ'1. 
+    exists (Y ~ dbind_typ T ++ θ'2). exists Tᵈ. repeat split; auto.
+    + rewrite Hss. auto.
+    + econstructor; auto. admit.
+    + admit.
+    + intros. inversion H8.
+      * dependent destruction H9... 
+      * simpl. apply binds_cons... apply Hbinds...
+    + intros. admit.
+    + admit.
+    + destruct_a_wf_wl...
+    + admit.
+    + auto.
+  - simpl in *.
+    apply IHaworklist_subst' in H5 as IH.
+    + destruct IH as [θ'0 [θ'1 [θ'2 [Tᵈ [Hss [Htrans [Htranst [Htranst' [Hbindsx [Hbinds Hwfss]]]]]]]]]].
+
+      admit.
+    + admit.
+    + admit.
+    + auto.
+Admitted.
+
+
+
+(* define a extended relation of a_update_bound extended with Ω and θ ? *)
+Lemma a_worklist_subst_transfer_same_dworklist: forall Γ Ω θ X T E Γ1 Γ2,
+  a_mono_typ (awl_to_aenv Γ) T ->
+  X `notin` ftvar_in_typ T ->
+  aworklist_subst Γ X T E Γ1 Γ2 ->
+  trans_worklist nil (awl_app (subst_tvar_in_aworklist T X Γ2) (awl_app (etvar_list_to_awl E) Γ1))  Ω θ ->
+  exists θ', trans_worklist nil Γ Ω θ' /\ (forall Y b, Y <> X -> binds Y b θ -> binds Y b θ') /\ 
+    (exists Tᵈ, θ ⫦ᵗ T ⇝ Tᵈ /\ binds X (dbind_typ Tᵈ) θ').
+Proof with auto with Hdb_a_wl_red_soundness.
+  intros. generalize dependent θ. generalize dependent Ω. dependent induction H1; intros.
+  - simpl in *.
+    assert (exists Aᵈ, θ ⫦ᵗ A ⇝ Aᵈ) by admit.
+    destruct H1 as [Aᵈ].
+    exists ((X ~ dbind_typ Aᵈ) ++ θ).
+    repeat split.
+    + econstructor; auto. admit. (* OK, mono *)
+    + intros. apply binds_cons...
+    + exists Aᵈ. split; auto.
+  - dependent destruction H2.
+    apply IHaworklist_subst in H2.
+    destruct H2 as [θ'1 [Htrans [Hbinds Htransx]]].
+    exists θ'1. repeat split; auto.
+    econstructor...
+    + apply trans_typ_reorder with (θ':=θ'1) in H3...
+      * admit.
+      * admit.
+      * admit.
+      * intros. apply Hbinds... admit.
+    + simpl in H. admit.
+    + auto.
+  - simpl in *. dependent destruction H4.
+    apply IHaworklist_subst in H4.
+    destruct H4 as [θ'1 [Htrans [Hbinds Htransx]]].
+    exists ((Y ~ dbind_tvar_empty) ++ θ'1). 
+    repeat split; auto.
+    econstructor; auto.
+    intros. 
+    + inversion H5.
+      * dependent destruction H6...
+      * apply binds_cons...
+    + destruct Htransx as [Tᵈ [Htransa Htransx]]. 
+      exists Tᵈ. split; auto.
+      admit. (* trans_weaken *)
+    + admit. (* OK, mono *)
+    + auto. 
+  - simpl in *. dependent destruction H4.
+    apply IHaworklist_subst in H4.
+    destruct H4 as [θ'1 [Htrans [Hbinds Htransx]]].
+    exists ((Y ~ dbind_stvar_empty) ++ θ'1). 
+    repeat split; auto.
+    econstructor; auto.
+    intros. 
+    + inversion H5.
+      * dependent destruction H6...
+      * apply binds_cons... 
+    + destruct Htransx as [Tᵈ [Htransa Htransx]]. 
+      exists Tᵈ. split; auto.
+      admit. (* trans_weaken *)   
+    + admit.
+    + auto. 
+  - simpl in *. dependent destruction H2.
+    apply IHaworklist_subst in H2...
+    + destruct H2 as [θ'1 [Htrans [Hbinds Htransx]]].
+      exists θ'1. repeat split; auto.
+      constructor; auto.
+      admit.
+Admitted.
+
+
 
 
 (* Hint Resolve d_chk_inf_wft : Hdb_a_wl_red_soundness. *)
@@ -751,8 +976,7 @@ Proof with eauto with Hdb_a_wl_red_soundness.
       constructor...
       eapply trans_typ_reorder in Htransa...
       * admit.
-      * intros. apply Hbinds...
-        admit. (* OK, notin *)
+    + admit.
   (* A < B1 /\ B2 *)
   - exists (work_sub A1ᵈ (typ_intersection B1ᵈ B2ᵈ) ⫤ Ω)%dworklist. split...
     destruct_d_wl_del_red...
@@ -790,7 +1014,7 @@ Proof with eauto with Hdb_a_wl_red_soundness.
     destruct Htrans as [θ].
     destruct_trans. rename_typ.
     exists (work_check (exp_abs (close_exp_wrt_exp x eᵈ)) (typ_arrow A1ᵈ A2ᵈ) ⫤ Ω)%dworklist. split.
-    + exists Θ.
+    + exists θ.
       econstructor...
       econstructor...
       eapply trans_exp__abs with (L:=fvar_in_exp e). intros.
@@ -956,7 +1180,7 @@ Proof with eauto with Hdb_a_wl_red_soundness.
       apply d_wl_red_weaken_work1 in Hdred. dependent destruction Hdred...
     apply d_wl_red_weaken_work2 in Hdred...
   - exists (work_infapp  (typ_arrow A1ᵈ A2ᵈ) eᵈ cᵈ ⫤ Ω)%dworklist...
-    split. destruct_d_wl_del_red. exists Θ...
+    split. destruct_d_wl_del_red. exists θ...
     econstructor...
   - exists (work_infabs (typ_arrow A1ᵈ B1ᵈ) cᵈ ⫤ Ω)%dworklist...
     split. destruct_d_wl_del_red. exists θ... 
