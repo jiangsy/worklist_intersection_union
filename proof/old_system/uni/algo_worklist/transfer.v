@@ -592,7 +592,7 @@ Proof with eauto with Hdb_transfer.
 Admitted.
 
 
-Lemma wf_ss_rename : forall θ1 θ2 X X',
+Lemma wf_ss_rename_tvar : forall θ1 θ2 X X',
   wf_ss (θ2 ++ (X, □) :: θ1) ->
   X' ∉ dom (θ2 ++ θ1) ->
   wf_ss (map (subst_tvar_in_dbind ` X' X) θ2 ++ (X', □) :: θ1).
@@ -609,6 +609,23 @@ Proof with eauto with Hdb_transfer.
       admit.
 Admitted.
 
+Lemma wf_ss_rename : forall θ1 θ2 X X' b,
+  wf_ss (θ2 ++ (X, b) :: θ1) ->
+  X' ∉ dom (θ2 ++ θ1) ->
+  wf_ss (map (subst_tvar_in_dbind ` X' X) θ2 ++ (X', b) :: θ1).
+Proof with eauto with Hdb_transfer.
+  intros. induction θ2; simpl in *...
+  - inversion H; subst...
+  - dependent destruction a.
+    inversion H; subst...
+    econstructor...
+    + replace (ss_to_denv (map (subst_tvar_in_dbind ` X' X) θ2 ++ (X', □) :: θ1))
+      with ((map (subst_tvar_in_dbind ` X' X) (ss_to_denv θ2) ++ (X', □) :: (ss_to_denv θ1)))
+      by admit.
+      simpl. 
+      admit.
+Admitted.
+
 Lemma trans_typ_rename_tvar : forall θ1 θ2 Aᵃ Aᵈ X X', 
   θ2 ++ (X, dbind_tvar_empty) :: θ1 ⫦ᵗ Aᵃ ⇝ Aᵈ ->
   X' `notin` dom (θ2 ++ θ1) ->
@@ -617,13 +634,52 @@ Proof with auto with Hdb_transfer.
   intros. dependent induction H; simpl; auto...
   - unfold eq_dec. destruct (EqDec_eq_of_X X0 X); subst.
     + econstructor...
+      eapply wf_ss_rename_tvar; eauto.
+    + econstructor...
+      eapply wf_ss_rename_tvar; eauto.
+      admit.
+  - destruct_eq_atom'. 
+    + econstructor... 
+      eapply wf_ss_rename_tvar; eauto.
+    + econstructor... 
+      eapply wf_ss_rename_tvar; eauto.
+      admit.
+  - destruct_eq_atom'. 
+    + admit. (* OK, false *)
+    + econstructor... 
+      eapply wf_ss_rename_tvar; eauto. admit. 
+  - econstructor...
+    eapply wf_ss_rename_tvar; eauto.  
+  - econstructor...
+    eapply wf_ss_rename_tvar; eauto.
+  - econstructor... 
+    eapply wf_ss_rename_tvar; eauto.
+  - eapply trans_typ__all with (L := L `union` singleton X).
+    intros. inst_cofinites_with X0.
+    rewrite typ_subst_open_comm...
+    rewrite typ_subst_open_comm...
+    rewrite_env (map (subst_tvar_in_dbind ` X' X) ((X0, □) :: θ2) ++ (X', □) :: θ1).
+    eapply H0...
+Admitted.
+
+
+Lemma trans_typ_rename : forall θ1 θ2 Aᵃ Aᵈ X X' b, 
+  θ2 ++ (X, b) :: θ1 ⫦ᵗ Aᵃ ⇝ Aᵈ ->
+  X' `notin` dom (θ2 ++ θ1) ->
+  map (subst_tvar_in_dbind (` X') X) θ2  ++ (X', b) :: θ1 ⫦ᵗ {` X' /ᵗ X} Aᵃ ⇝ {` X' /ᵗ X} Aᵈ.
+Proof with auto with Hdb_transfer.
+  intros. dependent induction H; simpl; auto...
+  - destruct_eq_atom'. 
+    + econstructor...
       eapply wf_ss_rename; eauto.
+      admit.
     + econstructor...
       eapply wf_ss_rename; eauto.
       admit.
   - destruct_eq_atom'. 
     + econstructor... 
       eapply wf_ss_rename; eauto.
+      admit.
     + econstructor... 
       eapply wf_ss_rename; eauto.
       admit.
@@ -637,11 +693,11 @@ Proof with auto with Hdb_transfer.
     eapply wf_ss_rename; eauto.
   - econstructor... 
     eapply wf_ss_rename; eauto.
-  - eapply trans_typ__all with (L := L `union` singleton X).
+  - eapply trans_typ__all with (L := L `union` singleton X  `union` singleton X').
     intros. inst_cofinites_with X0.
     rewrite typ_subst_open_comm...
     rewrite typ_subst_open_comm...
-    rewrite_env (map (subst_tvar_in_dbind ` X' X) ((X0, □) :: θ2) ++ (X', □) :: θ1).
+    rewrite_env (map (subst_tvar_in_dbind ` X' X) ((X0, □) :: θ2) ++ (X', b) :: θ1).
     eapply H0...
 Admitted.
 
@@ -657,7 +713,33 @@ Proof.
 Qed.
 
 
-Lemma a_wf_typ_trans_typ : forall θ Γ Ω Aᵃ,
+Lemma trans_typ_tvar_stvar_same : forall θ1 θ2 X Aᵃ Aᵈ b b',
+  b = dbind_tvar_empty \/ b = dbind_stvar_empty ->
+  b' = dbind_tvar_empty \/ b' = dbind_stvar_empty ->
+  θ2 ++ (X, b) :: θ1 ⫦ᵗ Aᵃ ⇝ Aᵈ ->
+  θ2 ++ (X, b') :: θ1 ⫦ᵗ Aᵃ ⇝ Aᵈ.
+Proof with auto with Hdb_transfer.
+  intros. dependent induction H1; auto...
+  - admit.
+  - admit.
+  - admit.
+  - constructor.
+    admit.
+  - constructor.
+    admit.
+  - constructor.
+    admit.
+  - destruct H; destruct H0; subst; econstructor; eauto.
+  - eapply trans_typ__all with (L:=L).
+    intros. inst_cofinites_with X0.
+    rewrite_env (((X0, □) :: θ2) ++ (X, b') :: θ1).
+    destruct b; destruct b'; eauto...
+  - destruct H; destruct H0; subst; econstructor; eauto.
+  - destruct H; destruct H0; subst; econstructor; eauto.
+Admitted.
+
+
+Lemma trans_typ_total : forall θ Γ Ω Aᵃ,
   a_wf_typ (awl_to_aenv Γ) Aᵃ ->  
   ⊢ᵃʷ Γ -> 
   nil ⫦ Γ ⇝ Ω ⫣ θ -> 
@@ -780,12 +862,12 @@ Proof.
   apply trans_body_rename_tvar; eauto.
 Qed.
 
-Lemma a_wf_exp_trans_exp : forall θ Γ Ω eᵃ,
+Lemma trans_exp_total : forall θ Γ Ω eᵃ,
   a_wf_exp (awl_to_aenv Γ) eᵃ ->  
   ⊢ᵃʷ Γ -> 
   nil ⫦ Γ ⇝ Ω ⫣ θ -> 
   exists eᵈ, trans_exp θ eᵃ eᵈ
-with a_wf_body_trans_body : forall θ Γ Ω bᵃ,
+with trans_body_total : forall θ Γ Ω bᵃ,
   a_wf_body (awl_to_aenv Γ) bᵃ ->  
   ⊢ᵃʷ Γ -> 
   nil ⫦ Γ ⇝ Ω ⫣ θ -> 
@@ -799,7 +881,7 @@ Proof with eauto with Hdb_transfer.
     + exists (exp_var_f x)... 
     + inst_cofinites_by (L `union` (fvar_in_exp e) `union` dom (awl_to_aenv Γ)).
       assert (⊢ᵃʷ aworklist_consvar Γ x (abind_var_typ T)) by auto.
-      eapply a_wf_typ_trans_typ in H...
+      eapply trans_typ_total in H...
       destruct H as [Tᵈ].
       eapply H1 with (θ:=θ) in H4...
       destruct H4 as [eᵈ].
@@ -816,7 +898,7 @@ Proof with eauto with Hdb_transfer.
       exists (exp_app e1ᵈ e2ᵈ)...
     + inst_cofinites_by (L `union` dom (awl_to_aenv Γ) `union` ftvar_in_body body5) using_name X.
       assert (⊢ᵃʷ aworklist_constvar Γ X abind_tvar_empty) by auto.
-      eapply a_wf_body_trans_body with (Ω:=dworklist_constvar Ω X dbind_tvar_empty) (θ:=(X, dbind_tvar_empty)::θ) in H2...
+      eapply trans_body_total with (Ω:=dworklist_constvar Ω X dbind_tvar_empty) (θ:=(X, dbind_tvar_empty)::θ) in H2...
       destruct H2 as [bᵈ].
       exists (exp_tabs (close_body_wrt_typ X bᵈ)).
       eapply trans_exp__tabs with (L:=L `union` dom θ). intros.
@@ -825,12 +907,12 @@ Proof with eauto with Hdb_transfer.
       rewrite open_body_wrt_typ_close_body_wrt_typ.
       apply trans_body_rename_tvar_cons with (X':=X0) in H2; auto.
     + apply IHa_wf_exp in H2 as Htrans_e; auto.
-      eapply a_wf_typ_trans_typ with (θ:=θ) (Ω:=Ω) in H as Htrans_A; auto.  
+      eapply trans_typ_total with (θ:=θ) (Ω:=Ω) in H as Htrans_A; auto.  
       destruct Htrans_e as [eᵈ].
       destruct Htrans_A as [Aᵈ].
       exists (exp_tapp eᵈ Aᵈ)...
     + apply IHa_wf_exp in H2 as Htrans_e; auto.
-      eapply a_wf_typ_trans_typ with (θ:=θ) (Ω:=Ω) in H as Htrans_A; auto.  
+      eapply trans_typ_total with (θ:=θ) (Ω:=Ω) in H as Htrans_A; auto.  
       destruct Htrans_e as [eᵈ].
       destruct Htrans_A as [Aᵈ].
       exists (exp_anno eᵈ Aᵈ)...
@@ -838,8 +920,8 @@ Proof with eauto with Hdb_transfer.
     generalize dependent Ω. 
     generalize dependent θ. 
     dependent induction H; intros.
-    + eapply a_wf_exp_trans_exp in H0...
-      eapply a_wf_typ_trans_typ in H...
+    + eapply trans_exp_total in H0...
+      eapply trans_typ_total in H...
       destruct H0 as [eᵈ].
       destruct H as [Aᵈ].
       exists (body_anno eᵈ Aᵈ)...
@@ -1402,15 +1484,19 @@ Proof with eauto with Hdb_transfer.
 Qed. *)
 
 
-Lemma trans_typ_reorder : forall θ θ' A,
+Lemma trans_typ_reorder : forall θ θ' Aᵃ Aᵈ,
   wf_ss θ ->
   wf_ss θ' ->
-  (forall X b, X `in` ftvar_in_typ A -> binds X b θ -> binds X b θ') ->
-  θ ⫦ᵗ A ⇝ A ->
-  θ' ⫦ᵗ A ⇝ A.
+  (forall X b, X `in` ftvar_in_typ Aᵃ -> binds X b θ -> binds X b θ') ->
+  θ ⫦ᵗ Aᵃ ⇝ Aᵈ ->
+  θ' ⫦ᵗ Aᵃ ⇝ Aᵈ.
 Proof with eauto with Hdb_transfer.
-  intros. apply trans_typ_lc_atyp in H2 as Hlc. generalize dependent θ'. generalize dependent θ. 
+  intros. apply trans_typ_lc_atyp in H2 as Hlc.
+  generalize dependent θ'. generalize dependent θ. generalize dependent Aᵈ.
   induction Hlc; intros...
+  - dependent destruction H2...
+  - dependent destruction H2...
+  - dependent destruction H2...
   - dependent destruction H2...
     + apply trans_typ__tvar... 
       apply H3... simpl...

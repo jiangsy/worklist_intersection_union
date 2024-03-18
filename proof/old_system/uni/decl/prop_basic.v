@@ -617,7 +617,7 @@ Proof.
   intros. forwards*: d_sub_dwft H.
 Qed.
 
-Lemma d_wf_typ_strengthening : forall Ψ1 Ψ2 X A b,
+Lemma d_wf_typ_strengthen : forall Ψ1 Ψ2 X A b,
     ⊢ Ψ2 ++ X ~ b ++ Ψ1 ->
     Ψ2 ++ X ~ b ++ Ψ1 ⊢ A ->
     X \notin ftvar_in_typ A ->
@@ -827,16 +827,46 @@ Proof with try solve_notin; simpl; eauto.
 Qed.
 
 
-Lemma d_mono_typ_rename_tvar : forall Ψ1 Ψ2 X X' T,
+
+Lemma d_mono_typ_rename : forall Ψ1 Ψ2 X X' b T,
+    ⊢ (Ψ2 ++ X ~ b ++ Ψ1) -> 
     X' ∉ (dom (Ψ2 ++ Ψ1)) ->
-    d_mono_typ (Ψ2 ++ X ~ dbind_tvar_empty ++ Ψ1) T ->
+    (b = dbind_tvar_empty \/ b = dbind_stvar_empty) ->
+    d_mono_typ (Ψ2 ++ X ~ b ++ Ψ1) T ->
+    d_mono_typ (map (subst_tvar_in_dbind ` X' X) Ψ2 ++ (X', b) :: Ψ1) ({`X' /ᵗ X} T).
+Proof with simpl in *; eauto.
+  intros. dependent induction H2...
+  - destruct (X0 == X).
+    + subst. econstructor. 
+      apply binds_mid_eq in H2. subst...
+      apply d_wf_env_uniq...
+    + econstructor. 
+      apply binds_remove_mid in H2...
+      rewrite_env (map (subst_tvar_in_dbind ` X' X) Ψ2 ++ (X' ~ b) ++ Ψ1).
+      apply binds_weaken...
+      apply binds_app_iff in H2. destruct H2...
+      * apply binds_map_2 with (f:=subst_tvar_in_dbind ` X' X) in H2...
+Qed.
+
+Lemma d_mono_typ_rename_tvar : forall Ψ1 Ψ2 X X' T,
+    ⊢ (Ψ2 ++ X ~ □ ++ Ψ1) -> 
+    X' ∉ (dom (Ψ2 ++ Ψ1)) ->
+    d_mono_typ (Ψ2 ++ X ~ □ ++ Ψ1) T ->
     d_mono_typ (map (subst_tvar_in_dbind ` X' X) Ψ2 ++ (X', □) :: Ψ1) ({`X' /ᵗ X} T).
 Proof with simpl in *; eauto.
-  intros. dependent induction H0...
-  - destruct (X0 == X). econstructor.
-    + subst.  admit. (* OK *)
-    + admit.
-Admitted.
+  intros. apply d_mono_typ_rename...
+Qed.
+
+
+Lemma d_mono_typ_rename_stvar : forall Ψ1 Ψ2 X X' T,
+    ⊢ (Ψ2 ++ X ~ ■ ++ Ψ1) -> 
+    X' ∉ (dom (Ψ2 ++ Ψ1)) ->
+    d_mono_typ (Ψ2 ++ X ~ ■ ++ Ψ1) T ->
+    d_mono_typ (map (subst_tvar_in_dbind ` X' X) Ψ2 ++ (X', ■) :: Ψ1) ({`X' /ᵗ X} T).
+Proof with simpl in *; eauto.
+  intros. apply d_mono_typ_rename...
+Qed.
+
 
 #[export] Hint Resolve neq_all_rename neq_intersection_rename neq_union_rename : sub.
 
