@@ -1015,7 +1015,8 @@ Proof.
         -- right. intro Hcontra. dependent destruction Hcontra.
            ++ eapply Jg; eauto.
            ++ eapply abind_etvar_stvar_false; eauto.
-        -- admit. (* TODO: two step reduction reduces exp_size *)
+        -- right. intro Hcontra. dependent destruction Hcontra; eauto.
+           admit. (* TODO *)
         -- pick fresh x.
            assert (JgArr:   (work_check (e ^ᵉₑ exp_var_f x) A2 ⫤ x ~ᵃ A1;ᵃ aW) ⟶ᵃʷ⁎⋅ \/ 
                           ¬ (work_check (e ^ᵉₑ exp_var_f x) A2 ⫤ x ~ᵃ A1;ᵃ aW) ⟶ᵃʷ⁎⋅).
@@ -1171,7 +1172,13 @@ Proof.
       destruct Jg as [Jg | Jg]; eauto.
       right. intro Hcontra.
       dependent destruction Hcontra. eauto.
-    + admit. (* TODO !!! *) 
+    + dependent destruction H; try solve [right; intro Hcontra; dependent destruction Hcontra].
+      assert (Jg:  (work_apply c A2 ⫤ work_check e A1 ⫤ aW) ⟶ᵃʷ⁎⋅ \/
+                 ¬ (work_apply c A2 ⫤ work_check e A1 ⫤ aW) ⟶ᵃʷ⁎⋅).
+      { (* TODO!! *) admit. }
+      destruct Jg as [Jg | Jg]; eauto.
+      right. intro Hcontra.
+      dependent destruction Hcontra. eauto.
     + simpl in *. dependent destruction Hm. dependent destruction H2.
       dependent destruction H;
         try solve [right; intro Hcontra; dependent destruction Hcontra].
@@ -1575,53 +1582,181 @@ Proof.
         (* can use some tatics, while have to solve the binding problem first*) 
         -- pick fresh X. inst_cofinites_with X.
            edestruct JgAlll as [JgAlll' | JgAlll']; eauto.
-           ++ left. eapply a_wl_red__sub_alll with (L := union L (ftvar_in_typ A)); eauto.
-              intros X' Hnin. admit. (* TODO: rename tvar *)
+           ++ left. inst_cofinites_for a_wl_red__sub_alll; eauto.
+              intros X' Hnin.
+              apply a_wl_red_rename_tvar with (X:=X) (X':=X') in JgAlll'.
+              ** simpl in JgAlll'.
+                 unfold eq_dec in JgAlll'.
+                 destruct (EqDec_eq_of_X X X) in JgAlll'.
+                 --- rewrite rename_tvar_in_aworklist_fresh_eq in JgAlll'; auto.
+                     rewrite typ_subst_open_var in JgAlll'; auto.
+                 --- contradiction.
+              ** admit.
+              ** admit. (* wf *)
+              ** simpl. rewrite ftvar_in_typ_open_typ_wrt_typ_upper. auto.
            ++ right. intro Hcontra. dependent destruction Hcontra.
-              admit. (* TODO: rename tvar *)
+              pick fresh X1.
+              inst_cofinites_with X1.
+              apply a_wl_red_rename_tvar with (X:=X1) (X':=X) in H8; auto.
+              ** simpl in H8.
+                 unfold eq_dec in H8.
+                 destruct (EqDec_eq_of_X X1 X1) in H8.
+                 --- rewrite rename_tvar_in_aworklist_fresh_eq in H8; auto.
+                     rewrite typ_subst_open_var in H8; auto.
+                 --- contradiction.
+              ** admit. (* wf *)  
+              ** simpl. rewrite ftvar_in_typ_open_typ_wrt_typ_upper. auto.
         -- pick fresh X. inst_cofinites_with X.
            edestruct JgAlll as [JgAlll' | JgAlll']; eauto.
-           ++ left. eapply a_wl_red__sub_alll with (L := union L (ftvar_in_typ A)); eauto.
-              intros X' Hnin. admit. (* TODO: rename tvar *)
+           ++ left. inst_cofinites_for a_wl_red__sub_alll; eauto.
+              intros X' Hnin.
+              apply a_wl_red_rename_tvar with (X:=X) (X':=X') in JgAlll'.
+              ** simpl in JgAlll'.
+                 unfold eq_dec in JgAlll'.
+                 destruct (EqDec_eq_of_X X X) in JgAlll'.
+                 --- rewrite rename_tvar_in_aworklist_fresh_eq in JgAlll'; auto.
+                     rewrite typ_subst_open_var in JgAlll'; auto.
+                 --- contradiction.
+              ** admit.
+              ** admit. (* wf *)
+              ** simpl. rewrite ftvar_in_typ_open_typ_wrt_typ_upper. auto.
            ++ right. intro Hcontra. dependent destruction Hcontra.
-              admit. (* TODO: rename tvar *)
+              pick fresh X1.
+              inst_cofinites_with X1.
+              apply a_wl_red_rename_tvar with (X:=X1) (X':=X) in H8; auto.
+              ** simpl in H8.
+                 unfold eq_dec in H8.
+                 destruct (EqDec_eq_of_X X1 X1) in H8.
+                 --- rewrite rename_tvar_in_aworklist_fresh_eq in H8; auto.
+                     rewrite typ_subst_open_var in H8; auto.
+                 --- contradiction.
+              ** admit. (* wf *)  
+              ** simpl. rewrite ftvar_in_typ_open_typ_wrt_typ_upper. auto.
         -- destruct Jg as [Jg | Jg]; eauto.
            pick fresh X. inst_cofinites_with X.
            edestruct JgAlll as [JgAlll' | JgAlll']; eauto.
-           ++ left. eapply a_wl_red__sub_alll with (L := union L (ftvar_in_typ A)); eauto.
-              intros X' Hnin. admit. (* TODO: rename tvar *)
-           ++ right. intro Hcontra. dependent destruction Hcontra.
-              ** apply Jg; auto.
-              ** admit. (* TODO: rename tvar *)
+           ++ left. inst_cofinites_for a_wl_red__sub_alll; eauto.
+              intros X' Hnin.
+              apply a_wl_red_rename_tvar with (X:=X) (X':=X') in JgAlll'.
+              ** simpl in JgAlll'.
+                 unfold eq_dec in JgAlll'.
+                 destruct (EqDec_eq_of_X X X) in JgAlll'.
+                 --- rewrite rename_tvar_in_aworklist_fresh_eq in JgAlll'; auto.
+                     rewrite typ_subst_open_var in JgAlll'; auto.
+                 --- contradiction.
+              ** admit.
+              ** admit. (* wf *)
+              ** simpl. rewrite ftvar_in_typ_open_typ_wrt_typ_upper. auto.
+           ++ right. intro Hcontra. dependent destruction Hcontra; eauto.
+              pick fresh X1.
+              inst_cofinites_with X1.
+              apply a_wl_red_rename_tvar with (X:=X1) (X':=X) in H8; auto.
+              ** simpl in H8.
+                 unfold eq_dec in H8.
+                 destruct (EqDec_eq_of_X X1 X1) in H8.
+                 --- rewrite rename_tvar_in_aworklist_fresh_eq in H8; auto.
+                     rewrite typ_subst_open_var in H8; auto.
+                 --- contradiction.
+              ** admit. (* wf *)  
+              ** simpl. rewrite ftvar_in_typ_open_typ_wrt_typ_upper. auto.
         -- pick fresh X1. inst_cofinites_with X1.
            edestruct JgAlll as [JgAlll' | JgAlll']; eauto.
-           ++ left. eapply a_wl_red__sub_alll with (L := union L (union (singleton X) (ftvar_in_typ A))); eauto.
-              intros X' Hnin. admit. (* TODO: rename tvar *)
-           ++ right. intro Hcontra. dependent destruction Hcontra.
-              ** admit. (* TODO: rename tvar *)
-              ** dependent destruction H7.
+           ++ left. inst_cofinites_for a_wl_red__sub_alll; eauto.
+              intros X' Hnin.
+              apply a_wl_red_rename_tvar with (X:=X1) (X':=X') in JgAlll'.
+              ** simpl in JgAlll'.
+                 destruct_eq_atom.
+                 rewrite rename_tvar_in_aworklist_fresh_eq in JgAlll'; auto.
+                 rewrite typ_subst_open_var in JgAlll'; auto.
+              ** admit.
+              ** admit. (* wf *)
+              ** simpl. rewrite ftvar_in_typ_open_typ_wrt_typ_upper. auto.
+           ++ right. intro Hcontra. dependent destruction Hcontra; try solve [dependent destruction H7].
+              pick fresh X1'.
+              inst_cofinites_with X1'.
+              apply a_wl_red_rename_tvar with (X:=X1') (X':=X1) in H9; auto.
+              ** simpl in H9.
+                 destruct_eq_atom.
+                 rewrite rename_tvar_in_aworklist_fresh_eq in H9; auto.
+                 rewrite typ_subst_open_var in H9; auto.
+              ** admit. (* wf *)  
+              ** simpl. rewrite ftvar_in_typ_open_typ_wrt_typ_upper. auto.
         -- pick fresh X1. inst_cofinites_with X1.
            edestruct JgAlll as [JgAlll' | JgAlll']; eauto.
-           ++ left. eapply a_wl_red__sub_alll with (L := union L (union (singleton X) (ftvar_in_typ A))); eauto.
-              intros X' Hnin. admit. (* TODO: rename tvar *)
-           ++ right. intro Hcontra. dependent destruction Hcontra.
-              ** admit. (* TODO: rename tvar *)
-              ** dependent destruction H7.
+           ++ left. inst_cofinites_for a_wl_red__sub_alll; eauto.
+              intros X' Hnin.
+              apply a_wl_red_rename_tvar with (X:=X1) (X':=X') in JgAlll'.
+              ** simpl in JgAlll'.
+                 destruct_eq_atom.
+                 rewrite rename_tvar_in_aworklist_fresh_eq in JgAlll'; auto.
+                 rewrite typ_subst_open_var in JgAlll'; auto.
+              ** admit.
+              ** admit. (* wf *)
+              ** simpl. rewrite ftvar_in_typ_open_typ_wrt_typ_upper. auto.
+           ++ right. intro Hcontra. dependent destruction Hcontra; try solve [dependent destruction H7].
+              pick fresh X1'.
+              inst_cofinites_with X1'.
+              apply a_wl_red_rename_tvar with (X:=X1') (X':=X1) in H9; auto.
+              ** simpl in H9.
+                 destruct_eq_atom.
+                 rewrite rename_tvar_in_aworklist_fresh_eq in H9; auto.
+                 rewrite typ_subst_open_var in H9; auto.
+              ** admit. (* wf *)  
+              ** simpl. rewrite ftvar_in_typ_open_typ_wrt_typ_upper. auto.
         -- pick fresh X1. inst_cofinites_with X1.
            edestruct JgAlll as [JgAlll' | JgAlll']; eauto.
-           ++ left. eapply a_wl_red__sub_alll with (L := union L (union (singleton X) (ftvar_in_typ A))); eauto.
-              intros X' Hnin. admit. (* TODO: rename tvar *)
-           ++ right. intro Hcontra. dependent destruction Hcontra.
-              ** admit. (* TODO: rename tvar *)
-              ** dependent destruction H7.
+           ++ left. inst_cofinites_for a_wl_red__sub_alll; eauto.
+              intros X' Hnin.
+              apply a_wl_red_rename_tvar with (X:=X1) (X':=X') in JgAlll'.
+              ** simpl in JgAlll'.
+                 destruct_eq_atom.
+                 rewrite rename_tvar_in_aworklist_fresh_eq in JgAlll'; auto.
+                 rewrite typ_subst_open_var in JgAlll'; auto.
+              ** admit.
+              ** admit. (* wf *)
+              ** simpl. rewrite ftvar_in_typ_open_typ_wrt_typ_upper. auto.
+           ++ right. intro Hcontra. dependent destruction Hcontra; try solve [dependent destruction H7].
+              pick fresh X1'.
+              inst_cofinites_with X1'.
+              apply a_wl_red_rename_tvar with (X:=X1') (X':=X1) in H9; auto.
+              ** simpl in H9.
+                 destruct_eq_atom.
+                 rewrite rename_tvar_in_aworklist_fresh_eq in H9; auto.
+                 rewrite typ_subst_open_var in H9; auto.
+              ** admit. (* wf *)  
+              ** simpl. rewrite ftvar_in_typ_open_typ_wrt_typ_upper. auto.
         -- pick fresh X. inst_cofinites_with X.
            edestruct JgAlll as [JgAlll' | JgAlll']; eauto.
            admit. admit. admit. (* safe *) 
-           ++ left. eapply a_wl_red__sub_alll with (L := union L (union (ftvar_in_typ A) (union (ftvar_in_typ A1) (ftvar_in_typ A2)))); eauto.
-              admit. admit. admit. (* safe *)
-              intros X' Hnin. admit. (* TODO: rename tvar *)
-           ++ right. intro Hcontra. dependent destruction Hcontra.
-              admit. (* TODO: rename tvar *)
+           ++ left. inst_cofinites_for a_wl_red__sub_alll; eauto.
+              admit. admit. admit. (* safe *) 
+              intros X' Hnin.
+              apply a_wl_red_rename_tvar with (X:=X) (X':=X') in JgAlll'.
+              ** simpl in JgAlll'.
+                 unfold eq_dec in JgAlll'.
+                 destruct (EqDec_eq_of_X X X) in JgAlll'.
+                 --- rewrite rename_tvar_in_aworklist_fresh_eq in JgAlll'; auto.
+                     rewrite typ_subst_open_var in JgAlll'; auto.
+                     rewrite subst_tvar_in_typ_fresh_eq in JgAlll'; auto.
+                     rewrite subst_tvar_in_typ_fresh_eq in JgAlll'; auto.
+                 --- contradiction.
+              ** admit.
+              ** admit. (* wf *)
+              ** simpl. rewrite ftvar_in_typ_open_typ_wrt_typ_upper. auto.
+           ++ right. intro Hcontra. dependent destruction Hcontra; eauto.
+              pick fresh X1.
+              inst_cofinites_with X1.
+              apply a_wl_red_rename_tvar with (X:=X1) (X':=X) in H8; auto.
+              ** simpl in H8.
+                 unfold eq_dec in H8.
+                 destruct (EqDec_eq_of_X X1 X1) in H8.
+                 --- rewrite rename_tvar_in_aworklist_fresh_eq in H8; auto.
+                     rewrite typ_subst_open_var in H8; auto.
+                     rewrite subst_tvar_in_typ_fresh_eq in H8; auto.
+                     rewrite subst_tvar_in_typ_fresh_eq in H8; auto.
+                 --- contradiction.
+              ** admit. (* wf *)  
+              ** simpl. rewrite ftvar_in_typ_open_typ_wrt_typ_upper. auto.
         -- dependent destruction H3. dependent destruction H5.
            pick fresh X. inst_cofinites_with X.
            assert (Heq: all_size A = all_size (A ^ᵗ X)) by admit. (* safe *)
@@ -1638,11 +1773,35 @@ Proof.
              admit.
              }
            destruct JgAll as [JgAll | JgAll]; eauto.
-           ++ left. eapply a_wl_red__sub_all with (L := union L (union L0 (union L1 (union L2 (union (ftvar_in_typ A) (ftvar_in_typ A0)))))); eauto.
-              intros X' Hnin. admit. (* TODO: rename tvar *)
-           ++ right. intro Hcontra. dependent destruction Hcontra.
-              ** dependent destruction H7.
-              ** admit.  (* TODO: rename tvar *)
+           ++ left. inst_cofinites_for a_wl_red__sub_all; eauto.
+              intros X' Hnin. 
+              apply a_wl_red_rename_tvar with (X:=X) (X':=X') in JgAll.
+              ** simpl in JgAll.
+                 unfold eq_dec in JgAll.
+                 destruct (EqDec_eq_of_X X X) in JgAll.
+                 --- rewrite rename_tvar_in_aworklist_fresh_eq in JgAll; auto.
+                     rewrite typ_subst_open_var in JgAll; auto.
+                     rewrite typ_subst_open_var in JgAll; auto.
+                 --- contradiction.
+              ** admit.
+              ** admit. (* wf *)
+              ** simpl.
+                 rewrite ftvar_in_typ_open_typ_wrt_typ_upper.
+                 rewrite ftvar_in_typ_open_typ_wrt_typ_upper. auto.
+           ++ right. intro Hcontra. dependent destruction Hcontra; try solve [dependent destruction H7].
+              pick fresh X1.
+              inst_cofinites_with X1.
+              apply a_wl_red_rename_tvar with (X:=X1) (X':=X) in H7; auto.
+              ** simpl in H7.
+                 unfold eq_dec in H7.
+                 destruct (EqDec_eq_of_X X1 X1) in H7.
+                 --- rewrite rename_tvar_in_aworklist_fresh_eq in H7; auto.
+                     rewrite typ_subst_open_var in H7; auto.
+                     rewrite typ_subst_open_var in H7; auto.
+                 --- contradiction.
+              ** admit. (* wf *)  
+              ** simpl. rewrite ftvar_in_typ_open_typ_wrt_typ_upper.
+                 rewrite ftvar_in_typ_open_typ_wrt_typ_upper. auto.
         -- edestruct JgUnion1 as [JgUnion1' | JgUnion1']; eauto.
            edestruct JgUnion2 as [JgUnion2' | JgUnion2']; eauto.
            right. intro Hcontra. dependent destruction Hcontra.
