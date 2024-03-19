@@ -271,28 +271,31 @@ Notation " x ~ᵈ T ;ᵈ Ω " :=
     (dworklist_consvar Ω x (dbind_typ T))
         (at level 58, T at next level, right associativity) : dworklist_scope.
       
-  Notation " X ~ᵈ □ ;ᵈ Ω " :=
-    (dworklist_constvar Ω X dbind_tvar_empty)
+Notation " X ~ᵈ □ ;ᵈ Ω " :=
+(dworklist_constvar Ω X dbind_tvar_empty)
+    (at level 58, right associativity) : dworklist_scope.
+
+Notation " X ~ᵈ ■ ;ᵈ Ω " :=
+(dworklist_constvar Ω X dbind_stvar_empty)
+    (at level 58, right associativity) : dworklist_scope.
+
+Notation " W ⫤ Ω " :=
+(dworklist_conswork Ω W)
+    (at level 58, right associativity) : dworklist_scope.
+
+Notation " Ω2 ⧺ Ω1 " :=
+    (dwl_app Ω2 Ω1)
         (at level 58, right associativity) : dworklist_scope.
-  
-  Notation " X ~ᵈ ■ ;ᵈ Ω " :=
-    (dworklist_constvar Ω X dbind_stvar_empty)
-        (at level 58, right associativity) : dworklist_scope.
-  
-  Notation " W ⫤ Ω " :=
-    (dworklist_conswork Ω W)
-        (at level 58, right associativity) : dworklist_scope.
-  
-  Notation " Ω ⟶ᵈʷ⁎⋅ " :=
-    (d_wl_red Ω)
-        (at level 58, no associativity) : type_scope.
-  
-  Notation " Ω ⟶ᵈ⁎⋅ " :=
-    (d_wl_del_red Ω)
-        (at level 58, no associativity) : type_scope.
-  
-  Notation " ⊢ᵈʷ Ω " :=
-    (d_wf_wl Ω)
-        (at level 58, no associativity) : type_scope.
-      
-  
+    
+Notation " Ω ⟶ᵈʷ⁎⋅ " :=
+(d_wl_red Ω)
+    (at level 58, no associativity) : type_scope.
+
+Notation " Ω ⟶ᵈ⁎⋅ " :=
+(d_wl_del_red Ω)
+    (at level 58, no associativity) : type_scope.
+
+Notation " ⊢ᵈʷ Ω " :=
+(d_wf_wl Ω)
+    (at level 58, no associativity) : type_scope.
+    

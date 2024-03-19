@@ -512,18 +512,14 @@ Notation " W ⫤ Γ " :=
   (aworklist_conswork Γ W)
       (at level 58, right associativity) : aworklist_scope.
 
+Notation " Γ2 ⧺ Γ1 " :=
+  (awl_app Γ2 Γ1)
+      (at level 58, right associativity) : aworklist_scope.
+
 Notation " Γ ⟶ᵃʷ⁎⋅ " :=
   (a_wl_red Γ)
       (at level 58, no associativity) : type_scope.
-
-(* Notation " Γ1 ⟶ᵃʷ Γ2 " :=
-  (a_wl_red_ss Γ1 Γ2)
-      (at level 58, no associativity) : type_scope.
-
-Notation " Γ1 ⟶ᵃʷ⁎ Γ2 " :=
-  (a_wl_mul_red Γ1 Γ2)
-      (at level 58, no associativity) : type_scope. *)
-
+      
 Notation " ⊢ᵃʷ Γ " :=
   (a_wf_wl Γ)
       (at level 58, no associativity) : type_scope.

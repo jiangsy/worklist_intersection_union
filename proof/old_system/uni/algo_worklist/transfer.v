@@ -288,6 +288,7 @@ where "θ ⫦ Γᵃ ⇝ Γᵈ ⫣ θ'" := (trans_worklist θ Γᵃ Γᵈ θ').
 Hint Constructors trans_typ : Hdb_transfer.
 
 
+
 Lemma trans_wl_not_in_ss : forall θ Γ Ω X,
   nil ⫦ Γ ⇝ Ω ⫣ θ -> X ∉ dom (awl_to_aenv Γ) -> X ∉ dom θ.
 Proof with auto.
@@ -456,6 +457,44 @@ Proof with eauto with Hdb_transfer.
     subst. auto.
 Qed.
 
+
+Lemma trans_wl_split : forall Γ1 Γ2 Ω θ θ',
+  ⊢ᵃʷ (Γ2 ⧺ Γ1) ->
+  θ ⫦ (Γ2 ⧺ Γ1) ⇝ Ω ⫣ θ' ->
+  exists Ω1 Ω2 θ''
+    , Ω = dwl_app Ω2 Ω1 
+    ∧ θ  ⫦ Γ1 ⇝ Ω1 ⫣ θ''
+    ∧ θ'' ⫦ Γ2 ⇝ Ω2 ⫣ θ'.
+Proof.
+  (* induction Γ2; simpl; intros.
+  - exists Ω. exists dworklist_empty. exists θ'.
+    simpl; repeat split; auto.
+    econstructor.
+  - inversion H; subst.
+    pose proof (IHΓ2' _ _ _ H3) as (Γ1 & Γ2 & Θ0 & E & Inst1 & Inst2).
+    exists Γ1, (Γ2 ⊨ w0), Θ0. repeat split; eauto.
+  - destruct bd; inversion H; subst.
+    + pose proof (IHΓ2' _ _ _ H3) as (Γ1 & Γ2 & Θ0 & E & Inst1 & Inst2).
+      exists Γ1, (Γ2 ,′' x : A0), Θ0.
+      subst. repeat split; eauto.
+    + pose proof (IHΓ2' _ _ _ H4) as (Γ1 & Γ2 & Θ0 & E & Inst1 & Inst2).
+      exists Γ1, Γ2, Θ0.
+      subst. repeat split; eauto.
+    + pose proof (IHΓ2' _ _ _ H3) as (Γ1 & Γ2 & Θ0 & E & Inst1 & Inst2).
+      exists Γ1, Γ2, Θ0.
+      subst. repeat split; eauto. *)
+Admitted.
+
+Lemma trans_wl_split_etvar : forall Γ1 Γ2 Ω θ θ'1 θ'2 X T,
+  ⊢ᵃʷ (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) ->
+  θ ⫦ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1 ⇝ Ω ⫣ θ'2 ++ (X ~ dbind_typ T) ++ θ'1 ->
+  exists Ω1 Ω2
+    , Ω = dwl_app Ω2 Ω1 
+    ∧ θ ⫦ X ~ᵃ ⬒ ;ᵃ Γ1 ⇝ Ω1 ⫣ (X ~ dbind_typ T) ++ θ'1
+    ∧ (X ~ dbind_typ T) ++ θ'1 ⫦ Γ2 ⇝ Ω2 ⫣ θ'2 ++ (X ~ dbind_typ T) ++ θ'1.
+Proof.
+  induction Γ2; simpl.
+Admitted.
 
 Hint Constructors trans_typ : Hdb_transfer.
 Hint Constructors trans_exp : Hdb_transfer.
