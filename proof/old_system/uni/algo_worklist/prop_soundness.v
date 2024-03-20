@@ -314,7 +314,7 @@ Hint Constructors aworklist_subst : Hdb_a_wl_red_soundness.
 Hint Resolve trans_typ_lc_atyp : Hdb_a_wl_red_soundness.
 
 
-Lemma worklist_subst'_fresh_etvar_total' : forall Γ1 Γ2 X X1 X2,
+Lemma worklist_subst_fresh_etvar_total : forall Γ1 Γ2 X X1 X2,
   ⊢ᵃʷ awl_app Γ2 (aworklist_constvar Γ1 X abind_etvar_empty) ->
   X1 `notin` dom (awl_to_aenv (awl_app Γ2 (aworklist_constvar Γ1 X abind_etvar_empty))) ->
   X2 `notin` add X1 (dom (awl_to_aenv (awl_app Γ2 (aworklist_constvar Γ1 X abind_etvar_empty)))) ->
@@ -357,10 +357,14 @@ Proof.
             apply worklist_split_etvar_det in x; auto.
             destruct x; subst.
             auto. simpl.
-            admit.
-        -- simpl. admit.
-    + admit. (* OK, neq *)
-    + admit. (* OK, neq *)
+            apply a_wf_wl_tvar_notin_remaining in H1; auto.
+        -- simpl. apply a_wf_wl_tvar_notin_remaining in H1; auto.
+           rewrite awl_to_aenv_app in H2. rewrite dom_aenv_app_comm in H2; simpl in *.
+           auto.
+    + rewrite awl_to_aenv_app in H0. rewrite dom_aenv_app_comm in H0; simpl in *.
+      auto.
+    + rewrite awl_to_aenv_app in H1. rewrite dom_aenv_app_comm in H1; simpl in *.
+      auto.
   - dependent destruction H.
     + replace (X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ X ~ᵃ □ ;ᵃ Γ2 ⧺ X0 ~ᵃ ⬒ ;ᵃ Γ1)%aworklist with 
       (X2 ~ᵃ ⬒ ;ᵃ (X1 ~ᵃ ⬒ ;ᵃ X ~ᵃ □ ;ᵃ Γ2) ⧺ X0 ~ᵃ ⬒ ;ᵃ Γ1)%aworklist;
@@ -383,11 +387,16 @@ Proof.
                 with (Γ'2 ⧺ X0 ~ᵃ ⬒ ;ᵃ (X2 ~ᵃ ⬒ ;ᵃ Γ1))%aworklist in x by auto.
               apply worklist_split_etvar_det in x; auto.
               destruct x; subst; auto.
-              admit. (* OK, notin *)
-           ++ admit.
-        -- admit.
-      * admit.
-      * admit.
+              apply a_wf_wl_tvar_notin_remaining in H0; auto.
+              ++ simpl. apply a_wf_wl_tvar_notin_remaining in H0; auto.
+                rewrite awl_to_aenv_app in H1. rewrite dom_aenv_app_comm in H1; simpl in *.
+                auto.
+        -- rewrite awl_to_aenv_app in H. rewrite dom_aenv_app_comm in H; simpl in *.
+           auto.
+      * rewrite awl_to_aenv_app in H1. rewrite dom_aenv_app_comm in H1; simpl in *.
+        auto.
+      * rewrite awl_to_aenv_app in H2. rewrite dom_aenv_app_comm in H2; simpl in *.
+        auto.
     + replace (X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ X ~ᵃ ■ ;ᵃ Γ2 ⧺ X0 ~ᵃ ⬒ ;ᵃ Γ1)%aworklist with 
       (X2 ~ᵃ ⬒ ;ᵃ (X1 ~ᵃ ⬒ ;ᵃ X ~ᵃ ■ ;ᵃ Γ2) ⧺ X0 ~ᵃ ⬒ ;ᵃ Γ1)%aworklist;
       constructor; simpl; auto.
@@ -395,25 +404,30 @@ Proof.
       (X1 ~ᵃ ⬒ ;ᵃ (X ~ᵃ ■ ;ᵃ Γ2) ⧺ X0 ~ᵃ ⬒ ;ᵃ (X2 ~ᵃ ⬒ ;ᵃ Γ1))%aworklist;
       constructor; simpl; auto.
       * constructor; auto.
-      eapply IHΓ2 with (X1:=X1) (X2:=X2) in H0 as Hws; eauto.
-      dependent destruction Hws; auto.
-      -- simpl in *. solve_notin_eq X2.
-      -- simpl in *. solve_notin_eq X2.
-      -- replace (X1 ~ᵃ ⬒ ;ᵃ Γ'2 ⧺ X0 ~ᵃ ⬒ ;ᵃ Γ1)%aworklist with 
-           ((X1 ~ᵃ ⬒ ;ᵃ Γ'2) ⧺ X0 ~ᵃ ⬒ ;ᵃ Γ1)%aworklist in x by auto.
-         apply worklist_split_etvar_det in x; destruct x; subst. simpl in *.
-         dependent destruction Hws; auto; simpl in *.
-         ++ solve_notin_eq X1.
-         ++ solve_notin_eq X1.
-         ++ replace (Γ'2 ⧺ X0 ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1)%aworklist 
-              with (Γ'2 ⧺ X0 ~ᵃ ⬒ ;ᵃ (X2 ~ᵃ ⬒ ;ᵃ Γ1))%aworklist in x by auto.
-            apply worklist_split_etvar_det in x; auto.
-            destruct x; subst; auto.
-            admit. (* OK, notin *)
-         ++ admit.
-        -- admit.
-      * admit.
-      * admit.
+        eapply IHΓ2 with (X1:=X1) (X2:=X2) in H0 as Hws; eauto.
+        dependent destruction Hws; auto.
+        -- simpl in *. solve_notin_eq X2.
+        -- simpl in *. solve_notin_eq X2.
+        -- replace (X1 ~ᵃ ⬒ ;ᵃ Γ'2 ⧺ X0 ~ᵃ ⬒ ;ᵃ Γ1)%aworklist with 
+            ((X1 ~ᵃ ⬒ ;ᵃ Γ'2) ⧺ X0 ~ᵃ ⬒ ;ᵃ Γ1)%aworklist in x by auto.
+          apply worklist_split_etvar_det in x; destruct x; subst. simpl in *.
+          dependent destruction Hws; auto; simpl in *.
+          ++ solve_notin_eq X1.
+          ++ solve_notin_eq X1.
+          ++ replace (Γ'2 ⧺ X0 ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1)%aworklist 
+                with (Γ'2 ⧺ X0 ~ᵃ ⬒ ;ᵃ (X2 ~ᵃ ⬒ ;ᵃ Γ1))%aworklist in x by auto.
+              apply worklist_split_etvar_det in x; auto.
+              destruct x; subst; auto.
+              apply a_wf_wl_tvar_notin_remaining in H0; auto.
+              ++ simpl. apply a_wf_wl_tvar_notin_remaining in H0; auto.
+                rewrite awl_to_aenv_app in H1. rewrite dom_aenv_app_comm in H1; simpl in *.
+                auto.
+        -- rewrite awl_to_aenv_app in H. rewrite dom_aenv_app_comm in H; simpl in *.
+          auto.
+      * rewrite awl_to_aenv_app in H1. rewrite dom_aenv_app_comm in H1; simpl in *.
+        auto.
+      * rewrite awl_to_aenv_app in H2. rewrite dom_aenv_app_comm in H2; simpl in *.
+        auto.
     + replace (X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ X ~ᵃ ⬒ ;ᵃ Γ2 ⧺ X0 ~ᵃ ⬒ ;ᵃ Γ1)%aworklist with 
       (X2 ~ᵃ ⬒ ;ᵃ (X1 ~ᵃ ⬒ ;ᵃ X ~ᵃ ⬒  ;ᵃ Γ2) ⧺ X0 ~ᵃ ⬒ ;ᵃ Γ1)%aworklist;
       constructor; simpl; auto.
@@ -435,11 +449,16 @@ Proof.
                 with (Γ'2 ⧺ X0 ~ᵃ ⬒ ;ᵃ (X2 ~ᵃ ⬒ ;ᵃ Γ1))%aworklist in x by auto.
               apply worklist_split_etvar_det in x; auto.
               destruct x; subst; auto.
-              admit. (* OK, notin *)
-          ++ admit.
-        -- simpl in *. admit.
-      * admit.
-      * admit.
+              apply a_wf_wl_tvar_notin_remaining in H0; auto.
+              ++ simpl. apply a_wf_wl_tvar_notin_remaining in H0; auto.
+                rewrite awl_to_aenv_app in H1. rewrite dom_aenv_app_comm in H1; simpl in *.
+                auto.
+        -- rewrite awl_to_aenv_app in H. rewrite dom_aenv_app_comm in H; simpl in *.
+          auto.
+      * rewrite awl_to_aenv_app in H1. rewrite dom_aenv_app_comm in H1; simpl in *.
+        auto.
+      * rewrite awl_to_aenv_app in H2. rewrite dom_aenv_app_comm in H2; simpl in *.
+        auto.
  - dependent destruction H. 
    replace (X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ w ⫤ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1)%aworklist with 
     (X2 ~ᵃ ⬒ ;ᵃ (X1 ~ᵃ ⬒ ;ᵃ w ⫤ Γ2) ⧺ X ~ᵃ ⬒ ;ᵃ Γ1)%aworklist;
@@ -462,11 +481,14 @@ Proof.
            (Γ'2 ⧺ X ~ᵃ ⬒ ;ᵃ (X2 ~ᵃ ⬒ ;ᵃ Γ1))%aworklist in x; auto.
           apply worklist_split_etvar_det in x; auto.
           destruct x; subst; auto.
-          admit. (* OK, notin *)
-       -- admit. (* OK, notin *)
-   + admit.
-   + admit.  
-Admitted.
+          apply a_wf_wl_tvar_notin_remaining in H0; auto.
+       -- rewrite awl_to_aenv_app in H1. rewrite dom_aenv_app_comm in H1; simpl in *.
+          apply a_wf_wl_tvar_notin_remaining in H0; auto.
+   + rewrite awl_to_aenv_app in H1. rewrite dom_aenv_app_comm in H1; simpl in *.
+     auto.
+   + rewrite awl_to_aenv_app in H2. rewrite dom_aenv_app_comm in H2; simpl in *.
+     auto.
+Qed.
 
 Ltac rewrite_close_open_subst :=
   match goal with
