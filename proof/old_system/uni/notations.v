@@ -1,6 +1,7 @@
 Require Export Coq.Unicode.Utf8.
 
 Require Export uni.def_ott.
+Require Export uni.def_extra.
 Require Export uni.decl.def_extra.
 (* Require Export uni.worklist.def. *)
 Require Export uni.prop_ln.
@@ -93,8 +94,5 @@ Notation "e1 ^ᵉₑ e2" := (open_exp_wrt_exp e1 e2)
 
 Notation "e ^ᵉₜ A" := (open_exp_wrt_typ e A)
   (at level 48, left associativity) : type_scope.
-(* 
-Notation "e ⟼ e'" := 
-  (dexp_red e e')
-    (at level 65, no associativity). *)
+
 

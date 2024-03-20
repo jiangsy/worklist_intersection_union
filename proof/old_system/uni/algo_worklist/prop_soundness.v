@@ -168,7 +168,7 @@ Lemma a_worklist_subst_transfer_same_dworklist: forall Γ Ω θ X T Γ1 Γ2,
   ⊢ᵃʷ Γ ->
   a_mono_typ (awl_to_aenv Γ) T ->
   X `notin` ftvar_in_typ T ->
-  aworklist_subst' Γ X T Γ1 Γ2 ->
+  aworklist_subst Γ X T Γ1 Γ2 ->
   trans_worklist nil (awl_app (subst_tvar_in_aworklist T X Γ2) Γ1)  Ω θ ->
   exists θ'1 θ'2 Tᵈ, 
       trans_worklist nil Γ Ω (θ'2 ++ (X ~ dbind_typ Tᵈ) ++ θ'1 ) /\ 
@@ -192,7 +192,7 @@ Proof with auto with Hdb_a_wl_red_soundness.
       auto.
     + admit. (* OK, wf_ss *)
   - dependent destruction H3.
-    apply IHaworklist_subst' in H3 as IH.
+    apply IHaworklist_subst in H3 as IH.
     destruct IH as [θ'1 [θ'2 [Tᵈ [Htrans [Htranst [Htranst' [Hbinds Hwfss]]]]]]].    
     exists θ'1. exists θ'2. exists Tᵈ. repeat split; auto.
     + econstructor. auto. 
@@ -212,7 +212,7 @@ Proof with auto with Hdb_a_wl_red_soundness.
     + admit. (* OK, mono *)
     + auto.
   - dependent destruction H5.
-    apply IHaworklist_subst' in H5 as IH.
+    apply IHaworklist_subst in H5 as IH.
     destruct IH as [θ'1 [θ'2 [Tᵈ [Htrans [Htranst [Htranst' [Hbinds Hwfss]]]]]]].    
     exists θ'1. exists (Y ~ dbind_tvar_empty ++ θ'2). 
     exists Tᵈ. repeat split; auto.
@@ -231,7 +231,7 @@ Proof with auto with Hdb_a_wl_red_soundness.
     + auto.
   (* stvar_stay *)
   - dependent destruction H5.
-    apply IHaworklist_subst' in H5 as IH.
+    apply IHaworklist_subst in H5 as IH.
     destruct IH as [θ'1 [θ'2 [Tᵈ [Htrans [Htranst [Htranst' [Hbindsx Hwfss]]]]]]].    
     exists θ'1. exists (Y ~ dbind_stvar_empty ++ θ'2). 
     exists Tᵈ. repeat split; auto.
@@ -250,7 +250,7 @@ Proof with auto with Hdb_a_wl_red_soundness.
     + auto.
   (* work_stay *)
   - dependent destruction H3.
-    apply IHaworklist_subst' in H3 as IH.
+    apply IHaworklist_subst in H3 as IH.
     destruct IH as [θ'1 [θ'2 [Tᵈ [Htrans [Htranst [Htranst' [Hbinds Hwfss]]]]]]].    
     exists θ'1. exists θ'2. exists Tᵈ. repeat split; auto.
     + constructor; auto.
@@ -262,7 +262,7 @@ Proof with auto with Hdb_a_wl_red_soundness.
     + auto.
   (* etvar_move *)
   - dependent destruction H5.
-    apply IHaworklist_subst' in H5 as IH.
+    apply IHaworklist_subst in H5 as IH.
     destruct IH as [θ'1 [θ'2 [Tᵈ [Htrans [Htranst [Htranst' [Hbindsx Hwfss]]]]]]].    
     exists θ'1. 
     exists (Y ~ dbind_typ T ++ θ'2). exists Tᵈ. repeat split; auto.
@@ -277,7 +277,7 @@ Proof with auto with Hdb_a_wl_red_soundness.
     + admit.
     + auto.
   - simpl in *.
-    apply IHaworklist_subst' in H5 as IH.
+    apply IHaworklist_subst in H5 as IH.
     destruct IH as [θ'1 [θ'2 [Tᵈ [Htrans [Htranst [Htranst' [Hbindsx Hwfss]]]]]]].    
     assert (exists T2ᵈ, exists θ'3, θ'1 = (Y ~ dbind_typ T2ᵈ) ++ θ'3) by admit.
     destruct H6 as [T2ᵈ [θ'3]].
@@ -314,31 +314,11 @@ Hint Constructors aworklist_subst : Hdb_a_wl_red_soundness.
 Hint Resolve trans_typ_lc_atyp : Hdb_a_wl_red_soundness.
 
 
-Lemma worklist_split_etvar_det : forall Γ1 Γ2 Γ'1 Γ'2 X,
-  X `notin` dom (awl_to_aenv Γ'2) `union`  dom (awl_to_aenv Γ'1) ->
-  (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1)%aworklist = (Γ'2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ'1)%aworklist ->
-  Γ2 = Γ'2 /\ Γ1 = Γ'1.
-Proof.
-  intros. generalize dependent Γ1. 
-  generalize dependent Γ'1. generalize dependent Γ'2. 
-  induction Γ2; simpl in *; intros.
-  - destruct Γ'2; simpl in *; try dependent destruction H0.
-    + intuition. 
-    + solve_notin_eq X0.
-  - destruct Γ'2; simpl in *; try dependent destruction H0.
-    + apply IHΓ2 in x; auto. destruct x; subst; auto.
-  - destruct Γ'2; simpl in *; try dependent destruction H0. 
-    + admit. (* OK, false*)
-    + apply IHΓ2 in x; auto. destruct x; subst; auto.
-  - destruct Γ'2; simpl in *; try dependent destruction H0. 
-    + apply IHΓ2 in x; auto. destruct x; subst; auto.
-Admitted.
-
 Lemma worklist_subst'_fresh_etvar_total' : forall Γ1 Γ2 X X1 X2,
   ⊢ᵃʷ awl_app Γ2 (aworklist_constvar Γ1 X abind_etvar_empty) ->
   X1 `notin` dom (awl_to_aenv (awl_app Γ2 (aworklist_constvar Γ1 X abind_etvar_empty))) ->
   X2 `notin` add X1 (dom (awl_to_aenv (awl_app Γ2 (aworklist_constvar Γ1 X abind_etvar_empty)))) ->
-  aworklist_subst' (aworklist_constvar (aworklist_constvar (awl_app Γ2 (aworklist_constvar Γ1 X abind_etvar_empty)) X1 abind_etvar_empty) X2 abind_etvar_empty) 
+  aworklist_subst (aworklist_constvar (aworklist_constvar (awl_app Γ2 (aworklist_constvar Γ1 X abind_etvar_empty)) X1 abind_etvar_empty) X2 abind_etvar_empty) 
     X (typ_arrow ` X1 `X2) (aworklist_constvar (aworklist_constvar Γ1 X2 abind_etvar_empty) X1 abind_etvar_empty) Γ2.
 Proof.
   induction Γ2; intros; simpl in *; auto.
@@ -376,9 +356,9 @@ Proof.
             with  (Γ'2 ⧺ X ~ᵃ ⬒ ;ᵃ (X2 ~ᵃ ⬒ ;ᵃ Γ1))%aworklist in x by auto.
             apply worklist_split_etvar_det in x; auto.
             destruct x; subst.
-            auto.
+            auto. simpl.
             admit.
-        -- admit.
+        -- simpl. admit.
     + admit. (* OK, neq *)
     + admit. (* OK, neq *)
   - dependent destruction H.
@@ -500,7 +480,7 @@ Ltac simpl_open_subst_typ' :=
   match goal with
   | H : context [ {?B /ᵗ ?X} (?A ^ᵗ (?X')) ] |- _ =>
     rewrite subst_tvar_in_typ_open_typ_wrt_typ in H; auto with Hdb_a_wl_red_soundness;
-    simpl in H; try destruct_eq_atom'; auto
+    simpl in H; try destruct_eq_atom; auto
     (* try solve [rewrite subst_tvar_in_typ_fresh_eq in H; auto] *)
   | H1 : context [ {?B /ᵗ ?X} ?A ], H2 : context [ftvar_in_typ ?A] |- _ =>
       let H := fresh "H" in

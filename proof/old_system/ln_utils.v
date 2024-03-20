@@ -46,25 +46,23 @@ Tactic Notation "inst_cofinites_by" constr(F) :=
 Tactic Notation "inst_cofinites_by" constr(L) "using_name" ident(x) := 
   let x := fresh x in pick fresh x for L; inst_cofinites_with x.
 
+Ltac solve_notin_eq X :=
+  let H := fresh "H" in
+    assert (H: X `notin` singleton X) by auto;
+    apply notin_singleton_1 in H; contradiction.
 
 
-Fixpoint ftvar_in_aworklist' (aW_5:aworklist) : vars :=
-  match aW_5 with
-  | aworklist_empty => {}
-  | (aworklist_consvar aW x ab) => (ftvar_in_aworklist' aW) \u (ftvar_in_abind ab)
-  | (aworklist_constvar aW X ab) => (ftvar_in_aworklist' aW) \u (ftvar_in_abind ab) \u (singleton X)
-  | (aworklist_conswork aW w) => (ftvar_in_aworklist' aW) \u (ftvar_in_work w)
-end.
+Ltac destruct_eq_atom :=
+  unfold eq_dec in *;
+  repeat
+    match goal with
+    | H : context [EqDec_eq_of_X ?X0 ?X] |- _ => destruct (EqDec_eq_of_X X0 X); subst;
+        try solve_notin_eq X0; try solve_notin_eq X
+    | H : _ |- context [EqDec_eq_of_X ?X0 ?X] => destruct (EqDec_eq_of_X X0 X); subst;
+        try solve_notin_eq X0; try solve_notin_eq X
+    end.
 
 
-Fixpoint fvar_in_aworklist' (aW_5:aworklist) : vars :=
-  match aW_5 with
-  | aworklist_empty => {}
-  | (aworklist_consvar aW x ab) => (fvar_in_aworklist' aW) \u (singleton x) (* no var in abind *)
-  | (aworklist_constvar aW X ab) => (fvar_in_aworklist' aW) (* no var in abind *)
-  | (aworklist_conswork aW w) => (fvar_in_aworklist' aW) \u (fvar_in_work w)
-end.
-  
 
 Ltac gather_atoms ::=
   let A := gather_atoms_with (fun x : vars => x) in

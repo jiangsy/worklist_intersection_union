@@ -677,13 +677,13 @@ Proof with auto with Hdb_transfer.
     + econstructor...
       eapply wf_ss_rename_tvar; eauto.
       admit.
-  - destruct_eq_atom'. 
+  - destruct_eq_atom. 
     + econstructor... 
       eapply wf_ss_rename_tvar; eauto.
     + econstructor... 
       eapply wf_ss_rename_tvar; eauto.
       admit.
-  - destruct_eq_atom'. 
+  - destruct_eq_atom. 
     + admit. (* OK, false *)
     + econstructor... 
       eapply wf_ss_rename_tvar; eauto. admit. 
@@ -708,21 +708,21 @@ Lemma trans_typ_rename : forall θ1 θ2 Aᵃ Aᵈ X X' b,
   map (subst_tvar_in_dbind (` X') X) θ2  ++ (X', b) :: θ1 ⫦ᵗ {` X' /ᵗ X} Aᵃ ⇝ {` X' /ᵗ X} Aᵈ.
 Proof with auto with Hdb_transfer.
   intros. dependent induction H; simpl; auto...
-  - destruct_eq_atom'. 
+  - destruct_eq_atom. 
     + econstructor...
       eapply wf_ss_rename; eauto.
       admit.
     + econstructor...
       eapply wf_ss_rename; eauto.
       admit.
-  - destruct_eq_atom'. 
+  - destruct_eq_atom. 
     + econstructor... 
       eapply wf_ss_rename; eauto.
       admit.
     + econstructor... 
       eapply wf_ss_rename; eauto.
       admit.
-  - destruct_eq_atom'. 
+  - destruct_eq_atom. 
     + admit. (* OK, false *)
     + econstructor... 
       eapply wf_ss_rename; eauto. admit. 
@@ -1453,7 +1453,7 @@ Proof.
   - dependent destruction Hinsta.
     constructor... 
     apply wf_ss_weaken_etvar; auto.
-  - destruct_eq_atom'.
+  - destruct_eq_atom.
     + constructor. 
       * apply wf_ss_weaken_etvar; auto.
       * rewrite_env (nil ++ θ1) in Hinstt. 
@@ -1484,7 +1484,7 @@ Proof.
     apply H0; auto.
     + simpl. constructor; auto.
     + rewrite subst_tvar_in_typ_open_typ_wrt_typ.
-      * simpl. destruct_eq_atom'. auto.
+      * simpl. destruct_eq_atom. auto.
       * eapply trans_typ_lc_atyp; eauto.
   - simpl in Hinsta.
     dependent destruction Hinsta. constructor; auto.
@@ -1510,8 +1510,8 @@ Proof with eauto with Hdb_transfer.
     exists typ_top... 
   - dependent destruction Hinst;
     exists typ_bot...
-  - destruct_eq_atom'.
-    + exists (` X0). simpl. destruct_eq_atom'; split.
+  - destruct_eq_atom.
+    + exists (` X0). simpl. destruct_eq_atom; split.
       * rewrite_env (nil ++ θ1) in Hwft.
         apply trans_typ_weaken with (θ2:=θ2) in Hwft...
         apply trans_typ_det with (A₁ᵈ:=A'ᵈ) in Hwft...
