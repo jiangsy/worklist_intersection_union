@@ -313,182 +313,180 @@ Hint Constructors aworklist_subst : Hdb_a_wl_red_soundness.
 
 Hint Resolve trans_typ_lc_atyp : Hdb_a_wl_red_soundness.
 
+
+Lemma worklist_split_etvar_det : forall Γ1 Γ2 Γ'1 Γ'2 X,
+  X `notin` dom (awl_to_aenv Γ'2) `union`  dom (awl_to_aenv Γ'1) ->
+  (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1)%aworklist = (Γ'2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ'1)%aworklist ->
+  Γ2 = Γ'2 /\ Γ1 = Γ'1.
+Proof.
+  intros. generalize dependent Γ1. 
+  generalize dependent Γ'1. generalize dependent Γ'2. 
+  induction Γ2; simpl in *; intros.
+  - destruct Γ'2; simpl in *; try dependent destruction H0.
+    + intuition. 
+    + solve_notin_eq X0.
+  - destruct Γ'2; simpl in *; try dependent destruction H0.
+    + apply IHΓ2 in x; auto. destruct x; subst; auto.
+  - destruct Γ'2; simpl in *; try dependent destruction H0. 
+    + admit. (* OK, false*)
+    + apply IHΓ2 in x; auto. destruct x; subst; auto.
+  - destruct Γ'2; simpl in *; try dependent destruction H0. 
+    + apply IHΓ2 in x; auto. destruct x; subst; auto.
+Admitted.
+
 Lemma worklist_subst'_fresh_etvar_total' : forall Γ1 Γ2 X X1 X2,
+  ⊢ᵃʷ awl_app Γ2 (aworklist_constvar Γ1 X abind_etvar_empty) ->
   X1 `notin` dom (awl_to_aenv (awl_app Γ2 (aworklist_constvar Γ1 X abind_etvar_empty))) ->
   X2 `notin` add X1 (dom (awl_to_aenv (awl_app Γ2 (aworklist_constvar Γ1 X abind_etvar_empty)))) ->
   aworklist_subst' (aworklist_constvar (aworklist_constvar (awl_app Γ2 (aworklist_constvar Γ1 X abind_etvar_empty)) X1 abind_etvar_empty) X2 abind_etvar_empty) 
-    X (typ_arrow ` X1 `X2) (aworklist_constvar (aworklist_constvar Γ1 X1 abind_etvar_empty) X2 abind_etvar_empty) Γ2.
+    X (typ_arrow ` X1 `X2) (aworklist_constvar (aworklist_constvar Γ1 X2 abind_etvar_empty) X1 abind_etvar_empty) Γ2.
 Proof.
   induction Γ2; intros; simpl in *; auto.
   - replace (X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ X ~ᵃ ⬒ ;ᵃ Γ1)%aworklist with 
       (aworklist_constvar 
           (awl_app (aworklist_constvar aworklist_empty X1 abind_etvar_empty) (aworklist_constvar Γ1 X abind_etvar_empty))
           X2 abind_etvar_empty);
-     constructor; simpl; auto.
-     replace (X1 ~ᵃ ⬒ ;ᵃ X ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1)%aworklist with 
+    constructor; simpl; auto.
+    replace (X1 ~ᵃ ⬒ ;ᵃ X ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1)%aworklist with 
       (aworklist_constvar 
-          (awl_app (aworklist_constvar aworklist_empty X abind_etvar_empty) (aworklist_constvar Γ1 X2 abind_etvar_empty))
-          X1 abind_etvar_empty); 
-
-
-
+          ((awl_app aworklist_empty (aworklist_constvar (aworklist_constvar Γ1 X2 abind_etvar_empty) X abind_etvar_empty)))
+          X1 abind_etvar_empty);
+    constructor; simpl; auto.
     constructor.
-    constructor.
-  - constructor.
-Admitted.
-
-Lemma worklist_subst'_fresh_etvar_total : forall Γ X X1 X2,
-  ⊢ᵃʷ Γ ->
-  binds X abind_etvar_empty (awl_to_aenv Γ) ->
-  X1 `notin` dom (awl_to_aenv Γ) ->
-  X2 `notin` add X1 (dom (awl_to_aenv Γ)) ->
-  exists Γ1 Γ2, 
-    aworklist_subst' (aworklist_constvar (aworklist_constvar Γ X1 abind_etvar_empty) X2 abind_etvar_empty) 
-      X (typ_arrow ` X1 `X2) Γ1 Γ2.
-Proof with auto with Hdb_a_wl_red_soundness.
-  intros. induction Γ; simpl in *.
-  - inversion H0.
-  - dependent destruction H.
-    inversion H2. 
-    + dependent destruction H5.
-    + apply IHΓ in H1; auto.
-      destruct H1 as [Γ1 [Γ2 Hws]].
-      dependent destruction Hws; simpl in *.
-      * inversion H2. 
-        -- dependent destruction H1.
-        -- apply binds_dom_contradiction in H5... contradiction.
-      * solve_notin_eq X2.
-      * assert (exists Γ2', (Γ2 = (X1 ~ᵃ ⬒ ;ᵃ Γ2')%aworklist) /\ (awl_app Γ2' (X ~ᵃ ⬒ ;ᵃ Γ1)%aworklist = Γ)) by admit.
-        destruct H7 as [Γ2' [Heq1 Heq2]].
-        rewrite Heq1 in *. rewrite <- Heq2 in *. 
-        simpl in *.
-        dependent destruction Hws.
+  - replace (X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ aworklist_consvar (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) x ab)%aworklist with 
+      (X2 ~ᵃ ⬒ ;ᵃ (X1 ~ᵃ ⬒ ;ᵃ aworklist_consvar Γ2 x ab) ⧺ X ~ᵃ ⬒ ;ᵃ Γ1)%aworklist;
+    constructor; simpl; auto.
+    replace (X1 ~ᵃ ⬒ ;ᵃ aworklist_consvar (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1) x ab)%aworklist with
+      ((X1 ~ᵃ ⬒ ;ᵃ aworklist_consvar Γ2 x ab) ⧺ X ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1)%aworklist; 
+    constructor; simpl; auto.
+    + dependent destruction H; auto.
+      simpl.
+      constructor; auto.
+      eapply IHΓ2 with (X1:=X1) (X2:=X2) in H1 as Hws; eauto.
+      dependent destruction Hws; auto.
+      * simpl in *. solve_notin_eq X2.
+      * simpl in *. solve_notin_eq X2.
+      * replace (X1 ~ᵃ ⬒ ;ᵃ Γ'2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1)%aworklist with 
+        ((X1 ~ᵃ ⬒ ;ᵃ Γ'2) ⧺ X ~ᵃ ⬒ ;ᵃ Γ1)%aworklist in x by auto.
+        apply worklist_split_etvar_det in x; destruct x; subst. simpl in *.
+        dependent destruction Hws; auto; simpl in *.
+        -- solve_notin_eq X1.
+        -- solve_notin_eq X1.
+        -- replace (Γ'2 ⧺ X ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1)%aworklist 
+            with  (Γ'2 ⧺ X ~ᵃ ⬒ ;ᵃ (X2 ~ᵃ ⬒ ;ᵃ Γ1))%aworklist in x by auto.
+            apply worklist_split_etvar_det in x; auto.
+            destruct x; subst.
+            auto.
+            admit.
         -- admit.
-        -- simpl in *. solve_notin_eq X1.
-        -- apply IHΓ in H8.
-           destruct H8 as [Γ1' [Γ2'' Hws']].
-            dependent destruction Hws'; simpl in *.
-            ++ inversion H2. 
-                ** dependent destruction H1.
-                ** apply binds_dom_contradiction in H5... contradiction.
-            ++ solve_notin_eq X2.
-            ++ exists Γ1'. exists Γ2''...
-      admit.
-  - dependent destruction H. 
-    inversion H1. 
-    + dependent destruction H4.
-    + apply IHΓ in H4...
-      destruct H4 as [Γ1 [Γ2 Hws]].
-      dependent destruction Hws; simpl in *.
-      * inversion H1. 
-        -- dependent destruction H4.
-        -- apply binds_dom_contradiction in H4... contradiction.
-      * solve_notin_eq X2.
+    + admit. (* OK, neq *)
+    + admit. (* OK, neq *)
+  - dependent destruction H.
+    + replace (X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ X ~ᵃ □ ;ᵃ Γ2 ⧺ X0 ~ᵃ ⬒ ;ᵃ Γ1)%aworklist with 
+      (X2 ~ᵃ ⬒ ;ᵃ (X1 ~ᵃ ⬒ ;ᵃ X ~ᵃ □ ;ᵃ Γ2) ⧺ X0 ~ᵃ ⬒ ;ᵃ Γ1)%aworklist;
+      constructor; simpl; auto.
+      replace (X1 ~ᵃ ⬒ ;ᵃ X ~ᵃ □ ;ᵃ Γ2 ⧺ X0 ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1)%aworklist with 
+      (X1 ~ᵃ ⬒ ;ᵃ (X ~ᵃ □ ;ᵃ Γ2) ⧺ X0 ~ᵃ ⬒ ;ᵃ (X2 ~ᵃ ⬒ ;ᵃ Γ1))%aworklist;
+      constructor; simpl; auto.
+      * constructor; auto.
+        eapply IHΓ2 with (X1:=X1) (X2:=X2) in H0 as Hws; eauto.
+        dependent destruction Hws; auto.
+        -- simpl in *. solve_notin_eq X2.
+        -- simpl in *. solve_notin_eq X2.
+        -- replace (X1 ~ᵃ ⬒ ;ᵃ Γ'2 ⧺ X0 ~ᵃ ⬒ ;ᵃ Γ1)%aworklist with 
+             ((X1 ~ᵃ ⬒ ;ᵃ Γ'2) ⧺ X0 ~ᵃ ⬒ ;ᵃ Γ1)%aworklist in x by auto.
+           apply worklist_split_etvar_det in x; destruct x; subst. simpl in *.
+           dependent destruction Hws; auto; simpl in *.
+           ++ solve_notin_eq X1.
+           ++ solve_notin_eq X1.
+           ++ replace (Γ'2 ⧺ X0 ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1)%aworklist 
+                with (Γ'2 ⧺ X0 ~ᵃ ⬒ ;ᵃ (X2 ~ᵃ ⬒ ;ᵃ Γ1))%aworklist in x by auto.
+              apply worklist_split_etvar_det in x; auto.
+              destruct x; subst; auto.
+              admit. (* OK, notin *)
+           ++ admit.
+        -- admit.
       * admit.
-
-
-(* This is not general, but probably enough for our usage *)
-Lemma worklist_subst_fresh_etvar_total : forall Γ X X1 X2,
-  ⊢ᵃʷ Γ ->
-  binds X abind_etvar_empty (awl_to_aenv Γ) ->
-  X1 `notin` dom (awl_to_aenv Γ) ->
-  X2 `notin` add X1 (dom (awl_to_aenv Γ)) ->
-  exists E Γ1 Γ2, 
-    aworklist_subst (aworklist_constvar (aworklist_constvar Γ X1 abind_etvar_empty) X2 abind_etvar_empty) 
-      X (typ_arrow ` X1 `X2) E Γ1 Γ2.
-Proof with auto with Hdb_a_wl_red_soundness.
-  intros. induction Γ; simpl in *.
-  - inversion H0.
-  - dependent destruction H.
-    inversion H2. 
-    + dependent destruction H5.
-    + apply IHΓ in H1; auto.
-      destruct H1 as [E [Γ1 [Γ2 Hws]]].
-      dependent destruction Hws; simpl in *.
-      * inversion H2. 
-        -- dependent destruction H1.
-        -- apply binds_dom_contradiction in H5... contradiction.
-      * solve_notin_eq X2.
-      * dependent destruction Hws. 
-        -- inversion H2.
-           ++ dependent destruction H6. 
-           ++ apply binds_dom_contradiction in H5... contradiction.
-        -- simpl in *. solve_notin_eq X1.
-        -- exists (X2 :: X1 :: E).
-           exists Γ1.
-           exists (aworklist_consvar Γ2 x (abind_var_typ A))...
-  - dependent destruction H.
-    + inversion H1. dependent destruction H4.
-      apply IHΓ in H0 as Hws... 
-      destruct Hws as [E [Γ1 [Γ2 Hws]]].
-      dependent destruction Hws; simpl in *.
-      * inversion H1. 
-        -- dependent destruction H5.
-        -- apply binds_dom_contradiction in H5... contradiction.
-      * solve_notin_eq X2.
-      * destruct (X0 == X). 
-        -- subst. apply binds_dom_contradiction in H4... contradiction.
-        -- dependent destruction Hws. 
-           ++ inversion H1.
-              ** dependent destruction H6. 
-              ** apply binds_dom_contradiction in H4... contradiction. 
-           ++ simpl in *. solve_notin_eq X1.
-           ++ exists (X2 :: X1 :: E).
-              exists Γ1.
-              exists (aworklist_constvar Γ2 X0 abind_tvar_empty)...
-    + inversion H1. dependent destruction H4.
-      apply IHΓ in H0 as Hws... 
-      destruct Hws as [E [Γ1 [Γ2 Hws]]].
-      dependent destruction Hws; simpl in *.
-      * inversion H1. 
-        -- dependent destruction H5.
-        -- apply binds_dom_contradiction in H5... contradiction.
-      * solve_notin_eq X2.
-      * destruct (X0 == X). 
-        -- subst. apply binds_dom_contradiction in H4... contradiction.
-        -- dependent destruction Hws. 
-           ++ inversion H1.
-              ** dependent destruction H6. 
-              ** apply binds_dom_contradiction in H4... contradiction. 
-           ++ simpl in *. solve_notin_eq X1.
-           ++ exists (X2 :: X1 :: E).
-              exists Γ1.
-              exists (aworklist_constvar Γ2 X0 abind_stvar_empty)... 
-    + inversion H1. dependent destruction H4.
-      * exists (X2 :: X1 :: nil). exists Γ. exists aworklist_empty...
-      * apply IHΓ in H0...
-        destruct H0 as [E [Γ1 [Γ2 Hws]]].
-        dependent destruction Hws; simpl in *.
-        -- inversion H1. 
-           ++ dependent destruction H0.
-              solve_notin_eq X.
-           ++ apply binds_dom_contradiction in H4... contradiction.
-        -- solve_notin_eq X2.
-        -- destruct (X0 == X). 
-           ++ subst. apply binds_dom_contradiction in H4... contradiction.
-           ++ dependent destruction Hws. 
-              ** inversion H1.
-                 --- dependent destruction H5.
-                     solve_notin_eq X. 
-                 --- apply binds_dom_contradiction in H4... contradiction. 
-              ** simpl in *. solve_notin_eq X1.
-              ** exists (X2 :: X1 :: E).
-                 exists Γ1.
-                 exists (aworklist_constvar Γ2 X0 abind_etvar_empty)... 
-  - dependent destruction H.
-    apply IHΓ in H0; auto.
-    destruct H0 as [E [Γ1 [Γ2 Hws]]].
-    dependent destruction Hws; simpl in *.
-    * apply binds_dom_contradiction in H1... contradiction. 
-    * solve_notin_eq X2.
-    * dependent destruction Hws. 
-      -- apply binds_dom_contradiction in H1... contradiction.
-      -- simpl in *. solve_notin_eq X1.
-      -- exists (X2 :: X1 :: E).
-         exists Γ1.
-         exists (aworklist_conswork Γ2 w)...
-Qed.
-
+      * admit.
+    + replace (X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ X ~ᵃ ■ ;ᵃ Γ2 ⧺ X0 ~ᵃ ⬒ ;ᵃ Γ1)%aworklist with 
+      (X2 ~ᵃ ⬒ ;ᵃ (X1 ~ᵃ ⬒ ;ᵃ X ~ᵃ ■ ;ᵃ Γ2) ⧺ X0 ~ᵃ ⬒ ;ᵃ Γ1)%aworklist;
+      constructor; simpl; auto.
+      replace (X1 ~ᵃ ⬒ ;ᵃ X ~ᵃ ■ ;ᵃ Γ2 ⧺ X0 ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1)%aworklist with 
+      (X1 ~ᵃ ⬒ ;ᵃ (X ~ᵃ ■ ;ᵃ Γ2) ⧺ X0 ~ᵃ ⬒ ;ᵃ (X2 ~ᵃ ⬒ ;ᵃ Γ1))%aworklist;
+      constructor; simpl; auto.
+      * constructor; auto.
+      eapply IHΓ2 with (X1:=X1) (X2:=X2) in H0 as Hws; eauto.
+      dependent destruction Hws; auto.
+      -- simpl in *. solve_notin_eq X2.
+      -- simpl in *. solve_notin_eq X2.
+      -- replace (X1 ~ᵃ ⬒ ;ᵃ Γ'2 ⧺ X0 ~ᵃ ⬒ ;ᵃ Γ1)%aworklist with 
+           ((X1 ~ᵃ ⬒ ;ᵃ Γ'2) ⧺ X0 ~ᵃ ⬒ ;ᵃ Γ1)%aworklist in x by auto.
+         apply worklist_split_etvar_det in x; destruct x; subst. simpl in *.
+         dependent destruction Hws; auto; simpl in *.
+         ++ solve_notin_eq X1.
+         ++ solve_notin_eq X1.
+         ++ replace (Γ'2 ⧺ X0 ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1)%aworklist 
+              with (Γ'2 ⧺ X0 ~ᵃ ⬒ ;ᵃ (X2 ~ᵃ ⬒ ;ᵃ Γ1))%aworklist in x by auto.
+            apply worklist_split_etvar_det in x; auto.
+            destruct x; subst; auto.
+            admit. (* OK, notin *)
+         ++ admit.
+        -- admit.
+      * admit.
+      * admit.
+    + replace (X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ X ~ᵃ ⬒ ;ᵃ Γ2 ⧺ X0 ~ᵃ ⬒ ;ᵃ Γ1)%aworklist with 
+      (X2 ~ᵃ ⬒ ;ᵃ (X1 ~ᵃ ⬒ ;ᵃ X ~ᵃ ⬒  ;ᵃ Γ2) ⧺ X0 ~ᵃ ⬒ ;ᵃ Γ1)%aworklist;
+      constructor; simpl; auto.
+      replace (X1 ~ᵃ ⬒ ;ᵃ X ~ᵃ ⬒ ;ᵃ Γ2 ⧺ X0 ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1)%aworklist with 
+      (X1 ~ᵃ ⬒ ;ᵃ (X ~ᵃ ⬒  ;ᵃ Γ2) ⧺ X0 ~ᵃ ⬒ ;ᵃ (X2 ~ᵃ ⬒ ;ᵃ Γ1))%aworklist;
+      constructor; simpl; auto.
+      * constructor; auto.
+        eapply IHΓ2 with (X1:=X1) (X2:=X2) in H0 as Hws; eauto.
+        dependent destruction Hws; auto.
+        -- simpl in *. solve_notin_eq X2.
+        -- simpl in *. solve_notin_eq X2.
+        -- replace (X1 ~ᵃ ⬒ ;ᵃ Γ'2 ⧺ X0 ~ᵃ ⬒ ;ᵃ Γ1)%aworklist with 
+            ((X1 ~ᵃ ⬒ ;ᵃ Γ'2) ⧺ X0 ~ᵃ ⬒ ;ᵃ Γ1)%aworklist in x by auto.
+          apply worklist_split_etvar_det in x; destruct x; subst. simpl in *.
+          dependent destruction Hws; auto; simpl in *.
+          ++ solve_notin_eq X1.
+          ++ solve_notin_eq X1.
+          ++ replace (Γ'2 ⧺ X0 ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1)%aworklist 
+                with (Γ'2 ⧺ X0 ~ᵃ ⬒ ;ᵃ (X2 ~ᵃ ⬒ ;ᵃ Γ1))%aworklist in x by auto.
+              apply worklist_split_etvar_det in x; auto.
+              destruct x; subst; auto.
+              admit. (* OK, notin *)
+          ++ admit.
+        -- simpl in *. admit.
+      * admit.
+      * admit.
+ - dependent destruction H. 
+   replace (X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ w ⫤ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1)%aworklist with 
+    (X2 ~ᵃ ⬒ ;ᵃ (X1 ~ᵃ ⬒ ;ᵃ w ⫤ Γ2) ⧺ X ~ᵃ ⬒ ;ᵃ Γ1)%aworklist;
+   constructor; simpl; auto.
+   replace (X1 ~ᵃ ⬒ ;ᵃ w ⫤ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1)%aworklist with 
+    (X1 ~ᵃ ⬒ ;ᵃ (w ⫤ Γ2) ⧺ X ~ᵃ ⬒ ;ᵃ (X2 ~ᵃ ⬒ ;ᵃ Γ1))%aworklist;
+   constructor; simpl; auto.
+   + constructor; auto.
+     eapply IHΓ2 with (X1:=X1) (X2:=X2) in H0 as Hws; eauto.
+     dependent destruction Hws; auto.
+     * simpl in *. solve_notin_eq X2.
+     * simpl in *. solve_notin_eq X2.
+     * replace (X1 ~ᵃ ⬒ ;ᵃ Γ'2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1)%aworklist with 
+         ((X1 ~ᵃ ⬒ ;ᵃ Γ'2) ⧺ X ~ᵃ ⬒ ;ᵃ Γ1)%aworklist in x by auto.
+       apply worklist_split_etvar_det in x; destruct x; subst. simpl in *.
+       dependent destruction Hws; auto; simpl in *.
+       -- solve_notin_eq X1.
+       -- solve_notin_eq X1.
+       -- replace (Γ'2 ⧺ X ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1)%aworklist with 
+           (Γ'2 ⧺ X ~ᵃ ⬒ ;ᵃ (X2 ~ᵃ ⬒ ;ᵃ Γ1))%aworklist in x; auto.
+          apply worklist_split_etvar_det in x; auto.
+          destruct x; subst; auto.
+          admit. (* OK, notin *)
+       -- admit. (* OK, notin *)
+   + admit.
+   + admit.  
+Admitted.
 
 Ltac rewrite_close_open_subst :=
   match goal with
@@ -638,10 +636,9 @@ Proof with eauto with Hdb_a_wl_red_soundness.
   - assert (⊢ᵃʷ awl_app (subst_tvar_in_aworklist A X Γ2) (awl_app (etvar_list_to_awl E) Γ1)) by admit.
     _apply_IH_a_wl_red. 
     eapply a_worklist_subst_transfer_same_dworklist in Htrans; eauto.
-    destruct Htrans as [θ'1 [Htrans [Hbinds Htransx]]].
-    destruct Htransx as [Tᵈ [Htransa Htransx]].
+    destruct Htrans as [θ'1 [θ'2 [Tᵈ [Htrans [Htransa [Htrans' [Hbinds [Hwfss]]]]]]]].
     exists (work_sub Tᵈ Tᵈ ⫤ Ω)%dworklist. split.
-    + exists θ'1.
+    + exists (θ'2 ++ X ~ dbind_typ Tᵈ ++ θ'1).
       constructor...
       constructor...
       eapply trans_typ_reorder in Htransa...
