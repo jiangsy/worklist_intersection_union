@@ -96,7 +96,7 @@ Proof.
 Qed.
 
 
-Lemma close_typ_notin_rec : forall X A n,
+Lemma close_typ_wrt_typ_notin_rec : forall X A n,
     X `notin` ftvar_in_typ (close_typ_wrt_typ_rec n X A).
 Proof.
   intros until A.
@@ -106,16 +106,44 @@ Proof.
 Qed.
 
 
-Lemma close_typ_notin : forall X A,
+Lemma close_typ_wrt_typ_notin : forall X A,
     X `notin` ftvar_in_typ (close_typ_wrt_typ X A).
 Proof.
-  intros. apply close_typ_notin_rec.
+  intros. apply close_typ_wrt_typ_notin_rec.
 Qed.
 
 
-Lemma close_exp_notin_rec : forall x e n,
+(* Lemma close_exp_wrt_typ_notin_rec : forall X e n,
+  X `notin` ftvar_in_exp (close_exp_wrt_typ_rec n X e)
+with close_body_wrt_typ_notin_rec : forall X b n,
+  X `notin` ftvar_in_body (close_body_wrt_typ_rec n X b).
+Proof.
+  - intros until e.
+    induction e; simpl; intros; auto.
+    + specialize (close_typ_wrt_typ_notin_rec X A n); intros; auto.
+    + specialize (close_typ_wrt_typ_notin_rec X A n); intros; auto.
+  - intros. destruct b.
+    + simpl. specialize (close_typ_wrt_typ_notin_rec X A n); intros; auto.
+Qed.
+
+
+Lemma close_exp_wrt_typ_notin : forall X e,
+  X `notin` ftvar_in_exp (close_exp_wrt_typ X e).
+Proof.
+  intros. unfold close_exp_wrt_typ.
+  apply close_exp_wrt_typ_notin_rec.
+Qed. *)
+
+(* Lemma close_typ_wrt_typ_notin : forall X A,
+    X `notin` ftvar_in_typ (close_typ_wrt_typ X A).
+Proof.
+  intros. apply close_typ_wrt_typ_notin_rec.
+Qed. *)
+
+
+Lemma close_exp_wrt_exp_notin_rec : forall x e n,
     x `notin` fvar_in_exp (close_exp_wrt_exp_rec n x e)
-with close_body_notin_rec : forall x b n,
+with close_body_wrt_exp_notin_rec : forall x b n,
     x `notin` fvar_in_body (close_body_wrt_exp_rec n x b).
 Proof.
   - intros until e. induction e; simpl; intros; auto.
@@ -130,36 +158,36 @@ with close_body_notin : forall x b,
     x `notin` fvar_in_body (close_body_wrt_exp x b).
 Proof.
   - intros until e. unfold close_exp_wrt_exp.
-    apply close_exp_notin_rec.
+    apply close_exp_wrt_exp_notin_rec.
   - intros until b. unfold close_body_wrt_exp.
-    apply close_body_notin_rec.
+    apply close_body_wrt_exp_notin_rec.
 Qed.
 
 
-Lemma close_exp_tvar_notin_rec : forall X e n,
+Lemma close_exp_wrt_typ_notin_rec : forall X e n,
     X `notin` ftvar_in_exp (close_exp_wrt_typ_rec n X e)
-with close_body_tvar_notin_rec : forall X b n,
+with close_body_wrt_typ_notin_rec : forall X b n,
     X `notin` ftvar_in_body (close_body_wrt_typ_rec n X b).
 Proof.
   - intros until e. induction e; simpl; intros; auto.
     + apply notin_union; auto.
-      apply close_typ_notin_rec.
+      apply close_typ_wrt_typ_notin_rec.
     + apply notin_union; auto.
-      apply close_typ_notin_rec.
+      apply close_typ_wrt_typ_notin_rec.
   - intros until b. induction b; simpl; intros; auto.
     + apply notin_union; auto.
-      apply close_typ_notin_rec.
+      apply close_typ_wrt_typ_notin_rec.
 Qed.
 
-Lemma close_exp_tvar_notin : forall X e,
+Lemma close_exp_wrt_typ_notin : forall X e,
     X `notin` ftvar_in_exp (close_exp_wrt_typ X e)
-with close_body_tvar_notin : forall X b,
+with close_body_wrt_typ_notin : forall X b,
     X `notin` ftvar_in_body (close_body_wrt_typ X b).
 Proof.
   - intros until e. unfold close_exp_wrt_typ.
-    apply close_exp_tvar_notin_rec.
+    apply close_exp_wrt_typ_notin_rec.
   - intros until b. unfold close_body_wrt_typ.
-    apply close_body_tvar_notin_rec.
+    apply close_body_wrt_typ_notin_rec.
 Qed.
 
 

@@ -623,6 +623,7 @@ Proof with eauto with Hdb_transfer.
     destruct H2 as [T']. exists T'...
 Qed.
 
+
 Lemma trans_wl_in_dwl_etvar : forall Γ X Ω θ,
   nil ⫦ Γ ⇝ Ω ⫣ θ ->
   binds X abind_etvar_empty (awl_to_aenv Γ) ->
@@ -648,22 +649,6 @@ Proof with eauto with Hdb_transfer.
       admit.
 Admitted.
 
-Lemma wf_ss_rename : forall θ1 θ2 X X' b,
-  wf_ss (θ2 ++ (X, b) :: θ1) ->
-  X' ∉ dom (θ2 ++ θ1) ->
-  wf_ss (map (subst_tvar_in_dbind ` X' X) θ2 ++ (X', b) :: θ1).
-Proof with eauto with Hdb_transfer.
-  intros. induction θ2; simpl in *...
-  - inversion H; subst...
-  - dependent destruction a.
-    inversion H; subst...
-    econstructor...
-    + replace (ss_to_denv (map (subst_tvar_in_dbind ` X' X) θ2 ++ (X', □) :: θ1))
-      with ((map (subst_tvar_in_dbind ` X' X) (ss_to_denv θ2) ++ (X', □) :: (ss_to_denv θ1)))
-      by admit.
-      simpl. 
-      admit.
-Admitted.
 
 Lemma trans_typ_rename_tvar : forall θ1 θ2 Aᵃ Aᵈ X X', 
   θ2 ++ (X, dbind_tvar_empty) :: θ1 ⫦ᵗ Aᵃ ⇝ Aᵈ ->
@@ -698,45 +683,6 @@ Proof with auto with Hdb_transfer.
     rewrite typ_subst_open_comm...
     rewrite typ_subst_open_comm...
     rewrite_env (map (subst_tvar_in_dbind ` X' X) ((X0, □) :: θ2) ++ (X', □) :: θ1).
-    eapply H0...
-Admitted.
-
-
-Lemma trans_typ_rename : forall θ1 θ2 Aᵃ Aᵈ X X' b, 
-  θ2 ++ (X, b) :: θ1 ⫦ᵗ Aᵃ ⇝ Aᵈ ->
-  X' `notin` dom (θ2 ++ θ1) ->
-  map (subst_tvar_in_dbind (` X') X) θ2  ++ (X', b) :: θ1 ⫦ᵗ {` X' /ᵗ X} Aᵃ ⇝ {` X' /ᵗ X} Aᵈ.
-Proof with auto with Hdb_transfer.
-  intros. dependent induction H; simpl; auto...
-  - destruct_eq_atom. 
-    + econstructor...
-      eapply wf_ss_rename; eauto.
-      admit.
-    + econstructor...
-      eapply wf_ss_rename; eauto.
-      admit.
-  - destruct_eq_atom. 
-    + econstructor... 
-      eapply wf_ss_rename; eauto.
-      admit.
-    + econstructor... 
-      eapply wf_ss_rename; eauto.
-      admit.
-  - destruct_eq_atom. 
-    + admit. (* OK, false *)
-    + econstructor... 
-      eapply wf_ss_rename; eauto. admit. 
-  - econstructor...
-    eapply wf_ss_rename; eauto.  
-  - econstructor...
-    eapply wf_ss_rename; eauto.
-  - econstructor... 
-    eapply wf_ss_rename; eauto.
-  - eapply trans_typ__all with (L := L `union` singleton X  `union` singleton X').
-    intros. inst_cofinites_with X0.
-    rewrite typ_subst_open_comm...
-    rewrite typ_subst_open_comm...
-    rewrite_env (map (subst_tvar_in_dbind ` X' X) ((X0, □) :: θ2) ++ (X', b) :: θ1).
     eapply H0...
 Admitted.
 
@@ -806,7 +752,7 @@ Proof with eauto with Hdb_transfer.
     exists (typ_all (close_typ_wrt_typ X Axᵈ)).
     eapply trans_typ__all with (L:=L `union` dom θ). intros.
     erewrite subst_tvar_in_typ_intro by auto.
-    erewrite (subst_tvar_in_typ_intro X (close_typ_wrt_typ X Axᵈ)) by apply close_typ_notin.
+    erewrite (subst_tvar_in_typ_intro X (close_typ_wrt_typ X Axᵈ)) by apply close_typ_wrt_typ_notin.
     apply trans_typ_rename_tvar_cons...
     rewrite open_typ_wrt_typ_close_typ_wrt_typ...
   - apply IHa_wf_typ1 in H2 as Htrans_typ1...
@@ -942,7 +888,7 @@ Proof with eauto with Hdb_transfer.
       exists (exp_tabs (close_body_wrt_typ X bᵈ)).
       eapply trans_exp__tabs with (L:=L `union` dom θ). intros.
       erewrite (subst_tvar_in_body_intro X)...
-      erewrite (subst_tvar_in_body_intro X (close_body_wrt_typ X bᵈ)) by apply close_body_tvar_notin.
+      erewrite (subst_tvar_in_body_intro X (close_body_wrt_typ X bᵈ)) by apply close_body_wrt_typ_notin_rec.
       rewrite open_body_wrt_typ_close_body_wrt_typ.
       apply trans_body_rename_tvar_cons with (X':=X0) in H2; auto.
     + apply IHa_wf_exp in H2 as Htrans_e; auto.
@@ -1378,7 +1324,7 @@ Proof with eauto with Hdb_transfer.
     + eapply trans_typ__all with (L:=L `union` (dom (θ2 ++ (X, □) :: θ1))); intros.
       intuition.
       erewrite subst_tvar_in_typ_intro by auto.
-      erewrite (subst_tvar_in_typ_intro X0 (close_typ_wrt_typ X0 Aᵈ)) by apply close_typ_notin.
+      erewrite (subst_tvar_in_typ_intro X0 (close_typ_wrt_typ X0 Aᵈ)) by apply close_typ_wrt_typ_notin.
       apply trans_typ_rename_tvar_cons...
       rewrite open_typ_wrt_typ_close_typ_wrt_typ...
   - dependent destruction Hinst.
@@ -1540,7 +1486,7 @@ Proof with eauto with Hdb_transfer.
     + eapply trans_typ__all with (L:=L `union` dom (θ2 ++ (X, □) :: θ1)); intros.
       intuition.
       erewrite subst_tvar_in_typ_intro by auto.
-      erewrite (subst_tvar_in_typ_intro X0 (close_typ_wrt_typ X0 Aᵈ)) by apply close_typ_notin.
+      erewrite (subst_tvar_in_typ_intro X0 (close_typ_wrt_typ X0 Aᵈ)) by apply close_typ_wrt_typ_notin.
       apply trans_typ_rename_tvar_cons...
       rewrite open_typ_wrt_typ_close_typ_wrt_typ...
   - dependent destruction Hinst.
@@ -1591,6 +1537,14 @@ Proof with eauto with Hdb_transfer.
   - dependent destruction H2...
 Qed. *)
 
+Lemma trans_typ_binds_etvar : forall θ X T,
+  wf_ss θ ->
+  binds X (dbind_typ T) θ ->
+  θ ⫦ᵗ ` X ⇝ T.
+Proof.
+  intros.
+  constructor; auto.
+Qed.
 
 Lemma trans_typ_reorder : forall θ θ' Aᵃ Aᵈ,
   wf_ss θ ->
