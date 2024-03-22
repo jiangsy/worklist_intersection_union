@@ -11,6 +11,37 @@ Require Import ln_utils.
 Require Import LibTactics.
 
 
+Lemma aworklist_binds_split : forall Γ X,
+  ⊢ᵃʷ Γ ->
+  binds X abind_etvar_empty (awl_to_aenv Γ) ->
+  exists Γ1 Γ2, (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1)%aworklist = Γ.
+Proof.
+  intros. induction H.
+  - inversion H0.
+  - inversion H0; try dependent destruction H3.
+    + apply IHa_wf_wl in H3. destruct H3 as [Γ1 [Γ2 Heq]].
+      exists Γ1, (x ~ᵃ A ;ᵃ Γ2)%aworklist.
+      rewrite <- Heq. auto.
+  - inversion H0; try dependent destruction H2.
+    + apply IHa_wf_wl in H2. destruct H2 as [Γ1 [Γ2 Heq]].
+      exists Γ1, (X0 ~ᵃ □ ;ᵃ Γ2)%aworklist.
+      rewrite <- Heq. auto.
+  - inversion H0; try dependent destruction H2.
+    + apply IHa_wf_wl in H2. destruct H2 as [Γ1 [Γ2 Heq]].
+      exists Γ1, (X0 ~ᵃ ■ ;ᵃ Γ2)%aworklist.
+      rewrite <- Heq. auto.
+  - inversion H0; try dependent destruction H2.
+    + exists aW, aworklist_empty; auto. 
+    + apply IHa_wf_wl in H2. destruct H2 as [Γ1 [Γ2 Heq]].
+      exists Γ1, (X0 ~ᵃ ⬒ ;ᵃ Γ2)%aworklist.
+      rewrite <- Heq. auto.
+  - simpl in H0.
+    + apply IHa_wf_wl in H0. destruct H0 as [Γ1 [Γ2 Heq]].
+      exists Γ1, (w ⫤ Γ2)%aworklist.
+      rewrite <- Heq. auto.
+Qed.
+
+
 
 Ltac destruct_a_wf_wl :=
   repeat
