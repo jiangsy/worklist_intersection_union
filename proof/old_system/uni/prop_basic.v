@@ -152,9 +152,9 @@ Proof.
   - intros until b. induction b; simpl; intros; auto.
 Qed.
 
-Lemma close_exp_notin : forall x e,
+Lemma close_exp_wrt_exp_notin : forall x e,
     x `notin` fvar_in_exp (close_exp_wrt_exp x e)
-with close_body_notin : forall x b,
+with close_body_wrt_exp_notin : forall x b,
     x `notin` fvar_in_body (close_body_wrt_exp x b).
 Proof.
   - intros until e. unfold close_exp_wrt_exp.

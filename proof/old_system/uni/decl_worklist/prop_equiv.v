@@ -186,6 +186,10 @@ Ltac destruct_d_wl_del_red :=
     | ?w1 _ _ => dependent destruction H
     | ?w1 _ _ _ => dependent destruction H
     end
+  | H : d_wl_del_red (dworklist_consvar ?Ω ?x ?A) |- _ => 
+    dependent destruction H
+  | H : d_wl_del_red (dworklist_constvar ?Ω ?x ?b) |- _ => 
+    dependent destruction H
   | H : apply_cont ?c ?A ?w |- _ => dependent destruction H
   end.
 

@@ -899,7 +899,7 @@ Proof with eauto with Hdb_transfer.
       exists (exp_abs (close_exp_wrt_exp x eᵈ)). 
       eapply trans_exp__abs with (L:=L `union` fvar_in_exp e `union` fvar_in_exp eᵈ). intros.
       erewrite (subst_var_in_exp_intro x)...
-      erewrite (subst_var_in_exp_intro x ((close_exp_wrt_exp x eᵈ) )) by apply close_exp_notin.
+      erewrite (subst_var_in_exp_intro x ((close_exp_wrt_exp x eᵈ) )) by apply close_exp_wrt_exp_notin.
       apply trans_exp_rename_var...
       rewrite open_exp_wrt_exp_close_exp_wrt_exp...
     + apply IHa_wf_exp1 in H2 as Htrans_e1; auto.
@@ -1644,39 +1644,12 @@ Lemma trans_cont_etvar_subst_same_ss : forall θ Tᵃ Tᵈ X cᵃ cᵈ,
   θ ⫦ᶜ cᵃ ⇝ cᵈ.
 Proof.
   intros. generalize dependent θ. generalize dependent cᵈ.
-  induction cᵃ; intros.
-  - simpl in *. dependent destruction H3; eauto.
-    constructor. apply IHcᵃ; auto.
-  - simpl in *. dependent destruction H3; eauto.
-    constructor. 
-    eapply trans_typ_etvar_subst_same_ss; eauto.
-    apply IHcᵃ; auto.
-  - simpl in *. dependent destruction H3; eauto.
-    constructor.
-    eapply trans_exp_etvar_subst_same_ss; eauto.
-    apply IHcᵃ; auto.
-  - simpl in *. dependent destruction H3; eauto.
-    constructor. 
-    eapply trans_typ_etvar_subst_same_ss; eauto.
-    apply IHcᵃ; auto.
-  - simpl in *. dependent destruction H3; eauto.
-    constructor. 
-    eapply trans_typ_etvar_subst_same_ss; eauto.
-    eapply trans_typ_etvar_subst_same_ss; eauto.
-    apply IHcᵃ; auto.
-  - simpl in *. dependent destruction H3; eauto.
-    constructor. 
-    eapply trans_typ_etvar_subst_same_ss; eauto.
-    apply IHcᵃ; auto.
-  - simpl in *. dependent destruction H3; eauto.
-    constructor. 
-    eapply trans_typ_etvar_subst_same_ss; eauto.
-    apply IHcᵃ; auto.
-  - simpl in *. dependent destruction H3; eauto.
-    constructor. 
-    eapply trans_typ_etvar_subst_same_ss; eauto.
+  induction cᵃ; intros;  simpl in *; dependent destruction H3; eauto;
+    constructor;
+      try eapply trans_typ_etvar_subst_same_ss; eauto;
+      try eapply trans_exp_etvar_subst_same_ss; eauto;
+      try apply IHcᵃ; auto.
 Qed.
-
 
 Lemma trans_work_etvar_subst_same_ss : forall θ Tᵃ Tᵈ X wᵃ wᵈ,
   wf_ss θ ->
@@ -1769,28 +1742,6 @@ Proof with eauto with Hdb_transfer.
   eapply trans_typ_rev_subst in H2...
 Qed.
 
-
-(* Lemma trans_typ_reorder : forall θ θ' A,
-  wf_ss θ ->
-  wf_ss θ' ->
-  (forall x b, binds x b θ -> binds x b θ') ->
-  θ ⫦ᵗ A ⇝ A ->
-  θ' ⫦ᵗ A ⇝ A.
-Proof with eauto with Hdb_transfer.
-  intros. apply trans_typ_lc_atyp in H2 as Hlc. generalize dependent θ'. generalize dependent θ. 
-  induction Hlc; intros...
-  - dependent destruction H2...
-  - dependent destruction H2...
-  - dependent destruction H2.
-    inst_cofinites_for trans_typ__all. intros.
-    inst_cofinites_with X.
-    eapply H0 with (θ':=(X, dbind_tvar_empty) :: θ') in H2; auto...
-    + intros. inversion H6. 
-      * dependent destruction H7...
-      * apply binds_cons...
-  - dependent destruction H2...
-  - dependent destruction H2...
-Qed. *)
 
 Lemma trans_typ_binds_etvar : forall θ X T,
   wf_ss θ ->
@@ -1903,34 +1854,10 @@ Lemma trans_cont_reorder : forall θ θ' cᵃ cᵈ,
 Proof with eauto with Hdb_transfer.
   intros.
   generalize dependent θ'. generalize dependent θ. generalize dependent cᵈ.
-  induction cᵃ; intros...
-  - dependent destruction H2...
-  - simpl in *. dependent destruction H2...
-    eapply trans_typ_reorder in H0...
-  - simpl in *. dependent destruction H2...
-    constructor.
-    eapply trans_exp_reorder with (θ:=θ)...
-    eapply IHcᵃ with (θ:=θ)...
-  - simpl in *. dependent destruction H2...
-    constructor.
-    eapply trans_typ_reorder with (θ:=θ)...
-    eapply IHcᵃ with (θ:=θ)...
-  - simpl in *. dependent destruction H2...
-    constructor.
-    eapply trans_typ_reorder with (θ:=θ)...
-    eapply trans_typ_reorder with (θ:=θ)...
-    eapply IHcᵃ with (θ:=θ)...
-  - simpl in *. dependent destruction H2...
-    constructor.
-    eapply trans_typ_reorder with (θ:=θ)...
-    eapply IHcᵃ with (θ:=θ)...
-  - simpl in *. dependent destruction H2...
-    constructor.
-    eapply trans_typ_reorder with (θ:=θ)...
-    eapply IHcᵃ with (θ:=θ)...
-  - simpl in *. dependent destruction H2...
-    constructor.
-    eapply trans_typ_reorder with (θ:=θ)...
+  induction cᵃ; simpl in *; intros; dependent destruction H2; constructor; 
+    try eapply trans_typ_reorder with (θ:=θ); eauto with Hdb_transfer; 
+    try eapply trans_exp_reorder with (θ:=θ); eauto with Hdb_transfer; 
+    try eapply IHcᵃ with (θ:=θ)...
 Qed.
 
 

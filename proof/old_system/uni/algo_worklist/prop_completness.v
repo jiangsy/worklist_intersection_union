@@ -85,6 +85,6 @@ Proof with auto with Hdb_a_wl_red_completness.
       * admit.
       * admit.
     + constructor;  eapply IHHtrans; eauto.
-    dependent destruction H0...
+        dependent destruction H0...
 
 Admitted.

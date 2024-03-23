@@ -524,6 +524,9 @@ Ltac rewrite_close_open_subst :=
   | H : _ |- context [open_exp_wrt_typ (close_exp_wrt_typ ?X ?e) ?B] =>
       erewrite (subst_tvar_in_exp_intro X (close_exp_wrt_typ X e)) by apply close_exp_wrt_typ_notin;
       rewrite open_exp_wrt_typ_close_exp_wrt_typ
+  | H : _ |- context [open_exp_wrt_exp (close_exp_wrt_exp ?x ?e) ?e'] =>
+      erewrite (subst_var_in_exp_intro x (close_exp_wrt_exp x e)) by apply close_exp_wrt_exp_notin;
+      rewrite open_exp_wrt_exp_close_exp_wrt_exp
   | H : _ |- _ => idtac
   end.
 
@@ -623,7 +626,7 @@ Proof with eauto with Hdb_a_wl_red_soundness.
       econstructor...
       * inst_cofinites_for trans_typ__all. intros.
         solve_trans_typ_open_close.
-        admit.
+        admit. (* trans_typ_rename *)
       * admit. (* trans_typ_strengthen *)
     + econstructor. 
       eapply d_sub__alll with (T:=T) (L:=L)...
@@ -633,7 +636,7 @@ Proof with eauto with Hdb_a_wl_red_soundness.
       * intros. inst_cofinites_with X0.
         rewrite_close_open_subst.
         admit. (* OK, s_in *)
-      * admit.
+      * admit. (* OK, mono *)
       * rewrite_close_open_subst.
         rewrite Hsubst.
         dependent destruction Hdred...
@@ -738,11 +741,10 @@ Proof with eauto with Hdb_a_wl_red_soundness.
       eapply trans_exp__abs with (L:=fvar_in_exp e). intros.
       admit.
     + destruct_d_wl_del_red.
-      dependent destruction Hdred...  
       econstructor; auto.
       econstructor.
       * admit. (* OK, wf *)
-      * intros. admit. (* OK, rename *)
+      * intros. admit.
   (* \ x. e <= ^X *)
   - inst_cofinites_by L.
     inst_cofinites_by (L `union` singleton x `union` singleton X `union`  dom (awl_to_aenv Γ)) using_name X1.
@@ -775,10 +777,16 @@ Proof with eauto with Hdb_a_wl_red_soundness.
       exists (dworklist_conswork Ω (work_check (exp_abs (close_exp_wrt_exp x eᵈ)) (typ_arrow T0 T))). split.
       * exists θ'. constructor; auto.
         constructor.
-        -- admit.
-        -- apply trans_typ_binds_etvar; auto...
+        -- inst_cofinites_for trans_exp__abs. intros.
+           rewrite_close_open_subst.
            admit.
-      * constructor; auto. admit. admit.
+        -- apply trans_typ_binds_etvar; auto...
+           inversion Hbindsx. dependent destruction H8. solve_notin_eq X1.
+           inversion H8. dependent destruction H9. solve_notin_eq X2.
+           auto.
+      * constructor; auto.
+         admit. 
+         destruct_d_wl_del_red...
       * admit. (* OK, wf *)
       * admit. (* mono *)   
     + admit. (* OK, wf *)
@@ -795,8 +803,7 @@ Proof with eauto with Hdb_a_wl_red_soundness.
       econstructor...
       inst_cofinites_for trans_exp__abs. intros.
       admit.
-    + destruct_d_wl_del_red.
-      dependent destruction Hdred...  
+    + destruct_d_wl_del_red...
       econstructor; auto.
       admit.
   (* e <= A1 /\ A2 *)
@@ -892,7 +899,7 @@ Proof with eauto with Hdb_a_wl_red_soundness.
         admit. (* rename *)
         admit. (* OK, uniq *)
         admit. (* OK, uniq *)
-      * destruct_d_wl_del_red... dependent destruction Hdred. auto.
+      * destruct_d_wl_del_red...
   (* () => _ *)
   - exists (work_infer exp_unit cᵈ ⫤ Ω)%dworklist...
     split. exists θ... 
