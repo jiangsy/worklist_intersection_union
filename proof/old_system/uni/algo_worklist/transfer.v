@@ -1574,18 +1574,124 @@ Proof.
   apply trans_typ_strengthen_etvar in H2; auto.
   apply trans_typ_strengthen_etvar in H3; auto.
   eapply trans_typ_etvar_subst; eauto.
-  - admit.
+  - apply lc_typ_subst_inv with (T:=Tᵃ) (X:=X).
+    eapply trans_typ_lc_atyp; eauto.
+    eapply trans_typ_lc_atyp; eauto.
   - eapply wf_ss_strengthen_etvar; eapply H.
   - admit.
   - admit.
-  - admit.
+  - apply subst_tvar_in_typ_fresh_same; auto.
+Admitted.
+
+Lemma trans_exp_etvar_subst_same_ss : forall θ Tᵃ Tᵈ X eᵃ eᵈ,
+  wf_ss θ ->
+  binds X (dbind_typ Tᵈ) θ ->
+  X `notin` ftvar_in_typ Tᵃ ->
+  θ ⫦ᵗ Tᵃ ⇝ Tᵈ ->
+  θ ⫦ᵉ (subst_tvar_in_exp Tᵃ X eᵃ) ⇝ eᵈ -> 
+  θ ⫦ᵉ eᵃ ⇝ eᵈ
+with trans_body_etvar_subst_same_ss : forall θ Tᵃ Tᵈ X bᵃ bᵈ,
+  wf_ss θ ->
+  binds X (dbind_typ Tᵈ) θ ->
+  X `notin` ftvar_in_typ Tᵃ ->
+  θ ⫦ᵗ Tᵃ ⇝ Tᵈ ->
+  θ ⫦ᵇ (subst_tvar_in_body Tᵃ X bᵃ) ⇝ bᵈ -> 
+  θ ⫦ᵇ bᵃ ⇝ bᵈ.
+Proof.
+  - intros.  generalize dependent θ. generalize dependent eᵈ.
+    assert (lc_exp eᵃ) by admit.
+    induction H; simpl in *; intros.
+    + dependent destruction H3; constructor; auto.
+    + dependent destruction H3; constructor; auto.
+    + dependent destruction H5.
+      inst_cofinites_for trans_exp__abs. intros.
+      apply H0; auto.
+      rewrite subst_tvar_in_exp_open_exp_wrt_exp.
+      simpl. auto.
+    + dependent destruction H5; eauto.
+      constructor; eauto.
+    + dependent destruction H4; eauto.
+      inst_cofinites_for trans_exp__tabs.
+      intros. inst_cofinites_with X0.
+      eapply trans_body_etvar_subst_same_ss; eauto.
+      constructor; auto.
+      * rewrite_env (nil ++ (X0 ~ □) ++ θ). apply trans_typ_weaken; auto.
+        constructor; auto.
+      * rewrite subst_tvar_in_body_open_body_wrt_typ; simpl.
+        destruct_eq_atom; auto.
+        eapply trans_typ_lc_atyp; eauto.
+    + dependent destruction H5.
+      constructor.
+      * apply IHlc_exp; eauto.
+      * eapply trans_typ_etvar_subst_same_ss; eauto.
+    + dependent destruction H5.
+      constructor.
+      * apply IHlc_exp; eauto.
+      * eapply trans_typ_etvar_subst_same_ss; eauto.
+  - intros. destruct bᵃ. simpl in *.
+    dependent destruction H3. constructor.
+    + eapply trans_exp_etvar_subst_same_ss; eauto.
+    + eapply trans_typ_etvar_subst_same_ss; eauto.
 Admitted.
 
 
-Lemma trans_wl_split_etvar' : forall Γ1 Γ2 X Ω θ', 
-  nil ⫦ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1 ⇝ Ω ⫣ θ'.
-Admitted.
+Lemma trans_cont_etvar_subst_same_ss : forall θ Tᵃ Tᵈ X cᵃ cᵈ,
+  wf_ss θ ->
+  binds X (dbind_typ Tᵈ) θ ->
+  X `notin` ftvar_in_typ Tᵃ ->
+  θ ⫦ᵗ Tᵃ ⇝ Tᵈ ->
+  θ ⫦ᶜ (subst_tvar_in_cont Tᵃ X cᵃ) ⇝ cᵈ -> 
+  θ ⫦ᶜ cᵃ ⇝ cᵈ.
+Proof.
+  intros. generalize dependent θ. generalize dependent cᵈ.
+  induction cᵃ; intros.
+  - simpl in *. dependent destruction H3; eauto.
+    constructor. apply IHcᵃ; auto.
+  - simpl in *. dependent destruction H3; eauto.
+    constructor. 
+    eapply trans_typ_etvar_subst_same_ss; eauto.
+    apply IHcᵃ; auto.
+  - simpl in *. dependent destruction H3; eauto.
+    constructor.
+    eapply trans_exp_etvar_subst_same_ss; eauto.
+    apply IHcᵃ; auto.
+  - simpl in *. dependent destruction H3; eauto.
+    constructor. 
+    eapply trans_typ_etvar_subst_same_ss; eauto.
+    apply IHcᵃ; auto.
+  - simpl in *. dependent destruction H3; eauto.
+    constructor. 
+    eapply trans_typ_etvar_subst_same_ss; eauto.
+    eapply trans_typ_etvar_subst_same_ss; eauto.
+    apply IHcᵃ; auto.
+  - simpl in *. dependent destruction H3; eauto.
+    constructor. 
+    eapply trans_typ_etvar_subst_same_ss; eauto.
+    apply IHcᵃ; auto.
+  - simpl in *. dependent destruction H3; eauto.
+    constructor. 
+    eapply trans_typ_etvar_subst_same_ss; eauto.
+    apply IHcᵃ; auto.
+  - simpl in *. dependent destruction H3; eauto.
+    constructor. 
+    eapply trans_typ_etvar_subst_same_ss; eauto.
+Qed.
 
+
+Lemma trans_work_etvar_subst_same_ss : forall θ Tᵃ Tᵈ X wᵃ wᵈ,
+  wf_ss θ ->
+  binds X (dbind_typ Tᵈ) θ ->
+  X `notin` ftvar_in_typ Tᵃ ->
+  θ ⫦ᵗ Tᵃ ⇝ Tᵈ ->
+  θ ⫦ʷ (subst_tvar_in_work Tᵃ X wᵃ) ⇝ wᵈ -> 
+  θ ⫦ʷ wᵃ ⇝ wᵈ.
+Proof.
+  intros. destruct wᵃ; try simpl in *; dependent destruction H3;
+    constructor; 
+      try eapply trans_typ_etvar_subst_same_ss; eauto;
+      try eapply trans_exp_etvar_subst_same_ss; eauto;
+      try eapply trans_cont_etvar_subst_same_ss; eauto.
+Qed.
 
 
 Lemma trans_typ_rev_subst : forall θ1 θ2 Bᵃ Bᵈ X Aᵃ A'ᵈ,
