@@ -724,6 +724,7 @@ Proof.
 Qed.
 
 
+
 Lemma trans_typ_tvar_stvar_same : forall θ1 θ2 X Aᵃ Aᵈ b b',
   b = dbind_tvar_empty \/ b = dbind_stvar_empty ->
   b' = dbind_tvar_empty \/ b' = dbind_stvar_empty ->
@@ -828,50 +829,58 @@ Qed.
 
 Lemma trans_exp_rename_tvar : forall θ1 θ2 eᵃ eᵈ X X', 
   θ2 ++ (X, dbind_tvar_empty) :: θ1 ⫦ᵉ eᵃ ⇝ eᵈ ->
-  X' \notin dom (θ2 ++ θ1) ->
-  map (subst_tvar_in_dbind (` X') X) θ2 ++ (X', dbind_tvar_empty) :: θ1 ⫦ᵉ subst_tvar_in_exp (` X') X eᵃ ⇝ subst_tvar_in_exp (` X') X eᵈ
-with trans_body_rename_tvar : forall θ1 θ2 bᵃ bᵈ X X', 
+  X' `notin` dom (θ2 ++ θ1) ->
+  map (subst_tvar_in_dbind (` X') X) θ2  ++ (X', dbind_tvar_empty) :: θ1 ⫦ᵉ 
+      subst_tvar_in_exp `X' X eᵃ ⇝ subst_tvar_in_exp `X' X eᵈ
+with trans_body_rename_tvar :  forall θ1 θ2 bᵃ bᵈ X X', 
   θ2 ++ (X, dbind_tvar_empty) :: θ1 ⫦ᵇ bᵃ ⇝ bᵈ ->
-  X' \notin dom (θ2 ++ θ1) ->
-  map (subst_tvar_in_dbind (` X') X) θ2 ++ (X', dbind_tvar_empty) :: θ1 ⫦ᵇ subst_tvar_in_body (` X') X bᵃ ⇝ subst_tvar_in_body (` X') X bᵈ.
+  X' `notin` dom (θ2 ++ θ1) ->
+  map (subst_tvar_in_dbind (` X') X) θ2  ++ (X', dbind_tvar_empty) :: θ1 ⫦ᵇ 
+      subst_tvar_in_body `X' X bᵃ ⇝ subst_tvar_in_body `X' X bᵈ.
 Proof with auto with Hdb_transfer.
-  - intros. dependent induction H; simpl; auto...
-    + admit.
-    + econstructor. admit.
-    + admit.
-    + admit.
-    + econstructor.
-      apply IHtrans_exp...
+  - intros. dependent induction H; simpl in *...
+    + constructor...
+      eapply wf_ss_rename_tvar; eauto.
+    + constructor.
+      eapply wf_ss_rename_tvar; eauto.
+    + inst_cofinites_for trans_exp__abs.
+      intros. inst_cofinites_with x.
+      eapply H0 in H1; eauto.
+      rewrite subst_tvar_in_exp_open_exp_wrt_exp in H1...
+      rewrite subst_tvar_in_exp_open_exp_wrt_exp in H1...
+    + inst_cofinites_for trans_exp__tabs.
+      intros. inst_cofinites_with X0.
+      rewrite_env (((X0, □) :: θ2) ++ (X, □) :: θ1 ) in H.
+      apply trans_body_rename_tvar with (X':=X') in H...
+      rewrite subst_tvar_in_body_open_body_wrt_typ in H...
+      rewrite subst_tvar_in_body_open_body_wrt_typ in H...
+      simpl in H. destruct_eq_atom.
+      auto.
+    + constructor...
       apply trans_typ_rename_tvar...
-    + econstructor.
-      apply IHtrans_exp...
+    + constructor...
       apply trans_typ_rename_tvar...
-  - intros. dependent induction H; simpl; auto...
-    + econstructor.
-      eapply trans_exp_rename_tvar...
-      apply trans_typ_rename_tvar...
-Admitted.
+  - intros. destruct bᵃ. dependent destruction H.
+    simpl. constructor...
+    apply trans_typ_rename_tvar...
+Qed.
+
 
 Lemma trans_exp_rename_tvar_cons : forall θ eᵃ eᵈ X X', 
   (X, dbind_tvar_empty) :: θ ⫦ᵉ eᵃ ⇝ eᵈ ->
-  X' \notin dom θ ->
-  (X', dbind_tvar_empty) :: θ ⫦ᵉ subst_tvar_in_exp (` X') X eᵃ ⇝ subst_tvar_in_exp (` X') X eᵈ.
-Proof.
-  intros. 
-  rewrite_env (map (subst_tvar_in_dbind (` X') X) nil  ++ (X', dbind_tvar_empty) :: θ).
-  apply trans_exp_rename_tvar; auto.
-Qed.
-
-
-Lemma trans_body_rename_tvar_cons : forall θ bᵃ bᵈ X X', 
+  X' `notin` dom θ ->
+  (X', dbind_tvar_empty) :: θ ⫦ᵉ subst_tvar_in_exp `X' X eᵃ ⇝ subst_tvar_in_exp `X' X eᵈ
+with trans_body_rename_tvar_cons :  forall θ bᵃ bᵈ X X', 
   (X, dbind_tvar_empty) :: θ ⫦ᵇ bᵃ ⇝ bᵈ ->
-  X' \notin dom θ ->
-  (X', dbind_tvar_empty) :: θ ⫦ᵇ subst_tvar_in_body (` X') X bᵃ ⇝ subst_tvar_in_body (` X') X bᵈ.
+  X' `notin` dom θ ->
+  (X', dbind_tvar_empty) :: θ ⫦ᵇ subst_tvar_in_body `X' X bᵃ ⇝ subst_tvar_in_body `X' X bᵈ.
 Proof.
-  intros.
-  rewrite_env (map (subst_tvar_in_dbind (` X') X) nil  ++ (X', dbind_tvar_empty) :: θ).
-  apply trans_body_rename_tvar; eauto.
+  intros. rewrite_env (map (subst_tvar_in_dbind (` X') X) nil ++ (X', □) :: θ). 
+    apply trans_exp_rename_tvar; auto.
+  intros. rewrite_env (map (subst_tvar_in_dbind (` X') X) nil ++ (X', □) :: θ). 
+    apply trans_body_rename_tvar; auto.
 Qed.
+
 
 Lemma trans_exp_total : forall θ Γ Ω eᵃ,
   a_wf_exp (awl_to_aenv Γ) eᵃ ->  

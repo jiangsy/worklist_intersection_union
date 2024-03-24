@@ -1361,6 +1361,8 @@ Proof with eauto with Hdb_a_wl_red_basic; solve_false.
         simpl in *. destruct_eq_atom.
         -- auto.
         -- eapply a_worklist_subst_wf_wl in Hws; eauto.
+           admit.
+           simpl. apply binds_cons. apply binds_cons...
         -- rewrite (a_worklist_subst_ftavr_in_aworklist _ _ _ _ _ Hws); eauto.
       * admit. (* wf *)
       * solve_notin_rename_tvar; auto.
@@ -1382,6 +1384,8 @@ Proof with eauto with Hdb_a_wl_red_basic; solve_false.
         simpl in Hawlred. destruct_eq_atom.
         -- auto.
         -- eapply a_worklist_subst_wf_wl in Hws; eauto.
+           admit.
+           simpl; apply binds_cons. apply binds_cons...
         -- rewrite (a_worklist_subst_ftavr_in_aworklist _ _ _ _ _ Hws); auto.
       * admit. (* wf *)
       * solve_notin_rename_tvar; auto.
@@ -1407,6 +1411,8 @@ Proof with eauto with Hdb_a_wl_red_basic; solve_false.
         simpl in Hawlred. destruct_eq_atom.
         -- auto.
         -- eapply a_worklist_subst_wf_wl in Hws; eauto.
+           admit.
+           simpl. apply binds_cons. apply binds_cons...
         -- rewrite (a_worklist_subst_ftavr_in_aworklist _ _ _ _ _ Hws); auto.
       * admit. (* wf *)
       * solve_notin_rename_tvar; auto.
@@ -1427,6 +1433,8 @@ Proof with eauto with Hdb_a_wl_red_basic; solve_false.
         simpl in Hawlred. destruct_eq_atom.
         -- auto.
         -- eapply a_worklist_subst_wf_wl in Hws; eauto.
+           admit.
+           simpl. apply binds_cons. apply binds_cons...
         -- rewrite (a_worklist_subst_ftavr_in_aworklist _ _ _ _ _ Hws); auto...
       * admit. (* wf *)
       * solve_notin_rename_tvar; auto.
