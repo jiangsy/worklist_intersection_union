@@ -38,21 +38,26 @@ Proof.
 Admitted.
 
 
-Lemma a_worklist_subst_transfer_same_dworklist_rev: forall Γ Ω θ X T Γ1 Γ2,
+Lemma a_worklist_subst_transfer_same_dworklist_rev: forall Γ Ω θ X T Tᵈ Γ1 Γ2,
   ⊢ᵃʷ Γ ->
   a_mono_typ (awl_to_aenv Γ) T ->
   X `notin` ftvar_in_typ T ->
   aworklist_subst Γ X T Γ1 Γ2 ->
   trans_worklist nil Γ Ω θ ->
-  exists θ' Tᵈ, 
+  θ ⫦ᵗ T ⇝ Tᵈ ->
+  θ ⫦ᵗ ` X ⇝ Tᵈ ->
+  exists θ', 
       trans_worklist nil (awl_app (subst_tvar_in_aworklist T X Γ2) Γ1) Ω θ' /\
-      θ ⫦ᵗ T ⇝ Tᵈ /\ 
-      θ' ⫦ᵗ T ⇝ Tᵈ /\
       (forall Y b, X <> Y -> binds Y b θ <-> binds Y b θ') /\ 
-      binds X (dbind_typ Tᵈ) θ' /\
       wf_ss θ'.
 Proof.
+  intros. induction H2; simpl in *.
+  - dependent destruction H3.
+    exists θ'; repeat split; auto.
+    + admit.
+    + admit. 
 Admitted.
+
 
 Theorem d_a_wl_red_completness: forall Ω Γ,
    Ω ⟶ᵈʷ⁎⋅ -> ⊢ᵃʷ Γ -> transfer Γ Ω  -> Γ ⟶ᵃʷ⁎⋅.
@@ -109,13 +114,15 @@ Proof with auto with Hdb_a_wl_red_completness.
           ++ admit.
           ++ admit.
           ++ admit.
-          ++ eapply a_worklist_subst_transfer_same_dworklist_rev with (Ω:=Ω) (θ:=θ) in Hws; auto.
-             ** destruct Hws as [θ'' [Tᵈ [Htranswl [Htransa [Htransa' [Hbinds [Hbindsx Hwfss]]]]]]].
+          ++ eapply a_worklist_subst_transfer_same_dworklist_rev with (Ω:=Ω) (θ:=θ) (Tᵈ:=typ_unit) in Hws; auto.
+             ** destruct Hws as [θ'' [Htranswl [Hbinds Hwfss]]].
                 apply IHd_wl_red; eauto. 
                 --- admit. (* wf *)
              ** admit.
              ** admit.
              ** admit.
+             ** apply trans_typ_binds_etvar; auto.
+             ** apply trans_typ_binds_etvar; auto.
         -- admit.
       * dependent destruction H0.
         admit.

@@ -31,7 +31,7 @@ Proof.
       exists Γ1, (X0 ~ᵃ ■ ;ᵃ Γ2)%aworklist.
       rewrite <- Heq. auto.
   - inversion H0; try dependent destruction H2.
-    + exists aW, aworklist_empty; auto. 
+    + exists Γ, aworklist_empty; auto. 
     + apply IHa_wf_wl in H2. destruct H2 as [Γ1 [Γ2 Heq]].
       exists Γ1, (X0 ~ᵃ ⬒ ;ᵃ Γ2)%aworklist.
       rewrite <- Heq. auto.
