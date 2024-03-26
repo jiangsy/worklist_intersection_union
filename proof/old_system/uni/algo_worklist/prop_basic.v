@@ -31,7 +31,7 @@ Proof.
       exists Γ1, (X0 ~ᵃ ■ ;ᵃ Γ2)%aworklist.
       rewrite <- Heq. auto.
   - inversion H0; try dependent destruction H2.
-    + exists Γ, aworklist_empty; auto. 
+    + exists Γ, aworklist_empty; auto.
     + apply IHa_wf_wl in H2. destruct H2 as [Γ1 [Γ2 Heq]].
       exists Γ1, (X0 ~ᵃ ⬒ ;ᵃ Γ2)%aworklist.
       rewrite <- Heq. auto.
@@ -733,16 +733,16 @@ Proof.
   intros. induction H; simpl; try fsetdec.
   - rewrite ftvar_in_typ_subst_tvar_in_typ_upper; fsetdec.
   - rewrite ftvar_in_work_subst_tvar_in_work_upper; fsetdec.
-  - rewrite ftvar_in_aworklist'_awl_app in *. simpl. admit.
-Admitted.
+  - autorewrite with core in *. fsetdec.
+Qed.
 
 Lemma a_worklist_subst_ftavr_in_aworklist_1 : forall Γ X A Γ1 Γ2,
   aworklist_subst Γ X A Γ1 Γ2 ->
   ftvar_in_aworklist' Γ1 [<=] ftvar_in_aworklist' Γ `union` ftvar_in_typ A.
 Proof.
   intros. induction H; simpl; try fsetdec.
-  - admit.
-Admitted.
+  - autorewrite with core in *. fsetdec.
+Qed.
 
 
 Lemma a_worklist_subst_ftavr_in_aworklist_2 : forall Γ X A Γ1 Γ2,
@@ -750,9 +750,10 @@ Lemma a_worklist_subst_ftavr_in_aworklist_2 : forall Γ X A Γ1 Γ2,
   ftvar_in_aworklist' Γ2 [<=] ftvar_in_aworklist' Γ `union` ftvar_in_typ A.
 Proof.
   intros. induction H; simpl; try fsetdec.
-  - admit.
-Admitted.
+  - autorewrite with core in *. fsetdec.
+Qed.
 
+Hint Rewrite dom_app dom_cons : core.
 
 Lemma dom_aworklist_subst : forall Γ X A Γ1 Γ2,
     aworklist_subst Γ X A Γ1 Γ2 -> dom (awl_to_aenv Γ) [=] dom (awl_to_aenv Γ1) `union` dom (awl_to_aenv (subst_tvar_in_aworklist A X Γ2)) `union` (singleton X).
@@ -775,12 +776,12 @@ Proof with simpl in *; fsetdec.
      repeat rewrite KeySetProperties.add_union_singleton.
      clear H H0.
      fsetdec.
-  -  simpl. admit.
-     (* rewrite KeySetProperties.union_add. rewrite IHHS.
-     repeat rewrite KeySetProperties.add_union_singleton.
-     clear H.
-     fsetdec. *)
-Admitted.
+  -  simpl. rewrite awl_to_aenv_app, awl_to_aenv_cons in *.
+     autorewrite with core in *. rewrite <- IHHS.
+     rewrite AtomSetProperties.add_union_singleton.
+     clear IHHS H0 H.
+     fsetdec.
+Qed.
 
 Lemma a_worklist_subst_wf_typ : forall Γ X A B Γ1 Γ2,
   binds X abind_etvar_empty (awl_to_aenv Γ) ->
@@ -789,7 +790,7 @@ Lemma a_worklist_subst_wf_typ : forall Γ X A B Γ1 Γ2,
   ⊢ᵃʷ Γ ->
   aworklist_subst Γ X A Γ1 Γ2 ->
   a_wf_typ (awl_to_aenv (awl_app (subst_tvar_in_aworklist A X Γ2) Γ1)) B.
-Proof with (autorewrite with core using simpl); eauto; solve_false; try solve_notin.
+Proof with (autorewrite with core in *); simpl; eauto; solve_false; try solve_notin.
   introv HB HN WF HW HS.
   generalize dependent Γ1. generalize dependent Γ2. dependent induction WF; auto; intros.
   - case_eq (X==X0); intros. { subst. simpl in HN. solve_notin. }
@@ -824,10 +825,11 @@ Proof with (autorewrite with core using simpl); eauto; solve_false; try solve_no
            solve_notin.
     + inverts HB; solve_false.
       * inverts HW. inverts H...
-        ** forwards*: IHHS.
-           admit.
-           admit.
-           admit.
+        forwards*: IHHS.
+        { rewrite_env ((awl_to_aenv Γ2 ++ [(X, abind_etvar_empty)]) ++ awl_to_aenv Γ1) in H4.
+          forwards: binds_weaken [(Y, abind_etvar_empty)] H4.
+          rewrite_env ((awl_to_aenv Γ2 ++ X ~ abind_etvar_empty) ++ Y ~ abind_etvar_empty ++ awl_to_aenv Γ1). auto.
+        }
            admit.
            (* applys a_wf_typ_weaken Y. { autorewrite with core in H. auto. }
            rewrite dom_aworklist_subst in H5; try apply HS.
@@ -864,10 +866,11 @@ Proof with (autorewrite with core using simpl); eauto; solve_false; try solve_no
            solve_notin.
     + inverts HB; solve_false.
       * inverts HW. inverts H...
-        ** forwards*: IHHS.
-           admit.
-           admit.
-           admit.
+        forwards*: IHHS.
+        { rewrite_env ((awl_to_aenv Γ2 ++ [(X, abind_etvar_empty)]) ++ awl_to_aenv Γ1) in H4.
+          forwards: binds_weaken [(Y, abind_etvar_empty)] H4.
+          rewrite_env ((awl_to_aenv Γ2 ++ X ~ abind_etvar_empty) ++ Y ~ abind_etvar_empty ++ awl_to_aenv Γ1). auto.
+        }
            admit.
            (* applys a_wf_typ_weaken Y. { autorewrite with core in H. auto. }
            rewrite dom_aworklist_subst in H5; try apply HS.
@@ -907,9 +910,10 @@ Proof with (autorewrite with core using simpl); eauto; solve_false; try solve_no
         ** inverts H4.
            admit.
         ** forwards*: IHHS.
-            admit.
-            admit.
-            admit.
+        { rewrite_env ((awl_to_aenv Γ2 ++ [(X, abind_etvar_empty)]) ++ awl_to_aenv Γ1) in H4.
+          forwards: binds_weaken [(Y, abind_etvar_empty)] H4.
+          rewrite_env ((awl_to_aenv Γ2 ++ X ~ abind_etvar_empty) ++ Y ~ abind_etvar_empty ++ awl_to_aenv Γ1). auto.
+        }
             admit.
            (* applys a_wf_typ_weaken Y. { autorewrite with core in H. auto. }
            rewrite dom_aworklist_subst in H5; try apply HS.
@@ -920,12 +924,10 @@ Proof with (autorewrite with core using simpl); eauto; solve_false; try solve_no
     + intros. inst_cofinites_with X0.
       replace ((X0 ~ abind_tvar_empty ++ awl_to_aenv (awl_app (subst_tvar_in_aworklist A X Γ2) Γ1)))
       with  ((awl_to_aenv (awl_app (subst_tvar_in_aworklist A X (aworklist_constvar Γ2 X0 abind_tvar_empty)) Γ1))) by auto.
-      eapply H1 with (Γ:=aworklist_constvar Γ X0 abind_tvar_empty); auto.
-      applys~ binds_cons_3.
+      (* eapply H1 with (Γ:=aworklist_constvar Γ X0 abind_tvar_empty); auto. *)
+      (* applys~ binds_cons_3. *)
       admit.
       (* a_wf_wl_weaken_head *)
-      admit.
-      admit.
   - simpl in *. constructor; eauto.
   - simpl in *. constructor; eauto.
 Admitted.
@@ -1009,7 +1011,7 @@ Ltac solve_tvar_notin_ftvarlist_worklist_subst :=
 
 
 Ltac rewrite_aworklist_rename_rev' :=
-  match goal with
+  lazymatch goal with
   | H : context [rename_tvar_in_aworklist _ _ (rename_tvar_in_aworklist ?X' ?X ?Γ)] |- _ =>
     let H1 := fresh "H" in
     assert (H1: X' `notin` ftvar_in_aworklist' Γ) by (try solve [solve_notin_rename_tvar; solve_tvar_notin_ftvarlist_worklist_subst]);
