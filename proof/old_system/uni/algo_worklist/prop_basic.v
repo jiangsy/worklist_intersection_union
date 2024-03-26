@@ -819,29 +819,15 @@ Qed.
 
 #[local] Hint Rewrite dom_app dom_cons : core.
 
-Lemma binds_in_dom : forall X b Γ,
-  binds X b (awl_to_aenv Γ) ->
-  X `in` dom (awl_to_aenv Γ).
-Proof.
-  intros. induction Γ; simpl in *; auto.
-  - inversion H.
-  - inversion H.
-    + dependent destruction H0. fsetdec.
-    + apply IHΓ in H0. fsetdec.
-  - inversion H.
-    + dependent destruction H0. fsetdec.
-    + apply IHΓ in H0. fsetdec.
-Qed.
-
 
 Lemma ftvar_in_wf_typ_upper : forall Γ A,
   a_wf_typ (awl_to_aenv Γ) A ->
   ftvar_in_typ A [<=] dom (awl_to_aenv Γ).
 Proof.
   intros; dependent induction H; try solve [simpl; fsetdec].
-  - simpl. apply binds_in_dom in H. fsetdec.
-  - simpl. apply binds_in_dom in H. fsetdec.
-  - simpl. apply binds_in_dom in H. fsetdec.
+  - simpl. apply binds_In in H. fsetdec.
+  - simpl. apply binds_In in H. fsetdec.
+  - simpl. apply binds_In in H. fsetdec.
   - simpl. rewrite IHa_wf_typ1; auto.
     rewrite IHa_wf_typ2; auto.
     fsetdec.
@@ -1110,7 +1096,7 @@ Proof with (autorewrite with core in *); simpl; eauto; solve_false; try solve_no
            { rewrite awl_rewrite_middle. rewrite awl_rewrite_middle in H7.
              applys* a_wf_wl_weaken... }
   - simpl in *. constructor; eauto.
-  - intros. remember (dom (awl_to_aenv Γ)). pick fresh X0 and apply a_wf_typ__all.
+  - intros. pick fresh X0 and apply a_wf_typ__all.
     now auto. subst.
     + pick fresh U. inst_cofinites_with X0.
       replace ((X0 ~ abind_tvar_empty ++ awl_to_aenv (awl_app (subst_tvar_in_aworklist A X Γ2) Γ1)))
@@ -1849,9 +1835,9 @@ Ltac solve_notin_rename_var' :=
         (apply notin_rename_var_in_aworklist; auto)
     end
   | H : aworklist_subst ?Γ ?X ?A ?Γ1 ?Γ2 |- context [fvar_in_aworklist' ?Γ2] =>
-      rewrite a_worklist_subst_fvar_in_aworklist_2; eauto; auto
+      rewrite a_worklist_subst_fvar_in_aworklist_2; eauto
   | H : aworklist_subst ?Γ ?X ?A ?Γ1 ?Γ2 |- context [fvar_in_aworklist' ?Γ1] =>
-      rewrite a_worklist_subst_fvar_in_aworklist_1; eauto; auto
+      rewrite a_worklist_subst_fvar_in_aworklist_1; eauto
   end; auto.
 
 Ltac solve_notin_rename_var :=
