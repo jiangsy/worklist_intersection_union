@@ -17,12 +17,13 @@ Require Import ln_utils.
 
 Hint Constructors a_wf_wl : Hdb_a_wl_red_soundness.
 Hint Constructors trans_typ : Hdb_a_wl_red_soundness.
+Hint Constructors trans_exp : Hdb_a_wl_red_soundness.
 Hint Constructors trans_cont : Hdb_a_wl_red_soundness.
 Hint Constructors trans_work : Hdb_a_wl_red_soundness.
 Hint Constructors trans_worklist : Hdb_a_wl_red_soundness.
 Hint Constructors wf_ss : Hdb_a_wl_red_soundness.
 Hint Constructors d_wl_del_red : Hdb_a_wl_red_soundness.
-
+Hint Constructors aworklist_subst : Hdb_a_wl_red_soundness.
 
 Hint Resolve wf_ss_uniq : Hdb_a_wl_red_soundness.
 Hint Resolve a_wf_wl_d_wf_env : Hdb_a_wl_red_soundness.
@@ -32,29 +33,6 @@ Hint Constructors d_sub : Hdb_a_wl_red_soundness.
 Hint Constructors d_typing : Hdb_a_wl_red_soundness.
 Hint Constructors d_infabs : Hdb_a_wl_red_soundness.
 Hint Constructors d_inftapp : Hdb_a_wl_red_soundness.
-
-
-Theorem a_mono_typ_wf : forall aE A,
-  a_mono_typ aE A -> a_wf_typ aE A.
-Proof.
-  intros. induction H; auto.
-Qed.
-
-Hint Resolve a_mono_typ_wf : Hdb_a_wl_red_soundness.
-
-
-Ltac unify_trans_typ :=
-  match goal with
-  | H_1 : trans_typ ?θ ?Aᵃ ?A1ᵈ, H_2 : trans_typ ?θ ?Aᵃ ?A2ᵈ |- _ => eapply trans_typ_det with (A₁ᵈ:=A1ᵈ) in H_2; 
-      eauto with Hdb_a_wl_red_soundness; subst
-  end.
-
-Ltac unify_trans_exp :=
-  match goal with
-  | H_1 : trans_exp ?θ ?eᵃ ?e1ᵈ, H_2 : trans_exp ?θ ?eᵃ ?e2ᵈ |- _ => eapply trans_exp_det in H_1; 
-      eauto with Hdb_a_wl_red_soundness; subst
-  end.
-  
 
 
 (* depedent destruction all non-atomic trans_* relation *)
@@ -78,57 +56,14 @@ Ltac destruct_trans :=
     try unify_trans_typ;
     try unify_trans_exp.
 
-(* match the name of a_typ and d_typ in trans_typ *)
-Ltac rename_typ :=
-  lazymatch goal with
-  | H : trans_typ ?θ (open_typ_wrt_typ _ _) ?Aᵈ |- _ => fail
-  | H : trans_typ ?θ (?C_T _ _) ?Aᵈ |- _ => fail
-  | _ : trans_typ ?θ ?A1ᵃ ?A1ᵈ, _ : trans_typ ?θ ?A2ᵃ ?A2ᵈ, _ : trans_typ ?θ ?A3ᵃ ?A3ᵈ, _ : trans_typ ?θ ?A4ᵃ ?A4ᵈ |- _ => 
-    let A1ᵃ1 := fresh A1ᵃ"ᵈ0" in 
-    rename A1ᵈ into A1ᵃ1;
-    let A2ᵃ1 := fresh A2ᵃ"ᵈ0" in
-    rename A2ᵈ into A2ᵃ1;
-    let A3ᵃ1 := fresh A3ᵃ"ᵈ0" in
-    rename A3ᵈ into A3ᵃ1;
-    let A4ᵃ1 := fresh A4ᵃ"ᵈ0" in
-    rename A4ᵈ into A4ᵃ1;
-    let A1ᵃ2 := fresh A1ᵃ"ᵈ" in 
-    rename A1ᵃ1 into A1ᵃ2;
-    let A2ᵃ2 := fresh A2ᵃ"ᵈ" in
-    rename A2ᵃ1 into A2ᵃ2;
-    let A3ᵃ2 := fresh A3ᵃ"ᵈ" in
-    rename A3ᵃ1 into A3ᵃ2;
-    let A4ᵃ2 := fresh A4ᵃ"ᵈ" in
-    rename A4ᵃ1 into A4ᵃ2
-  | _ : trans_typ ?θ ?A1ᵃ ?A1ᵈ, _ : trans_typ ?θ ?A2ᵃ ?A2ᵈ, _ : trans_typ ?θ ?A3ᵃ ?A3ᵈ |- _ => 
-    let A1ᵃ1 := fresh A1ᵃ"ᵈ0" in 
-    rename A1ᵈ into A1ᵃ1;
-    let A2ᵃ1 := fresh A2ᵃ"ᵈ0" in
-    rename A2ᵈ into A2ᵃ1;
-    let A3ᵃ1 := fresh A3ᵃ"ᵈ0" in
-    rename A3ᵈ into A3ᵃ1;
-    let A1ᵃ2 := fresh A1ᵃ"ᵈ" in 
-    rename A1ᵃ1 into A1ᵃ2;
-    let A2ᵃ2 := fresh A2ᵃ"ᵈ" in
-    rename A2ᵃ1 into A2ᵃ2;
-    let A3ᵃ2 := fresh A3ᵃ"ᵈ" in
-    rename A3ᵃ1 into A3ᵃ2
-  | _ : trans_typ ?θ ?A1ᵃ ?A1ᵈ, _ : trans_typ ?θ ?A2ᵃ ?A2ᵈ |- _ => 
-    let A1ᵃ1 := fresh A1ᵃ"ᵈ0" in 
-    rename A1ᵈ into A1ᵃ1;
-    let A2ᵃ1 := fresh A2ᵃ"ᵈ0" in
-    rename A2ᵈ into A2ᵃ1;
-    let A1ᵃ2 := fresh A1ᵃ"ᵈ" in 
-    rename A1ᵃ1 into A1ᵃ2;
-    let A2ᵃ2 := fresh A2ᵃ"ᵈ" in
-    rename A2ᵃ1 into A2ᵃ2
-  | _ : trans_typ ?θ ?A1ᵃ ?A1ᵈ |- _ => 
-    let A1ᵃ1 := fresh A1ᵃ"ᵈ0" in 
-    rename A1ᵈ into A1ᵃ1;
-    let A1ᵃ2 := fresh A1ᵃ"ᵈ" in 
-    rename A1ᵃ1 into A1ᵃ2
-  end. 
 
+Theorem a_mono_typ_wf : forall aE A,
+  a_mono_typ aE A -> a_wf_typ aE A.
+Proof.
+  intros. induction H; auto.
+Qed.
+
+Hint Resolve a_mono_typ_wf : Hdb_a_wl_red_soundness.
 
 (* assert the well-formedness and apply the induction hypothesis  *)
 Ltac _apply_IH_a_wl_red :=
@@ -166,18 +101,18 @@ Ltac trans_all_typ :=
 
 
 Lemma a_worklist_subst_transfer_same_dworklist: forall Γ Ω θ X T Γ1 Γ2,
-⊢ᵃʷ Γ ->
-a_mono_typ (awl_to_aenv Γ) T ->
-X `notin` ftvar_in_typ T ->
-aworklist_subst Γ X T Γ1 Γ2 ->
-trans_worklist nil (awl_app (subst_tvar_in_aworklist T X Γ2) Γ1)  Ω θ ->
-exists θ' Tᵈ, 
-    trans_worklist nil Γ Ω θ' /\ 
-    θ ⫦ᵗ T ⇝ Tᵈ /\ 
-    θ' ⫦ᵗ T ⇝ Tᵈ /\
-    (forall Y b, X <> Y -> binds Y b θ <-> binds Y b θ') /\ 
-    binds X (dbind_typ Tᵈ) θ' /\
-    wf_ss θ'.
+  ⊢ᵃʷ Γ ->
+  a_mono_typ (awl_to_aenv Γ) T ->
+  X `notin` ftvar_in_typ T ->
+  aworklist_subst Γ X T Γ1 Γ2 ->
+  trans_worklist nil (awl_app (subst_tvar_in_aworklist T X Γ2) Γ1)  Ω θ ->
+  exists θ' Tᵈ, 
+      trans_worklist nil Γ Ω θ' /\ 
+      θ ⫦ᵗ T ⇝ Tᵈ /\ 
+      θ' ⫦ᵗ T ⇝ Tᵈ /\
+      (forall Y b, X <> Y -> binds Y b θ <-> binds Y b θ') /\ 
+      binds X (dbind_typ Tᵈ) θ' /\
+      wf_ss θ'.
 Proof with auto with Hdb_a_wl_red_soundness.
   intros. generalize dependent θ. generalize dependent Ω. dependent induction H2; intros.
   - simpl in *.
@@ -274,14 +209,14 @@ Proof with auto with Hdb_a_wl_red_soundness.
     exists (Y ~ dbind_typ T ++ θ'1). exists Tᵈ. repeat split; auto.
     + econstructor; auto. 
       admit. (* OK, notin *)
-      admit. (* OK, monos *)
+      admit. (* OK, mono *)
     + rewrite_env (nil ++ (Y ~ dbind_typ T) ++ θ'). apply trans_typ_weaken...
       constructor; auto.
       eapply a_wf_wl_wf_ss; eauto.
     + rewrite_env (nil ++ (Y ~ dbind_typ T) ++ θ'1). apply trans_typ_weaken...
       constructor; auto.
       admit. (* OK, notin *)
-      admit. (* OK, monos *)
+      admit. (* OK, mono *)
     + intros. inversion H9.
       * dependent destruction H10... 
       * simpl. apply binds_cons... apply Hbinds...
@@ -331,11 +266,6 @@ Admitted.
 
 (* Hint Resolve d_chk_inf_wft : Hdb_a_wl_red_soundness. *)
 
-Hint Constructors trans_typ : Hdb_a_wl_red_soundness.
-Hint Constructors trans_exp : Hdb_a_wl_red_soundness.
-Hint Constructors trans_cont : Hdb_a_wl_red_soundness.
-Hint Constructors trans_work : Hdb_a_wl_red_soundness.
-Hint Constructors trans_worklist : Hdb_a_wl_red_soundness.
 Hint Constructors aworklist_subst : Hdb_a_wl_red_soundness.
 
 
@@ -731,16 +661,17 @@ Proof with eauto with Hdb_a_wl_red_soundness.
       * admit. (* OK, mono *)
     + admit. (* OK, wf *)
   (* A1 -> A2 < ^X  *)
-  - inst_cofinites_by (L `union` singleton X `union`  dom (awl_to_aenv Γ)) using_name X1.
-    inst_cofinites_by (L `union` singleton X1 `union` singleton X `union` dom (awl_to_aenv Γ)) using_name X2.
+  - inst_cofinites_by (L `union` singleton X `union`  dom (awl_to_aenv Γ) `union` ftvar_in_typ A1) using_name X1.
+    inst_cofinites_by (L `union` singleton X1 `union` singleton X `union` dom (awl_to_aenv Γ) `union` ftvar_in_typ A1) 
+      using_name X2.
     assert (Hws: exists Γ1 Γ2, 
       aworklist_subst (work_sub (typ_arrow A1 A2) ` X ⫤ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ) X
         (typ_arrow ` X1 ` X2) Γ1 Γ2). {
-    eapply worklist_subst_fresh_etvar_total' with (X1:=X1) (X2:=X2) in H; auto.
-    destruct H as [Γ1 [Γ2 Hws]].
-    exists Γ1, (work_sub (typ_arrow A1 A2) `X ⫤ Γ2)%aworklist.
-    econstructor. auto.
-    destruct_a_wf_wl; auto.
+      eapply worklist_subst_fresh_etvar_total' with (X1:=X1) (X2:=X2) in H; auto.
+      destruct H as [Γ1 [Γ2 Hws]].
+      exists Γ1, (work_sub (typ_arrow A1 A2) `X ⫤ Γ2)%aworklist.
+      econstructor. auto.
+      destruct_a_wf_wl; auto.
     }
     destruct Hws as [Γ1 [Γ2 Hsubst]].
     apply H3 in Hsubst as Hwsred.
@@ -760,9 +691,7 @@ Proof with eauto with Hdb_a_wl_red_soundness.
         -- constructor. 
            ++ rewrite_env (nil ++ θ'). 
               apply trans_typ_strengthen_etvar with (X:=X1) (T:=T0)...
-              eapply trans_typ_strengthen_etvar with (X:=X2) (T:=T)... 
-              admit. (* OK, notin *)
-              admit. (* OK, notin *)
+              eapply trans_typ_strengthen_etvar with (X:=X2) (T:=T)...
            ++ admit. (* OK, trans_typ_strengthen_etvar *)
         -- apply trans_typ_binds_etvar; eauto.
            ++ admit. (* OK, wf_ss *) 
@@ -866,17 +795,15 @@ Proof with eauto with Hdb_a_wl_red_soundness.
       destruct_trans.
       assert (Hbindsx1: binds X1 (dbind_typ T0)  ((X2, dbind_typ T) :: (X1, dbind_typ T0) :: θ')) by auto.
       assert (Hbindsx2: binds X2 (dbind_typ T)  ((X2, dbind_typ T) :: (X1, dbind_typ T0) :: θ')) by auto.
-      assert (Hbindsx3: binds X1 (dbind_typ T0)  ((X2, dbind_typ T) :: (X1, dbind_typ T0) :: θ')) by auto.
       apply trans_typ_binds_etvar in Hbindsx1...
       apply trans_typ_binds_etvar in Hbindsx2...
-      apply trans_typ_binds_etvar in Hbindsx3...
       repeat unify_trans_typ.
       exists (dworklist_conswork Ω (work_check (exp_abs (close_exp_wrt_exp x eᵈ)) (typ_arrow T0 T))). split.
       * exists θ'. constructor; auto.
         constructor.
         -- inst_cofinites_for trans_exp__abs. intros.
            rewrite_close_open_subst.
-           admit. (* Ok, inf rename *)
+           admit. (* Ok, trans rename *)
         -- apply trans_typ_binds_etvar; auto...
            inversion Hbindsx. dependent destruction H9. solve_notin_eq X1.
            inversion H9. dependent destruction H10. solve_notin_eq X2.
@@ -1012,10 +939,9 @@ Proof with eauto with Hdb_a_wl_red_soundness.
         destruct_d_wl_del_red... simpl in H7.
         inst_cofinites_for d_typing__inf_abs_mono; auto.
         admit. (* OK, mono *)
-        intros. rewrite_close_open_subst; auto. (* OK, chk rename *)
-        admit. (* mono *)
-        admit. (* rename *)
-        admit. (* OK, uniq *)
+        intros. rewrite_close_open_subst; auto. admit. (* OK, chk rename *)
+        admit. (* OK, wf_ss *)
+        admit. (* OK, wf_ss *)
       * destruct_d_wl_del_red...
   (* () => _ *)
   - exists (work_infer exp_unit cᵈ ⫤ Ω)%dworklist...
@@ -1108,10 +1034,8 @@ Proof with eauto with Hdb_a_wl_red_soundness.
       destruct_trans.
       assert (Hbindsx1: binds X1 (dbind_typ T0)  ((X2, dbind_typ T) :: (X1, dbind_typ T0) :: θ')) by auto.
       assert (Hbindsx2: binds X2 (dbind_typ T)  ((X2, dbind_typ T) :: (X1, dbind_typ T0) :: θ')) by auto.
-      assert (Hbindsx3: binds X1 (dbind_typ T0)  ((X2, dbind_typ T) :: (X1, dbind_typ T0) :: θ')) by auto.
       apply trans_typ_binds_etvar in Hbindsx1...
       apply trans_typ_binds_etvar in Hbindsx2...
-      apply trans_typ_binds_etvar in Hbindsx3...
       repeat unify_trans_typ.
       exists (dworklist_conswork Ω (work_infabs (typ_arrow T0 T) cᵈ)). split.
       * exists θ'. constructor; auto.
