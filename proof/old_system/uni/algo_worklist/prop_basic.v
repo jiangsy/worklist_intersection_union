@@ -937,8 +937,8 @@ Proof with (autorewrite with core in *); simpl; eauto; solve_false; try solve_no
   - simpl in *. constructor; eauto.
 Admitted.
 
-Ltac rewrite_aworklist_rename_tvar :=
-  repeat'
+Ltac rewrite_aworklist_rename_tvar' :=
+  repeat
   match goal with
   | H : context [rename_tvar_in_aworklist _ _ (awl_app _ _)] |- _ =>
     progress (repeat rewrite <- awl_app_rename_tvar_comm in H); simpl in H; repeat (case_if in H; [ ])
