@@ -1195,9 +1195,9 @@ Ltac solve_tvar_notin_ftvarlist_worklist_subst :=
   repeat
     lazymatch goal with
     | H : aworklist_subst ?Γ ?X' ?A ?Γ1 ?Γ2 |- ?X ∉ ftvar_in_aworklist' ?Γ2 =>
-      rewrite (a_worklist_subst_ftavr_in_aworklist_2 _ _ _ _ _ H); eauto; simpl; auto; solve_notin_rename_tvar; auto
+      rewrite (a_worklist_subst_ftavr_in_aworklist_2 _ _ _ _ _ H); eauto; try (progress simpl; auto); try (progress solve_notin_rename_tvar; auto)
     | H : aworklist_subst ?Γ ?X' ?A ?Γ1 ?Γ2 |- ?X ∉ ftvar_in_aworklist' ?Γ1 =>
-      rewrite (a_worklist_subst_ftavr_in_aworklist_1 _ _ _ _ _ H); eauto; simpl; auto; solve_notin_rename_tvar; auto
+      rewrite (a_worklist_subst_ftavr_in_aworklist_1 _ _ _ _ _ H); eauto; try (progress simpl; auto); try (progress solve_notin_rename_tvar; auto)
    end.
 
 
