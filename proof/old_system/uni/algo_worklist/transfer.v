@@ -1011,6 +1011,14 @@ Proof.
 Admitted.
 
 
+Lemma trans_wl_weaken_etvar : forall Γ Ω X T θ θ',
+  X `notin` ftvar_in_aworklist' Γ `union` dom θ->
+  θ ⫦ Γ ⇝ Ω ⫣ (θ' ++ θ) ->
+  d_mono_typ (ss_to_denv θ) T ->
+  (X, dbind_typ T) :: θ ⫦ Γ ⇝ Ω ⫣ (θ' ++ (X, dbind_typ T) :: θ).
+Proof.
+Admitted.
+
 Lemma trans_wl_strengthen_etvar_gen : forall Γ Ω X T θ1 θ2 θ'1 θ'2,
   X `notin` ftvar_in_aworklist' Γ ->
   θ2 ++ (X, dbind_typ T) :: θ1 ⫦ Γ ⇝ Ω ⫣ (θ'2 ++ (X, dbind_typ T) :: θ'1) ->
