@@ -7,11 +7,17 @@ Require Import List.
 Require Import uni.notations.
 Require Import uni.algo_worklist.def_extra.
 Require Import uni.algo_worklist.transfer.
+Require Import uni.algo_worklist.prop_basic.
 Require Import ln_utils.
 
 
 Hint Constructors a_wl_red : Hdb_a_wl_red_completness.
-
+Hint Constructors a_wf_wl : Hdb_a_wl_red_completness.
+Hint Constructors trans_typ : Hdb_a_wl_red_completness.
+Hint Constructors trans_exp : Hdb_a_wl_red_completness.
+Hint Constructors trans_cont : Hdb_a_wl_red_completness.
+Hint Constructors trans_work : Hdb_a_wl_red_completness.
+Hint Constructors trans_worklist : Hdb_a_wl_red_completness.
 
 
 Ltac destruct_trans :=
@@ -22,15 +28,20 @@ Ltac destruct_trans :=
     | H : trans_worklist ?θ  (aworklist_constvar ?Γ ?X ?b) ?Ω ?θ' |- _ => dependent destruction H *)
     | H : trans_work ?θ ?wᵃ (?wᵈ _) |- _ => dependent destruction H
     | H : trans_work ?θ ?wᵃ (?wᵈ _ _) |- _ => dependent destruction H
-    | H : trans_work ?θ (?wᵃ _ _ _) ?wᵈ |- _ => dependent destruction H
-    | H : trans_cont ?θ (?C_C _) ?wᵈ |- _ => dependent destruction H
-    | H : trans_cont ?θ (?C_C _ _) ?wᵈ |- _ => dependent destruction H
+    | H : trans_work ?θ ?wᵃ (?wᵈ _ _ _) |- _ => dependent destruction H
+    | H : trans_cont ?θ ?wᵃ (?C_C _) |- _ => dependent destruction H
+    | H : trans_cont ?θ ?wᵃ (?C_C _ _) |- _ => dependent destruction H
+    | H : trans_exp ?θ ?eᵃ (open_exp_wrt_exp _ _) |- _ => fail
+    | H : trans_exp ?θ ?eᵃ exp_unit |- _ => dependent destruction H
+    | H : trans_exp ?θ ?eᵃ (?C_E _) |- _ => dependent destruction H
+    | H : trans_exp ?θ ?eᵃ (?C_E _ _) |- _ => dependent destruction H
     | H : trans_typ ?θ (` ?X) ?Aᵈ |- _ => fail
     | H : trans_typ ?θ ?Aᵃ (open_typ_wrt_typ _ _) |- _ => fail
     | H : trans_typ ?θ ?Aᵃ typ_unit |- _ => dependent destruction H
     | H : trans_typ ?θ ?Aᵃ typ_bot |- _ => dependent destruction H
     | H : trans_typ ?θ ?Aᵃ typ_top |- _ => dependent destruction H
     | H : trans_typ ?θ ?Aᵃ (`?X) |- _ => dependent destruction H
+    | H : trans_typ ?θ ?Aᵃ (?C_T _)  |- _ => dependent destruction H
     | H : trans_typ ?θ ?Aᵃ (?C_T _ _)  |- _ => dependent destruction H
     end.
 
@@ -202,6 +213,17 @@ Proof.
   induction H; eauto; intros.
 Qed.
 
+Lemma aworklist_trailing_wf_wl : forall Γ0 Γ,
+  aworklist_trailing_etvar Γ0 Γ -> 
+  ⊢ᵃʷ Γ ->
+  ⊢ᵃʷ Γ0.
+Proof.
+  intros. induction H; eauto.
+  - dependent destruction H0; eauto.
+Qed.
+
+
+(* transform (Γ0, ^X, ^Y, more existential tvars) to Γ0 *)
 Ltac solve_awl_trailing_etvar :=
   match goal with
   | H_1 : ⊢ᵃʷ ?Γ, H_2: ?θ ⫦ ?Γ ⇝ ?Ω ⫣ ?θ' |- _ =>
@@ -209,6 +231,7 @@ Ltac solve_awl_trailing_etvar :=
     let Γ0 := fresh "Γ0" in
     let Htrans_et := fresh "Htrans_et" in
     let θ' := fresh "θ'" in
+    let Hwf := fresh "Hwf" in
     apply aworklist_trailing_etvar_total in H_1 as Htr;
     destruct Htr as [Γ0 Htr];
     eapply aworklist_trailing_etvar_reduce_ord; eauto 
@@ -216,11 +239,43 @@ Ltac solve_awl_trailing_etvar :=
     apply aworklist_trailing_etvar_trans with (Γ0:=Γ0) in H_2 as Htrans_et ; auto;
     destruct Htrans_et as [θ' Htrans_et];
     dependent destruction Htrans_et;
+    apply aworklist_trailing_wf_wl in Htr as Hwf; auto;
     match goal with
     | H_3 : aworklist_trailing_etvar (aworklist_constvar ?Γ0 ?X abind_etvar_empty) ?Γ |- _ =>
       apply aworklist_trailing_base_ord in H_3; inversion H_3
     | _ => idtac
     end
+  end.
+
+Lemma trans_apply_cont : forall θ c cᵈ A Aᵈ wᵈ,
+  θ ⫦ᶜ c ⇝ cᵈ ->
+  θ ⫦ᵗ A ⇝ Aᵈ ->
+  apply_cont cᵈ Aᵈ wᵈ ->
+  exists w, apply_cont c A w.
+Proof.
+  intros. induction H1.
+  - dependent destruction H.
+    exists (work_infabs A cᵃ). constructor.
+  - dependent destruction H.
+    dependent destruction H1.
+  (* TODO: update wf of work_apply to add more constraint 
+    e.g. work_apply (cont_infapp c A) then A must be an arrow
+  *)
+Admitted.
+
+
+Ltac solve_binds_nonmono :=
+  match goal with
+  | H1 : binds ?X (dbind_typ typ_bot) ?θ |- _ =>
+    apply wf_ss_binds_monotyp in H1; try inversion H1; try eapply a_wf_wl_wf_ss; eauto
+  | H1 : binds ?X (dbind_typ typ_top) ?θ |- _ =>
+    apply wf_ss_binds_monotyp in H1; try inversion H1; eapply a_wf_wl_wf_ss; eauto
+  | H1 : binds ?X (dbind_typ (typ_all ?A)) ?θ |- _ =>
+    apply wf_ss_binds_monotyp in H1; try inversion H1; try eapply a_wf_wl_wf_ss; eauto
+  | H1 : binds ?X (dbind_typ (typ_intersection ?A1 ?A2)) ?θ |- _ =>
+    apply wf_ss_binds_monotyp in H1; try inversion H1; try eapply a_wf_wl_wf_ss; eauto
+  | H1 : binds ?X (dbind_typ (typ_union ?A1 ?A2)) ?θ |- _ =>
+    apply wf_ss_binds_monotyp in H1; try inversion H1; try eapply a_wf_wl_wf_ss; eauto
   end.
 
 Theorem d_a_wl_red_completness: forall Ω Γ,
@@ -229,28 +284,28 @@ Proof with eauto with Hdb_a_wl_red_completness.
   intros. generalize dependent Γ. induction H; auto; unfold transfer in *; intros * Hwf Htrans;
     try destruct Htrans as [θ Htrans].
   - solve_awl_trailing_etvar.
-    + dependent destruction Hwf... 
+    + dependent destruction Hwf...
   - solve_awl_trailing_etvar.
     constructor. apply IHd_wl_red...
-    admit.
+    dependent destruction Hwf0...
   - solve_awl_trailing_etvar.
     constructor. eapply IHd_wl_red...
-    admit.
+    dependent destruction Hwf0...
   - solve_awl_trailing_etvar.
     constructor. apply IHd_wl_red...
-    admit.
+    dependent destruction Hwf0...
   - solve_awl_trailing_etvar.
     destruct_trans.
     + admit.
     + constructor...
       apply IHd_wl_red...
-      admit.
-  - solve_awl_trailing_etvar.
+      dependent destruction Hwf0...
+ - solve_awl_trailing_etvar.
     destruct_trans.
     + admit.
     + constructor...
       apply IHd_wl_red...
-      admit.
+      dependent destruction Hwf0...
   - solve_awl_trailing_etvar.
     destruct_trans.
     + assert (exists Γ1, exists Γ2, aworklist_subst Γ0 X ` X0 Γ1 Γ2) by admit.    
@@ -289,89 +344,229 @@ Proof with eauto with Hdb_a_wl_red_completness.
     + admit.
     + admit.
   - solve_awl_trailing_etvar. 
-    + admit.
+    destruct_trans; try solve_binds_nonmono.
+    + dependent destruction Hwf0. 
+      dependent destruction H3.
+      dependent destruction H3.
+      dependent destruction H5.
+      pick fresh X and apply a_wl_red__sub_all. 
+      inst_cofinites_with X.
+      apply H0; auto.
+      * constructor. constructor...
+        admit. 
+        admit.
+        constructor; auto.
+      * exists ((X , dbind_stvar_empty) :: θ0)...
+        constructor...
+        constructor...
+        -- apply trans_typ_tvar_stvar_cons...
+        -- apply trans_typ_tvar_stvar_cons...
   - solve_awl_trailing_etvar. 
-    + admit.
+    destruct_trans.
+    + solve_binds_nonmono.
+    + pick fresh X and apply a_wl_red__sub_alll.
+      inst_cofinites_with X.
+      * admit.
+      * admit.
+      * admit.
+      * inst_cofinites_with X.
+        apply IHd_wl_red.
+        -- admit.
+        -- exists ((X, dbind_typ T) :: θ0).
+           constructor...
+           constructor... admit. (* OK. mono *)
+           constructor...
+           admit.
+           rewrite_env (nil ++ (X ~ dbind_typ T) ++ θ0). 
+            apply trans_typ_weaken...
+            admit.
   - solve_awl_trailing_etvar. 
-    + admit.
+    destruct_trans.
+    + solve_binds_nonmono.
+    + constructor. apply IHd_wl_red; eauto.
+      destruct_a_wf_wl...
+      exists θ0...      
   - solve_awl_trailing_etvar. 
-    + admit.
+    + destruct_trans.
+      * solve_binds_nonmono.
+      * constructor. apply IHd_wl_red; eauto.
+        destruct_a_wf_wl...
+        exists θ0...
   - solve_awl_trailing_etvar.
-    + admit.
+    + destruct_trans.
+      * solve_binds_nonmono.
+      * apply a_wl_red__sub_intersection3. apply IHd_wl_red; eauto.
+        destruct_a_wf_wl...
+        exists θ0...
   - solve_awl_trailing_etvar.
-    + admit.
+    destruct_trans.
+    + solve_binds_nonmono.
+    + constructor. apply IHd_wl_red; eauto.
+      destruct_a_wf_wl...
+      exists θ0...
+  - solve_awl_trailing_etvar. 
+    destruct_trans.
+    + solve_binds_nonmono.
+    + eapply a_wl_red__sub_union2. apply IHd_wl_red; eauto.
+      destruct_a_wf_wl...
+      exists θ0...
   - solve_awl_trailing_etvar.
-    + admit.
-  - solve_awl_trailing_etvar.
-    + admit.
+    destruct_trans.
+    + solve_binds_nonmono.
+    + constructor. apply IHd_wl_red; eauto.
+      destruct_a_wf_wl...
+      exists θ0...
 
   (* check *)
   - solve_awl_trailing_etvar.
-    + admit.
+    destruct_trans.
+    destruct_a_wf_wl...
+    constructor. 
+    apply IHd_wl_red...
+  - solve_awl_trailing_etvar.
+    destruct_trans.
+    + eapply a_wl_red__chk_absetvar.
+      admit. 
+      admit.
+    + pick fresh x and apply a_wl_red__chk_absarrow.
+      inst_cofinites_with x.
+      eapply H0.
+      * admit.
+      * exists θ0. constructor...
   - solve_awl_trailing_etvar.
     + admit.
   - solve_awl_trailing_etvar.
-    + admit.
+    destruct_trans.
+    + solve_binds_nonmono.
+    + apply a_wl_red__chk_inter.
+      apply IHd_wl_red...
+      destruct_a_wf_wl...
+      exists θ0...
   - solve_awl_trailing_etvar.
-    + admit.
+    destruct_trans.
+    + solve_binds_nonmono.
+    + apply a_wl_red__chk_union1.
+      apply IHd_wl_red...
+      destruct_a_wf_wl...
   - solve_awl_trailing_etvar.
-    + admit.
-  - solve_awl_trailing_etvar.
-    + admit.
+    destruct_trans.
+    + solve_binds_nonmono.
+    + apply a_wl_red__chk_union2.
+      apply IHd_wl_red...
+      destruct_a_wf_wl...
 
   (* infer *)
   - solve_awl_trailing_etvar.
-    + admit.
+    destruct_trans.
+    destruct_a_wf_wl.
+    econstructor; eauto.
+    apply IHd_wl_red; auto...
+    admit.
+    admit.
+  - solve_awl_trailing_etvar.
+    destruct_trans.
+    constructor.
+    admit.
   - solve_awl_trailing_etvar.
     + admit.
   - solve_awl_trailing_etvar.
-    + admit.
+    destruct_trans...
+    destruct_a_wf_wl.
+    constructor...
+    apply IHd_wl_red...
   - solve_awl_trailing_etvar.
     + admit.
   - solve_awl_trailing_etvar.
-    + admit.
+    destruct_trans.
+    destruct_a_wf_wl.
+    constructor...
+    apply IHd_wl_red...
+    exists θ0...
   - solve_awl_trailing_etvar.
-    + admit.
-  - solve_awl_trailing_etvar.
-    + admit.
+    destruct_trans.
+    destruct_a_wf_wl.
+    constructor...
+    apply IHd_wl_red...
 
   (* inftapp *)
   - solve_awl_trailing_etvar.
+    destruct_trans.
+    + solve_binds_nonmono.
+    + constructor.
+      apply IHd_wl_red...
+      destruct_a_wf_wl...
+      admit.
+      admit.
+  - solve_awl_trailing_etvar.
+    destruct_trans.
+    + solve_binds_nonmono.
+    + constructor.
+      apply IHd_wl_red...
+      destruct_a_wf_wl...
+  - solve_awl_trailing_etvar.
+    destruct_trans.
+    + solve_binds_nonmono.
     + admit.
   - solve_awl_trailing_etvar.
+    destruct_trans.
+    + solve_binds_nonmono.
     + admit.
   - solve_awl_trailing_etvar.
+    destruct_trans.
+    + solve_binds_nonmono.
     + admit.
   - solve_awl_trailing_etvar.
-    + admit.
+    destruct_trans.
+    admit.
   - solve_awl_trailing_etvar.
-    + admit.
-  - solve_awl_trailing_etvar.
-    + admit.
-  - solve_awl_trailing_etvar.
-    + admit.
+    destruct_trans.
+    admit.
 
   (* infabs *)
   - solve_awl_trailing_etvar.
-    + admit.
+    destruct_trans.
+    + econstructor.
+      admit. admit.
+    + destruct_a_wf_wl... 
+      constructor...
+      apply IHd_wl_red...
+  - solve_awl_trailing_etvar.
+    destruct_trans.
+    + solve_binds_nonmono.
+    + econstructor. constructor.
+      destruct_a_wf_wl... 
+      apply IHd_wl_red...
+      exists θ0...
+      constructor...
   - solve_awl_trailing_etvar.
     + admit.
   - solve_awl_trailing_etvar.
+    destruct_trans.
+    + solve_binds_nonmono.
+    + constructor...
+      destruct_a_wf_wl...
+      apply IHd_wl_red...
+  - solve_awl_trailing_etvar.
+    destruct_trans.
+    + solve_binds_nonmono.
+    + apply a_wl_red__infabs_inter2.
+      apply IHd_wl_red...
+      destruct_a_wf_wl...
+  - solve_awl_trailing_etvar.
+    destruct_trans.
+    + solve_binds_nonmono.
     + admit.
+  - solve_awl_trailing_etvar.
+    admit.
   - solve_awl_trailing_etvar.
     + admit.
   - solve_awl_trailing_etvar.
-    + admit.
-  - solve_awl_trailing_etvar.
-    + admit.
-  - solve_awl_trailing_etvar.
-    + admit.
-  - solve_awl_trailing_etvar.
-    + admit.
-  - solve_awl_trailing_etvar.
-    + admit.
+    destruct_trans.
+    admit.
+    admit.
 
   (* apply *)
   - solve_awl_trailing_etvar.
-    + admit.
+    + destruct_trans.
+      eapply trans_apply_cont in H as Hac; eauto. admit.
 Admitted.

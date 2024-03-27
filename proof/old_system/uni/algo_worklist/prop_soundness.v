@@ -497,7 +497,6 @@ Proof.
   constructor; auto.
 Qed.
 
-
 Lemma trans_apply_cont : forall θ c cᵈ A Aᵈ w wᵈ,
   θ ⫦ᶜ c ⇝ cᵈ ->
   θ ⫦ᵗ A ⇝ Aᵈ ->
@@ -506,9 +505,8 @@ Lemma trans_apply_cont : forall θ c cᵈ A Aᵈ w wᵈ,
   apply_cont cᵈ Aᵈ wᵈ.
 Proof.
   intros. induction H2.
-  - destruct_trans; auto.
+  - dependent destruction H.
 Admitted.
-
 
 
 Theorem d_a_wl_red_soundness: forall Γ,

@@ -781,6 +781,23 @@ Proof with auto with Hdb_transfer.
   - destruct H; destruct H0; subst; econstructor; eauto.
 Admitted.
 
+Corollary trans_typ_tvar_stvar_cons : forall θ X Aᵃ Aᵈ,
+  (X, dbind_tvar_empty) :: θ ⫦ᵗ Aᵃ ⇝ Aᵈ ->
+  (X, dbind_stvar_empty) :: θ ⫦ᵗ Aᵃ ⇝ Aᵈ.
+Proof.
+  intros. rewrite_env (nil ++ (X, dbind_stvar_empty) :: θ).
+  eapply trans_typ_tvar_stvar_same with (b:=dbind_tvar_empty); eauto.
+Qed.
+
+
+Corollary trans_typ_stvar_tvar_cons : forall θ X Aᵃ Aᵈ,
+  (X, dbind_stvar_empty) :: θ ⫦ᵗ Aᵃ ⇝ Aᵈ ->
+  (X, dbind_tvar_empty) :: θ ⫦ᵗ Aᵃ ⇝ Aᵈ.
+Proof.
+  intros. rewrite_env (nil ++ (X, dbind_tvar_empty) :: θ).
+  eapply trans_typ_tvar_stvar_same with (b:=dbind_stvar_empty); eauto.
+Qed.
+
 
 Lemma trans_typ_total : forall θ Γ Ω Aᵃ,
   a_wf_typ (awl_to_aenv Γ) Aᵃ ->  
@@ -1233,6 +1250,25 @@ Proof with eauto.
 Qed.
 
 
+
+Lemma wf_ss_binds_monotyp : forall θ X T,
+  wf_ss θ -> binds X (dbind_typ T) θ -> d_mono_typ (ss_to_denv θ) T.
+Proof.
+  intros. induction H; auto.
+  - inversion H0.
+  - inversion H0.
+    + inversion H2.
+    + simpl. rewrite_env ((X0 ~ □) ++ ss_to_denv θ).
+      apply d_mono_typ_weaken_head. apply IHwf_ss; auto.
+  - inversion H0.
+    + inversion H2.
+    + simpl. rewrite_env ((X0 ~ ■) ++ ss_to_denv θ).
+      apply d_mono_typ_weaken_head. apply IHwf_ss; auto.
+  - inversion H0.
+    + dependent destruction H3. simpl. auto. 
+    + simpl. apply IHwf_ss; auto.
+Qed.
+
 (* depedent destruction all non-atomic ⊢ᵃʷ relation *)
 
 
@@ -1397,6 +1433,41 @@ Proof with eauto with Hdb_transfer.
     eapply IHtrans_typ2; eauto. 
 Qed.
 
+
+Lemma trans_typ_strengthen : forall θ1 θ2 X b Aᵃ Aᵈ,
+  (θ2 ++ (X, b) :: θ1) ⫦ᵗ Aᵃ ⇝ Aᵈ ->
+  X \notin ftvar_in_typ Aᵃ ->
+  wf_ss (θ2 ++ θ1) ->
+  θ2 ++ θ1 ⫦ᵗ Aᵃ ⇝ Aᵈ.
+Proof with eauto with Hdb_transfer.
+  intros.
+  dependent induction H; intros...
+  - econstructor...
+    simpl in H1.
+    apply binds_remove_mid in H0...
+  - apply trans_typ__stvar...
+    simpl in H1.
+    apply binds_remove_mid in H0...
+  - econstructor...
+    simpl in H1.
+    apply binds_remove_mid in H0...
+  - simpl in H1. econstructor.
+    eapply IHtrans_typ1; eauto. 
+    eapply IHtrans_typ2; eauto. 
+  - inst_cofinites_for trans_typ__all.
+    intros. inst_cofinites_with X0.
+    rewrite_env (((X0, □) :: θ2) ++ θ1).
+    eapply H0 with (X:=X) (b:=b); simpl; eauto...
+    rewrite ftvar_in_typ_open_typ_wrt_typ_upper; auto.
+  - simpl in H1. econstructor.
+    eapply IHtrans_typ1; eauto. 
+    eapply IHtrans_typ2; eauto. 
+  - simpl in H1. econstructor.
+    eapply IHtrans_typ1; eauto. 
+    eapply IHtrans_typ2; eauto.
+Qed.
+
+
 Lemma trans_typ_refl: forall θ A,
   ss_to_denv θ ⊢ A ->
   wf_ss θ ->
@@ -1528,6 +1599,7 @@ Proof with eauto with Hdb_transfer.
 Admitted.
 
 
+
 Hint Resolve trans_typ_lc_atyp : Hdb_transfer.
 Hint Resolve trans_typ_lc_dtyp : Hdb_transfer.
 
@@ -1627,7 +1699,9 @@ Proof.
     eapply trans_typ_lc_atyp; eauto.
   - eapply wf_ss_strengthen_etvar; eapply H.
   - admit.
-  - admit.
+  - clear H0 H1 Heq H2 H3. induction θ2; simpl in *. 
+    + inversion H; auto.
+    + inversion H; apply IHθ2; eauto.
   - apply subst_tvar_in_typ_fresh_same; auto.
 Admitted.
 
