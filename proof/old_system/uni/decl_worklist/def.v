@@ -13,10 +13,7 @@ Fixpoint dwl_app (Ω1 Ω2 : dworklist) :=
   | dworklist_conswork Ω1' w => dworklist_conswork (dwl_app Ω1' Ω2) w
   end.
 
-(* TODO : could change to cont -> typ -> work *)
 Inductive apply_cont : cont -> typ -> work -> Prop :=
-  (* | applycont__done : forall T1,  
-      apply_cont cont_done (some T1) dworklist_empty *)
   | applycont__infabs: forall A c,
       apply_cont (cont_infabs c) 
                    A

@@ -266,17 +266,16 @@ Admitted.
 
 Ltac solve_binds_nonmono :=
   match goal with
-  | H1 : binds ?X (dbind_typ typ_bot) ?θ |- _ =>
-    apply wf_ss_binds_monotyp in H1; try inversion H1; try eapply a_wf_wl_wf_ss; eauto
-  | H1 : binds ?X (dbind_typ typ_top) ?θ |- _ =>
-    apply wf_ss_binds_monotyp in H1; try inversion H1; eapply a_wf_wl_wf_ss; eauto
-  | H1 : binds ?X (dbind_typ (typ_all ?A)) ?θ |- _ =>
-    apply wf_ss_binds_monotyp in H1; try inversion H1; try eapply a_wf_wl_wf_ss; eauto
-  | H1 : binds ?X (dbind_typ (typ_intersection ?A1 ?A2)) ?θ |- _ =>
-    apply wf_ss_binds_monotyp in H1; try inversion H1; try eapply a_wf_wl_wf_ss; eauto
-  | H1 : binds ?X (dbind_typ (typ_union ?A1 ?A2)) ?θ |- _ =>
-    apply wf_ss_binds_monotyp in H1; try inversion H1; try eapply a_wf_wl_wf_ss; eauto
-  end.
+  | H1 : binds ?X ?b ?θ |- _ =>
+    match goal with 
+    | H1 : context [typ_bot] |- _ => apply wf_ss_binds_monotyp in H1; try inversion H1; try eapply a_wf_wl_wf_ss; eauto
+    | H1 : context [typ_top] |- _ => apply wf_ss_binds_monotyp in H1; try inversion H1; try eapply a_wf_wl_wf_ss; eauto
+    | H1 : context [(typ_all ?A)] |- _ => apply wf_ss_binds_monotyp in H1; try inversion H1; try eapply a_wf_wl_wf_ss; eauto
+    | H1 : context [(typ_intersection ?A1 ?A2)] |- _ => apply wf_ss_binds_monotyp in H1; try inversion H1; try eapply a_wf_wl_wf_ss; eauto
+    | H1 : context [(typ_union ?A1 ?A2)] |- _ => apply wf_ss_binds_monotyp in H1; try inversion H1; try eapply a_wf_wl_wf_ss; eauto
+  end
+end.
+
 
 Theorem d_a_wl_red_completness: forall Ω Γ,
    Ω ⟶ᵈʷ⁎⋅ -> ⊢ᵃʷ Γ -> transfer Γ Ω  -> Γ ⟶ᵃʷ⁎⋅.
