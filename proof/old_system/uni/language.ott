@@ -614,7 +614,7 @@ dE |- A ▹ cc
 
 dE |- A1 -> B1
 dE |- A2
-dE |- c
+dE |- cc
 ----------------------- :: infabsunion
 dE |- A1 ~> B1 ⊔▹ A2 ▹ cc
 

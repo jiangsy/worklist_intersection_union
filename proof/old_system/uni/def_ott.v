@@ -1305,11 +1305,10 @@ Inductive d_wf_work : denv -> work -> Prop :=    (* defn d_wf_work *)
      d_wf_typ Ψ A ->
      d_wf_cont2 Ψ cc ->
      d_wf_work Ψ (work_infabs A cc)
- | d_wf_work__infabsunion : forall (Ψ:denv) (A1 B1 A2:typ) (cc:contd) (c:cont),
-     lc_contd cc ->
+ | d_wf_work__infabsunion : forall (Ψ:denv) (A1 B1 A2:typ) (cc:contd),
      d_wf_typ Ψ (typ_arrow A1 B1) ->
      d_wf_typ Ψ A2 ->
-     d_wf_cont Ψ c ->
+     d_wf_cont2 Ψ cc ->
      d_wf_work Ψ (work_infabsunion A1 B1 A2 cc)
  | d_wf_work__infapp : forall (Ψ:denv) (A B:typ) (e:exp) (c:cont),
      d_wf_typ Ψ (typ_arrow A B) ->
