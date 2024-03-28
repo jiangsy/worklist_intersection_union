@@ -15,10 +15,10 @@ Hint Constructors d_wf_wl : Hdb_dworklist_equiv.
 Hint Constructors d_wl_del_red : Hdb_dworklist_equiv.
 
 
-Declare Scope dworklist_scope.
+(* Declare Scope dworklist_scope.
 Delimit Scope dworklist_scope with dworklist.
 Bind Scope dworklist_scope with dworklist.
-
+ *)
 
 
 Ltac destruct_wf :=
@@ -146,6 +146,8 @@ Proof with auto with Hdb_dworklist_equiv.
     rewrite_dwl_app. eapply IHHred; eauto...
   - econstructor; eauto.
     rewrite_dwl_app. eapply IHHred; eauto...
+  - econstructor; eauto.
+    rewrite_dwl_app. eapply IHHred; eauto...
 Qed.
 
 Lemma d_wl_red_weaken_work1 : forall Ω1 w1 w2,
@@ -176,8 +178,7 @@ Proof.
     dependent destruction H0; auto.
 Qed.
 
-Ltac destruct_d_wl_del_red := 
-  repeat
+(* Ltac destruct_d_wl_del_red' := 
   match goal with
   | H : d_wl_del_red (dworklist_conswork ?Ω ?w) |- _ => 
     lazymatch w with 
@@ -191,7 +192,28 @@ Ltac destruct_d_wl_del_red :=
   | H : d_wl_del_red (dworklist_constvar ?Ω ?x ?b) |- _ => 
     dependent destruction H
   | H : apply_cont ?c ?A ?w |- _ => dependent destruction H
+  (* | H : apply_cont2 ?cc ?A ?B ?w |- _ => dependent destruction H *)
+  end. *)
+
+Ltac destruct_d_wl_del_red' := 
+  match goal with
+  | H : d_wl_del_red (dworklist_conswork ?Ω ?w) |- _ => 
+    lazymatch w with 
+    | work_apply (?c ?B) ?A => dependent destruction H
+    | work_apply ?c ?A => fail
+    | ?w1 _ _ => dependent destruction H
+    | ?w1 _ _ _ => dependent destruction H
+    end
+  | H : d_wl_del_red (dworklist_consvar ?Ω ?x ?A) |- _ => 
+    dependent destruction H
+  | H : d_wl_del_red (dworklist_constvar ?Ω ?x ?b) |- _ => 
+    dependent destruction H
+  | H : apply_cont ?c ?A ?w |- _ => dependent destruction H
+  | H : apply_cont2 (?cc _) ?A ?B ?w |- _ => dependent destruction H
+  | H : apply_cont2 (?cc _ _) ?A ?B ?w |- _ => dependent destruction H
   end.
+
+Ltac destruct_d_wl_del_red := repeat destruct_d_wl_del_red'.
 
 Ltac _apply_IH_d_wl_red :=
   let H := fresh "H" in
@@ -208,7 +230,7 @@ Hint Constructors d_typing : typing. *)
 (* This direction is not so important because soundness is proven against decl system directly *)
 Theorem d_wl_red_sound: forall Ω, 
     ⊢ᵈʷ Ω -> Ω ⟶ᵈʷ⁎⋅ -> Ω ⟶ᵈ⁎⋅.
-Proof with auto with Hdb_dworklist_equiv typing.
+Proof with eauto with Hdb_dworklist_equiv typing.
   intros. induction H0; try solve [dependent destruction H; auto with Hdb_dworklist_equiv];
     try solve [destruct_wf; _apply_IH_d_wl_red; destruct_d_wl_del_red; eauto with Hdb_dworklist_equiv].
   (* sub *)
@@ -249,17 +271,21 @@ Proof with auto with Hdb_dworklist_equiv typing.
   - admit.
   - _apply_IH_d_wl_red.
     destruct_d_wl_del_red.
-    econstructor; eauto...
+    eapply d_wl_del_red__infabs with (B:=B) (C:=C)...
   - destruct_wf. 
     _apply_IH_d_wl_red.
     destruct_d_wl_del_red.
-    econstructor; eauto...
+    eapply d_wl_del_red__infabs with (B:=B) (C:=C)...
   - _apply_IH_d_wl_red.
     destruct_d_wl_del_red.
-    econstructor; eauto...
+    eapply d_wl_del_red__infabs with (B:=typ_intersection B1 B2) (C:=typ_union C1 C2)...
+  - assert (⊢ᵈʷ (work_infabs A (contd_unioninfabs B C cc) ⫤ Ω)) by admit.
+    apply IHd_wl_red in H1.
+    destruct_d_wl_del_red...  
   - econstructor; eauto.
     destruct_wf.
     eapply d_wf_work_apply_cont in H0; eauto.
+  - admit.
 Admitted.
 
 
@@ -352,14 +378,16 @@ Proof.
     rewrite_dwl_app. auto.
   - econstructor; eauto.
     rewrite_dwl_app. auto.
+  - econstructor; eauto.
+    rewrite_dwl_app. auto.
 Qed.
 
 
-Lemma d_wl_red_infabs_complete: forall Ω A B C c,
-   dwl_to_denv Ω ⊢ A ▹ B → C -> d_wf_wl (dworklist_conswork Ω (work_infabs A c)) -> 
-   d_wl_red (dworklist_conswork Ω (work_apply c (typ_arrow B C))) -> d_wl_red (dworklist_conswork Ω (work_infabs A c)).
+Lemma d_wl_red_infabs_complete: forall Ω A B C cc,
+   dwl_to_denv Ω ⊢ A ▹ B → C -> d_wf_wl (dworklist_conswork Ω (work_infabs A cc)) -> 
+   d_wl_red (dworklist_conswork Ω (work_apply2 cc B C)) -> d_wl_red (dworklist_conswork Ω (work_infabs A cc)).
 Proof with auto with Hdb_dworklist_equiv.
-  intros. generalize dependent c. dependent induction H; intros; eauto;
+  intros. generalize dependent cc. dependent induction H; intros; eauto;
   try solve [destruct_wf; econstructor; auto with Hdb_dworklist_equiv].
   - destruct_wf.
     eapply d_wl_red__infabs_all with (T:=T); eauto.
@@ -367,14 +395,14 @@ Proof with auto with Hdb_dworklist_equiv.
     apply d_infabs_wft in H.
     apply d_wl_red__infabs_union.
     apply IHd_infabs1; auto.
-    eapply d_wl_red__applycont with 
-      (w:=((work_infabsunion (typ_arrow B1 C1) A2 c))).
-    eapply applycont__infabsunion.
+    eapply d_wl_red__apply_cont2 with 
+      (w:=((work_infabsunion B1 C1 A2 cc))).
+    eapply apply_cont2__infabsunion.
     simpl.
     eapply d_wl_red__infabsunion.
     apply IHd_infabs2; intuition.
-    eapply d_wl_red__applycont with 
-      (w:=(work_unioninfabs (typ_arrow B1 C1) (typ_arrow B2 C2) c)).
+    eapply d_wl_red__apply_cont2 with 
+      (w:=(work_unioninfabs  B1 C1 B2 C2 cc)).
     econstructor.
     simpl.
     econstructor.

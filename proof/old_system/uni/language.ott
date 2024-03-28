@@ -52,9 +52,9 @@ cont, c :: 'cont_' ::=
   | ( c )                 :: S :: app {{ coq ( [[c]] )}}
 
 contd, cc :: 'contd_' ::=
-  | _ ⊔▹ A ~> B ▹ cc      ::   :: infabsunion
+  | _ ⊔▹ A ▹ cc           ::   :: infabsunion
   | _ • e =>=> c          ::   :: infapp
-  | _ ⊔▹ A >> cc          ::   :: unioninfabs
+  | _ ⊔▹ A ~> B >> cc     ::   :: unioninfabs
   | ( cc )                :: S :: app {{ coq ( [[cc]] )}}
 
 work, w :: 'work_' ::=
@@ -123,15 +123,15 @@ formula :: formula_ ::=
   | ( X db )  in dE    ::   :: binds2 {{ coq binds ([[X]])  ([[db]]) ([[dE]]) }}
   | ( x ab )  in aE    ::   :: binds3 {{ coq binds ([[x]])  ([[ab]]) ([[aE]]) }}
   | ( X ab )  in aE    ::   :: binds4 {{ coq binds ([[X]])  ([[ab]]) ([[aE]]) }}
-  | uniq dE           ::   :: uniq   {{ coq uniq ([[dE]]) }}
+  % | uniq dE           ::   :: uniq   {{ coq uniq ([[dE]]) }}
   | x  `notin` dom dE ::   :: fresh1 {{ coq ([[x]]  `notin` dom ([[dE]])) }}
   | X  `notin` dom dE ::   :: fresh2 {{ coq ([[X]]  `notin` dom ([[dE]])) }}
   | x  `notin` dom aE ::   :: fresh3 {{ coq ([[x]]  `notin` dom ([[aE]])) }}
   | X  `notin` dom aE ::   :: fresh4 {{ coq ([[X]]  `notin` dom ([[aE]])) }}
-  | X in A           ::   :: appear1 {{ coq [[X]] `in` ftvar_in_typ [[A]]}}
+  % | X in A           ::   :: appear1 {{ coq [[X]] `in` ftvar_in_typ [[A]]}}
   | A ¬= TOP         ::   :: neqtop  {{ coq ~ ([[A]] = typ_top)}}
-  | A = TOP          ::   :: eqtop  {{ coq ([[A]] = typ_top)}}
-  | A = BOT          ::   :: eqbot  {{ coq ([[A]] = typ_bot)}}
+  % | A = TOP          ::   :: eqtop  {{ coq ([[A]] = typ_top)}}
+  % | A = BOT          ::   :: eqbot  {{ coq ([[A]] = typ_bot)}}
   | ⌊ dW ⌋           ::   :: dwl_to_env {{ coq dwl_to_denv [[ dW ]] }}
   | ⌊ aW ⌋           ::   :: awl_to_env {{ coq awl_to_aenv [[ aW ]] }}
 
@@ -575,20 +575,20 @@ dE |- _ <: A
 defn 
 dE |- cc :: :: d_wf_cont2 :: 'd_wf_cont2__' by 
 
-dE |- A -> B
+dE |- A
 dE |- cc
 ------------------ :: infabsunion
-dE |- _ ⊔▹ A ~> B ▹ cc
+dE |- _ ⊔▹ A ▹ cc
 
 dE |- e 
 dE |- c
 -------------------- :: infapp
 dE |- _ • e =>=> c  
 
-dE |- A 
+dE |- A -> B
 dE |- cc
 -------------------- :: unioninfabs
-dE |- _ ⊔▹ A >> cc  
+dE |- _ ⊔▹ A ~> B >> cc  
 
 
 defns 
@@ -967,20 +967,20 @@ aE |- _ <: A
 defn 
 aE |- cc :: :: a_wf_cont2 :: 'a_wf_cont2__' by 
 
-aE |- A -> B
+aE |- A
 aE |- cc
 ------------------ :: infabsunion
-aE |- _ ⊔▹ A ~> B ▹ cc
+aE |- _ ⊔▹ A ▹ cc
 
 aE |- e 
 aE |- c
 -------------------- :: infapp
 aE |- _ • e =>=> c  
 
-aE |- A 
+aE |- A -> B
 aE |- cc
 -------------------- :: unioninfabs
-aE |- _ ⊔▹ A >> cc  
+aE |- _ ⊔▹ A ~> B >> cc  
 
 
 defns 

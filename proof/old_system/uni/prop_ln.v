@@ -122,9 +122,9 @@ Fixpoint size_cont (c1 : cont) {struct c1} : nat :=
 
 with size_contd (cc1 : contd) {struct cc1} : nat :=
   match cc1 with
-    | contd_infabsunion A1 B1 cc2 => 1 + (size_typ A1) + (size_typ B1) + (size_contd cc2)
+    | contd_infabsunion A1 cc2 => 1 + (size_typ A1) + (size_contd cc2)
     | contd_infapp e1 c1 => 1 + (size_exp e1) + (size_cont c1)
-    | contd_unioninfabs A1 cc2 => 1 + (size_typ A1) + (size_contd cc2)
+    | contd_unioninfabs A1 B1 cc2 => 1 + (size_typ A1) + (size_typ B1) + (size_contd cc2)
   end.
 
 Fixpoint size_dbind (db1 : dbind) {struct db1} : nat :=
@@ -309,19 +309,19 @@ Inductive degree_cont_wrt_typ : nat -> cont -> Prop :=
     degree_cont_wrt_typ n1 (cont_sub A1)
 
 with degree_contd_wrt_typ : nat -> contd -> Prop :=
-  | degree_wrt_typ_contd_infabsunion : forall n1 A1 B1 cc1,
+  | degree_wrt_typ_contd_infabsunion : forall n1 A1 cc1,
     degree_typ_wrt_typ n1 A1 ->
-    degree_typ_wrt_typ n1 B1 ->
     degree_contd_wrt_typ n1 cc1 ->
-    degree_contd_wrt_typ n1 (contd_infabsunion A1 B1 cc1)
+    degree_contd_wrt_typ n1 (contd_infabsunion A1 cc1)
   | degree_wrt_typ_contd_infapp : forall n1 e1 c1,
     degree_exp_wrt_typ n1 e1 ->
     degree_cont_wrt_typ n1 c1 ->
     degree_contd_wrt_typ n1 (contd_infapp e1 c1)
-  | degree_wrt_typ_contd_unioninfabs : forall n1 A1 cc1,
+  | degree_wrt_typ_contd_unioninfabs : forall n1 A1 B1 cc1,
     degree_typ_wrt_typ n1 A1 ->
+    degree_typ_wrt_typ n1 B1 ->
     degree_contd_wrt_typ n1 cc1 ->
-    degree_contd_wrt_typ n1 (contd_unioninfabs A1 cc1).
+    degree_contd_wrt_typ n1 (contd_unioninfabs A1 B1 cc1).
 
 Inductive degree_cont_wrt_exp : nat -> cont -> Prop :=
   | degree_wrt_exp_cont_infabs : forall n1 cc1,
@@ -340,16 +340,16 @@ Inductive degree_cont_wrt_exp : nat -> cont -> Prop :=
     degree_cont_wrt_exp n1 (cont_sub A1)
 
 with degree_contd_wrt_exp : nat -> contd -> Prop :=
-  | degree_wrt_exp_contd_infabsunion : forall n1 A1 B1 cc1,
+  | degree_wrt_exp_contd_infabsunion : forall n1 A1 cc1,
     degree_contd_wrt_exp n1 cc1 ->
-    degree_contd_wrt_exp n1 (contd_infabsunion A1 B1 cc1)
+    degree_contd_wrt_exp n1 (contd_infabsunion A1 cc1)
   | degree_wrt_exp_contd_infapp : forall n1 e1 c1,
     degree_exp_wrt_exp n1 e1 ->
     degree_cont_wrt_exp n1 c1 ->
     degree_contd_wrt_exp n1 (contd_infapp e1 c1)
-  | degree_wrt_exp_contd_unioninfabs : forall n1 A1 cc1,
+  | degree_wrt_exp_contd_unioninfabs : forall n1 A1 B1 cc1,
     degree_contd_wrt_exp n1 cc1 ->
-    degree_contd_wrt_exp n1 (contd_unioninfabs A1 cc1).
+    degree_contd_wrt_exp n1 (contd_unioninfabs A1 B1 cc1).
 
 Scheme degree_cont_wrt_typ_ind' := Induction for degree_cont_wrt_typ Sort Prop
   with degree_contd_wrt_typ_ind' := Induction for degree_contd_wrt_typ Sort Prop.
@@ -644,19 +644,19 @@ Inductive lc_set_cont : cont -> Set :=
     lc_set_cont (cont_sub A1)
 
 with lc_set_contd : contd -> Set :=
-  | lc_set_contd_infabsunion : forall A1 B1 cc1,
+  | lc_set_contd_infabsunion : forall A1 cc1,
     lc_set_typ A1 ->
-    lc_set_typ B1 ->
     lc_set_contd cc1 ->
-    lc_set_contd (contd_infabsunion A1 B1 cc1)
+    lc_set_contd (contd_infabsunion A1 cc1)
   | lc_set_contd_infapp : forall e1 c1,
     lc_set_exp e1 ->
     lc_set_cont c1 ->
     lc_set_contd (contd_infapp e1 c1)
-  | lc_set_contd_unioninfabs : forall A1 cc1,
+  | lc_set_contd_unioninfabs : forall A1 B1 cc1,
     lc_set_typ A1 ->
+    lc_set_typ B1 ->
     lc_set_contd cc1 ->
-    lc_set_contd (contd_unioninfabs A1 cc1).
+    lc_set_contd (contd_unioninfabs A1 B1 cc1).
 
 Scheme lc_cont_ind' := Induction for lc_cont Sort Prop
   with lc_contd_ind' := Induction for lc_contd Sort Prop.
