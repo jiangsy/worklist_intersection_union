@@ -1762,7 +1762,7 @@ Lemma trans_cont_etvar_subst_same_ss : forall θ Tᵃ Tᵈ X cᵃ cᵈ,
   binds X (dbind_typ Tᵈ) θ ->
   X `notin` ftvar_in_typ Tᵃ ->
   θ ⫦ᵗ Tᵃ ⇝ Tᵈ ->
-  θ ⫦ᶜ (subst_tvar_in_cont Tᵃ X cᵃ) ⇝ cᵈ -> 
+  θ ⫦ᶜ (subst_tvar_in_conts Tᵃ X cᵃ) ⇝ cᵈ -> 
   θ ⫦ᶜ cᵃ ⇝ cᵈ.
 Proof.
   intros. generalize dependent θ. generalize dependent cᵈ.

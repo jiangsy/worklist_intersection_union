@@ -74,7 +74,7 @@ Notation "{ b' /ᵇₑ x } b" :=
     , right associativity) : type_scope.
 
 Notation "{ A /ᶜₜ X } c" :=
-  (subst_tvar_in_cont A X c)
+  (subst_tvar_in_conts A X c)
     ( at level 49, A at level 50, X at level 0
     , right associativity) : type_scope. 
 

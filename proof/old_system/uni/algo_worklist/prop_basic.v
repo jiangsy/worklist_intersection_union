@@ -354,7 +354,7 @@ Qed.
 
 Lemma apply_cont_rename_tvar : forall c A w X X',
   apply_cont c A w ->
-  apply_cont (subst_tvar_in_cont (typ_var_f X') X c) (subst_tvar_in_typ (typ_var_f X') X A)
+  apply_cont (subst_tvar_in_conts (typ_var_f X') X c) (subst_tvar_in_typ (typ_var_f X') X A)
     (subst_tvar_in_work (typ_var_f X') X w).
 Proof.
   intros. induction H; simpl; try solve [simpl; eauto with Hdb_a_wl_red_basic].
@@ -645,7 +645,7 @@ Qed.
 
 Lemma rename_tvar_in_cont_rev_eq : forall X X' c,
   X' `notin` ftvar_in_cont c ->
-  subst_tvar_in_cont (typ_var_f X) X' (subst_tvar_in_cont (typ_var_f X') X c) = c.
+  subst_tvar_in_conts (typ_var_f X) X' (subst_tvar_in_conts (typ_var_f X') X c) = c.
 Proof.
   induction c; simpl in *; intros;
     try repeat rewrite rename_tvar_in_typ_rev_eq; auto;
@@ -1155,11 +1155,11 @@ Ltac solve_notin_rename_tvar :=
     | _ =>
       assert (X `notin` ftvar_in_aworklist' (rename_tvar_in_aworklist X' X Γ)) by now apply notin_rename_tvar_in_aworklist
     end
-  | H : _ |- context [subst_tvar_in_cont ?X' ?X ?c] =>
+  | H : _ |- context [subst_tvar_in_conts ?X' ?X ?c] =>
     match goal with
-    | H1 : (X `notin` (ftvar_in_cont (subst_tvar_in_cont X' X c))) |- _ => fail 1
+    | H1 : (X `notin` (ftvar_in_cont (subst_tvar_in_conts X' X c))) |- _ => fail 1
     | _ =>
-      assert (X `notin` (ftvar_in_cont (subst_tvar_in_cont X' X c))) by (simpl; apply subst_tvar_in_cont_fresh_same; auto)
+      assert (X `notin` (ftvar_in_cont (subst_tvar_in_conts X' X c))) by (simpl; apply subst_tvar_in_cont_fresh_same; auto)
     end
   | H : _ |- context [subst_tvar_in_exp ?X' ?X ?e] =>
     match goal with
