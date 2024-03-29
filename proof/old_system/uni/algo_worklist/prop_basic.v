@@ -57,6 +57,8 @@ Ltac destruct_a_wf_wl :=
     | H : a_wf_conts ?E (?C_C _) |- _ => dependent destruction H
     | H : a_wf_conts ?E (?C_C _ _) |- _ => dependent destruction H
     | H : a_wf_conts ?E (?C_C _ _ _) |- _ => dependent destruction H
+    | H : a_wf_contd ?E (?C_C _ _) |- _ => dependent destruction H
+    | H : a_wf_contd ?E (?C_C _ _ _) |- _ => dependent destruction H
     end.
 
 Hint Constructors a_wf_wl : Hdb_a_wl_red_basic.

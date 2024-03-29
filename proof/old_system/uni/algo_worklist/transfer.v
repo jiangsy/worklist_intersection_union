@@ -154,93 +154,100 @@ with trans_body : subst_set -> body -> body -> Prop :=
       trans_body θ (body_anno eᵃ A1ᵃ) (body_anno eᵈ A1ᵈ)
 .
 
-Inductive trans_cont : subst_set -> cont -> cont -> Prop :=
-  | trans_cont__infabs : forall θ cᵃ cᵈ,
-    trans_cont θ cᵃ cᵈ ->
-    trans_cont θ (cont_infabs cᵃ) (cont_infabs cᵈ)
-  | trans_cont__infabs_union : forall θ A1ᵃ A1ᵈ cᵃ cᵈ,
-    trans_typ θ A1ᵃ A1ᵈ ->
-    trans_cont θ cᵃ cᵈ ->
-    trans_cont θ (cont_infabsunion A1ᵃ cᵃ) (cont_infabsunion A1ᵈ cᵈ)
-  | trans_cont__infapp : forall θ eᵃ eᵈ cᵃ cᵈ,
-    trans_exp θ eᵃ eᵈ ->
-    trans_cont θ cᵃ cᵈ ->
-    trans_cont θ (cont_infapp eᵃ cᵃ) (cont_infapp eᵈ cᵈ)
-  | trans_cont__inftapp : forall θ A1ᵃ A1ᵈ cᵃ cᵈ,
-    trans_typ θ A1ᵃ A1ᵈ ->
-    trans_cont θ cᵃ cᵈ ->
-    trans_cont θ (cont_inftapp A1ᵃ cᵃ) (cont_inftapp A1ᵈ cᵈ)
+Inductive trans_conts : subst_set -> conts -> conts -> Prop :=
+  | trans_conts__infabs : forall θ cdᵃ cdᵈ,
+    trans_contd θ cdᵃ cdᵈ ->
+    trans_conts θ (conts_infabs cdᵃ) (conts_infabs cdᵈ)
+  | trans_cont__inftapp : forall θ Aᵃ Aᵈ cᵃ cᵈ,
+    trans_typ θ Aᵃ Aᵈ ->
+    trans_conts θ cᵃ cᵈ ->
+    trans_conts θ (conts_inftapp Aᵃ cᵃ) (conts_inftapp Aᵈ cᵈ)
   | trans_cont__inftappunion : forall θ A1ᵃ A1ᵈ A2ᵃ A2ᵈ cᵃ cᵈ,
     trans_typ θ A1ᵃ A1ᵈ ->
     trans_typ θ A2ᵃ A2ᵈ ->
-    trans_cont θ cᵃ cᵈ ->
-    trans_cont θ (cont_inftappunion A1ᵃ A2ᵃ cᵃ) (cont_inftappunion A1ᵈ A2ᵈ cᵈ)
-  | trans_cont__unioninftapp : forall θ A1ᵃ A1ᵈ cᵃ cᵈ,
-    trans_typ θ A1ᵃ A1ᵈ ->
-    trans_cont θ cᵃ cᵈ ->
-    trans_cont θ (cont_unioninftapp A1ᵃ cᵃ) (cont_unioninftapp A1ᵈ cᵈ)
-  | trans_cont__unioninfabs : forall θ A1ᵃ A1ᵈ cᵃ cᵈ,
-    trans_typ θ A1ᵃ A1ᵈ ->
-    trans_cont θ cᵃ cᵈ ->
-    trans_cont θ (cont_unioninfabs A1ᵃ cᵃ) (cont_unioninfabs A1ᵈ cᵈ)    
-  | trans_cont__sub : forall θ A1ᵃ A1ᵈ,
-    trans_typ θ A1ᵃ A1ᵈ ->
-    trans_cont θ (cont_sub A1ᵃ) (cont_sub A1ᵈ)
+    trans_conts θ cᵃ cᵈ ->
+    trans_conts θ (conts_inftappunion A1ᵃ A2ᵃ cᵃ) (conts_inftappunion A1ᵈ A2ᵈ cᵈ)
+  | trans_cont__unioninftapp : forall θ Aᵃ Aᵈ cᵃ cᵈ,
+    trans_typ θ Aᵃ Aᵈ ->
+    trans_conts θ cᵃ cᵈ ->
+    trans_conts θ (conts_unioninftapp Aᵃ cᵃ) (conts_unioninftapp Aᵈ cᵈ)
+  | trans_cont__sub : forall θ Aᵃ Aᵈ,
+    trans_typ θ Aᵃ Aᵈ ->
+    trans_conts θ (conts_sub Aᵃ) (conts_sub Aᵈ)
+with trans_contd : subst_set -> contd -> contd -> Prop :=
+  | trans_contd__infapp : forall θ eᵃ eᵈ csᵃ csᵈ,
+    trans_exp θ eᵃ eᵈ ->
+    trans_conts θ csᵃ csᵈ ->
+    trans_contd θ (contd_infapp eᵃ csᵃ) (contd_infapp eᵈ csᵈ)
+  | trans_contd__infabs_union : forall θ Aᵃ Aᵈ cdᵃ cdᵈ,
+    trans_typ θ Aᵃ Aᵈ ->
+    trans_contd θ cdᵃ cdᵈ ->
+    trans_contd θ (contd_infabsunion Aᵃ cdᵃ) (contd_infabsunion Aᵈ cdᵈ)
+  | trans_contd__unioninfabs : forall θ Aᵃ Aᵈ Bᵃ Bᵈ cdᵃ cdᵈ,
+    trans_typ θ Aᵃ Aᵈ ->
+    trans_typ θ Bᵃ Bᵈ ->
+    trans_contd θ cdᵃ cdᵈ ->
+    trans_contd θ (contd_unioninfabs Aᵃ Bᵃ cdᵃ) (contd_unioninfabs Aᵈ Bᵈ cdᵈ)    
 .
 
 
 Inductive trans_work : subst_set -> work -> work -> Prop :=
-  | trans_work__inf : forall θ eᵃ eᵈ cᵃ cᵈ,
+  | trans_work__inf : forall θ eᵃ eᵈ csᵃ csᵈ,
       trans_exp θ eᵃ eᵈ ->
-      trans_cont θ cᵃ cᵈ ->
-      trans_work θ (work_infer eᵃ cᵃ) (work_infer eᵈ cᵈ)
-  | trans_work__chk : forall θ eᵃ eᵈ A1ᵃ A1ᵈ,
+      trans_conts θ csᵃ csᵈ ->
+      trans_work θ (work_infer eᵃ csᵃ) (work_infer eᵈ csᵈ)
+  | trans_work__chk : forall θ eᵃ eᵈ Aᵃ Aᵈ,
       trans_exp θ eᵃ eᵈ ->
-      trans_typ θ A1ᵃ A1ᵈ ->
-      trans_work θ (work_check eᵃ A1ᵃ) (work_check eᵈ A1ᵈ)
-  | trans_work__infabs : forall θ A1ᵃ A1ᵈ  cᵃ cᵈ,
-      trans_typ θ A1ᵃ A1ᵈ ->
-      trans_cont θ cᵃ cᵈ ->
-      trans_work θ (work_infabs A1ᵃ cᵃ ) (work_infabs A1ᵈ cᵈ)
-  | trans_work__infabsunion : forall θ A1ᵃ A1ᵈ A2ᵃ A2ᵈ cᵃ cᵈ,
+      trans_typ θ Aᵃ Aᵈ ->
+      trans_work θ (work_check eᵃ Aᵃ) (work_check eᵈ Aᵈ)
+  | trans_work__infabs : forall θ Aᵃ Aᵈ  cdᵃ cdᵈ,
+      trans_typ θ Aᵃ Aᵈ ->
+      trans_contd θ cdᵃ cdᵈ ->
+      trans_work θ (work_infabs Aᵃ cdᵃ ) (work_infabs Aᵈ cdᵈ)
+  | trans_work__infabsunion : forall θ A1ᵃ A1ᵈ A2ᵃ A2ᵈ B1ᵃ B1ᵈ cdᵃ cdᵈ,
       trans_typ θ A1ᵃ A1ᵈ ->
       trans_typ θ A2ᵃ A2ᵈ ->
-      trans_cont θ cᵃ cᵈ ->
-      trans_work θ (work_infabsunion A1ᵃ A2ᵃ cᵃ) (work_infabsunion A1ᵈ A2ᵈ cᵈ)
-  | trans_work__infapp : forall θ A1ᵃ A1ᵈ eᵃ eᵈ cᵃ cᵈ,
-      trans_typ θ A1ᵃ A1ᵈ ->
+      trans_contd θ cdᵃ cdᵈ ->
+      trans_work θ (work_infabsunion A1ᵃ B1ᵃ A2ᵃ cdᵃ) (work_infabsunion A1ᵈ B1ᵈ A2ᵈ cdᵈ)
+  | trans_work__infapp : forall θ Aᵃ Aᵈ Bᵃ Bᵈ eᵃ eᵈ csᵃ csᵈ,
+      trans_typ θ Aᵃ Aᵈ ->
       trans_exp θ eᵃ eᵈ ->
-      trans_cont θ cᵃ cᵈ ->
-      trans_work θ (work_infapp A1ᵃ eᵃ cᵃ) (work_infapp A1ᵈ eᵈ cᵈ)
-  | trans_work__inftapp : forall θ A1ᵃ A1ᵈ A2ᵃ A2ᵈ cᵃ cᵈ,
+      trans_conts θ csᵃ csᵈ ->
+      trans_work θ (work_infapp Aᵃ Bᵃ eᵃ csᵃ) (work_infapp Aᵈ Bᵈ eᵈ csᵈ)
+  | trans_work__inftapp : forall θ A1ᵃ A1ᵈ A2ᵃ A2ᵈ csᵃ csᵈ,
       trans_typ θ A1ᵃ A1ᵈ ->
       trans_typ θ A2ᵃ A2ᵈ ->
-      trans_cont θ cᵃ cᵈ ->
-      trans_work θ (work_inftapp A1ᵃ A2ᵃ cᵃ) (work_inftapp A1ᵈ A2ᵈ cᵈ)
-  | trans_work__sub : forall θ A1ᵃ A1ᵈ B1ᵃ B1ᵈ,
+      trans_conts θ csᵃ csᵈ ->
+      trans_work θ (work_inftapp A1ᵃ A2ᵃ csᵃ) (work_inftapp A1ᵈ A2ᵈ csᵈ)
+  | trans_work__sub : forall θ Aᵃ Aᵈ Bᵃ Bᵈ,
+      trans_typ θ Aᵃ Aᵈ ->
+      trans_typ θ Bᵃ Bᵈ ->
+      trans_work θ (work_sub Aᵃ Bᵃ) (work_sub Aᵈ Bᵈ)
+  | trans_work__inftappunion : forall θ A1ᵃ A1ᵈ A2ᵃ A2ᵈ B1ᵃ B1ᵈ csᵃ csᵈ,
       trans_typ θ A1ᵃ A1ᵈ ->
+      trans_typ θ A2ᵃ A2ᵈ ->
       trans_typ θ B1ᵃ B1ᵈ ->
-      trans_work θ (work_sub A1ᵃ B1ᵃ) (work_sub A1ᵈ B1ᵈ)
-  | trans_work__inftappunion : forall θ A1ᵃ A1ᵈ A2ᵃ A2ᵈ B1ᵃ B1ᵈ cᵃ cᵈ,
+      trans_conts θ csᵃ csᵈ ->
+      trans_work θ (work_inftappunion A1ᵃ A2ᵃ B1ᵃ csᵃ) (work_inftappunion A1ᵈ A2ᵈ B1ᵈ csᵈ)
+  | trans_work__unioninftapp : forall θ A1ᵃ A1ᵈ A2ᵃ A2ᵈ csᵃ csᵈ,
       trans_typ θ A1ᵃ A1ᵈ ->
       trans_typ θ A2ᵃ A2ᵈ ->
-      trans_typ θ B1ᵃ B1ᵈ ->
-      trans_cont θ cᵃ cᵈ ->
-      trans_work θ (work_inftappunion A1ᵃ A2ᵃ B1ᵃ cᵃ) (work_inftappunion A1ᵈ A2ᵈ B1ᵈ cᵈ)
-  | trans_work__unioninftapp : forall θ A1ᵃ A1ᵈ A2ᵃ A2ᵈ cᵃ cᵈ,
+      trans_conts θ csᵃ csᵈ ->
+      trans_work θ (work_unioninftapp A1ᵃ A2ᵃ csᵃ) (work_unioninftapp A1ᵈ A2ᵈ csᵈ)
+  | trans_work__unioninfabs : forall θ A1ᵃ A1ᵈ A2ᵃ A2ᵈ B1ᵃ B1ᵈ B2ᵃ B2ᵈ cdᵃ cdᵈ,
       trans_typ θ A1ᵃ A1ᵈ ->
       trans_typ θ A2ᵃ A2ᵈ ->
-      trans_cont θ cᵃ cᵈ ->
-      trans_work θ (work_unioninftapp A1ᵃ A2ᵃ cᵃ) (work_unioninftapp A1ᵈ A2ᵈ cᵈ)
-  | trans_work__unioninfabs : forall θ A1ᵃ A1ᵈ A2ᵃ A2ᵈ cᵃ cᵈ,
-      trans_typ θ A1ᵃ A1ᵈ ->
-      trans_typ θ A2ᵃ A2ᵈ ->
-      trans_cont θ cᵃ cᵈ ->
-      trans_work θ (work_unioninfabs A1ᵃ A2ᵃ cᵃ) (work_unioninfabs A1ᵈ A2ᵈ cᵈ)
-  | trans_work__applycont : forall θ cᵃ cᵈ A1ᵃ A1ᵈ,
-      trans_cont θ cᵃ cᵈ ->
-      trans_typ θ A1ᵃ A1ᵈ ->
-      trans_work θ (work_apply cᵃ A1ᵃ) (work_apply cᵈ A1ᵈ)
+      trans_contd θ cdᵃ cdᵈ ->
+      trans_work θ (work_unioninfabs A1ᵃ B1ᵃ A2ᵃ B2ᵃ cdᵃ) (work_unioninfabs A1ᵈ B1ᵈ A2ᵈ B2ᵈ cdᵈ)
+  | trans_work__applys : forall θ Aᵃ Aᵈ csᵃ csᵈ,
+      trans_typ θ Aᵃ Aᵈ ->
+      trans_conts θ csᵃ csᵈ ->
+      trans_work θ (work_applys csᵃ Aᵃ) (work_applys csᵈ Aᵈ)
+  | trans_work__applyd : forall θ Aᵃ Aᵈ Bᵃ Bᵈ cdᵃ cdᵈ,
+      trans_typ θ Aᵃ Aᵈ ->
+      trans_typ θ Bᵃ Bᵈ ->
+      trans_contd θ cdᵃ cdᵈ ->
+      trans_work θ (work_applyd cdᵃ Aᵃ Bᵃ) (work_applyd cdᵈ Aᵈ Bᵈ)
 .
 
 Notation "θ ⫦ᵗ Aᵃ ⇝ Aᵈ" := (trans_typ θ Aᵃ Aᵈ)
@@ -252,8 +259,11 @@ Notation "θ ⫦ᵉ eᵃ ⇝ eᵈ" := (trans_exp θ eᵃ eᵈ)
 Notation "θ ⫦ᵇ bᵃ ⇝ bᵈ" := (trans_body θ bᵃ bᵈ)
   (at level 65, bᵃ at next level, no associativity).
 
-Notation "θ ⫦ᶜ cᵃ ⇝ cᵈ" := (trans_cont θ cᵃ cᵈ)
-  (at level 65, cᵃ at next level, no associativity).
+Notation "θ ⫦ᶜˢ csᵃ ⇝ csᵈ" := (trans_conts θ csᵃ csᵈ)
+  (at level 65, csᵃ at next level, no associativity).
+
+Notation "θ ⫦ᶜᵈ cdᵃ ⇝ cdᵈ" := (trans_contd θ cdᵃ cdᵈ)
+  (at level 65, cdᵃ at next level, no associativity).
 
 Notation "θ ⫦ʷ wᵃ ⇝ wᵈ" := (trans_work θ wᵃ wᵈ)
   (at level 65, wᵃ at next level, no associativity).
@@ -460,36 +470,41 @@ Proof with eauto with Hdb_transfer.
     subst. auto.
 Qed.
 
-Lemma trans_cont_det : forall θ cᵃ c₁ᵈ c₂ᵈ,
+
+
+Lemma trans_conts_det : forall θ csᵃ cs₁ᵈ cs₂ᵈ,
   uniq θ -> 
-  θ ⫦ᶜ cᵃ ⇝ c₁ᵈ -> 
-  θ ⫦ᶜ cᵃ ⇝ c₂ᵈ -> 
-  c₁ᵈ = c₂ᵈ.
+  θ ⫦ᶜˢ csᵃ ⇝ cs₁ᵈ -> 
+  θ ⫦ᶜˢ csᵃ ⇝ cs₂ᵈ -> 
+  cs₁ᵈ = cs₂ᵈ
+with trans_contd_det : forall θ cdᵃ cd₁ᵈ cd₂ᵈ,
+  uniq θ -> 
+  θ ⫦ᶜᵈ cdᵃ ⇝ cd₁ᵈ -> 
+  θ ⫦ᶜᵈ cdᵃ ⇝ cd₂ᵈ -> 
+  cd₁ᵈ = cd₂ᵈ.
 Proof with eauto with Hdb_transfer.
-  intros. generalize dependent c₂ᵈ.
-  induction H0; (intros c₂ᵈ Htrans2; dependent destruction Htrans2; auto).
-  - apply f_equal; auto.
-  - eapply trans_typ_det with (A₁ᵈ:= A1ᵈ0) in H0...
-    subst. erewrite IHtrans_cont...
-  - eapply trans_exp_det with (e₁ᵈ:= eᵈ0) in H0...
-    subst. erewrite IHtrans_cont...
-  - eapply trans_typ_det with (A₁ᵈ:= A1ᵈ0) in H0...
-    subst. erewrite IHtrans_cont...
-  - eapply trans_typ_det with (A₁ᵈ:= A1ᵈ0) in H0...
-    subst. 
-    eapply trans_typ_det with (A₁ᵈ:= A2ᵈ0) in H1...
-    subst. 
-    erewrite IHtrans_cont...
-  - eapply trans_typ_det with (A₁ᵈ:= A1ᵈ0) in H0...
-    subst.
-    erewrite IHtrans_cont...
-  - eapply trans_typ_det with (A₁ᵈ:= A1ᵈ0) in H0...
-    subst.
-    erewrite IHtrans_cont...
-  - eapply trans_typ_det with (A₁ᵈ:= A1ᵈ0) in H0...
-    subst...
+  - intros. generalize dependent cs₂ᵈ.
+    induction H0; (intros cs₂ᵈ Htrans2; dependent destruction Htrans2).
+    + apply trans_contd_det with (cd₂ᵈ:= cdᵈ0) in H0; auto; subst; auto.
+    + apply trans_typ_det with (A₂ᵈ:=Aᵈ0) in H0; auto; subst.
+      pose proof (IHtrans_conts H _ Htrans2) as IHtrans_conts; subst; auto.
+    + apply trans_typ_det with (A₂ᵈ:=A1ᵈ0) in H0; auto; subst.
+      apply trans_typ_det with (A₂ᵈ:=A2ᵈ0) in H1; auto; subst.
+      pose proof (IHtrans_conts H _ Htrans2) as IHtrans_conts; subst; auto.
+    + apply trans_typ_det with (A₂ᵈ:=Aᵈ0) in H0; auto; subst.
+      pose proof (IHtrans_conts H _ Htrans2) as IHtrans_conts; subst; auto.
+    + apply trans_typ_det with (A₂ᵈ:=Aᵈ0) in H0; auto; subst. auto.
+  - intros. generalize dependent cd₂ᵈ.
+    induction H0; (intros cd₂ᵈ Htrans2; dependent destruction Htrans2).
+    + apply trans_exp_det with (e₂ᵈ:=eᵈ0) in H0; auto; subst.
+      apply trans_conts_det with (cs₂ᵈ:= csᵈ0) in H1; subst; auto.
+    + apply trans_typ_det with (A₂ᵈ:=Aᵈ0) in H0; auto; subst.
+      pose proof (IHtrans_contd H _ Htrans2) as IHtrans_contd; subst; auto.
+    + apply trans_typ_det with (A₂ᵈ:=Aᵈ0) in H0; auto; subst.
+      apply trans_typ_det with (A₂ᵈ:=Bᵈ0) in H1; auto; subst.
+      pose proof (IHtrans_contd H _ Htrans2) as IHtrans_contd; subst; auto.
 Qed.
-  
+
 
 Lemma trans_wl_split_ss : forall Γ Ω θ θ', 
   θ ⫦ Γ ⇝ Ω ⫣ θ' ->
@@ -546,7 +561,8 @@ Qed.
 
 Hint Constructors trans_typ : Hdb_transfer.
 Hint Constructors trans_exp : Hdb_transfer.
-Hint Constructors trans_cont : Hdb_transfer.
+Hint Constructors trans_conts : Hdb_transfer.
+Hint Constructors trans_contd : Hdb_transfer.
 Hint Constructors trans_work : Hdb_transfer.
 Hint Constructors trans_worklist : Hdb_transfer.
 Hint Constructors wf_ss : Hdb_transfer.
@@ -1272,14 +1288,27 @@ Qed.
 (* depedent destruction all non-atomic ⊢ᵃʷ relation *)
 
 
-Lemma a_wf_work_applied : forall Γ c A w,
-  a_wf_cont Γ c ->
+Lemma a_wf_work_apply_conts : forall Γ cs A w,
+  a_wf_conts Γ cs ->
   a_wf_typ Γ A ->
-  apply_cont c A w ->
+  apply_conts cs A w ->
   a_wf_work Γ w.
 Proof with eauto with Hdb_transfer.
   intros. induction H1; try solve [destruct_a_wf_wl; constructor; eauto with Hdb_transfer].
 Qed.
+
+
+
+Lemma a_wf_work_apply_contd : forall Γ cd A B w,
+  a_wf_contd Γ cd ->
+  a_wf_typ Γ A ->
+  a_wf_typ Γ B ->
+  apply_contd cd A B w ->
+  a_wf_work Γ w.
+Proof with eauto with Hdb_transfer.
+  intros. induction H2; try solve [destruct_a_wf_wl; constructor; eauto with Hdb_transfer].
+Qed.
+
 
 
 Lemma wf_ss_etvar_same_denv: forall θ θ' X T,
@@ -1757,20 +1786,35 @@ Proof.
 Admitted.
 
 
-Lemma trans_cont_etvar_subst_same_ss : forall θ Tᵃ Tᵈ X cᵃ cᵈ,
+Lemma trans_conts_etvar_subst_same_ss : forall θ Tᵃ Tᵈ X csᵃ csᵈ,
   wf_ss θ ->
   binds X (dbind_typ Tᵈ) θ ->
   X `notin` ftvar_in_typ Tᵃ ->
   θ ⫦ᵗ Tᵃ ⇝ Tᵈ ->
-  θ ⫦ᶜ (subst_tvar_in_conts Tᵃ X cᵃ) ⇝ cᵈ -> 
-  θ ⫦ᶜ cᵃ ⇝ cᵈ.
+  θ ⫦ᶜˢ (subst_tvar_in_conts Tᵃ X csᵃ) ⇝ csᵈ -> 
+  θ ⫦ᶜˢ csᵃ ⇝ csᵈ
+with trans_contd_etvar_subst_same_ss : forall θ Tᵃ Tᵈ X cdᵃ cdᵈ,
+  wf_ss θ ->
+  binds X (dbind_typ Tᵈ) θ ->
+  X `notin` ftvar_in_typ Tᵃ ->
+  θ ⫦ᵗ Tᵃ ⇝ Tᵈ ->
+  θ ⫦ᶜᵈ (subst_tvar_in_contd Tᵃ X cdᵃ) ⇝ cdᵈ -> 
+  θ ⫦ᶜᵈ cdᵃ ⇝ cdᵈ.
 Proof.
-  intros. generalize dependent θ. generalize dependent cᵈ.
-  induction cᵃ; intros;  simpl in *; dependent destruction H3; eauto;
+  intros. generalize dependent θ. generalize dependent csᵈ.
+  induction csᵃ; intros; simpl in *; dependent destruction H3;
     constructor;
-      try eapply trans_typ_etvar_subst_same_ss; eauto;
-      try eapply trans_exp_etvar_subst_same_ss; eauto;
-      try apply IHcᵃ; auto.
+      try eapply trans_typ_etvar_subst_same_ss;
+      try eapply trans_exp_etvar_subst_same_ss;
+      try apply trans_contd_etvar_subst_same_ss; 
+      try apply IHcsᵃ; eauto.
+  intros. generalize dependent θ. generalize dependent cdᵈ.
+  induction cdᵃ; intros; simpl in *; dependent destruction H3;
+    constructor;
+      try eapply trans_typ_etvar_subst_same_ss; 
+      try eapply trans_exp_etvar_subst_same_ss;
+      try apply trans_contd_etvar_subst_same_ss; 
+      try apply IHcsᵃ; eauto.
 Qed.
 
 Lemma trans_work_etvar_subst_same_ss : forall θ Tᵃ Tᵈ X wᵃ wᵈ,
@@ -1785,7 +1829,8 @@ Proof.
     constructor; 
       try eapply trans_typ_etvar_subst_same_ss; eauto;
       try eapply trans_exp_etvar_subst_same_ss; eauto;
-      try eapply trans_cont_etvar_subst_same_ss; eauto.
+      try eapply trans_conts_etvar_subst_same_ss; eauto;
+      try eapply trans_contd_etvar_subst_same_ss; eauto.
 Qed.
 
 
@@ -1967,19 +2012,31 @@ Proof with eauto with Hdb_transfer.
 Admitted.
 
 
-Lemma trans_cont_reorder : forall θ θ' cᵃ cᵈ,
+Lemma trans_conts_reorder : forall θ θ' csᵃ csᵈ,
   wf_ss θ ->
   wf_ss θ' ->
-  (forall X b, X `in` ftvar_in_cont cᵃ -> binds X b θ -> binds X b θ') ->
-  θ ⫦ᶜ cᵃ ⇝ cᵈ ->
-  θ' ⫦ᶜ cᵃ ⇝ cᵈ.
+  (forall X b, X `in` ftvar_in_conts csᵃ -> binds X b θ -> binds X b θ') ->
+  θ ⫦ᶜˢ csᵃ ⇝ csᵈ ->
+  θ' ⫦ᶜˢ csᵃ ⇝ csᵈ
+with trans_contd_reorder : forall θ θ' cdᵃ cdᵈ,
+  wf_ss θ ->
+  wf_ss θ' ->
+  (forall X b, X `in` ftvar_in_contd cdᵃ -> binds X b θ -> binds X b θ') ->
+  θ ⫦ᶜᵈ cdᵃ ⇝ cdᵈ ->
+  θ' ⫦ᶜᵈ cdᵃ ⇝ cdᵈ.
 Proof with eauto with Hdb_transfer.
   intros.
-  generalize dependent θ'. generalize dependent θ. generalize dependent cᵈ.
-  induction cᵃ; simpl in *; intros; dependent destruction H2; constructor; 
+  generalize dependent θ'. generalize dependent θ. generalize dependent csᵈ.
+  induction csᵃ; simpl in *; intros; dependent destruction H2; constructor; 
     try eapply trans_typ_reorder with (θ:=θ); eauto with Hdb_transfer; 
     try eapply trans_exp_reorder with (θ:=θ); eauto with Hdb_transfer; 
     try eapply IHcᵃ with (θ:=θ)...
+  intros.
+  generalize dependent θ'. generalize dependent θ. generalize dependent cdᵈ.
+  induction cdᵃ; simpl in *; intros; dependent destruction H2; constructor; 
+    try eapply trans_typ_reorder with (θ:=θ); eauto with Hdb_transfer; 
+    try eapply trans_exp_reorder with (θ:=θ); eauto with Hdb_transfer; 
+    try eapply IHdᵃ with (θ:=θ)...
 Qed.
 
 
@@ -1993,14 +2050,14 @@ Proof with eauto with Hdb_transfer.
   intros. destruct wᵃ; simpl in *; dependent destruction H2; constructor;
     try eapply trans_typ_reorder with (θ:=θ); eauto with Hdb_transfer; 
     try eapply trans_exp_reorder with (θ:=θ); eauto with Hdb_transfer; 
-    try eapply trans_cont_reorder with (θ:=θ); eauto with Hdb_transfer.
+    try eapply trans_conts_reorder with (θ:=θ); eauto with Hdb_transfer;
+    try eapply trans_contd_reorder with (θ:=θ); eauto with Hdb_transfer.
+    intros. apply H1; auto.
 Qed.
 
 
 Definition transfer (Γ : aworklist) (Ω : dworklist)  : Prop :=
   exists θ', trans_worklist nil Γ Ω θ'.
-
-
 
 
 Ltac unify_trans_typ :=

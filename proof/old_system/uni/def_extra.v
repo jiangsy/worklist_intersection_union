@@ -26,11 +26,11 @@ Inductive apply_conts : conts -> typ -> work -> Prop :=
       apply_conts (conts_infabs cs) 
                    A
                    (work_infabs A cs)
-  | apply_conts__tapp : forall A B cs,
+  | apply_conts__inftapp : forall A B cs,
       apply_conts (conts_inftapp B cs) 
                    A
                    (work_inftapp A B cs)
-  | apply_conts__tappunion : forall A2 B C1 cs,
+  | apply_conts__inftappunion : forall A2 B C1 cs,
       apply_conts (conts_inftappunion A2 B cs) 
                    C1
                    (work_inftappunion C1 A2 B cs)

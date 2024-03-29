@@ -26,13 +26,13 @@ Inductive d_wl_del_red : dworklist -> Prop :=
   | d_wl_del_red__stvar : forall Ω X,
       d_wl_del_red Ω ->
       d_wl_del_red (dworklist_constvar Ω X dbind_stvar_empty)
-  | d_wl_del_red__chk : forall Ω e T1,
-      d_typing (dwl_to_denv Ω) e typingmode__chk T1 ->
+  | d_wl_del_red__chk : forall Ω e A,
+      d_typing (dwl_to_denv Ω) e typingmode__chk A ->
       d_wl_del_red Ω ->
-      d_wl_del_red (dworklist_conswork Ω (work_check e T1))
-  | d_wl_del_red__inf : forall Ω e T1 cs,
-      d_typing (dwl_to_denv Ω) e typingmode__inf T1 ->
-      d_wl_del_red (dworklist_conswork Ω (work_applys cs T1)) ->
+      d_wl_del_red (dworklist_conswork Ω (work_check e A))
+  | d_wl_del_red__inf : forall Ω e A cs,
+      d_typing (dwl_to_denv Ω) e typingmode__inf A ->
+      d_wl_del_red (dworklist_conswork Ω (work_applys cs A)) ->
       d_wl_del_red (dworklist_conswork Ω (work_infer e cs))
   | d_wl_del_red__infabs : forall Ω A B C cd,
       d_infabs (dwl_to_denv Ω) A B C ->
@@ -233,7 +233,7 @@ Inductive d_wl_red : dworklist -> Prop :=    (* defn d_wl_red *)
      apply_contd cd A B w ->
      d_wl_red (dworklist_conswork Ω w) ->
      d_wl_red (dworklist_conswork Ω (work_applyd cd A B))   
-    .
+.
 
 
 Declare Scope dworklist_scope.
