@@ -404,13 +404,13 @@ Proof with auto with Hdb_dworklist_equiv.
     apply d_infabs_wft in H.
     apply d_wl_red__infabs_union.
     apply IHd_infabs1; auto.
-    eapply d_wl_red__apply_contd with 
+    eapply d_wl_red__applyd with 
       (w:=((work_infabsunion B1 C1 A2 cc))).
     eapply apply_contd__infabsunion.
     simpl.
     eapply d_wl_red__infabsunion.
     apply IHd_infabs2; intuition.
-    eapply d_wl_red__apply_contd with 
+    eapply d_wl_red__applyd with 
       (w:=(work_unioninfabs  B1 C1 B2 C2 cc)).
     econstructor.
     simpl.
@@ -429,12 +429,12 @@ Proof with auto with Hdb_dworklist_equiv.
     destruct_wf.
     econstructor.
     eapply IHd_inftapp1...
-    eapply d_wl_red__apply_conts with (w:=work_inftappunion C1 A2 B c).
+    eapply d_wl_red__applys with (w:=work_inftappunion C1 A2 B c).
     econstructor.
     simpl.
     econstructor. 
     eapply IHd_inftapp2... intuition.
-    eapply d_wl_red__apply_conts with (w:=work_unioninftapp C1 C2 c).
+    eapply d_wl_red__applys with (w:=work_unioninftapp C1 C2 c).
     eapply apply_conts__unioninftapp...
     econstructor...
 Qed.
@@ -455,7 +455,7 @@ Proof with auto with Hdb_dworklist_equiv.
   - econstructor.
     destruct_wf.
     eapply IHd_typing1; eauto.
-    apply d_wl_red__apply_conts with (w:=work_infabs A (contd_infapp e2 c)); eauto.
+    apply d_wl_red__applys with (w:=work_infabs A (contd_infapp e2 c)); eauto.
     econstructor. simpl.
     apply d_infabs_wft in H0 as Hwft. intuition.
     eapply d_wl_red_infabs_complete; eauto.
@@ -476,7 +476,7 @@ Proof with auto with Hdb_dworklist_equiv.
     apply d_chk_inf_wft in H0.
     econstructor.
     apply IHd_typing; auto...
-    apply d_wl_red__apply_conts with (w:=(work_inftapp A B c)); eauto.
+    apply d_wl_red__applys with (w:=(work_inftapp A B c)); eauto.
     econstructor.
     simpl.
     eapply d_wl_red_inftapp_complete; eauto.
@@ -519,7 +519,7 @@ Proof with auto with Hdb_dworklist_equiv.
   - destruct_wf. 
     apply d_wl_red__infabsunion.
     eapply d_wl_red_infabs_complete; eauto.
-    eapply d_wl_red__apply_contd with (w:=(work_unioninfabs B1 C1 B2 C2 cd)).
+    eapply d_wl_red__applyd with (w:=(work_unioninfabs B1 C1 B2 C2 cd)).
     apply apply_contd__unioninfabs.
     simpl. econstructor.
     apply d_infabs_wft in H4. 
@@ -532,7 +532,7 @@ Proof with auto with Hdb_dworklist_equiv.
   - destruct_wf. eapply d_wl_red_inftapp_complete; eauto.
   - destruct_wf. econstructor. 
     eapply d_wl_red_inftapp_complete; eauto...
-    eapply d_wl_red__apply_conts with (w:=(work_unioninftapp C1 C2 cs))...
+    eapply d_wl_red__applys with (w:=(work_unioninftapp C1 C2 cs))...
     econstructor. simpl.
     apply d_inftapp_wft in H4.
     econstructor. intuition.

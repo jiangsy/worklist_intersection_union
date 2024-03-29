@@ -63,11 +63,11 @@ Inductive d_wl_del_red : dworklist -> Prop :=
       d_sub (dwl_to_denv Ω) A B ->
       d_wl_del_red Ω ->
       d_wl_del_red (dworklist_conswork Ω (work_sub A B))
-  | d_wl_del_red__apply_conts : forall Ω cs A w,
+  | d_wl_del_red__applys : forall Ω cs A w,
       apply_conts cs A w ->
       d_wl_del_red (dworklist_conswork Ω w) ->
       d_wl_del_red (dworklist_conswork Ω (work_applys cs A))
-  | d_wl_del_red__apply_contd : forall Ω cd A B w,
+  | d_wl_del_red__applyd : forall Ω cd A B w,
       apply_contd cd A B w ->
       d_wl_del_red (dworklist_conswork Ω w) ->
       d_wl_del_red (dworklist_conswork Ω (work_applyd cd A B))
@@ -225,11 +225,11 @@ Inductive d_wl_red : dworklist -> Prop :=    (* defn d_wl_red *)
  | d_wl_red__infapp: forall (Ω:dworklist) (e:exp) (A B:typ) (cs:conts),
      d_wl_red (dworklist_conswork (dworklist_conswork Ω (work_check e A)) (work_applys cs B)) ->
      d_wl_red (dworklist_conswork Ω (work_infapp A B e cs))
- | d_wl_red__apply_conts : forall (Ω:dworklist) (w:work) (A:typ) (cs:conts),
+ | d_wl_red__applys : forall (Ω:dworklist) (w:work) (A:typ) (cs:conts),
      apply_conts cs A w ->
      d_wl_red (dworklist_conswork Ω w) ->
      d_wl_red (dworklist_conswork Ω (work_applys cs A))   
- | d_wl_red__apply_contd : forall (Ω:dworklist) (w:work) (A B:typ) (cd:contd),
+ | d_wl_red__applyd : forall (Ω:dworklist) (w:work) (A B:typ) (cd:contd),
      apply_contd cd A B w ->
      d_wl_red (dworklist_conswork Ω w) ->
      d_wl_red (dworklist_conswork Ω (work_applyd cd A B))   

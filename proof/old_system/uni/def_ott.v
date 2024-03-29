@@ -1577,11 +1577,10 @@ Inductive a_wf_work : aenv -> work -> Prop :=    (* defn a_wf_work *)
      a_wf_typ aE A ->
      a_wf_contd aE cd ->
      a_wf_work aE (work_infabs A cd)
- | a_wf_work__infabsunion : forall (aE:aenv) (A1 B1 A2:typ) (cd:contd) (cs:conts),
-     lc_contd cd ->
+ | a_wf_work__infabsunion : forall (aE:aenv) (A1 B1 A2:typ) (cd:contd),
      a_wf_typ aE (typ_arrow A1 B1) ->
      a_wf_typ aE A2 ->
-     a_wf_conts aE cs ->
+     a_wf_contd aE cd ->
      a_wf_work aE (work_infabsunion A1 B1 A2 cd)
  | a_wf_work__infapp : forall (aE:aenv) (A B:typ) (e:exp) (cs:conts),
      a_wf_typ aE (typ_arrow A B) ->

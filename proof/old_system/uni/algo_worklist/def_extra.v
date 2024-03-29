@@ -288,11 +288,11 @@ Inductive a_wl_red : aworklist -> Prop :=    (* defn a_wl_red *)
  | a_wl_red__unioninftapp : forall (Γ:aworklist) (C2 C1:typ) (cs:conts),
      a_wl_red (aworklist_conswork Γ (work_applys cs (typ_union C1 C2))) ->
      a_wl_red (aworklist_conswork Γ (work_unioninftapp C1 C2 cs))
- | a_wl_red__apply_conts : forall (Γ:aworklist) (w:work) (A:typ) (cs:conts),
+ | a_wl_red__applys : forall (Γ:aworklist) (w:work) (A:typ) (cs:conts),
      apply_conts cs A w ->
      a_wl_red (aworklist_conswork Γ w) ->
      a_wl_red (aworklist_conswork Γ (work_applys cs A))   
- | a_wl_red__apply_contd : forall (Γ:aworklist) (w:work) (A B:typ) (cd:contd),
+ | a_wl_red__applyd : forall (Γ:aworklist) (w:work) (A B:typ) (cd:contd),
      apply_contd cd A B w ->
      a_wl_red (aworklist_conswork Γ w) ->
      a_wl_red (aworklist_conswork Γ (work_applyd cd A B))  

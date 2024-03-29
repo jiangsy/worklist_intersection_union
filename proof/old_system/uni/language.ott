@@ -1006,7 +1006,7 @@ aE |- A ▹ cd
 
 aE |- A1 -> B1
 aE |- A2
-aE |- cs
+aE |- cd
 ----------------------- :: infabsunion
 aE |- A1 ~> B1 ⊔▹ A2 ▹ cd
 
