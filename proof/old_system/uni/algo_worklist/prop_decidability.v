@@ -628,7 +628,7 @@ Qed.
 
 Lemma exp_size_cont_subst_tvar_in_cont_mono : forall Γ X A c,
   a_mono_typ Γ A ->
-  exp_size_cont (subst_tvar_in_cont A X c) = exp_size_cont c.
+  exp_size_cont (subst_tvar_in_conts A X c) = exp_size_cont c.
 Proof.
   intros Γ X A c Hmono.
   induction c; simpl; eauto.
@@ -678,7 +678,7 @@ Proof.
 Qed.
 
 Lemma judge_size_cont_subst_tvar_in_cont : forall X A c,
-  judge_size_cont (subst_tvar_in_cont A X c) = judge_size_cont c.
+  judge_size_cont (subst_tvar_in_conts A X c) = judge_size_cont c.
 Proof.
   intros X A c.
   induction c; simpl; eauto.

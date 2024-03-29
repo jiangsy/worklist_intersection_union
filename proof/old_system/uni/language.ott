@@ -3,7 +3,7 @@ metavar expvar, x, y, z     ::= {{ repr-locally-nameless }}
 
 grammar
 
-typ, A, B, C, T:: typ_ ::=
+typ, A, B, C, T    :: typ_ ::=
   | UNIT           ::   :: unit
   | TOP            ::   :: top
   | BOT            ::   :: bot
@@ -30,6 +30,7 @@ exp, e, f, g :: exp_ ::=
   | { e2 / x } e1                       :: M :: subst1 {{ coq (open_exp_wrt_exp [[x e1]] [[e2]]) }}
   | { A2 / X } e1                       :: M :: subst2 {{ coq (open_exp_wrt_typ [[X e1]] [[A2]]) }}
 
+
 dbind, db :: dbind_ ::=
   | : ■  ::   :: tvar_empty
   | : ~■ ::   :: stvar_empty
@@ -41,31 +42,34 @@ abind, ab :: abind_ ::=
   | : ^■       ::   :: etvar_empty
   | : A        ::   :: var_typ
 
-cont, c :: 'cont_' ::=
-  % | Done                :: :: done
-  | _ ▹ c                :: :: infabs
-  | _ ⊔▹ A1 ▹ c          :: :: infabsunion
-  | _ • e =>=> c         :: :: infapp
-  | _ ○ A =>=> c         :: :: inftapp
-  | _ ⊔∘ A1 ○ A2 =>=> c  :: :: inftappunion
-  | _ ⊔∘ A2 >> c         :: :: unioninftapp
-  | _ ⊔▹ A2 >> c         :: :: unioninfabs
-  | _ <: A               :: :: sub
-  | ( c )                  :: S :: app {{ coq ( [[c]] )}}
+
+conts, cs :: 'conts_' ::=
+  | _ ▹ cd                 ::   :: infabs
+  | _ ○ A =>=> cs          ::   :: inftapp
+  | _ ⊔∘ A1 ○ A2 =>=> cs   ::   :: inftappunion
+  | _ ⊔∘ A2 >> cs          ::   :: unioninftapp
+  | _ <: A                 ::   :: sub
+  | ( cs )                 :: S :: app {{ coq ( [[cs]] )}}
+
+contd, cd :: 'contd_' ::=
+  | _ ⊔▹ A ▹ cd           ::   :: infabsunion
+  | _ • e =>=> cs          ::   :: infapp
+  | _ ⊔▹ A ~> B >> cd     ::   :: unioninfabs
+  | ( cd )                :: S :: app {{ coq ( [[cd]] )}}
 
 work, w :: 'work_' ::=
-  | e => c                 ::   :: infer
-  | e <= A                 ::   :: check
-  | A ▹ c                  ::   :: infabs
-  | A1 ⊔▹ A2 ▹ c           ::   :: infabsunion
-  | A • e =>=> c           ::   :: infapp
-  | A1 ○ A2 =>=> c         ::   :: inftapp
-  | A1 <: A2               ::   :: sub
-  | A1 ⊔∘ A2 ○ B =>=> c    ::   :: inftappunion
-  | A1 ⊔∘ A2 >> c          ::   :: unioninftapp
-  | A1 ⊔▹ A2 >> c          ::   :: unioninfabs
-  | c $ A                  ::   :: apply
-
+  | e => cs                                ::   :: infer
+  | e <= A                                 ::   :: check
+  | A ▹ cd                                 ::   :: infabs
+  | A1 ~> B1 ⊔▹ A2 ▹ cd                    ::   :: infabsunion
+  | A ~> B • e =>=> cs                     ::   :: infapp
+  | A1 ○ A2 =>=> cs                        ::   :: inftapp
+  | A1 <: A2                               ::   :: sub
+  | A1 ⊔∘ A2 ○ B =>=> cs                   ::   :: inftappunion
+  | A1 ⊔∘ A2 >> cs                         ::   :: unioninftapp
+  | A1 ~> B1 ⊔▹ A2 ~> B2 >> cd             ::   :: unioninfabs
+  | cs $$ A                                ::   :: applys
+  | cd $ A $ B                             ::   :: applyd
 
 substitutions
   single A X  :: subst_tvar_in
@@ -73,13 +77,10 @@ substitutions
   single e x  :: subst_var_in
   single w x  :: subst_var_in
 
-
 freevars
   A X  :: ftvar_in
   e x  :: fvar_in
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+ 
 grammar
 
 denv, dE, dF, dG:: '' ::= {{ coq list (atom*dbind) }}
@@ -94,14 +95,12 @@ aenv, aE, aF, aG :: '' ::= {{ coq list (atom*abind) }}
   | aE , X ab  ::   :: aconstvar {{ coq ([[X]]~[[ab]] ++ [[aE]]) }}
   | ⌊ aW ⌋    :: M :: awlenv {{ coq ( awl_to_aenv [[aW]] )}}
 
-dvalue, v :: dvalue_ ::=
-  | unit                 ::   :: unit
-  | \ x . e              ::   :: abs  (+ bind x in e +)
-  | \ X . body          ::   :: tabs (+ bind X in body +)
 
-% dmaybetyp, MT :: dmaybetyp_ ::=
-%   | none                 ::   :: none
-%   | some A               ::   :: some  
+
+% dvalue, v :: dvalue_ ::=
+%   | unit                 ::   :: unit
+%   | \ x . e              ::   :: abs  (+ bind x in e +)
+%   | \ X . body          ::   :: tabs (+ bind X in body +)
 
 dworklist, dW :: 'dworklist_' ::=
   | empty      ::   :: empty
@@ -124,19 +123,20 @@ formula :: formula_ ::=
   | ( X db )  in dE    ::   :: binds2 {{ coq binds ([[X]])  ([[db]]) ([[dE]]) }}
   | ( x ab )  in aE    ::   :: binds3 {{ coq binds ([[x]])  ([[ab]]) ([[aE]]) }}
   | ( X ab )  in aE    ::   :: binds4 {{ coq binds ([[X]])  ([[ab]]) ([[aE]]) }}
-  | uniq dE           ::   :: uniq   {{ coq uniq ([[dE]]) }}
+  % | uniq dE           ::   :: uniq   {{ coq uniq ([[dE]]) }}
   | x  `notin` dom dE ::   :: fresh1 {{ coq ([[x]]  `notin` dom ([[dE]])) }}
   | X  `notin` dom dE ::   :: fresh2 {{ coq ([[X]]  `notin` dom ([[dE]])) }}
   | x  `notin` dom aE ::   :: fresh3 {{ coq ([[x]]  `notin` dom ([[aE]])) }}
   | X  `notin` dom aE ::   :: fresh4 {{ coq ([[X]]  `notin` dom ([[aE]])) }}
-  | X in A           ::   :: appear1 {{ coq [[X]] `in` ftvar_in_typ [[A]]}}
+  % | X in A           ::   :: appear1 {{ coq [[X]] `in` ftvar_in_typ [[A]]}}
   | A ¬= TOP         ::   :: neqtop  {{ coq ~ ([[A]] = typ_top)}}
-  | A = TOP          ::   :: eqtop  {{ coq ([[A]] = typ_top)}}
-  | A = BOT          ::   :: eqbot  {{ coq ([[A]] = typ_bot)}}
+  % | A = TOP          ::   :: eqtop  {{ coq ([[A]] = typ_top)}}
+  % | A = BOT          ::   :: eqbot  {{ coq ([[A]] = typ_bot)}}
   | ⌊ dW ⌋           ::   :: dwl_to_env {{ coq dwl_to_denv [[ dW ]] }}
   | ⌊ aW ⌋           ::   :: awl_to_env {{ coq awl_to_aenv [[ aW ]] }}
 
- 
+
+
 embed {{ coq 
 
 Fixpoint dwl_to_denv (dW : dworklist) : denv :=
@@ -546,46 +546,49 @@ defns
 J_d_wf_cont :: '' ::= 
 
 defn 
-dE |- c :: :: d_wf_cont :: 'd_wf_cont__' by 
+dE |- cs :: :: d_wf_conts :: 'd_wf_conts__' by 
 
-dE |- c
+dE |- cd
 ----------------- :: infabs
-dE |- _ ▹ c
-
-dE |- A
-dE |- c 
------------------- :: infabsunion
-dE |- _ ⊔▹ A ▹ c
-
-dE |- e 
-dE |- c
--------------------- :: infapp
-dE |- _ • e =>=> c  
+dE |- _ ▹ cd
 
 dE |- A 
-dE |- c
+dE |- cs
 -------------------- :: inftapp
-dE |- _ ○ A =>=> c  
+dE |- _ ○ A =>=> cs  
 
 dE |- A1 
 dE |- A2
-dE |- c
+dE |- cs
 -------------------- :: inftappunion
-dE |- _ ⊔∘ A1 ○ A2 =>=> c  
+dE |- _ ⊔∘ A1 ○ A2 =>=> cs  
 
 dE |- A 
-dE |- c
+dE |- cs
 -------------------- :: unioninftapp
-dE |- _ ⊔∘ A >> c  
-
-dE |- A 
-dE |- c
--------------------- :: unioninfabs
-dE |- _ ⊔▹ A >> c  
+dE |- _ ⊔∘ A >> cs  
 
 dE |- A 
 -------------------- :: sub
 dE |- _ <: A  
+
+defn 
+dE |- cd :: :: d_wf_contd :: 'd_wf_contd__' by 
+
+dE |- A
+dE |- cd
+------------------ :: infabsunion
+dE |- _ ⊔▹ A ▹ cd
+
+dE |- e 
+dE |- cs
+-------------------- :: infapp
+dE |- _ • e =>=> cs  
+
+dE |- A -> B
+dE |- cd
+-------------------- :: unioninfabs
+dE |- _ ⊔▹ A ~> B >> cd  
 
 
 defns 
@@ -595,9 +598,9 @@ defn
 dE |- w :: :: d_wf_work :: 'd_wf_work__' by 
 
 dE |- e
-dE |- c
+dE |- cs
 ----------------- :: infer
-dE |- e => c
+dE |- e => cs
 
 dE |- e
 dE |- A
@@ -605,56 +608,63 @@ dE |- A
 dE |- e <= A
 
 dE |- A 
-dE |- c
+dE |- cd
 -------------------- :: infabs
-dE |- A ▹ c  
+dE |- A ▹ cd  
 
-dE |- A1 
+dE |- A1 -> B1
 dE |- A2
-dE |- c
--------------------- :: infabsunion
-dE |- A1 ⊔▹ A2 ▹ c
+dE |- cd
+----------------------- :: infabsunion
+dE |- A1 ~> B1 ⊔▹ A2 ▹ cd
 
-dE |- A
+dE |- A -> B
 dE |- e
-dE |- c
--------------------- :: infapp
-dE |- A • e =>=> c    
+dE |- cs
+------------------------- :: infapp
+dE |- A ~> B • e =>=> cs    
 
 dE |- A1
 dE |- A2
-dE |- c
+dE |- cs
 ---------------------------- :: inftapp
-dE |- A1 ○ A2 =>=> c  
+dE |- A1 ○ A2 =>=> cs  
 
 dE |- A1 
 dE |- A2
 dE |- B
-dE |- c
+dE |- cs
 ---------------------------- :: inftappunion
-dE |- A1 ⊔∘ A2 ○ B =>=> c  
+dE |- A1 ⊔∘ A2 ○ B =>=> cs  
 
 dE |- A1
 dE |- A2 
-dE |- c
+dE |- cs
 ------------------------------ :: unioninftapp
-dE |- A1 ⊔∘ A2 >> c  
+dE |- A1 ⊔∘ A2 >> cs  
 
-dE |- A1
-dE |- A2 
-dE |- c
+dE |- A1 -> B1
+dE |- A2 -> B2
+dE |- cd
 -------------------- :: unioninfabs
-dE |- A1 ⊔▹ A2 >> c  
-
-dE |- A1
-dE |- A2 
--------------------- :: sub
-dE |- A1 <: A2  
+dE |- A1 ~> B1 ⊔▹ A2 ~> B2 >> cd  
 
 dE |- A
-dE |- c
+dE |- B 
+-------------------- :: sub
+dE |- A <: B  
+
+dE |- A
+dE |- cs
 -------------------- :: apply
-dE |- c $ A
+dE |- cs $$ A
+
+dE |- A
+dE |- B
+dE |- cd
+-------------------- :: apply2
+dE |- cd $ A $ B
+
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -928,46 +938,49 @@ defns
 J_a_wf_cont :: '' ::= 
 
 defn 
-aE |- c :: :: a_wf_cont :: 'a_wf_cont__' by 
+aE |- cs :: :: a_wf_conts :: 'a_wf_conts__' by 
 
-aE |- c
+aE |- cd
 ----------------- :: infabs
-aE |- _ ▹ c
-
-aE |- A
-aE |- c 
------------------- :: infabsunion
-aE |- _ ⊔▹ A ▹ c
-
-aE |- e 
-aE |- c
--------------------- :: infapp
-aE |- _ • e =>=> c  
+aE |- _ ▹ cd
 
 aE |- A 
-aE |- c
+aE |- cs
 -------------------- :: inftapp
-aE |- _ ○ A =>=> c  
+aE |- _ ○ A =>=> cs  
 
 aE |- A1 
 aE |- A2
-aE |- c
+aE |- cs
 -------------------- :: inftappunion
-aE |- _ ⊔∘ A1 ○ A2 =>=> c  
+aE |- _ ⊔∘ A1 ○ A2 =>=> cs  
 
 aE |- A 
-aE |- c
+aE |- cs
 -------------------- :: unioninftapp
-aE |- _ ⊔∘ A >> c  
-
-aE |- A 
-aE |- c
--------------------- :: unioninfabs
-aE |- _ ⊔▹ A >> c  
+aE |- _ ⊔∘ A >> cs  
 
 aE |- A 
 -------------------- :: sub
 aE |- _ <: A  
+
+defn 
+aE |- cd :: :: a_wf_contd :: 'a_wf_contd__' by 
+
+aE |- A
+aE |- cd
+------------------ :: infabsunion
+aE |- _ ⊔▹ A ▹ cd
+
+aE |- e 
+aE |- cs
+-------------------- :: infapp
+aE |- _ • e =>=> cs  
+
+aE |- A -> B
+aE |- cd
+-------------------- :: unioninfabs
+aE |- _ ⊔▹ A ~> B >> cd  
 
 
 defns 
@@ -977,9 +990,9 @@ defn
 aE |- w :: :: a_wf_work :: 'a_wf_work__' by 
 
 aE |- e
-aE |- c
+aE |- cs
 ----------------- :: infer
-aE |- e => c
+aE |- e => cs
 
 aE |- e
 aE |- A
@@ -987,56 +1000,62 @@ aE |- A
 aE |- e <= A
 
 aE |- A 
-aE |- c
+aE |- cd
 -------------------- :: infabs
-aE |- A ▹ c  
+aE |- A ▹ cd  
 
-aE |- A1 
+aE |- A1 -> B1
 aE |- A2
-aE |- c
--------------------- :: infabsunion
-aE |- A1 ⊔▹ A2 ▹ c
+aE |- cd
+----------------------- :: infabsunion
+aE |- A1 ~> B1 ⊔▹ A2 ▹ cd
 
-aE |- A
+aE |- A -> B
 aE |- e
-aE |- c
--------------------- :: infapp
-aE |- A • e =>=> c    
+aE |- cs
+------------------------- :: infapp
+aE |- A ~> B • e =>=> cs    
 
 aE |- A1
 aE |- A2
-aE |- c
+aE |- cs
 ---------------------------- :: inftapp
-aE |- A1 ○ A2 =>=> c  
+aE |- A1 ○ A2 =>=> cs  
 
 aE |- A1 
 aE |- A2
 aE |- B
-aE |- c
+aE |- cs
 ---------------------------- :: inftappunion
-aE |- A1 ⊔∘ A2 ○ B =>=> c  
+aE |- A1 ⊔∘ A2 ○ B =>=> cs  
 
 aE |- A1
 aE |- A2 
-aE |- c
+aE |- cs
 ------------------------------ :: unioninftapp
-aE |- A1 ⊔∘ A2 >> c  
+aE |- A1 ⊔∘ A2 >> cs  
 
-aE |- A1
-aE |- A2 
-aE |- c
--------------------- :: unioninfabs
-aE |- A1 ⊔▹ A2 >> c  
-
-aE |- A1
-aE |- A2 
--------------------- :: sub
-aE |- A1 <: A2  
+aE |- A1 -> B1
+aE |- A2 -> B2
+aE |- cd
+------------------------------- :: unioninfabs
+aE |- A1 ~> B1 ⊔▹ A2 ~> B2 >> cd  
 
 aE |- A
-aE |- c
+aE |- B 
+-------------------- :: sub
+aE |- A <: B  
+
+aE |- A
+aE |- cs
 -------------------- :: apply
-aE |- c $ A
+aE |- cs $$ A
+
+aE |- A
+aE |- B
+aE |- cd
+-------------------- :: apply2
+aE |- cd $ A $ B
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -70,13 +70,14 @@ Ltac gather_atoms ::=
   let C := gather_atoms_with (fun x : denv => dom x) in
   (* let C2 := gather_atoms_with (fun x : list (atom * dbind) => dom x) in *)
   let D1 := gather_atoms_with (fun x => ftvar_in_typ x) in
-  let D2 := gather_atoms_with (fun x => ftvar_in_cont x) in
-  let D3 := gather_atoms_with (fun x => ftvar_in_work x) in
-  let D4 := gather_atoms_with (fun x => ftvar_in_aworklist' x) in
+  let D2 := gather_atoms_with (fun x => ftvar_in_conts x) in
+  let D3 := gather_atoms_with (fun x => ftvar_in_contd x) in
+  let D4 := gather_atoms_with (fun x => ftvar_in_work x) in
+  let D5 := gather_atoms_with (fun x => ftvar_in_aworklist' x) in
   let E :=  gather_atoms_with (fun x => dom (awl_to_aenv x)) in
   (* let D3 := gather_atoms_with (fun x => fv_typ_in_binding x) in *)
   (* let D4 := gather_atoms_with (fun x => fv_exp_in_exp x) in *)
-  constr:(A \u B \u C \u D1 \u D2 \u D3 \u D4 \u E).
+  constr:(A \u B \u C \u D1 \u D2 \u D3 \u D4 \u D5 \u E).
 
   
 (* Ltac apply_fresh_base_fixed H gather_vars atom_name :=
