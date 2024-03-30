@@ -204,10 +204,10 @@ Proof.
       eapply d_wf_typ__all with (L:=L `union` singleton X `union` ftvar_in_typ T1); intros;
       inst_cofinites_with X0.
       * rewrite H5 in H2.
-        rewrite typ_subst_open_comm in H2; auto.
+        rewrite subst_typ_in_typ_open_typ_in_typ_fresh2 in H2; auto.
         eapply ftv_sin_typ_subst; eauto.
       * eapply H1 with (X:=X) (T1:=T1); auto.
-        -- rewrite H5. rewrite typ_subst_open_comm; auto.
+        -- rewrite H5. rewrite subst_typ_in_typ_open_typ_in_typ_fresh2; auto.
   - destruct A1; simpl in *; try solve [inversion x].
     destruct (X0 == X) in x.
     subst. auto. inversion x.
@@ -360,7 +360,7 @@ Proof.
   inversion H0.
   inst_cofinites_by (L `union` ftvar_in_typ A1 `union` dom Ψ1) using_name X.
   rewrite_env (map (subst_tvar_in_dbind T1 X) nil ++ Ψ1).
-  erewrite <- typ_subst_open_var; eauto.
+  erewrite <- subst_typ_in_typ_open_typ_in_typ_tvar2; eauto.
   apply d_wft_typ_subst; eauto.
   econstructor; auto.
 Qed.
@@ -790,10 +790,10 @@ Proof with try solve_notin; simpl in *; eauto.
         rewrite_env ([(a, subst_tvar_in_dbind (typ_var_f Y) X d)] ++ l).
         applys* d_wf_typ_weaken_head.
   - eapply d_wf_typ__all with (L:=L `union` singleton X); intros; inst_cofinites_with X0.
-    + rewrite typ_subst_open_comm; eauto.
+    + rewrite subst_typ_in_typ_open_typ_in_typ_fresh2; eauto.
       apply ftv_sin_typ_subst_inv; auto.
     + intros.
-      rewrite typ_subst_open_comm; eauto.
+      rewrite subst_typ_in_typ_open_typ_in_typ_fresh2; eauto.
       rewrite_env (map (subst_tvar_in_dbind ` Y X) (X0 ~ □ ++ Ψ2) ++ (Y, ■) :: Ψ1).
       auto.
 Qed.

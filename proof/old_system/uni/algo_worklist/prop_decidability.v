@@ -1127,7 +1127,7 @@ Proof.
               destruct (EqDec_eq_of_X X X) in Jg.
               ** rewrite rename_tvar_in_aworklist_fresh_eq in Jg; auto.
                  rewrite subst_tvar_in_cont_fresh_eq in Jg; auto.
-                 rewrite typ_subst_open_var in Jg; auto.
+                 rewrite subst_typ_in_typ_open_typ_in_typ_tvar2 in Jg; auto.
               ** contradiction.
             ++ admit.
             ++ admit. (* wf *)
@@ -1142,7 +1142,7 @@ Proof.
               destruct (EqDec_eq_of_X X1 X1) in H2.
               ** rewrite rename_tvar_in_aworklist_fresh_eq in H2; auto.
                   rewrite subst_tvar_in_cont_fresh_eq in H2; auto.
-                  rewrite typ_subst_open_var in H2; auto.
+                  rewrite subst_typ_in_typ_open_typ_in_typ_tvar2 in H2; auto.
               ** contradiction.
             ++ admit. (* wf *)  
             ++ simpl. rewrite ftvar_in_typ_open_typ_wrt_typ_upper. auto.
@@ -1589,7 +1589,7 @@ Proof.
                  unfold eq_dec in JgAlll'.
                  destruct (EqDec_eq_of_X X X) in JgAlll'.
                  --- rewrite rename_tvar_in_aworklist_fresh_eq in JgAlll'; auto.
-                     rewrite typ_subst_open_var in JgAlll'; auto.
+                     rewrite subst_typ_in_typ_open_typ_in_typ_tvar2 in JgAlll'; auto.
                  --- contradiction.
               ** admit.
               ** admit. (* wf *)
@@ -1602,7 +1602,7 @@ Proof.
                  unfold eq_dec in H8.
                  destruct (EqDec_eq_of_X X1 X1) in H8.
                  --- rewrite rename_tvar_in_aworklist_fresh_eq in H8; auto.
-                     rewrite typ_subst_open_var in H8; auto.
+                     rewrite subst_typ_in_typ_open_typ_in_typ_tvar2 in H8; auto.
                  --- contradiction.
               ** admit. (* wf *)  
               ** simpl. rewrite ftvar_in_typ_open_typ_wrt_typ_upper. auto.
@@ -1615,7 +1615,7 @@ Proof.
                  unfold eq_dec in JgAlll'.
                  destruct (EqDec_eq_of_X X X) in JgAlll'.
                  --- rewrite rename_tvar_in_aworklist_fresh_eq in JgAlll'; auto.
-                     rewrite typ_subst_open_var in JgAlll'; auto.
+                     rewrite subst_typ_in_typ_open_typ_in_typ_tvar2 in JgAlll'; auto.
                  --- contradiction.
               ** admit.
               ** admit. (* wf *)
@@ -1628,7 +1628,7 @@ Proof.
                  unfold eq_dec in H8.
                  destruct (EqDec_eq_of_X X1 X1) in H8.
                  --- rewrite rename_tvar_in_aworklist_fresh_eq in H8; auto.
-                     rewrite typ_subst_open_var in H8; auto.
+                     rewrite subst_typ_in_typ_open_typ_in_typ_tvar2 in H8; auto.
                  --- contradiction.
               ** admit. (* wf *)  
               ** simpl. rewrite ftvar_in_typ_open_typ_wrt_typ_upper. auto.
@@ -1642,7 +1642,7 @@ Proof.
                  unfold eq_dec in JgAlll'.
                  destruct (EqDec_eq_of_X X X) in JgAlll'.
                  --- rewrite rename_tvar_in_aworklist_fresh_eq in JgAlll'; auto.
-                     rewrite typ_subst_open_var in JgAlll'; auto.
+                     rewrite subst_typ_in_typ_open_typ_in_typ_tvar2 in JgAlll'; auto.
                  --- contradiction.
               ** admit.
               ** admit. (* wf *)
@@ -1655,7 +1655,7 @@ Proof.
                  unfold eq_dec in H8.
                  destruct (EqDec_eq_of_X X1 X1) in H8.
                  --- rewrite rename_tvar_in_aworklist_fresh_eq in H8; auto.
-                     rewrite typ_subst_open_var in H8; auto.
+                     rewrite subst_typ_in_typ_open_typ_in_typ_tvar2 in H8; auto.
                  --- contradiction.
               ** admit. (* wf *)  
               ** simpl. rewrite ftvar_in_typ_open_typ_wrt_typ_upper. auto.
@@ -1667,7 +1667,7 @@ Proof.
               ** simpl in JgAlll'.
                  destruct_eq_atom.
                  rewrite rename_tvar_in_aworklist_fresh_eq in JgAlll'; auto.
-                 rewrite typ_subst_open_var in JgAlll'; auto.
+                 rewrite subst_typ_in_typ_open_typ_in_typ_tvar2 in JgAlll'; auto.
               ** admit.
               ** admit. (* wf *)
               ** simpl. rewrite ftvar_in_typ_open_typ_wrt_typ_upper. auto.
@@ -1678,7 +1678,7 @@ Proof.
               ** simpl in H9.
                  destruct_eq_atom.
                  rewrite rename_tvar_in_aworklist_fresh_eq in H9; auto.
-                 rewrite typ_subst_open_var in H9; auto.
+                 rewrite subst_typ_in_typ_open_typ_in_typ_tvar2 in H9; auto.
               ** admit. (* wf *)  
               ** simpl. rewrite ftvar_in_typ_open_typ_wrt_typ_upper. auto.
         -- pick fresh X1. inst_cofinites_with X1.
@@ -1689,7 +1689,7 @@ Proof.
               ** simpl in JgAlll'.
                  destruct_eq_atom.
                  rewrite rename_tvar_in_aworklist_fresh_eq in JgAlll'; auto.
-                 rewrite typ_subst_open_var in JgAlll'; auto.
+                 rewrite subst_typ_in_typ_open_typ_in_typ_tvar2 in JgAlll'; auto.
               ** admit.
               ** admit. (* wf *)
               ** simpl. rewrite ftvar_in_typ_open_typ_wrt_typ_upper. auto.
@@ -1700,7 +1700,7 @@ Proof.
               ** simpl in H9.
                  destruct_eq_atom.
                  rewrite rename_tvar_in_aworklist_fresh_eq in H9; auto.
-                 rewrite typ_subst_open_var in H9; auto.
+                 rewrite subst_typ_in_typ_open_typ_in_typ_tvar2 in H9; auto.
               ** admit. (* wf *)  
               ** simpl. rewrite ftvar_in_typ_open_typ_wrt_typ_upper. auto.
         -- pick fresh X1. inst_cofinites_with X1.
@@ -1711,7 +1711,7 @@ Proof.
               ** simpl in JgAlll'.
                  destruct_eq_atom.
                  rewrite rename_tvar_in_aworklist_fresh_eq in JgAlll'; auto.
-                 rewrite typ_subst_open_var in JgAlll'; auto.
+                 rewrite subst_typ_in_typ_open_typ_in_typ_tvar2 in JgAlll'; auto.
               ** admit.
               ** admit. (* wf *)
               ** simpl. rewrite ftvar_in_typ_open_typ_wrt_typ_upper. auto.
@@ -1722,7 +1722,7 @@ Proof.
               ** simpl in H9.
                  destruct_eq_atom.
                  rewrite rename_tvar_in_aworklist_fresh_eq in H9; auto.
-                 rewrite typ_subst_open_var in H9; auto.
+                 rewrite subst_typ_in_typ_open_typ_in_typ_tvar2 in H9; auto.
               ** admit. (* wf *)  
               ** simpl. rewrite ftvar_in_typ_open_typ_wrt_typ_upper. auto.
         -- pick fresh X. inst_cofinites_with X.
@@ -1736,7 +1736,7 @@ Proof.
                  unfold eq_dec in JgAlll'.
                  destruct (EqDec_eq_of_X X X) in JgAlll'.
                  --- rewrite rename_tvar_in_aworklist_fresh_eq in JgAlll'; auto.
-                     rewrite typ_subst_open_var in JgAlll'; auto.
+                     rewrite subst_typ_in_typ_open_typ_in_typ_tvar2 in JgAlll'; auto.
                      rewrite subst_tvar_in_typ_fresh_eq in JgAlll'; auto.
                      rewrite subst_tvar_in_typ_fresh_eq in JgAlll'; auto.
                  --- contradiction.
@@ -1751,7 +1751,7 @@ Proof.
                  unfold eq_dec in H8.
                  destruct (EqDec_eq_of_X X1 X1) in H8.
                  --- rewrite rename_tvar_in_aworklist_fresh_eq in H8; auto.
-                     rewrite typ_subst_open_var in H8; auto.
+                     rewrite subst_typ_in_typ_open_typ_in_typ_tvar2 in H8; auto.
                      rewrite subst_tvar_in_typ_fresh_eq in H8; auto.
                      rewrite subst_tvar_in_typ_fresh_eq in H8; auto.
                  --- contradiction.
@@ -1780,8 +1780,8 @@ Proof.
                  unfold eq_dec in JgAll.
                  destruct (EqDec_eq_of_X X X) in JgAll.
                  --- rewrite rename_tvar_in_aworklist_fresh_eq in JgAll; auto.
-                     rewrite typ_subst_open_var in JgAll; auto.
-                     rewrite typ_subst_open_var in JgAll; auto.
+                     rewrite subst_typ_in_typ_open_typ_in_typ_tvar2 in JgAll; auto.
+                     rewrite subst_typ_in_typ_open_typ_in_typ_tvar2 in JgAll; auto.
                  --- contradiction.
               ** admit.
               ** admit. (* wf *)
@@ -1796,8 +1796,8 @@ Proof.
                  unfold eq_dec in H7.
                  destruct (EqDec_eq_of_X X1 X1) in H7.
                  --- rewrite rename_tvar_in_aworklist_fresh_eq in H7; auto.
-                     rewrite typ_subst_open_var in H7; auto.
-                     rewrite typ_subst_open_var in H7; auto.
+                     rewrite subst_typ_in_typ_open_typ_in_typ_tvar2 in H7; auto.
+                     rewrite subst_typ_in_typ_open_typ_in_typ_tvar2 in H7; auto.
                  --- contradiction.
               ** admit. (* wf *)  
               ** simpl. rewrite ftvar_in_typ_open_typ_wrt_typ_upper.

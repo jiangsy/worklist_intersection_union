@@ -5,6 +5,7 @@ Require Import List.
 
 
 Require Import uni.notations.
+Require Import uni.prop_basic.
 Require Import uni.algo_worklist.def_extra.
 Require Import uni.algo_worklist.transfer.
 Require Import uni.algo_worklist.prop_basic.
@@ -48,6 +49,55 @@ Ltac destruct_trans :=
     | H : trans_typ ?θ ?Aᵃ (?C_T _ _)  |- _ => dependent destruction H
     end.
 
+Ltac rename_typ_rev :=
+  lazymatch goal with
+  | H : trans_typ ?θ ?Aᵃ (open_typ_wrt_typ _ _)  |- _ => fail
+  | H : trans_typ ?θ ?Aᵃ (?C_T _ _) |- _ => fail
+  | _ : trans_typ ?θ ?A1ᵃ ?A1ᵈ, _ : trans_typ ?θ ?A2ᵃ ?A2ᵈ, _ : trans_typ ?θ ?A3ᵃ ?A3ᵈ, _ : trans_typ ?θ ?A4ᵃ ?A4ᵈ |- _ => 
+    let A1ᵃ1 := fresh A1ᵈ"ᵃ0" in 
+    rename A1ᵃ into A1ᵃ1; 
+    let A2ᵃ1 := fresh A2ᵈ"ᵃ0" in
+    rename A2ᵃ into A2ᵃ1;
+    let A3ᵃ1 := fresh A3ᵈ"ᵃ0" in
+    rename A3ᵃ into A3ᵃ1;
+    let A4ᵃ1 := fresh A4ᵈ"ᵃ0" in
+    rename A4ᵃ into A4ᵃ1;
+    let A1ᵃ2 := fresh A1ᵈ"ᵃ" in 
+    rename A1ᵃ1 into A1ᵃ2;
+    let A2ᵃ2 := fresh A2ᵈ"ᵃ" in
+    rename A2ᵃ1 into A2ᵃ2;
+    let A3ᵃ2 := fresh A3ᵈ"ᵃ" in
+    rename A3ᵃ1 into A3ᵃ2;
+    let A4ᵃ2 := fresh A4ᵈ"ᵃ" in
+    rename A4ᵃ1 into A4ᵃ2
+  | _ : trans_typ ?θ ?A1ᵃ ?A1ᵈ, _ : trans_typ ?θ ?A2ᵃ ?A2ᵈ, _ : trans_typ ?θ ?A3ᵃ ?A3ᵈ |- _ => 
+    let A1ᵃ1 := fresh A1ᵈ"ᵃ0" in 
+    rename A1ᵃ into A1ᵃ1;
+    let A2ᵃ1 := fresh A2ᵈ"ᵃ0" in
+    rename A2ᵃ into A2ᵃ1;
+    let A3ᵃ1 := fresh A3ᵈ"ᵃ0" in
+    rename A3ᵃ into A3ᵃ1;
+    let A1ᵃ2 := fresh A1ᵈ"ᵃ" in 
+    rename A1ᵃ1 into A1ᵃ2;
+    let A2ᵃ2 := fresh A2ᵈ"ᵃ" in
+    rename A2ᵃ1 into A2ᵃ2;
+    let A3ᵃ2 := fresh A3ᵈ"ᵃ" in
+    rename A3ᵃ1 into A3ᵃ2
+  | _ : trans_typ ?θ ?A1ᵃ ?A1ᵈ, _ : trans_typ ?θ ?A2ᵃ ?A2ᵈ |- _ => 
+    let A1ᵃ1 := fresh A1ᵈ"ᵃ0" in 
+    rename A1ᵃ into A1ᵃ1;
+    let A2ᵃ1 := fresh A2ᵈ"ᵃ0" in
+    rename A2ᵃ into A2ᵃ1;
+    let A1ᵃ2 := fresh A1ᵈ"ᵃ" in 
+    rename A1ᵃ1 into A1ᵃ2;
+    let A2ᵃ2 := fresh A2ᵈ"ᵃ" in
+    rename A2ᵃ1 into A2ᵃ2
+  | _ : trans_typ ?θ ?A1ᵃ ?A1ᵈ |- _ => 
+    let A1ᵃ1 := fresh A1ᵈ"ᵃ0" in 
+    rename A1ᵃ into A1ᵃ1;
+    let A1ᵃ2 := fresh A1ᵈ"ᵃ" in 
+    rename A1ᵃ1 into A1ᵃ2
+  end. 
 
 (* equiv to tex_wfs *)
 (* look at wfs *)
@@ -269,17 +319,54 @@ Proof.
 Admitted.
 
 
+
+
+
 Ltac solve_binds_nonmono :=
   match goal with
   | H1 : binds ?X ?b ?θ |- _ =>
     match goal with 
-    | H1 : context [typ_bot] |- _ => apply wf_ss_binds_monotyp in H1; try inversion H1; try eapply a_wf_wl_wf_ss; eauto
-    | H1 : context [typ_top] |- _ => apply wf_ss_binds_monotyp in H1; try inversion H1; try eapply a_wf_wl_wf_ss; eauto
-    | H1 : context [(typ_all ?A)] |- _ => apply wf_ss_binds_monotyp in H1; try inversion H1; try eapply a_wf_wl_wf_ss; eauto
-    | H1 : context [(typ_intersection ?A1 ?A2)] |- _ => apply wf_ss_binds_monotyp in H1; try inversion H1; try eapply a_wf_wl_wf_ss; eauto
-    | H1 : context [(typ_union ?A1 ?A2)] |- _ => apply wf_ss_binds_monotyp in H1; try inversion H1; try eapply a_wf_wl_wf_ss; eauto
+    | H1 : context [typ_bot] |- _ => apply wf_ss_binds_monotyp in H1; try inversion H1; try eapply trans_wl_wf_ss; eauto
+    | H1 : context [typ_top] |- _ => apply wf_ss_binds_monotyp in H1; try inversion H1; try eapply trans_wl_wf_ss; eauto
+    | H1 : context [(typ_all ?A)] |- _ => apply wf_ss_binds_monotyp in H1; try inversion H1; try eapply trans_wl_wf_ss; eauto
+    | H1 : context [(typ_intersection ?A1 ?A2)] |- _ => apply wf_ss_binds_monotyp in H1; try inversion H1; try eapply trans_wl_wf_ss; eauto
+    | H1 : context [(typ_union ?A1 ?A2)] |- _ => apply wf_ss_binds_monotyp in H1; try inversion H1; try eapply trans_wl_wf_ss; eauto
   end
 end.
+
+
+
+Lemma trans_typ_subst : forall θ1 θ2 Aᵃ Aᵈ Bᵃ Bᵈ X b,
+  b = dbind_tvar_empty \/ b = dbind_stvar_empty ->
+  θ2 ++ (X , b) :: θ1 ⫦ᵗ Aᵃ ⇝ Aᵈ ->
+  wf_ss (θ2 ++ θ1) ->
+  θ2 ++ θ1 ⫦ᵗ Bᵃ ⇝ Bᵈ ->
+  θ2 ++ θ1 ⫦ᵗ {Bᵃ /ᵗ X} Aᵃ ⇝ {Bᵈ /ᵗ X} Aᵈ.
+Proof.
+  intros. generalize dependent Bᵃ. generalize dependent Bᵈ. 
+  dependent induction H0; intros; simpl; destruct_eq_atom; eauto with Hdb_a_wl_red_completness.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - inst_cofinites_for trans_typ__all. intros.
+    inst_cofinites_with X0.
+    admit.
+Admitted.
+
+
+Lemma trans_typ_subst_tvar_cons : forall θ Aᵃ Aᵈ Bᵃ Bᵈ X,
+  (X , dbind_tvar_empty) :: θ ⫦ᵗ Aᵃ ⇝ Aᵈ ->
+  θ ⫦ᵗ Bᵃ ⇝ Bᵈ ->
+  θ ⫦ᵗ {Bᵃ /ᵗ X} Aᵃ ⇝ {Bᵈ /ᵗ X} Aᵈ.
+Proof.
+  intros. rewrite_env (nil ++ θ). eapply trans_typ_subst with (b:=dbind_tvar_empty); eauto.
+  apply trans_typ_wf_ss in H. dependent destruction H; auto.
+Qed.
+
+
+Hint Resolve trans_typ_lc_atyp : Hdb_a_wl_red_completness.
+Hint Resolve trans_typ_lc_dtyp : Hdb_a_wl_red_completness.
 
 
 Theorem d_a_wl_red_completness: forall Ω Γ,
@@ -300,13 +387,13 @@ Proof with eauto with Hdb_a_wl_red_completness.
     dependent destruction Hwf0...
   - solve_awl_trailing_etvar.
     destruct_trans.
-    + admit.
+    + solve_binds_nonmono. 
     + constructor...
       apply IHd_wl_red...
       dependent destruction Hwf0...
  - solve_awl_trailing_etvar.
     destruct_trans.
-    + admit.
+    + solve_binds_nonmono. 
     + constructor...
       apply IHd_wl_red...
       dependent destruction Hwf0...
@@ -332,20 +419,28 @@ Proof with eauto with Hdb_a_wl_red_completness.
     + destruct_a_wf_wl...
   - solve_awl_trailing_etvar.
     destruct_trans.
+    + destruct_a_wf_wl... 
+    + apply wf_ss_uniq in H0. 
+      pose proof (binds_unique _ _ _ _ _ H1 H3 H0).
+      inversion H4.
     + admit.
+    + apply wf_ss_uniq in H0. 
+      pose proof (binds_unique _ _ _ _ _ H1 H3 H0).
+      inversion H4.
+    + destruct_a_wf_wl... 
+    + admit. (* OK, false *)
     + admit.
-    + admit.
-    + admit.
-    + admit.
-    + admit.
-    + admit.
-    + admit.
+    + admit. (* OK, false *)
     + admit.
   - solve_awl_trailing_etvar. 
     destruct_trans.
-    + admit.
-    + admit.
-    + admit.
+    + apply wf_ss_binds_monotyp in H1 as Hmonoa...
+      apply wf_ss_binds_monotyp in H3 as Hmonob...
+      admit.
+    + apply wf_ss_binds_monotyp in H2 as Hmonob...
+      admit.
+    + apply wf_ss_binds_monotyp in H1 as Hmonoa...
+      admit.
     + destruct_a_wf_wl...
       constructor...
       apply IHd_wl_red...
@@ -359,10 +454,9 @@ Proof with eauto with Hdb_a_wl_red_completness.
       pick fresh X and apply a_wl_red__sub_all. 
       inst_cofinites_with X.
       apply H0; auto.
-      * constructor. constructor...
-        admit. 
-        admit.
-        constructor; auto.
+      * constructor... constructor...
+        admit. (* OK, wf *)
+        admit. (* OK, wf *)
       * exists ((X , dbind_stvar_empty) :: θ0)...
         constructor...
         constructor...
@@ -373,9 +467,9 @@ Proof with eauto with Hdb_a_wl_red_completness.
     + solve_binds_nonmono.
     + pick fresh X and apply a_wl_red__sub_alll.
       inst_cofinites_with X.
-      * admit.
-      * admit.
-      * admit.
+      * eapply trans_typ_neq_all_rev...
+      * eapply trans_typ_neq_intersection_rev...
+      * eapply trans_typ_neq_union_rev...
       * inst_cofinites_with X.
         apply IHd_wl_red.
         -- admit.
@@ -424,30 +518,25 @@ Proof with eauto with Hdb_a_wl_red_completness.
       destruct_a_wf_wl...
       exists θ0...
 
-  (* check *)
+  (** check **)
   - solve_awl_trailing_etvar.
     destruct_trans.
     destruct_a_wf_wl...
     constructor. 
     apply IHd_wl_red...
+  (* λ x. e <= A -> B *)
   - solve_awl_trailing_etvar.
     destruct_trans.
-    + apply a_wl_red__chk_absetvar with (L:=
-      (union L0
-        (union (singleton X)
-            (union (dom θ)
-              (union (dom θ0)
-                  (union (ftvar_in_typ A1)
-                    (union (ftvar_in_typ A2)
-                        (union (ftvar_in_aworklist' Γ)
-                          (union (ftvar_in_aworklist' Γ0) (union (dom (awl_to_aenv Γ)) (dom (awl_to_aenv Γ0)))))))))))).
-       admit. intros.
+    + inst_cofinites_for a_wl_red__chk_absetvar; intros. 
+      admit.
        inst_cofinites_with x. inst_cofinites_with X1. inst_cofinites_with X2. 
        admit.
-    + pick fresh x and apply a_wl_red__chk_absarrow.
+    + destruct_a_wf_wl. pick fresh x and apply a_wl_red__chk_absarrow.
       inst_cofinites_with x.
       eapply H0.
-      * admit. (* OK, wf *)
+      * repeat constructor... 
+        admit. (* OK, wf *) 
+        admit.
       * exists θ0. constructor...
   (* λx. e ⇐ ⊤ *)
   - solve_awl_trailing_etvar.
@@ -486,6 +575,8 @@ Proof with eauto with Hdb_a_wl_red_completness.
     econstructor; eauto.
     apply IHd_wl_red; auto...
     admit. (* OK, wf *)
+    exists θ0...
+    repeat constructor...
     admit.
   - solve_awl_trailing_etvar.
     destruct_trans.
@@ -493,19 +584,32 @@ Proof with eauto with Hdb_a_wl_red_completness.
     apply IHd_wl_red...
     + admit. (* OK, wf *)
     + exists θ0...
+  (* Λ a. e : A => _ *)
   - solve_awl_trailing_etvar.
     destruct_trans.
     destruct bᵃ.
     pick fresh X and apply a_wl_red__inf_tabs.
     inst_cofinites_with X.
-    admit.
+    repeat rewrite open_body_wrt_typ_anno in H1.
+    dependent destruction H1.
+    apply H0.
+    + admit.
+    + exists ((X, dbind_tvar_empty) :: θ0). 
+      repeat constructor...
+      * inst_cofinites_for trans_typ__all. intros.
+        apply trans_typ_rename_tvar_cons with (X':=X0) in H2...
+        admit.
   - solve_awl_trailing_etvar.
     destruct_trans...
     destruct_a_wf_wl.
     constructor...
     apply IHd_wl_red...
+  (* λ x. e => _ *)
   - solve_awl_trailing_etvar.
-    + admit.
+    destruct_trans.
+    inst_cofinites_for a_wl_red__inf_abs_mono; auto.
+    intros.
+    admit.
   - solve_awl_trailing_etvar.
     destruct_trans.
     destruct_a_wf_wl.
@@ -523,10 +627,16 @@ Proof with eauto with Hdb_a_wl_red_completness.
     destruct_trans.
     + solve_binds_nonmono.
     + constructor.
-      apply IHd_wl_red...
       destruct_a_wf_wl...
-      admit.
-      admit.
+      apply IHd_wl_red...
+      * admit. (* OK, wf *)
+      * exists θ0. constructor...
+        constructor...
+        rename_typ_rev.
+        pick fresh X. inst_cofinites_with X.
+        erewrite <- subst_typ_in_typ_open_typ_in_typ_tvar2; eauto...
+        erewrite <- subst_typ_in_typ_open_typ_in_typ_tvar2 with (A:=A); eauto...
+        eapply trans_typ_subst_tvar_cons with (θ:=θ0) in H0; auto; eauto.
   - solve_awl_trailing_etvar.
     destruct_trans.
     + solve_binds_nonmono.
@@ -536,27 +646,45 @@ Proof with eauto with Hdb_a_wl_red_completness.
   - solve_awl_trailing_etvar.
     destruct_trans.
     + solve_binds_nonmono.
-    + admit.
+    + destruct_a_wf_wl...
+      constructor... 
+      apply IHd_wl_red...
   - solve_awl_trailing_etvar.
     destruct_trans.
     + solve_binds_nonmono.
-    + admit.
+    + destruct_a_wf_wl...
+      apply a_wl_red__inftapp_inter2...
+      apply IHd_wl_red...
   - solve_awl_trailing_etvar.
     destruct_trans.
     + solve_binds_nonmono.
-    + admit.
+    + destruct_a_wf_wl...
+      constructor...
+      apply IHd_wl_red...
   - solve_awl_trailing_etvar.
     destruct_trans.
-    admit.
+    + destruct_a_wf_wl...
+      constructor...
+      apply IHd_wl_red...
   - solve_awl_trailing_etvar.
     destruct_trans.
-    admit.
+    + destruct_a_wf_wl...
+      constructor...
+      apply IHd_wl_red...
 
   (* infabs *)
   - solve_awl_trailing_etvar.
     destruct_trans.
-    + econstructor.
-      admit. admit.
+    + inst_cofinites_for a_wl_red__infabs_etvar.
+      * admit.
+      * intros.
+        apply wf_ss_binds_monotyp in H1 as Hmonoa...
+        dependent destruction H5.
+        simpl. destruct_eq_atom.
+        constructor.
+        apply IHd_wl_red...
+        -- admit.
+        -- admit.
     + destruct_a_wf_wl... 
       constructor...
       apply IHd_wl_red...
@@ -601,10 +729,16 @@ Proof with eauto with Hdb_a_wl_red_completness.
     apply IHd_wl_red...
     exists θ0...
   - solve_awl_trailing_etvar.
-    + admit.
+    destruct_trans.
+    destruct_a_wf_wl...
+    constructor...
+    apply IHd_wl_red...
   - solve_awl_trailing_etvar.
     destruct_trans.
-    admit.
+    destruct_a_wf_wl...
+    constructor...
+    apply IHd_wl_red...
+    exists θ0...
 
   (* apply *)
   - solve_awl_trailing_etvar.

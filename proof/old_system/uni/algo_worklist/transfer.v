@@ -212,6 +212,7 @@ Inductive trans_work : subst_set -> work -> work -> Prop :=
       trans_work θ (work_infabsunion A1ᵃ B1ᵃ A2ᵃ cdᵃ) (work_infabsunion A1ᵈ B1ᵈ A2ᵈ cdᵈ)
   | trans_work__infapp : forall θ Aᵃ Aᵈ Bᵃ Bᵈ eᵃ eᵈ csᵃ csᵈ,
       trans_typ θ Aᵃ Aᵈ ->
+      trans_typ θ Bᵃ Bᵈ ->
       trans_exp θ eᵃ eᵈ ->
       trans_conts θ csᵃ csᵈ ->
       trans_work θ (work_infapp Aᵃ Bᵃ eᵃ csᵃ) (work_infapp Aᵈ Bᵈ eᵈ csᵈ)
@@ -304,6 +305,58 @@ where "θ ⫦ Γᵃ ⇝ Γᵈ ⫣ θ'" := (trans_worklist θ Γᵃ Γᵈ θ').
 Hint Constructors trans_typ : Hdb_transfer.
 
 
+Lemma trans_typ_neq_all : forall θ Aᵃ Aᵈ,
+  θ ⫦ᵗ Aᵃ ⇝ Aᵈ -> neq_all Aᵃ -> neq_all Aᵈ.
+Proof.
+  intros. dependent destruction H0; dependent destruction H; auto.
+  + admit.
+  + constructor... admit. admit.
+Admitted.
+
+
+Lemma trans_typ_neq_all_rev : forall θ Aᵃ Aᵈ,
+  θ ⫦ᵗ Aᵃ ⇝ Aᵈ -> neq_all Aᵈ -> neq_all Aᵃ.
+Proof.
+  intros. dependent destruction H0; dependent destruction H; auto.
+  + admit.
+  + constructor... admit. admit.
+Admitted.
+
+
+Lemma trans_typ_neq_union : forall θ Aᵃ Aᵈ,
+  θ ⫦ᵗ Aᵃ ⇝ Aᵈ -> neq_union Aᵃ -> neq_union Aᵈ.
+Proof.
+  intros. dependent destruction H0; dependent destruction H; auto.
+  + admit.
+  + constructor... admit. admit.
+Admitted.
+
+
+Lemma trans_typ_neq_union_rev : forall θ Aᵃ Aᵈ,
+  θ ⫦ᵗ Aᵃ ⇝ Aᵈ -> neq_union Aᵈ -> neq_union Aᵃ.
+Proof.
+  intros. dependent destruction H0; dependent destruction H; auto.
+  + admit.
+  + constructor... admit.
+Admitted.
+
+Lemma trans_typ_neq_intersection : forall θ Aᵃ Aᵈ,
+  θ ⫦ᵗ Aᵃ ⇝ Aᵈ -> neq_intersection Aᵃ -> neq_intersection Aᵈ.
+Proof.
+  intros. dependent destruction H0; dependent destruction H; auto.
+  + admit.
+  + constructor... admit. admit.
+Admitted.
+
+
+Lemma trans_typ_neq_intersection_rev : forall θ Aᵃ Aᵈ,
+  θ ⫦ᵗ Aᵃ ⇝ Aᵈ -> neq_intersection Aᵈ -> neq_intersection Aᵃ.
+Proof.
+  intros. dependent destruction H0; dependent destruction H; auto.
+  + admit.
+  + constructor... admit.
+Admitted.
+
 
 Lemma trans_wl_not_in_ss : forall θ Γ Ω X,
   nil ⫦ Γ ⇝ Ω ⫣ θ -> X ∉ dom (awl_to_aenv Γ) -> X ∉ dom θ.
@@ -345,7 +398,7 @@ Proof.
 Qed.
 
 
-Lemma a_wf_wl_wf_ss : forall θ θ' Γ Ω,  
+Lemma trans_wl_wf_ss : forall θ θ' Γ Ω,  
   θ ⫦ Γ ⇝ Ω ⫣ θ' -> wf_ss θ'.
 Proof with eauto.
   intros. dependent induction H; auto.
@@ -355,7 +408,7 @@ Proof with eauto.
 Qed.
 
 
-Hint Resolve a_wf_wl_wf_ss : Hdb_transfer.
+Hint Resolve trans_wl_wf_ss : Hdb_transfer.
 
 
 Lemma trans_typ_wf_ss : forall θ Aᵃ Aᵈ,
@@ -533,7 +586,7 @@ Proof.
   induction Γ2; simpl; intros.
   - exists Ω. exists dworklist_empty. exists θ'.
     simpl; repeat split; auto.
-    econstructor. eapply a_wf_wl_wf_ss; eauto.
+    econstructor. eapply trans_wl_wf_ss; eauto.
   - inversion H; subst.
     pose proof (IHΓ2 _ _ _ H6) as (Ω1 & Ω2 & Θ0 & E & Inst1 & Inst2).
     exists Ω1, (x ~ᵈ A1ᵈ;ᵈ Ω2)%dworklist, Θ0. repeat split; eauto.
@@ -571,7 +624,7 @@ Hint Constructors trans_worklist : Hdb_transfer.
 Hint Constructors wf_ss : Hdb_transfer.
 
 
-Hint Resolve a_wf_wl_wf_ss : Hdb_a_wl_red_soundness.
+Hint Resolve trans_wl_wf_ss : Hdb_a_wl_red_soundness.
 
 Lemma trans_wl_app : forall Γ1 Γ2 Ω1 Ω2 θ1 θ2 θ3,
   θ1 ⫦ Γ1 ⇝ Ω1 ⫣ θ2 ->
@@ -756,8 +809,8 @@ Proof with auto with Hdb_transfer.
     eapply wf_ss_rename_tvar; eauto.
   - eapply trans_typ__all with (L := L `union` singleton X).
     intros. inst_cofinites_with X0.
-    rewrite typ_subst_open_comm...
-    rewrite typ_subst_open_comm...
+    rewrite subst_typ_in_typ_open_typ_in_typ_fresh2...
+    rewrite subst_typ_in_typ_open_typ_in_typ_fresh2...
     rewrite_env (map (subst_tvar_in_dbind ` X' X) ((X0, □) :: θ2) ++ (X', □) :: θ1).
     eapply H0...
 Admitted.
@@ -1711,6 +1764,8 @@ Qed.
 
 
 
+
+
 Lemma trans_typ_etvar_subst_same_ss : forall θ Tᵃ Tᵈ X Aᵃ Aᵈ,
   wf_ss θ ->
   binds X (dbind_typ Tᵈ) θ ->
@@ -1873,7 +1928,7 @@ Proof with eauto with Hdb_transfer.
     intuition... subst...
   - dependent destruction Hinst.  
     pick fresh X0. inst_cofinites_with X0.
-    rewrite typ_subst_open_comm in H1...
+    rewrite subst_typ_in_typ_open_typ_in_typ_fresh2 in H1...
     rewrite_env (((X0, dbind_tvar_empty) :: θ2) ++ θ1) in H1.
     apply H0 in H1...
     destruct H1 as [Aᵈ].
@@ -2063,67 +2118,4 @@ Qed.
 Definition transfer (Γ : aworklist) (Ω : dworklist)  : Prop :=
   exists θ', trans_worklist nil Γ Ω θ'.
 
-
-Ltac unify_trans_typ :=
-  match goal with
-  | H_1 : trans_typ ?θ ?Aᵃ ?A1ᵈ, H_2 : trans_typ ?θ ?Aᵃ ?A2ᵈ |- _ => eapply trans_typ_det with (A₁ᵈ:=A1ᵈ) in H_2; 
-      eauto with Hdb_transfer; subst
-  end.
-
-Ltac unify_trans_exp :=
-  match goal with
-  | H_1 : trans_exp ?θ ?eᵃ ?e1ᵈ, H_2 : trans_exp ?θ ?eᵃ ?e2ᵈ |- _ => eapply trans_exp_det in H_1; 
-      eauto with Hdb_transfer; subst
-  end.
-  
-
-Ltac rename_typ :=
-  lazymatch goal with
-  | H : trans_typ ?θ (open_typ_wrt_typ _ _) ?Aᵈ |- _ => fail
-  | H : trans_typ ?θ (?C_T _ _) ?Aᵈ |- _ => fail
-  | _ : trans_typ ?θ ?A1ᵃ ?A1ᵈ, _ : trans_typ ?θ ?A2ᵃ ?A2ᵈ, _ : trans_typ ?θ ?A3ᵃ ?A3ᵈ, _ : trans_typ ?θ ?A4ᵃ ?A4ᵈ |- _ => 
-    let A1ᵃ1 := fresh A1ᵃ"ᵈ0" in 
-    rename A1ᵈ into A1ᵃ1;
-    let A2ᵃ1 := fresh A2ᵃ"ᵈ0" in
-    rename A2ᵈ into A2ᵃ1;
-    let A3ᵃ1 := fresh A3ᵃ"ᵈ0" in
-    rename A3ᵈ into A3ᵃ1;
-    let A4ᵃ1 := fresh A4ᵃ"ᵈ0" in
-    rename A4ᵈ into A4ᵃ1;
-    let A1ᵃ2 := fresh A1ᵃ"ᵈ" in 
-    rename A1ᵃ1 into A1ᵃ2;
-    let A2ᵃ2 := fresh A2ᵃ"ᵈ" in
-    rename A2ᵃ1 into A2ᵃ2;
-    let A3ᵃ2 := fresh A3ᵃ"ᵈ" in
-    rename A3ᵃ1 into A3ᵃ2;
-    let A4ᵃ2 := fresh A4ᵃ"ᵈ" in
-    rename A4ᵃ1 into A4ᵃ2
-  | _ : trans_typ ?θ ?A1ᵃ ?A1ᵈ, _ : trans_typ ?θ ?A2ᵃ ?A2ᵈ, _ : trans_typ ?θ ?A3ᵃ ?A3ᵈ |- _ => 
-    let A1ᵃ1 := fresh A1ᵃ"ᵈ0" in 
-    rename A1ᵈ into A1ᵃ1;
-    let A2ᵃ1 := fresh A2ᵃ"ᵈ0" in
-    rename A2ᵈ into A2ᵃ1;
-    let A3ᵃ1 := fresh A3ᵃ"ᵈ0" in
-    rename A3ᵈ into A3ᵃ1;
-    let A1ᵃ2 := fresh A1ᵃ"ᵈ" in 
-    rename A1ᵃ1 into A1ᵃ2;
-    let A2ᵃ2 := fresh A2ᵃ"ᵈ" in
-    rename A2ᵃ1 into A2ᵃ2;
-    let A3ᵃ2 := fresh A3ᵃ"ᵈ" in
-    rename A3ᵃ1 into A3ᵃ2
-  | _ : trans_typ ?θ ?A1ᵃ ?A1ᵈ, _ : trans_typ ?θ ?A2ᵃ ?A2ᵈ |- _ => 
-    let A1ᵃ1 := fresh A1ᵃ"ᵈ0" in 
-    rename A1ᵈ into A1ᵃ1;
-    let A2ᵃ1 := fresh A2ᵃ"ᵈ0" in
-    rename A2ᵈ into A2ᵃ1;
-    let A1ᵃ2 := fresh A1ᵃ"ᵈ" in 
-    rename A1ᵃ1 into A1ᵃ2;
-    let A2ᵃ2 := fresh A2ᵃ"ᵈ" in
-    rename A2ᵃ1 into A2ᵃ2
-  | _ : trans_typ ?θ ?A1ᵃ ?A1ᵈ |- _ => 
-    let A1ᵃ1 := fresh A1ᵃ"ᵈ0" in 
-    rename A1ᵈ into A1ᵃ1;
-    let A1ᵃ2 := fresh A1ᵃ"ᵈ" in 
-    rename A1ᵃ1 into A1ᵃ2
-  end. 
     

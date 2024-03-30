@@ -36,6 +36,71 @@ Hint Constructors d_infabs : Hdb_a_wl_red_soundness.
 Hint Constructors d_inftapp : Hdb_a_wl_red_soundness.
 
 
+
+
+Ltac unify_trans_typ :=
+  match goal with
+  | H_1 : trans_typ ?θ ?Aᵃ ?A1ᵈ, H_2 : trans_typ ?θ ?Aᵃ ?A2ᵈ |- _ => eapply trans_typ_det with (A₁ᵈ:=A1ᵈ) in H_2; 
+      eauto with Hdb_transfer; subst
+  end.
+
+Ltac unify_trans_exp :=
+  match goal with
+  | H_1 : trans_exp ?θ ?eᵃ ?e1ᵈ, H_2 : trans_exp ?θ ?eᵃ ?e2ᵈ |- _ => eapply trans_exp_det in H_1; 
+      eauto with Hdb_transfer; subst
+  end.
+  
+
+Ltac rename_typ :=
+  lazymatch goal with
+  | H : trans_typ ?θ (open_typ_wrt_typ _ _) ?Aᵈ |- _ => fail
+  | H : trans_typ ?θ (?C_T _ _) ?Aᵈ |- _ => fail
+  | _ : trans_typ ?θ ?A1ᵃ ?A1ᵈ, _ : trans_typ ?θ ?A2ᵃ ?A2ᵈ, _ : trans_typ ?θ ?A3ᵃ ?A3ᵈ, _ : trans_typ ?θ ?A4ᵃ ?A4ᵈ |- _ => 
+    let A1ᵃ1 := fresh A1ᵃ"ᵈ0" in 
+    rename A1ᵈ into A1ᵃ1;
+    let A2ᵃ1 := fresh A2ᵃ"ᵈ0" in
+    rename A2ᵈ into A2ᵃ1;
+    let A3ᵃ1 := fresh A3ᵃ"ᵈ0" in
+    rename A3ᵈ into A3ᵃ1;
+    let A4ᵃ1 := fresh A4ᵃ"ᵈ0" in
+    rename A4ᵈ into A4ᵃ1;
+    let A1ᵃ2 := fresh A1ᵃ"ᵈ" in 
+    rename A1ᵃ1 into A1ᵃ2;
+    let A2ᵃ2 := fresh A2ᵃ"ᵈ" in
+    rename A2ᵃ1 into A2ᵃ2;
+    let A3ᵃ2 := fresh A3ᵃ"ᵈ" in
+    rename A3ᵃ1 into A3ᵃ2;
+    let A4ᵃ2 := fresh A4ᵃ"ᵈ" in
+    rename A4ᵃ1 into A4ᵃ2
+  | _ : trans_typ ?θ ?A1ᵃ ?A1ᵈ, _ : trans_typ ?θ ?A2ᵃ ?A2ᵈ, _ : trans_typ ?θ ?A3ᵃ ?A3ᵈ |- _ => 
+    let A1ᵃ1 := fresh A1ᵃ"ᵈ0" in 
+    rename A1ᵈ into A1ᵃ1;
+    let A2ᵃ1 := fresh A2ᵃ"ᵈ0" in
+    rename A2ᵈ into A2ᵃ1;
+    let A3ᵃ1 := fresh A3ᵃ"ᵈ0" in
+    rename A3ᵈ into A3ᵃ1;
+    let A1ᵃ2 := fresh A1ᵃ"ᵈ" in 
+    rename A1ᵃ1 into A1ᵃ2;
+    let A2ᵃ2 := fresh A2ᵃ"ᵈ" in
+    rename A2ᵃ1 into A2ᵃ2;
+    let A3ᵃ2 := fresh A3ᵃ"ᵈ" in
+    rename A3ᵃ1 into A3ᵃ2
+  | _ : trans_typ ?θ ?A1ᵃ ?A1ᵈ, _ : trans_typ ?θ ?A2ᵃ ?A2ᵈ |- _ => 
+    let A1ᵃ1 := fresh A1ᵃ"ᵈ0" in 
+    rename A1ᵈ into A1ᵃ1;
+    let A2ᵃ1 := fresh A2ᵃ"ᵈ0" in
+    rename A2ᵈ into A2ᵃ1;
+    let A1ᵃ2 := fresh A1ᵃ"ᵈ" in 
+    rename A1ᵃ1 into A1ᵃ2;
+    let A2ᵃ2 := fresh A2ᵃ"ᵈ" in
+    rename A2ᵃ1 into A2ᵃ2
+  | _ : trans_typ ?θ ?A1ᵃ ?A1ᵈ |- _ => 
+    let A1ᵃ1 := fresh A1ᵃ"ᵈ0" in 
+    rename A1ᵈ into A1ᵃ1;
+    let A1ᵃ2 := fresh A1ᵃ"ᵈ" in 
+    rename A1ᵃ1 into A1ᵃ2
+  end. 
+
 (* depedent destruction all non-atomic trans_* relation *)
 Ltac destruct_trans :=
   repeat
@@ -82,7 +147,7 @@ Ltac _apply_IH_a_wl_red :=
       destruct Htrans as [θ Htrans]
     end.
 
-Hint Resolve a_wf_wl_wf_ss : Hdb_a_wl_red_soundness.
+Hint Resolve trans_wl_wf_ss : Hdb_a_wl_red_soundness.
 
 Ltac trans_all_typ :=
   match goal with 
@@ -138,7 +203,7 @@ Proof with auto with Hdb_a_wl_red_soundness.
     + constructor. auto.
       eapply trans_typ_etvar_subst_same_ss; eauto.
       eapply trans_typ_reorder with (θ:=θ'); eauto.
-      eapply a_wf_wl_wf_ss; eauto.
+      eapply trans_wl_wf_ss; eauto.
       intros. apply Hbinds... 
       admit. (* OK, neq *)
     + intros. apply Hbinds; auto.
@@ -154,7 +219,7 @@ Proof with auto with Hdb_a_wl_red_soundness.
       admit. (* OK, notin *)
     + rewrite_env (nil ++ (Y ~ □) ++ θ'). apply trans_typ_weaken...
       constructor; auto.
-      eapply a_wf_wl_wf_ss; eauto.
+      eapply trans_wl_wf_ss; eauto.
     + rewrite_env (nil ++ (Y ~ □) ++ θ'1). apply trans_typ_weaken...
       constructor; auto.
       admit. (* OK, notin *)
@@ -176,7 +241,7 @@ Proof with auto with Hdb_a_wl_red_soundness.
       admit. (* OK, notin *)
     + rewrite_env (nil ++ (Y ~ ■) ++ θ'). apply trans_typ_weaken...
       econstructor; auto.
-      eapply a_wf_wl_wf_ss; eauto.
+      eapply trans_wl_wf_ss; eauto.
     + rewrite_env (nil ++ (Y ~ ■) ++ θ'1). apply trans_typ_weaken... 
       admit. (* OK, wf_ss *)
     + intros. inversion H8.
@@ -198,7 +263,7 @@ Proof with auto with Hdb_a_wl_red_soundness.
     + constructor; auto.
       eapply trans_work_etvar_subst_same_ss; eauto.
       apply trans_work_reorder with (θ:=θ'); eauto.
-      * eapply a_wf_wl_wf_ss; eauto.
+      * eapply trans_wl_wf_ss; eauto.
       * intros. apply Hbinds; auto.
         unfold not. intros. subst.
         apply subst_tvar_in_work_fresh_same in H5; auto.
@@ -216,7 +281,7 @@ Proof with auto with Hdb_a_wl_red_soundness.
       admit. (* OK, mono *)
     + rewrite_env (nil ++ (Y ~ dbind_typ T) ++ θ'). apply trans_typ_weaken...
       constructor; auto.
-      eapply a_wf_wl_wf_ss; eauto.
+      eapply trans_wl_wf_ss; eauto.
     + rewrite_env (nil ++ (Y ~ dbind_typ T) ++ θ'1). apply trans_typ_weaken...
       constructor; auto.
       admit. (* OK, notin *)
@@ -529,6 +594,8 @@ Lemma trans_apply_contd : forall θ cdᵃ cdᵈ Aᵃ Aᵈ Bᵃ Bᵈ wᵃ wᵈ,
 Proof with eauto with Hdb_a_wl_red_soundness.
 
 Admitted.
+
+
 
 
 Theorem d_a_wl_red_soundness: forall Γ,
@@ -903,18 +970,12 @@ Proof with eauto with Hdb_a_wl_red_soundness.
       econstructor...
       econstructor...
       inst_cofinites_for trans_exp__tabs.
-      intros. simpl. unfold open_body_wrt_typ. simpl.
+      intros. simpl. repeat rewrite open_body_wrt_typ_anno. 
       constructor.
-      -- replace (open_exp_wrt_typ_rec 0 ` X0 e) with (open_exp_wrt_typ e ` X0) by auto.  
-         replace (open_exp_wrt_typ_rec 0 ` X0 (close_exp_wrt_typ X eᵈ)) 
-          with (open_exp_wrt_typ  (close_exp_wrt_typ X eᵈ) `X0) by auto.
-          rewrite_close_open_subst.
-          apply trans_exp_rename_tvar_cons with (X':=X0) in H7; eauto.          
+      -- rewrite_close_open_subst.
+         apply trans_exp_rename_tvar_cons with (X':=X0) in H7; eauto.          
           admit. (* OK, inf rename *)
-      -- replace (open_typ_wrt_typ_rec 0 ` X0 A) with (open_typ_wrt_typ A ` X0) by auto.  
-         replace (open_typ_wrt_typ_rec 0 ` X0 (close_typ_wrt_typ X Aᵈ0)) 
-          with (open_typ_wrt_typ (close_typ_wrt_typ X Aᵈ0) ` X0 ) by auto.
-          solve_trans_typ_open_close.
+      -- solve_trans_typ_open_close.
     + assert (θ ⫦ᵗ typ_all A ⇝ typ_all A1ᵈ). {
         inst_cofinites_for trans_typ__all. intros.
         inst_cofinites_with X0. auto.
@@ -925,14 +986,10 @@ Proof with eauto with Hdb_a_wl_red_soundness.
       }
       apply trans_typ_det with (A₁ᵈ:=typ_all (close_typ_wrt_typ X Aᵈ0)) in H9...
       apply d_wl_del_red__inf with (A:=typ_all (close_typ_wrt_typ X Aᵈ0)).
-      * eapply d_typing__inf_tabs. 
+      * inst_cofinites_for  d_typing__inf_tabs. 
         admit. (* OK, wf *)
-        intros. rewrite_close_open_subst.
-        eapply d_typing__chk_sub with (B:={` X0 /ᵗ X} Aᵈ0)...
-        econstructor; eauto.
-        admit. (* OK, wf rename *)
+        intros. inst_cofinites_with X0. rewrite_close_open_subst.
         rewrite_close_open_subst. admit. (* OK, chk rename *)
-        admit. (* OK, sub rename *)
       * rewrite H9. auto. destruct_d_wl_del_red...
   (* \x. e => _ *)
   - destruct_a_wf_wl.

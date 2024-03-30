@@ -24,7 +24,7 @@ Ltac solve_by_invert :=
   solve_by_inverts 1.
 
 
-Lemma subst_same_tvar_eq : forall A X,
+Lemma subst_typ_in_typ_refl_eq : forall A X,
   A = {` X /ᵗ X} A.
 Proof.
   intros.
@@ -36,7 +36,7 @@ Proof.
   - simpl. rewrite <- IHA1. rewrite <- IHA2. auto.
 Qed.
 
-Lemma typ_subst_open_comm : forall X A T B,
+Lemma subst_typ_in_typ_open_typ_in_typ_fresh2 : forall X A T B,
   lc_typ T ->
   X `notin` ftvar_in_typ B ->
   ({T /ᵗ X} A) ^^ᵗ B = {T/ᵗ X} A ^^ᵗ B.
@@ -47,7 +47,7 @@ Proof.
 Qed.
 
 
-Lemma typ_subst_open_var : forall X A T,
+Lemma subst_typ_in_typ_open_typ_in_typ_tvar2 : forall X A T,
   lc_typ T ->
   X `notin` ftvar_in_typ A ->
   {T /ᵗ X} A ^ᵗ X = A ^^ᵗ T.
@@ -58,6 +58,13 @@ Proof.
   simpl. unfold eq_dec.
   - destruct (EqDec_eq_of_X X X); auto.
     contradiction.
+Qed.
+
+
+Lemma open_body_wrt_typ_anno : forall A B e,
+  open_body_wrt_typ (body_anno e A) B = body_anno (open_exp_wrt_typ e B) (open_typ_wrt_typ A B).
+Proof.
+  intros. unfold open_body_wrt_typ. simpl. auto.
 Qed.
 
 
@@ -225,7 +232,7 @@ Proof.
     inst_cofinites_by (singleton X).
     eapply lc_typ_all_exists with (X1:=x0). intros.
     specialize (H0 x0 (A ^ᵗ x0) X T). apply H0.
-    subst. rewrite <- typ_subst_open_comm; auto.
+    subst. rewrite <- subst_typ_in_typ_open_typ_in_typ_fresh2; auto.
     auto.
   - destruct A; try solve [inversion x]; auto.
     inversion x; eauto.
@@ -249,7 +256,7 @@ Proof.
   - destruct (X0 == X); auto.
   - inst_cofinites_by (singleton X) using_name X. eapply lc_typ_all_exists with (X1:=X0).
     replace (({T /ᵗ X} A) ^ᵗ X0) with ({T /ᵗ X} A ^ᵗ X0); eauto.
-    rewrite typ_subst_open_comm; auto.
+    rewrite subst_typ_in_typ_open_typ_in_typ_fresh2; auto.
 Qed.
 
 
@@ -295,7 +302,7 @@ Proof.
     + inversion x.
     + apply s_in__all with (L:=L `union` singleton Y); intros; inst_cofinites_with Y0. auto.
      inversion x. rewrite H6 in H3.
-    eapply H2; eauto. subst. rewrite typ_subst_open_comm; auto.
+    eapply H2; eauto. subst. rewrite subst_typ_in_typ_open_typ_in_typ_fresh2; auto.
   - destruct A; simpl; try solve [inversion x].
   simpl in *. destruct (X0 == Y); subst.
     + assert (s_in X (typ_union A1 A2)) by auto.
@@ -332,7 +339,7 @@ Proof.
     apply subst_tvar_in_typ_lc_typ; auto.
   - simpl. eapply s_in__all with (L:=L `union` singleton Y).
     intros. inst_cofinites_with Y0.
-    rewrite typ_subst_open_comm; auto.
+    rewrite subst_typ_in_typ_open_typ_in_typ_fresh2; auto.
 Qed.
 
 
