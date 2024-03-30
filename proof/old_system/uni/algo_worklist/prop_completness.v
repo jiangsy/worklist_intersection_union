@@ -15,7 +15,8 @@ Hint Constructors a_wl_red : Hdb_a_wl_red_completness.
 Hint Constructors a_wf_wl : Hdb_a_wl_red_completness.
 Hint Constructors trans_typ : Hdb_a_wl_red_completness.
 Hint Constructors trans_exp : Hdb_a_wl_red_completness.
-Hint Constructors trans_cont : Hdb_a_wl_red_completness.
+Hint Constructors trans_conts : Hdb_a_wl_red_completness.
+Hint Constructors trans_contd : Hdb_a_wl_red_completness.
 Hint Constructors trans_work : Hdb_a_wl_red_completness.
 Hint Constructors trans_worklist : Hdb_a_wl_red_completness.
 
@@ -29,8 +30,10 @@ Ltac destruct_trans :=
     | H : trans_work ?θ ?wᵃ (?wᵈ _) |- _ => dependent destruction H
     | H : trans_work ?θ ?wᵃ (?wᵈ _ _) |- _ => dependent destruction H
     | H : trans_work ?θ ?wᵃ (?wᵈ _ _ _) |- _ => dependent destruction H
-    | H : trans_cont ?θ ?wᵃ (?C_C _) |- _ => dependent destruction H
-    | H : trans_cont ?θ ?wᵃ (?C_C _ _) |- _ => dependent destruction H
+    | H : trans_conts ?θ ?wᵃ (?C_CS _) |- _ => dependent destruction H
+    | H : trans_conts ?θ ?wᵃ (?C_CS _ _) |- _ => dependent destruction H
+    | H : trans_contd ?θ ?wᵃ (?C_CD _ _) |- _ => dependent destruction H
+    | H : trans_contd ?θ ?wᵃ (?C_CD _ _) |- _ => dependent destruction H
     | H : trans_exp ?θ ?eᵃ (open_exp_wrt_exp _ _) |- _ => fail
     | H : trans_exp ?θ ?eᵃ exp_unit |- _ => dependent destruction H
     | H : trans_exp ?θ ?eᵃ (?C_E _) |- _ => dependent destruction H
@@ -247,17 +250,19 @@ Ltac solve_awl_trailing_etvar :=
     end
   end.
 
-Lemma trans_apply_cont : forall θ c cᵈ A Aᵈ wᵈ,
-  θ ⫦ᶜ c ⇝ cᵈ ->
-  θ ⫦ᵗ A ⇝ Aᵈ ->
-  apply_cont cᵈ Aᵈ wᵈ ->
-  exists w, apply_cont c A w.
+Lemma trans_apply_conts : forall θ csᵃ csᵈ Aᵃ Aᵈ wᵈ,
+  θ ⫦ᶜˢ csᵃ ⇝ csᵈ ->
+  θ ⫦ᵗ Aᵃ ⇝ Aᵈ ->
+  apply_conts csᵈ Aᵈ wᵈ ->
+  exists wᵃ, apply_conts csᵃ Aᵃ wᵃ.
 Proof.
   intros. induction H1.
   - dependent destruction H.
-    exists (work_infabs A cᵃ). constructor.
+    exists (work_infabs Aᵃ cdᵃ). constructor.
   - dependent destruction H.
-    dependent destruction H1.
+    admit.
+  - dependent destruction H.
+    admit.
   (* TODO: update wf of work_apply to add more constraint 
     e.g. work_apply (cont_infapp c A) then A must be an arrow
   *)
@@ -536,7 +541,6 @@ Proof with eauto with Hdb_a_wl_red_completness.
       destruct_a_wf_wl... 
       apply IHd_wl_red...
       exists θ0...
-      constructor...
   - solve_awl_trailing_etvar.
     + admit.
   - solve_awl_trailing_etvar.
@@ -562,10 +566,12 @@ Proof with eauto with Hdb_a_wl_red_completness.
   - solve_awl_trailing_etvar.
     destruct_trans.
     admit.
-    admit.
 
   (* apply *)
   - solve_awl_trailing_etvar.
-    + destruct_trans.
-      eapply trans_apply_cont in H as Hac; eauto. admit.
+    destruct_trans.
+    eapply trans_apply_conts in H as Hacs; eauto. admit.
+  - solve_awl_trailing_etvar.
+    destruct_trans.
+    admit.
 Admitted.
