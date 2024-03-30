@@ -329,7 +329,7 @@ Proof with eauto with Hdb_a_wl_red_completness.
             ++ apply trans_typ_binds_etvar; auto.
     + admit.
     + admit.
-    + admit.
+    + destruct_a_wf_wl...
   - solve_awl_trailing_etvar.
     destruct_trans.
     + admit.
@@ -342,11 +342,14 @@ Proof with eauto with Hdb_a_wl_red_completness.
     + admit.
     + admit.
   - solve_awl_trailing_etvar. 
-    destruct_trans. 
+    destruct_trans.
     + admit.
     + admit.
     + admit.
-    + admit.
+    + destruct_a_wf_wl...
+      constructor...
+      apply IHd_wl_red...
+      exists θ0...
   - solve_awl_trailing_etvar. 
     destruct_trans; try solve_binds_nonmono.
     + dependent destruction Hwf0. 
@@ -429,16 +432,33 @@ Proof with eauto with Hdb_a_wl_red_completness.
     apply IHd_wl_red...
   - solve_awl_trailing_etvar.
     destruct_trans.
-    + eapply a_wl_red__chk_absetvar.
-      admit. 
-      admit.
+    + apply a_wl_red__chk_absetvar with (L:=
+      (union L0
+        (union (singleton X)
+            (union (dom θ)
+              (union (dom θ0)
+                  (union (ftvar_in_typ A1)
+                    (union (ftvar_in_typ A2)
+                        (union (ftvar_in_aworklist' Γ)
+                          (union (ftvar_in_aworklist' Γ0) (union (dom (awl_to_aenv Γ)) (dom (awl_to_aenv Γ0)))))))))))).
+       admit. intros.
+       inst_cofinites_with x. inst_cofinites_with X1. inst_cofinites_with X2. 
+       admit.
     + pick fresh x and apply a_wl_red__chk_absarrow.
       inst_cofinites_with x.
       eapply H0.
-      * admit.
+      * admit. (* OK, wf *)
       * exists θ0. constructor...
+  (* λx. e ⇐ ⊤ *)
   - solve_awl_trailing_etvar.
-    + admit.
+    destruct_trans.
+    + solve_binds_nonmono.
+    + pick fresh x and apply a_wl_red__chk_abstop. 
+      inst_cofinites_with x.
+      apply H0.
+      * admit. (* OK, wf *)
+      * exists θ0. constructor...
+  (* e ⇐ A1 ⊓ A2 *)
   - solve_awl_trailing_etvar.
     destruct_trans.
     + solve_binds_nonmono.
@@ -465,14 +485,20 @@ Proof with eauto with Hdb_a_wl_red_completness.
     destruct_a_wf_wl.
     econstructor; eauto.
     apply IHd_wl_red; auto...
-    admit.
+    admit. (* OK, wf *)
     admit.
   - solve_awl_trailing_etvar.
     destruct_trans.
     constructor.
-    admit.
+    apply IHd_wl_red...
+    + admit. (* OK, wf *)
+    + exists θ0...
   - solve_awl_trailing_etvar.
-    + admit.
+    destruct_trans.
+    destruct bᵃ.
+    pick fresh X and apply a_wl_red__inf_tabs.
+    inst_cofinites_with X.
+    admit.
   - solve_awl_trailing_etvar.
     destruct_trans...
     destruct_a_wf_wl.
@@ -542,7 +568,13 @@ Proof with eauto with Hdb_a_wl_red_completness.
       apply IHd_wl_red...
       exists θ0...
   - solve_awl_trailing_etvar.
-    + admit.
+    destruct_trans.
+    + solve_binds_nonmono.
+    + pick fresh X and apply a_wl_red__infabs_all.
+      inst_cofinites_with X.
+      apply IHd_wl_red. 
+      * admit. (* OK, wf *)
+      * admit.
   - solve_awl_trailing_etvar.
     destruct_trans.
     + solve_binds_nonmono.
@@ -558,9 +590,16 @@ Proof with eauto with Hdb_a_wl_red_completness.
   - solve_awl_trailing_etvar.
     destruct_trans.
     + solve_binds_nonmono.
-    + admit.
+    + destruct_a_wf_wl...
+      constructor...
+      apply IHd_wl_red...
   - solve_awl_trailing_etvar.
-    admit.
+    dependent destruction H0.
+    destruct_trans.
+    destruct_a_wf_wl...
+    constructor...
+    apply IHd_wl_red...
+    exists θ0...
   - solve_awl_trailing_etvar.
     + admit.
   - solve_awl_trailing_etvar.

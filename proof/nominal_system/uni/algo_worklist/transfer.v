@@ -536,6 +536,32 @@ Proof.
 Qed.
 
 
+Lemma inst_wl_split : forall Γ1 Γ2 Ω θ θ'
+  , θ ⫦ (awl_app Γ2 Γ1) ⇝ Ω ⫣ θ'
+  → exists Ω1 Ω2 θ''
+    , Ω = dwl_app Ω2 Ω1 
+    ∧ θ  ⫦ Γ1 ⇝ Ω1 ⫣ θ''
+    ∧ θ'' ⫦ Γ2 ⇝ Ω2 ⫣ θ'.
+Proof.
+  induction Γ2; simpl; intros.
+  - exists Ω. exists dworklist_empty. exists θ'.
+    simpl; repeat split; auto.
+    econstructor.
+  - inversion H; subst.
+    pose proof (IHΓ2' _ _ _ H3) as (Γ1 & Γ2 & Θ0 & E & Inst1 & Inst2).
+    exists Γ1, (Γ2 ⊨ w0), Θ0. repeat split; eauto.
+  - destruct bd; inversion H; subst.
+    + pose proof (IHΓ2' _ _ _ H3) as (Γ1 & Γ2 & Θ0 & E & Inst1 & Inst2).
+      exists Γ1, (Γ2 ,′' x : A0), Θ0.
+      subst. repeat split; eauto.
+    + pose proof (IHΓ2' _ _ _ H4) as (Γ1 & Γ2 & Θ0 & E & Inst1 & Inst2).
+      exists Γ1, Γ2, Θ0.
+      subst. repeat split; eauto.
+    + pose proof (IHΓ2' _ _ _ H3) as (Γ1 & Γ2 & Θ0 & E & Inst1 & Inst2).
+      exists Γ1, Γ2, Θ0.
+      subst. repeat split; eauto.
+Qed.
+
 Lemma a_wf_typ_trans_typ : forall θ Γ Ω Aᵃ,
   a_wf_typ (awl_to_aenv Γ) Aᵃ ->  
   ⊢ᵃ Γ -> 

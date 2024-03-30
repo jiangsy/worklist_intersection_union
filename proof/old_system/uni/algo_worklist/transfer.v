@@ -207,6 +207,7 @@ Inductive trans_work : subst_set -> work -> work -> Prop :=
   | trans_work__infabsunion : forall θ A1ᵃ A1ᵈ A2ᵃ A2ᵈ B1ᵃ B1ᵈ cdᵃ cdᵈ,
       trans_typ θ A1ᵃ A1ᵈ ->
       trans_typ θ A2ᵃ A2ᵈ ->
+      trans_typ θ B1ᵃ B1ᵈ ->
       trans_contd θ cdᵃ cdᵈ ->
       trans_work θ (work_infabsunion A1ᵃ B1ᵃ A2ᵃ cdᵃ) (work_infabsunion A1ᵈ B1ᵈ A2ᵈ cdᵈ)
   | trans_work__infapp : forall θ Aᵃ Aᵈ Bᵃ Bᵈ eᵃ eᵈ csᵃ csᵈ,
@@ -237,6 +238,8 @@ Inductive trans_work : subst_set -> work -> work -> Prop :=
   | trans_work__unioninfabs : forall θ A1ᵃ A1ᵈ A2ᵃ A2ᵈ B1ᵃ B1ᵈ B2ᵃ B2ᵈ cdᵃ cdᵈ,
       trans_typ θ A1ᵃ A1ᵈ ->
       trans_typ θ A2ᵃ A2ᵈ ->
+      trans_typ θ B1ᵃ B1ᵈ ->
+      trans_typ θ B2ᵃ B2ᵈ ->
       trans_contd θ cdᵃ cdᵈ ->
       trans_work θ (work_unioninfabs A1ᵃ B1ᵃ A2ᵃ B2ᵃ cdᵃ) (work_unioninfabs A1ᵈ B1ᵈ A2ᵈ B2ᵈ cdᵈ)
   | trans_work__applys : forall θ Aᵃ Aᵈ csᵃ csᵈ,
@@ -2053,6 +2056,7 @@ Proof with eauto with Hdb_transfer.
     try eapply trans_conts_reorder with (θ:=θ); eauto with Hdb_transfer;
     try eapply trans_contd_reorder with (θ:=θ); eauto with Hdb_transfer.
     intros. apply H1; auto.
+    intros. apply H1; eauto.
 Qed.
 
 
