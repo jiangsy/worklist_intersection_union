@@ -344,6 +344,8 @@ Proof.
     rewrite_dwl_app; eauto.
   - inst_cofinites_by L. eapply H0.
     rewrite_dwl_app; eauto.
+  - inst_cofinites_by L. eapply H1.
+    rewrite_dwl_app; eauto.
 Qed.
 
 Corollary d_wl_red_weaken_consw : forall Ω w,
@@ -379,8 +381,9 @@ Proof.
   - eapply d_wl_red__inf_tabs with (L:=L).
     intros. inst_cofinites_with X.
     rewrite_dwl_app. auto.
-  - eapply d_wl_red__inf_abs_mono with (T1:=T1) (T2:=T2); auto.
+  - eapply d_wl_red__inf_abs_mono with (T1:=T1) (T2:=T2) (L:=L); auto.
     rewrite d_wl_app_cons_work_same_env. auto.
+    intros. inst_cofinites_with x.
     rewrite_dwl_app. auto.
   - eapply d_wl_red__infabs_all with (T:=T).
     rewrite d_wl_app_cons_work_same_env. auto.
@@ -466,7 +469,13 @@ Proof with auto with Hdb_dworklist_equiv.
     replace (work_applys c C ⫤ work_check e2 B ⫤ Ω)%dworklist with (dwl_app (work_applys c C ⫤ dworklist_empty) (work_check e2 B ⫤ Ω)%dworklist) by auto.
     apply d_wl_red_strengthen_work; eauto.
   - destruct_wf.
-    eapply d_wl_red__inf_abs_mono; eauto.
+    eapply d_wl_red__inf_abs_mono with (L:=L `union` L0 `union` dom (dwl_to_denv Ω)); eauto.
+    intros. inst_cofinites_with x.
+    apply H1...   
+    apply d_mono_typ_d_wf_typ in H. dependent destruction H.
+    repeat constructor; simpl...
+    eapply d_wf_exp_bound_typ_head; eauto.
+    apply d_wf_typ_weaken_cons...
   - destruct_wf. 
     eapply d_wl_red__inf_tabs with (L:=L `union` L0 `union` dom (dwl_to_denv Ω)); eauto. 
     intros. inst_cofinites_with X. dependent destruction H2.

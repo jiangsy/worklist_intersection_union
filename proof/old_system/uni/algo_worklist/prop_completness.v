@@ -139,8 +139,9 @@ Proof.
   intros. generalize dependent θ. generalize dependent Ω. induction H2; intros; simpl in *.
   - dependent destruction H3.
     exists θ'; repeat split; auto.
-    + admit.
-    + admit. 
+    + intros. inversion H8. dependent destruction H9... 
+      contradiction. auto.
+    + apply trans_typ_wf_ss in H5. dependent destruction H5; auto.
   - dependent destruction H3.
     apply IHaworklist_subst in H3; auto.
     destruct H3 as [θ'0 [Htrans [Hbinds Hwfss]]].
@@ -149,45 +150,84 @@ Proof.
       admit.
     + apply Hbinds; auto.
     + apply Hbinds; auto.
-    + admit.
-    + admit.
+    + destruct_a_wf_wl; auto. 
+    + admit. (* OK, mono strengthen *)
   - dependent destruction H5.
     apply IHaworklist_subst in H5; auto.
     destruct H5 as [θ'0 [Htrans [Hbinds Hwfss]]].
     exists ((Y, dbind_tvar_empty)::θ'0). repeat split; eauto.
-    + constructor; auto. admit.
-    + intros. admit.
-    + intros. admit.
+    + constructor; auto.
+      unfold not. intros. 
+      apply binds_In_inv in H5. destruct H5 as [b].
+      apply Hbinds in H5; auto. 
+      apply binds_In in H5. contradiction.
+    + intros. 
+      inversion H9. dependent destruction H10; auto.
+      apply binds_cons; auto. apply Hbinds; auto.
+    + intros. inversion H9. dependent destruction H10; auto.
+      apply binds_cons; auto. apply Hbinds; auto.
+    + constructor; auto. unfold not. intros.
+      apply binds_In_inv in H5. destruct H5 as [b].
+      apply Hbinds in H5; auto. 
+      apply binds_In in H5. contradiction.
+    + destruct_a_wf_wl; auto.
     + admit.
-    + admit.
-    + admit.
-    + admit.
-    + admit.
+    + rewrite_env (nil ++ θ'). eapply trans_typ_strengthen; eauto.
+      eapply trans_wl_wf_ss; eauto.
+    + rewrite_env (nil ++ θ'). eapply trans_typ_strengthen; eauto.
+      eapply trans_wl_wf_ss; eauto.
   - dependent destruction H5.
     apply IHaworklist_subst in H5; auto.
     destruct H5 as [θ'0 [Htrans [Hbinds Hwfss]]].
     exists ((Y, dbind_stvar_empty)::θ'0). repeat split; eauto.
+    + constructor; auto.
+      unfold not. intros. 
+      apply binds_In_inv in H5. destruct H5 as [b].
+      apply Hbinds in H5; auto. 
+      apply binds_In in H5. contradiction.
+    + intros. 
+      inversion H9. dependent destruction H10; auto.
+      apply binds_cons; auto. apply Hbinds; auto.
+    + intros. inversion H9. dependent destruction H10; auto.
+      apply binds_cons; auto. apply Hbinds; auto.
+    + constructor; auto. unfold not. intros.
+      apply binds_In_inv in H5. destruct H5 as [b].
+      apply Hbinds in H5; auto. 
+      apply binds_In in H5. contradiction.
+    + destruct_a_wf_wl; auto.
+    + admit.
+    + rewrite_env (nil ++ θ'). eapply trans_typ_strengthen; eauto.
+      eapply trans_wl_wf_ss; eauto.
+    + rewrite_env (nil ++ θ'). eapply trans_typ_strengthen; eauto.
+      eapply trans_wl_wf_ss; eauto.
+  - dependent destruction H3.
+    apply IHaworklist_subst in H3; auto.
+    destruct H3 as [θ'0 [Htrans [Hbinds Hwfss]]].
+    exists θ'0. repeat split; eauto.
     + constructor; auto. admit.
-    + intros. admit.
-    + intros. admit.
-    + admit.
-    + admit.
-    + admit.
-    + admit.
-    + admit.
-  - admit.
+    + apply Hbinds; auto.
+    + apply Hbinds; auto.
+    + destruct_a_wf_wl; auto.
   - dependent destruction H5.
     apply IHaworklist_subst in H5; auto.
     destruct H5 as [θ'0 [Htrans [Hbinds Hwfss]]].
     exists ((Y, dbind_typ T)::θ'0). repeat split; eauto.
     + constructor; auto. admit. admit.
-    + intros. admit.
-    + intros. admit.
+    + intros. inversion H10. dependent destruction H11; auto.
+      apply binds_cons; auto. apply Hbinds; auto.
+    + intros. inversion H10. dependent destruction H11; auto.
+      apply binds_cons; auto. apply Hbinds; auto.
+    + constructor; auto. unfold not. intros.
+      apply binds_In_inv in H5. destruct H5 as [b].
+      apply Hbinds in H5; auto. 
+      apply binds_In in H5. contradiction.
+      admit.
+    + destruct_a_wf_wl; auto.
     + admit.
-    + admit.
-    + admit.
-    + admit.
-    + admit.
+    + rewrite_env (nil ++ θ'). eapply trans_typ_strengthen; eauto.
+      eapply trans_wl_wf_ss; eauto.
+    + rewrite_env (nil ++ θ'). eapply trans_typ_strengthen; eauto.
+      eapply trans_wl_wf_ss; eauto.
   - dependent destruction H5.
     assert 
       (Hwft: forall X, X `in` ftvar_in_typ T -> X `in` ftvar_in_typ Tᵈ) by admit.  (* since Y in A *)
@@ -313,9 +353,6 @@ Proof.
     admit.
   - dependent destruction H.
     admit.
-  (* TODO: update wf of work_apply to add more constraint 
-    e.g. work_apply (cont_infapp c A) then A must be an arrow
-  *)
 Admitted.
 
 
@@ -593,12 +630,13 @@ Proof with eauto with Hdb_a_wl_red_completness.
     repeat rewrite open_body_wrt_typ_anno in H1.
     dependent destruction H1.
     apply H0.
-    + admit.
+    + admit. (* OK, wf *)
     + exists ((X, dbind_tvar_empty) :: θ0). 
       repeat constructor...
       * inst_cofinites_for trans_typ__all. intros.
         apply trans_typ_rename_tvar_cons with (X':=X0) in H2...
-        admit.
+        rewrite subst_typ_in_typ_open_typ_in_typ_tvar2 in H2...
+        rewrite subst_typ_in_typ_open_typ_in_typ_tvar2 in H2...
   - solve_awl_trailing_etvar.
     destruct_trans...
     destruct_a_wf_wl.
@@ -609,7 +647,12 @@ Proof with eauto with Hdb_a_wl_red_completness.
     destruct_trans.
     inst_cofinites_for a_wl_red__inf_abs_mono; auto.
     intros.
-    admit.
+    inst_cofinites_with x. inst_cofinites_with X1. inst_cofinites_with X2.
+    apply H1.
+    + admit.
+    + exists ((X2 , dbind_typ T2) :: (X1 , dbind_typ T1) :: θ0)...
+      dependent destruction H.
+      admit.
   - solve_awl_trailing_etvar.
     destruct_trans.
     destruct_a_wf_wl.
@@ -683,7 +726,7 @@ Proof with eauto with Hdb_a_wl_red_completness.
         simpl. destruct_eq_atom.
         constructor.
         apply IHd_wl_red...
-        -- admit.
+        -- admit. (* OK, wf *)
         -- admit.
     + destruct_a_wf_wl... 
       constructor...
@@ -702,7 +745,13 @@ Proof with eauto with Hdb_a_wl_red_completness.
       inst_cofinites_with X.
       apply IHd_wl_red. 
       * admit. (* OK, wf *)
-      * admit.
+      * exists ((X, dbind_typ T)::θ0). 
+        constructor...
+        constructor...
+        admit.
+        constructor...
+        admit.
+        admit.
   - solve_awl_trailing_etvar.
     destruct_trans.
     + solve_binds_nonmono.
@@ -743,7 +792,13 @@ Proof with eauto with Hdb_a_wl_red_completness.
   (* apply *)
   - solve_awl_trailing_etvar.
     destruct_trans.
-    eapply trans_apply_conts in H as Hacs; eauto. admit.
+    eapply trans_apply_conts in H as Hacs; eauto.
+    destruct Hacs as [wᵃ Hacs].
+    eapply a_wl_red__applys with (w:=wᵃ)...
+    apply IHd_wl_red; auto.
+    admit.
+    exists θ0... constructor...
+    admit.
   - solve_awl_trailing_etvar.
     destruct_trans.
     admit.
