@@ -172,7 +172,7 @@ Proof.
       apply Hbinds in H5; auto. 
       apply binds_In in H5. contradiction.
     + destruct_a_wf_wl; auto.
-    + admit.
+    + admit. (* OK, a_mono strengthen *)
     + rewrite_env (nil ++ θ'). eapply trans_typ_strengthen; eauto.
       eapply trans_wl_wf_ss; eauto.
     + rewrite_env (nil ++ θ'). eapply trans_typ_strengthen; eauto.
@@ -196,7 +196,7 @@ Proof.
       apply Hbinds in H5; auto. 
       apply binds_In in H5. contradiction.
     + destruct_a_wf_wl; auto.
-    + admit.
+    + admit. (* OK, a_mono strengthen *) 
     + rewrite_env (nil ++ θ'). eapply trans_typ_strengthen; eauto.
       eapply trans_wl_wf_ss; eauto.
     + rewrite_env (nil ++ θ'). eapply trans_typ_strengthen; eauto.
@@ -345,17 +345,48 @@ Lemma trans_apply_conts : forall θ csᵃ csᵈ Aᵃ Aᵈ wᵈ,
   θ ⫦ᶜˢ csᵃ ⇝ csᵈ ->
   θ ⫦ᵗ Aᵃ ⇝ Aᵈ ->
   apply_conts csᵈ Aᵈ wᵈ ->
-  exists wᵃ, apply_conts csᵃ Aᵃ wᵃ.
+  exists wᵃ, apply_conts csᵃ Aᵃ wᵃ /\ θ ⫦ʷ wᵃ ⇝ wᵈ.
 Proof.
   intros. induction H1.
   - dependent destruction H.
-    exists (work_infabs Aᵃ cdᵃ). constructor.
+    exists (work_infabs Aᵃ cdᵃ); split; constructor; auto.
   - dependent destruction H.
-    admit.
+    rename_typ_rev.
+    exists (work_inftapp Aᵃ Bᵃ cᵃ); split; constructor; auto.
   - dependent destruction H.
-    admit.
-Admitted.
+    rename_typ_rev.
+    exists (work_inftappunion C1ᵃ A2ᵃ Bᵃ cᵃ).
+    split; constructor; auto.
+  - dependent destruction H.
+    rename_typ_rev.
+    exists (work_unioninftapp A1ᵃ A2ᵃ cᵃ).
+    split; constructor; auto.
+  - dependent destruction H.
+    rename_typ_rev.
+    exists (work_sub Aᵃ Bᵃ).
+    split; constructor; auto.
+Qed.
 
+
+Lemma trans_apply_contd : forall θ cdᵃ cdᵈ Aᵃ Aᵈ Bᵃ Bᵈ wᵈ,
+  θ ⫦ᶜᵈ cdᵃ ⇝ cdᵈ ->
+  θ ⫦ᵗ Aᵃ ⇝ Aᵈ ->
+  θ ⫦ᵗ Bᵃ ⇝ Bᵈ ->
+  apply_contd cdᵈ Aᵈ Bᵈ wᵈ ->
+  exists wᵃ, apply_contd cdᵃ Aᵃ Bᵃ wᵃ /\ θ ⫦ʷ wᵃ ⇝ wᵈ.
+Proof.
+  intros. induction H2.
+  - dependent destruction H.
+    rename_typ_rev.
+    exists (work_infapp Aᵃ Bᵃ eᵃ csᵃ); split; constructor; auto.
+  - dependent destruction H.
+    rename_typ_rev.
+    exists (work_infabsunion B1ᵃ C1ᵃ A2ᵃ cdᵃ); split; constructor; auto.
+  - dependent destruction H.
+    rename_typ_rev.
+    exists (work_unioninfabs B1ᵃ C1ᵃ B2ᵃ C2ᵃ cdᵃ).
+    split; constructor; auto.
+Qed.
 
 
 Ltac destruct_mono_arrow :=
@@ -411,6 +442,25 @@ Proof.
     admit.
 Admitted.
 
+
+Ltac solve_right := 
+  let Hcontra := fresh "Hcontra" in 
+  right; intros Hcontra; inversion Hcontra.
+
+
+Lemma a_mono_typ_dec : forall Γ A,
+  ⊢ᵃʷ Γ ->
+  a_wf_typ (awl_to_aenv Γ) A ->
+  a_mono_typ (awl_to_aenv Γ) A \/ ~ a_mono_typ (awl_to_aenv Γ) A.
+Proof.
+  intros. dependent induction H0; auto; try solve [solve_right].  
+  - right. unfold not. intros.
+    dependent destruction H1.
+    + admit.
+    + admit.
+  - left. admit.
+  - admit.
+Admitted.
 
 Lemma trans_typ_subst_tvar_cons : forall θ Aᵃ Aᵈ Bᵃ Bᵈ X,
   (X , dbind_tvar_empty) :: θ ⫦ᵗ Aᵃ ⇝ Aᵈ ->
@@ -497,6 +547,7 @@ Proof with eauto with Hdb_a_wl_red_completness.
     + apply wf_ss_binds_monotyp in H2 as Hmonob...
       admit.
     + apply wf_ss_binds_monotyp in H1 as Hmonoa...
+      rename_typ_rev.
       admit.
     + destruct_a_wf_wl...
       constructor...
@@ -633,7 +684,7 @@ Proof with eauto with Hdb_a_wl_red_completness.
     admit. (* OK, wf *)
     exists θ0...
     repeat constructor...
-    admit.
+    admit. (* OK, trans binds typ*)
   - solve_awl_trailing_etvar.
     destruct_trans.
     constructor.
@@ -763,7 +814,7 @@ Proof with eauto with Hdb_a_wl_red_completness.
            dependent destruction Htransws.
            destruct_trans.
            repeat (constructor; auto with Hdb_a_wl_red_completness).
-        -- admit. (* OK, Hwf *)
+        -- admit. (* OK, wf *)
         -- simpl. constructor... 
         -- apply wf_ss_binds_monotyp in H1 as Hmono...
             dependent destruction Hmono...
@@ -794,9 +845,9 @@ Proof with eauto with Hdb_a_wl_red_completness.
       * admit. (* OK, wf *)
       * exists ((X, dbind_typ T)::θ0).
         repeat (constructor; auto with Hdb_a_wl_red_completness).
-        admit.
-        admit.
-        admit.
+        admit. (* OK, mono *)
+        admit. (* Ordinary, trans subst *)
+        admit. (* OK, trans cont weaken *)
   - solve_awl_trailing_etvar.
     destruct_trans.
     + solve_binds_nonmono_contradiction.
@@ -838,13 +889,17 @@ Proof with eauto with Hdb_a_wl_red_completness.
   - solve_awl_trailing_etvar.
     destruct_trans.
     eapply trans_apply_conts in H as Hacs; eauto.
-    destruct Hacs as [wᵃ Hacs].
+    destruct Hacs as [wᵃ [Hacs Htransw]].
     eapply a_wl_red__applys with (w:=wᵃ)...
     apply IHd_wl_red; auto.
-    admit.
-    exists θ0... constructor...
-    admit.
+    destruct_a_wf_wl. constructor... eapply a_wf_work_apply_conts...
+    exists θ0...
   - solve_awl_trailing_etvar.
     destruct_trans.
-    admit.
+    eapply trans_apply_contd in H as Hacd; eauto.
+    destruct Hacd as [wᵃ [Hacd Htransw]].
+    eapply a_wl_red__applyd with (w:=wᵃ)...
+    apply IHd_wl_red; auto.
+    destruct_a_wf_wl. constructor... eapply a_wf_work_apply_contd with (A:=Aᵃ)...
+    exists θ0...
 Admitted.

@@ -866,8 +866,6 @@ aE |-m UNIT
 --------------- :: tvar
 aE |-m X
 
-aE |- A
-aE |- B
 (X : ^■ ) in aE
 ----------------- :: etvar
 aE |-m X
