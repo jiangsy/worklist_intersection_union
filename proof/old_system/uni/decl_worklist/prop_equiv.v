@@ -257,30 +257,54 @@ Proof with eauto with Hdb_dworklist_equiv typing.
     admit.
   - admit.
   - admit.
-  - econstructor.
-    eapply d_typing__chk_abstop with (L:=L).
+  - destruct_wf. econstructor.
+    apply d_typing__chk_abstop with (L:=L `union` L0 `union` dom (dwl_to_denv Ω)).
     intros. inst_cofinites_with x...
-    admit. admit.
+    assert (⊢ᵈʷ (work_check (e ^ᵉₑ exp_var_f x) typ_top ⫤ x ~ᵈ typ_bot;ᵈ Ω)).
+    { repeat constructor... admit. }
+    apply H4 in H6. dependent destruction H6...
+    inst_cofinites_by (L `union` L0 `union` dom (dwl_to_denv Ω)). 
+    assert (⊢ᵈʷ (work_check (e ^ᵉₑ exp_var_f x) typ_top ⫤ x ~ᵈ typ_bot;ᵈ Ω)).
+    { repeat constructor... admit. }
+    apply H4 in H5. dependent destruction H5...  dependent destruction H6...
   - eapply d_wl_del_red__inf with (A:=A)...
-    econstructor... admit.
+    econstructor... destruct_wf...
     apply IHd_wl_red. admit.
   - admit.
   - admit.
   - destruct_wf. _apply_IH_d_wl_red.
     destruct_d_wl_del_red.
-    admit.
+    eapply d_wl_del_red__inf with (A:=B).
+    + econstructor; eauto. dependent destruction H7.
+      apply d_wl_red_weaken_work1 in H7. inversion H7... 
+    + eapply d_wl_red_weaken_work2; eauto.
   - admit.
   - destruct_wf.
     econstructor...
     econstructor...
-  - admit.
-  - admit.
-  - admit.
+  - destruct_wf. _apply_IH_d_wl_red.
+    destruct_d_wl_del_red.
+    eapply d_wl_del_red__inftapp; eauto.
+    apply d_inftapp__intersection1...
+  - destruct_wf. _apply_IH_d_wl_red.
+    destruct_d_wl_del_red.
+    eapply d_wl_del_red__inftapp; eauto.
+    apply d_inftapp__intersection2...
+  - destruct_wf. _apply_IH_d_wl_red.
+    destruct_d_wl_del_red.
+    eapply d_wl_del_red__inftapp; eauto...
+    constructor...
   - destruct_wf.
     econstructor...
   - destruct_wf.
     econstructor...
-  - admit.
+  - destruct_wf. 
+    assert (⊢ᵈʷ (work_infabs (A ^^ᵗ T) cd ⫤ Ω)).
+    { repeat constructor... apply d_wft_all_open... apply d_mono_typ_d_wf_typ... }
+    apply IHd_wl_red in H4. dependent destruction H4.
+    eapply d_wl_del_red__infabs with (B:=B) (C:=C); eauto.
+    eapply d_infabs__all with (T:=T)...
+    apply d_mono_typ_d_wf_typ; eauto.
   - _apply_IH_d_wl_red.
     destruct_d_wl_del_red.
     eapply d_wl_del_red__infabs with (B:=B) (C:=C)...
@@ -294,7 +318,9 @@ Proof with eauto with Hdb_dworklist_equiv typing.
   - econstructor; eauto.
     destruct_wf.
     eapply d_wf_work_apply_conts in H0; eauto.
-  - admit.
+  - econstructor; eauto.
+    destruct_wf.
+    eapply d_wf_work_apply_contd with (A:=A) in H0; eauto.
 Admitted.
 
 

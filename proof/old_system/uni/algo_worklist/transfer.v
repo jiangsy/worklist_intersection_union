@@ -776,6 +776,22 @@ Proof with eauto with Hdb_transfer.
 Qed.
 
 
+Lemma trans_wl_d_wl_binds_stvar_ss : forall Γ X Ω θ θ',
+  θ ⫦ Γ ⇝ Ω ⫣ θ' ->
+  binds X dbind_stvar_empty (dwl_to_denv Ω) ->
+  binds X dbind_stvar_empty (ss_to_denv θ').
+Proof with eauto with Hdb_transfer.
+  intros. dependent induction H; simpl in *...
+  - inversion H0.
+  - inversion H1. dependent destruction H2...
+    eauto...
+  - inversion H1. dependent destruction H2...
+    eauto...
+  - inversion H1. dependent destruction H2...
+    eauto...
+Qed.
+
+
 Lemma trans_wl_a_wl_binds_etvar_d_wl : forall Γ X Ω θ,
   nil ⫦ Γ ⇝ Ω ⫣ θ ->
   binds X abind_etvar_empty (awl_to_aenv Γ) ->
@@ -1266,7 +1282,7 @@ Proof.
 Admitted.
 
 
-Lemma tran_wl_wf_trans_typ : forall Γ Ω θ Aᵃ Aᵈ,
+Lemma trans_wl_a_wf_typ_d_wf_typ' : forall Γ Ω θ Aᵃ Aᵈ,
   lc_typ Aᵃ ->
   nil ⫦ Γ ⇝ Ω ⫣ θ ->
   θ ⫦ᵗ Aᵃ ⇝ Aᵈ ->
@@ -1301,6 +1317,30 @@ Proof with eauto with Hdb_transfer.
     dependent destruction H1...
 Admitted.
 
+Lemma trans_wl_a_wf_typ_d_wf_typ : forall Γ Ω θ Aᵃ Aᵈ,
+  nil ⫦ Γ ⇝ Ω ⫣ θ ->
+  θ ⫦ᵗ Aᵃ ⇝ Aᵈ ->
+  a_wf_typ (awl_to_aenv Γ) Aᵃ ->
+  d_wf_typ (dwl_to_denv Ω) Aᵈ.
+Proof with eauto with Hdb_transfer. 
+  intros. apply trans_typ_lc_atyp in H0 as Hlc.
+  eapply trans_wl_a_wf_typ_d_wf_typ'; eauto.
+Qed.
+
+Lemma trans_wl_d_wf_typ_ss_wf_typ : forall Γ Ω θ Aᵈ,
+  nil ⫦ Γ ⇝ Ω ⫣ θ ->
+  d_wf_typ (dwl_to_denv Ω) Aᵈ ->
+  d_wf_typ (ss_to_denv θ) Aᵈ.
+Proof with eauto with Hdb_transfer. 
+  intros. generalize dependent Γ; generalize dependent θ; dependent induction H0; intros...
+  - eapply trans_wl_d_wl_binds_tvar_ss in H0; eauto.
+  - eapply trans_wl_d_wl_binds_stvar_ss in H0; eauto.
+  - inst_cofinites_for d_wf_typ__all; intros; inst_cofinites_with X...
+    rewrite_env (ss_to_denv ((X, dbind_tvar_empty)::θ)).
+    eapply H1 with (Γ:=aworklist_constvar Γ X abind_tvar_empty) (Ω:=dworklist_constvar Ω X dbind_tvar_empty); eauto.
+    constructor...
+Qed.
+
 
 Lemma trans_wl_dom_upper_bound : forall θ Γ Ω,  
   nil ⫦ Γ ⇝ Ω ⫣ θ ->
@@ -1315,7 +1355,6 @@ Proof with auto with Hdb_transfer.
 Qed.
 
 
-(* not used now *)
 Lemma a_wf_wl_d_wf_wl : forall θ Γ Ω,  
   ⊢ᵃʷ Γ -> nil ⫦ Γ ⇝ Ω ⫣ θ -> ⊢ᵈʷ Ω.
 Proof with eauto.
@@ -1328,9 +1367,8 @@ Proof with eauto.
     rewrite trans_wl_dom_upper_bound...
   - econstructor... 
     rewrite trans_wl_dom_upper_bound... 
-    eapply tran_wl_wf_trans_typ with (Aᵃ:=A1ᵃ)...
-    eapply trans_typ_lc_atyp...
-Abort.
+    eapply trans_wl_a_wf_typ_d_wf_typ with (Aᵃ:=A1ᵃ)...
+Admitted.
 
 
 Lemma a_wf_wl_d_wf_env : forall θ Γ Ω,  
@@ -1342,8 +1380,7 @@ Proof with eauto.
   - econstructor...
     rewrite trans_wl_dom_upper_bound...
   - econstructor... 
-    eapply tran_wl_wf_trans_typ with (Aᵃ:=A1ᵃ)...
-    eapply trans_typ_lc_atyp... 
+    eapply trans_wl_a_wf_typ_d_wf_typ with (Aᵃ:=A1ᵃ)...
     rewrite trans_wl_dom_upper_bound...
 Qed.
 
@@ -1633,8 +1670,8 @@ Proof with eauto with Hdb_transfer.
   intros * Hlc Hfv Hwft Hinst.
   generalize dependent θ2. generalize dependent X. generalize dependent A'ᵈ.
   dependent induction Hlc; simpl in *; intros.
-  - dependent destruction Hinst. 
-    exists typ_unit... 
+  - dependent destruction Hinst.
+    exists typ_unit...
   - dependent destruction Hinst. 
     exists typ_top... 
   - dependent destruction Hinst.
@@ -1726,7 +1763,7 @@ Proof.
   - admit.
 Admitted.
   
-Lemma trans_typ_etvar_subst : forall θ1 θ2 Tᵃ Tᵈ X Aᵃ Aᵈ,
+Lemma trans_typ_subst_etvar : forall θ1 θ2 Tᵃ Tᵈ X Aᵃ Aᵈ,
   lc_typ Aᵃ -> 
   wf_ss (θ2 ++ θ1) ->
   X `notin` dom (θ2 ++ θ1) ->
@@ -1789,10 +1826,7 @@ Proof.
 Qed.
 
 
-
-
-
-Lemma trans_typ_etvar_subst_same_ss : forall θ Tᵃ Tᵈ X Aᵃ Aᵈ,
+Lemma trans_typ_subst_etvar_same_ss : forall θ Tᵃ Tᵈ X Aᵃ Aᵈ,
   wf_ss θ ->
   binds X (dbind_typ Tᵈ) θ ->
   X `notin` ftvar_in_typ Tᵃ ->
@@ -1806,7 +1840,7 @@ Proof.
   rewrite  Heq in *.
   apply trans_typ_strengthen_etvar in H2; auto.
   apply trans_typ_strengthen_etvar in H3; auto.
-  eapply trans_typ_etvar_subst; eauto.
+  eapply trans_typ_subst_etvar; eauto.
   - apply lc_typ_subst_inv with (T:=Tᵃ) (X:=X).
     eapply trans_typ_lc_atyp; eauto.
     eapply trans_typ_lc_atyp; eauto.
@@ -1819,7 +1853,7 @@ Proof.
 Admitted.
 
 
-Lemma trans_exp_etvar_subst_same_ss' : forall θ Tᵃ Tᵈ X eᵃ eᵈ,
+Lemma trans_exp_subst_etvar_same_ss' : forall θ Tᵃ Tᵈ X eᵃ eᵈ,
   lc_exp eᵃ ->
   wf_ss θ ->
   binds X (dbind_typ Tᵈ) θ ->
@@ -1827,7 +1861,7 @@ Lemma trans_exp_etvar_subst_same_ss' : forall θ Tᵃ Tᵈ X eᵃ eᵈ,
   θ ⫦ᵗ Tᵃ ⇝ Tᵈ ->
   θ ⫦ᵉ (subst_tvar_in_exp Tᵃ X eᵃ) ⇝ eᵈ -> 
   θ ⫦ᵉ eᵃ ⇝ eᵈ
-with trans_body_etvar_subst_same_ss' : forall θ Tᵃ Tᵈ X bᵃ bᵈ,
+with trans_body_subst_etvar_same_ss' : forall θ Tᵃ Tᵈ X bᵃ bᵈ,
   lc_body bᵃ ->
   wf_ss θ ->
   binds X (dbind_typ Tᵈ) θ ->
@@ -1851,7 +1885,7 @@ Proof.
     + dependent destruction H4; eauto.
       inst_cofinites_for trans_exp__tabs.
       intros. inst_cofinites_with X0.
-      eapply trans_body_etvar_subst_same_ss'; eauto.
+      eapply trans_body_subst_etvar_same_ss'; eauto.
       constructor; auto.
       * rewrite_env (nil ++ (X0 ~ □) ++ θ). apply trans_typ_weaken; auto.
         constructor; auto.
@@ -1861,26 +1895,26 @@ Proof.
     + dependent destruction H4.
       constructor.
       * apply IHHlc; eauto.
-      * eapply trans_typ_etvar_subst_same_ss; eauto.
+      * eapply trans_typ_subst_etvar_same_ss; eauto.
     + dependent destruction H4.
       constructor.
       * apply IHHlc; eauto.
-      * eapply trans_typ_etvar_subst_same_ss; eauto.
+      * eapply trans_typ_subst_etvar_same_ss; eauto.
   - intros * Hlc. dependent destruction Hlc; intros; simpl in *.
     dependent destruction H5. constructor.
-    + eapply trans_exp_etvar_subst_same_ss'; eauto.
-    + eapply trans_typ_etvar_subst_same_ss; eauto.
+    + eapply trans_exp_subst_etvar_same_ss'; eauto.
+    + eapply trans_typ_subst_etvar_same_ss; eauto.
 Qed.
 
 
-Lemma trans_exp_etvar_subst_same_ss : forall θ Tᵃ Tᵈ X eᵃ eᵈ,
+Lemma trans_exp_subst_etvar_same_ss : forall θ Tᵃ Tᵈ X eᵃ eᵈ,
   wf_ss θ ->
   binds X (dbind_typ Tᵈ) θ ->
   X `notin` ftvar_in_typ Tᵃ ->
   θ ⫦ᵗ Tᵃ ⇝ Tᵈ ->
   θ ⫦ᵉ (subst_tvar_in_exp Tᵃ X eᵃ) ⇝ eᵈ -> 
   θ ⫦ᵉ eᵃ ⇝ eᵈ
-with trans_body_etvar_subst_same_ss : forall θ Tᵃ Tᵈ X bᵃ bᵈ,
+with trans_body_subst_etvar_same_ss : forall θ Tᵃ Tᵈ X bᵃ bᵈ,
   wf_ss θ ->
   binds X (dbind_typ Tᵈ) θ ->
   X `notin` ftvar_in_typ Tᵃ ->
@@ -1888,27 +1922,27 @@ with trans_body_etvar_subst_same_ss : forall θ Tᵃ Tᵈ X bᵃ bᵈ,
   θ ⫦ᵇ (subst_tvar_in_body Tᵃ X bᵃ) ⇝ bᵈ -> 
   θ ⫦ᵇ bᵃ ⇝ bᵈ.
 Proof.
-  - intros. clear trans_exp_etvar_subst_same_ss. clear  trans_body_etvar_subst_same_ss.
+  - intros. clear trans_exp_subst_etvar_same_ss. clear  trans_body_subst_etvar_same_ss.
     apply trans_exp_lc_aexp in H3 as Hlce.
     apply trans_typ_lc_atyp in H2 as Hlct.
     apply lc_exp_subst_tvar_in_exp_inv in Hlce; auto.
-    eapply trans_exp_etvar_subst_same_ss'; eauto. 
-  - intros. clear trans_exp_etvar_subst_same_ss. clear trans_body_etvar_subst_same_ss.
+    eapply trans_exp_subst_etvar_same_ss'; eauto. 
+  - intros. clear trans_exp_subst_etvar_same_ss. clear trans_body_subst_etvar_same_ss.
     apply trans_body_lc_abody in H3 as Hlcb.
     apply trans_typ_lc_atyp in H2 as Hlct.
     apply lc_body_subst_tvar_in_body_inv in Hlcb; auto.
-    eapply trans_body_etvar_subst_same_ss'; eauto. 
+    eapply trans_body_subst_etvar_same_ss'; eauto. 
 Qed.
 
 
-Lemma trans_conts_etvar_subst_same_ss : forall θ Tᵃ Tᵈ X csᵃ csᵈ,
+Lemma trans_conts_subst_etvar_same_ss : forall θ Tᵃ Tᵈ X csᵃ csᵈ,
   wf_ss θ ->
   binds X (dbind_typ Tᵈ) θ ->
   X `notin` ftvar_in_typ Tᵃ ->
   θ ⫦ᵗ Tᵃ ⇝ Tᵈ ->
   θ ⫦ᶜˢ (subst_tvar_in_conts Tᵃ X csᵃ) ⇝ csᵈ -> 
   θ ⫦ᶜˢ csᵃ ⇝ csᵈ
-with trans_contd_etvar_subst_same_ss : forall θ Tᵃ Tᵈ X cdᵃ cdᵈ,
+with trans_contd_subst_etvar_same_ss : forall θ Tᵃ Tᵈ X cdᵃ cdᵈ,
   wf_ss θ ->
   binds X (dbind_typ Tᵈ) θ ->
   X `notin` ftvar_in_typ Tᵃ ->
@@ -1919,20 +1953,20 @@ Proof.
   intros. generalize dependent θ. generalize dependent csᵈ.
   induction csᵃ; intros; simpl in *; dependent destruction H3;
     constructor;
-      try eapply trans_typ_etvar_subst_same_ss;
-      try eapply trans_exp_etvar_subst_same_ss;
-      try apply trans_contd_etvar_subst_same_ss; 
+      try eapply trans_typ_subst_etvar_same_ss;
+      try eapply trans_exp_subst_etvar_same_ss;
+      try apply trans_contd_subst_etvar_same_ss; 
       try apply IHcsᵃ; eauto.
   intros. generalize dependent θ. generalize dependent cdᵈ.
   induction cdᵃ; intros; simpl in *; dependent destruction H3;
     constructor;
-      try eapply trans_typ_etvar_subst_same_ss; 
-      try eapply trans_exp_etvar_subst_same_ss;
-      try apply trans_contd_etvar_subst_same_ss; 
+      try eapply trans_typ_subst_etvar_same_ss; 
+      try eapply trans_exp_subst_etvar_same_ss;
+      try apply trans_contd_subst_etvar_same_ss; 
       try apply IHcsᵃ; eauto.
 Qed.
 
-Lemma trans_work_etvar_subst_same_ss : forall θ Tᵃ Tᵈ X wᵃ wᵈ,
+Lemma trans_work_subst_etvar_same_ss : forall θ Tᵃ Tᵈ X wᵃ wᵈ,
   wf_ss θ ->
   binds X (dbind_typ Tᵈ) θ ->
   X `notin` ftvar_in_typ Tᵃ ->
@@ -1942,14 +1976,14 @@ Lemma trans_work_etvar_subst_same_ss : forall θ Tᵃ Tᵈ X wᵃ wᵈ,
 Proof.
   intros. destruct wᵃ; try simpl in *; dependent destruction H3;
     constructor; 
-      try eapply trans_typ_etvar_subst_same_ss; eauto;
-      try eapply trans_exp_etvar_subst_same_ss; eauto;
-      try eapply trans_conts_etvar_subst_same_ss; eauto;
-      try eapply trans_contd_etvar_subst_same_ss; eauto.
+      try eapply trans_typ_subst_etvar_same_ss; eauto;
+      try eapply trans_exp_subst_etvar_same_ss; eauto;
+      try eapply trans_conts_subst_etvar_same_ss; eauto;
+      try eapply trans_contd_subst_etvar_same_ss; eauto.
 Qed.
 
 
-Lemma trans_typ_rev_subst : forall θ1 θ2 Bᵃ Bᵈ X Aᵃ A'ᵈ,
+Lemma trans_typ_subst_tvar : forall θ1 θ2 Bᵃ Bᵈ X Aᵃ A'ᵈ,
   lc_typ Aᵃ -> 
   wf_ss (θ2 ++ θ1) ->
   X `notin` dom (θ2 ++ θ1) ->
@@ -2012,7 +2046,7 @@ Proof with eauto with Hdb_transfer.
 Qed.
 
 
-Lemma trans_typ_rev_subst_cons : forall θ Bᵃ Bᵈ X Aᵃ A'ᵈ,
+Lemma trans_typ_subst_tvar_cons : forall θ Bᵃ Bᵈ X Aᵃ A'ᵈ,
   lc_typ Aᵃ -> 
   X `notin` dom θ ->
   θ ⫦ᵗ Bᵃ ⇝ Bᵈ ->
@@ -2021,7 +2055,7 @@ Lemma trans_typ_rev_subst_cons : forall θ Bᵃ Bᵈ X Aᵃ A'ᵈ,
 Proof with eauto with Hdb_transfer.
   intros.
   rewrite_env (nil ++ θ) in H2.
-  eapply trans_typ_rev_subst in H2...
+  eapply trans_typ_subst_tvar in H2...
 Qed.
 
 
