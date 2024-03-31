@@ -10,20 +10,22 @@ LNGEN_OUTS := $(addsuffix /prop_ln.v,${SYSTEMS})
 
 .PHONY: ott lngen coq clean
 
+sedi=(-i) && [ "$(uname)" == "Darwin" ] && sedi=(-i '')
+
 %/def_ott.v : %/language.ott
 	ott -i $^ -o $@ ${OTT_FLAGS}
-	sed -e "/Ott.ott_list_core/d" -i "" $@
-	sed -e "/lc_typ[ ](exp_tabs[ ](body_anno/d" -i "" $@ 
-	sed -e "s/dW/Ω/g" -i "" $@ 
-	sed -e "s/aW/Γ/g" -i "" $@ 
-	sed -e "s/dE/Ψ/g" -i "" $@ 
+	sed "${sedi[@]}" -e "/Ott.ott_list_core/d" $@
+	sed "${sedi[@]}" -e "/lc_typ[ ](exp_tabs[ ](body_anno/d" $@ 
+	sed "${sedi[@]}" -e "s/dW/Ω/g" $@ 
+	sed "${sedi[@]}" -e "s/aW/Γ/g" $@ 
+	sed "${sedi[@]}" -e "s/dE/Ψ/g" $@ 
 
 ott : ${OTT_OUTS}
 
 %/prop_ln.v : %/def_ott.v
 	lngen --coq $@ --coq-ott $*.ott $*/language.ott
-	sed -e "s/.ott./.def_ott./" -i "" $@ 
-	sed -f ./scripts/$*_prop_ln.sed -i "" $@ || true
+	sed "${sedi[@]}" -e "s/.ott./.def_ott./" $@ 
+	sed "${sedi[@]}" -f ./scripts/$*_prop_ln.sed $@ || true
 
 lngen : ${LNGEN_OUTS}
 
