@@ -82,7 +82,7 @@ Ltac auto_apply :=
   | H : context [ ?P -> ?Q ] |- ?Q => apply H
   end.
 
-(* destrcut conjunctions *)
+(* destruct conjunctions *)
 Ltac destruct_conj :=
   repeat match goal with H: ?T |- _ =>
                          lazymatch T with

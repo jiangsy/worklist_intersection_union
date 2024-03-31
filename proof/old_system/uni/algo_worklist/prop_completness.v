@@ -13,6 +13,7 @@ Require Import ln_utils.
 
 
 Hint Constructors a_wl_red : Hdb_a_wl_red_completness.
+Hint Constructors wf_ss : Hdb_a_wl_red_completness.
 Hint Constructors a_wf_wl : Hdb_a_wl_red_completness.
 Hint Constructors trans_typ : Hdb_a_wl_red_completness.
 Hint Constructors trans_exp : Hdb_a_wl_red_completness.
@@ -357,20 +358,39 @@ Admitted.
 
 
 
+Ltac destruct_mono_arrow :=
+  repeat
+    lazymatch goal with
+    | H : d_mono_typ ?θ (typ_arrow ?A1 ?A2) |- _ => dependent destruction H
+    end. 
 
 
-Ltac solve_binds_nonmono :=
+Ltac solve_binds_mono :=
+  repeat
   match goal with
-  | H1 : binds ?X ?b ?θ |- _ =>
-    match goal with 
-    | H1 : context [typ_bot] |- _ => apply wf_ss_binds_monotyp in H1; try inversion H1; try eapply trans_wl_wf_ss; eauto
-    | H1 : context [typ_top] |- _ => apply wf_ss_binds_monotyp in H1; try inversion H1; try eapply trans_wl_wf_ss; eauto
-    | H1 : context [(typ_all ?A)] |- _ => apply wf_ss_binds_monotyp in H1; try inversion H1; try eapply trans_wl_wf_ss; eauto
-    | H1 : context [(typ_intersection ?A1 ?A2)] |- _ => apply wf_ss_binds_monotyp in H1; try inversion H1; try eapply trans_wl_wf_ss; eauto
-    | H1 : context [(typ_union ?A1 ?A2)] |- _ => apply wf_ss_binds_monotyp in H1; try inversion H1; try eapply trans_wl_wf_ss; eauto
-  end
+  | H1 : binds ?X (dbind_typ ?T) ?θ , H2 : wf_ss ?θ |- _ =>
+    match goal with
+    | H1 : d_mono_typ (ss_to_denv θ) T |- _ => fail 1
+    | _ =>
+      let Hmono := fresh "Hmono" in
+      apply wf_ss_binds_monotyp in H1 as Hmono; auto
+    end
+  end;
+  destruct_mono_arrow.
+
+
+Ltac solve_binds_nonmono_contradiction :=
+  solve_binds_mono; 
+  match goal with
+  | H1 :  d_mono_typ ?θ typ_bot |- _ => inversion H1
+  | H1 :  d_mono_typ ?θ typ_top |- _ => inversion H1
+  | H1 :  d_mono_typ ?θ (typ_all ?A) |- _ => inversion H1
+  | H1 :  d_mono_typ ?θ (typ_intersection ?A1 ?A2) |- _ => inversion H1
+  | H1 :  d_mono_typ ?θ (typ_union ?A1 ?A2) |- _ => inversion H1
 end.
 
+
+Hint Resolve trans_wl_wf_ss : Hdb_a_wl_red_completness.
 
 
 Lemma trans_typ_subst : forall θ1 θ2 Aᵃ Aᵈ Bᵃ Bᵈ X b,
@@ -424,13 +444,13 @@ Proof with eauto with Hdb_a_wl_red_completness.
     dependent destruction Hwf0...
   - solve_awl_trailing_etvar.
     destruct_trans.
-    + solve_binds_nonmono. 
+    + solve_binds_nonmono_contradiction. 
     + constructor...
       apply IHd_wl_red...
       dependent destruction Hwf0...
  - solve_awl_trailing_etvar.
     destruct_trans.
-    + solve_binds_nonmono. 
+    + solve_binds_nonmono_contradiction. 
     + constructor...
       apply IHd_wl_red...
       dependent destruction Hwf0...
@@ -483,7 +503,7 @@ Proof with eauto with Hdb_a_wl_red_completness.
       apply IHd_wl_red...
       exists θ0...
   - solve_awl_trailing_etvar. 
-    destruct_trans; try solve_binds_nonmono.
+    destruct_trans; try solve_binds_nonmono_contradiction.
     + dependent destruction Hwf0. 
       dependent destruction H3.
       dependent destruction H3.
@@ -501,7 +521,7 @@ Proof with eauto with Hdb_a_wl_red_completness.
         -- apply trans_typ_tvar_stvar_cons...
   - solve_awl_trailing_etvar. 
     destruct_trans.
-    + solve_binds_nonmono.
+    + solve_binds_nonmono_contradiction.
     + pick fresh X and apply a_wl_red__sub_alll.
       inst_cofinites_with X.
       * eapply trans_typ_neq_all_rev...
@@ -511,46 +531,45 @@ Proof with eauto with Hdb_a_wl_red_completness.
         apply IHd_wl_red.
         -- admit.
         -- exists ((X, dbind_typ T) :: θ0).
-           constructor...
-           constructor... admit. (* OK. mono *)
-           constructor...
-           admit.
-           rewrite_env (nil ++ (X ~ dbind_typ T) ++ θ0). 
-            apply trans_typ_weaken...
-            admit.
+           repeat (constructor; auto with Hdb_a_wl_red_completness).
+           ++ admit.
+           ++ admit.
+           ++ rewrite_env (nil ++ (X ~ dbind_typ T) ++ θ0). 
+              apply trans_typ_weaken...
+              admit.
   - solve_awl_trailing_etvar. 
     destruct_trans.
-    + solve_binds_nonmono.
+    + solve_binds_nonmono_contradiction.
     + constructor. apply IHd_wl_red; eauto.
       destruct_a_wf_wl...
       exists θ0...      
   - solve_awl_trailing_etvar. 
     + destruct_trans.
-      * solve_binds_nonmono.
+      * solve_binds_nonmono_contradiction.
       * constructor. apply IHd_wl_red; eauto.
         destruct_a_wf_wl...
         exists θ0...
   - solve_awl_trailing_etvar.
     + destruct_trans.
-      * solve_binds_nonmono.
+      * solve_binds_nonmono_contradiction.
       * apply a_wl_red__sub_intersection3. apply IHd_wl_red; eauto.
         destruct_a_wf_wl...
         exists θ0...
   - solve_awl_trailing_etvar.
     destruct_trans.
-    + solve_binds_nonmono.
+    + solve_binds_nonmono_contradiction.
     + constructor. apply IHd_wl_red; eauto.
       destruct_a_wf_wl...
       exists θ0...
   - solve_awl_trailing_etvar. 
     destruct_trans.
-    + solve_binds_nonmono.
+    + solve_binds_nonmono_contradiction.
     + eapply a_wl_red__sub_union2. apply IHd_wl_red; eauto.
       destruct_a_wf_wl...
       exists θ0...
   - solve_awl_trailing_etvar.
     destruct_trans.
-    + solve_binds_nonmono.
+    + solve_binds_nonmono_contradiction.
     + constructor. apply IHd_wl_red; eauto.
       destruct_a_wf_wl...
       exists θ0...
@@ -578,7 +597,7 @@ Proof with eauto with Hdb_a_wl_red_completness.
   (* λx. e ⇐ ⊤ *)
   - solve_awl_trailing_etvar.
     destruct_trans.
-    + solve_binds_nonmono.
+    + solve_binds_nonmono_contradiction.
     + pick fresh x and apply a_wl_red__chk_abstop. 
       inst_cofinites_with x.
       apply H0.
@@ -587,20 +606,20 @@ Proof with eauto with Hdb_a_wl_red_completness.
   (* e ⇐ A1 ⊓ A2 *)
   - solve_awl_trailing_etvar.
     destruct_trans.
-    + solve_binds_nonmono.
+    + solve_binds_nonmono_contradiction.
     + apply a_wl_red__chk_inter.
       apply IHd_wl_red...
       destruct_a_wf_wl...
       exists θ0...
   - solve_awl_trailing_etvar.
     destruct_trans.
-    + solve_binds_nonmono.
+    + solve_binds_nonmono_contradiction.
     + apply a_wl_red__chk_union1.
       apply IHd_wl_red...
       destruct_a_wf_wl...
   - solve_awl_trailing_etvar.
     destruct_trans.
-    + solve_binds_nonmono.
+    + solve_binds_nonmono_contradiction.
     + apply a_wl_red__chk_union2.
       apply IHd_wl_red...
       destruct_a_wf_wl...
@@ -649,10 +668,15 @@ Proof with eauto with Hdb_a_wl_red_completness.
     intros.
     inst_cofinites_with x. inst_cofinites_with X1. inst_cofinites_with X2.
     apply H1.
-    + admit.
+    + admit. (* OK, wf *)
     + exists ((X2 , dbind_typ T2) :: (X1 , dbind_typ T1) :: θ0)...
       dependent destruction H.
-      admit.
+      assert (d_mono_typ (ss_to_denv θ0) T2) by admit.
+      assert (d_mono_typ (ss_to_denv θ0) T1) by admit.
+      assert (Hwfss: wf_ss θ0) by (now eapply trans_wl_wf_ss in Htrans_et).
+      repeat (constructor; eauto with Hdb_a_wl_red_completness).
+      * admit. (* OK, trans_cont_weaken *)
+      * admit. (* OK, trans_exp_weaken *)
   - solve_awl_trailing_etvar.
     destruct_trans.
     destruct_a_wf_wl.
@@ -668,7 +692,7 @@ Proof with eauto with Hdb_a_wl_red_completness.
   (* inftapp *)
   - solve_awl_trailing_etvar.
     destruct_trans.
-    + solve_binds_nonmono.
+    + solve_binds_nonmono_contradiction.
     + constructor.
       destruct_a_wf_wl...
       apply IHd_wl_red...
@@ -682,25 +706,25 @@ Proof with eauto with Hdb_a_wl_red_completness.
         eapply trans_typ_subst_tvar_cons with (θ:=θ0) in H0; auto; eauto.
   - solve_awl_trailing_etvar.
     destruct_trans.
-    + solve_binds_nonmono.
+    + solve_binds_nonmono_contradiction.
     + constructor.
       apply IHd_wl_red...
       destruct_a_wf_wl...
   - solve_awl_trailing_etvar.
     destruct_trans.
-    + solve_binds_nonmono.
+    + solve_binds_nonmono_contradiction.
     + destruct_a_wf_wl...
       constructor... 
       apply IHd_wl_red...
   - solve_awl_trailing_etvar.
     destruct_trans.
-    + solve_binds_nonmono.
+    + solve_binds_nonmono_contradiction.
     + destruct_a_wf_wl...
       apply a_wl_red__inftapp_inter2...
       apply IHd_wl_red...
   - solve_awl_trailing_etvar.
     destruct_trans.
-    + solve_binds_nonmono.
+    + solve_binds_nonmono_contradiction.
     + destruct_a_wf_wl...
       constructor...
       apply IHd_wl_red...
@@ -721,52 +745,73 @@ Proof with eauto with Hdb_a_wl_red_completness.
     + inst_cofinites_for a_wl_red__infabs_etvar.
       * admit.
       * intros.
-        apply wf_ss_binds_monotyp in H1 as Hmonoa...
-        dependent destruction H5.
+        assert (exists Γ2', Γ2 = aworklist_conswork Γ2' (work_infabs (typ_arrow ` X1 ` X2) cdᵃ )).
+        { dependent destruction H5. eauto. }
+        destruct H6 as [Γ2' Heq]. subst.
         simpl. destruct_eq_atom.
         constructor.
         apply IHd_wl_red...
-        -- admit. (* OK, wf *)
-        -- admit.
+        admit. (* OK, wf *)
+        apply a_worklist_subst_transfer_same_dworklist_rev with 
+          (Ω:=(work_infabs (typ_arrow A B) cd ⫤ Ω)%dworklist) 
+          (Tᵈ:=typ_arrow A B)
+          (θ:=((X2, dbind_typ B) :: (X1, dbind_typ A) :: θ0))
+          in H5; simpl...  
+        destruct H5 as [θ'' [Htransws [Hbinds Hwfss]]].    
+        -- exists θ''. simpl in *. destruct_eq_atom. auto.
+           dependent destruction H. 
+           dependent destruction Htransws.
+           destruct_trans.
+           repeat (constructor; auto with Hdb_a_wl_red_completness).
+        -- admit. (* OK, Hwf *)
+        -- simpl. constructor... 
+        -- apply wf_ss_binds_monotyp in H1 as Hmono...
+            dependent destruction Hmono...
+            repeat (constructor; auto with Hdb_a_wl_red_completness).
+          admit.  (* OK, trans_contd_strengthen *)
+        -- solve_binds_mono. 
+           constructor.
+           apply trans_typ_binds_etvar...
+           apply trans_typ_binds_etvar...
+        -- solve_binds_mono. 
+           apply trans_typ_binds_etvar...
     + destruct_a_wf_wl... 
       constructor...
       apply IHd_wl_red...
   - solve_awl_trailing_etvar.
     destruct_trans.
-    + solve_binds_nonmono.
+    + solve_binds_nonmono_contradiction.
     + econstructor. constructor.
       destruct_a_wf_wl... 
       apply IHd_wl_red...
       exists θ0...
   - solve_awl_trailing_etvar.
     destruct_trans.
-    + solve_binds_nonmono.
+    + solve_binds_nonmono_contradiction.
     + pick fresh X and apply a_wl_red__infabs_all.
       inst_cofinites_with X.
       apply IHd_wl_red. 
       * admit. (* OK, wf *)
-      * exists ((X, dbind_typ T)::θ0). 
-        constructor...
-        constructor...
+      * exists ((X, dbind_typ T)::θ0).
+        repeat (constructor; auto with Hdb_a_wl_red_completness).
         admit.
-        constructor...
         admit.
         admit.
   - solve_awl_trailing_etvar.
     destruct_trans.
-    + solve_binds_nonmono.
+    + solve_binds_nonmono_contradiction.
     + constructor...
       destruct_a_wf_wl...
       apply IHd_wl_red...
   - solve_awl_trailing_etvar.
     destruct_trans.
-    + solve_binds_nonmono.
+    + solve_binds_nonmono_contradiction.
     + apply a_wl_red__infabs_inter2.
       apply IHd_wl_red...
       destruct_a_wf_wl...
   - solve_awl_trailing_etvar.
     destruct_trans.
-    + solve_binds_nonmono.
+    + solve_binds_nonmono_contradiction.
     + destruct_a_wf_wl...
       constructor...
       apply IHd_wl_red...
