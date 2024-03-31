@@ -510,14 +510,14 @@ Proof with eauto with Hdb_a_wl_red_completness.
       * assert (exists Γ1, exists Γ2, aworklist_subst Γ0 X ` X0 Γ1 Γ2) by admit.    
         destruct H4 as [Γ1 [Γ2 Hws]].
         -- eapply a_wl_red__sub_etvarmono1 with (Γ1:=Γ1) (Γ2:=Γ2); auto.
-           ++ admit.
-           ++ admit.
+           ++ eapply trans_wl_ss_binds_etvar_a_wl...
+           ++ apply a_mono_typ__etvar. eapply trans_wl_ss_binds_etvar_a_wl...
            ++ eapply a_worklist_subst_transfer_same_dworklist_rev with (Ω:=Ω) (θ:=θ0) (Tᵈ:=typ_unit) in Hws; auto.
               ** destruct Hws as [θ'' [Htranswl [Hbinds Hwfss]]].
                  apply IHd_wl_red; eauto. 
                  --- admit. (* wf *)
               ** destruct_a_wf_wl... 
-              ** admit.
+              ** apply a_mono_typ__etvar. eapply trans_wl_ss_binds_etvar_a_wl...
               ** apply trans_typ_binds_etvar; auto.
               ** apply trans_typ_binds_etvar; auto.
     + admit. (* Pending *)
@@ -636,8 +636,8 @@ Proof with eauto with Hdb_a_wl_red_completness.
   (* λ x. e <= A -> B *)
   - solve_awl_trailing_etvar.
     destruct_trans.
-    + inst_cofinites_for a_wl_red__chk_absetvar; intros. 
-      admit. (* OK, binds *)
+    + inst_cofinites_for a_wl_red__chk_absetvar; intros.
+      eapply trans_wl_ss_binds_etvar_a_wl; eauto.
       inst_cofinites_with x. inst_cofinites_with X1. inst_cofinites_with X2. 
       admit. (* Pending *)
     + destruct_a_wf_wl. pick fresh x and apply a_wl_red__chk_absarrow.
@@ -796,7 +796,7 @@ Proof with eauto with Hdb_a_wl_red_completness.
   - solve_awl_trailing_etvar.
     destruct_trans.
     + inst_cofinites_for a_wl_red__infabs_etvar.
-      * admit.
+      * eapply trans_wl_ss_binds_etvar_a_wl; eauto. 
       * intros.
         assert (exists Γ2', Γ2 = aworklist_conswork Γ2' (work_infabs (typ_arrow ` X1 ` X2) cdᵃ )).
         { dependent destruction H5. eauto. }
