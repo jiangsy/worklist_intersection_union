@@ -961,14 +961,9 @@ Lemma ftvar_in_aworklist_upper : forall Γ ,
   ⊢ᵃʷ Γ ->
   ftvar_in_aworklist' Γ [<=] dom (awl_to_aenv Γ).
 Proof.
-  intros; induction H; auto.
-  - simpl. fsetdec.
+  intros; induction H; auto; try solve [simpl; fsetdec].
   - simpl. rewrite ftvar_in_wf_typ_upper; eauto. fsetdec.
-  - simpl. fsetdec.
-  - simpl. fsetdec.
-  - simpl. fsetdec.
-  - simpl. rewrite ftvar_in_wf_work_upper; eauto.
-    fsetdec.
+  - simpl. rewrite ftvar_in_wf_work_upper; eauto. fsetdec.
 Qed.
 
 Lemma ftvar_in_aworklist_lower : forall Γ ,
@@ -1148,7 +1143,7 @@ Proof with (autorewrite with core in *); simpl; eauto; solve_false; try solve_no
   - simpl in *. constructor; eauto.
   - intros. pick fresh X0 and apply a_wf_typ__all.
     now auto. subst.
-    + pick fresh U. inst_cofinites_with X0.
+    + inst_cofinites_with X0.
       replace ((X0 ~ abind_tvar_empty ++ awl_to_aenv (awl_app (subst_tvar_in_aworklist A X Γ2) Γ1)))
         with  ((awl_to_aenv (awl_app (subst_tvar_in_aworklist A X (aworklist_constvar Γ2 X0 abind_tvar_empty)) Γ1))) by auto.
       eapply H1 with (Γ:=aworklist_constvar Γ X0 abind_tvar_empty); auto.
