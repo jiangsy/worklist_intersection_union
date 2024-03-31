@@ -101,7 +101,7 @@ Ltac rename_typ :=
     rename A1ᵃ1 into A1ᵃ2
   end. 
 
-(* depedent destruction all non-atomic trans_* relation *)
+(* dependent destruction all non-atomic trans_* relation *)
 Ltac destruct_trans :=
   repeat
     lazymatch goal with

@@ -254,7 +254,7 @@ Proof with auto with typing.
       destruct (EqDec_eq_of_X X0 X) in H7.
       * subst. apply notin_union_2 in H4. apply notin_singleton_1 in H4.
         contradiction.
-      * rewrite <- H7. rewrite subst_typ_in_typ_open_typ_in_typ_fresh2; auto.
+      * rewrite <- H7. rewrite subst_tvar_in_typ_open_typ_wrt_typ_fresh2; auto.
   - simpl in *. rewrite d_subst_tv_in_typ_open_typ_wrt_typ; eauto...
   - simpl in *. apply d_typing__chk_abstop with (L:=L).
     intros x Hfr. inst_cofinites_with x.
@@ -273,7 +273,7 @@ Proof with auto with typing.
     + replace (typ_all ({T2 /ᵗ X} T1)) with ({T2 /ᵗ X} typ_all T1) by auto.
       auto...
     + intros. inst_cofinites_with X0.
-      rewrite subst_typ_in_typ_open_typ_in_typ_fresh2; eauto...
+      rewrite subst_tvar_in_typ_open_typ_wrt_typ_fresh2; eauto...
       replace (X0 ~ dbind_tvar_empty ++ map (d_subst_tv_in_binding T2 X) F ++ Ψ) with
       (map (d_subst_tv_in_binding T2 X) (X0 ~ dbind_tvar_empty ++ F) ++ Ψ) by auto.
       auto.
@@ -357,14 +357,14 @@ Proof with auto with typing.
       econstructor...
       dependent destruction H0. pick fresh X.
       inst_cofinites_with X.
-      erewrite <- subst_typ_in_typ_open_typ_in_typ_tvar2; eauto...
+      erewrite <- subst_tvar_in_typ_open_typ_wrt_typ_tvar2; eauto...
       rewrite_env ((map (subst_tvar_in_dbind B X) nil) ++ Ψ).
       eapply d_wft_typ_subst; eauto...
       econstructor; eauto.
     + exists (A0 ^^ᵗ B). split; auto...
       pick fresh X. inst_cofinites_with X.
-      erewrite <- subst_typ_in_typ_open_typ_in_typ_tvar2; eauto.
-      erewrite <- subst_typ_in_typ_open_typ_in_typ_tvar2 with (A:=A); eauto.
+      erewrite <- subst_tvar_in_typ_open_typ_wrt_typ_tvar2; eauto.
+      erewrite <- subst_tvar_in_typ_open_typ_wrt_typ_tvar2 with (A:=A); eauto.
       rewrite_env ((map (subst_tvar_in_dbind B X) nil) ++ Ψ).
       apply d_sub_subst_stvar; auto...
       econstructor; eauto.
