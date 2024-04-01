@@ -113,9 +113,7 @@ Theorem aworklist_subst_total : forall Γ X Tᵃ Tᵈ Ω θ,
 Proof.
 Admitted. *)
 
-Hint Resolve trans_wl_wf_ss : Hdb_a_wl_red_completness.
-Hint Resolve trans_typ_wf_ss : Hdb_a_wl_red_completness.
-
+#[local] Hint Resolve wf_ss_uniq trans_typ_wf_ss trans_wl_wf_ss : core.
 
 Lemma wf_ss_late_dom_notin_ftver_bind_typ : forall θ1 θ2 X T,
   wf_ss (θ2 ++ (X, dbind_typ T) :: θ1) ->
@@ -176,8 +174,6 @@ Proof.
     + apply IHθ2; auto.
       * dependent destruction H; auto.
 Qed.
-
-#[local] Hint Resolve wf_ss_uniq trans_typ_wf_ss trans_wl_wf_ss : core.
 
 Lemma a_worklist_subst_transfer_same_dworklist_rev_exist: forall Γ1 Γ2 Ω θ X T Tᵈ,
   ⊢ᵃʷ (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) ->
@@ -499,10 +495,6 @@ Ltac solve_binds_nonmono_contradiction :=
   | H1 :  d_mono_typ ?θ (typ_union ?A1 ?A2) |- _ => inversion H1
 end.
 
-
-Hint Resolve trans_wl_wf_ss : Hdb_a_wl_red_completness.
-
-
 (* maybe only b=tvar is used *)
 Lemma trans_typ_subst : forall θ1 θ2 Aᵃ Aᵈ Bᵃ Bᵈ X b,
   b = dbind_tvar_empty \/ b = dbind_stvar_empty ->
@@ -532,7 +524,7 @@ Admitted.
   θ2 ++ (X , dbind_typ Tᵈ) :: θ1 ⫦ᵗ Aᵃ ⇝ {Tᵈ /ᵗ X} Aᵈ.
 Proof.
   intros. generalize dependent Tᵃ. generalize dependent Tᵈ. 
-  dependent induction H0; intros; simpl; destruct_eq_atom; eauto with Hdb_a_wl_red_completness.
+  dependent induction H0; intros; simpl; destruct_eq_atom; eauto.
   - apply trans_typ_binds_etvar; eauto. admit.
   - admit.
   - admit.

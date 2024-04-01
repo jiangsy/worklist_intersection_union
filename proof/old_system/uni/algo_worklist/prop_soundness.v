@@ -896,15 +896,6 @@ Ltac solve_trans_typ_open_close :=
   solve_trans_typ_open_close';
   simpl_open_subst_typ.
 
-Lemma trans_typ_binds_etvar : forall θ X T,
-  wf_ss θ ->
-  binds X (dbind_typ T) θ ->
-  θ ⫦ᵗ ` X ⇝ T.
-Proof.
-  intros.
-  constructor; auto.
-Qed.
-
 #[local] Hint Resolve trans_wl_wf_ss trans_typ_wf_ss wf_ss_uniq : core.
 #[local] Hint Resolve trans_typ_lc_atyp : core.
 

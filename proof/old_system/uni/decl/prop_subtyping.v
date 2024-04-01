@@ -1009,7 +1009,7 @@ Qed.
 
 Lemma d_sub_size_more: forall Ψ A B n,
   Ψ ⊢ A <: B | n -> forall n', n' >= n -> Ψ ⊢ A <: B | n'.
-Proof with auto with trans.
+Proof with auto.
   intros Ψ S1 T1 n H.
   dependent induction H; intros; auto...
   - apply nat_split in H1.
@@ -1042,10 +1042,10 @@ Proof with auto with trans.
 Qed.
 
 
-Hint Extern 1 (?x < ?y) => lia : trans.
-Hint Extern 1 (?x <= ?y) => lia : trans.
-Hint Extern 1 (?x >= ?y) => lia : trans.
-Hint Extern 1 (?x > ?y) => lia : trans.
+#[local] Hint Extern 1 (?x < ?y) => lia : core.
+#[local] Hint Extern 1 (?x <= ?y) => lia : core.
+#[local] Hint Extern 1 (?x >= ?y) => lia : core.
+#[local] Hint Extern 1 (?x > ?y) => lia : core.
 
 
 Lemma d_sub_size_union_inv: forall Ψ A1 A2 B n,
@@ -1062,8 +1062,8 @@ Proof with auto with trans.
   - specialize (IHd_sub_size A1 A2 (eq_refl _)).
     split; apply d_subs__union2; intuition.
   - split.
-    eapply d_sub_size_more; eauto. lia.
-    eapply d_sub_size_more; eauto. lia.
+    eapply d_sub_size_more; eauto.
+    eapply d_sub_size_more; eauto.
 Qed.
 
 
@@ -1145,7 +1145,7 @@ Proof.
             ++ unfold open_typ_wrt_typ in Heq. simpl in *.
                 inversion Heq.
         -- inversion Heq. subst. eapply IHn1; eauto.
-           erewrite d_open_mono_same_order; eauto. lia.
+           erewrite d_open_mono_same_order; eauto.
       * destruct A; simpl in *; try solve [inversion Heq].
         -- destruct n.
            ++ unfold open_typ_wrt_typ in Heq. simpl in Heq.
@@ -1182,24 +1182,24 @@ Ltac solve_trans_forall_B_intersection_impl T1 T2:=
    | H1 : ?Ψ ⊢ ?T <: T1 | ?n1 |- _ =>
       match goal with
       | H2 : ?Ψ ⊢ ?T <: T2 | ?n2 |- _ =>
-        apply d_sub_size_more with (n':=S(n1+n2)) in H1; auto with trans;
-        apply d_sub_size_more with (n':=S(n1+n2)) in H2; auto with trans
+        apply d_sub_size_more with (n':=S(n1+n2)) in H1; auto;
+        apply d_sub_size_more with (n':=S(n1+n2)) in H2; auto
       end
    end.
 
 Ltac solve_trans_forall_B_union_impl T1 T2:=
   match goal with
     | H1 : ?Ψ ⊢ ?T <: T1 | ?n1 |- _ =>
-      apply d_sub_size_more with (n':=S n1) in H1; auto with trans
+      apply d_sub_size_more with (n':=S n1) in H1; auto
     | H2 : ?Ψ ⊢ ?T <: T2 | ?n1 |- _ =>
-      apply d_sub_size_more with (n':=S n1) in H2; auto with trans
+      apply d_sub_size_more with (n':=S n1) in H2; auto
   end.
 
 Ltac solve_trans_forall_B_iu :=
   match goal with
    | H : ?Ψ ⊢ ?T <: ?C | ?n |- ?Ψ ⊢ ?B <: ?D => match D with
-      | typ_intersection ?D1 ?D2 => dependent destruction H; auto with trans; solve_trans_forall_B_intersection_impl D1 D2
-      | typ_union ?D1 ?D2 => dependent destruction H; auto with trans; solve_trans_forall_B_union_impl D1 D2
+      | typ_intersection ?D1 ?D2 => dependent destruction H; auto; solve_trans_forall_B_intersection_impl D1 D2
+      | typ_union ?D1 ?D2 => dependent destruction H; auto; solve_trans_forall_B_union_impl D1 D2
       | _ => idtac
    end
   end.
@@ -1232,7 +1232,7 @@ Lemma d_sub_size_transitivity : forall n_d_typ_order n_dsub_size Ψ A B C n1 n2 
   d_typ_order B < n_d_typ_order ->
   n1 + n2 < n_dsub_size ->
   Ψ ⊢ A <: B | n1 -> Ψ ⊢ B <: C | n2 -> Ψ ⊢ A <: C.
-Proof with auto with trans.
+Proof with auto.
   induction n_d_typ_order; induction n_dsub_size; intros * Horder Hsize Hsub1 Hsub2.
   - inversion Horder.
   - inversion Horder.
@@ -1307,8 +1307,7 @@ Proof with auto with trans.
         eapply d_sub_size_subst_stvar with (T:=T1) in H1; simpl; eauto.
         destruct H1 as [n' Hsub].
         eapply IHn_d_typ_order with (B:=B1 ^^ᵗ T1) (n1:=n'); eauto...
-        erewrite d_open_mono_same_order; eauto. now lia.
-        simpl in Hsub. auto. simpl.
+        erewrite d_open_mono_same_order; eauto. 
         rewrite 2 subst_tvar_in_typ_open_typ_wrt_typ in Hsub... simpl in Hsub.
         unfold eq_dec in Hsub. destruct (EqDec_eq_of_X X X) in Hsub.
         rewrite (subst_tvar_in_typ_fresh_eq A1) in Hsub...
