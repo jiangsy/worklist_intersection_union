@@ -168,3 +168,6 @@ Inductive d_typing : denv -> exp -> typing_mode -> typ -> Prop :=
     d_wf_typ Ψ A1 ->
     d_typing Ψ e typingmode__chk (typ_union A1 A2)
 .
+
+#[export] Hint Constructors neq_union neq_intersection neq_all : core.
+#[export] Hint Constructors d_sub d_infabs d_inftapp d_typing : core.

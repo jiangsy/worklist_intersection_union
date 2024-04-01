@@ -1,4 +1,4 @@
-Require Import Coq.Program.Equality.
+(* Require Import Coq.Program.Equality.
 Require Import Program.Tactics.
 Require Import Lia.
 Require Import Metalib.Metatheory.
@@ -277,4 +277,4 @@ Proof with eauto using d_sub_alt_complete.
   intros * HT. induction HT.
   9: applys* d_typing_alt_chksub_gen...
   all: now eauto.
-Qed.
+Qed. *)

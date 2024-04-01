@@ -15,26 +15,10 @@ Require Import uni.algo_worklist.transfer.
 Require Import ln_utils.
 
 
-Hint Constructors a_wf_wl : Hdb_a_wl_red_soundness.
-Hint Constructors trans_typ : Hdb_a_wl_red_soundness.
-Hint Constructors trans_exp : Hdb_a_wl_red_soundness.
-Hint Constructors trans_conts : Hdb_a_wl_red_soundness.
-Hint Constructors trans_contd : Hdb_a_wl_red_soundness.
-Hint Constructors trans_work : Hdb_a_wl_red_soundness.
-Hint Constructors trans_worklist : Hdb_a_wl_red_soundness.
-Hint Constructors wf_ss : Hdb_a_wl_red_soundness.
-Hint Constructors d_wl_del_red : Hdb_a_wl_red_soundness.
-Hint Constructors aworklist_subst : Hdb_a_wl_red_soundness.
+Hint Constructors a_wf_wl : core.
 
-Hint Resolve wf_ss_uniq : Hdb_a_wl_red_soundness.
-Hint Resolve a_wf_wl_d_wf_env : Hdb_a_wl_red_soundness.
-
-
-Hint Constructors d_sub : Hdb_a_wl_red_soundness.
-Hint Constructors d_typing : Hdb_a_wl_red_soundness.
-Hint Constructors d_infabs : Hdb_a_wl_red_soundness.
-Hint Constructors d_inftapp : Hdb_a_wl_red_soundness.
-
+#[local] Hint Constructors d_wl_del_red aworklist_subst : core.
+#[local] Hint Resolve wf_ss_uniq a_wf_wl_d_wf_env : core.
 
 
 Ltac rename_typ :=
@@ -257,7 +241,6 @@ Proof.
       * rewrite_env (nil ++ θ1) in Hinstt. 
         apply trans_typ_det with (A₁ᵈ:=Aᵈ) in Hinstt; auto. 
         -- subst. auto.
-        -- apply wf_ss_uniq; auto.
     + dependent destruction Hinsta.
       * apply trans_typ__tvar.
         apply wf_ss_weaken_etvar; auto. 
@@ -348,12 +331,10 @@ Proof.
       rewrite subst_tvar_in_exp_open_exp_wrt_exp.
       simpl. auto.
     + dependent destruction H3; eauto.
-      constructor; eauto.
     + dependent destruction H4; eauto.
       inst_cofinites_for trans_exp__tabs.
       intros. inst_cofinites_with X0.
       eapply trans_body_subst_etvar_same_ss'; eauto.
-      constructor; auto.
       * rewrite_env (nil ++ (X0 ~ □) ++ θ). apply trans_typ_weaken; auto.
         constructor; auto.
       * rewrite subst_tvar_in_body_open_body_wrt_typ; simpl.
@@ -890,7 +871,7 @@ Ltac rewrite_close_open_subst :=
 Ltac simpl_open_subst_typ' :=
   match goal with
   | H : context [ {?B /ᵗ ?X} (?A ^ᵗ (?X')) ] |- _ =>
-    rewrite subst_tvar_in_typ_open_typ_wrt_typ in H; auto with Hdb_a_wl_red_soundness;
+    rewrite subst_tvar_in_typ_open_typ_wrt_typ in H; auto;
     simpl in H; try destruct_eq_atom; auto
     (* try solve [rewrite subst_tvar_in_typ_fresh_eq in H; auto] *)
   | H1 : context [ {?B /ᵗ ?X} ?A ], H2 : context [ftvar_in_typ ?A] |- _ =>
@@ -906,7 +887,7 @@ Ltac  simpl_open_subst_typ :=
 Ltac solve_trans_typ_open_close' :=
   match goal with
   | H : ?θ ⫦ᵗ ?A1ᵃ ⇝ ?Aᵈ |- ?θ' ⫦ᵗ ?A2ᵃ ⇝ ({(` ?X1') /ᵗ ?X} ?Aᵈ) => 
-      apply trans_typ_rename_tvar_cons with (X':=X1') in H; eauto with Hdb_a_wl_red_soundness
+      apply trans_typ_rename_tvar_cons with (X':=X1') in H; eauto
   end.
 
 
@@ -923,6 +904,10 @@ Proof.
   intros.
   constructor; auto.
 Qed.
+
+#[local] Hint Resolve trans_wl_wf_ss trans_typ_wf_ss wf_ss_uniq : core.
+#[local] Hint Resolve trans_typ_lc_atyp : core.
+
 
 Lemma trans_apply_conts : forall θ csᵃ csᵈ Aᵃ Aᵈ wᵃ wᵈ,
   θ ⫦ᶜˢ csᵃ ⇝ csᵈ ->
@@ -943,7 +928,7 @@ Lemma trans_apply_contd : forall θ cdᵃ cdᵈ Aᵃ Aᵈ Bᵃ Bᵈ wᵃ wᵈ,
   θ ⫦ʷ wᵃ ⇝ wᵈ ->
   apply_contd cdᵃ Aᵃ Bᵃ wᵃ ->
   apply_contd cdᵈ Aᵈ Bᵈ wᵈ.
-Proof with eauto with Hdb_a_wl_red_soundness.
+Proof with eauto.
 Proof.
   intros. dependent destruction H3; destruct_trans;
     try unify_trans_contd; try unify_trans_conts; 
@@ -953,7 +938,7 @@ Qed.
 
 Theorem d_a_wl_red_soundness: forall Γ,
   ⊢ᵃʷ Γ -> Γ ⟶ᵃʷ⁎⋅ -> exists Ω, transfer Γ Ω /\ Ω ⟶ᵈ⁎⋅.
-Proof with eauto with Hdb_a_wl_red_soundness.
+Proof with eauto.
   intros * Hwfa Hared. dependent induction Hared; auto; unfold transfer in *;
     try _apply_IH_a_wl_red; try destruct_trans; try trans_all_typ; try rename_typ.
   - exists dworklist_empty. intuition...
@@ -1086,7 +1071,6 @@ Proof with eauto with Hdb_a_wl_red_soundness.
       * exists θ'. econstructor...
         constructor. 
         -- apply trans_typ_binds_etvar; eauto.
-           ++ admit. (* OK, wf_ss *) 
            ++ inversion Hbindsx. dependent destruction H9. solve_notin_eq X1. 
            inversion H9. dependent destruction H10. solve_notin_eq X2.
            auto.
@@ -1134,7 +1118,6 @@ Proof with eauto with Hdb_a_wl_red_soundness.
               eapply trans_typ_strengthen_etvar with (X:=X2) (T:=T)...
            ++ admit. (* OK, trans_typ_strengthen_etvar *)
         -- apply trans_typ_binds_etvar; eauto.
-           ++ admit. (* OK, wf_ss *) 
            ++ inversion Hbindsx. dependent destruction H8. solve_notin_eq X1. 
            inversion H8. dependent destruction H10. solve_notin_eq X2.
            auto.
@@ -1539,7 +1522,6 @@ Proof with eauto with Hdb_a_wl_red_soundness.
     exists (work_applys csᵈ Aᵈ ⫤ Ω)%dworklist. split.
     exists θ'. econstructor...
     eapply trans_apply_conts in H2; eauto.
-    econstructor; eauto.
   - destruct_a_wf_wl.
     eapply a_wf_work_apply_contd with (A:=A) (B:=B) in H1 as Hwf...
     assert ( ⊢ᵃʷ (w ⫤ Γ) ) by auto.
@@ -1553,5 +1535,4 @@ Proof with eauto with Hdb_a_wl_red_soundness.
     exists (work_applyd cdᵈ Aᵈ Bᵈ ⫤ Ω)%dworklist. split.
     exists θ'. econstructor...
     eapply trans_apply_contd in H2; eauto.
-    econstructor; eauto.
 Admitted.

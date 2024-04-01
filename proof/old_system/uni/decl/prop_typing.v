@@ -21,8 +21,6 @@ Defined. *)
 Hint Constructors d_wf_typ: core.
 Hint Constructors d_wf_env: core.
 Hint Constructors d_wf_typ_s: core.
-Hint Constructors d_typing : typing.
-
 
 
 Inductive d_subenv : denv -> denv -> Prop :=
@@ -42,11 +40,11 @@ Inductive d_subenv : denv -> denv -> Prop :=
         (x ~ dbind_typ A' ++ Ψ)
 .
 
-Hint Constructors d_subenv: typing.
+#[local] Hint Constructors d_subenv: core.
 
 Lemma d_subenv_refl: forall Ψ,
   ⊢ Ψ -> d_subenv Ψ Ψ.
-Proof with auto with typing.
+Proof with auto.
   intros. induction H; auto...
   econstructor; auto.
   apply dsub_refl; auto.
@@ -197,41 +195,13 @@ Lemma d_sub_subenv: forall Ψ A B,
   Ψ ⊢ A <: B -> forall Ψ', d_subenv Ψ' Ψ -> Ψ' ⊢ A <: B.
 Proof with eauto using d_mono_typ_subenv.
   intros Ψ A B Hsub.
-  induction Hsub; try solve [econstructor; solve_wf_subenv].
-  - econstructor; auto.
-  - intros. econstructor; auto. intros. inst_cofinites_with X.
-    specialize (H2 (X ~ dbind_stvar_empty ++ Ψ')).
-    assert (d_subenv (X ~ dbind_stvar_empty ++ Ψ') (X ~ dbind_stvar_empty ++ Ψ)). {
-      constructor. auto. }
-    specialize (H2 H5).
-    auto.
-  - intros. forwards: IHHsub H4.
-    pick fresh X and apply d_sub__alll; try applys H5...
-  - intros.
-    apply d_sub__intersection1; auto.
-  - intros.
-    apply d_sub__intersection2; auto.
-    eapply d_subenv_wf_typ; eauto.
-  - intros.
-    apply d_sub__intersection3; auto.
-    eapply d_subenv_wf_typ; eauto.
-  - intros.
-    apply d_sub__union1; auto.
-    eapply d_subenv_wf_typ; eauto.
-  - intros.
-    apply d_sub__union2; auto.
-    eapply d_subenv_wf_typ; eauto.
-  - intros.
-    apply d_sub__union3; auto.
+  induction Hsub; try solve [econstructor; solve_wf_subenv; auto]...
 Qed.
 
 
-Hint Resolve d_subenv_wf_typ : typing.
-Hint Resolve d_subenv_wf_env : typing.
-Hint Resolve d_wft_typ_subst : typing.
-Hint Resolve d_wf_env_subst_tvar_typ : typing.
-Hint Resolve bind_typ_subst : typing.
-Hint Resolve d_wf_typ_dlc_type : typing.
+#[local] Hint Resolve d_subenv_wf_typ d_subenv_wf_env d_wft_typ_subst 
+                      d_wf_env_subst_tvar_typ bind_typ_subst d_wf_typ_dlc_type : core.
+
 
 
 (* for the e <= forall a. A, not used now*)
@@ -239,7 +209,7 @@ Theorem d_chkinf_subst_mono: forall Ψ1 Ψ2 X e m A T,
   d_typing (Ψ2 ++ X ~ dbind_tvar_empty ++ Ψ1) e m A ->
   d_mono_typ Ψ1 T ->
   d_typing (map (subst_tvar_in_dbind T X) Ψ2  ++ Ψ1) (subst_tvar_in_exp T X e) m ({T /ᵗ X} A).
-Proof with auto with typing.
+Proof with auto.
   (* intros.
   generalize dependent T2.
   dependent induction H; intros; try solve [simpl in *; eauto 5 with typing].
@@ -322,9 +292,6 @@ Fixpoint typ_size (T:typ) : nat :=
   end.
 
 
-Hint Constructors d_inftapp : inftapp.
-
-
 Lemma d_inftapp_wft : forall Ψ A B C,
   d_inftapp Ψ A B C ->
   ⊢ Ψ /\ Ψ ⊢ A /\ Ψ ⊢ B /\ Ψ ⊢ C.
@@ -339,10 +306,10 @@ Theorem d_inftapp_subsumption_same_env : forall Ψ A B C A',
   Ψ ⊢ A ○ B ⇒⇒ C ->
   Ψ ⊢ A' <: A ->
   exists C', Ψ ⊢ C' <: C /\ Ψ ⊢ A' ○ B ⇒⇒ C'.
-Proof with auto with typing.
+Proof with auto.
   intros. generalize dependent A'. dependent induction H.
   - intros. dependent induction H1.
-    + exists typ_bot. split; auto... constructor; auto.
+    + exists typ_bot. split; auto... 
     + eapply d_sub_open_mono_bot_false in H6; eauto. contradiction.
     + specialize (IHd_sub H H0 (eq_refl _)). destruct IHd_sub as [C1 Hc1].
       exists C1; intuition...
@@ -444,8 +411,6 @@ Qed.
 
 #[export] Hint Immediate d_inftapp_wft_0 d_inftapp_wft_1 d_inftapp_wft_2 d_inftapp_wft_3 : core.
 
-#[local] Hint Constructors d_inftapp : core.
-
 Lemma d_inftapp_subenv : forall Ψ Ψ' A B C,
   Ψ ⊢ A ○ B ⇒⇒ C ->
   d_subenv Ψ' Ψ ->
@@ -467,9 +432,6 @@ Proof with eauto.
   forwards : d_inftapp_subenv HA' HE.
   exists*.
 Qed.
-
-Hint Constructors d_infabs : typing.
-
 
 Lemma d_infabs_wft : forall Ψ A B C,
   Ψ ⊢ A ▹ B → C ->
@@ -730,15 +692,14 @@ Qed.
 Theorem d_chk_inf_rename : forall Ψ1 Ψ2 x y T e A mode, 
   d_typing (Ψ2 ++ x ~ T ++ Ψ1) e mode A ->
   y `notin` (dom Ψ1 `union` dom Ψ2) ->
-  d_typing (Ψ2 ++ y ~ T ++ Ψ1) (subst_var_in_exp (exp_var_f y) x e) mode A 
-  .
+  d_typing (Ψ2 ++ y ~ T ++ Ψ1) (subst_var_in_exp (exp_var_f y) x e) mode A.
 Proof.
   intros. dependent induction H.
   - simpl. case_if; admit.
   - simpl. econstructor. admit.
     apply IHd_typing; auto.
   - simpl. apply d_typing__inf_unit. admit.
-  - simpl. eapply d_typing__inf_app; eauto.
+  - simpl. eapply d_typing__inf_app; eauto 3. 
     apply IHd_typing1; auto.
     admit.
     apply IHd_typing2; auto.
