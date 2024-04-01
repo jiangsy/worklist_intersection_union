@@ -13,17 +13,6 @@ Require Import uni.algo_worklist.prop_basic.
 Require Import ln_utils.
 
 
-Hint Constructors a_wl_red : Hdb_a_wl_red_completness.
-Hint Constructors wf_ss : Hdb_a_wl_red_completness.
-Hint Constructors a_wf_wl : Hdb_a_wl_red_completness.
-Hint Constructors trans_typ : Hdb_a_wl_red_completness.
-Hint Constructors trans_exp : Hdb_a_wl_red_completness.
-Hint Constructors trans_conts : Hdb_a_wl_red_completness.
-Hint Constructors trans_contd : Hdb_a_wl_red_completness.
-Hint Constructors trans_work : Hdb_a_wl_red_completness.
-Hint Constructors trans_worklist : Hdb_a_wl_red_completness.
-
-
 Ltac destruct_trans :=
   repeat
     lazymatch goal with
@@ -188,7 +177,7 @@ Proof.
       * dependent destruction H; auto.
 Qed.
 
-
+#[local] Hint Resolve wf_ss_uniq trans_typ_wf_ss trans_wl_wf_ss : core.
 
 Lemma a_worklist_subst_transfer_same_dworklist_rev_exist: forall Γ1 Γ2 Ω θ X T Tᵈ,
   ⊢ᵃʷ (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) ->
@@ -201,21 +190,18 @@ Lemma a_worklist_subst_transfer_same_dworklist_rev_exist: forall Γ1 Γ2 Ω θ X
       trans_worklist nil (awl_app (subst_tvar_in_aworklist T X Γ'2) Γ'1) Ω θ' /\
       (forall Y b, X <> Y -> binds Y b θ <-> binds Y b θ') /\ 
       wf_ss θ'.
-Proof with eauto with Hdb_a_wl_red_completness Hdb_transfer.
+Proof with eauto.
   intros * Hwf Hnotin Htranswl Htranst Htransx. generalize dependent Ω. 
     generalize dependent Γ1. generalize dependent θ. induction Γ2; simpl in *; 
     intros.
   - dependent destruction Htranswl...
     exists Γ1, aworklist_empty, θ'. repeat split; intros; simpl in *...
-    + econstructor.
     + inversion H2. dependent destruction H3. solve_notin_eq Y. auto.
   - dependent destruction Htranswl.
     apply IHΓ2 in Htranswl as Hws; auto... 
     destruct Hws as [Γ'1 [Γ'2 [θ'0 [Hws [Htrans [Hbinds Hwfss]]]]]].
     exists Γ'1, (aworklist_consvar Γ'2 x (abind_var_typ A1ᵃ)), θ'0. repeat split...
-    + econstructor; auto.
-    + simpl. constructor; auto.
-      admit.
+    + econstructor; auto. admit.
     + apply Hbinds; auto.
     + apply Hbinds; auto.
     + destruct_a_wf_wl; auto.
@@ -265,23 +251,20 @@ Proof with eauto with Hdb_a_wl_red_completness Hdb_transfer.
           assert (binds X0 (dbind_typ T0) ( (X0, dbind_typ T0) :: θ'' ++ (X, dbind_typ T1) :: θ'0)) by auto.
           specialize (trans_typ_tvar_stvar_in_etvar_binds_in_atyp _ _ _ _ _ Htranst H4 H1). intros.
           eapply d_mono_typ_strengthen_multi; eauto.
-          apply trans_typ_wf_ss in Htranst. dependent destruction Htranst. auto.
         }
         assert (nil ⫦ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ X0 ~ᵃ ⬒ ;ᵃ Γ1 ⇝ (Ω2 ⧺ Ω0) ⫣ θ'' ++ (X, dbind_typ T1) :: (X0, dbind_typ T0) :: θ'0).
         { eapply trans_wl_app with (θ2:=(X, dbind_typ T1) :: (X0, dbind_typ T0) :: θ'0). 
-          constructor; auto.
           constructor; auto.
           admit.
         }
         apply IHΓ2 in H5 as Hws.
         destruct Hws as [Γ'1 [Γ'2 [θ'00 [Hws [Htrans [Hbinds Hwfss]]]]]].
         exists Γ'1, Γ'2, θ'00. repeat split; auto.
-        -- constructor; auto. 
         -- intros. admit.
         -- intros. admit.
         -- apply trans_typ_reorder with (θ:=(X0, dbind_typ T0) :: θ'' ++ (X, dbind_typ T1) :: θ'0); auto. 
            admit. admit. admit.
-        -- apply trans_typ_binds_etvar; eauto. admit.
+        -- apply trans_typ_binds_etvar; eauto.
         -- apply a_wf_wl_reorder; auto.
         -- eapply trans_typ_wf_ss; eauto. 
       * apply IHΓ2 in Htranswl as Hws; auto.
@@ -304,7 +287,6 @@ Proof with eauto with Hdb_a_wl_red_completness Hdb_transfer.
     apply IHΓ2 in Htranswl as Hws.
     destruct Hws as [Γ'1 [Γ'2 [θ'0 [Hws [Htrans [Hbinds Hwfss]]]]]].
     exists Γ'1, (aworklist_conswork Γ'2 w), θ'0. repeat (split; auto).
-    + constructor; auto.
     + simpl. constructor; auto. 
       admit.
     + auto.
@@ -382,7 +364,6 @@ Lemma aworklist_trailing_etvar_reduce_ord : forall Γ0 Γ,
   aworklist_trailing_etvar Γ0 Γ -> Γ0 ⟶ᵃʷ⁎⋅ -> Γ ⟶ᵃʷ⁎⋅.
 Proof.
   intros. induction H; auto.
-  constructor; auto.
 Qed.
 
 Lemma aworklist_trailing_etvar_trans : forall Γ0 Γ Ω θ θ',
@@ -531,7 +512,7 @@ Lemma trans_typ_subst : forall θ1 θ2 Aᵃ Aᵈ Bᵃ Bᵈ X b,
   θ2 ++ θ1 ⫦ᵗ {Bᵃ /ᵗ X} Aᵃ ⇝ {Bᵈ /ᵗ X} Aᵈ.
 Proof.
   intros. generalize dependent Bᵃ. generalize dependent Bᵈ. 
-  dependent induction H0; intros; simpl; destruct_eq_atom; eauto with Hdb_a_wl_red_completness.
+  dependent induction H0; intros; simpl; destruct_eq_atom; eauto.
   - admit.
   - admit.
   - admit.
@@ -573,7 +554,7 @@ Lemma trans_typ_tvar_etvar : forall θ1 θ2 Aᵃ Aᵈ Tᵃ Tᵈ X,
   map (subst_tvar_in_dbind Tᵈ X) θ2 ++ (X , dbind_typ Tᵈ) :: θ1 ⫦ᵗ Aᵃ ⇝ {Tᵈ /ᵗ X} Aᵈ.
 Proof.
   intros. generalize dependent Tᵃ. generalize dependent Tᵈ. 
-  dependent induction H; intros; simpl; destruct_eq_atom; eauto with Hdb_a_wl_red_completness.
+  dependent induction H; intros; simpl; destruct_eq_atom; eauto.
   - apply trans_typ_binds_etvar; eauto. 
     admit.
   - econstructor; auto. admit. admit.
@@ -627,8 +608,8 @@ Lemma trans_typ_subst_tvar_cons : forall θ Aᵃ Aᵈ Bᵃ Bᵈ X,
   θ ⫦ᵗ Bᵃ ⇝ Bᵈ ->
   θ ⫦ᵗ {Bᵃ /ᵗ X} Aᵃ ⇝ {Bᵈ /ᵗ X} Aᵈ.
 Proof.
-  intros. rewrite_env (nil ++ θ). eapply trans_typ_subst with (b:=dbind_tvar_empty); eauto.
-  apply trans_typ_wf_ss in H. dependent destruction H; auto.
+  intros. rewrite_env (nil ++ θ). 
+  eapply trans_typ_subst with (b:=dbind_tvar_empty); eauto.
 Qed.
 
 Ltac destruct_binds_eq :=
@@ -655,13 +636,13 @@ Lemma trans_wl_a_wl_binds_var_trans_typ_d_wl' : forall θ Γ Ω x Aᵃ Aᵈ,
   binds x (abind_var_typ Aᵃ) (awl_to_aenv Γ) ->
   binds x (dbind_typ Aᵈ) (dwl_to_denv Ω) ->
   θ ⫦ᵗ Aᵃ ⇝ Aᵈ.
-Proof with eauto with Hdb_a_wl_red_completness Hdb_transfer.
+Proof with eauto.
   intros. generalize dependent Ω. generalize dependent θ. 
     dependent induction H; intros; auto.
   - inversion H2.
   - dependent destruction H4.
     inversion H3.
-    destruct_binds; auto with Hdb_a_wl_red_completness Hdb_transfer.
+    destruct_binds; auto.
     + eapply binds_dom_contradiction with (a:=abind_var_typ Aᵃ) in H; auto; contradiction.
     + eapply binds_dom_contradiction with (a:=dbind_typ Aᵈ) in H13; auto. contradiction.
     + subst. eapply IHa_wf_wl; eauto.
@@ -698,17 +679,15 @@ Qed.
   
 
 
-Hint Resolve trans_typ_lc_atyp : Hdb_a_wl_red_completness.
-Hint Resolve trans_typ_lc_dtyp : Hdb_a_wl_red_completness.
-Hint Resolve trans_wl_d_wl_mono_ss : Hdb_a_wl_red_completness.
+#[local] Hint Resolve trans_typ_lc_atyp trans_typ_lc_dtyp trans_wl_d_wl_mono_ss : core.
+
 
 Theorem d_a_wl_red_completness: forall Ω Γ,
    Ω ⟶ᵈʷ⁎⋅ -> ⊢ᵃʷ Γ -> transfer Γ Ω  -> Γ ⟶ᵃʷ⁎⋅.
-Proof with eauto with Hdb_a_wl_red_completness.
+Proof with eauto.
   intros. generalize dependent Γ. induction H; auto; unfold transfer in *; intros * Hwf Htrans;
     try destruct Htrans as [θ Htrans].
   - solve_awl_trailing_etvar.
-    + dependent destruction Hwf...
   - solve_awl_trailing_etvar.
     constructor. apply IHd_wl_red...
     dependent destruction Hwf0...
@@ -739,15 +718,13 @@ Proof with eauto with Hdb_a_wl_red_completness.
         -- eapply a_wl_red__sub_etvarmono1 with (Γ1:=Γ1) (Γ2:=Γ2); auto.
            ++ eapply trans_wl_ss_binds_etvar_a_wl...
            ++ apply a_mono_typ__etvar. eapply trans_wl_ss_binds_etvar_a_wl...
-           ++ eapply a_worklist_subst_transfer_same_dworklist_rev with (Ω:=Ω) (θ:=θ0) (Tᵈ:=typ_unit) in Hws; auto.
+           ++ eapply a_worklist_subst_transfer_same_dworklist_rev with (Ω:=Ω) (θ:=θ0) (Tᵈ:=typ_unit) in Hws; eauto.
               ** destruct Hws as [θ'' [Htranswl [Hbinds Hwfss]]].
                  apply IHd_wl_red; eauto. 
                  --- admit. (* wf *)
               ** destruct_a_wf_wl... 
               ** eapply trans_wl_ss_binds_etvar_a_wl; eauto. 
               ** apply a_mono_typ__etvar. eapply trans_wl_ss_binds_etvar_a_wl...
-              ** apply trans_typ_binds_etvar; auto.
-              ** apply trans_typ_binds_etvar; auto.
     + admit. (* Pending *)
     + admit. (* Pending *)
     + destruct_a_wf_wl...
@@ -814,7 +791,7 @@ Proof with eauto with Hdb_a_wl_red_completness.
         apply IHd_wl_red.
         -- admit. (* OK, wf *)
         -- exists ((X, dbind_typ T) :: θ0).
-           repeat (constructor; auto with Hdb_a_wl_red_completness)...
+           repeat (constructor; auto)...
            ++ eapply trans_typ_tvar_etvar_cons with (θ:=θ0) (Tᵃ:=T) (Tᵈ:=T) in H4; eauto...
               rewrite subst_tvar_in_typ_open_typ_wrt_typ_tvar2 in H4... 
               apply trans_typ_refl...
@@ -834,25 +811,21 @@ Proof with eauto with Hdb_a_wl_red_completness.
       * solve_binds_nonmono_contradiction.
       * constructor. apply IHd_wl_red; eauto.
         destruct_a_wf_wl...
-        exists θ0...
   - solve_awl_trailing_etvar.
     + destruct_trans.
       * solve_binds_nonmono_contradiction.
       * apply a_wl_red__sub_intersection3. apply IHd_wl_red; eauto.
         destruct_a_wf_wl...
-        exists θ0...
   - solve_awl_trailing_etvar.
     destruct_trans.
     + solve_binds_nonmono_contradiction.
     + constructor. apply IHd_wl_red; eauto.
       destruct_a_wf_wl...
-      exists θ0...
   - solve_awl_trailing_etvar. 
     destruct_trans.
     + solve_binds_nonmono_contradiction.
     + eapply a_wl_red__sub_union2. apply IHd_wl_red; eauto.
       destruct_a_wf_wl...
-      exists θ0...
   - solve_awl_trailing_etvar.
     destruct_trans.
     + solve_binds_nonmono_contradiction.
@@ -888,7 +861,7 @@ Proof with eauto with Hdb_a_wl_red_completness.
       pick fresh x and apply a_wl_red__chk_abstop. 
       inst_cofinites_with x.
       apply H0.
-      * repeat (constructor; auto with Hdb_a_wl_red_completness). 
+      * repeat (constructor; auto). 
         admit. (* OK, wf *)
       * exists θ0. constructor...
   (* e ⇐ A1 ⊓ A2 *)
@@ -959,10 +932,10 @@ Proof with eauto with Hdb_a_wl_red_completness.
     + admit. (* OK, wf *)
     + exists ((X2 , dbind_typ T2) :: (X1 , dbind_typ T1) :: θ0)...
       dependent destruction H...
-      assert (d_mono_typ (ss_to_denv θ0) T2) by eauto with Hdb_a_wl_red_completness.
-      assert (d_mono_typ (ss_to_denv θ0) T1) by eauto with Hdb_a_wl_red_completness.
+      assert (d_mono_typ (ss_to_denv θ0) T2) by eauto.
+      assert (d_mono_typ (ss_to_denv θ0) T1) by eauto.
       assert (Hwfss: wf_ss θ0) by (now eapply trans_wl_wf_ss in Htrans_et).
-      repeat (constructor; auto with Hdb_a_wl_red_completness).
+      repeat (constructor; auto).
       * admit. (* OK, trans_cont_weaken *)
       * admit. (* OK, trans_exp_weaken *)
   - solve_awl_trailing_etvar.
@@ -1050,13 +1023,13 @@ Proof with eauto with Hdb_a_wl_red_completness.
            dependent destruction H. 
            dependent destruction Htransws.
            destruct_trans.
-           repeat (constructor; auto with Hdb_a_wl_red_completness).
+           repeat (constructor; auto).
         -- admit. (* OK, wf *)
         -- admit.
         -- simpl. constructor... 
         -- apply wf_ss_binds_monotyp in H1 as Hmono...
             dependent destruction Hmono...
-            repeat (constructor; auto with Hdb_a_wl_red_completness).
+            repeat (constructor; auto).
           admit.  (* OK, trans_contd_strengthen *)
         -- solve_binds_mono. 
            constructor.
@@ -1082,7 +1055,7 @@ Proof with eauto with Hdb_a_wl_red_completness.
       apply IHd_wl_red. 
       * admit. (* OK, wf *)
       * exists ((X, dbind_typ T)::θ0).
-        repeat (constructor; auto with Hdb_a_wl_red_completness)...
+        repeat (constructor; auto)...
         -- eapply trans_typ_tvar_etvar_cons with (θ:=θ0) (Tᵃ:=T) (Tᵈ:=T) in H1; eauto...
            rewrite subst_tvar_in_typ_open_typ_wrt_typ_tvar2 in H1...
            apply trans_typ_refl...

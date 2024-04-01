@@ -138,7 +138,6 @@ Proof.
     + eapply d_wf_typ_subst_tvar_stvar_cons; auto.
 Qed.
 
-Hint Constructors d_sub : core.
 Hint Immediate d_wf_typ_d_wf_typ_s : core.
 Hint Immediate d_wf_typ_s_d_wf_typ : core.
 
@@ -158,10 +157,6 @@ Proof.
 Qed.
 
 Hint Resolve d_wf_typ_s_dlc_type : core.
-
-Hint Constructors neq_union : Core.
-Hint Constructors neq_intersection : Core.
-
 
 Lemma d_wf_typ_open_inv : forall Ψ1 A1 T1 X,
   lc_typ T1 ->
@@ -301,8 +296,6 @@ Proof.
       apply d_wf_typ_weaken_cons; auto.
 Qed.
 
-
-Hint Constructors d_typing : core.
 
 (* Lemma d_wft_typ_swap_env : forall Ψ2 X Y Ψ1 T ,
     Ψ2 ++ X ~ dbind_tvar_empty ++ Y ~ dbind_tvar_empty ++ Ψ1 ⊢ T ->
@@ -868,7 +861,7 @@ Proof with simpl in *; eauto.
 Qed.
 
 
-#[export] Hint Resolve neq_all_rename neq_intersection_rename neq_union_rename : sub.
+#[export] Hint Resolve neq_all_rename neq_intersection_rename neq_union_rename : core.
 
 
 Lemma neq_all_lc_typ : forall A,

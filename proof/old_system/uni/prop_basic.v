@@ -7,10 +7,11 @@ Require Import LibTactics.
 Require Import uni.notations.
 Require Import ln_utils.
 
-Hint Constructors d_wf_typ: core.
-Hint Constructors d_wf_env: core.
-Hint Constructors d_wf_typ_s: core.
 
+#[export] Hint Constructors d_wf_typ: core.
+#[export] Hint Constructors d_wf_env: core.
+#[export] Hint Constructors d_wf_typ_s: core.
+#[export] Hint Constructors s_in: core.
 
 Ltac solve_by_inverts n :=
   match goal with | H : ?T |- _ =>
@@ -22,7 +23,6 @@ Ltac solve_by_inverts n :=
 
 Ltac solve_by_invert :=
   solve_by_inverts 1.
-
 
 Lemma subst_tvar_in_typ_refl_eq : forall A X,
   A = {` X /ᵗ X} A.
@@ -196,9 +196,6 @@ Proof.
   - intros until b. unfold close_body_wrt_typ.
     apply close_body_wrt_typ_notin_rec.
 Qed.
-
-
-Hint Constructors s_in: core.
 
 
 Lemma sin_in : forall X T,

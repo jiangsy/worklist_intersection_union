@@ -6,11 +6,10 @@ Require Import uni.notations.
 Require Import uni.decl.prop_basic.
 Require Import ln_utils.
 
-Hint Constructors d_sub : sub.
 
 Lemma dsub_refl' : forall Ψ A,
   ⊢ Ψ -> Ψ ⊢ₛ A -> Ψ ⊢ A <: A.
-Proof with auto with sub.
+Proof with auto.
   intros; dependent induction H0; eauto...
   eapply d_sub__all with (L:=L `union` dom Ψ); eauto.
 Qed.
@@ -29,7 +28,7 @@ Qed.
 Lemma dsub_union_inversion : forall Ψ S1 S2 T1,
   Ψ ⊢ typ_union S1 S2 <: T1 ->
   Ψ ⊢ S1 <: T1 /\ Ψ ⊢ S2 <: T1.
-Proof with auto with sub.
+Proof with auto.
   intros.
   dependent induction H; auto...
   - inversion H0. split; econstructor; auto.
@@ -47,7 +46,7 @@ Qed.
 Lemma dsub_intersection_inversion : forall Ψ S1 T1 T2,
   Ψ ⊢ S1 <: typ_intersection T1 T2 ->
   Ψ ⊢ S1 <: T1 /\ Ψ ⊢ S1 <: T2.
-Proof with auto with sub.
+Proof with auto.
   intros.
   dependent induction H; auto...
   - inversion H0. split; econstructor; auto.
@@ -97,11 +96,11 @@ Proof.
 Qed.
 
 
-Hint Resolve d_wf_typ_lc_typ : subtyping.
-Hint Resolve dsub_refl : subtyping.
+#[local] Hint Resolve dsub_refl d_wft_typ_subst d_wft_typ_subst_stvar d_wf_env_subst_tvar_typ : core.
+(* Hint Resolve dsub_refl : subtyping.
 Hint Resolve d_wft_typ_subst : subtyping.
 Hint Resolve d_wft_typ_subst_stvar : subtyping.
-Hint Resolve d_wf_env_subst_tvar_typ : subtyping.
+Hint Resolve d_wf_env_subst_tvar_typ : subtyping. *)
 
 Inductive d_sub_tvar_open_inv : typvar -> typ -> Prop :=
 | d__stoi__refl : forall X, d_sub_tvar_open_inv X (typ_var_f X)
@@ -466,7 +465,7 @@ Theorem d_sub_tvar_ind_open_subst : forall Ψ F X A B,
   (X ~ dbind_tvar_empty) ++ Ψ ⊢ A ->
   Ψ ⊢ B ->
   map (subst_tvar_in_dbind B X) F ++ Ψ ⊢ ({B /ᵗ X} A) <: B.
-Proof with auto with subtyping.
+Proof with auto.
   intros * Hwfenv H. induction H; intros.
   - simpl. destruct (X == X).
     + apply dsub_refl; auto...
@@ -496,7 +495,7 @@ Theorem d_sub_weaken: forall Ψ1 Ψ2 Ψ3 A B,
   Ψ3 ++ Ψ1 ⊢ A <: B ->
   ⊢ Ψ3 ++ Ψ2 ++ Ψ1 ->
   Ψ3 ++ Ψ2 ++ Ψ1 ⊢ A <: B.
-Proof with auto with subtyping weaken.
+Proof with auto with weaken.
   intros Ψ1 Ψ2 Ψ3 A B Hsub Hwf.
   dependent induction Hsub;
     try solve [simpl in *];
@@ -558,9 +557,9 @@ Theorem  d_sub_subst_mono : forall Ψ1 X Ψ2 A B T,
   Ψ1 ⊢ T ->
   d_mono_typ Ψ1 T ->
   map (subst_tvar_in_dbind T X) Ψ2 ++ Ψ1 ⊢ {T /ᵗ X} A <: {T /ᵗ X} B.
-Proof with eauto with subtyping.
+Proof with eauto.
   intros Ψ X F A1 B1 T1 Hwfenv Hsub Hwft Hmono.
-  dependent induction Hsub; try solve [simpl in *; eauto with subtyping].
+  dependent induction Hsub; try solve [simpl in *; eauto].
   - eapply dsub_refl; auto...
   - simpl. eapply d_sub__all with (L:=L `union` singleton X `union` dom Ψ `union` dom F); intros X0 Hfr; inst_cofinites_with X.
     + rewrite subst_tvar_in_typ_open_typ_wrt_typ_fresh2; auto...
@@ -635,8 +634,7 @@ Proof with eauto with subtyping.
     + inversion H0.
 Qed.
 
-Hint Resolve d_wft_typ_subst_stvar : subtyping.
-Hint Resolve d_wf_env_subst_stvar_typ : subtyping.
+#[local] Hint Resolve d_wft_typ_subst_stvar d_wf_env_subst_stvar_typ : core.
 (* Hint Resolve d_subst_stv_lc_typ : lngen. *)
 
 Lemma dneq_all_intersection_union_subst_stv : forall T1 T2 X,
@@ -741,8 +739,8 @@ Theorem d_sub_subst_stvar : forall Ψ1 X Ψ2 A B T,
   Ψ2 ++ (X ~ dbind_stvar_empty) ++ Ψ1 ⊢ A <: B ->
   Ψ1 ⊢ T ->
   map (subst_tvar_in_dbind T X) Ψ2 ++ Ψ1 ⊢ {T /ᵗ X} A <: {T /ᵗ X} B.
-Proof with subst; eauto using d_wf_typ_weaken_head with subtyping.
-  intros. dependent induction H; try solve [simpl in *; eauto with subtyping].
+Proof with subst; eauto using d_wf_typ_weaken_head.
+  intros. dependent induction H; try solve [simpl in *; eauto].
   - eapply dsub_refl; auto...
   - simpl. inst_cofinites_for d_sub__all; intros X1 Hfr; inst_cofinites_with X1.
     + rewrite subst_tvar_in_typ_open_typ_wrt_typ_fresh2; auto...
@@ -759,16 +757,16 @@ Proof with subst; eauto using d_wf_typ_weaken_head with subtyping.
       * applys* d_mono_typ_subst_stvar... eauto using d_sub_dwft_0.
       * rewrite <- subst_tvar_in_typ_open_typ_wrt_typ; eauto using d_wf_typ_dlc_type.
     + eapply d_sub_open_mono_stvar_false in H3; eauto. contradiction.
-  - simpl. apply d_sub__intersection2. eauto with subtyping.
+  - simpl. apply d_sub__intersection2. eauto.
     apply d_wft_typ_subst_stvar; auto...
     destruct (d_sub_dwft _ _ _ H) as [? [? ?]]. auto.
-  - simpl. apply d_sub__intersection3. eauto with subtyping.
+  - simpl. apply d_sub__intersection3. eauto.
     apply d_wft_typ_subst_stvar; auto...
     destruct (d_sub_dwft _ _ _ H) as [? [? ?]]. auto.
-  - simpl. apply d_sub__union1. eauto with subtyping.
+  - simpl. apply d_sub__union1. eauto.
     apply d_wft_typ_subst_stvar; auto...
     destruct (d_sub_dwft _ _ _ H) as [? [? ?]]. auto.
-  - simpl. apply d_sub__union2. eauto with subtyping.
+  - simpl. apply d_sub__union2. eauto.
     apply d_wft_typ_subst_stvar; auto...
     destruct (d_sub_dwft _ _ _ H) as [? [? ?]]. auto.
 Qed.
@@ -842,7 +840,7 @@ Proof.
   intros. induction H; eauto.
 Qed.
 
-Hint Constructors d_sub_size : sub.
+#[local] Hint Constructors d_sub_size : core.
 
 Lemma d_sub_dwft_sized : forall Ψ A B n,
     Ψ ⊢ A <: B | n -> ⊢ Ψ /\ Ψ ⊢ A /\ Ψ ⊢ B.
@@ -870,13 +868,12 @@ Qed.
 
 #[local] Hint Resolve d_sub_dwft_sized_0 d_sub_dwft_sized_1 d_sub_dwft_sized_2 : core.
 
-
 Lemma d_sub_size_rename_stvar : forall Ψ1 Ψ2 X Y A B n,
   Ψ2 ++ X ~ ■ ++ Ψ1 ⊢ A <: B | n ->
       Y ∉ (dom Ψ1 `union` dom Ψ2) ->
       (map (subst_tvar_in_dbind (typ_var_f Y) X) Ψ2) ++ Y ~ ■ ++ Ψ1 ⊢
         {typ_var_f Y /ᵗ X} A <: {typ_var_f Y /ᵗ X} B | n.
-Proof with (simpl in *; eauto using d_wf_env_subst_tvar_typ with sub).
+Proof with (simpl in *; eauto using d_wf_env_subst_tvar_typ).
   intros * HS HN.
   case_eq (Y == X); intros.
   1: { subst. rewrite* subst_same_tvar_map_id.
@@ -968,7 +965,7 @@ Qed.
 
 Lemma d_sub_size_complete : forall Ψ A B,
   Ψ ⊢ A <: B -> exists n, Ψ ⊢ A <: B | n.
-Proof with eauto with sub.
+Proof with eauto.
   intros. induction H; eauto...
   - destruct IHd_sub1 as [n1]. destruct IHd_sub2 as [n2].
     eauto...
@@ -989,8 +986,6 @@ Proof with eauto with sub.
     eauto...
     Unshelve. all: econstructor.
 Qed.
-
-Hint Constructors d_sub_size : trans.
 
 
 Lemma nat_suc: forall n n1, n >= S n1 ->
@@ -1047,7 +1042,6 @@ Proof with auto with trans.
 Qed.
 
 
-Hint Constructors d_sub : trans.
 Hint Extern 1 (?x < ?y) => lia : trans.
 Hint Extern 1 (?x <= ?y) => lia : trans.
 Hint Extern 1 (?x >= ?y) => lia : trans.
@@ -1108,12 +1102,11 @@ Inductive d_wft_ord : typ -> Prop :=
     d_wft_ord (typ_union T1 T2)
 .
 
-Hint Constructors d_ord : wf.
-Hint Constructors d_wft_ord : wf.
+#[local] Hint Constructors d_ord d_wft_ord : core.
 
 Lemma d_wft_ord_complete: forall Ψ A,
   Ψ ⊢ A -> d_wft_ord A.
-Proof with auto with wf.
+Proof with auto.
   intros. induction H; eauto...
 Qed.
 
@@ -1124,8 +1117,6 @@ Theorem d_sub_mono_bot_false : forall Ψ A,
 Proof.
   intros. induction H; try solve [(dependent destruction H0); auto].
 Qed.
-
-
 
 Theorem d_sub_open_mono_bot_false: forall n1 n2 Ψ A T L,
     d_typ_order (A ^^ᵗ T) < n1 ->
@@ -1326,16 +1317,12 @@ Proof with auto with trans.
         all: eauto using d_mono_typ_lc, d_mono_typ_d_wf_typ.
       * eapply d_sub__intersection1.
         -- eapply IHn_dsub_size with (B:=typ_all B1) (n1:=S n) (n2:=n1); eauto...
-           econstructor; eauto.
         -- eapply IHn_dsub_size with (B:=typ_all B1) (n1:=S n) (n2:=n2); eauto...
-           econstructor; eauto.
       * eapply d_sub__union1.
         -- eapply IHn_dsub_size with (B:=typ_all B1) (n1:=S n) (n2:=n0); eauto...
-           econstructor; eauto.
         -- auto.
       * eapply d_sub__union2.
         -- eapply IHn_dsub_size with (B:=typ_all B1) (n1:=S n) (n2:=n0); eauto...
-           econstructor; eauto.
         -- auto.
     + simpl in *. assert (Ψ ⊢ B1) as Hwft1 by applys* d_sub_dwft_sized_1.
       dependent destruction Hwft1; solve_trans_forall_B_C.

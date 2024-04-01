@@ -238,6 +238,8 @@ Inductive d_wl_red : dworklist -> Prop :=    (* defn d_wl_red *)
 .
 
 
+#[export] Hint Constructors d_wl_red d_wf_wl d_wl_del_red : core.
+
 Declare Scope dworklist_scope.
 Delimit Scope dworklist_scope with dworklist.
 Bind Scope dworklist_scope with dworklist.

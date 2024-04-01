@@ -303,13 +303,7 @@ Inductive trans_worklist : subst_set -> aworklist -> dworklist -> subst_set -> P
 where "θ ⫦ Γᵃ ⇝ Γᵈ ⫣ θ'" := (trans_worklist θ Γᵃ Γᵈ θ').
 
 
-Hint Constructors trans_typ : Hdb_transfer.
-Hint Constructors trans_exp : Hdb_transfer.
-Hint Constructors trans_conts : Hdb_transfer.
-Hint Constructors trans_contd : Hdb_transfer.
-Hint Constructors trans_work : Hdb_transfer.
-Hint Constructors trans_worklist : Hdb_transfer.
-Hint Constructors wf_ss : Hdb_transfer.
+#[export] Hint Constructors trans_typ trans_exp trans_conts trans_contd trans_work trans_worklist wf_ss : core.
 
 
 Lemma wf_ss_uniq : forall θ,
@@ -343,7 +337,7 @@ Proof.
   intros. inversion H2.
 Qed.
 
-Hint Resolve wf_ss_uniq : Hdb_transfer.
+#[local] Hint Resolve wf_ss_uniq : core.
 
 Lemma trans_typ_neq_all : forall θ Aᵃ Aᵈ,
   θ ⫦ᵗ Aᵃ ⇝ Aᵈ -> neq_all Aᵃ -> neq_all Aᵈ.
@@ -409,9 +403,6 @@ Lemma trans_wl_wf_ss : forall θ θ' Γ Ω,
   θ ⫦ Γ ⇝ Ω ⫣ θ' -> wf_ss θ'.
 Proof with eauto.
   intros. dependent induction H; auto.
-  - constructor; auto.
-  - constructor; auto.
-  - constructor; auto.
 Qed.
 
 
@@ -421,7 +412,7 @@ Hint Resolve trans_wl_wf_ss : Hdb_transfer.
 Lemma trans_typ_wf_ss : forall θ Aᵃ Aᵈ,
   θ ⫦ᵗ Aᵃ ⇝ Aᵈ ->
   wf_ss θ.
-Proof with auto with Hdb_transfer.
+Proof with auto.
   intros. induction H...
   - inst_cofinites_by L.
     dependent destruction H0...
@@ -432,14 +423,14 @@ Qed.
 Lemma trans_typ_wf_dtyp : forall θ Aᵃ Aᵈ,
   θ ⫦ᵗ Aᵃ ⇝ Aᵈ ->
   (ss_to_denv θ) ⊢ Aᵈ.
-Proof with auto with Hdb_transfer.
+Proof with auto.
 Abort.
 
 
 Lemma trans_typ_lc_atyp : forall θ Aᵃ Aᵈ,
   θ ⫦ᵗ Aᵃ ⇝ Aᵈ ->
   lc_typ Aᵃ.
-Proof with auto with Hdb_transfer.
+Proof with auto.
   intros. induction H...
 Qed.
 
@@ -447,7 +438,7 @@ Lemma wf_ss_binds_typ_lc : forall θ X T,
   wf_ss θ ->
   binds X (dbind_typ T) θ ->
   lc_typ T.
-Proof with auto with Hdb_transfer.
+Proof with auto.
   intros. induction H.
   - inversion H0.
   - inversion H0; subst...
@@ -462,7 +453,7 @@ Qed.
 Lemma trans_typ_lc_dtyp : forall θ Aᵃ Aᵈ,
   θ ⫦ᵗ Aᵃ ⇝ Aᵈ ->
   lc_typ Aᵈ.
-Proof with auto with Hdb_transfer.
+Proof with auto.
   intros. induction H...
   eapply wf_ss_binds_typ_lc; eauto.
 Qed.
@@ -494,7 +485,7 @@ Lemma trans_typ_det : forall θ Aᵃ A₁ᵈ A₂ᵈ,
   θ ⫦ᵗ Aᵃ ⇝ A₁ᵈ -> 
   θ ⫦ᵗ Aᵃ ⇝ A₂ᵈ -> 
   A₁ᵈ = A₂ᵈ.
-Proof with eauto with Hdb_transfer.
+Proof with eauto.
   intros. generalize dependent A₂ᵈ.
   induction H0; (intros A₂ᵈ H2; dependent destruction H2; auto).
   - exfalso. eapply wf_ss_etvar_tvar_false... 
@@ -533,7 +524,7 @@ with trans_body_det : forall θ bᵃ b₁ᵈ b₂ᵈ,
   θ ⫦ᵇ bᵃ ⇝ b₁ᵈ -> 
   θ ⫦ᵇ bᵃ ⇝ b₂ᵈ -> 
   b₁ᵈ = b₂ᵈ.
-Proof with eauto with Hdb_transfer.
+Proof with eauto.
   - intros. generalize dependent e₂ᵈ.
     induction H0; (intros e₂ᵈ H2; dependent destruction H2; auto).
     + inst_cofinites_by (L `union` L0 `union` (fvar_in_exp eᵈ) `union` (fvar_in_exp eᵈ0) `union`  dom θ) using_name x.
@@ -564,7 +555,7 @@ Qed.
 Ltac unify_trans_exp :=
   match goal with
   | H_1 : trans_exp ?θ ?eᵃ ?e1ᵈ, H_2 : trans_exp ?θ ?eᵃ ?e2ᵈ |- _ => eapply trans_exp_det in H_1; 
-      eauto with Hdb_transfer; subst
+      eauto; subst
   end.
 
 Lemma trans_conts_det : forall θ csᵃ cs₁ᵈ cs₂ᵈ,
@@ -577,7 +568,7 @@ with trans_contd_det : forall θ cdᵃ cd₁ᵈ cd₂ᵈ,
   θ ⫦ᶜᵈ cdᵃ ⇝ cd₁ᵈ -> 
   θ ⫦ᶜᵈ cdᵃ ⇝ cd₂ᵈ -> 
   cd₁ᵈ = cd₂ᵈ.
-Proof with eauto with Hdb_transfer.
+Proof with eauto.
   - intros. generalize dependent cs₂ᵈ.
     induction H0; (intros cs₂ᵈ Htrans2; dependent destruction Htrans2).
     + apply trans_contd_det with (cd₂ᵈ:= cdᵈ0) in H0; auto; subst; auto.
@@ -603,13 +594,13 @@ Qed.
 Ltac unify_trans_contd :=
   match goal with
   | H_1 : trans_contd ?θ ?cdᵃ ?cd1ᵈ, H_2 : trans_contd ?θ ?cdᵃ ?cd2ᵈ |- _ => eapply trans_contd_det in H_1; 
-      eauto with Hdb_transfer; subst
+      eauto; subst
   end.
 
 Ltac unify_trans_conts :=
   match goal with
   | H_1 : trans_conts ?θ ?csᵃ ?cs1ᵈ, H_2 : trans_conts ?θ ?csᵃ ?cs2ᵈ |- _ => eapply trans_conts_det in H_1; 
-      eauto with Hdb_transfer; subst
+      eauto; subst
   end.
 
 Lemma trans_wl_split_ss : forall Γ Ω θ θ', 
@@ -641,25 +632,20 @@ Proof.
     pose proof (IHΓ2 _ _ _ H6) as (Ω1 & Ω2 & Θ0 & E & Inst1 & Inst2).
     exists Ω1, (x ~ᵈ A1ᵈ;ᵈ Ω2)%dworklist, Θ0. repeat split; eauto.
     rewrite E. auto.
-    constructor; auto.
   - destruct ab; inversion H; subst.
     + pose proof (IHΓ2 _ _ _ H3) as (Ω1 & Ω2 & Θ0 & E & Inst1 & Inst2).
       exists Ω1, (X ~ᵈ □ ;ᵈ Ω2)%dworklist, Θ0.
       subst. repeat split; eauto.
-      constructor; auto.
     + pose proof (IHΓ2 _ _ _ H3) as (Ω1 & Ω2 & Θ0 & E & Inst1 & Inst2).
       exists Ω1, (X ~ᵈ ■ ;ᵈ Ω2)%dworklist, Θ0.
       subst. repeat split; eauto.
-      constructor; auto.
     + pose proof (IHΓ2 _ _ _ H2) as (Ω1 & Ω2 & Θ0 & E & Inst1 & Inst2).
       exists Ω1, Ω2, Θ0.
       subst. repeat split; eauto. 
-      econstructor; eauto.
   - inversion H; subst.
     pose proof (IHΓ2 _ _ _ H3) as (Ω1 & Ω2 & Θ0 & E & Inst1 & Inst2).
     exists Ω1, (wᵈ ⫤ Ω2)%dworklist, Θ0.
     subst. repeat split; eauto.
-    constructor; auto.
 Qed.
 
 
@@ -672,7 +658,7 @@ Lemma trans_wl_app : forall Γ1 Γ2 Ω1 Ω2 θ1 θ2 θ3,
   θ1 ⫦ Γ2 ⧺ Γ1 ⇝ Ω2 ⧺ Ω1 ⫣ θ3.
 Proof.
   intros.
-  induction H0; simpl; try solve [eauto with Hdb_transfer].
+  induction H0; simpl; try solve [eauto].
 Qed.
 
 
@@ -680,7 +666,7 @@ Lemma trans_wl_a_wl_binds_etvar_ss : forall Γ X Ω θ θ',
   θ ⫦ Γ ⇝ Ω ⫣ θ' ->
   binds X abind_etvar_empty (awl_to_aenv Γ) ->
   exists T, X ~ T ∈ θ'.
-Proof with eauto with Hdb_transfer.
+Proof with eauto.
   intros. dependent induction H.
   - inversion H0.
   - auto...
@@ -702,7 +688,7 @@ Lemma trans_wl_a_wl_binds_tvar_ss : forall Γ X Ω θ,
   nil ⫦ Γ ⇝ Ω ⫣ θ ->
   binds X abind_tvar_empty (awl_to_aenv Γ) ->
   X ~ □ ∈ θ.
-Proof with eauto with Hdb_transfer.
+Proof with eauto.
   intros. dependent induction H...
   - inversion H1. inversion H2; subst...
     eauto...
@@ -718,7 +704,7 @@ Lemma trans_wl_a_wl_binds_tvar_d_wl : forall Γ X Ω θ,
   nil ⫦ Γ ⇝ Ω ⫣ θ ->
   binds X abind_tvar_empty (awl_to_aenv Γ) ->
   binds X dbind_tvar_empty (dwl_to_denv Ω).
-Proof with eauto with Hdb_transfer.
+Proof with eauto.
   intros. dependent induction H; simpl in *...
   - inversion H1. inversion H2; subst...
     eauto...
@@ -753,7 +739,7 @@ Lemma trans_wl_a_wl_binds_stvar_ss : forall Γ X Ω θ,
   nil ⫦ Γ ⇝ Ω ⫣ θ ->
   binds X abind_stvar_empty (awl_to_aenv Γ) ->
   X ~ ■ ∈ θ.
-Proof with eauto with Hdb_transfer.
+Proof with eauto.
   intros. dependent induction H...
   - inversion H1. inversion H2; subst...
     eauto...
@@ -769,7 +755,7 @@ Lemma trans_wl_a_wl_binds_stvar_d_wl : forall Γ X Ω θ,
   nil ⫦ Γ ⇝ Ω ⫣ θ ->
   binds X abind_stvar_empty (awl_to_aenv Γ) ->
   binds X dbind_stvar_empty (dwl_to_denv Ω).
-Proof with eauto with Hdb_transfer.
+Proof with eauto.
   intros. dependent induction H; simpl in *...
   - inversion H1. dependent destruction H2...
     eauto...
@@ -785,7 +771,7 @@ Lemma trans_wl_d_wl_binds_tvar_ss : forall Γ X Ω θ θ',
   θ ⫦ Γ ⇝ Ω ⫣ θ' ->
   binds X dbind_tvar_empty (dwl_to_denv Ω) ->
   binds X dbind_tvar_empty (ss_to_denv θ').
-Proof with eauto with Hdb_transfer.
+Proof with eauto.
   intros. dependent induction H; simpl in *...
   - inversion H0.
   - inversion H1. dependent destruction H2...
@@ -801,7 +787,7 @@ Lemma trans_wl_d_wl_binds_stvar_ss : forall Γ X Ω θ θ',
   θ ⫦ Γ ⇝ Ω ⫣ θ' ->
   binds X dbind_stvar_empty (dwl_to_denv Ω) ->
   binds X dbind_stvar_empty (ss_to_denv θ').
-Proof with eauto with Hdb_transfer.
+Proof with eauto.
   intros. dependent induction H; simpl in *...
   - inversion H0.
   - inversion H1. dependent destruction H2...
@@ -817,7 +803,7 @@ Lemma trans_wl_a_wl_binds_etvar_d_wl : forall Γ X Ω θ,
   nil ⫦ Γ ⇝ Ω ⫣ θ ->
   binds X abind_etvar_empty (awl_to_aenv Γ) ->
   exists T, binds X (dbind_typ T) (dwl_to_denv Ω).
-Proof with eauto with Hdb_transfer.
+Proof with eauto.
 Admitted.
 
 Lemma trans_wl_d_wl_mono_ss : forall θ θ' Γ Ω T,
@@ -833,7 +819,7 @@ Lemma wf_ss_rename_tvar : forall θ1 θ2 X X',
   wf_ss (θ2 ++ (X, □) :: θ1) ->
   X' ∉ dom (θ2 ++ θ1) ->
   wf_ss (map (subst_tvar_in_dbind ` X' X) θ2 ++ (X', □) :: θ1).
-Proof with eauto with Hdb_transfer.
+Proof with eauto.
   intros. induction θ2; simpl in *...
   - inversion H; subst...
   - dependent destruction a.
@@ -873,7 +859,7 @@ Lemma trans_typ_rename_tvar : forall θ1 θ2 Aᵃ Aᵈ X X',
   θ2 ++ (X, dbind_tvar_empty) :: θ1 ⫦ᵗ Aᵃ ⇝ Aᵈ ->
   X' `notin` dom (θ2 ++ θ1) ->
   map (subst_tvar_in_dbind (` X') X) θ2  ++ (X', dbind_tvar_empty) :: θ1 ⫦ᵗ {` X' /ᵗ X} Aᵃ ⇝ {` X' /ᵗ X} Aᵈ.
-Proof with auto with Hdb_transfer.
+Proof with auto.
   intros. dependent induction H; simpl; auto...
   - unfold eq_dec. destruct (EqDec_eq_of_X X0 X); subst.
     + econstructor...
@@ -923,7 +909,7 @@ Lemma trans_typ_tvar_stvar_same : forall θ1 θ2 X Aᵃ Aᵈ b b',
   b' = dbind_tvar_empty \/ b' = dbind_stvar_empty ->
   θ2 ++ (X, b) :: θ1 ⫦ᵗ Aᵃ ⇝ Aᵈ ->
   θ2 ++ (X, b') :: θ1 ⫦ᵗ Aᵃ ⇝ Aᵈ.
-Proof with auto with Hdb_transfer.
+Proof with auto.
   intros. dependent induction H1; auto...
   - admit.
   - admit.
@@ -961,12 +947,14 @@ Proof.
 Qed.
 
 
+#[local] Hint Resolve trans_wl_wf_ss : core.
+
 Lemma trans_typ_total : forall θ Γ Ω Aᵃ,
   a_wf_typ (awl_to_aenv Γ) Aᵃ ->  
   ⊢ᵃʷ Γ -> 
   nil ⫦ Γ ⇝ Ω ⫣ θ -> 
   exists Aᵈ, trans_typ θ Aᵃ Aᵈ.
-Proof with eauto with Hdb_transfer.
+Proof with eauto.
   intros. 
   generalize dependent Ω. 
   generalize dependent θ. 
@@ -1009,7 +997,7 @@ Lemma trans_exp_rename_var : forall θ eᵃ eᵈ x x',
 with trans_body_rename_var : forall θ bᵃ bᵈ x x', 
   θ ⫦ᵇ bᵃ ⇝ bᵈ ->
   θ ⫦ᵇ {(exp_var_f x') /ᵇₑ x} bᵃ ⇝ {(exp_var_f x') /ᵇₑ x} bᵈ.
-Proof with auto with Hdb_transfer.
+Proof with auto.
   - intros. dependent induction H; simpl; auto...
     + unfold eq_dec. destruct (EqDec_eq_of_X x0 x); subst.
       * econstructor... 
@@ -1041,7 +1029,7 @@ with trans_body_rename_tvar :  forall θ1 θ2 bᵃ bᵈ X X',
   X' `notin` dom (θ2 ++ θ1) ->
   map (subst_tvar_in_dbind (` X') X) θ2  ++ (X', dbind_tvar_empty) :: θ1 ⫦ᵇ 
       subst_tvar_in_body `X' X bᵃ ⇝ subst_tvar_in_body `X' X bᵈ.
-Proof with auto with Hdb_transfer.
+Proof with auto.
   - intros. dependent induction H; simpl in *...
     + constructor...
       eapply wf_ss_rename_tvar; eauto.
@@ -1096,7 +1084,7 @@ with trans_body_total : forall θ Γ Ω bᵃ,
   ⊢ᵃʷ Γ -> 
   nil ⫦ Γ ⇝ Ω ⫣ θ -> 
   exists bᵈ, trans_body θ bᵃ bᵈ.
-Proof with eauto with Hdb_transfer.
+Proof with eauto.
   - intros. 
     generalize dependent Ω. 
     generalize dependent θ. 
@@ -1285,7 +1273,7 @@ Admitted.
 Lemma tran_wl_dwl_ss_same_tvar_stvar : forall Γ Ω θ,
   nil ⫦ Γ ⇝ Ω ⫣ θ ->
   ss_no_etvar θ = denv_no_var (dwl_to_denv Ω).
-Proof with auto with Hdb_transfer. 
+Proof with auto. 
   intros. dependent induction H...
   - simpl... rewrite IHtrans_worklist...
   - simpl... rewrite IHtrans_worklist...
@@ -1421,7 +1409,7 @@ Lemma trans_wl_a_wf_typ_d_wf_typ' : forall Γ Ω θ Aᵃ Aᵈ,
   θ ⫦ᵗ Aᵃ ⇝ Aᵈ ->
   a_wf_typ (awl_to_aenv Γ) Aᵃ ->
   d_wf_typ (dwl_to_denv Ω) Aᵈ.
-Proof with eauto with Hdb_transfer. 
+Proof with eauto. 
   intros * Hlc. 
   generalize dependent Aᵈ.
   generalize dependent Γ.
@@ -1455,7 +1443,7 @@ Lemma trans_wl_a_wf_typ_d_wf_typ : forall Γ Ω θ Aᵃ Aᵈ,
   θ ⫦ᵗ Aᵃ ⇝ Aᵈ ->
   a_wf_typ (awl_to_aenv Γ) Aᵃ ->
   d_wf_typ (dwl_to_denv Ω) Aᵈ.
-Proof with eauto with Hdb_transfer. 
+Proof with eauto. 
   intros. apply trans_typ_lc_atyp in H0 as Hlc.
   eapply trans_wl_a_wf_typ_d_wf_typ'; eauto.
 Qed.
@@ -1464,21 +1452,20 @@ Lemma trans_wl_d_wf_typ_ss_wf_typ : forall Γ Ω θ Aᵈ,
   nil ⫦ Γ ⇝ Ω ⫣ θ ->
   d_wf_typ (dwl_to_denv Ω) Aᵈ ->
   d_wf_typ (ss_to_denv θ) Aᵈ.
-Proof with eauto with Hdb_transfer. 
+Proof with eauto. 
   intros. generalize dependent Γ; generalize dependent θ; dependent induction H0; intros...
   - eapply trans_wl_d_wl_binds_tvar_ss in H0; eauto.
   - eapply trans_wl_d_wl_binds_stvar_ss in H0; eauto.
   - inst_cofinites_for d_wf_typ__all; intros; inst_cofinites_with X...
     rewrite_env (ss_to_denv ((X, dbind_tvar_empty)::θ)).
     eapply H1 with (Γ:=aworklist_constvar Γ X abind_tvar_empty) (Ω:=dworklist_constvar Ω X dbind_tvar_empty); eauto.
-    constructor...
 Qed.
 
 
 Lemma trans_wl_dom_upper_bound : forall θ Γ Ω,  
   nil ⫦ Γ ⇝ Ω ⫣ θ ->
   dom (dwl_to_denv Ω) [<=] dom (awl_to_aenv Γ).
-Proof with auto with Hdb_transfer.
+Proof with auto.
   intros. dependent induction H; simpl...
   - fsetdec.
   - rewrite IHtrans_worklist... fsetdec.
@@ -1545,7 +1532,7 @@ Lemma a_wf_work_apply_conts : forall Γ cs A w,
   a_wf_typ Γ A ->
   apply_conts cs A w ->
   a_wf_work Γ w.
-Proof with eauto with Hdb_transfer.
+Proof with eauto.
   intros. induction H1; try solve [destruct_a_wf_wl; constructor; eauto with Hdb_transfer].
 Qed.
 
@@ -1557,7 +1544,7 @@ Lemma a_wf_work_apply_contd : forall Γ cd A B w,
   a_wf_typ Γ B ->
   apply_contd cd A B w ->
   a_wf_work Γ w.
-Proof with eauto with Hdb_transfer.
+Proof with eauto.
   intros. induction H2; try solve [destruct_a_wf_wl; constructor; eauto with Hdb_transfer].
 Qed.
 
@@ -1576,7 +1563,7 @@ Lemma wf_ss_weaken_tvar: forall θ1 θ2 X,
   wf_ss (θ2 ++ θ1) ->
   X `notin` dom (θ2 ++ θ1) ->
   wf_ss (θ2 ++ (X, dbind_tvar_empty) :: θ1).
-Proof with auto with Hdb_transfer.
+Proof with auto.
   intros. induction θ2; simpl in *...
   - destruct a; destruct d; simpl in *...
     + dependent destruction H... 
@@ -1589,7 +1576,7 @@ Lemma wf_ss_weaken_stvar: forall θ1 θ2 X,
   wf_ss (θ2 ++ θ1) ->
   X `notin` dom (θ2 ++ θ1) ->
   wf_ss (θ2 ++ (X, dbind_stvar_empty) :: θ1).
-Proof with auto with Hdb_transfer.
+Proof with auto.
   intros. induction θ2; simpl in *...
   - destruct a; destruct d; simpl in *...
     + dependent destruction H... 
@@ -1603,7 +1590,7 @@ Lemma wf_ss_weaken_etvar: forall θ θ' T X,
   d_mono_typ (ss_to_denv θ) T ->
   X `notin` dom (θ' ++ θ) ->
   wf_ss (θ' ++ (X, dbind_typ T) :: θ).
-Proof with auto with Hdb_transfer.
+Proof with auto.
   intros. induction θ'.
   - simpl in *. constructor...
   - destruct a. destruct d; simpl in *.
@@ -1620,7 +1607,7 @@ Hint Resolve wf_ss_weaken_etvar : Hdb_transfer.
 Lemma in_ss_denv_in_ss : forall X b θ,
   binds X b (ss_to_denv θ) ->
   binds X b θ.
-Proof with auto with Hdb_transfer.
+Proof with auto.
   intros. induction θ...
   - destruct a. destruct d...
     + inversion H... 
@@ -1645,7 +1632,7 @@ Qed.
 Lemma wf_ss_etvar_tvar : forall θ1 θ2 T X,
   wf_ss (θ2 ++ (X, dbind_typ T) :: θ1) ->
   wf_ss (θ2 ++ (X, □) :: θ1).
-Proof with auto with Hdb_transfer.
+Proof with auto.
   intros. induction θ2; simpl in *.
   - dependent destruction H...
   - destruct a. destruct d.
@@ -1664,7 +1651,7 @@ Lemma trans_typ_weaken : forall θ1 θ2 θ3 Aᵃ Aᵈ,
   θ3 ++ θ1 ⫦ᵗ Aᵃ ⇝ Aᵈ ->
   wf_ss (θ3 ++ θ2 ++ θ1) ->
   (θ3 ++ θ2 ++ θ1) ⫦ᵗ Aᵃ ⇝ Aᵈ.
-Proof with eauto with Hdb_transfer.
+Proof with eauto.
   intros. generalize dependent θ2.
   dependent induction H; intros...
   - inst_cofinites_for trans_typ__all. intros.
@@ -1677,7 +1664,7 @@ Lemma trans_typ_strengthen_etvar : forall θ1 θ2 X T Aᵃ Aᵈ,
   (θ2 ++ (X, dbind_typ T) :: θ1) ⫦ᵗ Aᵃ ⇝ Aᵈ ->
   X \notin ftvar_in_typ Aᵃ ->
   θ2 ++ θ1 ⫦ᵗ Aᵃ ⇝ Aᵈ.
-Proof with eauto with Hdb_transfer.
+Proof with eauto.
   intros.
   dependent induction H; intros...
   - econstructor. 
@@ -1720,7 +1707,7 @@ Lemma trans_typ_strengthen : forall θ1 θ2 X b Aᵃ Aᵈ,
   X \notin ftvar_in_typ Aᵃ ->
   wf_ss (θ2 ++ θ1) ->
   θ2 ++ θ1 ⫦ᵗ Aᵃ ⇝ Aᵈ.
-Proof with eauto with Hdb_transfer.
+Proof with eauto.
   intros.
   dependent induction H; intros...
   - econstructor...
@@ -1753,7 +1740,7 @@ Lemma trans_typ_refl: forall θ A,
   ss_to_denv θ ⊢ A ->
   wf_ss θ ->
   θ ⫦ᵗ A ⇝ A.
-Proof with eauto with Hdb_transfer.
+Proof with eauto.
   intros. dependent induction H...
   - econstructor...
     apply in_ss_denv_in_ss...
@@ -1767,7 +1754,7 @@ Lemma wf_ss_typ_no_etvar: forall θ X A T,
   ss_to_denv θ ⊢ A ->
   X ~ T ∈ θ ->
   X \notin ftvar_in_typ A.
-Proof with eauto with Hdb_transfer.
+Proof with eauto.
   intros. dependent induction H0...
   + destruct (X == X0)...
     subst. apply in_ss_denv_in_ss in H0.
@@ -1787,7 +1774,7 @@ Corollary etvar_bind_no_etvar: forall θ X1 X2 A1 A2,
   X1 ~ A1 ∈ θ ->
   X2 ~ A2 ∈ θ ->
   X1 \notin ftvar_in_typ A2.
-Proof with eauto with Hdb_transfer.
+Proof with eauto.
   intros; eapply wf_ss_typ_no_etvar...
 Admitted.
 
@@ -1797,7 +1784,7 @@ Hint Resolve trans_typ_wf_ss : Hdb_transfer.
 Lemma ss_wf_typ_trans_typ_total : forall θ Aᵃ,
   (ss_to_denv θ) ⊢ Aᵃ ->
   exists Aᵈ, θ ⫦ᵗ Aᵃ ⇝ Aᵈ.
-Proof with eauto with Hdb_transfer.
+Proof with eauto.
   intros. induction H...
   - admit.
   - admit.
@@ -1826,7 +1813,7 @@ Lemma trans_typ_reorder : forall θ θ' Aᵃ Aᵈ,
   (forall X b, X `in` ftvar_in_typ Aᵃ -> binds X b θ -> binds X b θ') ->
   θ ⫦ᵗ Aᵃ ⇝ Aᵈ ->
   θ' ⫦ᵗ Aᵃ ⇝ Aᵈ.
-Proof with eauto with Hdb_transfer.
+Proof with eauto.
   intros. apply trans_typ_lc_atyp in H2 as Hlc.
   generalize dependent θ'. generalize dependent θ. generalize dependent Aᵈ.
   induction Hlc; intros...
@@ -1877,7 +1864,7 @@ with trans_body_reorder' : forall θ θ' bᵃ bᵈ,
   (forall X b, X `in` ftvar_in_body bᵃ -> binds X b θ -> binds X b θ') ->
   θ ⫦ᵇ bᵃ ⇝ bᵈ ->
   θ' ⫦ᵇ bᵃ ⇝ bᵈ.
-Proof with eauto with Hdb_transfer.
+Proof with eauto.
   - intros * Hlc. 
     generalize dependent θ'. generalize dependent θ. generalize dependent eᵈ.
     induction Hlc; clear trans_exp_reorder'; intros; try solve [dependent destruction H2; eauto with Hdb_transfer].
@@ -1928,7 +1915,7 @@ with trans_body_reorder : forall θ θ' bᵃ bᵈ,
   (forall X b, X `in` ftvar_in_body bᵃ -> binds X b θ -> binds X b θ') ->
   θ ⫦ᵇ bᵃ ⇝ bᵈ ->
   θ' ⫦ᵇ bᵃ ⇝ bᵈ.
-Proof with eauto with Hdb_transfer.
+Proof with eauto.
   - intros. apply trans_exp_lc_aexp in H2 as Hlc. eapply trans_exp_reorder' with (θ:=θ); eauto.
   - intros. apply trans_body_lc_abody in H2 as Hlc. eapply trans_body_reorder' with (θ:=θ); eauto.
 Qed.
@@ -1945,7 +1932,7 @@ with trans_body_reorder : forall θ θ' bᵃ bᵈ,
   (forall X b, X `in` ftvar_in_body bᵃ -> binds X b θ -> binds X b θ') ->
   θ ⫦ᵇ bᵃ ⇝ bᵈ ->
   θ' ⫦ᵇ bᵃ ⇝ bᵈ.
-Proof with eauto with Hdb_transfer.
+Proof with eauto.
   - intros. 
     apply trans_exp_lc_aexp in H2 as Hlc.
     generalize dependent θ'. generalize dependent θ. generalize dependent eᵈ.
@@ -1998,7 +1985,7 @@ with trans_contd_reorder : forall θ θ' cdᵃ cdᵈ,
   (forall X b, X `in` ftvar_in_contd cdᵃ -> binds X b θ -> binds X b θ') ->
   θ ⫦ᶜᵈ cdᵃ ⇝ cdᵈ ->
   θ' ⫦ᶜᵈ cdᵃ ⇝ cdᵈ.
-Proof with eauto with Hdb_transfer.
+Proof with eauto.
   intros.
   generalize dependent θ'. generalize dependent θ. generalize dependent csᵈ.
   induction csᵃ; simpl in *; intros; dependent destruction H2; constructor; 
@@ -2020,12 +2007,12 @@ Lemma trans_work_reorder : forall θ θ' wᵃ wᵈ,
   (forall X b, X `in` ftvar_in_work wᵃ -> binds X b θ -> binds X b θ') ->
   θ ⫦ʷ wᵃ ⇝ wᵈ ->
   θ' ⫦ʷ wᵃ ⇝ wᵈ.
-Proof with eauto with Hdb_transfer.
+Proof with eauto.
   intros. destruct wᵃ; simpl in *; dependent destruction H2; constructor;
     try eapply trans_typ_reorder with (θ:=θ); eauto with Hdb_transfer; 
     try eapply trans_exp_reorder with (θ:=θ); eauto with Hdb_transfer; 
     try eapply trans_conts_reorder with (θ:=θ); eauto with Hdb_transfer;
-    try eapply trans_contd_reorder with (θ:=θ); eauto with Hdb_transfer.
+    try eapply trans_contd_reorder with (θ:=θ); eauto.
     intros. apply H1; auto.
     intros. apply H1; eauto.
 Qed.
