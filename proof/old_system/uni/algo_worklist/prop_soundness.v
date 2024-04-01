@@ -37,20 +37,6 @@ Hint Constructors d_inftapp : Hdb_a_wl_red_soundness.
 
 
 
-
-Ltac unify_trans_typ :=
-  match goal with
-  | H_1 : trans_typ ?θ ?Aᵃ ?A1ᵈ, H_2 : trans_typ ?θ ?Aᵃ ?A2ᵈ |- _ => eapply trans_typ_det with (A₁ᵈ:=A1ᵈ) in H_2; 
-      eauto with Hdb_transfer; subst
-  end.
-
-Ltac unify_trans_exp :=
-  match goal with
-  | H_1 : trans_exp ?θ ?eᵃ ?e1ᵈ, H_2 : trans_exp ?θ ?eᵃ ?e2ᵈ |- _ => eapply trans_exp_det in H_1; 
-      eauto with Hdb_transfer; subst
-  end.
-  
-
 Ltac rename_typ :=
   lazymatch goal with
   | H : trans_typ ?θ (open_typ_wrt_typ _ _) ?Aᵈ |- _ => fail
@@ -572,17 +558,11 @@ Lemma trans_apply_conts : forall θ csᵃ csᵈ Aᵃ Aᵈ wᵃ wᵈ,
   θ ⫦ʷ wᵃ ⇝ wᵈ ->
   apply_conts csᵃ Aᵃ wᵃ ->
   apply_conts csᵈ Aᵈ wᵈ.
-intros. dependent destruction H2; destruct_trans. 
-  + admit.
-  + admit.
-  + repeat unify_trans_typ.
-    rename_typ.
-    admit.
-  + repeat unify_trans_typ.
-    admit.
-  + repeat unify_trans_typ.
-    constructor.
-Admitted.
+Proof.
+  intros. dependent destruction H2; destruct_trans;
+    try unify_trans_contd; try unify_trans_conts; 
+    try repeat unify_trans_typ; try unify_trans_exp; try constructor.
+Qed.
 
 Lemma trans_apply_contd : forall θ cdᵃ cdᵈ Aᵃ Aᵈ Bᵃ Bᵈ wᵃ wᵈ,
   θ ⫦ᶜᵈ cdᵃ ⇝ cdᵈ ->
@@ -592,10 +572,11 @@ Lemma trans_apply_contd : forall θ cdᵃ cdᵈ Aᵃ Aᵈ Bᵃ Bᵈ wᵃ wᵈ,
   apply_contd cdᵃ Aᵃ Bᵃ wᵃ ->
   apply_contd cdᵈ Aᵈ Bᵈ wᵈ.
 Proof with eauto with Hdb_a_wl_red_soundness.
-
-Admitted.
-
-
+Proof.
+  intros. dependent destruction H3; destruct_trans;
+    try unify_trans_contd; try unify_trans_conts; 
+    try repeat unify_trans_typ; try unify_trans_exp; try constructor.
+Qed.
 
 
 Theorem d_a_wl_red_soundness: forall Γ,
