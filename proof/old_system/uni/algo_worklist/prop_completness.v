@@ -103,7 +103,7 @@ Ltac rename_typ_rev :=
 
 (* equiv to tex_wfs *)
 (* look at wfs *)
-Theorem aworklist_subst_total' : forall Γ1 Γ2 X Tᵃ Tᵈ Ω θ,
+(* Theorem aworklist_subst_total' : forall Γ1 Γ2 X Tᵃ Tᵈ Ω θ,
   ⊢ᵃʷ (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) ->
   nil ⫦ (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) ⇝ Ω ⫣ θ ->
   binds X (dbind_typ Tᵈ) θ ->
@@ -122,9 +122,67 @@ Theorem aworklist_subst_total : forall Γ X Tᵃ Tᵈ Ω θ,
   exists Γ'1 Γ'2,
     aworklist_subst Γ X Tᵃ Γ'1 Γ'2.
 Proof.
+Admitted. *)
+
+Lemma wf_ss_late_dom_notin_ftver_bind_typ : forall θ1 θ2 X T,
+  wf_ss (θ2 ++ (X, dbind_typ T) :: θ1) ->
+  (forall Y, Y `in` dom θ2 -> Y `notin` ftvar_in_typ T).
+Proof.
+  intros. assert (wf_ss ((X, dbind_typ T) :: θ1)) by admit.
+  eapply wf_ss_binds_monotyp in H1; eauto.
+  simpl in H1.
+  dependent induction H1; auto.
+  - simpl. admit.
+  - simpl. apply notin_union; eauto.
+    + eapply IHd_mono_typ1; eauto. admit.
+    + eapply IHd_mono_typ2; eauto. admit.
 Admitted.
 
 
+Lemma d_mono_typ_strengthen : forall θ X b T,
+  wf_ss ((X, b) :: θ) ->
+  d_mono_typ (ss_to_denv ((X, b) :: θ)) T ->
+  X `notin` ftvar_in_typ T ->
+  d_mono_typ (ss_to_denv θ) T.
+Proof.
+  intros. dependent induction H0; eauto.
+  - destruct b; simpl in *. 
+    + inversion H0. dependent destruction H2. solve_notin_eq X0.
+      constructor; auto.
+    + inversion H0. dependent destruction H2.
+      constructor; auto.
+    + constructor; auto.
+  - simpl in *. eauto.
+Qed.
+
+Lemma d_mono_typ_strengthen_multi : forall θ1 θ2 X T1 T2,
+  wf_ss (θ2 ++ (X, dbind_typ T1) :: θ1) ->
+  d_mono_typ (ss_to_denv (θ2 ++ (X, dbind_typ T1) :: θ1)) T2 ->
+  d_mono_typ (ss_to_denv θ1) T1 ->
+  (∀ Y : atom, Y `in` ftvar_in_typ T2 → Y `in` ftvar_in_typ T1) ->
+  d_mono_typ (ss_to_denv θ1) T2.
+Proof.
+  intros. induction θ2; simpl in *; auto.
+  - destruct a as [X0 b]. destruct b.
+    + apply IHθ2; auto.
+      * dependent destruction H; auto.
+      * eapply  d_mono_typ_strengthen; eauto.
+        unfold not. intros. apply H2 in H3.
+        rewrite_env (((X0, □) :: θ2) ++ (X, dbind_typ T1) :: θ1) in H.
+        assert (X0 `in` dom ((X0, □) :: θ2)) by (simpl; auto).
+        specialize (wf_ss_late_dom_notin_ftver_bind_typ _ _ _ _ H X0 H4).
+        intros. contradiction.
+    + apply IHθ2; auto.
+      * dependent destruction H; auto.
+      * eapply  d_mono_typ_strengthen; eauto.
+        unfold not. intros. apply H2 in H3.
+        rewrite_env (((X0, ■) :: θ2) ++ (X, dbind_typ T1) :: θ1) in H.
+        assert (X0 `in` dom ((X0, ■) :: θ2)) by (simpl; auto).
+        specialize (wf_ss_late_dom_notin_ftver_bind_typ _ _ _ _ H X0 H4).
+        intros. contradiction.
+    + apply IHθ2; auto.
+      * dependent destruction H; auto.
+Qed.
 
 Lemma a_worklist_subst_transfer_same_dworklist_rev_exist: forall Γ1 Γ2 Ω θ X T Tᵈ,
   ⊢ᵃʷ (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) ->
@@ -190,16 +248,32 @@ Proof.
       * destruct_a_wf_wl; auto.
     + assert (Hdec: (X0 `in` ftvar_in_typ T) \/ (X0 `notin` ftvar_in_typ T)) by fsetdec.
       inversion Hdec.
-      * apply trans_wl_split in Htranswl. destruct Htranswl as [Ω1 [Ω2 [θ'' [Heq [Htrans1 Htrans2]]]]].
+      * apply trans_wl_split in Htranswl as Htranswlsplit. destruct Htranswlsplit as [Ω1 [Ω2 [θ'' [Heq [Htrans1 Htrans2]]]]].
         dependent destruction Htrans1. subst.
-        assert (nil ⫦ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ X0 ~ᵃ ⬒ ;ᵃ Γ1 ⇝ (Ω2 ⧺ Ω0) ⫣ (X0, dbind_typ T0) :: (X0, dbind_typ T) :: θ'0) by admit.
-        apply IHΓ2 in H2 as Hws.
-        destruct Hws as [Γ'1 [Γ'2 [θ'0 [Hws [Htrans [Hbinds Hwfss]]]]]].
-        exists Γ'1, Γ'2, θ'0. repeat split; auto.
-        -- constructor; auto. admit.
+        apply trans_wl_split_ss in Htrans2 as Hsssplit. destruct Hsssplit as [θ'']. subst.
+        assert (Hbindsx: binds X (dbind_typ T1) ((X0, dbind_typ T0) :: θ'' ++ (X, dbind_typ T1) :: θ'0)) by auto.
+        apply trans_typ_binds_etvar in Hbindsx as Htransx'. unify_trans_typ.
+        clear Hbindsx.
+        assert (d_mono_typ (ss_to_denv θ'0) T0). {
+          assert (binds X0 (dbind_typ T0) ( (X0, dbind_typ T0) :: θ'' ++ (X, dbind_typ T1) :: θ'0)) by auto.
+          specialize (trans_typ_tvar_stvar_in_etvar_binds_in_atyp _ _ _ _ _ Htranst H4 H1). intros.
+          eapply d_mono_typ_strengthen_multi; eauto.
+          apply trans_typ_wf_ss in Htranst. dependent destruction Htranst. auto.
+        }
+        assert (nil ⫦ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ X0 ~ᵃ ⬒ ;ᵃ Γ1 ⇝ (Ω2 ⧺ Ω0) ⫣ θ'' ++ (X, dbind_typ T1) :: (X0, dbind_typ T0) :: θ'0).
+        { eapply trans_wl_app with (θ2:=(X, dbind_typ T1) :: (X0, dbind_typ T0) :: θ'0). 
+          constructor; auto.
+          constructor; auto.
+          admit.
+        }
+        apply IHΓ2 in H5 as Hws.
+        destruct Hws as [Γ'1 [Γ'2 [θ'00 [Hws [Htrans [Hbinds Hwfss]]]]]].
+        exists Γ'1, Γ'2, θ'00. repeat split; auto.
+        -- constructor; auto. 
         -- intros. admit.
-        -- admit.
-        -- admit.
+        -- intros. admit.
+        -- apply trans_typ_reorder with (θ:=(X0, dbind_typ T0) :: θ'' ++ (X, dbind_typ T1) :: θ'0); auto. 
+          admit. admit.
         -- admit.
         -- admit.
       * apply IHΓ2 in Htranswl as Hws; auto.
