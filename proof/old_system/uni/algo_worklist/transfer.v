@@ -1798,42 +1798,6 @@ Proof with eauto.
   intros; eapply wf_ss_typ_no_etvar...
 Admitted.
 
-
-
-Ltac destruct_binds_eq :=
-  repeat
-    lazymatch goal with
-    | H1 : (?X1, ?b1) = (?X2, ?b2) |- _ =>
-      dependent destruction H1
-    end.
-
-Ltac destruct_binds :=
-  simpl in *;
-  repeat
-  match goal with
-  | H1 : binds ?X ?b ((?X', ?b') :: ?θ) |- _ =>
-    let H_1 := fresh "H" in
-    let H_2 := fresh "H" in
-    inversion H1 as [H_1 | H_2];
-    clear H1;
-    try destruct_binds_eq;
-    try solve [solve_notin_eq X];
-    try solve [solve_notin_eq X']
-  end.
-
-
-Ltac destruct_in :=
-  simpl in *;
-  match goal with
-  | H1 : ((?X, ?b) = (?X', ?b')) \/  In ?b'' ?θ |- _ =>
-    let H1_1 := fresh "H" in
-    let H1_2 := fresh "H" in
-    inversion H1 as [H1_1 | H1_2];
-    clear H1;
-    try destruct_binds_eq;
-    try solve [solve_notin_eq X];
-    try solve [solve_notin_eq X']
-  end.
   
 
 Lemma trans_wl_a_wl_binds_var_binds_d_wl_and_trans : forall θ Γ Ω x Aᵃ,
