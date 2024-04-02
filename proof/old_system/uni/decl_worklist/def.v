@@ -27,11 +27,11 @@ Inductive d_wl_del_red : dworklist -> Prop :=
       d_wl_del_red Ω ->
       d_wl_del_red (dworklist_constvar Ω X dbind_stvar_empty)
   | d_wl_del_red__chk : forall Ω e A,
-      d_typing (dwl_to_denv Ω) e typingmode__chk A ->
+      d_chk_inf (dwl_to_denv Ω) e typingmode__chk A ->
       d_wl_del_red Ω ->
       d_wl_del_red (dworklist_conswork Ω (work_check e A))
   | d_wl_del_red__inf : forall Ω e A cs,
-      d_typing (dwl_to_denv Ω) e typingmode__inf A ->
+      d_chk_inf (dwl_to_denv Ω) e typingmode__inf A ->
       d_wl_del_red (dworklist_conswork Ω (work_applys cs A)) ->
       d_wl_del_red (dworklist_conswork Ω (work_infer e cs))
   | d_wl_del_red__infabs : forall Ω A B C cd,

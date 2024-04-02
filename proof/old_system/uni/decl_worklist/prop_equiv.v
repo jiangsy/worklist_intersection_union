@@ -229,7 +229,7 @@ Ltac _apply_IH_d_wl_red :=
     end.
 (* 
 (* remove later *)
-Hint Constructors d_typing : typing. *)
+Hint Constructors d_chk_inf : typing. *)
 
 #[local] Hint Immediate d_wf_wl_wf_env : core.
 
@@ -252,7 +252,7 @@ Proof with eauto with typing.
   - admit.
   - admit.
   - destruct_wf. econstructor.
-    apply d_typing__chk_abstop with (L:=L `union` L0 `union` dom (dwl_to_denv Ω)).
+    apply d_chk_inf__chk_abstop with (L:=L `union` L0 `union` dom (dwl_to_denv Ω)).
     intros. inst_cofinites_with x...
     assert (⊢ᵈʷ (work_check (e ^ᵉₑ exp_var_f x) typ_top ⫤ x ~ᵈ typ_bot;ᵈ Ω)).
     { repeat constructor... admit. }
@@ -434,7 +434,7 @@ Qed.
 
 
 Lemma d_wl_red_chk_inf_complete: forall Ω e A mode,
-  d_typing (dwl_to_denv Ω) e mode A -> 
+  d_chk_inf (dwl_to_denv Ω) e mode A -> 
   match mode with 
   | typingmode__chk => ⊢ᵈʷ (work_check e A ⫤ Ω) -> Ω ⟶ᵈʷ⁎⋅ -> (work_check e A ⫤ Ω) ⟶ᵈʷ⁎⋅
   | typingmode__inf => forall c, ⊢ᵈʷ (work_infer e c ⫤ Ω) -> (work_applys c A ⫤ Ω) ⟶ᵈʷ⁎⋅ -> (work_infer e c ⫤ Ω) ⟶ᵈʷ⁎⋅
@@ -443,18 +443,18 @@ Proof with auto.
   intros. dependent induction H; intros; eauto...
   (* - econstructor; eauto. *)
   - econstructor. 
-    eapply IHd_typing; eauto.
+    eapply IHd_chk_inf; eauto.
     destruct_wf...
   - econstructor.
     destruct_wf.
-    eapply IHd_typing1; eauto.
+    eapply IHd_chk_inf1; eauto.
     apply d_wl_red__applys with (w:=work_infabs A (contd_infapp e2 c)); eauto.
     econstructor. simpl.
     apply d_infabs_wft in H0 as Hwft. intuition.
     eapply d_wl_red_infabs_complete; eauto.
     econstructor... econstructor... econstructor.
     assert ((work_check e2 B ⫤ Ω) ⟶ᵈʷ⁎⋅).
-      apply IHd_typing2; auto.
+      apply IHd_chk_inf2; auto.
       apply d_wl_red_weaken_consw in H5; auto.
     replace (work_applys c C ⫤ work_check e2 B ⫤ Ω)%dworklist with (dwl_app (work_applys c C ⫤ dworklist_empty) (work_check e2 B ⫤ Ω)%dworklist) by auto.
     apply d_wl_red_strengthen_work; eauto.
@@ -473,7 +473,7 @@ Proof with auto.
   - destruct_wf.
     apply d_chk_inf_wft in H0.
     econstructor.
-    apply IHd_typing; auto...
+    apply IHd_chk_inf; auto...
     apply d_wl_red__applys with (w:=(work_inftapp A B c)); eauto.
     econstructor.
     simpl.
@@ -493,7 +493,7 @@ Proof with auto.
     eapply d_wf_exp_bound_typ_head; eauto.
     simpl. apply d_wf_typ_weaken_cons...
   - destruct_wf. econstructor. 
-    apply IHd_typing; auto...
+    apply IHd_chk_inf; auto...
     eapply d_wl_red__applys with (w:=(work_sub B A)); eauto.
     constructor; auto. simpl.
     apply d_wl_red_sub_complete; auto.

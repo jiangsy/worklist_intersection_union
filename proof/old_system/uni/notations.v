@@ -24,11 +24,11 @@ Notation "E ⊢ S1 <: T1" :=
     (at level 65, S1 at next level, no associativity) : type_scope.
 
 Notation "E ⊢ e ⇐ T" :=
-    (d_typing E e typingmode__chk T) 
+    (d_chk_inf E e typingmode__chk T) 
       (at level 65, e at next level, no associativity) : type_scope.
 
 Notation "E ⊢ e ⇒ T" := 
-    (d_typing E e typingmode__inf T) 
+    (d_chk_inf E e typingmode__inf T) 
       (at level 65, e at next level, no associativity) : type_scope.
 
 Notation "E ⊢ T1 ○ T2 ⇒⇒ T3" :=

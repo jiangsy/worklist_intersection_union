@@ -950,20 +950,7 @@ Qed.
 #[local] Hint Resolve trans_typ_wf_ss : core.
 
 
-(* Ltac destruct_binds' :=
-  simpl in *;
-  repeat
-  match goal with
-  | H1 : binds ?X ?b (?b' :: ?θ) |- _ =>
-    inversion H1;
-    clear H1;
-    intuition;
-    try destruct_binds_eq
-  end. *)
-
-
-
-Theorem d_a_wl_red_soundness: forall Γ,
+Theorem a_wl_red_soundness: forall Γ,
   ⊢ᵃʷ Γ -> Γ ⟶ᵃʷ⁎⋅ -> exists Ω, transfer Γ Ω /\ Ω ⟶ᵈ⁎⋅.
 Proof with eauto.
   intros * Hwfa Hared. dependent induction Hared; auto; unfold transfer in *;
@@ -1110,9 +1097,7 @@ Proof with eauto.
       * admit. (* OK, mono *)
     + admit. (* OK, wf *)
   (* A1 -> A2 < ^X  *)
-  - inst_cofinites_by (L `union` singleton X `union`  dom (awl_to_aenv Γ) `union` ftvar_in_typ A1) using_name X1.
-    inst_cofinites_by (L `union` singleton X1 `union` singleton X `union` dom (awl_to_aenv Γ) `union` ftvar_in_typ A1) 
-      using_name X2.
+  - pick fresh X1. pick fresh X2.
     assert (Hws: exists Γ1 Γ2, 
       aworklist_subst (work_sub (typ_arrow A1 A2) ` X ⫤ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ) X
         (typ_arrow ` X1 ` X2) Γ1 Γ2). {
@@ -1122,32 +1107,30 @@ Proof with eauto.
       econstructor. auto.
       destruct_a_wf_wl; auto.
     }
-    destruct Hws as [Γ1 [Γ2 Hsubst]].
-    apply H3 in Hsubst as Hwsred.
+    destruct Hws as [Γ1 [Γ2 Hsubst]]...
+    apply H3 in Hsubst as Hwsred...
     destruct Hwsred as [Ω [[θ Htrans] Hdred]].
     + eapply a_worklist_subst_transfer_same_dworklist in Hsubst as Htransws; eauto...
       destruct Htransws as [θ'1 [Tᵈ [Htrans_rev [Htransa [Htransa' [Hbinds [Hbindsx Hwfss]]]]]]].
       destruct_trans.
-      assert (Hbindsx1: binds X1 (dbind_typ T0)  ((X2, dbind_typ T) :: (X1, dbind_typ T0) :: θ')) by auto.
-      assert (Hbindsx2: binds X2 (dbind_typ T)  ((X2, dbind_typ T) :: (X1, dbind_typ T0) :: θ')) by auto.
-      apply trans_typ_binds_etvar in Hbindsx1...
-      apply trans_typ_binds_etvar in Hbindsx2...
+      assert (Hbindsx1: ((X2, dbind_typ T) :: (X1, dbind_typ T0) :: θ') ⫦ᵗ `X1 ⇝ T0 ) by eauto.
+      assert (Hbindsx2: ((X2, dbind_typ T) :: (X1, dbind_typ T0) :: θ') ⫦ᵗ `X2 ⇝ T ) by eauto.
       apply trans_typ_binds_etvar in Hbindsx as Htransx3...
       repeat unify_trans_typ.
       exists (dworklist_conswork Ω (work_sub(typ_arrow A1ᵈ A2ᵈ) (typ_arrow T0 T) )). split.
       * exists θ'. econstructor...
         constructor.
         -- constructor. 
-           ++ rewrite_env (nil ++ θ'). 
-              apply trans_typ_strengthen_etvar with (X:=X1) (T:=T0)...
-              eapply trans_typ_strengthen_etvar with (X:=X2) (T:=T)...
-           ++ admit. (* OK, trans_typ_strengthen_etvar *)
+           ++ eapply trans_typ_strengthen_cons... 
+              eapply trans_typ_strengthen_cons...
+           ++ eapply trans_typ_strengthen_cons... 
+              eapply trans_typ_strengthen_cons...
         -- apply trans_typ_binds_etvar; eauto.
            destruct_binds. destruct_in...
       * auto.
       * admit. (* OK, wf *)
-      * admit. (* OK, mono *)
-    + admit. (* OK, wf *)
+      * simpl... constructor...
+    + auto. admit. (* OK, wf *)
     (* τ < ^X *)
   - destruct_a_wf_wl. 
     apply a_worklist_subst_wf_wl in H4 as Hwf... 
@@ -1214,17 +1197,17 @@ Proof with eauto.
       econstructor...
       eapply trans_exp__abs with (L:=fvar_in_exp e). intros.
       rewrite_close_open_subst.
-      admit. (* OK, inf rename *)
+      admit. (* OK, trans rename *)
     + destruct_d_wl_del_red.
       econstructor; auto.
-      inst_cofinites_for d_typing__chk_abs; auto.
+      inst_cofinites_for d_chk_inf__chk_abs; auto.
       * admit. (* OK, wf *)
       * intros. rewrite_close_open_subst.
-        admit. (* OK, chk rename *)
+        apply d_chk_inf_rename_var_cons...
   (* \ x. e <= ^X *)
-  - inst_cofinites_by L.
-    inst_cofinites_by (L `union` singleton x `union` singleton X `union`  dom (awl_to_aenv Γ)) using_name X1.
-    inst_cofinites_by (L `union` singleton x `union` singleton X1 `union` singleton X `union` dom (awl_to_aenv Γ)) using_name X2.
+  - pick fresh x.
+    pick fresh X1. pick fresh X2.
+    inst_cofinites_with x. inst_cofinites_with X1. inst_cofinites_with X2.  
     assert (Hws: exists Γ1 Γ2, aworklist_subst 
        (work_check (e ^ᵉₑ exp_var_f x) ` X2  ⫤ x ~ᵃ ` X1;ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ) X
        (typ_arrow ` X1 ` X2) Γ1 Γ2). {
@@ -1241,10 +1224,8 @@ Proof with eauto.
     + eapply a_worklist_subst_transfer_same_dworklist in Hsubst as Htransws; eauto...
       destruct Htransws as [θ'1 [Tᵈ [Htrans_rev [Htransa [Htransa' [Hbinds [Hbindsx Hwfss]]]]]]].
       destruct_trans.
-      assert (Hbindsx1: binds X1 (dbind_typ T0)  ((X2, dbind_typ T) :: (X1, dbind_typ T0) :: θ')) by auto.
-      assert (Hbindsx2: binds X2 (dbind_typ T)  ((X2, dbind_typ T) :: (X1, dbind_typ T0) :: θ')) by auto.
-      apply trans_typ_binds_etvar in Hbindsx1...
-      apply trans_typ_binds_etvar in Hbindsx2...
+      assert (Hbindsx1: ((X2, dbind_typ T) :: (X1, dbind_typ T0) :: θ') ⫦ᵗ `X1 ⇝ T0 ) by eauto.
+      assert (Hbindsx2: ((X2, dbind_typ T) :: (X1, dbind_typ T0) :: θ') ⫦ᵗ `X2 ⇝ T ) by eauto.
       repeat unify_trans_typ.
       exists (dworklist_conswork Ω (work_check (exp_abs (close_exp_wrt_exp x eᵈ)) (typ_arrow T0 T))). split.
       * exists θ'. constructor; auto.
@@ -1276,7 +1257,7 @@ Proof with eauto.
       admit. (* OK, inf rename *)
     + destruct_d_wl_del_red...
       econstructor; auto.
-      inst_cofinites_for d_typing__chk_abstop. intros.
+      inst_cofinites_for d_chk_inf__chk_abstop. intros.
       rewrite_close_open_subst.
       admit. (* OK, chk rename h*)
   (* e <= A1 /\ A2 *)
@@ -1287,13 +1268,13 @@ Proof with eauto.
   - exists (work_check eᵈ (typ_union A1ᵈ A2ᵈ) ⫤ Ω)%dworklist...
     split...
     destruct_d_wl_del_red...
-    econstructor... eapply d_typing__chk_union1...
+    econstructor... eapply d_chk_inf__chk_union1...
     eapply trans_wl_a_wf_typ_d_wf_typ with (Γ:=Γ) (Aᵃ:=A2)...
   (* e <= A1 \/ A2 *)
   - exists (work_check eᵈ (typ_union A1ᵈ A2ᵈ) ⫤ Ω)%dworklist...
     split...
     destruct_d_wl_del_red...
-    econstructor... eapply d_typing__chk_union2...
+    econstructor... eapply d_chk_inf__chk_union2...
     eapply trans_wl_a_wf_typ_d_wf_typ with (Γ:=Γ) (Aᵃ:=A1)...
   (* x => _ *)
   - destruct_a_wf_wl.
@@ -1312,17 +1293,15 @@ Proof with eauto.
     split. exists θ...
     destruct_d_wl_del_red.
     econstructor...
-    eapply d_typing__inf_anno...
+    eapply d_chk_inf__inf_anno...
     eapply d_chk_inf_wft...
   (* /\ a. e : A => _ *)
   - destruct_a_wf_wl. 
     pick fresh X. inst_cofinites_with X.
     assert (Hwf: ⊢ᵃʷ (work_check (e ^ᵉₜ ` X) (A ^ᵗ X) ⫤ X ~ᵃ □ ;ᵃ work_applys cs (typ_all A) ⫤ Γ)) by admit.
-    apply H2 in Hwf as IHHared.
-    destruct IHHared as [Ω [Htrans Hdred]].
-    destruct Htrans as [θ].
+    _apply_IH_a_wl_red.
     destruct_trans.
-    dependent destruction H4.
+    dependent destruction H9.
     (*  *)
     exists (work_infer (exp_tabs (body_anno (close_exp_wrt_typ X eᵈ) (close_typ_wrt_typ X Aᵈ0))) csᵈ ⫤ Ω)%dworklist. split.
     + exists θ...
@@ -1332,7 +1311,7 @@ Proof with eauto.
       intros. simpl. repeat rewrite open_body_wrt_typ_anno. 
       constructor.
       -- rewrite_close_open_subst.
-         apply trans_exp_rename_tvar_cons with (X':=X0) in H7; eauto.          
+         apply trans_exp_rename_tvar_cons with (X':=X0) in H12; eauto.          
           admit. (* OK, inf rename *)
       -- solve_trans_typ_open_close.
     + assert (θ ⫦ᵗ typ_all A ⇝ typ_all A1ᵈ). {
@@ -1343,13 +1322,13 @@ Proof with eauto.
         inst_cofinites_for trans_typ__all. intros.
         solve_trans_typ_open_close.
       }
-      apply trans_typ_det with (A₁ᵈ:=typ_all (close_typ_wrt_typ X Aᵈ0)) in H9...
+      unify_trans_typ. inversion H15. subst.
       apply d_wl_del_red__inf with (A:=typ_all (close_typ_wrt_typ X Aᵈ0)).
-      * inst_cofinites_for  d_typing__inf_tabs. 
+      * inst_cofinites_for  d_chk_inf__inf_tabs. 
         admit. (* OK, wf *)
         intros. inst_cofinites_with X0. rewrite_close_open_subst.
         rewrite_close_open_subst. admit. (* OK, chk rename *)
-      * rewrite H9. auto. destruct_d_wl_del_red...
+      * destruct_d_wl_del_red...
   (* \x. e => _ *)
   - destruct_a_wf_wl.
     pick fresh x. pick fresh X1. pick fresh X2.
@@ -1367,13 +1346,11 @@ Proof with eauto.
       * admit. (* trans_typ *)
       * admit. (* trans_cont_weaken *)
     + eapply d_wl_del_red__inf with (A:=typ_arrow A1ᵈ Aᵈ0). 
-      * assert (Hbindsx1: binds X1 (dbind_typ T1)  ((X2, dbind_typ T0) :: (X1, dbind_typ T1) :: θ')) by auto.
-        assert (Hbindsx2: binds X2 (dbind_typ T0)  ((X2, dbind_typ T0) :: (X1, dbind_typ T1) :: θ')) by auto.
-        apply trans_typ_binds_etvar in Hbindsx1...
-        apply trans_typ_binds_etvar in Hbindsx2...
+      * assert (Hbindsx1: ((X2, dbind_typ T0) :: (X1, dbind_typ T1) :: θ') ⫦ᵗ `X1 ⇝ T1 ) by eauto.
+        assert (Hbindsx2: ((X2, dbind_typ T0) :: (X1, dbind_typ T1) :: θ') ⫦ᵗ `X2 ⇝ T0 ) by eauto.
         repeat unify_trans_typ.
-        destruct_d_wl_del_red... simpl in H7.
-        inst_cofinites_for d_typing__inf_abs_mono; auto.
+        destruct_d_wl_del_red... simpl in *.
+        inst_cofinites_for d_chk_inf__inf_abs_mono; auto.
         admit.
         intros. rewrite_close_open_subst; auto. admit.
       * destruct_d_wl_del_red...
@@ -1447,8 +1424,8 @@ Proof with eauto.
   - exists (work_unioninfabs B1ᵈ C1ᵈ B2ᵈ C2ᵈ cdᵈ ⫤ Ω)%dworklist.
     split...
   (* ^X ▹ _ *)
-  - inst_cofinites_by (L `union` singleton X `union`  dom (awl_to_aenv Γ)) using_name X1.
-    inst_cofinites_by (L `union` singleton X1 `union` singleton X `union` dom (awl_to_aenv Γ)) using_name X2.
+  - pick fresh X1. pick fresh X2.
+    inst_cofinites_with X1. inst_cofinites_with X2.
     assert (Hws: exists Γ1 Γ2, aworklist_subst 
       (work_infabs (typ_arrow ` X1 ` X2) cd ⫤ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ) X
       (typ_arrow ` X1 ` X2) Γ1 Γ2). {
@@ -1465,20 +1442,19 @@ Proof with eauto.
     + eapply a_worklist_subst_transfer_same_dworklist in Hsubst as Htransws; eauto...
       destruct Htransws as [θ'1 [Tᵈ [Htrans_rev [Htransa [Htransa' [Hbinds [Hbindsx Hwfss]]]]]]].
       destruct_trans.
-      assert (Hbindsx1: binds X1 (dbind_typ T0)  ((X2, dbind_typ T) :: (X1, dbind_typ T0) :: θ')) by auto.
-      assert (Hbindsx2: binds X2 (dbind_typ T)  ((X2, dbind_typ T) :: (X1, dbind_typ T0) :: θ')) by auto.
-      apply trans_typ_binds_etvar in Hbindsx1...
-      apply trans_typ_binds_etvar in Hbindsx2...
+      assert (Hbindsx1: ((X2, dbind_typ T) :: (X1, dbind_typ T0) :: θ') ⫦ᵗ `X1 ⇝ T0 ) by eauto.
+      assert (Hbindsx2: ((X2, dbind_typ T) :: (X1, dbind_typ T0) :: θ') ⫦ᵗ `X2 ⇝ T ) by eauto.
       repeat unify_trans_typ.
       exists (dworklist_conswork Ω (work_infabs (typ_arrow T0 T) cdᵈ)). split.
       * exists θ'. constructor; auto.
         constructor.
-        -- apply trans_typ_binds_etvar; auto...
+        -- apply trans_typ_binds_etvar...
            destruct_binds. destruct_in...
         -- admit. (* trans_cont_stengthen *)
       * destruct_d_wl_del_red...       
-      * admit. (* OK, wf *)
-      * admit. (* mono *)   
+      * destruct_a_wf_wl... 
+        admit.  (* OK, wf *)
+      * simpl. auto.
     + admit. (* OK, wf *)
   - exists (work_infer (exp_tapp eᵈ Bᵈ) cᵈ ⫤ Ω)%dworklist.
     split...
@@ -1489,7 +1465,7 @@ Proof with eauto.
     destruct_trans.
     inst_cofinites_by (dom (awl_to_aenv Γ) `union` dom θ `union` ftvar_in_typ A) using_name X.
     trans_all_typ.
-    replace (A ^^ᵗ B) with ({B /ᵗ X} A ^ᵗ X) in H6 by admit.
+    erewrite <- subst_tvar_in_typ_open_typ_wrt_typ_tvar2 in H6; eauto.
     eapply trans_typ_subst_tvar_cons in H6...
     destruct H6 as [Axᵈ [Hsubst Htransa]].
     exists (work_inftapp (typ_all (close_typ_wrt_typ X Axᵈ)) Bᵈ csᵈ ⫤ Ω)%dworklist.

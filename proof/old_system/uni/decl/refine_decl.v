@@ -75,7 +75,7 @@ Inductive d_sub_alt : denv -> typ -> typ -> Prop :=    (* d_sub plus more side c
      d_sub_alt Ψ (typ_union A1 A2) B.
 
 
-(* d_typing plus more side conditions *)
+(* d_chk_inf plus more side conditions *)
 Inductive d_typing_alt : denv -> exp -> typing_mode -> typ -> Prop :=
 | d_typing_alt__infvar : forall (Ψ:denv) (x:expvar) (A:typ),
     d_wf_env Ψ ->
@@ -184,7 +184,7 @@ Proof with eauto using d_sub_dwft_0, d_sub_dwft_1, d_sub_dwft_2.
 Qed.
 
 Lemma d_typing_alt_sound : forall Ψ e dir A,
-    d_typing_alt Ψ e dir A -> d_typing Ψ e dir A.
+    d_typing_alt Ψ e dir A -> d_chk_inf Ψ e dir A.
 Proof with eauto using d_sub_alt_sound.
   intros * HT. induction HT...
 Qed.
@@ -272,7 +272,7 @@ Qed.
 
 
 Lemma d_typing_alt_complete : forall Ψ e dir A,
-    d_typing Ψ e dir A -> d_typing_alt Ψ e dir A.
+    d_chk_inf Ψ e dir A -> d_typing_alt Ψ e dir A.
 Proof with eauto using d_sub_alt_complete.
   intros * HT. induction HT.
   9: applys* d_typing_alt_chksub_gen...

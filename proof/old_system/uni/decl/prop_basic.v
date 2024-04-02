@@ -789,9 +789,9 @@ Qed.
 
 
 Corollary d_wf_env_rename_stvar : forall Ψ1 X Ψ2 Y,
-  ⊢ Ψ2 ++ X ~ dbind_stvar_empty ++ Ψ1 ->
+  ⊢ Ψ2 ++ X ~ ■ ++ Ψ1 ->
   Y ∉ dom (Ψ2 ++ Ψ1) ->
-  ⊢ map (subst_tvar_in_dbind (typ_var_f Y) X) Ψ2 ++ Y ~ dbind_stvar_empty ++ Ψ1.
+  ⊢ map (subst_tvar_in_dbind (typ_var_f Y) X) Ψ2 ++  Y ~ ■ ++ Ψ1.
 Proof with try solve_notin; simpl; eauto.
   intros * HE HT.
   case_eq (Y == X); intros.
@@ -1080,5 +1080,5 @@ Qed.
 (* Lemma d_infabs_rename_var : *)
 (* Lemma d_inftapp_rename_tvar : *)
 (* Lemma d_inftapp_rename_var : *)
-(* Lemma d_chk_inf_rename_tvar : *)
-(* Lemma d_chk_inf_rename_var : *)
+(* Lemma d_chk_inf_rename_var_tvar : *)
+(* Lemma d_chk_inf_rename_var_var : *)

@@ -1736,6 +1736,17 @@ Proof with eauto.
 Qed.
 
 
+Lemma trans_typ_strengthen_cons : forall θ X b Aᵃ Aᵈ,
+  (X, b) :: θ ⫦ᵗ Aᵃ ⇝ Aᵈ ->
+  X \notin ftvar_in_typ Aᵃ ->
+  θ ⫦ᵗ Aᵃ ⇝ Aᵈ.
+Proof.
+  intros.
+  rewrite_env (nil ++ θ).
+  eapply trans_typ_strengthen; eauto.
+  apply trans_typ_wf_ss in H. dependent destruction H; auto.
+Qed.
+
 Lemma trans_typ_refl: forall θ A,
   ss_to_denv θ ⊢ A ->
   wf_ss θ ->
