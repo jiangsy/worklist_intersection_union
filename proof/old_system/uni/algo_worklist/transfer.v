@@ -324,6 +324,18 @@ Proof.
     + dependent destruction H0. auto.
 Qed.
 
+Lemma binds_tvar_ss_binds_ss_to_denv : forall X b θ,
+  b = dbind_tvar_empty \/  b = dbind_stvar_empty ->
+  binds X b θ ->
+  binds X b (ss_to_denv θ).
+Proof.
+  intros. induction θ; auto.
+  - destruct a; destruct d; simpl in *; try inversion H0; auto.
+    + dependent destruction H1. auto.
+    + dependent destruction H1. auto.
+    + dependent destruction H1. inversion H; dependent destruction H1. 
+Qed.
+
 Lemma wf_ss_etvar_tvar_false : forall θ X A,
   wf_ss θ -> X ~ A ∈ θ -> X ~ □ ∈ θ -> False.
 Proof.
@@ -1877,6 +1889,24 @@ Proof.
   - admit.
 Admitted.
   
+
+Lemma d_mono_typ_reorder : forall θ θ' T,
+  wf_ss θ ->
+  wf_ss θ' ->
+  (forall X b, X `in` ftvar_in_typ T -> binds X b θ -> binds X b θ') ->
+  d_mono_typ (ss_to_denv θ) T ->
+  d_mono_typ (ss_to_denv θ') T.
+Proof.
+  intros. apply d_mono_typ_lc in H2 as Hlc. induction Hlc; try dependent destruction H2.
+  - constructor.
+  - subst. 
+    apply binds_ss_to_denv_binds_ss in H2.
+    apply H1 in H2; simpl; auto.
+    constructor. 
+    apply binds_tvar_ss_binds_ss_to_denv; eauto.
+  - simpl in *. constructor; eauto.
+Qed.
+
 
 Lemma trans_typ_reorder : forall θ θ' Aᵃ Aᵈ,
   wf_ss θ ->
