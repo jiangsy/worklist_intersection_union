@@ -63,7 +63,7 @@ Ltac destruct_a_wf_wl :=
 
 #[export] Hint Constructors a_wf_wl : core.
 #[export] Hint Constructors a_wl_red : core.
-#[export] Hint Constructors apply_conts : core.
+#[export] Hint Constructors apply_contd apply_conts : core.
 #[export] Hint Constructors aworklist_subst : core.
 
 Ltac _apply_IH_a_wl_red :=
