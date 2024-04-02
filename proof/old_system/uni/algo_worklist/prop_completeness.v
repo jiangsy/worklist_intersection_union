@@ -753,8 +753,7 @@ Ltac solve_awl_trailing_etvar :=
     let Hwf := fresh "Hwf" in
     apply aworklist_trailing_etvar_total in H_1 as Htr;
     destruct Htr as [Γ0 Htr];
-    eapply aworklist_trailing_etvar_reduce_ord; eauto 
-    ;
+    eapply aworklist_trailing_etvar_reduce_ord; eauto;
     apply aworklist_trailing_etvar_trans with (Γ0:=Γ0) in H_2 as Htrans_et ; auto;
     destruct Htrans_et as [θ' Htrans_et];
     dependent destruction Htrans_et;
@@ -955,7 +954,7 @@ Qed.
 #[local] Hint Resolve trans_typ_lc_atyp trans_typ_lc_dtyp trans_wl_d_wl_mono_ss : core.
 
 
-Theorem d_a_wl_red_completness: forall Ω Γ,
+Theorem a_wl_red_completeness: forall Ω Γ,
    Ω ⟶ᵈʷ⁎⋅ -> ⊢ᵃʷ Γ -> transfer Γ Ω  -> Γ ⟶ᵃʷ⁎⋅.
 Proof with eauto.
   intros. generalize dependent Γ. induction H; auto; unfold transfer in *; intros * Hwf Htrans;
@@ -986,9 +985,7 @@ Proof with eauto.
     destruct_trans.
     + destruct (X0 == X).
       * subst. destruct_a_wf_wl... 
-      *
-      
-      assert (exists Γ1, exists Γ2, aworklist_subst Γ0 X ` X0 Γ1 Γ2) by admit.    
+      * assert (exists Γ1, exists Γ2, aworklist_subst Γ0 X ` X0 Γ1 Γ2) by admit.    
         destruct H4 as [Γ1 [Γ2 Hws]].
         -- eapply a_wl_red__sub_etvarmono1 with (Γ1:=Γ1) (Γ2:=Γ2); auto.
            ++ eapply trans_wl_ss_binds_etvar_a_wl...
@@ -1305,9 +1302,9 @@ Proof with eauto.
         -- admit.
         -- simpl. constructor... 
         -- apply wf_ss_binds_monotyp in H1 as Hmono...
-            dependent destruction Hmono...
-            repeat (constructor; auto).
-          admit.  (* *, trans_contd_strengthen *)
+           dependent destruction Hmono...
+           repeat (constructor; auto).
+           admit.  (* *, trans_contd_strengthen *)
         -- solve_binds_mono. 
            constructor.
            apply trans_typ_binds_etvar...

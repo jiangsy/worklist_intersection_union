@@ -897,7 +897,7 @@ Proof with auto.
       eapply wf_ss_rename_tvar; eauto.
       admit.
   - destruct_eq_atom. 
-    + admit. (* OK, false *)
+    + admit. (* *, false *)
     + econstructor... 
       eapply wf_ss_rename_tvar; eauto. admit. 
   - econstructor...

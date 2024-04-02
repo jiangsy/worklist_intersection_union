@@ -1745,7 +1745,7 @@ Proof with eauto; solve_false.
     eapply a_wf_wl_apply_conts in H0; eauto.
     + apply ftvar_in_work_apply_cont_eq in H2...
       fsetdec.
-  - admit. (* OK, should be same as above *)
+  - admit. (* *, should be same as above *)
 Admitted.
 
 Lemma worklist_subst_rename_var : forall Γ x x' X A Γ1 Γ2,
@@ -2070,5 +2070,5 @@ Proof with eauto.
     econstructor; eauto.
     auto_apply...
     eapply a_wf_wl_apply_conts; eauto.
-  - admit. (* OK, should be same as above *)
+  - admit. (* *, should be same as above *)
 Admitted.
