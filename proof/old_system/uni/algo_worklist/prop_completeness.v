@@ -114,6 +114,10 @@ Theorem aworklist_subst_total : forall Γ X Tᵃ Tᵈ Ω θ,
 Proof.
 Admitted. *)
 
+
+Open Scope aworklist_scope.
+
+
 #[local] Hint Resolve wf_ss_uniq trans_typ_wf_ss trans_wl_wf_ss : core.
 
 Lemma wf_ss_strengthen_app : forall θ1 θ2,
@@ -228,7 +232,7 @@ Corollary a_wf_wl_two_etvar_neq1 : forall X1 X2 b1 b2 Γ1 Γ2,
 Proof.
   intros.
   replace (aworklist_constvar (Γ2 ⧺ (aworklist_constvar Γ1 X1 b1)) X2 b2) with 
-     ((aworklist_constvar Γ2 X2 b2) ⧺ (aworklist_constvar Γ1 X1 b1))%aworklist in H by auto.
+     ((aworklist_constvar Γ2 X2 b2) ⧺ (aworklist_constvar Γ1 X1 b1)) in H by auto.
   eapply a_wf_wl_tvar_notin_remaining in H.
   simpl in H. fsetdec.
 Qed.
@@ -474,7 +478,7 @@ Proof with eauto.
   - dependent destruction Htranswl.
     apply IHΓ2 in Htranswl as Hws; auto... 
     destruct Hws as [Γ'1 [Γ'2 [θ'0 [Hws [Htrans [Hbinds Hwfss]]]]]].
-    exists Γ'1, (x ~ᵃ A1ᵃ;ᵃ Γ'2)%aworklist, θ'0. repeat split...
+    exists Γ'1, (x ~ᵃ A1ᵃ;ᵃ Γ'2), θ'0. repeat split...
     + econstructor; auto.
       apply trans_typ_reorder with (θ:=θ')...
       * intros. apply Hbinds...
@@ -488,7 +492,7 @@ Proof with eauto.
   - dependent destruction Htranswl.
     + apply IHΓ2 in Htranswl as Hws; auto.
       destruct Hws as [Γ'1 [Γ'2 [θ'0 [Hws [Htrans [Hbinds Hwfss]]]]]].
-      exists Γ'1, (X0 ~ᵃ □ ;ᵃ Γ'2)%aworklist, ((X0, □) :: θ'0). 
+      exists Γ'1, (X0 ~ᵃ □ ;ᵃ Γ'2), ((X0, □) :: θ'0). 
         repeat split...
       * econstructor; auto.
         eapply a_wf_wl_two_etvar_neq2; eauto.
@@ -552,7 +556,7 @@ Proof with eauto.
         -- eapply trans_typ_wf_ss; eauto. 
       * apply IHΓ2 in Htranswl as Hws; auto.
         destruct Hws as [Γ'1 [Γ'2 [θ'0 [Hws [Htrans [Hbinds Hwfss]]]]]].
-        exists Γ'1, (X0 ~ᵃ ⬒ ;ᵃ Γ'2)%aworklist, ((X0, dbind_typ T0) :: θ'0). 
+        exists Γ'1, (X0 ~ᵃ ⬒ ;ᵃ Γ'2), ((X0, dbind_typ T0) :: θ'0). 
           repeat split; auto.
         -- econstructor; auto.  
            eapply a_wf_wl_two_etvar_neq2; eauto.
@@ -997,8 +1001,8 @@ Proof with eauto.
               ** destruct_a_wf_wl... 
               ** eapply trans_wl_ss_binds_etvar_a_wl; eauto. 
               ** apply a_mono_typ__etvar. eapply trans_wl_ss_binds_etvar_a_wl...
-    + admit. (* Pending *)
-    + admit. (* Pending *)
+    + admit. (* *** *)
+    + admit. (* *** *)
     + destruct_a_wf_wl...
   - solve_awl_trailing_etvar.
     destruct_trans.
@@ -1006,30 +1010,30 @@ Proof with eauto.
     + apply wf_ss_uniq in H0. 
       pose proof (binds_unique _ _ _ _ _ H1 H3 H0).
       inversion H4.
-    + admit. (* Pending *)
+    + admit. (* *** *)
     + exfalso. eapply wf_ss_tvar_stvar_false; eauto.
     + destruct_a_wf_wl... 
     + solve_binds_mono.
       dependent destruction Hmono.
       admit.
-    + admit. (* Pending *)
+    + admit. (* *** *)
     + solve_binds_mono.
       dependent destruction Hmono.
       admit.  
-    + admit. (* Pending *)
+    + admit. (* *** *)
   - solve_awl_trailing_etvar. 
     destruct_trans.
     (* ^X < ^Y *)
     + apply wf_ss_binds_monotyp in H1 as Hmonoa...
       apply wf_ss_binds_monotyp in H3 as Hmonob...
-      admit. (* Pending *)
+      admit. (* *** *)
     (* A -> B > ^X *)
     + apply wf_ss_binds_monotyp in H2 as Hmonob...
-      admit. (* Pending *)
+      admit. (* *** *)
     (* ^X < A -> B *)
     + apply wf_ss_binds_monotyp in H1 as Hmonoa...
       rename_typ_rev.
-      admit. (* Pending *)
+      admit. (* *** *)
     (* A1 -> B1 < A2 -> B2 *)
     + destruct_a_wf_wl...
       constructor...
@@ -1119,7 +1123,7 @@ Proof with eauto.
     + inst_cofinites_for a_wl_red__chk_absetvar; intros.
       eapply trans_wl_ss_binds_etvar_a_wl; eauto.
       inst_cofinites_with x. inst_cofinites_with X1. inst_cofinites_with X2. 
-      admit. (* Pending *)
+      admit. (* *** *)
     + destruct_a_wf_wl. pick fresh x and apply a_wl_red__chk_absarrow.
       inst_cofinites_with x.
       eapply H0.
@@ -1288,7 +1292,7 @@ Proof with eauto.
         apply IHd_wl_red...
         admit. (* *, wf *)
         apply a_worklist_subst_transfer_same_dworklist_rev with 
-          (Ω:=(work_infabs (typ_arrow A B) cd ⫤ Ω)%dworklist) 
+          (Ω:=(work_infabs (typ_arrow A B) cd ⫤ᵈ Ω)%dworklist) 
           (Tᵈ:=typ_arrow A B)
           (θ:=((X2, dbind_typ B) :: (X1, dbind_typ A) :: θ0))
           in H5; simpl...  

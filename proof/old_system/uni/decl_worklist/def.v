@@ -256,8 +256,8 @@ Notation " X ~ᵈ ■ ;ᵈ Ω " :=
 (dworklist_constvar Ω X dbind_stvar_empty)
     (at level 58, right associativity) : dworklist_scope.
 
-Notation " W ⫤ Ω " :=
-(dworklist_conswork Ω W)
+Notation " w ⫤ᵈ Ω " :=
+(dworklist_conswork Ω w)
     (at level 58, right associativity) : dworklist_scope.
 
 Notation " Ω2 ⧺ Ω1 " :=

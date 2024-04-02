@@ -11,33 +11,35 @@ Require Import ln_utils.
 Require Import LibTactics.
 
 
+Open Scope aworklist_scope.
+
 Lemma aworklist_binds_split : forall Γ X,
   ⊢ᵃʷ Γ ->
   binds X abind_etvar_empty (awl_to_aenv Γ) ->
-  exists Γ1 Γ2, (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1)%aworklist = Γ.
+  exists Γ1 Γ2, (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) = Γ.
 Proof.
   intros. induction H.
   - inversion H0.
   - inversion H0; try dependent destruction H3.
     + apply IHa_wf_wl in H3. destruct H3 as [Γ1 [Γ2 Heq]].
-      exists Γ1, (x ~ᵃ A ;ᵃ Γ2)%aworklist.
+      exists Γ1, (x ~ᵃ A ;ᵃ Γ2).
       rewrite <- Heq. auto.
   - inversion H0; try dependent destruction H2.
     + apply IHa_wf_wl in H2. destruct H2 as [Γ1 [Γ2 Heq]].
-      exists Γ1, (X0 ~ᵃ □ ;ᵃ Γ2)%aworklist.
+      exists Γ1, (X0 ~ᵃ □ ;ᵃ Γ2).
       rewrite <- Heq. auto.
   - inversion H0; try dependent destruction H2.
     + apply IHa_wf_wl in H2. destruct H2 as [Γ1 [Γ2 Heq]].
-      exists Γ1, (X0 ~ᵃ ■ ;ᵃ Γ2)%aworklist.
+      exists Γ1, (X0 ~ᵃ ■ ;ᵃ Γ2).
       rewrite <- Heq. auto.
   - inversion H0; try dependent destruction H2.
     + exists Γ, aworklist_empty; auto.
     + apply IHa_wf_wl in H2. destruct H2 as [Γ1 [Γ2 Heq]].
-      exists Γ1, (X0 ~ᵃ ⬒ ;ᵃ Γ2)%aworklist.
+      exists Γ1, (X0 ~ᵃ ⬒ ;ᵃ Γ2).
       rewrite <- Heq. auto.
   - simpl in H0.
     + apply IHa_wf_wl in H0. destruct H0 as [Γ1 [Γ2 Heq]].
-      exists Γ1, (w ⫤ Γ2)%aworklist.
+      exists Γ1, (w ⫤ᵃ Γ2).
       rewrite <- Heq. auto.
 Qed.
 
@@ -154,7 +156,7 @@ Qed.
 
 Lemma worklist_split_etvar_det : forall Γ1 Γ2 Γ'1 Γ'2 X,
   X `notin` dom (awl_to_aenv Γ'2) `union`  dom (awl_to_aenv Γ'1) ->
-  (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1)%aworklist = (Γ'2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ'1)%aworklist ->
+  (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) = (Γ'2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ'1) ->
   Γ2 = Γ'2 /\ Γ1 = Γ'1.
 Proof.
   intros. generalize dependent Γ1.
@@ -332,7 +334,7 @@ Qed.
 (* -- *)
 
 Lemma awl_rewrite_middle : forall Γ1 Γ2 X,
-    (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1)%aworklist = ((Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ aworklist_empty) ⧺ Γ1)%aworklist.
+    (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) = ((Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ aworklist_empty) ⧺ Γ1).
 Proof.
   introv. induction* Γ2; simpl; rewrite* IHΓ2.
 Qed.
@@ -452,7 +454,7 @@ Proof with solve_false.
 Qed.
 
 Lemma aworklist_subst_bind_same_gen : forall Γ Γ' Γ'' Γ1 Γ2 X Y A,
-    ⊢ᵃʷ (Γ ⧺ X ~ᵃ ⬒ ;ᵃ Γ' ⧺ Y ~ᵃ ⬒ ;ᵃ Γ'')%aworklist ->
+    ⊢ᵃʷ (Γ ⧺ X ~ᵃ ⬒ ;ᵃ Γ' ⧺ Y ~ᵃ ⬒ ;ᵃ Γ'') ->
     aworklist_subst (Γ ⧺ X ~ᵃ ⬒ ;ᵃ Γ' ⧺ Y ~ᵃ ⬒ ;ᵃ Γ'') X A Γ1 Γ2 ->
     binds Y abind_etvar_empty (awl_to_aenv Γ1) \/ binds Y abind_etvar_empty (awl_to_aenv (subst_tvar_in_aworklist A X Γ2)).
 Proof with solve_false.
@@ -467,9 +469,9 @@ Proof with solve_false.
                              (X, abind_etvar_empty) :: awl_to_aenv Γ') ++ ((Y, abind_etvar_empty) :: awl_to_aenv Γ'')).
       eauto. }
     { forwards: a_wf_wl_tvar_notin_remaining H4. forwards (?&?): worklist_split_etvar_det H0. autorewrite with core in *. solve_notin. subst.
-      rewrite_env ((Γ ⧺ X ~ᵃ ⬒ ;ᵃ (X0 ~ᵃ ⬒ ;ᵃ Γ') ⧺ Y ~ᵃ ⬒ ;ᵃ Γ'')%aworklist) in H3.
+      rewrite_env ((Γ ⧺ X ~ᵃ ⬒ ;ᵃ (X0 ~ᵃ ⬒ ;ᵃ Γ') ⧺ Y ~ᵃ ⬒ ;ᵃ Γ'')) in H3.
       forwards* [?|?]: IHΓ H3. rewrite awl_rewrite_middle.
-      rewrite_env ((Γ ⧺ X ~ᵃ ⬒ ;ᵃ aworklist_empty) ⧺ ((X0 ~ᵃ ⬒ ;ᵃ Γ') ⧺ Y ~ᵃ ⬒ ;ᵃ Γ''))%aworklist.
+      rewrite_env ((Γ ⧺ X ~ᵃ ⬒ ;ᵃ aworklist_empty) ⧺ ((X0 ~ᵃ ⬒ ;ᵃ Γ') ⧺ Y ~ᵃ ⬒ ;ᵃ Γ'')).
       rewrite awl_rewrite_middle in H4.
       applys a_wf_wl_weaken H4.
       autorewrite with core in *. solve_notin.
@@ -481,7 +483,7 @@ Proof with solve_false.
 Qed.
 
 Lemma aworklist_app_assoc : forall Γ1 Γ2 Γ3,
-    ((Γ1 ⧺ Γ2) ⧺ Γ3)%aworklist = (Γ1 ⧺ Γ2 ⧺ Γ3)%aworklist.
+    ((Γ1 ⧺ Γ2) ⧺ Γ3) = (Γ1 ⧺ Γ2 ⧺ Γ3).
 Proof with simpl; auto.
   introv. induction Γ1...
   all: try rewrite IHΓ1...
@@ -489,7 +491,7 @@ Qed.
 
 
 Corollary aworklist_subst_bind_same : forall Γ Γ'' Γ1 Γ2 X Y A,
-    ⊢ᵃʷ (Γ ⧺ X ~ᵃ ⬒ ;ᵃ Y ~ᵃ ⬒ ;ᵃ Γ'')%aworklist ->
+    ⊢ᵃʷ (Γ ⧺ X ~ᵃ ⬒ ;ᵃ Y ~ᵃ ⬒ ;ᵃ Γ'') ->
     aworklist_subst (Γ ⧺ X ~ᵃ ⬒ ;ᵃ Y ~ᵃ ⬒ ;ᵃ Γ'') X A Γ1 Γ2 ->
     binds Y abind_etvar_empty (awl_to_aenv Γ1) \/ binds Y abind_etvar_empty (awl_to_aenv (subst_tvar_in_aworklist A X Γ2)).
 Proof with applys* aworklist_subst_bind_same_gen.
@@ -540,8 +542,8 @@ Qed.
 
 Lemma a_wf_wl_apply_conts : forall Γ w A cs,
   apply_conts cs A w ->
-  a_wf_wl (work_applys cs A ⫤ Γ) ->
-  a_wf_wl (w ⫤ Γ).
+  a_wf_wl (work_applys cs A ⫤ᵃ Γ) ->
+  a_wf_wl (w ⫤ᵃ Γ).
 Proof with eauto.
   intros. induction H; destruct_a_wf_wl...
 Qed.
@@ -1618,7 +1620,7 @@ Proof with eauto; solve_false.
         -- auto.
         -- eapply a_worklist_subst_wf_wl in Hws; eauto. admit. admit. (* wf *)
         -- rewrite a_worklist_subst_ftavr_in_aworklist with
-            (Γ:=(work_check (e ^ᵉₑ exp_var_f x) ` X2 ⫤ x ~ᵃ ` X1;ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ)%aworklist); auto. simpl.
+            (Γ:=(work_check (e ^ᵉₑ exp_var_f x) ` X2 ⫤ᵃ x ~ᵃ ` X1;ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ)); auto. simpl.
           solve_notin_rename_tvar; auto.
         -- solve_notin_rename_tvar; auto.
       * admit. (* wf *)
@@ -1656,7 +1658,7 @@ Proof with eauto; solve_false.
   - simpl in *.
     dependent destruction H0.
     apply a_wf_wl_wf_bind_typ in H3 as Hwfa...
-    assert (⊢ᵃʷ (work_applys cs A ⫤ Γ)) by now destruct_a_wf_wl; eauto.
+    assert (⊢ᵃʷ (work_applys cs A ⫤ᵃ Γ)) by now destruct_a_wf_wl; eauto.
     eapply a_wl_red__inf_var with (A:=({` X' /ᵗ X} A))...
     apply binds_var_typ_rename_tvar...
     auto_apply.
@@ -1708,7 +1710,7 @@ Proof with eauto; solve_false.
         -- auto.
         -- admit. (* wf *)
         -- rewrite a_worklist_subst_ftavr_in_aworklist with
-            (Γ:=(work_infabs (typ_arrow ` X1 ` X2) cd ⫤ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ)%aworklist);
+            (Γ:=(work_infabs (typ_arrow ` X1 ` X2) cd ⫤ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ));
             auto.
       * admit. (* wf *)
       * simpl; solve_notin_rename_tvar; auto.
@@ -1729,7 +1731,7 @@ Proof with eauto; solve_false.
         -- auto.
         -- admit. (* wf *)
         -- rewrite a_worklist_subst_ftavr_in_aworklist with
-            (Γ:=(work_infabs (typ_arrow ` X1 ` X2) cd ⫤ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ)%aworklist); auto.
+            (Γ:=(work_infabs (typ_arrow ` X1 ` X2) cd ⫤ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ)); auto.
       * admit. (* wf *)
       * simpl; solve_notin_rename_tvar; auto...
   - simpl in *. destruct_a_wf_wl.

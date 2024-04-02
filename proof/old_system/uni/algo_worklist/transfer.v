@@ -672,7 +672,7 @@ Proof.
       subst. repeat split; eauto. 
   - inversion H; subst.
     pose proof (IHΓ2 _ _ _ H3) as (Ω1 & Ω2 & Θ0 & E & Inst1 & Inst2).
-    exists Ω1, (wᵈ ⫤ Ω2)%dworklist, Θ0.
+    exists Ω1, (wᵈ ⫤ᵈ Ω2)%dworklist, Θ0.
     subst. repeat split; eauto.
 Qed.
 

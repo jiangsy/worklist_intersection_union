@@ -7,11 +7,10 @@ Require Export uni.def_ott.
 Require Export uni.decl_worklist.def.
 
 
-Definition fv_env_gen (fv : abind -> atoms) (E : aenv) : atoms :=
+(* Definition fv_env_gen (fv : abind -> atoms) (E : aenv) : atoms :=
   fold_right (fun xb acc => match xb with (x , b) => acc `union` fv b end ) {} E.
 
-Definition ftvar_in_aenv := fv_env_gen ftvar_in_abind.
-
+Definition ftvar_in_aenv := fv_env_gen ftvar_in_abind. *)
 
 Fixpoint awl_app (Γ1 Γ2 : aworklist) :=
   match Γ1 with 
@@ -20,15 +19,6 @@ Fixpoint awl_app (Γ1 Γ2 : aworklist) :=
   | aworklist_consvar Γ1' x b => aworklist_consvar (awl_app Γ1' Γ2) x b
   | aworklist_conswork Γ1' w => aworklist_conswork (awl_app Γ1' Γ2) w
   end.
-
-Fixpoint awl_rev_app (Γ1 Γ2 : aworklist) :=
-  match Γ1 with 
-  | aworklist_empty => Γ2 
-  | aworklist_constvar Γ1' X b => awl_rev_app Γ1' (aworklist_constvar Γ2 X b)
-  | aworklist_consvar Γ1' x b => awl_rev_app Γ1' (aworklist_consvar Γ2 x b)
-  | aworklist_conswork Γ1' w => awl_rev_app Γ1' (aworklist_conswork Γ2 w)
-  end.
-  
     
 Inductive aworklist_subst : aworklist -> typvar -> typ -> aworklist -> aworklist -> Prop :=
 | a_ws1__stop : forall Γ X A , 
@@ -282,8 +272,8 @@ Notation " X ~ᵃ ⬒ ;ᵃ Γ " :=
   (aworklist_constvar Γ X abind_etvar_empty)
       (at level 58, right associativity) : aworklist_scope.
 
-Notation " W ⫤ Γ " :=
-  (aworklist_conswork Γ W)
+Notation " w ⫤ᵃ Γ " :=
+  (aworklist_conswork Γ w)
       (at level 58, right associativity) : aworklist_scope.
 
 Notation " Γ2 ⧺ Γ1 " :=

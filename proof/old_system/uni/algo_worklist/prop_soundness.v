@@ -20,6 +20,7 @@ Hint Constructors a_wf_wl : core.
 #[local] Hint Constructors d_wl_del_red aworklist_subst : core.
 #[local] Hint Resolve wf_ss_uniq a_wf_wl_d_wf_env : core.
 
+Open Scope aworklist_scope.
 
 Ltac rename_typ :=
   lazymatch goal with
@@ -705,17 +706,17 @@ Lemma worklist_subst_fresh_etvar_total : forall Γ1 Γ2 X X1 X2,
     (typ_arrow ` X1 ` X2) (X1 ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1) Γ2.
 Proof with auto.
   induction Γ2; intros; simpl in *; auto.
-  - replace (X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ X ~ᵃ ⬒ ;ᵃ Γ1)%aworklist with 
-      (X2 ~ᵃ ⬒ ;ᵃ (X1 ~ᵃ ⬒ ;ᵃ aworklist_empty) ⧺ X ~ᵃ ⬒ ;ᵃ Γ1)%aworklist;
+  - replace (X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ X ~ᵃ ⬒ ;ᵃ Γ1) with 
+      (X2 ~ᵃ ⬒ ;ᵃ (X1 ~ᵃ ⬒ ;ᵃ aworklist_empty) ⧺ X ~ᵃ ⬒ ;ᵃ Γ1);
     constructor; simpl...
-    replace (X1 ~ᵃ ⬒ ;ᵃ X ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1)%aworklist with 
-      (X1 ~ᵃ ⬒ ;ᵃ aworklist_empty ⧺ X ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1)%aworklist;
+    replace (X1 ~ᵃ ⬒ ;ᵃ X ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1) with 
+      (X1 ~ᵃ ⬒ ;ᵃ aworklist_empty ⧺ X ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1);
     constructor; simpl...
-  - replace (X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ aworklist_consvar (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) x ab)%aworklist with 
-      (X2 ~ᵃ ⬒ ;ᵃ (X1 ~ᵃ ⬒ ;ᵃ aworklist_consvar Γ2 x ab) ⧺ X ~ᵃ ⬒ ;ᵃ Γ1)%aworklist;
+  - replace (X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ aworklist_consvar (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) x ab) with 
+      (X2 ~ᵃ ⬒ ;ᵃ (X1 ~ᵃ ⬒ ;ᵃ aworklist_consvar Γ2 x ab) ⧺ X ~ᵃ ⬒ ;ᵃ Γ1);
     constructor; simpl...
-    replace (X1 ~ᵃ ⬒ ;ᵃ aworklist_consvar (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1) x ab)%aworklist with
-      ((X1 ~ᵃ ⬒ ;ᵃ aworklist_consvar Γ2 x ab) ⧺ X ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1)%aworklist; 
+    replace (X1 ~ᵃ ⬒ ;ᵃ aworklist_consvar (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1) x ab) with
+      ((X1 ~ᵃ ⬒ ;ᵃ aworklist_consvar Γ2 x ab) ⧺ X ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1); 
     constructor; simpl...
     + dependent destruction H...
       simpl.
@@ -724,14 +725,14 @@ Proof with auto.
       dependent destruction Hws...
       * simpl in *. solve_notin_eq X2.
       * simpl in *. solve_notin_eq X2.
-      * replace (X1 ~ᵃ ⬒ ;ᵃ Γ'2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1)%aworklist with 
-        ((X1 ~ᵃ ⬒ ;ᵃ Γ'2) ⧺ X ~ᵃ ⬒ ;ᵃ Γ1)%aworklist in x by auto.
+      * replace (X1 ~ᵃ ⬒ ;ᵃ Γ'2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) with 
+        ((X1 ~ᵃ ⬒ ;ᵃ Γ'2) ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) in x by auto.
         apply worklist_split_etvar_det in x; destruct x; subst. simpl in *.
         dependent destruction Hws; auto; simpl in *.
         -- solve_notin_eq X1.
         -- solve_notin_eq X1.
-        -- replace (Γ'2 ⧺ X ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1)%aworklist 
-            with  (Γ'2 ⧺ X ~ᵃ ⬒ ;ᵃ (X2 ~ᵃ ⬒ ;ᵃ Γ1))%aworklist in x by auto.
+        -- replace (Γ'2 ⧺ X ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1) 
+            with  (Γ'2 ⧺ X ~ᵃ ⬒ ;ᵃ (X2 ~ᵃ ⬒ ;ᵃ Γ1)) in x by auto.
             apply worklist_split_etvar_det in x; auto.
             destruct x; subst...
             apply a_wf_wl_tvar_notin_remaining in H1; auto.
@@ -740,25 +741,25 @@ Proof with auto.
     + solve_notin_dom.
     + solve_notin_dom.
   - dependent destruction H.
-    + replace (X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ X ~ᵃ □ ;ᵃ Γ2 ⧺ X0 ~ᵃ ⬒ ;ᵃ Γ1)%aworklist with 
-      (X2 ~ᵃ ⬒ ;ᵃ (X1 ~ᵃ ⬒ ;ᵃ X ~ᵃ □ ;ᵃ Γ2) ⧺ X0 ~ᵃ ⬒ ;ᵃ Γ1)%aworklist;
+    + replace (X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ X ~ᵃ □ ;ᵃ Γ2 ⧺ X0 ~ᵃ ⬒ ;ᵃ Γ1) with 
+      (X2 ~ᵃ ⬒ ;ᵃ (X1 ~ᵃ ⬒ ;ᵃ X ~ᵃ □ ;ᵃ Γ2) ⧺ X0 ~ᵃ ⬒ ;ᵃ Γ1);
       constructor; simpl; auto.
-      replace (X1 ~ᵃ ⬒ ;ᵃ X ~ᵃ □ ;ᵃ Γ2 ⧺ X0 ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1)%aworklist with 
-      (X1 ~ᵃ ⬒ ;ᵃ (X ~ᵃ □ ;ᵃ Γ2) ⧺ X0 ~ᵃ ⬒ ;ᵃ (X2 ~ᵃ ⬒ ;ᵃ Γ1))%aworklist;
+      replace (X1 ~ᵃ ⬒ ;ᵃ X ~ᵃ □ ;ᵃ Γ2 ⧺ X0 ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1) with 
+      (X1 ~ᵃ ⬒ ;ᵃ (X ~ᵃ □ ;ᵃ Γ2) ⧺ X0 ~ᵃ ⬒ ;ᵃ (X2 ~ᵃ ⬒ ;ᵃ Γ1));
       constructor; simpl; auto.
       * constructor; auto.
         eapply IHΓ2 with (X1:=X1) (X2:=X2) in H0 as Hws; eauto.
         dependent destruction Hws; auto.
         -- simpl in *. solve_notin_eq X2.
         -- simpl in *. solve_notin_eq X2.
-        -- replace (X1 ~ᵃ ⬒ ;ᵃ Γ'2 ⧺ X0 ~ᵃ ⬒ ;ᵃ Γ1)%aworklist with 
-             ((X1 ~ᵃ ⬒ ;ᵃ Γ'2) ⧺ X0 ~ᵃ ⬒ ;ᵃ Γ1)%aworklist in x by auto.
+        -- replace (X1 ~ᵃ ⬒ ;ᵃ Γ'2 ⧺ X0 ~ᵃ ⬒ ;ᵃ Γ1) with 
+             ((X1 ~ᵃ ⬒ ;ᵃ Γ'2) ⧺ X0 ~ᵃ ⬒ ;ᵃ Γ1) in x by auto.
            apply worklist_split_etvar_det in x; destruct x; subst. simpl in *.
            dependent destruction Hws; auto; simpl in *.
            ++ solve_notin_eq X1.
            ++ solve_notin_eq X1.
-           ++ replace (Γ'2 ⧺ X0 ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1)%aworklist 
-                with (Γ'2 ⧺ X0 ~ᵃ ⬒ ;ᵃ (X2 ~ᵃ ⬒ ;ᵃ Γ1))%aworklist in x by auto.
+           ++ replace (Γ'2 ⧺ X0 ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1) 
+                with (Γ'2 ⧺ X0 ~ᵃ ⬒ ;ᵃ (X2 ~ᵃ ⬒ ;ᵃ Γ1)) in x by auto.
               apply worklist_split_etvar_det in x; auto.
               destruct x; subst; auto.
               apply a_wf_wl_tvar_notin_remaining in H0; auto.
@@ -767,25 +768,25 @@ Proof with auto.
         -- solve_notin_dom.
       * solve_notin_dom.
       * solve_notin_dom.
-    + replace (X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ X ~ᵃ ■ ;ᵃ Γ2 ⧺ X0 ~ᵃ ⬒ ;ᵃ Γ1)%aworklist with 
-      (X2 ~ᵃ ⬒ ;ᵃ (X1 ~ᵃ ⬒ ;ᵃ X ~ᵃ ■ ;ᵃ Γ2) ⧺ X0 ~ᵃ ⬒ ;ᵃ Γ1)%aworklist;
+    + replace (X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ X ~ᵃ ■ ;ᵃ Γ2 ⧺ X0 ~ᵃ ⬒ ;ᵃ Γ1) with 
+      (X2 ~ᵃ ⬒ ;ᵃ (X1 ~ᵃ ⬒ ;ᵃ X ~ᵃ ■ ;ᵃ Γ2) ⧺ X0 ~ᵃ ⬒ ;ᵃ Γ1);
       constructor; simpl; auto.
-      replace (X1 ~ᵃ ⬒ ;ᵃ X ~ᵃ ■ ;ᵃ Γ2 ⧺ X0 ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1)%aworklist with 
-      (X1 ~ᵃ ⬒ ;ᵃ (X ~ᵃ ■ ;ᵃ Γ2) ⧺ X0 ~ᵃ ⬒ ;ᵃ (X2 ~ᵃ ⬒ ;ᵃ Γ1))%aworklist;
+      replace (X1 ~ᵃ ⬒ ;ᵃ X ~ᵃ ■ ;ᵃ Γ2 ⧺ X0 ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1) with 
+      (X1 ~ᵃ ⬒ ;ᵃ (X ~ᵃ ■ ;ᵃ Γ2) ⧺ X0 ~ᵃ ⬒ ;ᵃ (X2 ~ᵃ ⬒ ;ᵃ Γ1));
       constructor; simpl; auto.
       * constructor; auto.
         eapply IHΓ2 with (X1:=X1) (X2:=X2) in H0 as Hws; eauto.
         dependent destruction Hws; auto.
         -- simpl in *. solve_notin_eq X2.
         -- simpl in *. solve_notin_eq X2.
-        -- replace (X1 ~ᵃ ⬒ ;ᵃ Γ'2 ⧺ X0 ~ᵃ ⬒ ;ᵃ Γ1)%aworklist with 
-            ((X1 ~ᵃ ⬒ ;ᵃ Γ'2) ⧺ X0 ~ᵃ ⬒ ;ᵃ Γ1)%aworklist in x by auto.
+        -- replace (X1 ~ᵃ ⬒ ;ᵃ Γ'2 ⧺ X0 ~ᵃ ⬒ ;ᵃ Γ1) with 
+            ((X1 ~ᵃ ⬒ ;ᵃ Γ'2) ⧺ X0 ~ᵃ ⬒ ;ᵃ Γ1) in x by auto.
           apply worklist_split_etvar_det in x; destruct x; subst. simpl in *.
           dependent destruction Hws; auto; simpl in *.
           ++ solve_notin_eq X1.
           ++ solve_notin_eq X1.
-          ++ replace (Γ'2 ⧺ X0 ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1)%aworklist 
-                with (Γ'2 ⧺ X0 ~ᵃ ⬒ ;ᵃ (X2 ~ᵃ ⬒ ;ᵃ Γ1))%aworklist in x by auto.
+          ++ replace (Γ'2 ⧺ X0 ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1) 
+                with (Γ'2 ⧺ X0 ~ᵃ ⬒ ;ᵃ (X2 ~ᵃ ⬒ ;ᵃ Γ1)) in x by auto.
               apply worklist_split_etvar_det in x; auto.
               destruct x; subst; auto.
               apply a_wf_wl_tvar_notin_remaining in H0; auto.
@@ -794,25 +795,25 @@ Proof with auto.
         -- solve_notin_dom.
       * solve_notin_dom.
       * solve_notin_dom.
-    + replace (X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ X ~ᵃ ⬒ ;ᵃ Γ2 ⧺ X0 ~ᵃ ⬒ ;ᵃ Γ1)%aworklist with 
-      (X2 ~ᵃ ⬒ ;ᵃ (X1 ~ᵃ ⬒ ;ᵃ X ~ᵃ ⬒  ;ᵃ Γ2) ⧺ X0 ~ᵃ ⬒ ;ᵃ Γ1)%aworklist;
+    + replace (X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ X ~ᵃ ⬒ ;ᵃ Γ2 ⧺ X0 ~ᵃ ⬒ ;ᵃ Γ1) with 
+      (X2 ~ᵃ ⬒ ;ᵃ (X1 ~ᵃ ⬒ ;ᵃ X ~ᵃ ⬒  ;ᵃ Γ2) ⧺ X0 ~ᵃ ⬒ ;ᵃ Γ1);
       constructor; simpl; auto.
-      replace (X1 ~ᵃ ⬒ ;ᵃ X ~ᵃ ⬒ ;ᵃ Γ2 ⧺ X0 ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1)%aworklist with 
-      (X1 ~ᵃ ⬒ ;ᵃ (X ~ᵃ ⬒  ;ᵃ Γ2) ⧺ X0 ~ᵃ ⬒ ;ᵃ (X2 ~ᵃ ⬒ ;ᵃ Γ1))%aworklist;
+      replace (X1 ~ᵃ ⬒ ;ᵃ X ~ᵃ ⬒ ;ᵃ Γ2 ⧺ X0 ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1) with 
+      (X1 ~ᵃ ⬒ ;ᵃ (X ~ᵃ ⬒  ;ᵃ Γ2) ⧺ X0 ~ᵃ ⬒ ;ᵃ (X2 ~ᵃ ⬒ ;ᵃ Γ1));
       constructor; simpl; auto.
       * constructor; auto.
         eapply IHΓ2 with (X1:=X1) (X2:=X2) in H0 as Hws; eauto.
         dependent destruction Hws; auto.
         -- simpl in *. solve_notin_eq X2.
         -- simpl in *. solve_notin_eq X2.
-        -- replace (X1 ~ᵃ ⬒ ;ᵃ Γ'2 ⧺ X0 ~ᵃ ⬒ ;ᵃ Γ1)%aworklist with 
-            ((X1 ~ᵃ ⬒ ;ᵃ Γ'2) ⧺ X0 ~ᵃ ⬒ ;ᵃ Γ1)%aworklist in x by auto.
+        -- replace (X1 ~ᵃ ⬒ ;ᵃ Γ'2 ⧺ X0 ~ᵃ ⬒ ;ᵃ Γ1) with 
+            ((X1 ~ᵃ ⬒ ;ᵃ Γ'2) ⧺ X0 ~ᵃ ⬒ ;ᵃ Γ1) in x by auto.
           apply worklist_split_etvar_det in x; destruct x; subst. simpl in *.
           dependent destruction Hws; auto; simpl in *.
           ++ solve_notin_eq X1.
           ++ solve_notin_eq X1.
-          ++ replace (Γ'2 ⧺ X0 ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1)%aworklist 
-                with (Γ'2 ⧺ X0 ~ᵃ ⬒ ;ᵃ (X2 ~ᵃ ⬒ ;ᵃ Γ1))%aworklist in x by auto.
+          ++ replace (Γ'2 ⧺ X0 ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1) 
+                with (Γ'2 ⧺ X0 ~ᵃ ⬒ ;ᵃ (X2 ~ᵃ ⬒ ;ᵃ Γ1)) in x by auto.
               apply worklist_split_etvar_det in x; auto.
               destruct x; subst; auto.
               apply a_wf_wl_tvar_notin_remaining in H0; auto.
@@ -822,25 +823,25 @@ Proof with auto.
       * solve_notin_dom.
       * solve_notin_dom.
  - dependent destruction H. 
-   replace (X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ w ⫤ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1)%aworklist with 
-    (X2 ~ᵃ ⬒ ;ᵃ (X1 ~ᵃ ⬒ ;ᵃ w ⫤ Γ2) ⧺ X ~ᵃ ⬒ ;ᵃ Γ1)%aworklist;
+   replace (X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ w ⫤ᵃ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) with 
+    (X2 ~ᵃ ⬒ ;ᵃ (X1 ~ᵃ ⬒ ;ᵃ w ⫤ᵃ Γ2) ⧺ X ~ᵃ ⬒ ;ᵃ Γ1);
    constructor; simpl; auto.
-   replace (X1 ~ᵃ ⬒ ;ᵃ w ⫤ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1)%aworklist with 
-    (X1 ~ᵃ ⬒ ;ᵃ (w ⫤ Γ2) ⧺ X ~ᵃ ⬒ ;ᵃ (X2 ~ᵃ ⬒ ;ᵃ Γ1))%aworklist;
+   replace (X1 ~ᵃ ⬒ ;ᵃ w ⫤ᵃ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1) with 
+    (X1 ~ᵃ ⬒ ;ᵃ (w ⫤ᵃ Γ2) ⧺ X ~ᵃ ⬒ ;ᵃ (X2 ~ᵃ ⬒ ;ᵃ Γ1));
    constructor; simpl; auto.
    + constructor; auto.
      eapply IHΓ2 with (X1:=X1) (X2:=X2) in H0 as Hws; eauto.
      dependent destruction Hws; auto.
      * simpl in *. solve_notin_eq X2.
      * simpl in *. solve_notin_eq X2.
-     * replace (X1 ~ᵃ ⬒ ;ᵃ Γ'2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1)%aworklist with 
-         ((X1 ~ᵃ ⬒ ;ᵃ Γ'2) ⧺ X ~ᵃ ⬒ ;ᵃ Γ1)%aworklist in x by auto.
+     * replace (X1 ~ᵃ ⬒ ;ᵃ Γ'2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) with 
+         ((X1 ~ᵃ ⬒ ;ᵃ Γ'2) ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) in x by auto.
        apply worklist_split_etvar_det in x; destruct x; subst. simpl in *.
        dependent destruction Hws; auto; simpl in *.
        -- solve_notin_eq X1.
        -- solve_notin_eq X1.
-       -- replace (Γ'2 ⧺ X ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1)%aworklist with 
-           (Γ'2 ⧺ X ~ᵃ ⬒ ;ᵃ (X2 ~ᵃ ⬒ ;ᵃ Γ1))%aworklist in x; auto.
+       -- replace (Γ'2 ⧺ X ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1) with 
+           (Γ'2 ⧺ X ~ᵃ ⬒ ;ᵃ (X2 ~ᵃ ⬒ ;ᵃ Γ1)) in x; auto.
           apply worklist_split_etvar_det in x; auto.
           destruct x; subst; auto.
           apply a_wf_wl_tvar_notin_remaining in H0; auto.
@@ -943,6 +944,7 @@ Qed.
 
 #[local] Hint Resolve trans_typ_wf_ss : core.
 
+Open Scope dworklist_scope.
 
 Theorem a_wl_red_soundness: forall Γ,
   ⊢ᵃʷ Γ -> Γ ⟶ᵃʷ⁎⋅ -> exists Ω, transfer Γ Ω /\ Ω ⟶ᵈ⁎⋅.
@@ -988,7 +990,7 @@ Proof with eauto.
         -- admit. (* *, wf *)
         -- admit. (* *, wf *)
         -- auto.
-  - exists ((work_sub (typ_arrow B1ᵈ B2ᵈ) (typ_arrow A1ᵈ A2ᵈ) ⫤ Ω)%dworklist).
+  - exists ((work_sub (typ_arrow B1ᵈ B2ᵈ) (typ_arrow A1ᵈ A2ᵈ) ⫤ᵈ Ω)).
     split. exists θ. auto...
     econstructor.
     econstructor.
@@ -997,14 +999,14 @@ Proof with eauto.
     + dependent destruction Hdred. dependent destruction Hdred...
   (* forall x. A < B  *)
   - inst_cofinites_by (L `union` ftvar_in_typ A1 `union` ftvar_in_typ B1) using_name X.
-    assert ( ⊢ᵃʷ (work_sub (B1 ^ᵗ X) A1 ⫤ aworklist_constvar Γ X abind_etvar_empty)) by admit.
+    assert ( ⊢ᵃʷ (work_sub (B1 ^ᵗ X) A1 ⫤ᵃ aworklist_constvar Γ X abind_etvar_empty)) by admit.
     destruct_a_wf_wl.
     _apply_IH_a_wl_red.
     destruct_trans.
     rename Aᵈ into B1tᵈ. rename Bᵈ into A1ᵈ.
     apply trans_typ_etvar_tvar_subst_cons in H13...
     destruct H13 as [B1xᵈ [Hsubst Htransa]].
-    exists (work_sub (typ_all (close_typ_wrt_typ X B1xᵈ)) A1ᵈ ⫤ Ω)%dworklist.
+    exists (work_sub (typ_all (close_typ_wrt_typ X B1xᵈ)) A1ᵈ ⫤ᵈ Ω).
     split.
     + exists θ'. econstructor...
       econstructor...
@@ -1027,11 +1029,11 @@ Proof with eauto.
   - destruct_a_wf_wl.
     dependent destruction H. dependent destruction H1.
     inst_cofinites_by (L `union` L0 `union` L1 `union` dom (awl_to_aenv Γ)) using_name X.
-    assert ( ⊢ᵃʷ (work_sub (B1 ^ᵗ X) (A1 ^ᵗ X) ⫤ aworklist_constvar Γ X abind_stvar_empty) ) by admit.
+    assert ( ⊢ᵃʷ (work_sub (B1 ^ᵗ X) (A1 ^ᵗ X) ⫤ᵃ aworklist_constvar Γ X abind_stvar_empty) ) by admit.
     _apply_IH_a_wl_red.
     destruct_trans...
     rename Aᵈ into B1xᵈ. rename Bᵈ into A1xᵈ.
-    exists (work_sub (typ_all (close_typ_wrt_typ X B1xᵈ)) (typ_all (close_typ_wrt_typ X A1xᵈ)) ⫤ Ω)%dworklist.
+    exists (work_sub (typ_all (close_typ_wrt_typ X B1xᵈ)) (typ_all (close_typ_wrt_typ X A1xᵈ)) ⫤ᵈ Ω).
     split.
     + exists θ'. econstructor...
       econstructor...
@@ -1055,11 +1057,11 @@ Proof with eauto.
   - inst_cofinites_by (L `union` singleton X `union`  dom (awl_to_aenv Γ)) using_name X1.
     inst_cofinites_by (L `union` singleton X1 `union` singleton X `union` dom (awl_to_aenv Γ)) using_name X2.
     assert (Hws: exists Γ1 Γ2, 
-      aworklist_subst (work_sub ` X (typ_arrow A1 A2) ⫤ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ) X
+      aworklist_subst (work_sub ` X (typ_arrow A1 A2) ⫤ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ) X
         (typ_arrow ` X1 ` X2) Γ1 Γ2). {
       eapply worklist_subst_fresh_etvar_total' with (X1:=X1) (X2:=X2) in H; auto.
       destruct H as [Γ1 [Γ2 Hws]].
-      exists Γ1, (work_sub `X (typ_arrow A1 A2) ⫤ Γ2)%aworklist.
+      exists Γ1, (work_sub `X (typ_arrow A1 A2) ⫤ᵃ Γ2).
       econstructor. auto.
       destruct_a_wf_wl; auto.
     }
@@ -1093,11 +1095,11 @@ Proof with eauto.
   (* A1 -> A2 < ^X  *)
   - pick fresh X1. pick fresh X2.
     assert (Hws: exists Γ1 Γ2, 
-      aworklist_subst (work_sub (typ_arrow A1 A2) ` X ⫤ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ) X
+      aworklist_subst (work_sub (typ_arrow A1 A2) ` X ⫤ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ) X
         (typ_arrow ` X1 ` X2) Γ1 Γ2). {
       eapply worklist_subst_fresh_etvar_total' with (X1:=X1) (X2:=X2) in H; auto.
       destruct H as [Γ1 [Γ2 Hws]].
-      exists Γ1, (work_sub (typ_arrow A1 A2) `X ⫤ Γ2)%aworklist.
+      exists Γ1, (work_sub (typ_arrow A1 A2) `X ⫤ᵃ Γ2).
       econstructor. auto.
       destruct_a_wf_wl; auto.
     }
@@ -1131,7 +1133,7 @@ Proof with eauto.
     _apply_IH_a_wl_red. 
     eapply a_worklist_subst_transfer_same_dworklist in H4 as Hws; eauto.
     destruct Hws as [θ'1 [Tᵈ [Htrans_rev [Htransa [Htransa' [Hbinds [Hbindsx Hwfss]]]]]]].
-    exists (work_sub Tᵈ Tᵈ ⫤ Ω)%dworklist. split.
+    exists (work_sub Tᵈ Tᵈ ⫤ᵈ Ω). split.
     + exists θ'1.
       constructor...
     + econstructor...
@@ -1143,49 +1145,49 @@ Proof with eauto.
     _apply_IH_a_wl_red.
     eapply a_worklist_subst_transfer_same_dworklist in H4 as Hws; eauto.
     destruct Hws as [θ'1 [Tᵈ [Htrans_rev [Htransa [Htransa' [Hbinds [Hbindsx Hwfss]]]]]]].
-    exists (work_sub Tᵈ Tᵈ ⫤ Ω)%dworklist. split.
+    exists (work_sub Tᵈ Tᵈ ⫤ᵈ Ω). split.
     + exists θ'1.
       constructor...
     + econstructor...
       apply dsub_refl...
       admit.
   (* A < B1 /\ B2 *)
-  - exists (work_sub A1ᵈ (typ_intersection B1ᵈ B2ᵈ) ⫤ Ω)%dworklist. split...
+  - exists (work_sub A1ᵈ (typ_intersection B1ᵈ B2ᵈ) ⫤ᵈ Ω). split...
     destruct_d_wl_del_red...
   (* A1 /\ A2 < B *)
-  - exists (work_sub (typ_intersection B1ᵈ B2ᵈ) A1ᵈ ⫤ Ω)%dworklist. split...
+  - exists (work_sub (typ_intersection B1ᵈ B2ᵈ) A1ᵈ ⫤ᵈ Ω). split...
     destruct_d_wl_del_red...
     econstructor... econstructor...
     eapply trans_wl_a_wf_typ_d_wf_typ with (Aᵃ:=B2)...
   (* A1 /\ A2 < B *)
-  - exists (work_sub (typ_intersection B1ᵈ B2ᵈ) A1ᵈ ⫤ Ω)%dworklist. split...
+  - exists (work_sub (typ_intersection B1ᵈ B2ᵈ) A1ᵈ ⫤ᵈ Ω). split...
     destruct_d_wl_del_red...
     econstructor... eapply d_sub__intersection3...
     eapply trans_wl_a_wf_typ_d_wf_typ with (Aᵃ:=B1)...
   (* A < B1 \/ B2 *)
-  - exists (work_sub B1ᵈ (typ_union A1ᵈ A2ᵈ) ⫤ Ω)%dworklist. split...
+  - exists (work_sub B1ᵈ (typ_union A1ᵈ A2ᵈ) ⫤ᵈ Ω). split...
     destruct_d_wl_del_red...
     econstructor... eapply d_sub__union1...
     eapply trans_wl_a_wf_typ_d_wf_typ with (Aᵃ:=A2)...
   (* A < B1 \/ B2 *)
-  - exists (work_sub B1ᵈ (typ_union A1ᵈ A2ᵈ) ⫤ Ω)%dworklist. split...
+  - exists (work_sub B1ᵈ (typ_union A1ᵈ A2ᵈ) ⫤ᵈ Ω). split...
     destruct_d_wl_del_red...
     econstructor... eapply d_sub__union2...
     eapply trans_wl_a_wf_typ_d_wf_typ with (Aᵃ:=A1)...
   (* A1 \/ A2 < B *)
-  - exists (work_sub (typ_union B1ᵈ B2ᵈ) A1ᵈ ⫤ Ω)%dworklist. split...
+  - exists (work_sub (typ_union B1ᵈ B2ᵈ) A1ᵈ ⫤ᵈ Ω). split...
     destruct_d_wl_del_red...
   (* e <= A *)
-  - exists (work_check eᵈ A1ᵈ ⫤ Ω)%dworklist. split...
+  - exists (work_check eᵈ A1ᵈ ⫤ᵈ Ω). split...
     destruct_d_wl_del_red...
   (* \ x. e <= A1 -> A2 *)
   - destruct_a_wf_wl. inst_cofinites_by (L `union` L0)... 
-    assert (⊢ᵃʷ (work_check (open_exp_wrt_exp e (exp_var_f x)) A2 ⫤ (aworklist_consvar Γ x (abind_var_typ A1)))) by admit.
+    assert (⊢ᵃʷ (work_check (open_exp_wrt_exp e (exp_var_f x)) A2 ⫤ᵃ (aworklist_consvar Γ x (abind_var_typ A1)))) by admit.
     apply H2 in H3.
     destruct H3 as [Ω [Htrans Hdred]].
     destruct Htrans as [θ].
     destruct_trans. rename_typ.
-    exists (work_check (exp_abs (close_exp_wrt_exp x eᵈ)) (typ_arrow A1ᵈ A2ᵈ) ⫤ Ω)%dworklist. split.
+    exists (work_check (exp_abs (close_exp_wrt_exp x eᵈ)) (typ_arrow A1ᵈ A2ᵈ) ⫤ᵈ Ω). split.
     + exists θ.
       econstructor...
       econstructor...
@@ -1203,11 +1205,11 @@ Proof with eauto.
     pick fresh X1. pick fresh X2.
     inst_cofinites_with x. inst_cofinites_with X1. inst_cofinites_with X2.  
     assert (Hws: exists Γ1 Γ2, aworklist_subst 
-       (work_check (e ^ᵉₑ exp_var_f x) ` X2  ⫤ x ~ᵃ ` X1;ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ) X
+       (work_check (e ^ᵉₑ exp_var_f x) ` X2  ⫤ᵃ x ~ᵃ ` X1;ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ) X
        (typ_arrow ` X1 ` X2) Γ1 Γ2). {
        eapply worklist_subst_fresh_etvar_total' with (X1:=X1) (X2:=X2) in H; auto.
        destruct H as [Γ1 [Γ2 Hws]].
-       exists Γ1, (work_check (e ^ᵉₑ exp_var_f x) ` X2  ⫤ x ~ᵃ ` X1 ;ᵃ Γ2)%aworklist.
+       exists Γ1, (work_check (e ^ᵉₑ exp_var_f x) ` X2  ⫤ᵃ x ~ᵃ ` X1 ;ᵃ Γ2).
        econstructor. econstructor; auto.
        auto.
        destruct_a_wf_wl; auto.
@@ -1237,12 +1239,12 @@ Proof with eauto.
     + admit. (* *, wf *)
   (* \ x. e <= ⊤ *)
   - destruct_a_wf_wl. inst_cofinites_by (L `union` L0).
-    assert ( ⊢ᵃʷ (work_check (e ^ᵉₑ exp_var_f x) typ_top ⫤ x ~ᵃ typ_bot;ᵃ Γ)) by admit.
+    assert ( ⊢ᵃʷ (work_check (e ^ᵉₑ exp_var_f x) typ_top ⫤ᵃ x ~ᵃ typ_bot;ᵃ Γ)) by admit.
     apply H3 in H4. 
     destruct H4 as [Ω [Htrans Hdred]].
     destruct Htrans as [θ].
     destruct_trans.
-    exists (work_check (exp_abs (close_exp_wrt_exp x eᵈ)) typ_top ⫤ Ω)%dworklist. split.
+    exists (work_check (exp_abs (close_exp_wrt_exp x eᵈ)) typ_top ⫤ᵈ Ω). split.
     + exists θ. 
       econstructor...
       econstructor...
@@ -1255,17 +1257,17 @@ Proof with eauto.
       rewrite_close_open_subst.
       admit. (* *, chk rename h*)
   (* e <= A1 /\ A2 *)
-  - exists (work_check eᵈ (typ_intersection A1ᵈ A2ᵈ) ⫤ Ω)%dworklist...
+  - exists (work_check eᵈ (typ_intersection A1ᵈ A2ᵈ) ⫤ᵈ Ω)...
     split...
     destruct_d_wl_del_red...
   (* e <= A1 \/ A2 *)
-  - exists (work_check eᵈ (typ_union A1ᵈ A2ᵈ) ⫤ Ω)%dworklist...
+  - exists (work_check eᵈ (typ_union A1ᵈ A2ᵈ) ⫤ᵈ Ω)...
     split...
     destruct_d_wl_del_red...
     econstructor... eapply d_chk_inf__chk_union1...
     eapply trans_wl_a_wf_typ_d_wf_typ with (Γ:=Γ) (Aᵃ:=A2)...
   (* e <= A1 \/ A2 *)
-  - exists (work_check eᵈ (typ_union A1ᵈ A2ᵈ) ⫤ Ω)%dworklist...
+  - exists (work_check eᵈ (typ_union A1ᵈ A2ᵈ) ⫤ᵈ Ω)...
     split...
     destruct_d_wl_del_red...
     econstructor... eapply d_chk_inf__chk_union2...
@@ -1274,16 +1276,16 @@ Proof with eauto.
   - destruct_a_wf_wl.
     apply binds_unique with (a:=abind_var_typ A0) in H; auto.
     dependent destruction H; subst.
-    assert (⊢ᵃʷ (work_applys cs A ⫤ Γ)). econstructor... econstructor...
+    assert (⊢ᵃʷ (work_applys cs A ⫤ᵃ Γ)). econstructor... econstructor...
     admit. (* *, wf *)
     apply IHHared in H as IH. destruct IH as [Ω [[θ Htrans] Hdred]].
     destruct_trans. rename_typ.
-    exists (work_infer (exp_var_f x) csᵈ ⫤ Ω)%dworklist.
+    exists (work_infer (exp_var_f x) csᵈ ⫤ᵈ Ω).
     split... exists θ. econstructor... econstructor...
     admit. (* *, binds *)
     admit. (* *, uniq *) 
   (* e : A => _ *)
-  - exists (work_infer (exp_anno eᵈ Aᵈ) csᵈ ⫤ Ω)%dworklist...
+  - exists (work_infer (exp_anno eᵈ Aᵈ) csᵈ ⫤ᵈ Ω)...
     split. exists θ...
     destruct_d_wl_del_red.
     econstructor...
@@ -1292,12 +1294,12 @@ Proof with eauto.
   (* /\ a. e : A => _ *)
   - destruct_a_wf_wl. 
     pick fresh X. inst_cofinites_with X.
-    assert (Hwf: ⊢ᵃʷ (work_check (e ^ᵉₜ ` X) (A ^ᵗ X) ⫤ X ~ᵃ □ ;ᵃ work_applys cs (typ_all A) ⫤ Γ)) by admit.
+    assert (Hwf: ⊢ᵃʷ (work_check (e ^ᵉₜ ` X) (A ^ᵗ X) ⫤ᵃ X ~ᵃ □ ;ᵃ work_applys cs (typ_all A) ⫤ᵃ Γ)) by admit.
     _apply_IH_a_wl_red.
     destruct_trans.
     dependent destruction H9.
     (*  *)
-    exists (work_infer (exp_tabs (body_anno (close_exp_wrt_typ X eᵈ) (close_typ_wrt_typ X Aᵈ0))) csᵈ ⫤ Ω)%dworklist. split.
+    exists (work_infer (exp_tabs (body_anno (close_exp_wrt_typ X eᵈ) (close_typ_wrt_typ X Aᵈ0))) csᵈ ⫤ᵈ Ω). split.
     + exists θ...
       econstructor...
       econstructor...
@@ -1327,12 +1329,12 @@ Proof with eauto.
   - destruct_a_wf_wl.
     pick fresh x. pick fresh X1. pick fresh X2.
     inst_cofinites_with x. inst_cofinites_with X1. inst_cofinites_with X2.
-    assert (Hwf: ⊢ᵃʷ (work_check (e ^ᵉₑ exp_var_f x) ` X2  ⫤ x ~ᵃ ` X1;ᵃ work_applys cs (typ_arrow ` X1 ` X2)
-            ⫤ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ)) by admit.
+    assert (Hwf: ⊢ᵃʷ (work_check (e ^ᵉₑ exp_var_f x) ` X2  ⫤ᵃ x ~ᵃ ` X1;ᵃ work_applys cs (typ_arrow ` X1 ` X2)
+            ⫤ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ)) by admit.
     apply H3 in Hwf.
     destruct Hwf as [Ω [[θ Htrans] Hdred]].
     destruct_trans. unify_trans_typ.
-    exists (work_infer (exp_abs (close_exp_wrt_exp x eᵈ)) csᵈ ⫤ Ω)%dworklist.
+    exists (work_infer (exp_abs (close_exp_wrt_exp x eᵈ)) csᵈ ⫤ᵈ Ω).
     split.
     + exists θ'...
       econstructor...
@@ -1349,27 +1351,27 @@ Proof with eauto.
         intros. rewrite_close_open_subst; auto. admit.
       * destruct_d_wl_del_red...
   (* () => _ *)
-  - exists (work_infer exp_unit csᵈ ⫤ Ω)%dworklist...
+  - exists (work_infer exp_unit csᵈ ⫤ᵈ Ω)...
     split. exists θ... 
     econstructor...
   (* e1 e2 => _ *)
-  - exists (work_infer (exp_app eᵈ eᵈ0) csᵈ ⫤ Ω)%dworklist.
+  - exists (work_infer (exp_app eᵈ eᵈ0) csᵈ ⫤ᵈ Ω).
     split...
     destruct_d_wl_del_red...
     eapply d_wl_del_red__inf with (A:=B)...
     econstructor...
       apply d_wl_red_weaken_work1 in Hdred. dependent destruction Hdred...
     apply d_wl_red_weaken_work2 in Hdred...
-  - exists (work_infapp Aᵈ Bᵈ eᵈ csᵈ ⫤ Ω)%dworklist...
+  - exists (work_infapp Aᵈ Bᵈ eᵈ csᵈ ⫤ᵈ Ω)...
     split. destruct_d_wl_del_red. exists θ...
     econstructor...
-  - exists (work_infabs (typ_arrow Aᵈ Bᵈ) cdᵈ ⫤ Ω)%dworklist...
+  - exists (work_infabs (typ_arrow Aᵈ Bᵈ) cdᵈ ⫤ᵈ Ω)...
     split. destruct_d_wl_del_red. exists θ... 
     econstructor... clear H2.
     econstructor... 
     eapply trans_wl_a_wf_typ_d_wf_typ with (Γ:=Γ) (Aᵃ:=A)...
     eapply trans_wl_a_wf_typ_d_wf_typ with (Γ:=Γ) (Aᵃ:=B)...
-  - exists (work_infabs typ_bot cdᵈ ⫤ Ω)%dworklist...
+  - exists (work_infabs typ_bot cdᵈ ⫤ᵈ Ω)...
     split...
     destruct_d_wl_del_red...
     dependent destruction H5...
@@ -1377,12 +1379,12 @@ Proof with eauto.
   - destruct_a_wf_wl. 
     dependent destruction H.
     inst_cofinites_by (L `union` L0 `union` ftvar_in_typ A) using_name X.
-    assert (⊢ᵃʷ (work_infabs (A ^ᵗ X) cd ⫤ X ~ᵃ ⬒ ;ᵃ Γ)) by admit.
+    assert (⊢ᵃʷ (work_infabs (A ^ᵗ X) cd ⫤ᵃ X ~ᵃ ⬒ ;ᵃ Γ)) by admit.
     _apply_IH_a_wl_red.
     destruct_trans.
     eapply trans_typ_etvar_tvar_subst_cons in H11...
     destruct H11 as [Axᵈ [Hsubst Htransa]].
-    exists (work_infabs (typ_all (close_typ_wrt_typ X Axᵈ)) cdᵈ ⫤ Ω)%dworklist. split.
+    exists (work_infabs (typ_all (close_typ_wrt_typ X Axᵈ)) cdᵈ ⫤ᵈ Ω). split.
     exists θ'.
     + constructor...
       constructor...
@@ -1397,35 +1399,35 @@ Proof with eauto.
       * admit. (* *, wf *)
       * admit. (* *, wf *)
       * rewrite_close_open_subst. rewrite Hsubst...
-  - exists (work_infabs (typ_intersection A1ᵈ A2ᵈ) cdᵈ ⫤ Ω)%dworklist...
+  - exists (work_infabs (typ_intersection A1ᵈ A2ᵈ) cdᵈ ⫤ᵈ Ω)...
     split...
     destruct_d_wl_del_red.
     econstructor...
     econstructor...
     eapply trans_wl_a_wf_typ_d_wf_typ with (Γ:=Γ) (Aᵃ:=A2)...
-  - exists (work_infabs (typ_intersection A1ᵈ A2ᵈ) cdᵈ ⫤ Ω)%dworklist...
+  - exists (work_infabs (typ_intersection A1ᵈ A2ᵈ) cdᵈ ⫤ᵈ Ω)...
     split...
     destruct_d_wl_del_red.
     econstructor...
     eapply d_infabs__intersection2...
     eapply trans_wl_a_wf_typ_d_wf_typ with (Γ:=Γ) (Aᵃ:=A1)...
-  - exists (work_infabs (typ_union A1ᵈ A2ᵈ) cdᵈ ⫤ Ω)%dworklist.
+  - exists (work_infabs (typ_union A1ᵈ A2ᵈ) cdᵈ ⫤ᵈ Ω).
     split...
     destruct_d_wl_del_red...
-  - exists (work_infabsunion B1ᵈ C1ᵈ A2ᵈ cdᵈ ⫤ Ω)%dworklist.
+  - exists (work_infabsunion B1ᵈ C1ᵈ A2ᵈ cdᵈ ⫤ᵈ Ω).
     split...
     destruct_d_wl_del_red...
-  - exists (work_unioninfabs B1ᵈ C1ᵈ B2ᵈ C2ᵈ cdᵈ ⫤ Ω)%dworklist.
+  - exists (work_unioninfabs B1ᵈ C1ᵈ B2ᵈ C2ᵈ cdᵈ ⫤ᵈ Ω).
     split...
   (* ^X ▹ _ *)
   - pick fresh X1. pick fresh X2.
     inst_cofinites_with X1. inst_cofinites_with X2.
     assert (Hws: exists Γ1 Γ2, aworklist_subst 
-      (work_infabs (typ_arrow ` X1 ` X2) cd ⫤ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ) X
+      (work_infabs (typ_arrow ` X1 ` X2) cd ⫤ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ) X
       (typ_arrow ` X1 ` X2) Γ1 Γ2). {
       eapply worklist_subst_fresh_etvar_total' with (X1:=X1) (X2:=X2) in H; auto.
       destruct H as [Γ1 [Γ2 Hws]].
-      exists Γ1, (work_infabs (typ_arrow ` X1 ` X2) cd ⫤ Γ2)%aworklist.
+      exists Γ1, (work_infabs (typ_arrow ` X1 ` X2) cd ⫤ᵃ Γ2).
       econstructor. 
       auto.
       destruct_a_wf_wl; auto.
@@ -1450,11 +1452,11 @@ Proof with eauto.
         admit.  (* *, wf *)
       * simpl. auto.
     + admit. (* *, wf *)
-  - exists (work_infer (exp_tapp eᵈ Bᵈ) cᵈ ⫤ Ω)%dworklist.
+  - exists (work_infer (exp_tapp eᵈ Bᵈ) cᵈ ⫤ᵈ Ω).
     split...
     destruct_d_wl_del_red...
   (* ∀ a. A ∘ B =>=> _ *)
-  - assert (⊢ᵃʷ (work_applys cs (A ^^ᵗ B) ⫤ Γ)) by admit.
+  - assert (⊢ᵃʷ (work_applys cs (A ^^ᵗ B) ⫤ᵃ Γ)) by admit.
     _apply_IH_a_wl_red.
     destruct_trans.
     inst_cofinites_by (dom (awl_to_aenv Γ) `union` dom θ `union` ftvar_in_typ A) using_name X.
@@ -1462,7 +1464,7 @@ Proof with eauto.
     erewrite <- subst_tvar_in_typ_open_typ_wrt_typ_tvar2 in H6; eauto.
     eapply trans_typ_subst_tvar_cons in H6...
     destruct H6 as [Axᵈ [Hsubst Htransa]].
-    exists (work_inftapp (typ_all (close_typ_wrt_typ X Axᵈ)) Bᵈ csᵈ ⫤ Ω)%dworklist.
+    exists (work_inftapp (typ_all (close_typ_wrt_typ X Axᵈ)) Bᵈ csᵈ ⫤ᵈ Ω).
     split.
     + exists θ.
       econstructor...
@@ -1476,31 +1478,31 @@ Proof with eauto.
       * admit. (* *, wf *)
       * rewrite_close_open_subst. rewrite Hsubst...
     + admit. (* *, lc *)
-  - exists (work_inftapp typ_bot Bᵈ csᵈ ⫤ Ω)%dworklist.
+  - exists (work_inftapp typ_bot Bᵈ csᵈ ⫤ᵈ Ω).
     split...
     econstructor... econstructor...
     eapply trans_wl_a_wf_typ_d_wf_typ with (Γ:=Γ) (Aᵃ:=B)...
-  - exists (work_inftapp (typ_intersection A1ᵈ A2ᵈ) Bᵈ csᵈ ⫤ Ω)%dworklist.
+  - exists (work_inftapp (typ_intersection A1ᵈ A2ᵈ) Bᵈ csᵈ ⫤ᵈ Ω).
     split...
     destruct_d_wl_del_red...
     econstructor... eapply d_inftapp__intersection1...
     eapply trans_wl_a_wf_typ_d_wf_typ with (Γ:=Γ) (Aᵃ:=A2)...
-  - exists (work_inftapp (typ_intersection A1ᵈ A2ᵈ) Bᵈ csᵈ ⫤ Ω)%dworklist.
+  - exists (work_inftapp (typ_intersection A1ᵈ A2ᵈ) Bᵈ csᵈ ⫤ᵈ Ω).
     split...
     destruct_d_wl_del_red...
     econstructor... eapply d_inftapp__intersection2...
     eapply trans_wl_a_wf_typ_d_wf_typ with (Γ:=Γ) (Aᵃ:=A1)...
-  - exists (work_inftapp (typ_union A1ᵈ A2ᵈ) Bᵈ cᵈ ⫤ Ω)%dworklist.
+  - exists (work_inftapp (typ_union A1ᵈ A2ᵈ) Bᵈ cᵈ ⫤ᵈ Ω).
     split...
     destruct_d_wl_del_red...
-  - exists (work_inftappunion C1ᵈ A2ᵈ Bᵈ cᵈ ⫤ Ω)%dworklist.
+  - exists (work_inftappunion C1ᵈ A2ᵈ Bᵈ cᵈ ⫤ᵈ Ω).
     split...
     destruct_d_wl_del_red...
-  - exists (work_unioninftapp C1ᵈ C2ᵈ csᵈ ⫤ Ω)%dworklist.
+  - exists (work_unioninftapp C1ᵈ C2ᵈ csᵈ ⫤ᵈ Ω).
     split...
   - destruct_a_wf_wl.
     eapply a_wf_work_apply_conts in H1 as Hwf...
-    assert ( ⊢ᵃʷ (w ⫤ Γ) ) by auto.
+    assert ( ⊢ᵃʷ (w ⫤ᵃ Γ) ) by auto.
     apply IHHared in H2...
     destruct H2 as [Ω [Htrans Hdred]].
     destruct Htrans as [θ Htrans].
@@ -1508,12 +1510,12 @@ Proof with eauto.
     trans_all_typ.
     assert (exists csᵈ, θ' ⫦ᶜˢ cs ⇝ csᵈ) by admit. (* *, trans cont total *)
     destruct H4 as [csᵈ Htransc].
-    exists (work_applys csᵈ Aᵈ ⫤ Ω)%dworklist. split.
+    exists (work_applys csᵈ Aᵈ ⫤ᵈ Ω). split.
     exists θ'. econstructor...
     eapply trans_apply_conts in H2; eauto.
   - destruct_a_wf_wl.
     eapply a_wf_work_apply_contd with (A:=A) (B:=B) in H1 as Hwf...
-    assert ( ⊢ᵃʷ (w ⫤ Γ) ) by auto.
+    assert ( ⊢ᵃʷ (w ⫤ᵃ Γ) ) by auto.
     apply IHHared in H3...
     destruct H3 as [Ω [Htrans Hdred]].
     destruct Htrans as [θ Htrans].
@@ -1521,7 +1523,7 @@ Proof with eauto.
     trans_all_typ.
     assert (exists cdᵈ, θ' ⫦ᶜᵈ cd ⇝ cdᵈ) by admit. (* *, trans cont total *)
     destruct H6 as [cdᵈ Htransc].
-    exists (work_applyd cdᵈ Aᵈ Bᵈ ⫤ Ω)%dworklist. split.
+    exists (work_applyd cdᵈ Aᵈ Bᵈ ⫤ᵈ Ω). split.
     exists θ'. econstructor...
     eapply trans_apply_contd in H2; eauto.
 Admitted.
