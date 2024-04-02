@@ -5,6 +5,7 @@ Require Import List.
 
 Require Import uni.notations.
 Require Import uni.decl.prop_basic.
+Require Import uni.decl_worklist.prop_equiv.
 Require Import uni.decl.prop_subtyping.
 Require Import uni.algo_worklist.def_extra.
 Require Import uni.algo_worklist.prop_basic.
@@ -313,6 +314,16 @@ Proof.
 Qed.
 
 
+Lemma binds_ss_to_denv_binds_ss : forall X b θ,
+  binds X b (ss_to_denv θ) ->
+  binds X b θ.  
+Proof.
+  intros. induction θ; auto.
+  - destruct a; destruct d; simpl in *; try inversion H; auto.
+    + dependent destruction H0. auto.
+    + dependent destruction H0. auto.
+Qed.
+
 Lemma wf_ss_etvar_tvar_false : forall θ X A,
   wf_ss θ -> X ~ A ∈ θ -> X ~ □ ∈ θ -> False.
 Proof.
@@ -338,59 +349,6 @@ Proof.
 Qed.
 
 #[local] Hint Resolve wf_ss_uniq : core.
-
-Lemma trans_typ_neq_all : forall θ Aᵃ Aᵈ,
-  θ ⫦ᵗ Aᵃ ⇝ Aᵈ -> neq_all Aᵃ -> neq_all Aᵈ.
-Proof.
-  intros. dependent destruction H0; dependent destruction H; auto.
-  + admit.
-  + constructor... admit. admit.
-Admitted.
-
-
-Lemma trans_typ_neq_all_rev : forall θ Aᵃ Aᵈ,
-  θ ⫦ᵗ Aᵃ ⇝ Aᵈ -> neq_all Aᵈ -> neq_all Aᵃ.
-Proof.
-  intros. dependent destruction H0; dependent destruction H; auto.
-  + admit.
-  + constructor... admit. admit.
-Admitted.
-
-
-Lemma trans_typ_neq_union : forall θ Aᵃ Aᵈ,
-  θ ⫦ᵗ Aᵃ ⇝ Aᵈ -> neq_union Aᵃ -> neq_union Aᵈ.
-Proof.
-  intros. dependent destruction H0; dependent destruction H; auto.
-  + admit.
-  + constructor... admit. admit.
-Admitted.
-
-
-Lemma trans_typ_neq_union_rev : forall θ Aᵃ Aᵈ,
-  θ ⫦ᵗ Aᵃ ⇝ Aᵈ -> neq_union Aᵈ -> neq_union Aᵃ.
-Proof.
-  intros. dependent destruction H0; dependent destruction H; auto.
-  + admit.
-  + constructor... admit.
-Admitted.
-
-Lemma trans_typ_neq_intersection : forall θ Aᵃ Aᵈ,
-  θ ⫦ᵗ Aᵃ ⇝ Aᵈ -> neq_intersection Aᵃ -> neq_intersection Aᵈ.
-Proof.
-  intros. dependent destruction H0; dependent destruction H; auto.
-  + admit.
-  + constructor... admit. admit.
-Admitted.
-
-
-Lemma trans_typ_neq_intersection_rev : forall θ Aᵃ Aᵈ,
-  θ ⫦ᵗ Aᵃ ⇝ Aᵈ -> neq_intersection Aᵈ -> neq_intersection Aᵃ.
-Proof.
-  intros. dependent destruction H0; dependent destruction H; auto.
-  + admit.
-  + constructor... admit.
-Admitted.
-
 
 Lemma trans_wl_not_in_ss : forall θ Γ Ω X,
   nil ⫦ Γ ⇝ Ω ⫣ θ -> X ∉ dom (awl_to_aenv Γ) -> X ∉ dom θ.
@@ -479,6 +437,76 @@ Proof.
       eapply trans_exp_lc_aexp; eauto.
       eapply trans_typ_lc_atyp; eauto.
 Qed.
+
+
+#[local] Hint Resolve trans_typ_wf_ss : core.
+#[local] Hint Resolve trans_typ_lc_atyp trans_typ_lc_dtyp : core.
+
+
+Lemma wf_ss_binds_monotyp : forall θ X T,
+  wf_ss θ -> binds X (dbind_typ T) θ -> d_mono_typ (ss_to_denv θ) T.
+Proof.
+  intros. induction H; auto.
+  - inversion H0.
+  - inversion H0.
+    + inversion H2.
+    + simpl. rewrite_env ((X0 ~ □) ++ ss_to_denv θ).
+      apply d_mono_typ_weaken_head. apply IHwf_ss; auto.
+  - inversion H0.
+    + inversion H2.
+    + simpl. rewrite_env ((X0 ~ ■) ++ ss_to_denv θ).
+      apply d_mono_typ_weaken_head. apply IHwf_ss; auto.
+  - inversion H0.
+    + dependent destruction H3. simpl. auto. 
+    + simpl. apply IHwf_ss; auto.
+Qed.
+
+Lemma trans_typ_neq_all : forall θ Aᵃ Aᵈ,
+  θ ⫦ᵗ Aᵃ ⇝ Aᵈ -> neq_all Aᵃ -> neq_all Aᵈ.
+Proof.
+  intros. dependent destruction H0; dependent destruction H; eauto.
+  + apply wf_ss_binds_monotyp in H0; auto.
+    admit.
+Admitted.
+
+
+Lemma trans_typ_neq_all_rev : forall θ Aᵃ Aᵈ,
+  θ ⫦ᵗ Aᵃ ⇝ Aᵈ -> neq_all Aᵈ -> neq_all Aᵃ.
+Proof.
+  intros. dependent destruction H0; dependent destruction H; eauto.
+Qed.
+
+
+Lemma trans_typ_neq_union : forall θ Aᵃ Aᵈ,
+  θ ⫦ᵗ Aᵃ ⇝ Aᵈ -> neq_union Aᵃ -> neq_union Aᵈ.
+Proof.
+  intros. dependent destruction H0; dependent destruction H; eauto.
+  + apply wf_ss_binds_monotyp in H0; auto.
+    admit.
+Admitted.
+
+
+Lemma trans_typ_neq_union_rev : forall θ Aᵃ Aᵈ,
+  θ ⫦ᵗ Aᵃ ⇝ Aᵈ -> neq_union Aᵈ -> neq_union Aᵃ.
+Proof.
+  intros. dependent destruction H0; dependent destruction H; eauto.
+Qed.
+
+Lemma trans_typ_neq_intersection : forall θ Aᵃ Aᵈ,
+  θ ⫦ᵗ Aᵃ ⇝ Aᵈ -> neq_intersection Aᵃ -> neq_intersection Aᵈ.
+Proof.
+  intros. dependent destruction H0; dependent destruction H; eauto.
+  + apply wf_ss_binds_monotyp in H0; auto.
+    admit.
+Admitted.
+
+
+Lemma trans_typ_neq_intersection_rev : forall θ Aᵃ Aᵈ,
+  θ ⫦ᵗ Aᵃ ⇝ Aᵈ -> neq_intersection Aᵈ -> neq_intersection Aᵃ.
+Proof.
+  intros. dependent destruction H0; dependent destruction H; eauto.
+Qed.
+
 
 Lemma trans_typ_det : forall θ Aᵃ A₁ᵈ A₂ᵈ,
   uniq θ -> 
@@ -839,20 +867,15 @@ Lemma trans_typ_s_in : forall θ X Aᵃ Aᵈ,
   s_in X Aᵃ ->
   s_in X Aᵈ.
 Proof.
-  intros. induction H; try dependent destruction H1.
-  - constructor.
-  - exfalso. eapply wf_ss_tvar_stvar_false; eauto.
+  intros. induction H; try dependent destruction H1; auto.
   - exfalso. eapply wf_ss_etvar_tvar_false; eauto.
   - econstructor; eauto.
-    eapply trans_typ_lc_dtyp; eauto.
   - eapply s_in__arrow2; auto. 
     eapply trans_typ_lc_dtyp; eauto.
   - eapply s_in__all with (L:=L `union` L0).
     intros. inst_cofinites_with Y.
     apply H2... apply binds_cons; auto.
     auto.
-  - econstructor; auto.
-  - econstructor; auto.
 Qed.
 
 Lemma trans_typ_rename_tvar : forall θ1 θ2 Aᵃ Aᵈ X X', 
@@ -1202,7 +1225,6 @@ Proof.
       admit.
 Admitted.
 
-
 Lemma trans_wl_weaken_etvar : forall Γ Ω X T θ1 θ2 θ',
   X `notin` ftvar_in_aworklist' Γ `union` dom θ1 `union` dom θ2 ->
   (θ2 ++ θ1) ⫦ Γ ⇝ Ω ⫣ (θ' ++ θ2 ++ θ1) ->
@@ -1371,7 +1393,6 @@ Proof.
   - apply singleton_iff in Hfv.
     subst. apply trans_typ_binds_etvar in Hbinds; auto.
     apply trans_typ_det with (A₁ᵈ:=T) in Htrans; eauto; subst; auto.
-    + apply wf_ss_uniq. eapply trans_typ_wf_ss; eauto.
     + eapply trans_typ_wf_ss; eauto.
   - dependent destruction Htrans. 
     apply union_iff in Hfv. inversion Hfv; simpl; eauto.
@@ -1475,7 +1496,7 @@ Proof with auto.
 Qed.
 
 
-Lemma a_wf_wl_d_wf_wl : forall θ Γ Ω,  
+Lemma trans_wl_a_wf_wl_d_wf_wl : forall θ Γ Ω,  
   ⊢ᵃʷ Γ -> nil ⫦ Γ ⇝ Ω ⫣ θ -> ⊢ᵈʷ Ω.
 Proof with eauto.
   intros. dependent induction H0; dependent destruction H...
@@ -1494,35 +1515,11 @@ Admitted.
 Lemma a_wf_wl_d_wf_env : forall θ Γ Ω,  
   ⊢ᵃʷ Γ -> nil ⫦ Γ ⇝ Ω ⫣ θ -> ⊢ dwl_to_denv Ω.
 Proof with eauto.
-  intros. dependent induction H0; dependent destruction H; simpl...
-  - econstructor...
-    rewrite trans_wl_dom_upper_bound...
-  - econstructor...
-    rewrite trans_wl_dom_upper_bound...
-  - econstructor... 
-    eapply trans_wl_a_wf_typ_d_wf_typ with (Aᵃ:=A1ᵃ)...
-    rewrite trans_wl_dom_upper_bound...
+  intros.
+  apply d_wf_wl_wf_env.
+  eapply trans_wl_a_wf_wl_d_wf_wl; eauto.
 Qed.
 
-
-
-Lemma wf_ss_binds_monotyp : forall θ X T,
-  wf_ss θ -> binds X (dbind_typ T) θ -> d_mono_typ (ss_to_denv θ) T.
-Proof.
-  intros. induction H; auto.
-  - inversion H0.
-  - inversion H0.
-    + inversion H2.
-    + simpl. rewrite_env ((X0 ~ □) ++ ss_to_denv θ).
-      apply d_mono_typ_weaken_head. apply IHwf_ss; auto.
-  - inversion H0.
-    + inversion H2.
-    + simpl. rewrite_env ((X0 ~ ■) ++ ss_to_denv θ).
-      apply d_mono_typ_weaken_head. apply IHwf_ss; auto.
-  - inversion H0.
-    + dependent destruction H3. simpl. auto. 
-    + simpl. apply IHwf_ss; auto.
-Qed.
 
 (* dependent destruction all non-atomic ⊢ᵃʷ relation *)
 
@@ -1867,13 +1864,6 @@ Proof with eauto.
     eapply IHa_wf_wl; eauto.
 Qed.
 
-
-
-Hint Resolve trans_typ_wf_ss : Hdb_transfer.
-
-
-Hint Resolve trans_typ_lc_atyp : Hdb_transfer.
-Hint Resolve trans_typ_lc_dtyp : Hdb_transfer.
 
 
 Lemma ftvar_in_trans_dtyp_upper : forall θ Aᵃ Aᵈ,
