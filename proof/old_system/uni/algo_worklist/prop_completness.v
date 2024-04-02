@@ -7,6 +7,7 @@ Require Import List.
 Require Import uni.notations.
 Require Import uni.prop_basic.
 Require Import uni.decl.prop_basic.
+Require Import uni.decl_worklist.prop_equiv.
 Require Import uni.algo_worklist.def_extra.
 Require Import uni.algo_worklist.transfer.
 Require Import uni.algo_worklist.prop_basic.
@@ -524,7 +525,7 @@ Admitted.
   θ2 ++ (X , dbind_typ Tᵈ) :: θ1 ⫦ᵗ Aᵃ ⇝ {Tᵈ /ᵗ X} Aᵈ.
 Proof.
   intros. generalize dependent Tᵃ. generalize dependent Tᵈ. 
-  dependent induction H0; intros; simpl; destruct_eq_atom; eauto.
+  dependent induction H0; intros; simpl; destruct_eq_atom; eauto with Hdb_a_wl_red_completness.
   - apply trans_typ_binds_etvar; eauto. admit.
   - admit.
   - admit.
@@ -604,24 +605,9 @@ Proof.
   eapply trans_typ_subst with (b:=dbind_tvar_empty); eauto.
 Qed.
 
-Ltac destruct_binds_eq :=
-  repeat
-    lazymatch goal with
-    | H1 : (?X1, ?b1) = (?X2, ?b2) |- _ =>
-      dependent destruction H1
-    end.
+#[local] Hint Resolve d_wf_wl_wf_env : core.
 
-Ltac destruct_binds :=
-  simpl in *;
-  repeat
-  match goal with
-  | H1 : binds ?X ?b (?b' :: ?θ) |- _ =>
-    inversion H1;
-    clear H1;
-    destruct_binds_eq
-  end.
-
-Lemma trans_wl_a_wl_binds_var_trans_typ_d_wl' : forall θ Γ Ω x Aᵃ Aᵈ,
+Lemma trans_wl_a_wl_binds_var_binds_d_wl_trans_typ' : forall θ Γ Ω x Aᵃ Aᵈ,
   ⊢ᵃʷ Γ ->
   ⊢ᵈʷ Ω ->
   nil ⫦ Γ ⇝ Ω ⫣ θ ->
@@ -629,36 +615,13 @@ Lemma trans_wl_a_wl_binds_var_trans_typ_d_wl' : forall θ Γ Ω x Aᵃ Aᵈ,
   binds x (dbind_typ Aᵈ) (dwl_to_denv Ω) ->
   θ ⫦ᵗ Aᵃ ⇝ Aᵈ.
 Proof with eauto.
-  intros. generalize dependent Ω. generalize dependent θ. 
-    dependent induction H; intros; auto.
-  - inversion H2.
-  - dependent destruction H4.
-    inversion H3.
-    destruct_binds; auto.
-    + eapply binds_dom_contradiction with (a:=abind_var_typ Aᵃ) in H; auto; contradiction.
-    + eapply binds_dom_contradiction with (a:=dbind_typ Aᵈ) in H13; auto. contradiction.
-    + subst. eapply IHa_wf_wl; eauto.
-  - dependent destruction H3.
-    inversion H1.
-    destruct_binds.
-    rewrite_env (nil ++ (X ~ dbind_tvar_empty) ++ θ'). 
-    apply trans_typ_weaken; simpl...
-  - dependent destruction H3. 
-    inversion H1.
-    destruct_binds. 
-    rewrite_env (nil ++ (X ~ dbind_stvar_empty) ++ θ'). 
-    apply trans_typ_weaken; simpl...
-  - dependent destruction H3.
-    destruct_binds.
-    rewrite_env (nil ++ (X ~ dbind_typ T) ++ θ'). 
-    apply trans_typ_weaken; simpl...
-  - dependent destruction H3. simpl in *.
-    dependent destruction H1.
-    eapply IHa_wf_wl; eauto.
+  intros.
+  eapply trans_wl_a_wl_binds_var_binds_d_wl_and_trans in H2; eauto.
+  destruct H2 as [Aᵈ' [Hbinds Htrans]].
+  eapply binds_unique in H3; eauto. dependent destruction H3...
 Qed.
 
-
-Lemma trans_wl_a_wl_binds_var_trans_typ_d_wl : forall θ Γ Ω x Aᵃ Aᵈ,
+Lemma trans_wl_a_wl_binds_var_binds_d_wl_trans_typ : forall θ Γ Ω x Aᵃ Aᵈ,
   ⊢ᵃʷ Γ ->
   nil ⫦ Γ ⇝ Ω ⫣ θ ->
   binds x (abind_var_typ Aᵃ) (awl_to_aenv Γ) ->
@@ -666,10 +629,9 @@ Lemma trans_wl_a_wl_binds_var_trans_typ_d_wl : forall θ Γ Ω x Aᵃ Aᵈ,
   θ ⫦ᵗ Aᵃ ⇝ Aᵈ.
 Proof.
   intros. eapply a_wf_wl_d_wf_wl in H0 as Hdwf; auto.
-  eapply trans_wl_a_wl_binds_var_trans_typ_d_wl'; eauto.
+  eapply trans_wl_a_wl_binds_var_binds_d_wl_trans_typ'; eauto.
 Qed.
   
-
 
 #[local] Hint Resolve trans_typ_lc_atyp trans_typ_lc_dtyp trans_wl_d_wl_mono_ss : core.
 
@@ -886,7 +848,7 @@ Proof with eauto.
     admit. (* OK, wf *)
     exists θ0...
     repeat constructor...
-    eapply trans_wl_a_wl_binds_var_trans_typ_d_wl; eauto.
+    eapply trans_wl_a_wl_binds_var_binds_d_wl_trans_typ; eauto.
   - solve_awl_trailing_etvar.
     destruct_trans.
     constructor.

@@ -1778,18 +1778,70 @@ Proof with eauto.
   intros; eapply wf_ss_typ_no_etvar...
 Admitted.
 
+
+
+Ltac destruct_binds_eq :=
+  repeat
+    lazymatch goal with
+    | H1 : (?X1, ?b1) = (?X2, ?b2) |- _ =>
+      dependent destruction H1
+    end.
+
+Ltac destruct_binds :=
+  simpl in *;
+  repeat
+  match goal with
+  | H1 : binds ?X ?b (?b' :: ?θ) |- _ =>
+    inversion H1;
+    clear H1;
+    destruct_binds_eq
+  end.
+
+
+Lemma trans_wl_a_wl_binds_var_binds_d_wl_and_trans : forall θ Γ Ω x Aᵃ,
+  ⊢ᵃʷ Γ ->
+  ⊢ᵈʷ Ω ->
+  nil ⫦ Γ ⇝ Ω ⫣ θ ->
+  binds x (abind_var_typ Aᵃ) (awl_to_aenv Γ) ->
+  exists Aᵈ, binds x (dbind_typ Aᵈ) (dwl_to_denv Ω) /\ θ ⫦ᵗ Aᵃ ⇝ Aᵈ.
+Proof with eauto.
+  intros. generalize dependent Ω. generalize dependent θ. 
+    dependent induction H; intros; auto.
+  - inversion H2.
+  - dependent destruction H4.
+    dependent destruction H3.
+    destruct_binds; eauto.
+    + eapply IHa_wf_wl in H8; eauto. destruct H8 as [Aᵈ [Hbinds Htrans]].
+      exists Aᵈ. split; auto.
+  - dependent destruction H3.
+    inversion H1.
+    destruct_binds.
+    eapply IHa_wf_wl in H8; eauto. destruct H8 as [Aᵈ [Hbinds Htrans]].
+    exists Aᵈ. split; auto.
+    rewrite_env (nil ++ (X ~ dbind_tvar_empty) ++ θ'). 
+    apply trans_typ_weaken; simpl...
+  - dependent destruction H3.
+    inversion H1.
+    destruct_binds.
+    eapply IHa_wf_wl in H8; eauto. destruct H8 as [Aᵈ [Hbinds Htrans]].
+    exists Aᵈ. split; auto.
+    rewrite_env (nil ++ (X ~ dbind_stvar_empty) ++ θ'). 
+    apply trans_typ_weaken; simpl...
+  - dependent destruction H3.
+    destruct_binds.
+    eapply IHa_wf_wl with (θ:=θ') in H6 ; eauto. destruct H6 as [Aᵈ [Hbinds Htrans]].
+    exists Aᵈ. split; auto.
+    rewrite_env (nil ++ (X ~ dbind_typ T) ++ θ'). 
+    apply trans_typ_weaken; simpl...
+  - dependent destruction H3. simpl in *.
+    dependent destruction H1.
+    eapply IHa_wf_wl; eauto.
+Qed.
+
+
+
 Hint Resolve trans_typ_wf_ss : Hdb_transfer.
 
-
-Lemma ss_wf_typ_trans_typ_total : forall θ Aᵃ,
-  (ss_to_denv θ) ⊢ Aᵃ ->
-  exists Aᵈ, θ ⫦ᵗ Aᵃ ⇝ Aᵈ.
-Proof with eauto.
-  intros. induction H...
-  - admit.
-  - admit.
-  - admit.
-Admitted.
 
 Hint Resolve trans_typ_lc_atyp : Hdb_transfer.
 Hint Resolve trans_typ_lc_dtyp : Hdb_transfer.

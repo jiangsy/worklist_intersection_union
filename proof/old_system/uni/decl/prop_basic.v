@@ -244,7 +244,7 @@ Proof.
 Qed.
 
 Corollary d_wf_typ_weaken_head: forall Ψ1 Ψ2 T,
-    Ψ1 ⊢ T ->
+  Ψ1 ⊢ T ->
   (* uniq (Ψ2 ++ Ψ1) -> *)
   Ψ2 ++ Ψ1 ⊢ T.
 Proof.
@@ -260,11 +260,8 @@ Proof.
   induction H; auto.
 Qed.
 
-Lemma d_wf_env_strenthening : forall Ψ1 X Ψ2,
-  ⊢ Ψ2 ++ X ~ dbind_tvar_empty ++ Ψ1 ->
-  ⊢ Ψ2 ++ Ψ1.
-Abort.
-(* Wrong Lemma Ψ2 = (y : X) *)
+#[export] Hint Resolve d_wf_env_uniq : core.
+
 
 Lemma d_wf_env_strenthening_head : forall a Ψ,
     ⊢ a :: Ψ -> ⊢ Ψ.
@@ -273,8 +270,7 @@ Proof with auto.
   inverts* H.
 Qed.
 
-Hint Resolve d_wf_env_uniq : core.
-Hint Resolve d_wf_typ_weaken_cons : core.
+#[local] Hint Resolve d_wf_typ_weaken_cons : core.
 
 Lemma dwf_env_binds_d_wf_typ : forall Ψ x A,
   ⊢ Ψ ->
@@ -1077,7 +1073,6 @@ Proof with eauto.
     forwards: H1. rewrite_env ((Y ~ □ ++ Ψ2) ++ x ~ dbind_typ B ++ Ψ1)...
     rewrite_env ((Y ~ □ ++ Ψ2)++ Ψ1)...
 Qed.
-
 
 (* Lemma d_subtying_rename_tvar : *)
 (* Lemma d_subtying_rename_var : *)

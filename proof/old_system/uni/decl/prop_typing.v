@@ -673,6 +673,8 @@ Proof.
   - inst_cofinites_by L. inversion H1; auto.
 Qed.
 
+#[local] Hint Resolve d_wf_typ_weaken_cons : core.
+
 Lemma d_chk_inf_wft: forall Ψ e mode A,
   d_typing Ψ e mode A ->
   Ψ ⊢ A.
