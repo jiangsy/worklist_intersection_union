@@ -1791,12 +1791,30 @@ Ltac destruct_binds :=
   simpl in *;
   repeat
   match goal with
-  | H1 : binds ?X ?b (?b' :: ?θ) |- _ =>
-    inversion H1;
+  | H1 : binds ?X ?b ((?X', ?b') :: ?θ) |- _ =>
+    let H_1 := fresh "H" in
+    let H_2 := fresh "H" in
+    inversion H1 as [H_1 | H_2];
     clear H1;
-    destruct_binds_eq
+    try destruct_binds_eq;
+    try solve [solve_notin_eq X];
+    try solve [solve_notin_eq X']
   end.
 
+
+Ltac destruct_in :=
+  simpl in *;
+  match goal with
+  | H1 : ((?X, ?b) = (?X', ?b')) \/  In ?b'' ?θ |- _ =>
+    let H1_1 := fresh "H" in
+    let H1_2 := fresh "H" in
+    inversion H1 as [H1_1 | H1_2];
+    clear H1;
+    try destruct_binds_eq;
+    try solve [solve_notin_eq X];
+    try solve [solve_notin_eq X']
+  end.
+  
 
 Lemma trans_wl_a_wl_binds_var_binds_d_wl_and_trans : forall θ Γ Ω x Aᵃ,
   ⊢ᵃʷ Γ ->
@@ -1811,7 +1829,7 @@ Proof with eauto.
   - dependent destruction H4.
     dependent destruction H3.
     destruct_binds; eauto.
-    + eapply IHa_wf_wl in H8; eauto. destruct H8 as [Aᵈ [Hbinds Htrans]].
+    + eapply IHa_wf_wl in H9; eauto. destruct H9 as [Aᵈ [Hbinds Htrans]].
       exists Aᵈ. split; auto.
   - dependent destruction H3.
     inversion H1.
@@ -1829,7 +1847,7 @@ Proof with eauto.
     apply trans_typ_weaken; simpl...
   - dependent destruction H3.
     destruct_binds.
-    eapply IHa_wf_wl with (θ:=θ') in H6 ; eauto. destruct H6 as [Aᵈ [Hbinds Htrans]].
+    eapply IHa_wf_wl with (θ:=θ') in H7 ; eauto. destruct H7 as [Aᵈ [Hbinds Htrans]].
     exists Aᵈ. split; auto.
     rewrite_env (nil ++ (X ~ dbind_typ T) ++ θ'). 
     apply trans_typ_weaken; simpl...

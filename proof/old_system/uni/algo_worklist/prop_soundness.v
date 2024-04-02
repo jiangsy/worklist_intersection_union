@@ -950,6 +950,18 @@ Qed.
 #[local] Hint Resolve trans_typ_wf_ss : core.
 
 
+(* Ltac destruct_binds' :=
+  simpl in *;
+  repeat
+  match goal with
+  | H1 : binds ?X ?b (?b' :: ?θ) |- _ =>
+    inversion H1;
+    clear H1;
+    intuition;
+    try destruct_binds_eq
+  end. *)
+
+
 
 Theorem d_a_wl_red_soundness: forall Γ,
   ⊢ᵃʷ Γ -> Γ ⟶ᵃʷ⁎⋅ -> exists Ω, transfer Γ Ω /\ Ω ⟶ᵈ⁎⋅.
@@ -1086,9 +1098,7 @@ Proof with eauto.
       * exists θ'. econstructor...
         constructor. 
         -- apply trans_typ_binds_etvar; eauto.
-           ++ inversion Hbindsx. dependent destruction H9. solve_notin_eq X1. 
-           inversion H9. dependent destruction H10. solve_notin_eq X2.
-           auto.
+           destruct_binds. destruct_in...
         -- constructor. rewrite_env (nil ++ θ'). 
            eapply trans_typ_strengthen_etvar with (X:=X1) (T:=T0).
            eapply trans_typ_strengthen_etvar with (X:=X2) (T:=T). auto...
@@ -1133,9 +1143,7 @@ Proof with eauto.
               eapply trans_typ_strengthen_etvar with (X:=X2) (T:=T)...
            ++ admit. (* OK, trans_typ_strengthen_etvar *)
         -- apply trans_typ_binds_etvar; eauto.
-           ++ inversion Hbindsx. dependent destruction H8. solve_notin_eq X1. 
-           inversion H8. dependent destruction H10. solve_notin_eq X2.
-           auto.
+           destruct_binds. destruct_in...
       * auto.
       * admit. (* OK, wf *)
       * admit. (* OK, mono *)
@@ -1245,9 +1253,7 @@ Proof with eauto.
            rewrite_close_open_subst.
            admit. (* Ok, trans rename *)
         -- apply trans_typ_binds_etvar; auto...
-           inversion Hbindsx. dependent destruction H9. solve_notin_eq X1.
-           inversion H9. dependent destruction H10. solve_notin_eq X2.
-           auto.
+           destruct_binds. destruct_in...
       * constructor; auto.
          admit. 
          destruct_d_wl_del_red...
@@ -1468,9 +1474,7 @@ Proof with eauto.
       * exists θ'. constructor; auto.
         constructor.
         -- apply trans_typ_binds_etvar; auto...
-           inversion Hbindsx. dependent destruction H6. solve_notin_eq X1.
-           inversion H6. dependent destruction H8. solve_notin_eq X2.
-           auto.
+           destruct_binds. destruct_in...
         -- admit. (* trans_cont_stengthen *)
       * destruct_d_wl_del_red...       
       * admit. (* OK, wf *)
