@@ -35,6 +35,66 @@ Proof.
 Qed.
 
 
+Lemma a_wf_typ_weaken: forall Σ1 Σ2 Σ3 A,
+    a_wf_typ (Σ3 ++ Σ1) A ->
+    a_wf_typ (Σ3 ++ Σ2 ++ Σ1) A.
+Proof.
+  introv H. dependent induction H; eauto.
+  - pick fresh X0 and apply a_wf_typ__all.
+    + forwards*: H X0.
+    + forwards*: H X0. forwards*: H0 X0.
+      forwards*: H1 X0  Σ1 (X0 ~ abind_tvar_empty ++ Σ3); auto.
+Qed.
+
+Corollary a_wf_typ_weaken_cons: forall Σ X t A,
+    a_wf_typ Σ A ->
+    X ∉ dom Σ ->
+    a_wf_typ ((X, t) :: Σ) A.
+Proof with simpl in *; try solve_notin.
+  intros. simpl.
+  rewrite_env (nil ++ (X ~ t) ++ Σ).
+  apply a_wf_typ_weaken; auto...
+Qed.
+
+Lemma a_wf_exp_weaken: forall Σ1 Σ2 Σ3 e,
+  a_wf_exp (Σ3 ++ Σ1) e ->
+  a_wf_exp (Σ3 ++ Σ2 ++ Σ1) e
+with a_wf_body_weaken : forall Σ1 Σ2 Σ3 b,
+  a_wf_body (Σ3 ++ Σ1) b ->
+  a_wf_body (Σ3 ++ Σ2 ++ Σ1) b.
+Proof with eauto using a_wf_typ_weaken. 
+  - intros. clear a_wf_exp_weaken. dependent induction H...
+    + intros. apply a_wf_exp__abs with (T:=T) 
+      (L:=union L (union (dom Σ2) (union (dom Σ1) (union (dom Σ3) (ftvar_in_typ T)))))...
+      intros. rewrite_env ((x ~ abind_var_typ T ++ Σ3) ++ Σ2 ++ Σ1).
+      apply H1...
+    + intros. inst_cofinites_for a_wf_exp__tabs. intros.
+      inst_cofinites_with X.
+      rewrite_env ((X ~ abind_tvar_empty ++ Σ3) ++ Σ2 ++ Σ1).
+      apply a_wf_body_weaken...
+  - intros. dependent destruction H; constructor...
+Qed.
+
+Lemma a_wf_conts_weaken: forall Σ1 Σ2 Σ3 cs,
+  a_wf_conts (Σ3 ++ Σ1) cs ->
+  a_wf_conts (Σ3 ++ Σ2 ++ Σ1) cs
+with a_wf_contd_weaken : forall Σ1 Σ2 Σ3 cd,
+  a_wf_contd (Σ3 ++ Σ1) cd ->
+  a_wf_contd (Σ3 ++ Σ2 ++ Σ1) cd.
+Proof with eauto using a_wf_typ_weaken, a_wf_exp_weaken.
+  - intros. dependent induction H; constructor... 
+  - intros. dependent induction H; constructor...
+Qed.
+
+Lemma a_wf_work_weaken: forall Σ1 Σ2 Σ3 w,
+  a_wf_work (Σ3 ++ Σ1) w ->
+  a_wf_work (Σ3 ++ Σ2 ++ Σ1) w.
+Proof with eauto using a_wf_typ_weaken, a_wf_exp_weaken, a_wf_conts_weaken, a_wf_contd_weaken.
+  intros. dependent destruction H...
+  constructor...
+Qed.
+
+
 Lemma a_wf_exp_var_binds_another : forall Σ1 x Σ2 e A1 A2,
   a_wf_exp (Σ2 ++ x ~ abind_var_typ A1 ++ Σ1) e ->
   a_wf_typ Σ1 A2 ->
@@ -243,65 +303,6 @@ Proof.
 Qed.
 
 #[local] Hint Rewrite awl_to_aenv_cons awl_to_aenv_app: core.
-
-Lemma a_wf_typ_weaken: forall Σ1 Σ2 Σ3 A,
-    a_wf_typ (Σ3 ++ Σ1) A ->
-    a_wf_typ (Σ3 ++ Σ2 ++ Σ1) A.
-Proof.
-  introv H. dependent induction H; eauto.
-  - pick fresh X0 and apply a_wf_typ__all.
-    + forwards*: H X0.
-    + forwards*: H X0. forwards*: H0 X0.
-      forwards*: H1 X0  Σ1 (X0 ~ abind_tvar_empty ++ Σ3); auto.
-Qed.
-
-Corollary a_wf_typ_weaken_cons: forall Σ X t A,
-    a_wf_typ Σ A ->
-    X ∉ dom Σ ->
-    a_wf_typ ((X, t) :: Σ) A.
-Proof with simpl in *; try solve_notin.
-  intros. simpl.
-  rewrite_env (nil ++ (X ~ t) ++ Σ).
-  apply a_wf_typ_weaken; auto...
-Qed.
-
-Lemma a_wf_exp_weaken: forall Σ1 Σ2 Σ3 e,
-  a_wf_exp (Σ3 ++ Σ1) e ->
-  a_wf_exp (Σ3 ++ Σ2 ++ Σ1) e
-with a_wf_body_weaken : forall Σ1 Σ2 Σ3 b,
-  a_wf_body (Σ3 ++ Σ1) b ->
-  a_wf_body (Σ3 ++ Σ2 ++ Σ1) b.
-Proof with eauto using a_wf_typ_weaken. 
-  - intros. clear a_wf_exp_weaken. dependent induction H...
-    + intros. apply a_wf_exp__abs with (T:=T) 
-      (L:=union L (union (dom Σ2) (union (dom Σ1) (union (dom Σ3) (ftvar_in_typ T)))))...
-      intros. rewrite_env ((x ~ abind_var_typ T ++ Σ3) ++ Σ2 ++ Σ1).
-      apply H1...
-    + intros. inst_cofinites_for a_wf_exp__tabs. intros.
-      inst_cofinites_with X.
-      rewrite_env ((X ~ abind_tvar_empty ++ Σ3) ++ Σ2 ++ Σ1).
-      apply a_wf_body_weaken...
-  - intros. dependent destruction H; constructor...
-Qed.
-
-Lemma a_wf_conts_weaken: forall Σ1 Σ2 Σ3 cs,
-  a_wf_conts (Σ3 ++ Σ1) cs ->
-  a_wf_conts (Σ3 ++ Σ2 ++ Σ1) cs
-with a_wf_contd_weaken : forall Σ1 Σ2 Σ3 cd,
-  a_wf_contd (Σ3 ++ Σ1) cd ->
-  a_wf_contd (Σ3 ++ Σ2 ++ Σ1) cd.
-Proof with eauto using a_wf_typ_weaken, a_wf_exp_weaken.
-  - intros. dependent induction H; constructor... 
-  - intros. dependent induction H; constructor...
-Qed.
-
-Lemma a_wf_work_weaken: forall Σ1 Σ2 Σ3 w,
-  a_wf_work (Σ3 ++ Σ1) w ->
-  a_wf_work (Σ3 ++ Σ2 ++ Σ1) w.
-Proof with eauto using a_wf_typ_weaken, a_wf_exp_weaken, a_wf_conts_weaken, a_wf_contd_weaken.
-  intros. dependent destruction H...
-  constructor...
-Qed.
 
 Lemma a_wf_wl_weaken_atvar: forall Γ1 Γ2 X t,
     ⊢ᵃʷ awl_app Γ1 Γ2 -> X ∉ (dom (awl_to_aenv Γ1) `union` dom (awl_to_aenv Γ2)) ->

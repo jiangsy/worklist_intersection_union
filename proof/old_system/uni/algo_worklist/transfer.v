@@ -281,6 +281,30 @@ where "θ ⫦ Γᵃ ⇝ Γᵈ ⫣ θ'" := (trans_worklist θ Γᵃ Γᵈ θ').
 #[export] Hint Constructors trans_typ trans_exp trans_conts trans_contd trans_work trans_worklist wf_ss : core.
 
 
+Lemma binds_same_move_etvar_before : forall θ1 θ2 X1 X2 b1 b2 Y (b : dbind),
+  binds Y b (θ2 ++ (X2, b2) :: (X1, b1) :: θ1) <->
+  binds Y b ((X1, b1) :: θ2 ++ (X2, b2) :: θ1).
+Proof.
+  intros;
+  split; intros; 
+  try rewrite_env (((X1, b1) :: θ2) ++ (X2, b2) :: θ1) in H; 
+  try rewrite_env (((X1, b1) :: θ2) ++ (X2, b2) :: θ1);
+  apply binds_app_iff in H; apply binds_app_iff; inversion H; destruct_binds; try destruct_in; eauto.
+Qed.
+
+Lemma notin_dom_reorder : forall X X0 θ θ',
+  X `notin` dom θ ->
+  X <> X0 ->
+  (forall Y (b: dbind), X0 ≠ Y → binds Y b θ ↔ binds Y b θ') ->
+  X `notin` dom θ'.
+Proof.
+  intros. unfold not. intros.
+  apply binds_In_inv in H2. destruct H2 as [b Hbinds].
+  apply H1 in Hbinds...
+  eapply binds_dom_contradiction in Hbinds; auto.
+  unfold not. intros. subst. contradiction.
+Qed.
+
 Lemma wf_ss_uniq : forall θ,
   wf_ss θ -> uniq θ.
 Proof.

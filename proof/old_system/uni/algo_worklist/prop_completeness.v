@@ -444,18 +444,6 @@ Proof.
 Qed.
 
 
-Lemma binds_same_move_etvar_before : forall θ1 θ2 X1 X2 b1 b2 Y (b : dbind),
-  binds Y b (θ2 ++ (X2, b2) :: (X1, b1) :: θ1) <->
-  binds Y b ((X1, b1) :: θ2 ++ (X2, b2) :: θ1).
-Proof.
-  intros;
-  split; intros; 
-  try rewrite_env (((X1, b1) :: θ2) ++ (X2, b2) :: θ1) in H; 
-  try rewrite_env (((X1, b1) :: θ2) ++ (X2, b2) :: θ1);
-  apply binds_app_iff in H; apply binds_app_iff; inversion H; destruct_binds; try destruct_in; eauto.
-Qed.
-
-
 Lemma a_worklist_subst_transfer_same_dworklist_rev_exist': forall Γ1 Γ2 Ω θ X T Tᵈ,
   ⊢ᵃʷ (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) ->
   X `notin` ftvar_in_typ T ->
@@ -492,12 +480,7 @@ Proof with eauto.
   - dependent destruction Htranswl.
     + apply IHΓ2 in Htranswl as Hws; auto.
       destruct Hws as [Γ'1 [Γ'2 [θ'0 [Hws [Htrans [Hbinds Hwfss]]]]]].
-      assert (X0 `notin` dom θ'0). {
-        unfold not. intros. apply binds_In_inv in H0. destruct H0 as [b Hbindsx].
-        apply Hbinds in Hbindsx.
-        apply binds_dom_contradiction in Hbindsx...
-        dependent destruction Hwf. rewrite awl_to_aenv_app in H. simpl in *. auto.
-      } 
+      assert (X0 `notin` dom θ'0) by (eapply notin_dom_reorder; eauto).
       exists Γ'1, (X0 ~ᵃ □ ;ᵃ Γ'2), ((X0, □) :: θ'0). 
         repeat split...
       * econstructor; auto.
@@ -512,12 +495,7 @@ Proof with eauto.
       * destruct_a_wf_wl...
     + apply IHΓ2 in Htranswl as Hws; auto.
       destruct Hws as [Γ'1 [Γ'2 [θ'0 [Hws [Htrans [Hbinds Hwfss]]]]]].
-      assert (X0 `notin` dom θ'0). {
-        unfold not. intros. apply binds_In_inv in H0. destruct H0 as [b Hbindsx].
-        apply Hbinds in Hbindsx.
-        apply binds_dom_contradiction in Hbindsx...
-        dependent destruction Hwf. rewrite awl_to_aenv_app in H. simpl in *. auto.
-      } 
+      assert (X0 `notin` dom θ'0) by (eapply notin_dom_reorder; eauto).
       exists Γ'1, (aworklist_constvar Γ'2 X0 abind_stvar_empty), ((X0, dbind_stvar_empty) :: θ'0). 
       repeat split; auto...
       * econstructor; auto.
@@ -565,12 +543,7 @@ Proof with eauto.
         -- eapply trans_typ_wf_ss; eauto. 
       * apply IHΓ2 in Htranswl as Hws; auto.
         destruct Hws as [Γ'1 [Γ'2 [θ'0 [Hws [Htrans [Hbinds Hwfss]]]]]].
-        assert (X0 `notin` dom θ'0). {
-          unfold not. intros. apply binds_In_inv in H2. destruct H2 as [b Hbindsx].
-          apply Hbinds in Hbindsx.
-          apply binds_dom_contradiction in Hbindsx...
-          dependent destruction Hwf. rewrite awl_to_aenv_app in H. simpl in *. auto.
-        }
+        assert (X0 `notin` dom θ'0) by (eapply notin_dom_reorder; eauto).
         assert (d_mono_typ (ss_to_denv θ'0) T0). {
            apply d_mono_typ_reorder with (θ:=θ')...
            intros. apply Hbinds; auto.
