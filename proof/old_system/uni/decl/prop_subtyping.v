@@ -612,9 +612,9 @@ Proof with eauto.
             ** apply d_wf_typ_weaken_cons; auto.
             ** contradiction.
       -- unfold eq_dec. destruct (EqDec_eq_of_X X0 X); eauto.
-         ++ applys* d_mono_typ_weaken_head.
+         ++ applys* d_mono_typ_weaken_cons.
          ++ contradiction.
-      -- applys* d_wf_typ_weaken_head.
+      -- applys* d_wf_typ_weaken_app.
     + apply d_sub_dwft in Hsub as Hwft1. destruct Hwft1 as [_ [HwftS HwftT]]. inversion HwftT.
       eapply d_sub__alll with (L:=L `union` singleton X) (T:={T1 /ᵗ X} T); eauto...
       1-3: simpl; econstructor; applys* lc_typ_subst.
@@ -739,7 +739,7 @@ Theorem d_sub_subst_stvar : forall Ψ1 X Ψ2 A B T,
   Ψ2 ++ (X ~ dbind_stvar_empty) ++ Ψ1 ⊢ A <: B ->
   Ψ1 ⊢ T ->
   map (subst_tvar_in_dbind T X) Ψ2 ++ Ψ1 ⊢ {T /ᵗ X} A <: {T /ᵗ X} B.
-Proof with subst; eauto using d_wf_typ_weaken_head.
+Proof with subst; eauto using d_wf_typ_weaken_app.
   intros. dependent induction H; try solve [simpl in *; eauto].
   - eapply dsub_refl; auto...
   - simpl. inst_cofinites_for d_sub__all; intros X1 Hfr; inst_cofinites_with X1.

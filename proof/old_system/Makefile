@@ -16,7 +16,8 @@ LNGEN_OUTS := $(addsuffix /prop_ln.v,${SYSTEMS})
 	sed -e "/lc_typ[ ](exp_tabs[ ](body_anno/d" -i "" $@ 
 	sed -e "s/dW/Ω/g" -i "" $@ 
 	sed -e "s/aW/Γ/g" -i "" $@ 
-	sed -e "s/dE/Ψ/g" -i "" $@ 
+	sed -e "s/dE/Ψ/g" -i "" $@
+	sed -e "s/aE/Σ/g" -i "" $@ 
 
 ott : ${OTT_OUTS}
 

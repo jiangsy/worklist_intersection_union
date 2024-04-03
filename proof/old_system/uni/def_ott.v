@@ -1433,178 +1433,178 @@ Inductive d_sub : denv -> typ -> typ -> Prop :=    (* defn d_sub *)
 
 (* defns J_a_wf_typ *)
 Inductive a_wf_typ : aenv -> typ -> Prop :=    (* defn a_wf_typ *)
- | a_wf_typ__unit : forall (aE:aenv),
-     a_wf_typ aE typ_unit
- | a_wf_typ__bot : forall (aE:aenv),
-     a_wf_typ aE typ_bot
- | a_wf_typ__top : forall (aE:aenv),
-     a_wf_typ aE typ_top
- | a_wf_typ__tvar : forall (aE:aenv) (X:typvar),
-      binds ( X )  ( abind_tvar_empty ) ( aE )  ->
-     a_wf_typ aE (typ_var_f X)
- | a_wf_typ__stvar : forall (aE:aenv) (X:typvar),
-      binds ( X )  ( abind_stvar_empty ) ( aE )  ->
-     a_wf_typ aE (typ_var_f X)
- | a_wf_typ__etvar : forall (aE:aenv) (X:typvar),
-      binds ( X )  ( abind_etvar_empty ) ( aE )  ->
-     a_wf_typ aE (typ_var_f X)
- | a_wf_typ__arrow : forall (aE:aenv) (A1 A2:typ),
-     a_wf_typ aE A1 ->
-     a_wf_typ aE A2 ->
-     a_wf_typ aE (typ_arrow A1 A2)
- | a_wf_typ__all : forall (L:vars) (aE:aenv) (A:typ),
+ | a_wf_typ__unit : forall (Σ:aenv),
+     a_wf_typ Σ typ_unit
+ | a_wf_typ__bot : forall (Σ:aenv),
+     a_wf_typ Σ typ_bot
+ | a_wf_typ__top : forall (Σ:aenv),
+     a_wf_typ Σ typ_top
+ | a_wf_typ__tvar : forall (Σ:aenv) (X:typvar),
+      binds ( X )  ( abind_tvar_empty ) ( Σ )  ->
+     a_wf_typ Σ (typ_var_f X)
+ | a_wf_typ__stvar : forall (Σ:aenv) (X:typvar),
+      binds ( X )  ( abind_stvar_empty ) ( Σ )  ->
+     a_wf_typ Σ (typ_var_f X)
+ | a_wf_typ__etvar : forall (Σ:aenv) (X:typvar),
+      binds ( X )  ( abind_etvar_empty ) ( Σ )  ->
+     a_wf_typ Σ (typ_var_f X)
+ | a_wf_typ__arrow : forall (Σ:aenv) (A1 A2:typ),
+     a_wf_typ Σ A1 ->
+     a_wf_typ Σ A2 ->
+     a_wf_typ Σ (typ_arrow A1 A2)
+ | a_wf_typ__all : forall (L:vars) (Σ:aenv) (A:typ),
       ( forall X , X \notin  L  -> s_in X  ( open_typ_wrt_typ A (typ_var_f X) )  )  ->
-      ( forall X , X \notin  L  -> a_wf_typ  ( X ~ abind_tvar_empty  ++  aE )   ( open_typ_wrt_typ A (typ_var_f X) )  )  ->
-     a_wf_typ aE (typ_all A)
- | a_wf_typ__union : forall (aE:aenv) (A1 A2:typ),
-     a_wf_typ aE A1 ->
-     a_wf_typ aE A2 ->
-     a_wf_typ aE (typ_union A1 A2)
- | a_wf_typ__intersection : forall (aE:aenv) (A1 A2:typ),
-     a_wf_typ aE A1 ->
-     a_wf_typ aE A2 ->
-     a_wf_typ aE (typ_intersection A1 A2).
+      ( forall X , X \notin  L  -> a_wf_typ  ( X ~ abind_tvar_empty  ++  Σ )   ( open_typ_wrt_typ A (typ_var_f X) )  )  ->
+     a_wf_typ Σ (typ_all A)
+ | a_wf_typ__union : forall (Σ:aenv) (A1 A2:typ),
+     a_wf_typ Σ A1 ->
+     a_wf_typ Σ A2 ->
+     a_wf_typ Σ (typ_union A1 A2)
+ | a_wf_typ__intersection : forall (Σ:aenv) (A1 A2:typ),
+     a_wf_typ Σ A1 ->
+     a_wf_typ Σ A2 ->
+     a_wf_typ Σ (typ_intersection A1 A2).
 
 (* defns J_a_mono_typ *)
 Inductive a_mono_typ : aenv -> typ -> Prop :=    (* defn a_mono_typ *)
- | a_mono_typ__unit : forall (aE:aenv),
-     a_mono_typ aE typ_unit
- | a_mono_typ__tvar : forall (aE:aenv) (X:typvar),
-      binds ( X )  ( abind_tvar_empty ) ( aE )  ->
-     a_mono_typ aE (typ_var_f X)
- | a_mono_typ__etvar : forall (aE:aenv) (X:typvar),
-      binds ( X )  ( abind_etvar_empty ) ( aE )  ->
-     a_mono_typ aE (typ_var_f X)
- | a_mono_typ__arrow : forall (aE:aenv) (A1 A2:typ),
-     a_mono_typ aE A1 ->
-     a_mono_typ aE A2 ->
-     a_mono_typ aE (typ_arrow A1 A2).
+ | a_mono_typ__unit : forall (Σ:aenv),
+     a_mono_typ Σ typ_unit
+ | a_mono_typ__tvar : forall (Σ:aenv) (X:typvar),
+      binds ( X )  ( abind_tvar_empty ) ( Σ )  ->
+     a_mono_typ Σ (typ_var_f X)
+ | a_mono_typ__etvar : forall (Σ:aenv) (X:typvar),
+      binds ( X )  ( abind_etvar_empty ) ( Σ )  ->
+     a_mono_typ Σ (typ_var_f X)
+ | a_mono_typ__arrow : forall (Σ:aenv) (A1 A2:typ),
+     a_mono_typ Σ A1 ->
+     a_mono_typ Σ A2 ->
+     a_mono_typ Σ (typ_arrow A1 A2).
 
 (* defns J_a_wf_exp *)
 Inductive a_wf_exp : aenv -> exp -> Prop :=    (* defn a_wf_exp *)
- | a_wf_exp__unit : forall (aE:aenv),
-     a_wf_exp aE exp_unit
- | a_wf_exp__var : forall (aE:aenv) (x:expvar) (A:typ),
-      binds ( x )  ( (abind_var_typ A) ) ( aE )  ->
-     a_wf_exp aE (exp_var_f x)
- | a_wf_exp__abs : forall (L:vars) (aE:aenv) (e:exp) (T:typ),
-     a_wf_typ aE T ->
-      ( forall x , x \notin  L  -> a_wf_exp  ( x ~ (abind_var_typ T)  ++  aE )   ( open_exp_wrt_exp e (exp_var_f x) )  )  ->
-     a_wf_exp aE (exp_abs e)
- | a_wf_exp__app : forall (aE:aenv) (e1 e2:exp),
-     a_wf_exp aE e1 ->
-     a_wf_exp aE e2 ->
-     a_wf_exp aE (exp_app e1 e2)
- | a_wf_exp__tabs : forall (L:vars) (aE:aenv) (body5:body),
-      ( forall X , X \notin  L  -> a_wf_body  ( X ~ abind_tvar_empty  ++  aE )   ( open_body_wrt_typ body5 (typ_var_f X) )  )  ->
-     a_wf_exp aE (exp_tabs body5)
- | a_wf_exp__tapp : forall (aE:aenv) (e:exp) (A:typ),
-     a_wf_typ aE A ->
-     a_wf_exp aE e ->
-     a_wf_exp aE (exp_tapp e A)
- | a_wf_exp__anno : forall (aE:aenv) (e:exp) (A:typ),
-     a_wf_typ aE A ->
-     a_wf_exp aE e ->
-     a_wf_exp aE (exp_anno e A)
+ | a_wf_exp__unit : forall (Σ:aenv),
+     a_wf_exp Σ exp_unit
+ | a_wf_exp__var : forall (Σ:aenv) (x:expvar) (A:typ),
+      binds ( x )  ( (abind_var_typ A) ) ( Σ )  ->
+     a_wf_exp Σ (exp_var_f x)
+ | a_wf_exp__abs : forall (L:vars) (Σ:aenv) (e:exp) (T:typ),
+     a_wf_typ Σ T ->
+      ( forall x , x \notin  L  -> a_wf_exp  ( x ~ (abind_var_typ T)  ++  Σ )   ( open_exp_wrt_exp e (exp_var_f x) )  )  ->
+     a_wf_exp Σ (exp_abs e)
+ | a_wf_exp__app : forall (Σ:aenv) (e1 e2:exp),
+     a_wf_exp Σ e1 ->
+     a_wf_exp Σ e2 ->
+     a_wf_exp Σ (exp_app e1 e2)
+ | a_wf_exp__tabs : forall (L:vars) (Σ:aenv) (body5:body),
+      ( forall X , X \notin  L  -> a_wf_body  ( X ~ abind_tvar_empty  ++  Σ )   ( open_body_wrt_typ body5 (typ_var_f X) )  )  ->
+     a_wf_exp Σ (exp_tabs body5)
+ | a_wf_exp__tapp : forall (Σ:aenv) (e:exp) (A:typ),
+     a_wf_typ Σ A ->
+     a_wf_exp Σ e ->
+     a_wf_exp Σ (exp_tapp e A)
+ | a_wf_exp__anno : forall (Σ:aenv) (e:exp) (A:typ),
+     a_wf_typ Σ A ->
+     a_wf_exp Σ e ->
+     a_wf_exp Σ (exp_anno e A)
 with a_wf_body : aenv -> body -> Prop :=    (* defn a_wf_body *)
- | a_wf_body__anno : forall (aE:aenv) (e:exp) (A:typ),
-     a_wf_typ aE A ->
-     a_wf_exp aE e ->
-     a_wf_body aE (body_anno e A).
+ | a_wf_body__anno : forall (Σ:aenv) (e:exp) (A:typ),
+     a_wf_typ Σ A ->
+     a_wf_exp Σ e ->
+     a_wf_body Σ (body_anno e A).
 
 (* defns J_a_wf_cont *)
 Inductive a_wf_conts : aenv -> conts -> Prop :=    (* defn a_wf_conts *)
- | a_wf_conts__infabs : forall (aE:aenv) (cd:contd),
-     a_wf_contd aE cd ->
-     a_wf_conts aE (conts_infabs cd)
- | a_wf_conts__inftapp : forall (aE:aenv) (A:typ) (cs:conts),
-     a_wf_typ aE A ->
-     a_wf_conts aE cs ->
-     a_wf_conts aE (conts_inftapp A cs)
- | a_wf_conts__inftappunion : forall (aE:aenv) (A1 A2:typ) (cs:conts),
-     a_wf_typ aE A1 ->
-     a_wf_typ aE A2 ->
-     a_wf_conts aE cs ->
-     a_wf_conts aE (conts_inftappunion A1 A2 cs)
- | a_wf_conts__unioninftapp : forall (aE:aenv) (A:typ) (cs:conts),
-     a_wf_typ aE A ->
-     a_wf_conts aE cs ->
-     a_wf_conts aE (conts_unioninftapp A cs)
- | a_wf_conts__sub : forall (aE:aenv) (A:typ),
-     a_wf_typ aE A ->
-     a_wf_conts aE (conts_sub A)
+ | a_wf_conts__infabs : forall (Σ:aenv) (cd:contd),
+     a_wf_contd Σ cd ->
+     a_wf_conts Σ (conts_infabs cd)
+ | a_wf_conts__inftapp : forall (Σ:aenv) (A:typ) (cs:conts),
+     a_wf_typ Σ A ->
+     a_wf_conts Σ cs ->
+     a_wf_conts Σ (conts_inftapp A cs)
+ | a_wf_conts__inftappunion : forall (Σ:aenv) (A1 A2:typ) (cs:conts),
+     a_wf_typ Σ A1 ->
+     a_wf_typ Σ A2 ->
+     a_wf_conts Σ cs ->
+     a_wf_conts Σ (conts_inftappunion A1 A2 cs)
+ | a_wf_conts__unioninftapp : forall (Σ:aenv) (A:typ) (cs:conts),
+     a_wf_typ Σ A ->
+     a_wf_conts Σ cs ->
+     a_wf_conts Σ (conts_unioninftapp A cs)
+ | a_wf_conts__sub : forall (Σ:aenv) (A:typ),
+     a_wf_typ Σ A ->
+     a_wf_conts Σ (conts_sub A)
 with a_wf_contd : aenv -> contd -> Prop :=    (* defn a_wf_contd *)
- | a_wf_contd__infabsunion : forall (aE:aenv) (A:typ) (cd:contd),
-     a_wf_typ aE A ->
-     a_wf_contd aE cd ->
-     a_wf_contd aE (contd_infabsunion A cd)
- | a_wf_contd__infapp : forall (aE:aenv) (e:exp) (cs:conts),
-     a_wf_exp aE e ->
-     a_wf_conts aE cs ->
-     a_wf_contd aE (contd_infapp e cs)
- | a_wf_contd__unioninfabs : forall (aE:aenv) (A B:typ) (cd:contd),
-     a_wf_typ aE (typ_arrow A B) ->
-     a_wf_contd aE cd ->
-     a_wf_contd aE (contd_unioninfabs A B cd).
+ | a_wf_contd__infabsunion : forall (Σ:aenv) (A:typ) (cd:contd),
+     a_wf_typ Σ A ->
+     a_wf_contd Σ cd ->
+     a_wf_contd Σ (contd_infabsunion A cd)
+ | a_wf_contd__infapp : forall (Σ:aenv) (e:exp) (cs:conts),
+     a_wf_exp Σ e ->
+     a_wf_conts Σ cs ->
+     a_wf_contd Σ (contd_infapp e cs)
+ | a_wf_contd__unioninfabs : forall (Σ:aenv) (A B:typ) (cd:contd),
+     a_wf_typ Σ (typ_arrow A B) ->
+     a_wf_contd Σ cd ->
+     a_wf_contd Σ (contd_unioninfabs A B cd).
 
 (* defns J_a_wf_work *)
 Inductive a_wf_work : aenv -> work -> Prop :=    (* defn a_wf_work *)
- | a_wf_work__infer : forall (aE:aenv) (e:exp) (cs:conts),
-     a_wf_exp aE e ->
-     a_wf_conts aE cs ->
-     a_wf_work aE (work_infer e cs)
- | a_wf_work__check : forall (aE:aenv) (e:exp) (A:typ),
-     a_wf_exp aE e ->
-     a_wf_typ aE A ->
-     a_wf_work aE (work_check e A)
- | a_wf_work__infabs : forall (aE:aenv) (A:typ) (cd:contd),
-     a_wf_typ aE A ->
-     a_wf_contd aE cd ->
-     a_wf_work aE (work_infabs A cd)
- | a_wf_work__infabsunion : forall (aE:aenv) (A1 B1 A2:typ) (cd:contd),
-     a_wf_typ aE (typ_arrow A1 B1) ->
-     a_wf_typ aE A2 ->
-     a_wf_contd aE cd ->
-     a_wf_work aE (work_infabsunion A1 B1 A2 cd)
- | a_wf_work__infapp : forall (aE:aenv) (A B:typ) (e:exp) (cs:conts),
-     a_wf_typ aE (typ_arrow A B) ->
-     a_wf_exp aE e ->
-     a_wf_conts aE cs ->
-     a_wf_work aE (work_infapp A B e cs)
- | a_wf_work__inftapp : forall (aE:aenv) (A1 A2:typ) (cs:conts),
-     a_wf_typ aE A1 ->
-     a_wf_typ aE A2 ->
-     a_wf_conts aE cs ->
-     a_wf_work aE (work_inftapp A1 A2 cs)
- | a_wf_work__inftappunion : forall (aE:aenv) (A1 A2 B:typ) (cs:conts),
-     a_wf_typ aE A1 ->
-     a_wf_typ aE A2 ->
-     a_wf_typ aE B ->
-     a_wf_conts aE cs ->
-     a_wf_work aE (work_inftappunion A1 A2 B cs)
- | a_wf_work__unioninftapp : forall (aE:aenv) (A1 A2:typ) (cs:conts),
-     a_wf_typ aE A1 ->
-     a_wf_typ aE A2 ->
-     a_wf_conts aE cs ->
-     a_wf_work aE (work_unioninftapp A1 A2 cs)
- | a_wf_work__unioninfabs : forall (aE:aenv) (A1 B1 A2 B2:typ) (cd:contd),
-     a_wf_typ aE (typ_arrow A1 B1) ->
-     a_wf_typ aE (typ_arrow A2 B2) ->
-     a_wf_contd aE cd ->
-     a_wf_work aE (work_unioninfabs A1 B1 A2 B2 cd)
- | a_wf_work__sub : forall (aE:aenv) (A B:typ),
-     a_wf_typ aE A ->
-     a_wf_typ aE B ->
-     a_wf_work aE (work_sub A B)
- | a_wf_work__apply : forall (aE:aenv) (cs:conts) (A:typ),
-     a_wf_typ aE A ->
-     a_wf_conts aE cs ->
-     a_wf_work aE (work_applys cs A)
- | a_wf_work__apply2 : forall (aE:aenv) (cd:contd) (A B:typ),
-     a_wf_typ aE A ->
-     a_wf_typ aE B ->
-     a_wf_contd aE cd ->
-     a_wf_work aE (work_applyd cd A B).
+ | a_wf_work__infer : forall (Σ:aenv) (e:exp) (cs:conts),
+     a_wf_exp Σ e ->
+     a_wf_conts Σ cs ->
+     a_wf_work Σ (work_infer e cs)
+ | a_wf_work__check : forall (Σ:aenv) (e:exp) (A:typ),
+     a_wf_exp Σ e ->
+     a_wf_typ Σ A ->
+     a_wf_work Σ (work_check e A)
+ | a_wf_work__infabs : forall (Σ:aenv) (A:typ) (cd:contd),
+     a_wf_typ Σ A ->
+     a_wf_contd Σ cd ->
+     a_wf_work Σ (work_infabs A cd)
+ | a_wf_work__infabsunion : forall (Σ:aenv) (A1 B1 A2:typ) (cd:contd),
+     a_wf_typ Σ (typ_arrow A1 B1) ->
+     a_wf_typ Σ A2 ->
+     a_wf_contd Σ cd ->
+     a_wf_work Σ (work_infabsunion A1 B1 A2 cd)
+ | a_wf_work__infapp : forall (Σ:aenv) (A B:typ) (e:exp) (cs:conts),
+     a_wf_typ Σ (typ_arrow A B) ->
+     a_wf_exp Σ e ->
+     a_wf_conts Σ cs ->
+     a_wf_work Σ (work_infapp A B e cs)
+ | a_wf_work__inftapp : forall (Σ:aenv) (A1 A2:typ) (cs:conts),
+     a_wf_typ Σ A1 ->
+     a_wf_typ Σ A2 ->
+     a_wf_conts Σ cs ->
+     a_wf_work Σ (work_inftapp A1 A2 cs)
+ | a_wf_work__inftappunion : forall (Σ:aenv) (A1 A2 B:typ) (cs:conts),
+     a_wf_typ Σ A1 ->
+     a_wf_typ Σ A2 ->
+     a_wf_typ Σ B ->
+     a_wf_conts Σ cs ->
+     a_wf_work Σ (work_inftappunion A1 A2 B cs)
+ | a_wf_work__unioninftapp : forall (Σ:aenv) (A1 A2:typ) (cs:conts),
+     a_wf_typ Σ A1 ->
+     a_wf_typ Σ A2 ->
+     a_wf_conts Σ cs ->
+     a_wf_work Σ (work_unioninftapp A1 A2 cs)
+ | a_wf_work__unioninfabs : forall (Σ:aenv) (A1 B1 A2 B2:typ) (cd:contd),
+     a_wf_typ Σ (typ_arrow A1 B1) ->
+     a_wf_typ Σ (typ_arrow A2 B2) ->
+     a_wf_contd Σ cd ->
+     a_wf_work Σ (work_unioninfabs A1 B1 A2 B2 cd)
+ | a_wf_work__sub : forall (Σ:aenv) (A B:typ),
+     a_wf_typ Σ A ->
+     a_wf_typ Σ B ->
+     a_wf_work Σ (work_sub A B)
+ | a_wf_work__apply : forall (Σ:aenv) (cs:conts) (A:typ),
+     a_wf_typ Σ A ->
+     a_wf_conts Σ cs ->
+     a_wf_work Σ (work_applys cs A)
+ | a_wf_work__apply2 : forall (Σ:aenv) (cd:contd) (A B:typ),
+     a_wf_typ Σ A ->
+     a_wf_typ Σ B ->
+     a_wf_contd Σ cd ->
+     a_wf_work Σ (work_applyd cd A B).
 
 (* defns J_a_wf_wl *)
 Inductive a_wf_wl : aworklist -> Prop :=    (* defn a_wf_wl *)
@@ -1636,23 +1636,23 @@ Inductive a_wf_wl : aworklist -> Prop :=    (* defn a_wf_wl *)
 Inductive a_wf_env : aenv -> Prop :=    (* defn a_wf_env *)
  | a_wf_env__empty : 
      a_wf_env  nil 
- | a_wf_env__tvar : forall (aE:aenv) (X:typvar),
-     a_wf_env aE ->
-      ( X   `notin` dom ( aE ))  ->
-     a_wf_env  ( X ~ abind_tvar_empty  ++  aE ) 
- | a_wf_env__stvar : forall (aE:aenv) (X:typvar),
-     a_wf_env aE ->
-      ( X   `notin` dom ( aE ))  ->
-     a_wf_env  ( X ~ abind_stvar_empty  ++  aE ) 
- | a_wf_env__etvar : forall (aE:aenv) (X:typvar),
-     a_wf_env aE ->
-      ( X   `notin` dom ( aE ))  ->
-     a_wf_env  ( X ~ abind_etvar_empty  ++  aE ) 
- | a_wf_env__typ : forall (aE:aenv) (x:expvar) (A:typ),
-     a_wf_env aE ->
-     a_wf_typ aE A ->
-      ( x   `notin` dom ( aE ))  ->
-     a_wf_env  ( x ~ (abind_var_typ A)  ++  aE ) .
+ | a_wf_env__tvar : forall (Σ:aenv) (X:typvar),
+     a_wf_env Σ ->
+      ( X   `notin` dom ( Σ ))  ->
+     a_wf_env  ( X ~ abind_tvar_empty  ++  Σ ) 
+ | a_wf_env__stvar : forall (Σ:aenv) (X:typvar),
+     a_wf_env Σ ->
+      ( X   `notin` dom ( Σ ))  ->
+     a_wf_env  ( X ~ abind_stvar_empty  ++  Σ ) 
+ | a_wf_env__etvar : forall (Σ:aenv) (X:typvar),
+     a_wf_env Σ ->
+      ( X   `notin` dom ( Σ ))  ->
+     a_wf_env  ( X ~ abind_etvar_empty  ++  Σ ) 
+ | a_wf_env__typ : forall (Σ:aenv) (x:expvar) (A:typ),
+     a_wf_env Σ ->
+     a_wf_typ Σ A ->
+      ( x   `notin` dom ( Σ ))  ->
+     a_wf_env  ( x ~ (abind_var_typ A)  ++  Σ ) .
 
 
 (** infrastructure *)

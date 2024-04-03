@@ -67,7 +67,8 @@ Ltac destruct_eq_atom :=
 Ltac gather_atoms ::=
   let A := gather_atoms_with (fun x : vars => x) in
   let B := gather_atoms_with (fun x : var => {{ x }}) in
-  let C := gather_atoms_with (fun x : denv => dom x) in
+  let C1 := gather_atoms_with (fun x : denv => dom x) in
+  let C2 := gather_atoms_with (fun x : aenv => dom x) in
   (* let C2 := gather_atoms_with (fun x : list (atom * dbind) => dom x) in *)
   let D1 := gather_atoms_with (fun x => ftvar_in_typ x) in
   let D2 := gather_atoms_with (fun x => ftvar_in_conts x) in
@@ -78,7 +79,7 @@ Ltac gather_atoms ::=
   let F :=  gather_atoms_with (fun x => dom (dwl_to_denv x)) in
   (* let D3 := gather_atoms_with (fun x => fv_typ_in_binding x) in *)
   (* let D4 := gather_atoms_with (fun x => fv_exp_in_exp x) in *)
-  constr:(A \u B \u C \u D1 \u D2 \u D3 \u D4 \u D5 \u E \u F).
+  constr:(A \u B \u C1 \u C2 \u D1 \u D2 \u D3 \u D4 \u D5 \u E \u F).
 
   
 (* Ltac apply_fresh_base_fixed H gather_vars atom_name :=

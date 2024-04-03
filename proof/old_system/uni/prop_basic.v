@@ -423,3 +423,25 @@ Proof with  simpl; eauto using lc_typ_subst; try solve_by_invert.
     forwards*: lc_typ_subst (typ_all A) (typ_var_f Y) X.
   - econstructor; applys lc_typ_subst; try inverts~ H...
 Qed.
+
+Lemma neq_all_lc_typ : forall A,
+  neq_all A -> lc_typ A.
+Proof.
+  intros. induction H; eauto.
+Qed.
+
+Lemma neq_intersection_lc_typ : forall A,
+  neq_intersection A -> lc_typ A.
+Proof.
+  intros. induction H; eauto.
+Qed.
+
+Lemma neq_union_lc_typ : forall A,
+  neq_union A -> lc_typ A.
+Proof.
+  intros. induction H; eauto.
+Qed.
+
+
+#[export] Hint Resolve neq_all_rename neq_intersection_rename neq_union_rename : core.
+#[export] Hint Immediate neq_all_lc_typ neq_intersection_lc_typ neq_union_lc_typ : core.

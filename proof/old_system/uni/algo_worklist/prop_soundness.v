@@ -98,8 +98,8 @@ Ltac destruct_trans :=
     try unify_trans_exp.
 
 
-Theorem a_mono_typ_wf : forall aE A,
-  a_mono_typ aE A -> a_wf_typ aE A.
+Theorem a_mono_typ_wf : forall Σ A,
+  a_mono_typ Σ A -> a_wf_typ Σ A.
 Proof.
   intros. induction H; auto.
 Qed.
@@ -1016,9 +1016,6 @@ Proof with eauto.
       * admit. (* trans_typ_strengthen *)
     + econstructor. 
       eapply d_sub__alll with (T:=T) (L:=L)...
-      * admit. (* *, trans neq_all *)
-      * admit. (* *, trans neq_intersection *)
-      * admit. (* *, trans neq_union *)
       * intros. inst_cofinites_with X0.
         rewrite_close_open_subst.
         admit. (* *, s_in *)

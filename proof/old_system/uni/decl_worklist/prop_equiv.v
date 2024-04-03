@@ -464,7 +464,7 @@ Proof with auto.
     apply H1...   
     apply d_mono_typ_d_wf_typ in H. dependent destruction H.
     repeat constructor; simpl...
-    eapply d_wf_exp_bound_typ_head; eauto.
+    eapply d_wf_exp_var_binds_another_cons; eauto.
     apply d_wf_typ_weaken_cons...
   - destruct_wf. 
     eapply d_wl_red__inf_tabs with (L:=L `union` L0 `union` dom (dwl_to_denv Ω)); eauto. 
@@ -484,13 +484,13 @@ Proof with auto.
     apply H0... econstructor... econstructor... simpl. auto.
     simpl.
     rewrite_env ((x ~ dbind_typ typ_bot) ++ dwl_to_denv Ω).
-    eapply d_wf_exp_bound_typ_head; eauto.
+    eapply d_wf_exp_var_binds_another_cons; eauto.
   - destruct_wf.
     eapply d_wl_red__chk_absarrow with (L:=L `union` L0 `union` dom (dwl_to_denv Ω)).
     intros. inst_cofinites_with x.
     apply H1... 
     econstructor; econstructor; eauto.
-    eapply d_wf_exp_bound_typ_head; eauto.
+    eapply d_wf_exp_var_binds_another_cons; eauto.
     simpl. apply d_wf_typ_weaken_cons...
   - destruct_wf. econstructor. 
     apply IHd_chk_inf; auto...

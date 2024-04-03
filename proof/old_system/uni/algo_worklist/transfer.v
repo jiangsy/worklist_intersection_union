@@ -9,7 +9,6 @@ Require Import uni.decl_worklist.prop_equiv.
 Require Import uni.decl.prop_subtyping.
 Require Import uni.algo_worklist.def_extra.
 Require Import uni.algo_worklist.prop_basic.
-(* Require Import uni.algo_worklist.prop_rename. *)
 Require Import ln_utils.
 
 
@@ -438,11 +437,11 @@ Proof.
   - inversion H0.
     + inversion H2.
     + simpl. rewrite_env ((X0 ~ □) ++ ss_to_denv θ).
-      apply d_mono_typ_weaken_head. apply IHwf_ss; auto.
+      apply d_mono_typ_weaken_cons. apply IHwf_ss; auto.
   - inversion H0.
     + inversion H2.
     + simpl. rewrite_env ((X0 ~ ■) ++ ss_to_denv θ).
-      apply d_mono_typ_weaken_head. apply IHwf_ss; auto.
+      apply d_mono_typ_weaken_cons. apply IHwf_ss; auto.
   - inversion H0.
     + dependent destruction H3. simpl. auto. 
     + simpl. apply IHwf_ss; auto.
@@ -487,13 +486,17 @@ Proof.
     admit.
 Admitted.
 
-
 Lemma trans_typ_neq_intersection_rev : forall θ Aᵃ Aᵈ,
   θ ⫦ᵗ Aᵃ ⇝ Aᵈ -> neq_intersection Aᵈ -> neq_intersection Aᵃ.
 Proof.
   intros. dependent destruction H0; dependent destruction H; eauto.
 Qed.
 
+#[export] Hint Resolve 
+  trans_typ_neq_all trans_typ_neq_all_rev 
+  trans_typ_neq_union trans_typ_neq_union_rev
+  trans_typ_neq_intersection trans_typ_neq_intersection_rev
+  : core.
 
 Lemma trans_typ_det : forall θ Aᵃ A₁ᵈ A₂ᵈ,
   uniq θ -> 
@@ -1588,6 +1591,14 @@ Proof with eauto.
     eapply H0; simpl...
 Qed.
 
+Lemma trans_typ_weaken_cons : forall θ X b Aᵃ Aᵈ,
+  θ ⫦ᵗ Aᵃ ⇝ Aᵈ ->
+  wf_ss ((X, b) :: θ) ->
+  (X, b) :: θ ⫦ᵗ Aᵃ ⇝ Aᵈ.
+Proof.
+  intros. rewrite_env (nil ++ (X ~ b) ++ θ). apply trans_typ_weaken; auto.
+Qed.
+
 Lemma trans_typ_strengthen_etvar : forall θ1 θ2 X T Aᵃ Aᵈ,
   (θ2 ++ (X, dbind_typ T) :: θ1) ⫦ᵗ Aᵃ ⇝ Aᵈ ->
   X \notin ftvar_in_typ Aᵃ ->
@@ -1713,6 +1724,19 @@ Proof with auto using trans_typ_weaken.
     + constructor...
 Qed. 
 
+Lemma trans_exp_weaken_cons : forall θ X b eᵃ eᵈ,
+  θ ⫦ᵉ eᵃ ⇝ eᵈ ->
+  wf_ss ((X, b) :: θ) ->
+  (X, b) :: θ ⫦ᵉ eᵃ ⇝ eᵈ
+with trans_body_weaken_cons : forall θ X b bᵃ bᵈ,
+  θ ⫦ᵇ bᵃ ⇝ bᵈ ->
+  wf_ss ((X, b) :: θ) ->
+  (X, b) :: θ ⫦ᵇ bᵃ ⇝ bᵈ.
+Proof.
+  - intros. rewrite_env (nil ++ (X ~ b) ++ θ). apply trans_exp_weaken; auto.
+  - intros. rewrite_env (nil ++ (X ~ b) ++ θ). apply trans_body_weaken; auto.
+Qed. 
+
 Lemma trans_conts_weaken : forall θ1 θ2 θ3 csᵃ csᵈ,
   θ3 ++ θ1 ⫦ᶜˢ csᵃ ⇝ csᵈ ->
   wf_ss (θ3 ++ θ2 ++ θ1) ->
@@ -1726,6 +1750,23 @@ Proof with auto using trans_typ_weaken, trans_exp_weaken.
   - intros. clear trans_contd_weaken. dependent induction H...
 Qed.
      
+
+Lemma trans_conts_weaken_cons : forall θ X b csᵃ csᵈ,
+  θ ⫦ᶜˢ csᵃ ⇝ csᵈ ->
+  wf_ss ((X, b) :: θ) ->
+  (X, b) :: θ ⫦ᶜˢ csᵃ ⇝ csᵈ
+with trans_contd_weaken_cons : forall θ X b cdᵃ cdᵈ,
+  θ ⫦ᶜᵈ cdᵃ ⇝ cdᵈ ->
+  wf_ss ((X, b) :: θ) ->
+  (X, b) :: θ ⫦ᶜᵈ cdᵃ ⇝ cdᵈ.
+Proof.
+  - intros. rewrite_env (nil ++ (X ~ b) ++ θ). apply trans_conts_weaken; auto.
+  - intros. rewrite_env (nil ++ (X ~ b) ++ θ). apply trans_contd_weaken; auto.
+Qed.
+
+#[local] Hint Immediate 
+  trans_typ_weaken_cons trans_exp_weaken_cons 
+  trans_conts_weaken_cons trans_contd_weaken_cons : core.
 
 Lemma trans_wl_a_wl_binds_var_binds_d_wl_and_trans : forall θ Γ Ω x Aᵃ,
   ⊢ᵃʷ Γ ->

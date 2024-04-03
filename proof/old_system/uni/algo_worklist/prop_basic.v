@@ -20,19 +20,42 @@ Lemma a_wf_wl_a_wf_env : forall Γ,
 Proof. 
 Admitted.
 
-Lemma a_wf_env_uniq : forall aE,
-  a_wf_env aE ->
-  uniq aE.
+Lemma a_wf_env_uniq : forall Σ,
+  a_wf_env Σ ->
+  uniq Σ.
 Proof.
   intros. induction H; auto.  
 Qed.
 
 
-Theorem a_mono_typ_wf : forall aE A,
-  a_mono_typ aE A -> a_wf_typ aE A.
+Theorem a_mono_typ_wf : forall Σ A,
+  a_mono_typ Σ A -> a_wf_typ Σ A.
 Proof.
   intros. induction H; auto.
 Qed.
+
+
+Lemma a_wf_exp_var_binds_another : forall Σ1 x Σ2 e A1 A2,
+  a_wf_exp (Σ2 ++ x ~ abind_var_typ A1 ++ Σ1) e ->
+  a_wf_typ Σ1 A2 ->
+  a_wf_exp (Σ2 ++ x ~ abind_var_typ A2 ++ Σ1) e
+with a_wf_body_var_binds_another : forall Σ1 x Σ2 e A1 A2,
+  a_wf_body (Σ2 ++ x ~ abind_var_typ A1 ++ Σ1) e ->
+  a_wf_typ Σ1 A2 ->
+  a_wf_body (Σ2 ++ x ~ abind_var_typ A2 ++ Σ1) e.
+Proof.
+Admitted.
+
+Lemma d_wf_exp_var_binds_another_cons : forall Σ1 x e A1 A2,
+  a_wf_exp (x ~ abind_var_typ A1 ++ Σ1) e ->
+  a_wf_typ Σ1 A2 ->
+  a_wf_exp (x ~ abind_var_typ A2 ++ Σ1) e.
+Proof.
+  intros.
+  rewrite_env (nil ++ x ~ abind_var_typ A2 ++ Σ1).
+  eapply a_wf_exp_var_binds_another; eauto.
+Qed.
+
 
 #[export] Hint Resolve a_mono_typ_wf a_wf_wl_a_wf_env a_wf_env_uniq : core.
 
@@ -167,12 +190,12 @@ Proof.
   intros. simpl. auto.
 Qed.
 
-Lemma dom_aenv_app_comm : forall (Ψ1 Ψ2: aenv),
-  dom (Ψ2 ++ Ψ1) [=] dom Ψ2 `union` (dom Ψ1).
+Lemma dom_aenv_app_comm : forall (Σ1 Σ2: aenv),
+  dom (Σ2 ++ Σ1) [=] dom Σ2 `union` (dom Σ1).
 Proof.
-  intros. induction Ψ2; simpl; auto.
+  intros. induction Σ2; simpl; auto.
   - fsetdec.
-  - destruct a; simpl. rewrite IHΨ2. fsetdec.
+  - destruct a; simpl. rewrite IHΣ2. fsetdec.
 Qed.
 
 
@@ -222,7 +245,7 @@ Qed.
 #[local] Hint Rewrite awl_to_aenv_cons awl_to_aenv_app: core.
 
 (* weakening *)
-Lemma a_wf_typ_weaken: forall E1 E2 X t A,
+(* Lemma a_wf_typ_weaken: forall E1 E2 X t A,
     a_wf_typ (E1 ++ E2) A ->
     X ∉ (dom E1 `union` dom E2) ->
     a_wf_typ (E1 ++ (X,t)::E2) A.
@@ -235,6 +258,18 @@ Proof.
     + forwards*: H X0.
     + forwards*: H X0. forwards*: H0 X0.
       forwards*: H1 X0 (X0 ~ abind_tvar_empty ++ E1) E2. simpl; solve_notin.
+Qed. *)
+
+
+Lemma a_wf_typ_weaken: forall Σ1 Σ2 Σ3 A,
+    a_wf_typ (Σ3 ++ Σ1) A ->
+    a_wf_typ (Σ3 ++ Σ2 ++ Σ1) A.
+Proof.
+  introv H. dependent induction H; eauto.
+  - pick fresh X0 and apply a_wf_typ__all.
+    + forwards*: H X0.
+    + forwards*: H X0. forwards*: H0 X0.
+      forwards*: H1 X0  Σ1 (X0 ~ abind_tvar_empty ++ Σ3); auto.
 Qed.
 
 Corollary a_wf_typ_weaken_cons: forall E X t A,
@@ -243,9 +278,10 @@ Corollary a_wf_typ_weaken_cons: forall E X t A,
     a_wf_typ ((X, t) :: E) A.
 Proof with simpl in *; try solve_notin.
   intros. simpl.
-  rewrite_env (nil ++ E) in H.
-  forwards*: a_wf_typ_weaken X H...
+  rewrite_env (nil ++ (X ~ t) ++ E).
+  apply a_wf_typ_weaken; auto...
 Qed.
+
 
 (** the following lemmas are overcomplicated; they could be generalized like
     the above ones **)
@@ -324,7 +360,7 @@ Proof with eauto using a_wf_typ_weaken_awl_to_aenv, a_wf_exp_weaken, a_wf_conts_
 Qed.
 
 
-Lemma a_wf_wl_weaken: forall Γ1 Γ2 X t,
+Lemma a_wf_wl_weaken_atvar: forall Γ1 Γ2 X t,
     ⊢ᵃʷ awl_app Γ1 Γ2 -> X ∉ (dom (awl_to_aenv Γ1) `union` dom (awl_to_aenv Γ2)) ->
     (~ exists A, t = abind_var_typ A) -> ⊢ᵃʷ awl_app Γ1 (aworklist_constvar Γ2 X t).
 Proof with eauto; try autorewrite with core using solve_notin.
@@ -341,7 +377,7 @@ Proof with eauto; try autorewrite with core using solve_notin.
     + applys* a_wf_work_weaken...
 Qed.
 
-Corollary a_wf_wl_weaken_head: forall Γ X t,
+Corollary a_wf_wl_weaken_cons: forall Γ X t,
     ⊢ᵃʷ Γ ->
     X ∉ (dom (awl_to_aenv Γ)) ->
     (~ exists A, t = abind_var_typ A) ->
@@ -350,7 +386,7 @@ Proof with  simpl; solve_notin.
   intros.
   rewrite_env (awl_app aworklist_empty Γ) in H.
   rewrite_env (awl_app aworklist_empty (aworklist_constvar Γ X t)).
-  applys* a_wf_wl_weaken...
+  applys* a_wf_wl_weaken_atvar...
 Qed.
 
 (* -- *)
@@ -370,7 +406,7 @@ Proof with rewrite awl_to_aenv_app, awl_to_aenv_cons in *; try solve_notin.
   forwards FrX: a_wf_wl_tvar_notin_remaining HX.
   rewrite awl_rewrite_middle in HX.
   rewrite awl_rewrite_middle.
-  applys a_wf_wl_weaken HX...
+  applys a_wf_wl_weaken_atvar HX...
   solve_false.
 Qed.
 
@@ -481,7 +517,7 @@ Proof with solve_false.
       forwards* [?|?]: IHΓ H3. rewrite awl_rewrite_middle.
       rewrite_env ((Γ ⧺ X ~ᵃ ⬒ ;ᵃ aworklist_empty) ⧺ ((X0 ~ᵃ ⬒ ;ᵃ Γ') ⧺ Y ~ᵃ ⬒ ;ᵃ Γ'')).
       rewrite awl_rewrite_middle in H4.
-      applys a_wf_wl_weaken H4.
+      applys a_wf_wl_weaken_atvar H4.
       autorewrite with core in *. solve_notin.
       solve_false.
     }
