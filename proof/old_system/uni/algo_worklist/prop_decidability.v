@@ -8,6 +8,7 @@ Require Import uni.notations.
 Require Import uni.prop_basic.
 Require Import uni.algo_worklist.def_extra.
 Require Import uni.algo_worklist.prop_basic.
+Require Import uni.algo_worklist.prop_rename.
 Require Import ln_utils.
 
 Fixpoint iu_size (A : typ) : nat :=
