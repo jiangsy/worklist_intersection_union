@@ -989,6 +989,7 @@ Qed.
 
 #[local] Hint Resolve trans_typ_lc_atyp trans_typ_lc_dtyp trans_wl_d_wl_mono_ss : core.
 
+#[local] Hint Immediate trans_wl_ss_binds_tvar_a_wl trans_wl_ss_binds_stvar_a_wl trans_wl_ss_binds_etvar_a_wl : core.
 
 Theorem a_wl_red_completeness: forall Ω Γ,
    Ω ⟶ᵈʷ⁎⋅ -> ⊢ᵃʷ Γ -> transfer Γ Ω  -> Γ ⟶ᵃʷ⁎⋅.
@@ -1044,7 +1045,6 @@ Proof with eauto.
       in Htrans_et as Htransws...
       destruct Htransws as [Γ1 [Γ2 [θ' [Hsubst [Htransws [Hbinds Hwfss]]]]]].
       apply a_wl_red__sub_etvarmono2 with (Γ1:=Γ1) (Γ2:=Γ2); eauto.
-      * eapply a_mono_typ__tvar. admit.
       * unfold not. intros. simpl in *. apply singleton_iff in H4. subst. apply wf_ss_etvar_tvar_false in H1; eauto.
       * apply IHd_wl_red; eauto. destruct_a_wf_wl. eapply a_worklist_subst_wf_wl; eauto.
       * destruct_a_wf_wl...
@@ -1060,7 +1060,6 @@ Proof with eauto.
       in Htrans_et as Htransws...
       destruct Htransws as [Γ1 [Γ2 [θ' [Hsubst [Htransws [Hbinds Hwfss]]]]]].
       apply a_wl_red__sub_etvarmono1 with (Γ1:=Γ1) (Γ2:=Γ2); eauto.
-      * eapply a_mono_typ__tvar. admit.
       * unfold not. intros. simpl in *. apply singleton_iff in H4. subst. apply wf_ss_etvar_tvar_false in H3; eauto.
       * apply IHd_wl_red; eauto. destruct_a_wf_wl. eapply a_worklist_subst_wf_wl; eauto.
       * destruct_a_wf_wl...
@@ -1175,7 +1174,7 @@ Proof with eauto.
   (* λ x. e <= A -> B *)
   - solve_awl_trailing_etvar.
     destruct_trans.
-    + inst_cofinites_for a_wl_red__chk_absetvar; intros.
+    + destruct_a_wf_wl. inst_cofinites_for a_wl_red__chk_absetvar; intros.
       eapply trans_wl_ss_binds_etvar_a_wl; eauto.
       inst_cofinites_with x. inst_cofinites_with X1. inst_cofinites_with X2.
       assert (nil ⫦ work_check (eᵃ ^ᵉₑ exp_var_f x) ` X2 ⫤ᵃ x ~ᵃ ` X1;ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ0 ⇝
@@ -1185,19 +1184,21 @@ Proof with eauto.
         repeat (constructor; auto); simpl in *.
         admit. (* *, trans_exp_weaken*)
       }
-      eapply a_worklist_subst_transfer_same_dworklist_rev in H7 as Htransws...
+      eapply a_worklist_subst_transfer_same_dworklist_rev in H10 as Htransws...
       destruct Htransws as [θ' [Htransws [Hbinds Hwfss]]]...
       * apply H0; eauto. eapply a_worklist_subst_wf_wl with 
         (Γ:=(work_check (eᵃ ^ᵉₑ exp_var_f x) ` X2 ⫤ᵃ x ~ᵃ ` X1;ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ0))... 
+        repeat (econstructor; simpl; auto).
         admit.
-      * admit.
+      * repeat (econstructor; simpl; auto).
+        admit.
       * simpl... constructor...
       * constructor...
     + destruct_a_wf_wl. pick fresh x and apply a_wl_red__chk_absarrow.
       inst_cofinites_with x.
       eapply H0.
       * repeat constructor... 
-        admit. (* *, wf weaken *)
+        admit. (* *, wf exp *)
         apply a_wf_typ_weaken_cons...
       * exists θ0. constructor...
   (* λx. e ⇐ ⊤ *)
@@ -1246,18 +1247,20 @@ Proof with eauto.
     destruct_trans.
     constructor.
     apply IHd_wl_red...
-    + admit. (* *, wf *)
+    + destruct_a_wf_wl...
     + exists θ0...
   (* Λ a. e : A => _ *)
   - solve_awl_trailing_etvar.
-    destruct_trans.
+    destruct_trans. destruct_a_wf_wl.
     destruct bᵃ.
     pick fresh X and apply a_wl_red__inf_tabs.
     inst_cofinites_with X.
     repeat rewrite open_body_wrt_typ_anno in H1.
     dependent destruction H1.
     apply H0.
-    + admit. (* *, wf *)
+    + dependent destruction H4. 
+      repeat (constructor; auto).
+      admit.
     + exists ((X, dbind_tvar_empty) :: θ0). 
       repeat constructor...
       * inst_cofinites_for trans_typ__all. intros.
