@@ -24,6 +24,14 @@ Fixpoint ss_to_denv (θ : subst_set) : denv :=
   | (X , dbind_typ T) :: θ' => ss_to_denv θ'
   end.
 
+Fixpoint ss_to_aenv (θ : subst_set) : aenv := 
+  match θ with 
+  | nil => nil
+  | (X , dbind_tvar_empty) :: θ' => (X ~ abind_tvar_empty) ++ ss_to_aenv θ'
+  | (X , dbind_stvar_empty) :: θ' => (X ~ abind_stvar_empty) ++ ss_to_aenv θ'
+  | (X , dbind_typ T) :: θ' => (X ~ abind_etvar_empty) ++ ss_to_aenv θ'
+  end.
+
 Inductive wf_ss : subst_set -> Prop :=
   | wfss__nil : wf_ss nil
   | wfss__tvar : forall θ X,
@@ -40,40 +48,6 @@ Inductive wf_ss : subst_set -> Prop :=
     d_mono_typ (ss_to_denv θ) T -> 
     wf_ss ((X , dbind_typ T) :: θ)
 .
-
-
-Inductive ss_wf_typ : subst_set -> typ -> Prop :=
-  | ss_wf_typ__unit : forall (θ:subst_set),
-    ss_wf_typ θ typ_unit
-  | ss_wf_typ__bot : forall (θ:subst_set),
-    ss_wf_typ θ typ_bot
-  | ss_wf_typ__top : forall (θ:subst_set),
-    ss_wf_typ θ typ_top
-  | ss_wf_typ__tvar : forall (θ:subst_set) (X:typvar),
-    binds ( X )  ( dbind_tvar_empty ) ( θ )  ->
-    ss_wf_typ θ (typ_var_f X)
-  | ss_wf_typ__stvar : forall (θ:subst_set) (X:typvar),
-    binds ( X )  ( dbind_stvar_empty ) ( θ )  ->
-    ss_wf_typ θ (typ_var_f X)
-  | ss_wf_typ__etvar : forall (θ:subst_set) (X:typvar) (T:typ),
-    binds ( X )  ( dbind_typ T ) ( θ )  ->
-    ss_wf_typ θ (typ_var_f X)
-  | ss_wf_typ__arrow : forall (θ:subst_set) (A1 A2:typ),
-    ss_wf_typ θ A1 ->
-    ss_wf_typ θ A2 ->
-    ss_wf_typ θ (typ_arrow A1 A2)
-  | ss_wf_typ__all : forall (L:vars) (θ:subst_set) (A:typ),
-    ( forall X , X \notin  L  -> s_in X  ( open_typ_wrt_typ A (typ_var_f X) )  )  ->
-    ( forall X , X \notin  L  -> ss_wf_typ  ( X ~ dbind_tvar_empty  ++  θ )   ( open_typ_wrt_typ A (typ_var_f X) )  )  ->
-    ss_wf_typ θ (typ_all A)
-  | ss_wf_typ__union : forall (θ:subst_set) (A1 A2:typ),
-    ss_wf_typ θ A1 ->
-    ss_wf_typ θ A2 ->
-    ss_wf_typ θ (typ_union A1 A2)
-  | ss_wf_typ__intersection : forall (θ:subst_set) (A1 A2:typ),
-    ss_wf_typ θ A1 ->
-    ss_wf_typ θ A2 ->
-    ss_wf_typ θ (typ_intersection A1 A2).
 
 
 Inductive trans_typ : subst_set -> typ -> typ -> Prop := 
@@ -278,26 +252,26 @@ Notation "θ ⫦ʷ wᵃ ⇝ wᵈ" := (trans_work θ wᵃ wᵈ)
 Reserved Notation "θ ⫦ Ω ⇝ Γ ⫣ θ'"
   (at level 65, Ω at next level, Γ at next level, no associativity).
 Inductive trans_worklist : subst_set -> aworklist -> dworklist -> subst_set -> Prop := 
-  | inst_wl__empty : forall θ, 
+  | trans_wl__empty : forall θ, 
       wf_ss θ -> 
       θ ⫦ aworklist_empty ⇝ dworklist_empty ⫣ θ
-  | inst_wl__conswork : forall θ θ' Γ Ω  wᵃ wᵈ, 
+  | trans_wl__cons_work : forall θ θ' Γ Ω  wᵃ wᵈ, 
       θ ⫦ Γ ⇝ Ω ⫣ θ' ->
       trans_work θ' wᵃ wᵈ ->
       θ ⫦ aworklist_conswork Γ wᵃ ⇝ dworklist_conswork Ω wᵈ ⫣ θ'
-  | inst_wl__cons_tvar : forall θ θ' Γ Ω X, 
+  | trans_wl__cons_tvar : forall θ θ' Γ Ω X, 
       θ ⫦ Γ ⇝ Ω ⫣ θ' ->
       X `notin` dom θ' -> 
-      θ ⫦ aworklist_constvar Γ X abind_tvar_empty ⇝ dworklist_constvar Ω X dbind_tvar_empty ⫣  (X, dbind_tvar_empty) :: θ'
-  | inst_wl__cons_stvar : forall θ θ' Γ Ω X, 
+      θ ⫦ aworklist_constvar Γ X abind_tvar_empty ⇝ dworklist_constvar Ω X dbind_tvar_empty ⫣ (X, dbind_tvar_empty) :: θ'
+  | trans_wl__cons_stvar : forall θ θ' Γ Ω X, 
       θ ⫦ Γ ⇝ Ω ⫣ θ' ->
       X `notin` dom θ' -> 
-      θ ⫦ aworklist_constvar Γ X abind_stvar_empty ⇝ dworklist_constvar Ω X dbind_stvar_empty ⫣  (X, dbind_stvar_empty) :: θ'
-  | inst_wl__cons_var : forall θ θ' Γ Ω A1ᵃ A1ᵈ x, 
+      θ ⫦ aworklist_constvar Γ X abind_stvar_empty ⇝ dworklist_constvar Ω X dbind_stvar_empty ⫣ (X, dbind_stvar_empty) :: θ'
+  | trans_wl__cons_var : forall θ θ' Γ Ω A1ᵃ A1ᵈ x, 
       θ ⫦ Γ ⇝ Ω ⫣ θ' ->
       trans_typ θ' A1ᵃ A1ᵈ ->
       θ ⫦ aworklist_consvar Γ x (abind_var_typ A1ᵃ) ⇝ dworklist_consvar Ω x (dbind_typ A1ᵈ) ⫣ θ'
-  | inst_wl_ev : forall θ θ' Γ Ω T X, 
+  | trans_wl__cons_etvar : forall θ θ' Γ Ω T X, 
       θ ⫦ Γ ⇝ Ω ⫣ θ' -> 
       X `notin` dom θ' -> 
       d_mono_typ (ss_to_denv θ' ) T ->
@@ -1147,23 +1121,6 @@ Proof with eauto.
 Qed.
 
 
-Fixpoint denv_no_var (Ψ : denv) :=
-  match Ψ with 
-  | nil => nil
-  | (X , dbind_stvar_empty) :: Ψ' =>  X ~ dbind_stvar_empty ++ denv_no_var Ψ'
-  | (X , dbind_tvar_empty) :: Ψ' =>  X ~ dbind_tvar_empty ++ denv_no_var Ψ'
-  | (X , dbind_typ _) :: Ψ' =>  denv_no_var Ψ'
-  end.
-
-Fixpoint ss_no_etvar (Ψ : denv) :=
-  match Ψ with 
-  | nil => nil
-  | (X , dbind_stvar_empty) :: Ψ' =>  X ~ dbind_stvar_empty ++ ss_no_etvar Ψ'
-  | (X , dbind_tvar_empty) :: Ψ' =>  X ~ dbind_tvar_empty ++ ss_no_etvar Ψ'
-  | (X , dbind_typ _) :: Ψ' =>  ss_no_etvar Ψ'
-  end.
-  
-
 Lemma trans_wl_strengthen_etvar : forall Γ Ω X T θ θ',
   X `notin` ftvar_in_aworklist' Γ ->
   (X, dbind_typ T) :: θ ⫦ Γ ⇝ Ω ⫣ (θ' ++ (X, dbind_typ T) :: θ) ->
@@ -1272,17 +1229,6 @@ Proof.
       simpl. constructor; auto.
       admit.
 Admitted.
-
-
-(* not used now *)
-Lemma tran_wl_dwl_ss_same_tvar_stvar : forall Γ Ω θ,
-  nil ⫦ Γ ⇝ Ω ⫣ θ ->
-  ss_no_etvar θ = denv_no_var (dwl_to_denv Ω).
-Proof with auto. 
-  intros. dependent induction H...
-  - simpl... rewrite IHtrans_worklist...
-  - simpl... rewrite IHtrans_worklist...
-Qed.
 
 
 Lemma trans_wl_wf_bind_typ : forall Γ Ω θ X T,
@@ -1646,9 +1592,9 @@ Lemma trans_typ_strengthen_etvar : forall θ1 θ2 X T Aᵃ Aᵈ,
   (θ2 ++ (X, dbind_typ T) :: θ1) ⫦ᵗ Aᵃ ⇝ Aᵈ ->
   X \notin ftvar_in_typ Aᵃ ->
   θ2 ++ θ1 ⫦ᵗ Aᵃ ⇝ Aᵈ.
-Proof with eauto.
+Proof with eauto using wf_ss_strengthen_etvar.
   intros.
-  dependent induction H; intros...
+  dependent induction H; intros; simpl in *...
   - econstructor. 
     eapply wf_ss_strengthen_etvar; eauto.
     simpl in H1.
@@ -1661,26 +1607,11 @@ Proof with eauto.
     eapply wf_ss_strengthen_etvar; eauto.
     simpl in H1.
     apply binds_remove_mid in H0...
-  - econstructor.
-    eapply wf_ss_strengthen_etvar; eauto.
-  - econstructor.
-    eapply wf_ss_strengthen_etvar; eauto.
-  - econstructor.
-    eapply wf_ss_strengthen_etvar; eauto.
-  - simpl in H1. econstructor.
-    eapply IHtrans_typ1; eauto. 
-    eapply IHtrans_typ2; eauto. 
   - eapply trans_typ__all with (L:=L `union` singleton X); eauto.
     intros. inst_cofinites_with X0.
     rewrite_env (((X0, □) :: θ2) ++ θ1).
     eapply H0 with (X:=X) (T:=T); eauto.
     rewrite ftvar_in_typ_open_typ_wrt_typ_upper; auto.
-  - simpl in H1. econstructor.
-    eapply IHtrans_typ1; eauto. 
-    eapply IHtrans_typ2; eauto. 
-  - simpl in H1. econstructor.
-    eapply IHtrans_typ1; eauto. 
-    eapply IHtrans_typ2; eauto. 
 Qed.
 
 
@@ -1691,7 +1622,7 @@ Lemma trans_typ_strengthen : forall θ1 θ2 X b Aᵃ Aᵈ,
   θ2 ++ θ1 ⫦ᵗ Aᵃ ⇝ Aᵈ.
 Proof with eauto.
   intros.
-  dependent induction H; intros...
+  dependent induction H; intros; simpl in *...
   - econstructor...
     simpl in H1.
     apply binds_remove_mid in H0...
@@ -1701,20 +1632,11 @@ Proof with eauto.
   - econstructor...
     simpl in H1.
     apply binds_remove_mid in H0...
-  - simpl in H1. econstructor.
-    eapply IHtrans_typ1; eauto. 
-    eapply IHtrans_typ2; eauto. 
   - inst_cofinites_for trans_typ__all.
     intros. inst_cofinites_with X0.
     rewrite_env (((X0, □) :: θ2) ++ θ1).
     eapply H0 with (X:=X) (b:=b); simpl; eauto...
     rewrite ftvar_in_typ_open_typ_wrt_typ_upper; auto.
-  - simpl in H1. econstructor.
-    eapply IHtrans_typ1; eauto. 
-    eapply IHtrans_typ2; eauto. 
-  - simpl in H1. econstructor.
-    eapply IHtrans_typ1; eauto. 
-    eapply IHtrans_typ2; eauto.
 Qed.
 
 
