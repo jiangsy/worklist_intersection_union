@@ -244,23 +244,6 @@ Qed.
 
 #[local] Hint Rewrite awl_to_aenv_cons awl_to_aenv_app: core.
 
-(* weakening *)
-(* Lemma a_wf_typ_weaken: forall E1 E2 X t A,
-    a_wf_typ (E1 ++ E2) A ->
-    X ∉ (dom E1 `union` dom E2) ->
-    a_wf_typ (E1 ++ (X,t)::E2) A.
-Proof.
-  introv H HN. inductions H.
-  1-3: solve [destruct* t; solve_false].
-  1-3: rewrite_env (E1 ++ [(X,t)] ++ E2); forwards*: binds_weaken H.
-  1,3-4: now eauto.
-  - pick fresh X0 and apply a_wf_typ__all.
-    + forwards*: H X0.
-    + forwards*: H X0. forwards*: H0 X0.
-      forwards*: H1 X0 (X0 ~ abind_tvar_empty ++ E1) E2. simpl; solve_notin.
-Qed. *)
-
-
 Lemma a_wf_typ_weaken: forall Σ1 Σ2 Σ3 A,
     a_wf_typ (Σ3 ++ Σ1) A ->
     a_wf_typ (Σ3 ++ Σ2 ++ Σ1) A.
@@ -272,93 +255,53 @@ Proof.
       forwards*: H1 X0  Σ1 (X0 ~ abind_tvar_empty ++ Σ3); auto.
 Qed.
 
-Corollary a_wf_typ_weaken_cons: forall E X t A,
-    a_wf_typ E A ->
-    X ∉ dom E ->
-    a_wf_typ ((X, t) :: E) A.
+Corollary a_wf_typ_weaken_cons: forall Σ X t A,
+    a_wf_typ Σ A ->
+    X ∉ dom Σ ->
+    a_wf_typ ((X, t) :: Σ) A.
 Proof with simpl in *; try solve_notin.
   intros. simpl.
-  rewrite_env (nil ++ (X ~ t) ++ E).
+  rewrite_env (nil ++ (X ~ t) ++ Σ).
   apply a_wf_typ_weaken; auto...
 Qed.
 
-
-(** the following lemmas are overcomplicated; they could be generalized like
-    the above ones **)
-Corollary a_wf_typ_weaken_awl_to_aenv: forall Γ1 Γ2 X t A,
-    a_wf_typ (awl_to_aenv (awl_app Γ1 Γ2)) A ->
-    X ∉ (dom (awl_to_aenv Γ1) `union` dom (awl_to_aenv Γ2)) ->
-    a_wf_typ (awl_to_aenv (awl_app Γ1 (aworklist_constvar Γ2 X t))) A.
-Proof with eauto; try autorewrite with core using simpl.
-  introv H HN. inductions H.
-  1-3: solve [destruct* t; solve_false].
-  1-3: rewrite awl_to_aenv_app_2; rewrite awl_to_aenv_app in H...
-  1,3-4: now eauto.
-  - pick fresh X0 and apply a_wf_typ__all.
-    + forwards*: H X0.
-    + forwards*: H X0. forwards*: H0 X0.
-      forwards: H1 X0 (aworklist_constvar Γ1 X0 abind_tvar_empty) Γ2...
+Lemma a_wf_exp_weaken: forall Σ1 Σ2 Σ3 e,
+  a_wf_exp (Σ3 ++ Σ1) e ->
+  a_wf_exp (Σ3 ++ Σ2 ++ Σ1) e
+with a_wf_body_weaken : forall Σ1 Σ2 Σ3 b,
+  a_wf_body (Σ3 ++ Σ1) b ->
+  a_wf_body (Σ3 ++ Σ2 ++ Σ1) b.
+Proof with eauto using a_wf_typ_weaken. 
+  - intros. clear a_wf_exp_weaken. dependent induction H...
+    + intros. apply a_wf_exp__abs with (T:=T) 
+      (L:=union L (union (dom Σ2) (union (dom Σ1) (union (dom Σ3) (ftvar_in_typ T)))))...
+      intros. rewrite_env ((x ~ abind_var_typ T ++ Σ3) ++ Σ2 ++ Σ1).
+      apply H1...
+    + intros. inst_cofinites_for a_wf_exp__tabs. intros.
+      inst_cofinites_with X.
+      rewrite_env ((X ~ abind_tvar_empty ++ Σ3) ++ Σ2 ++ Σ1).
+      apply a_wf_body_weaken...
+  - intros. dependent destruction H; constructor...
 Qed.
 
-Lemma a_wf_exp_weaken: forall Γ1 Γ2 X t e,
-    a_wf_exp (awl_to_aenv (awl_app Γ1 Γ2)) e ->
-    X ∉ (dom (awl_to_aenv Γ1) `union` dom (awl_to_aenv Γ2)) ->
-    a_wf_exp (awl_to_aenv (awl_app Γ1 (aworklist_constvar Γ2 X t))) e
-with a_wf_body_weaken: forall Γ1 Γ2 X t e,
-    a_wf_body (awl_to_aenv (awl_app Γ1 Γ2)) e ->
-    X ∉ (dom (awl_to_aenv Γ1) `union` dom (awl_to_aenv Γ2)) ->
-    a_wf_body (awl_to_aenv (awl_app Γ1 (aworklist_constvar Γ2 X t))) e.
-Proof with try solve_notin; eauto using a_wf_typ_weaken_awl_to_aenv;
-try autorewrite with core using simpl.
-
-* clear a_wf_exp_weaken.
-  introv H HN. inductions H.
-  1,4,6,7: econstructor...
-  - (* var *)
-    econstructor. rewrite awl_to_aenv_app_2; rewrite awl_to_aenv_app in H...
-  - (* abs *)
-    pick fresh X0 and apply a_wf_exp__abs.
-    + applys a_wf_typ_weaken_awl_to_aenv H...
-    + forwards*: H0 X0.
-      applys H1 X0 (aworklist_constvar Γ1 X0 (abind_var_typ T)) Γ2...
-  - (* tabs *)
-    pick fresh X0 and apply a_wf_exp__tabs.
-    forwards H0: H X0...
-    rewrite awl_to_aenv_app_3 in H0.
-    forwards* H1: a_wf_body_weaken X t H0...
-    rewrite awl_to_aenv_app_2 in H1...
-
-* clear  a_wf_body_weaken.
-  introv H HN. inductions H.
-  - econstructor...
+Lemma a_wf_conts_weaken: forall Σ1 Σ2 Σ3 cs,
+  a_wf_conts (Σ3 ++ Σ1) cs ->
+  a_wf_conts (Σ3 ++ Σ2 ++ Σ1) cs
+with a_wf_contd_weaken : forall Σ1 Σ2 Σ3 cd,
+  a_wf_contd (Σ3 ++ Σ1) cd ->
+  a_wf_contd (Σ3 ++ Σ2 ++ Σ1) cd.
+Proof with eauto using a_wf_typ_weaken, a_wf_exp_weaken.
+  - intros. dependent induction H; constructor... 
+  - intros. dependent induction H; constructor...
 Qed.
 
-Lemma a_wf_conts_weaken: forall Γ1 Γ2 X t cs,
-  a_wf_conts (awl_to_aenv (awl_app Γ1 Γ2)) cs ->
-  X ∉ (dom (awl_to_aenv Γ1) `union` dom (awl_to_aenv Γ2)) ->
-  a_wf_conts (awl_to_aenv (awl_app Γ1 (aworklist_constvar Γ2 X t))) cs
-with a_wf_contd_weaken : forall Γ1 Γ2 X t cd,
-  a_wf_contd (awl_to_aenv (awl_app Γ1 Γ2)) cd ->
-  X ∉ (dom (awl_to_aenv Γ1) `union` dom (awl_to_aenv Γ2)) ->
-  a_wf_contd (awl_to_aenv (awl_app Γ1 (aworklist_constvar Γ2 X t))) cd.
-Proof with eauto using a_wf_typ_weaken_awl_to_aenv, a_wf_exp_weaken;
-  try autorewrite with core using simpl.
-  - introv H HN. inductions H.
-    all: econstructor...
-  - introv H HN. inductions H.
-    all: econstructor...
+Lemma a_wf_work_weaken: forall Σ1 Σ2 Σ3 w,
+  a_wf_work (Σ3 ++ Σ1) w ->
+  a_wf_work (Σ3 ++ Σ2 ++ Σ1) w.
+Proof with eauto using a_wf_typ_weaken, a_wf_exp_weaken, a_wf_conts_weaken, a_wf_contd_weaken.
+  intros. dependent destruction H...
+  constructor...
 Qed.
-
-Lemma a_wf_work_weaken: forall Γ1 Γ2 X t Ω,
-    a_wf_work (awl_to_aenv (awl_app Γ1 Γ2)) Ω ->
-    X ∉ (dom (awl_to_aenv Γ1) `union` dom (awl_to_aenv Γ2)) ->
-    a_wf_work (awl_to_aenv (awl_app Γ1 (aworklist_constvar Γ2 X t))) Ω.
-Proof with eauto using a_wf_typ_weaken_awl_to_aenv, a_wf_exp_weaken, a_wf_conts_weaken, a_wf_contd_weaken;
-  try autorewrite with core using simpl.
-  introv H HN. inductions H.
-  all: econstructor...
-Qed.
-
 
 Lemma a_wf_wl_weaken_atvar: forall Γ1 Γ2 X t,
     ⊢ᵃʷ awl_app Γ1 Γ2 -> X ∉ (dom (awl_to_aenv Γ1) `union` dom (awl_to_aenv Γ2)) ->
@@ -369,12 +312,16 @@ Proof with eauto; try autorewrite with core using solve_notin.
   - inverts H. forwards~: IHΓ1.
     rewrite awl_to_aenv_app in H3.
     econstructor...
-    + applys* a_wf_typ_weaken_awl_to_aenv...
+    rewrite awl_to_aenv_app in *. simpl.
+    rewrite_env (awl_to_aenv Γ1 ++ (X ~ t) ++ awl_to_aenv Γ2)...
+    apply a_wf_typ_weaken...
   - inverts H.
     all: rewrite awl_to_aenv_app in H2; forwards~: IHΓ1; econstructor...
   - inverts H.
     econstructor...
-    + applys* a_wf_work_weaken...
+    + rewrite awl_to_aenv_app in *. simpl.
+      rewrite_env (awl_to_aenv Γ1 ++ (X ~ t) ++ awl_to_aenv Γ2)...
+      apply a_wf_work_weaken...
 Qed.
 
 Corollary a_wf_wl_weaken_cons: forall Γ X t,
@@ -533,17 +480,6 @@ Proof with simpl; auto.
   all: try rewrite IHΓ1...
 Qed.
 
-
-Corollary aworklist_subst_bind_same : forall Γ Γ'' Γ1 Γ2 X Y A,
-    ⊢ᵃʷ (Γ ⧺ X ~ᵃ ⬒ ;ᵃ Y ~ᵃ ⬒ ;ᵃ Γ'') ->
-    aworklist_subst (Γ ⧺ X ~ᵃ ⬒ ;ᵃ Y ~ᵃ ⬒ ;ᵃ Γ'') X A Γ1 Γ2 ->
-    binds Y abind_etvar_empty (awl_to_aenv Γ1) \/ binds Y abind_etvar_empty (awl_to_aenv (subst_tvar_in_aworklist A X Γ2)).
-Proof with applys* aworklist_subst_bind_same_gen.
-  intros.
-  rewrite awl_rewrite_middle in H.
-  rewrite aworklist_app_assoc in H...
-Qed.
-
 Lemma binds_var_typ_rename_tvar : forall x A X X' Γ,
   ⊢ᵃʷ Γ ->
   binds x (abind_var_typ A) (awl_to_aenv Γ) ->
@@ -631,9 +567,6 @@ Proof.
   - dependent destruction H; auto.
 Qed.
 
-
-(* A group lemmas about dom *)
-
 Ltac destruct_wf_arrow :=
   match goal with
   | [ H : a_wf_typ _ (typ_arrow _ _) |- _ ] => dependent destruction H
@@ -675,7 +608,7 @@ Ltac destruct_in :=
     try solve [solve_notin_eq X']
   end.
 
-Lemma a_worklist_subst_binds_same : forall Γ1 Γ2 X b X1 A Γ'1 Γ'2,
+Lemma a_worklist_subst_binds_same_atvar : forall Γ1 Γ2 X b X1 A Γ'1 Γ'2,
   ⊢ᵃʷ (awl_app Γ2 (aworklist_constvar Γ1 X abind_etvar_empty)) ->
   b = abind_tvar_empty \/ b = abind_stvar_empty \/ b = abind_etvar_empty ->
   aworklist_subst (awl_app Γ2 (aworklist_constvar Γ1 X abind_etvar_empty)) X A Γ'1 Γ'2 ->
@@ -728,15 +661,15 @@ Proof with (autorewrite with core in *); simpl; eauto; solve_false; try solve_no
   - case_eq (X==X0); intros. { subst. simpl in HN. solve_notin. }
     apply a_wf_typ__tvar.
     apply aworklist_binds_split in HB. destruct HB as [Γ'1 [Γ'2 Heq]]; rewrite <- Heq in *.
-    eapply a_worklist_subst_binds_same; eauto. auto.
+    eapply a_worklist_subst_binds_same_atvar; eauto. auto.
   - case_eq (X==X0); intros. { subst. simpl in HN. solve_notin. }
     apply a_wf_typ__stvar.
     apply aworklist_binds_split in HB. destruct HB as [Γ'1 [Γ'2 Heq]]; rewrite <- Heq in *.
-    eapply a_worklist_subst_binds_same; eauto. auto.
+    eapply a_worklist_subst_binds_same_atvar; eauto. auto.
   - case_eq (X==X0); intros. { subst. simpl in HN. solve_notin. }
     apply a_wf_typ__etvar.
     apply aworklist_binds_split in HB. destruct HB as [Γ'1 [Γ'2 Heq]]; rewrite <- Heq in *.
-    eapply a_worklist_subst_binds_same; eauto. auto.
+    eapply a_worklist_subst_binds_same_atvar; eauto. auto.
   - simpl in *. constructor; eauto.
   - intros. pick fresh X0 and apply a_wf_typ__all.
     now auto. subst.
