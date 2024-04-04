@@ -609,7 +609,7 @@ Ltac destruct_in :=
     try solve [solve_notin_eq X']
   end.
 
-Lemma a_worklist_subst_binds_same_atvar : forall Γ1 Γ2 X b X1 A Γ'1 Γ'2,
+Lemma a_worklist_subst_binds_same_atvar' : forall Γ1 Γ2 X b X1 A Γ'1 Γ'2,
   ⊢ᵃʷ (awl_app Γ2 (aworklist_constvar Γ1 X abind_etvar_empty)) ->
   b = abind_tvar_empty \/ b = abind_stvar_empty \/ b = abind_etvar_empty ->
   aworklist_subst (awl_app Γ2 (aworklist_constvar Γ1 X abind_etvar_empty)) X A Γ'1 Γ'2 ->
@@ -648,29 +648,39 @@ Proof.
     simpl in *. eauto.
 Qed.
 
+Lemma a_worklist_subst_binds_same_atvar : forall Γ X b X1 A Γ1 Γ2,
+  ⊢ᵃʷ Γ ->
+  binds X (abind_etvar_empty) (awl_to_aenv Γ) ->
+  b = abind_tvar_empty \/ b = abind_stvar_empty \/ b = abind_etvar_empty ->
+  aworklist_subst Γ X A Γ1 Γ2 ->
+  X <> X1 ->
+  binds X1 b (awl_to_aenv  Γ) ->
+  binds X1 b (awl_to_aenv (awl_app (subst_tvar_in_aworklist A X Γ2) Γ1)).
+Proof.
+  intros. 
+  apply aworklist_binds_split in H0. destruct H0 as [Γ'1 [Γ'2 Heq]]; rewrite <- Heq in *.
+    eapply a_worklist_subst_binds_same_atvar'; eauto. auto.
+Qed.
 
 Lemma a_worklist_subst_wf_typ : forall Γ X A B Γ1 Γ2,
-    binds X abind_etvar_empty (awl_to_aenv Γ) ->
-    X `notin` ftvar_in_typ B ->
-    a_wf_typ (awl_to_aenv Γ) B ->
-    ⊢ᵃʷ Γ ->
-    aworklist_subst Γ X A Γ1 Γ2 ->
-    a_wf_typ (awl_to_aenv (awl_app (subst_tvar_in_aworklist A X Γ2) Γ1)) B.
+  binds X abind_etvar_empty (awl_to_aenv Γ) ->
+  X `notin` ftvar_in_typ B ->
+  a_wf_typ (awl_to_aenv Γ) B ->
+  ⊢ᵃʷ Γ ->
+  aworklist_subst Γ X A Γ1 Γ2 ->
+  a_wf_typ (awl_to_aenv (awl_app (subst_tvar_in_aworklist A X Γ2) Γ1)) B.
 Proof with (autorewrite with core in *); simpl; eauto; solve_false; try solve_notin.
   introv HB HN WF HW HS.
   generalize dependent Γ1. generalize dependent Γ2. dependent induction WF; auto; intros.
   - case_eq (X==X0); intros. { subst. simpl in HN. solve_notin. }
     apply a_wf_typ__tvar.
-    apply aworklist_binds_split in HB. destruct HB as [Γ'1 [Γ'2 Heq]]; rewrite <- Heq in *.
-    eapply a_worklist_subst_binds_same_atvar; eauto. auto.
+    eapply a_worklist_subst_binds_same_atvar; eauto.
   - case_eq (X==X0); intros. { subst. simpl in HN. solve_notin. }
     apply a_wf_typ__stvar.
-    apply aworklist_binds_split in HB. destruct HB as [Γ'1 [Γ'2 Heq]]; rewrite <- Heq in *.
-    eapply a_worklist_subst_binds_same_atvar; eauto. auto.
+    eapply a_worklist_subst_binds_same_atvar; eauto.
   - case_eq (X==X0); intros. { subst. simpl in HN. solve_notin. }
     apply a_wf_typ__etvar.
-    apply aworklist_binds_split in HB. destruct HB as [Γ'1 [Γ'2 Heq]]; rewrite <- Heq in *.
-    eapply a_worklist_subst_binds_same_atvar; eauto. auto.
+    eapply a_worklist_subst_binds_same_atvar; eauto.
   - simpl in *. constructor; eauto.
   - intros. pick fresh X0 and apply a_wf_typ__all.
     now auto. subst.
@@ -684,3 +694,48 @@ Proof with (autorewrite with core in *); simpl; eauto; solve_false; try solve_no
   - simpl in *. constructor; eauto.
 Qed.
 
+
+Lemma a_worklist_subst_wf_wl : forall Γ X A Γ1 Γ2,
+  ⊢ᵃʷ Γ ->
+  binds X abind_etvar_empty (awl_to_aenv Γ) ->
+  aworklist_subst Γ X A Γ1 Γ2 ->
+  ⊢ᵃʷ awl_app (subst_tvar_in_aworklist A X Γ2) Γ1.
+Proof.
+  intros. induction H1; auto.
+  - dependent destruction H; auto.
+  - simpl. inversion H0; auto.
+    + dependent destruction H2.
+    + constructor; auto.
+      * admit.
+      * eapply a_worklist_subst_wf_typ; eauto.
+        admit. admit. admit.
+      * apply IHaworklist_subst; auto.
+        dependent destruction H; auto.
+  - simpl. inversion H0; auto.
+      + dependent destruction H4.
+      + constructor; auto.
+        * admit.
+        * apply IHaworklist_subst; auto.
+          dependent destruction H; auto.
+  - simpl. inversion H0; auto.
+    + dependent destruction H4.
+    + constructor; auto.
+      * admit.
+      * apply IHaworklist_subst; auto.
+        dependent destruction H; auto.
+  - simpl in *. constructor.
+    admit.
+    apply IHaworklist_subst; auto.
+    dependent destruction H; auto.
+  - simpl in *. inversion H0.
+    + dependent destruction H4. contradiction.
+    + constructor.
+      * admit.
+      * apply IHaworklist_subst; auto.
+        dependent destruction H; auto.
+  - simpl in *. inversion H0.
+    + dependent destruction H4. contradiction.
+    + apply* IHaworklist_subst.
+      admit.
+      admit.
+Admitted.

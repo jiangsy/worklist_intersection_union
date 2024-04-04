@@ -654,6 +654,17 @@ Proof with eauto with lngen.
   - inversion H2.
 Qed.
 
+Theorem d_sub_mono_refl : forall Ψ A B,
+  d_mono_typ Ψ A ->
+  d_mono_typ Ψ B ->
+  Ψ ⊢ A <: B ->
+  A = B.
+Proof.
+  intros * Hmonoa Hmonob Hsub. dependent induction Hsub;
+   try dependent destruction Hmonoa; try dependent destruction Hmonob; auto.
+  - erewrite IHHsub1; auto. erewrite IHHsub2; auto.  
+Qed.
+
 Theorem d_sub_open_mono_stvar_false: forall n1 n2 Ψ A T X L,
     d_typ_order (A ^^ᵗ T) < n1 ->
     d_typ_size (A ^^ᵗ T) < n2 ->

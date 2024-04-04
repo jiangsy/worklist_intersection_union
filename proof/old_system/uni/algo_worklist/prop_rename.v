@@ -25,17 +25,17 @@ Proof.
 Qed.
 
 Lemma awl_cons_rename_tvar_comm : forall a b t Γ X,
-    aworklist_constvar (rename_tvar_in_aworklist a b Γ)
-        (if X == b then a else X)
-        (subst_tvar_in_abind ` a b t) =
-    rename_tvar_in_aworklist a b (aworklist_constvar Γ X t).
+  aworklist_constvar (rename_tvar_in_aworklist a b Γ)
+      (if X == b then a else X)
+      (subst_tvar_in_abind ` a b t) =
+  rename_tvar_in_aworklist a b (aworklist_constvar Γ X t).
 Proof.
   induction Γ; simpl; fsetdec.
 Qed.
 
 Lemma ftvar_in_aworklist'_awl_cons : forall a b Γ,
-    ftvar_in_aworklist' (aworklist_constvar Γ a b) [=]
-      union (ftvar_in_aworklist' Γ) (union (ftvar_in_abind b) (singleton a)).
+  ftvar_in_aworklist' (aworklist_constvar Γ a b) [=]
+    union (ftvar_in_aworklist' Γ) (union (ftvar_in_abind b) (singleton a)).
 Proof.
   intros. simpl; fsetdec.
 Qed.
@@ -164,15 +164,6 @@ Proof.
   - simpl. rewrite ftvar_in_wf_typ_upper; eauto. fsetdec.
   - simpl. rewrite ftvar_in_wf_work_upper; eauto. fsetdec.
 Qed.
-
-Lemma ftvar_in_aworklist_lower : forall Γ ,
-  ⊢ᵃʷ Γ ->
-  dom (awl_to_aenv Γ) [<=] ftvar_in_aworklist' Γ.
-Proof.
-  intros; induction H; auto.
-  - simpl. fsetdec.
-  - simpl.
-Abort.
 
 (* -- *)
 
@@ -621,52 +612,6 @@ Proof with auto.
       rewrite ftvar_in_aworklist'_awl_cons in H0.
       solve_notin.
 Qed.
-
-
-Lemma a_worklist_subst_wf_wl : forall Γ X A Γ1 Γ2,
-  ⊢ᵃʷ Γ ->
-  binds X abind_etvar_empty (awl_to_aenv Γ) ->
-  aworklist_subst Γ X A Γ1 Γ2 ->
-  ⊢ᵃʷ awl_app (subst_tvar_in_aworklist A X Γ2) Γ1.
-Proof.
-  intros. induction H1; auto.
-  - dependent destruction H; auto.
-  - simpl. inversion H0; auto.
-    + dependent destruction H2.
-    + constructor; auto.
-      * admit.
-      * eapply a_worklist_subst_wf_typ; eauto.
-        admit. admit. admit.
-      * apply IHaworklist_subst; auto.
-        dependent destruction H; auto.
-  - simpl. inversion H0; auto.
-      + dependent destruction H4.
-      + constructor; auto.
-        * admit.
-        * apply IHaworklist_subst; auto.
-          dependent destruction H; auto.
-  - simpl. inversion H0; auto.
-    + dependent destruction H4.
-    + constructor; auto.
-      * admit.
-      * apply IHaworklist_subst; auto.
-        dependent destruction H; auto.
-  - simpl in *. constructor.
-    admit.
-    apply IHaworklist_subst; auto.
-    dependent destruction H; auto.
-  - simpl in *. inversion H0.
-    + dependent destruction H4. contradiction.
-    + constructor.
-      * admit.
-      * apply IHaworklist_subst; auto.
-        dependent destruction H; auto.
-  - simpl in *. inversion H0.
-    + dependent destruction H4. contradiction.
-    + apply* IHaworklist_subst.
-      admit.
-      admit.
-Admitted.
 
 
 Lemma a_wf_wl_rename_tvar_in_awl : forall Γ X X',
