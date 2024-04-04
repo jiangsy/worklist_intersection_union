@@ -782,37 +782,6 @@ Proof.
   intros. induction H2; try dependent destruction H; eauto 6.
 Qed.
 
-Ltac destruct_mono_arrow :=
-  repeat
-    lazymatch goal with
-    | H : d_mono_typ ?θ (typ_arrow ?A1 ?A2) |- _ => dependent destruction H
-    end. 
-
-
-Ltac solve_binds_mono :=
-  repeat
-  match goal with
-  | H1 : binds ?X (dbind_typ ?T) ?θ , H2 : wf_ss ?θ |- _ =>
-    match goal with
-    | H1 : d_mono_typ (ss_to_denv θ) T |- _ => fail 1
-    | _ =>
-      let Hmono := fresh "Hmono" in
-      apply wf_ss_binds_monotyp in H1 as Hmono; auto
-    end
-  end;
-  destruct_mono_arrow.
-
-
-Ltac solve_binds_nonmono_contradiction :=
-  solve_binds_mono; 
-  match goal with
-  | H1 : d_mono_typ ?θ typ_bot |- _ => inversion H1
-  | H1 : d_mono_typ ?θ typ_top |- _ => inversion H1
-  | H1 : d_mono_typ ?θ (typ_all ?A) |- _ => inversion H1
-  | H1 : d_mono_typ ?θ (typ_intersection ?A1 ?A2) |- _ => inversion H1
-  | H1 : d_mono_typ ?θ (typ_union ?A1 ?A2) |- _ => inversion H1
-end.
-
 Lemma trans_typ_subst : forall θ1 θ2 Aᵃ Aᵈ Bᵃ Bᵈ X b,
   b = dbind_tvar_empty \/ b = dbind_stvar_empty ->
   θ2 ++ (X , b) :: θ1 ⫦ᵗ Aᵃ ⇝ Aᵈ ->
@@ -1000,6 +969,22 @@ Proof with auto.
 Qed.
 
 
+Lemma trans_wl_aworklist_trailing_sub : forall Γ Ω θ A1 A2 B1 B2,
+  ⊢ᵃʷ Γ ->
+  nil ⫦ Γ ⇝ Ω ⫣ θ ->
+  d_mono_typ (ss_to_denv θ) (typ_arrow A1 A2) ->
+  d_mono_typ (ss_to_denv θ) (typ_arrow B1 B2) ->
+  aworklist_trailing_sub Γ (work_sub A2 B2 ⫤ᵃ work_sub B1 A1 ⫤ᵃ Γ).
+Proof.
+  intros * Hwf Htrans Hmonoa Hmonob.
+  destruct_mono_arrow.
+  eapply trans_wl_d_mono_typ_a_mono_typ_no_etvar in Hmonoa1; eauto.
+  eapply trans_wl_d_mono_typ_a_mono_typ_no_etvar in Hmonoa2; eauto.
+  eapply trans_wl_d_mono_typ_a_mono_typ_no_etvar in Hmonob1; eauto.
+  eapply trans_wl_d_mono_typ_a_mono_typ_no_etvar in Hmonob2; eauto.
+  intuition.
+Qed.
+
 #[local] Hint Resolve trans_typ_lc_atyp trans_typ_lc_dtyp trans_wl_d_wl_mono_ss : core.
 
 #[local] Hint Immediate trans_wl_ss_binds_tvar_a_wl trans_wl_ss_binds_stvar_a_wl trans_wl_ss_binds_etvar_a_wl : core.
@@ -1099,15 +1084,12 @@ Proof with eauto.
       destruct (X0 == X).
       * subst. assert ((work_sub A2 B2 ⫤ᵃ work_sub B1 A1 ⫤ᵃ Γ0) ⟶ᵃʷ⁎⋅)...
         apply IHd_wl_red...
-        admit.
-        exists θ0; (repeat constructor; auto); apply trans_typ_refl...
-        constructor...
-        eapply a_wl_red_aworklist_trailing_sub_weaken with (Γ:=work_sub A2 B2 ⫤ᵃ work_sub B1 A1 ⫤ᵃ Γ0); eauto.
-        eapply trans_wl_d_mono_typ_a_mono_typ_no_etvar in Hmonoa1; eauto.
-        eapply trans_wl_d_mono_typ_a_mono_typ_no_etvar in Hmonoa2; eauto.
-        eapply trans_wl_d_mono_typ_a_mono_typ_no_etvar in Hmonob1; eauto.
-        eapply trans_wl_d_mono_typ_a_mono_typ_no_etvar in Hmonob2; eauto.
-        intuition.
+        -- destruct_a_wf_wl. repeat (constructor; simpl; auto).
+           admit. admit. admit. admit.
+        -- exists θ0; (repeat constructor; auto); apply trans_typ_refl...
+        -- constructor...
+           eapply a_wl_red_aworklist_trailing_sub_weaken with (Γ:=work_sub A2 B2 ⫤ᵃ work_sub B1 A1 ⫤ᵃ Γ0); eauto.
+           eapply trans_wl_aworklist_trailing_sub; eauto. destruct_a_wf_wl...
       * destruct_d_wl_wf.
         apply d_wl_red_sound in H...
         destruct_mono_arrow.
@@ -1119,13 +1101,22 @@ Proof with eauto.
         admit.
         admit.
         admit.
+        admit.
     (* A -> B > ^X *)
     + apply wf_ss_binds_monotyp in H2 as Hmonob...
-      admit. (* *** *)
+      destruct_a_wf_wl.
+      assert (a_wf_typ (awl_to_aenv Γ0) (typ_arrow A1ᵃ A2ᵃ)) by auto.
+      apply a_mono_typ_dec in H0 as Hmono... inversion Hmono.
+      * admit.
+      * admit.
     (* ^X < A -> B *)
-    + apply wf_ss_binds_monotyp in H1 as Hmonoa...
+    + apply wf_ss_binds_monotyp in H1 as Hmonob...
+      destruct_a_wf_wl.
       rename_typ_rev.
-      admit. (* *** *)
+      assert (a_wf_typ (awl_to_aenv Γ0) (typ_arrow B1ᵃ B2ᵃ)) by auto.
+      apply a_mono_typ_dec in H3 as Hmono... inversion Hmono.
+      * admit.
+      * admit.
     (* A1 -> B1 < A2 -> B2 *)
     + destruct_a_wf_wl...
       constructor...

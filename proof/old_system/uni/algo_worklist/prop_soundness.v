@@ -1297,7 +1297,7 @@ Proof with eauto.
     destruct_trans. rename_typ.
     exists (work_infer (exp_var_f x) csᵈ ⫤ᵈ Ω).
     split... exists θ. econstructor... econstructor...
-    admit. (* *, uniq *) 
+    eapply trans_wl_a_wl_binds_var_trans_typ_d_wl in H1...
   (* e : A => _ *)
   - exists (work_infer (exp_anno eᵈ Aᵈ) csᵈ ⫤ᵈ Ω)...
     split. exists θ...
@@ -1361,8 +1361,8 @@ Proof with eauto.
         repeat unify_trans_typ.
         destruct_d_wl_del_red... simpl in *.
         inst_cofinites_for d_chk_inf__inf_abs_mono; auto.
-        admit.
-        intros. rewrite_close_open_subst; auto. admit.
+        admit. (* *, mono *)
+        intros. rewrite_close_open_subst; auto. admit. (* **, chk rename *)
       * destruct_d_wl_del_red...
   (* () => _ *)
   - exists (work_infer exp_unit csᵈ ⫤ᵈ Ω)...
