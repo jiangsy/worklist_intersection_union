@@ -612,7 +612,7 @@ Proof with eauto.
             ** apply d_wf_typ_weaken_cons; auto.
             ** contradiction.
       -- unfold eq_dec. destruct (EqDec_eq_of_X X0 X); eauto.
-         ++ applys* d_mono_typ_weaken_cons.
+         ++ applys* d_mono_typ_weaken_app.
          ++ contradiction.
       -- applys* d_wf_typ_weaken_app.
     + apply d_sub_dwft in Hsub as Hwft1. destruct Hwft1 as [_ [HwftS HwftT]]. inversion HwftT.
