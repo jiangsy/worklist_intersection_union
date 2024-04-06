@@ -466,8 +466,8 @@ Proof.
 Qed.
 
 
-Lemma d_mono_typ_weaken_cons: forall Ψ T a,
-    d_mono_typ Ψ T -> d_mono_typ (a ++ Ψ) T.
+Lemma d_mono_typ_weaken_app: forall Ψ1 Ψ2 T,
+    d_mono_typ Ψ1 T -> d_mono_typ (Ψ2 ++ Ψ1) T.
 Proof.
   intros. induction* H.
 Qed.
@@ -484,7 +484,7 @@ Lemma d_mono_typ_subst_mono_mono : forall F Ψ A T X,
   d_mono_typ (F ++ X ~ □ ++ Ψ) A ->
   d_mono_typ Ψ T ->
   d_mono_typ (map (subst_tvar_in_dbind T X) F ++ Ψ) ({T /ᵗ X} A).
-Proof with eauto using d_mono_typ_weaken_cons; try solve_by_invert; try solve [exfalso; jauto].
+Proof with eauto using d_mono_typ_weaken_app; try solve_by_invert; try solve [exfalso; jauto].
   intros. induction A; simpl in *...
   1: { simpl. destruct (X0 == X); subst; auto...
        inverts H.
@@ -519,7 +519,7 @@ Lemma d_mono_typ_no_stvar : forall Ψ1 Ψ2 A X,
     d_mono_typ (Ψ2 ++ X ~ ■ ++ Ψ1) A ->
     ⊢ Ψ2 ++ X ~ ■ ++ Ψ1 ->
     X `notin` ftvar_in_typ A.
-Proof with eauto using d_mono_typ_weaken_cons; try solve_by_invert; try solve [exfalso; jauto].
+Proof with eauto using d_mono_typ_weaken_app; try solve_by_invert; try solve [exfalso; jauto].
   intros. induction A; simpl in *...
   1: { simpl. destruct (X0 == X); subst; auto...
        - inverts H.
@@ -532,7 +532,7 @@ Qed.
 Lemma d_mono_typ_drop_stvar : forall Ψ1 Ψ2 A X,
     d_mono_typ (Ψ2 ++ X ~ ■ ++ Ψ1) A ->
     d_mono_typ (Ψ2 ++ Ψ1) A.
-Proof with eauto using d_mono_typ_weaken_cons; try solve_by_invert; try solve [exfalso; jauto].
+Proof with eauto using d_mono_typ_weaken_app; try solve_by_invert; try solve [exfalso; jauto].
   intros. induction A; simpl in *...
   1: { simpl. destruct (X0 == X); subst; auto...
        - inverts H. forwards* [?|?]: binds_app_1 H2.
@@ -548,7 +548,7 @@ Lemma d_mono_typ_subst_stvar : forall Ψ1 Ψ2 A T X,
     ⊢ Ψ2 ++ X ~ ■ ++ Ψ1 ->
     Ψ1 ⊢ T ->
     d_mono_typ (map (subst_tvar_in_dbind T X) Ψ2 ++ Ψ1) ({T /ᵗ X} A).
-Proof with eauto using d_mono_typ_weaken_cons; try solve_by_invert; try solve [exfalso; jauto].
+Proof with eauto using d_mono_typ_weaken_app; try solve_by_invert; try solve [exfalso; jauto].
   intros. induction A; simpl in *...
   1: { simpl. destruct (X0 == X); subst; auto...
        - inverts H.
@@ -939,7 +939,7 @@ Proof with try solve_notin; simpl in *; eauto.
           by rewrite* open_typ_wrt_typ_twice;
                                     forwards*: H1 Y ((Y, □) :: Ψ1) Ψ2 HE;
                                     rewrite_env ( Y ~ □ ++ (Ψ1 ++ Ψ2));
-                                    eauto using d_mono_typ_weaken_cons
+                                    eauto using d_mono_typ_weaken_app
       end) ]
       ].
 Qed.
@@ -1056,5 +1056,5 @@ Qed.
 (* Lemma d_infabs_rename_var : *)
 (* Lemma d_inftapp_rename_tvar : *)
 (* Lemma d_inftapp_rename_var : *)
-(* Lemma d_chk_inf_rename_var_tvar : *)
-(* Lemma d_chk_inf_rename_var_var : *)
+(* Lemma d_chk_inf_rename_tvar : *)
+(* Lemma d_chk_inf_rename_var : *)

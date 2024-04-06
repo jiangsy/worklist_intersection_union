@@ -114,7 +114,7 @@ Proof.
   - introv HB HT. clear a_wf_body_var_binds_another.
 Admitted.
 
-Lemma d_wf_exp_var_binds_another_cons : forall Σ1 x e A1 A2,
+Lemma a_wf_exp_var_binds_another_cons : forall Σ1 x e A1 A2,
   a_wf_exp (x ~ abind_var_typ A1 ++ Σ1) e ->
   a_wf_typ Σ1 A2 ->
   a_wf_exp (x ~ abind_var_typ A2 ++ Σ1) e.
