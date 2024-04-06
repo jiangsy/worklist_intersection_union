@@ -111,7 +111,13 @@ Proof.
     gen Σ1 A1 A2.
     induction Σ2; intros; cbn in *.
     (* + inverts* HE. *)
-  (* - introv HB HT. clear a_wf_body_var_binds_another. *)
+    + admit.
+    + admit.
+    + admit.
+    + admit.
+    + admit.
+    + admit.
+  - introv HB HT. clear a_wf_body_var_binds_another.
 Admitted.
 
 Lemma a_wf_exp_var_binds_another_cons : forall Σ1 x e A1 A2,

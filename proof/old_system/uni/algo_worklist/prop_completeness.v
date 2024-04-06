@@ -44,55 +44,33 @@ Ltac destruct_trans :=
     | H : trans_typ ?θ ?Aᵃ (?C_T _ _)  |- _ => dependent destruction H
     end.
 
+Ltac rename_typ_rev_to_fresh' :=
+  repeat 
+    lazymatch goal with
+    | H : trans_typ ?θ ?Aᵃ (open_typ_wrt_typ _ _)  |- _ => fail
+    | H : trans_typ ?θ ?Aᵃ (?C_T _ _) |- _ => fail
+    | H : trans_typ ?θ ?A1ᵃ ?A1ᵈ |- _ =>
+      let A1ᵃ1 := fresh A1ᵈ"ᵃ0" in 
+      rename A1ᵃ into A1ᵃ1;
+      generalize dependent H
+    end.
+    
+Ltac rename_typ_rev' :=
+  repeat 
+    lazymatch goal with
+    | H : trans_typ ?θ ?Aᵃ (open_typ_wrt_typ _ _)  |- _ => fail
+    | H : trans_typ ?θ ?Aᵃ (?C_T _ _) |- _ => fail
+    | H : trans_typ ?θ ?A1ᵃ ?A1ᵈ |- _ =>
+      let A1ᵃ1 := fresh A1ᵈ"ᵃ" in 
+      rename A1ᵃ into A1ᵃ1;
+      generalize dependent H
+    end.
+
 Ltac rename_typ_rev :=
-  lazymatch goal with
-  | H : trans_typ ?θ ?Aᵃ (open_typ_wrt_typ _ _)  |- _ => fail
-  | H : trans_typ ?θ ?Aᵃ (?C_T _ _) |- _ => fail
-  | _ : trans_typ ?θ ?A1ᵃ ?A1ᵈ, _ : trans_typ ?θ ?A2ᵃ ?A2ᵈ, _ : trans_typ ?θ ?A3ᵃ ?A3ᵈ, _ : trans_typ ?θ ?A4ᵃ ?A4ᵈ |- _ => 
-    let A1ᵃ1 := fresh A1ᵈ"ᵃ0" in 
-    rename A1ᵃ into A1ᵃ1; 
-    let A2ᵃ1 := fresh A2ᵈ"ᵃ0" in
-    rename A2ᵃ into A2ᵃ1;
-    let A3ᵃ1 := fresh A3ᵈ"ᵃ0" in
-    rename A3ᵃ into A3ᵃ1;
-    let A4ᵃ1 := fresh A4ᵈ"ᵃ0" in
-    rename A4ᵃ into A4ᵃ1;
-    let A1ᵃ2 := fresh A1ᵈ"ᵃ" in 
-    rename A1ᵃ1 into A1ᵃ2;
-    let A2ᵃ2 := fresh A2ᵈ"ᵃ" in
-    rename A2ᵃ1 into A2ᵃ2;
-    let A3ᵃ2 := fresh A3ᵈ"ᵃ" in
-    rename A3ᵃ1 into A3ᵃ2;
-    let A4ᵃ2 := fresh A4ᵈ"ᵃ" in
-    rename A4ᵃ1 into A4ᵃ2
-  | _ : trans_typ ?θ ?A1ᵃ ?A1ᵈ, _ : trans_typ ?θ ?A2ᵃ ?A2ᵈ, _ : trans_typ ?θ ?A3ᵃ ?A3ᵈ |- _ => 
-    let A1ᵃ1 := fresh A1ᵈ"ᵃ0" in 
-    rename A1ᵃ into A1ᵃ1;
-    let A2ᵃ1 := fresh A2ᵈ"ᵃ0" in
-    rename A2ᵃ into A2ᵃ1;
-    let A3ᵃ1 := fresh A3ᵈ"ᵃ0" in
-    rename A3ᵃ into A3ᵃ1;
-    let A1ᵃ2 := fresh A1ᵈ"ᵃ" in 
-    rename A1ᵃ1 into A1ᵃ2;
-    let A2ᵃ2 := fresh A2ᵈ"ᵃ" in
-    rename A2ᵃ1 into A2ᵃ2;
-    let A3ᵃ2 := fresh A3ᵈ"ᵃ" in
-    rename A3ᵃ1 into A3ᵃ2
-  | _ : trans_typ ?θ ?A1ᵃ ?A1ᵈ, _ : trans_typ ?θ ?A2ᵃ ?A2ᵈ |- _ => 
-    let A1ᵃ1 := fresh A1ᵈ"ᵃ0" in 
-    rename A1ᵃ into A1ᵃ1;
-    let A2ᵃ1 := fresh A2ᵈ"ᵃ0" in
-    rename A2ᵃ into A2ᵃ1;
-    let A1ᵃ2 := fresh A1ᵈ"ᵃ" in 
-    rename A1ᵃ1 into A1ᵃ2;
-    let A2ᵃ2 := fresh A2ᵈ"ᵃ" in
-    rename A2ᵃ1 into A2ᵃ2
-  | _ : trans_typ ?θ ?A1ᵃ ?A1ᵈ |- _ => 
-    let A1ᵃ1 := fresh A1ᵈ"ᵃ0" in 
-    rename A1ᵃ into A1ᵃ1;
-    let A1ᵃ2 := fresh A1ᵈ"ᵃ" in 
-    rename A1ᵃ1 into A1ᵃ2
-  end. 
+  rename_typ_rev_to_fresh';
+  intros;
+  rename_typ_rev';
+  intros.
 
 Open Scope aworklist_scope.
 
@@ -1043,6 +1021,9 @@ Proof.
 Qed.
 
 
+#[local] Hint Constructors a_mono_typ : core.
+
+
 #[local] Hint Resolve trans_typ_lc_atyp trans_typ_lc_dtyp trans_wl_d_wl_mono_ss : core.
 
 #[local] Hint Immediate trans_wl_ss_binds_tvar_a_wl trans_wl_ss_binds_stvar_a_wl trans_wl_ss_binds_etvar_a_wl : core.
@@ -1186,7 +1167,7 @@ Proof with eauto.
     + apply wf_ss_binds_monotyp in H2 as Hmonob...
       destruct_a_wf_wl.
       assert (a_wf_typ (awl_to_aenv Γ0) (typ_arrow A1ᵃ A2ᵃ)) by auto.
-      assert (X `notin` ftvar_in_typ (typ_arrow A1ᵃ A2ᵃ)) by admit.
+      assert (X `notin` ftvar_in_typ (typ_arrow A1ᵃ A2ᵃ)) by admit.  (* ***, needs to know X notin (A1 -> A2) *)
       simpl in *.
       (* ***, needs to know X notin (A1 -> A2) *)
       apply a_mono_typ_dec in H0 as Hmono... inversion Hmono.
@@ -1228,11 +1209,11 @@ Proof with eauto.
           repeat apply trans_typ_weaken_cons...
         }
         eapply a_worklist_subst_transfer_same_dworklist_rev in H8 as Htransws; eauto.
-        destruct Htransws as [θ' [Htransws [Hbinds Hwfss]]]...
-        
+        destruct Htransws as [θ' [Htransws [Hbinds Hwfss]]]; auto.
+      
         -- simpl. destruct_eq_atom.
            dependent destruction H8... 
-           simpl in *. destruct_eq_atom. repeat rewrite subst_tvar_in_typ_fresh_eq...
+           simpl in *. destruct_eq_atom. repeat rewrite subst_tvar_in_typ_fresh_eq; auto.
            constructor. apply IHd_wl_red; eauto.
            ++ repeat (constructor; simpl; auto).
               ** eapply a_worklist_subst_wf_typ; simpl; eauto. admit. admit. admit.
@@ -1248,18 +1229,81 @@ Proof with eauto.
                  admit. admit.
               ** eapply trans_typ_reorder with (θ:=((X2, dbind_typ B2) :: (X1, dbind_typ B1) :: θ0))...
                  admit. admit. 
-              ** apply Hbinds... 
+              ** apply Hbinds; auto. 
         -- admit.
         -- constructor...
         -- constructor...
     (* ^X < A -> B *)
     + apply wf_ss_binds_monotyp in H1 as Hmonob...
       destruct_a_wf_wl.
-      rename_typ_rev.
-      assert (a_wf_typ (awl_to_aenv Γ0) (typ_arrow B1ᵃ B2ᵃ)) by auto.
+      assert (a_wf_typ (awl_to_aenv Γ0) (typ_arrow A1ᵃ A2ᵃ)) by auto.
+      assert (X `notin` ftvar_in_typ (typ_arrow A1ᵃ A2ᵃ)) by admit.  (* ***, needs to know X notin (A1 -> A2) *)
+      simpl in *.
+      (* ***, needs to know X notin (A1 -> A2) *)
       apply a_mono_typ_dec in H3 as Hmono... inversion Hmono.
-      * admit. (* **, todo *)
-      * admit. (* ***, needs to know X notin (A1 -> A2) *)
+      * destruct_d_wl_wf.
+        destruct_a_wf_wl.
+        apply d_wl_red_sound in H.
+        destruct_mono_arrow.
+        dependent destruction H.
+        dependent destruction H0; simpl in *...
+        rename_typ_rev.
+        assert (d_mono_typ (ss_to_denv θ0) A1) by eauto.
+        assert (d_mono_typ (ss_to_denv θ0) A2) by eauto.
+        apply d_sub_mono_refl in H; eauto using trans_wl_ss_mono_typ_d_wl_mono_typ. subst.
+        apply d_sub_mono_refl in H0; eauto using trans_wl_ss_mono_typ_d_wl_mono_typ. subst.
+        rename_typ_rev.
+        assert (X `notin` ftvar_in_typ (typ_arrow A1 B2)) by (eapply etvar_bind_no_etvar; eauto).
+        simpl in *.
+        eapply a_worklist_subst_transfer_same_dworklist_rev_exist with (T:=typ_arrow A1ᵃ B2ᵃ) (Tᵈ:= typ_arrow A1 B2) 
+              in Htrans_et as Htransws... 
+        ++ destruct Htransws as [Γ1 [Γ2 [θ' [Hsubst [Htransws [Hbinds Hwfss]]]]]].
+           apply a_wl_red__sub_etvarmono2 with (Γ1:=Γ1) (Γ2:=Γ2); eauto.
+           eapply a_wl_red_aworklist_trailing_sub_weaken with 
+            (Γ:=work_sub B2 B2 ⫤ᵃ work_sub A1 A1 ⫤ᵃ (subst_tvar_in_aworklist (typ_arrow A1ᵃ B2ᵃ) X Γ2 ⧺ Γ1)); eauto.
+           admit.
+           apply IHd_wl_red...
+           ** repeat (constructor; simpl; eauto using a_worklist_subst_wf_wl); eapply a_worklist_subst_wf_typ; eauto.
+              admit. admit. admit. admit.
+           ** exists θ'. repeat (constructor; auto); apply trans_typ_refl...
+              admit. admit. admit. admit.
+        ++ destruct_d_wl_wf. repeat (constructor; simpl; auto)... 
+           admit. admit. admit. admit.
+      * inst_cofinites_for a_wl_red__sub_arrow1... 
+        rename_typ_rev.
+        destruct_mono_arrow.
+        intros.
+        assert (nil ⫦ (work_sub ` X (typ_arrow B1ᵃ B2ᵃ) ⫤ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ0) ⇝
+                      (work_sub (typ_arrow A1 A2) (typ_arrow B1 B2)  ⫤ᵈ Ω) ⫣ ((X2, dbind_typ A2) :: (X1, dbind_typ A1) :: θ0)).
+        { repeat (constructor; simpl; auto).
+          repeat apply trans_typ_weaken_cons...
+          repeat apply trans_typ_weaken_cons...
+        }
+        eapply a_worklist_subst_transfer_same_dworklist_rev in H8 as Htransws; eauto.
+        destruct Htransws as [θ' [Htransws [Hbinds Hwfss]]]...
+        
+        -- simpl. destruct_eq_atom.
+           dependent destruction H8... 
+           simpl in *. destruct_eq_atom. repeat rewrite subst_tvar_in_typ_fresh_eq...
+           constructor. apply IHd_wl_red; eauto.
+           ++ repeat (constructor; simpl; auto).
+              ** admit.
+              ** eapply a_worklist_subst_wf_typ; simpl; eauto. admit. admit. admit.
+              ** admit.
+              ** admit.
+              ** admit.
+           ++ exists θ'... 
+              repeat (constructor; simpl; auto).
+              ** dependent destruction Htransws...
+              ** eapply trans_typ_reorder with (θ:=((X2, dbind_typ A2) :: (X1, dbind_typ A1) :: θ0))...
+                 admit. admit.
+              ** apply Hbinds... 
+              ** apply Hbinds... 
+              ** eapply trans_typ_reorder with (θ:=((X2, dbind_typ A2) :: (X1, dbind_typ A1) :: θ0))...
+                 admit. admit. 
+        -- admit.
+        -- constructor...
+        -- constructor; auto.
     (* A1 -> B1 < A2 -> B2 *)
     + destruct_a_wf_wl...
       constructor...

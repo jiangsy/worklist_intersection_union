@@ -526,8 +526,8 @@ Lemma trans_typ_neq_all : forall θ Aᵃ Aᵈ,
 Proof.
   intros. dependent destruction H0; dependent destruction H; eauto.
   + apply wf_ss_binds_monotyp in H0; auto.
-    admit.
-Admitted.
+    eapply d_mono_typ_neq_all. eauto.
+Qed.
 
 
 Lemma trans_typ_neq_all_rev : forall θ Aᵃ Aᵈ,
@@ -542,8 +542,8 @@ Lemma trans_typ_neq_union : forall θ Aᵃ Aᵈ,
 Proof.
   intros. dependent destruction H0; dependent destruction H; eauto.
   + apply wf_ss_binds_monotyp in H0; auto.
-    admit.
-Admitted.
+    eapply d_mono_typ_neq_union. eauto.
+Qed.
 
 
 Lemma trans_typ_neq_union_rev : forall θ Aᵃ Aᵈ,
@@ -557,8 +557,8 @@ Lemma trans_typ_neq_intersection : forall θ Aᵃ Aᵈ,
 Proof.
   intros. dependent destruction H0; dependent destruction H; eauto.
   + apply wf_ss_binds_monotyp in H0; auto.
-    admit.
-Admitted.
+    eapply d_mono_typ_neq_intersection. eauto.
+Qed.
 
 Lemma trans_typ_neq_intersection_rev : forall θ Aᵃ Aᵈ,
   θ ⫦ᵗ Aᵃ ⇝ Aᵈ -> neq_intersection Aᵈ -> neq_intersection Aᵃ.
@@ -1308,24 +1308,6 @@ Proof.
       admit.
 Admitted.
 
-Lemma trans_wl_weaken_etvar : forall Γ Ω X T θ1 θ2 θ',
-  X `notin` ftvar_in_aworklist' Γ `union` dom θ1 `union` dom θ2 ->
-  (θ2 ++ θ1) ⫦ Γ ⇝ Ω ⫣ (θ' ++ θ2 ++ θ1) ->
-  d_mono_typ (ss_to_denv θ1) T ->
-  θ2 ++ (X, dbind_typ T) :: θ1 ⫦ Γ ⇝ Ω ⫣ (θ' ++ θ2 ++ (X, dbind_typ T) :: θ1).
-Proof.
-Admitted.
-
-
-Lemma trans_wl_weaken_etvar_cons : forall Γ Ω X T θ θ',
-  X `notin` ftvar_in_aworklist' Γ `union` dom θ->
-  θ ⫦ Γ ⇝ Ω ⫣ (θ' ++ θ) ->
-  d_mono_typ (ss_to_denv θ) T ->
-  (X, dbind_typ T) :: θ ⫦ Γ ⇝ Ω ⫣ (θ' ++ (X, dbind_typ T) :: θ).
-Proof.
-  intros. rewrite_env (nil ++ (X, dbind_typ T) :: θ).
-  eapply trans_wl_weaken_etvar; eauto.
-Qed.
 
 
 Lemma trans_wl_strengthen_etvar_gen : forall Γ Ω X T θ1 θ2 θ'1 θ'2,
@@ -1679,9 +1661,22 @@ Proof with eauto.
 Qed.
 
 
-Lemma trans_wl_dom_upper_bound : forall θ Γ Ω,  
+Lemma trans_wl_d_wl_dom_upper_bound : forall θ Γ Ω,  
   nil ⫦ Γ ⇝ Ω ⫣ θ ->
   dom (dwl_to_denv Ω) [<=] dom (awl_to_aenv Γ).
+Proof with auto.
+  intros. dependent induction H; simpl...
+  - fsetdec.
+  - rewrite IHtrans_worklist... fsetdec.
+  - rewrite IHtrans_worklist... fsetdec.
+  - rewrite IHtrans_worklist... fsetdec.
+  - rewrite IHtrans_worklist... fsetdec.
+Qed.
+
+
+Lemma trans_wl_ss_dom_upper_bound : forall θ Γ Ω,  
+  nil ⫦ Γ ⇝ Ω ⫣ θ ->
+  dom θ [<=] dom (awl_to_aenv Γ).
 Proof with auto.
   intros. dependent induction H; simpl...
   - fsetdec.
@@ -1699,11 +1694,11 @@ Proof with eauto.
   - econstructor...
     admit.
   - econstructor...
-    rewrite trans_wl_dom_upper_bound...
+    rewrite trans_wl_d_wl_dom_upper_bound...
   - econstructor... 
-    rewrite trans_wl_dom_upper_bound...
+    rewrite trans_wl_d_wl_dom_upper_bound...
   - econstructor... 
-    rewrite trans_wl_dom_upper_bound... 
+    rewrite trans_wl_d_wl_dom_upper_bound... 
     eapply trans_wl_a_wf_typ_d_wf_typ with (Aᵃ:=A1ᵃ)...
 Admitted.
 
@@ -1852,6 +1847,7 @@ Proof with eauto.
     rewrite_env (((X, □) :: θ3) ++ θ2 ++ θ1).
     eapply H0; simpl...
 Qed.
+
 
 Lemma trans_typ_weaken_cons : forall θ X b Aᵃ Aᵈ,
   θ ⫦ᵗ Aᵃ ⇝ Aᵈ ->
@@ -2029,6 +2025,50 @@ Qed.
 #[local] Hint Immediate 
   trans_typ_weaken_cons trans_exp_weaken_cons 
   trans_conts_weaken_cons trans_contd_weaken_cons : core.
+
+
+Lemma trans_wl_weaken_etvar : forall Γ Ω X T θ1 θ2 θ',
+  X `notin` ftvar_in_aworklist' Γ `union` dom θ1 `union` dom θ2 ->
+  (θ2 ++ θ1) ⫦ Γ ⇝ Ω ⫣ (θ' ++ θ2 ++ θ1) ->
+  d_mono_typ (ss_to_denv θ1) T ->
+  θ2 ++ (X, dbind_typ T) :: θ1 ⫦ Γ ⇝ Ω ⫣ (θ' ++ θ2 ++ (X, dbind_typ T) :: θ1).
+Proof with eauto.
+  intros. dependent induction H0...
+  - assert (θ'=nil) by admit. subst.
+    constructor... simpl. eapply wf_ss_weaken_etvar...
+  - simpl in *. constructor... 
+    admit.
+  - apply trans_wl_split_ss in H0. 
+    destruct H0 as [θ'']. subst. 
+    assert (θ' = (X0, □)::θ'') by admit. subst.
+    simpl in *. 
+    constructor...
+  - apply trans_wl_split_ss in H0. 
+    destruct H0 as [θ'']. subst. 
+    assert (θ' = (X0, ■)::θ'') by admit. subst.
+    simpl in *. 
+    constructor...
+  - simpl in *. constructor...
+    admit.
+  - apply trans_wl_split_ss in H0.  
+    destruct H0 as [θ'']. subst. 
+    assert (θ' =  (X0, dbind_typ T0)::θ'') by admit. subst.
+    simpl in *.
+    constructor...
+    admit.
+Admitted.
+
+
+Lemma trans_wl_weaken_etvar_cons : forall Γ Ω X T θ θ',
+  X `notin` ftvar_in_aworklist' Γ `union` dom θ->
+  θ ⫦ Γ ⇝ Ω ⫣ (θ' ++ θ) ->
+  d_mono_typ (ss_to_denv θ) T ->
+  (X, dbind_typ T) :: θ ⫦ Γ ⇝ Ω ⫣ (θ' ++ (X, dbind_typ T) :: θ).
+Proof.
+  intros. rewrite_env (nil ++ (X, dbind_typ T) :: θ).
+  eapply trans_wl_weaken_etvar; eauto.
+Qed.
+
 
 Lemma trans_wl_a_wl_binds_var_binds_d_wl_and_trans : forall θ Γ Ω x Aᵃ,
   ⊢ᵃʷ Γ ->
