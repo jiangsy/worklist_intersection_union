@@ -97,6 +97,34 @@ Proof with eauto using a_wf_typ_weaken, a_wf_exp_weaken, a_wf_conts_weaken, a_wf
 Qed.
 
 
+Lemma a_mono_typ_strengthen_cons : forall Σ X b T,
+  a_mono_typ ((X, b) :: Σ) T ->
+  X `notin` ftvar_in_typ T ->
+  a_mono_typ Σ T.
+Proof.
+  intros. dependent induction H; eauto.
+  - destruct b; simpl in *. 
+    + inversion H. dependent destruction H1. solve_notin_eq X0.
+      constructor; auto.
+    + inversion H. dependent destruction H1.
+      constructor; auto.
+    + inversion H. dependent destruction H1.
+      constructor; auto.
+    + inversion H. dependent destruction H1.
+      constructor; auto.
+  - destruct b; simpl in *. 
+    + inversion H. dependent destruction H1. 
+      apply a_mono_typ__etvar; auto.
+    + inversion H. dependent destruction H1.
+      apply a_mono_typ__etvar; auto.
+    + inversion H. dependent destruction H1.
+      solve_notin_eq X0.
+      apply a_mono_typ__etvar; auto.
+    + inversion H. dependent destruction H1.
+      apply a_mono_typ__etvar; auto.
+  - simpl in *; eauto.
+Qed.
+
 Lemma a_wf_exp_var_binds_another : forall Σ1 x Σ2 e A1 A2,
   a_wf_exp (Σ2 ++ x ~ abind_var_typ A1 ++ Σ1) e ->
   a_wf_typ Σ1 A2 ->
