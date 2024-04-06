@@ -736,6 +736,26 @@ Proof with (autorewrite with core in *); simpl; eauto; solve_false; try solve_no
 Qed.
 
 
+Lemma a_worklist_subst_mono_typ : forall Γ X A T Γ1 Γ2,
+  binds X abind_etvar_empty (awl_to_aenv Γ) ->
+  X `notin` ftvar_in_typ T ->
+  a_mono_typ (awl_to_aenv Γ) T ->
+  ⊢ᵃʷ Γ ->
+  aworklist_subst Γ X A Γ1 Γ2 ->
+  a_mono_typ (awl_to_aenv (awl_app (subst_tvar_in_aworklist A X Γ2) Γ1)) T.
+Proof with (autorewrite with core in *); simpl; eauto; solve_false; try solve_notin.
+  intros * Hbinds Hnotin Hmono Hwf Hsubst.
+  generalize dependent Γ1. generalize dependent Γ2. dependent induction Hmono; auto; intros.
+  - case_eq (X==X0); intros. { subst. simpl in Hnotin. solve_notin. }
+    apply a_mono_typ__tvar.
+    eapply a_worklist_subst_binds_same_atvar; eauto.
+  - case_eq (X==X0); intros. { subst. simpl in Hnotin. solve_notin. }
+    apply a_mono_typ__etvar.
+    eapply a_worklist_subst_binds_same_atvar; eauto.
+  - simpl in *. constructor; eauto.
+Qed.
+
+
 Lemma a_worklist_subst_wf_wl : forall Γ X A Γ1 Γ2,
   ⊢ᵃʷ Γ ->
   binds X abind_etvar_empty (awl_to_aenv Γ) ->

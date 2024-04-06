@@ -764,20 +764,36 @@ Qed.
 Lemma trans_typ_subst : forall θ1 θ2 Aᵃ Aᵈ Bᵃ Bᵈ X b,
   b = dbind_tvar_empty \/ b = dbind_stvar_empty ->
   θ2 ++ (X , b) :: θ1 ⫦ᵗ Aᵃ ⇝ Aᵈ ->
+  (forall Y T, binds Y (dbind_typ T) (θ2 ++ θ1) -> X `notin` ftvar_in_typ T) ->
   wf_ss (θ2 ++ θ1) ->
   θ2 ++ θ1 ⫦ᵗ Bᵃ ⇝ Bᵈ ->
   θ2 ++ θ1 ⫦ᵗ {Bᵃ /ᵗ X} Aᵃ ⇝ {Bᵈ /ᵗ X} Aᵈ.
-Proof.
+Proof with eauto.
   intros. generalize dependent Bᵃ. generalize dependent Bᵈ. 
   dependent induction H0; intros; simpl; destruct_eq_atom; eauto.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
+  - constructor... 
+    apply binds_remove_mid in H0...
+  - apply trans_typ__stvar...
+    apply binds_remove_mid in H0...
+  - assert (binds X b ((θ2 ++ (X, b) :: θ1))) by auto.
+    apply wf_ss_uniq in H1 as Huniq.
+    pose proof (binds_unique _ _ _ _ _  H0 H5 Huniq); inversion H; subst.
+    inversion H7.
+    inversion H7.
+  - constructor...
+    apply binds_remove_mid in H0...
+    apply H2 in H0 as Hfr...
+    rewrite subst_tvar_in_typ_fresh_eq...
   - inst_cofinites_for trans_typ__all. intros.
     inst_cofinites_with X0.
-    admit.
-Admitted.
+    rewrite subst_tvar_in_typ_open_typ_wrt_typ_fresh2...
+    rewrite subst_tvar_in_typ_open_typ_wrt_typ_fresh2...
+    rewrite_env (((X0, □) :: θ2) ++ θ1).
+    eapply H0; eauto...
+    + intros. destruct_binds...
+    + constructor...
+    + simpl... apply trans_typ_weaken_cons...
+Qed.
 
 
 (* maybe only b=tvar is used *)
@@ -979,6 +995,10 @@ Lemma trans_typ_subst_tvar_cons : forall θ Aᵃ Aᵈ Bᵃ Bᵈ X,
 Proof.
   intros. rewrite_env (nil ++ θ). 
   eapply trans_typ_subst with (b:=dbind_tvar_empty); eauto.
+  intros.
+  apply trans_typ_wf_ss in H.
+  dependent destruction H.
+  rewrite wf_ss_ftvar_in_typ_upper with (θ:=θ); eauto.
 Qed.
 
 #[local] Hint Resolve d_wf_wl_wf_env trans_wl_ss_binds_etvar_a_wl : core.
@@ -1067,6 +1087,16 @@ Proof.
 Qed.
 
 
+Lemma trans_typ_weaken_cons2 : forall θ X1 X2 b1 b2 Aᵃ Aᵈ,
+  θ ⫦ᵗ Aᵃ ⇝ Aᵈ ->
+  wf_ss ((X2, b2) :: (X1, b1) :: θ) ->
+  (X2, b2) :: (X1, b1) :: θ ⫦ᵗ Aᵃ ⇝ Aᵈ.
+Proof.
+  intros. apply trans_typ_weaken_cons; auto. 
+  dependent destruction H0; apply trans_typ_weaken_cons; auto.
+Qed.
+
+
 #[local] Hint Constructors a_mono_typ : core.
 
 
@@ -1077,6 +1107,8 @@ Qed.
 #[local] Hint Resolve trans_wl_d_wf_typ_a_wf_typ trans_typ_refl trans_wl_a_wf_wl_d_wf_wl : core.
 
 #[local] Hint Immediate trans_typ_a_mono_typ_d_mono_typ trans_wl_a_mono_typ_d_mono_typ : core.
+
+#[local] Hint Resolve trans_typ_weaken_cons2 : core.
 
 Theorem a_wl_red_completeness: forall Ω Γ,
    Ω ⟶ᵈʷ⁎⋅ -> ⊢ᵃʷ Γ -> transfer Γ Ω  -> Γ ⟶ᵃʷ⁎⋅.
@@ -1197,15 +1229,17 @@ Proof with eauto.
               ** eapply d_mono_typ_reorder with (θ:=θ0)... 
                  intros. apply Hbinds; auto.
                  apply wf_ss_typ_no_etvar with (A:=typ_arrow A1 B2) in H5...
-                 unfold not. intros. subst. contradiction.
+                 solve_false.
               ** eapply d_mono_typ_reorder with (θ:=θ0)... 
                  intros. apply Hbinds; auto.
                  apply wf_ss_typ_no_etvar with (A:=typ_arrow A1 B2) in H5...
-                 unfold not. intros. subst. contradiction.
+                 solve_false.
            ++ apply IHd_wl_red; auto...
-              ** repeat (constructor; simpl; auto); try 
+              ** assert (Hnotin: X `notin` ftvar_in_typ (typ_arrow A1 B2)).
+                 { apply wf_ss_typ_no_etvar with (A:=typ_arrow A1 B2) in H5... }
+                 simpl in Hnotin.
+                 repeat (constructor; simpl; auto); try 
                  eapply a_worklist_subst_wf_typ; eauto.
-                 admit. admit. admit. admit. (* *, X notin A1, B2 *)
                  eapply a_worklist_subst_wf_wl...
               ** exists θ'. repeat (constructor; auto); apply trans_typ_refl; auto;
                  eapply trans_wl_d_wf_typ_ss_wf_typ; eauto.
@@ -1237,11 +1271,16 @@ Proof with eauto.
            apply a_wl_red__sub_etvarmono1 with (Γ1:=Γ1) (Γ2:=Γ2); eauto.
            eapply a_wl_red_aworklist_trailing_sub_weaken with 
             (Γ:=work_sub B2 B2 ⫤ᵃ work_sub A1 A1 ⫤ᵃ (subst_tvar_in_aworklist (typ_arrow A1ᵃ B2ᵃ) X Γ2 ⧺ Γ1)); eauto.
-           admit.
-           apply IHd_wl_red...
-           ** repeat (constructor; simpl; eauto using a_worklist_subst_wf_wl); eapply a_worklist_subst_wf_typ; eauto.
-              admit. admit. admit. admit.
-           ** exists θ'. repeat (constructor; auto); apply trans_typ_refl...
+           ** eapply trans_wl_d_mono_typ_a_mono_typ_no_etvar in H6; eauto.
+              eapply trans_wl_d_mono_typ_a_mono_typ_no_etvar in H7; eauto. intuition.
+              constructor; simpl in *...
+              constructor...
+              admit. admit. admit. admit. admit. admit. admit. admit.
+           ** apply IHd_wl_red...
+              --- eapply trans_wl_d_mono_typ_a_mono_typ_no_etvar in H6; eauto.
+              eapply trans_wl_d_mono_typ_a_mono_typ_no_etvar in H7; eauto. intuition.
+              repeat (constructor; simpl; eauto using a_worklist_subst_wf_wl); eapply a_worklist_subst_wf_typ; eauto.
+              --- exists θ'. repeat (constructor; auto); apply trans_typ_refl...
               admit. admit. admit. admit.
         ++ destruct_d_wl_wf. repeat (constructor; simpl; auto)... 
            admit. admit. admit. admit.
@@ -1251,32 +1290,33 @@ Proof with eauto.
         assert (nil ⫦ (work_sub (typ_arrow A1ᵃ A2ᵃ) ` X ⫤ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ0) ⇝
                       (work_sub (typ_arrow A1 A2) (typ_arrow B1 B2) ⫤ᵈ Ω) ⫣ ((X2, dbind_typ B2) :: (X1, dbind_typ B1) :: θ0)).
         { repeat (constructor; simpl; auto).
-          repeat apply trans_typ_weaken_cons...
-          repeat apply trans_typ_weaken_cons...
         }
         eapply a_worklist_subst_transfer_same_dworklist_rev in H8 as Htransws; eauto.
         destruct Htransws as [θ' [Htransws [Hbinds Hwfss]]]; auto.
-      
         -- simpl. destruct_eq_atom.
            dependent destruction H8... 
            simpl in *. destruct_eq_atom. repeat rewrite subst_tvar_in_typ_fresh_eq; auto.
            constructor. apply IHd_wl_red; eauto.
-           ++ repeat (constructor; simpl; auto).
-              ** eapply a_worklist_subst_wf_typ; simpl; eauto. admit. admit. admit.
-              ** admit.
-              ** admit.
-              ** admit.
-              ** admit.
+           ++ assert (binds X2 abind_etvar_empty (awl_to_aenv (subst_tvar_in_aworklist (typ_arrow ` X1 ` X2) X Γ3 ⧺ Γ2))) 
+                by (eapply a_worklist_subst_binds_same_atvar with (Γ:=(X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ0)); simpl; eauto).
+              assert (binds X1 abind_etvar_empty (awl_to_aenv (subst_tvar_in_aworklist (typ_arrow ` X1 ` X2) X Γ3 ⧺ Γ2))) 
+                by (eapply a_worklist_subst_binds_same_atvar with (Γ:=(X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ0)); simpl; eauto).
+              repeat (constructor; simpl; eauto).
+              ** eapply a_worklist_subst_wf_typ with (Γ:=(X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ0)); simpl; eauto.
+                 apply a_wf_typ_weaken_cons...  apply a_wf_typ_weaken_cons...
+              ** eapply a_worklist_subst_wf_typ with (Γ:=(X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ0)); simpl; eauto.
+                 apply a_wf_typ_weaken_cons...  apply a_wf_typ_weaken_cons...
+              ** eapply a_worklist_subst_wf_wl with (Γ:=(X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ0)); simpl; eauto. 
            ++ exists θ'... 
               repeat (constructor; simpl; auto).
               ** dependent destruction Htransws...
               ** apply Hbinds... 
               ** eapply trans_typ_reorder with (θ:=((X2, dbind_typ B2) :: (X1, dbind_typ B1) :: θ0))...
-                 admit. admit.
+                 intros. apply Hbinds; auto. apply notin_union_1 in H4. solve_false.
               ** eapply trans_typ_reorder with (θ:=((X2, dbind_typ B2) :: (X1, dbind_typ B1) :: θ0))...
-                 admit. admit. 
+                 intros. apply Hbinds; auto. apply notin_union_2 in H4. solve_false.
               ** apply Hbinds; auto. 
-        -- admit.
+        -- repeat (constructor; simpl; eauto); apply a_wf_typ_weaken_cons; eauto; apply a_wf_typ_weaken_cons; eauto. 
         -- constructor...
         -- constructor...
     (* ^X < A -> B *)
@@ -1307,49 +1347,53 @@ Proof with eauto.
            apply a_wl_red__sub_etvarmono2 with (Γ1:=Γ1) (Γ2:=Γ2); eauto.
            eapply a_wl_red_aworklist_trailing_sub_weaken with 
             (Γ:=work_sub B2 B2 ⫤ᵃ work_sub A1 A1 ⫤ᵃ (subst_tvar_in_aworklist (typ_arrow A1ᵃ B2ᵃ) X Γ2 ⧺ Γ1)); eauto.
-           admit.
-           apply IHd_wl_red...
-           ** repeat (constructor; simpl; eauto using a_worklist_subst_wf_wl); eapply a_worklist_subst_wf_typ; eauto.
-              admit. admit. admit. admit.
-           ** exists θ'. repeat (constructor; auto); apply trans_typ_refl...
-              admit. admit. admit. admit.
+           ** eapply trans_wl_d_mono_typ_a_mono_typ_no_etvar in H6; eauto.
+              eapply trans_wl_d_mono_typ_a_mono_typ_no_etvar in H7; eauto. intuition.
+              constructor; simpl in *...
+              constructor...
+              admit. admit. admit. admit. admit. admit. admit. admit.
+           ** apply IHd_wl_red...
+              --- repeat (constructor; simpl; eauto using a_worklist_subst_wf_wl); eapply a_worklist_subst_wf_typ; eauto.
+                  admit. admit. admit. admit.
+              --- exists θ'. repeat (constructor; auto); apply trans_typ_refl...
+                  admit. admit. admit. admit.
         ++ destruct_d_wl_wf. repeat (constructor; simpl; auto)... 
            admit. admit. admit. admit.
       * inst_cofinites_for a_wl_red__sub_arrow1... 
-        rename_typ_rev.
         destruct_mono_arrow.
         intros.
-        assert (nil ⫦ (work_sub ` X (typ_arrow B1ᵃ B2ᵃ) ⫤ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ0) ⇝
-                      (work_sub (typ_arrow A1 A2) (typ_arrow B1 B2)  ⫤ᵈ Ω) ⫣ ((X2, dbind_typ A2) :: (X1, dbind_typ A1) :: θ0)).
-        { repeat (constructor; simpl; auto).
-          repeat apply trans_typ_weaken_cons...
-          repeat apply trans_typ_weaken_cons...
-        }
+        rename_typ_rev.
+        assert (nil ⫦ (work_sub ` X (typ_arrow B1ᵃ B2ᵃ)  ⫤ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ0) ⇝
+                      (work_sub (typ_arrow A1 A2) (typ_arrow B1 B2)  ⫤ᵈ Ω) 
+                    ⫣ ((X2, dbind_typ A2) :: (X1, dbind_typ A1) :: θ0)) by repeat (constructor; simpl; auto).
         eapply a_worklist_subst_transfer_same_dworklist_rev in H8 as Htransws; eauto.
-        destruct Htransws as [θ' [Htransws [Hbinds Hwfss]]]...
-        
+        destruct Htransws as [θ' [Htransws [Hbinds Hwfss]]]; auto.
         -- simpl. destruct_eq_atom.
            dependent destruction H8... 
-           simpl in *. destruct_eq_atom. repeat rewrite subst_tvar_in_typ_fresh_eq...
+           simpl in *. destruct_eq_atom. repeat rewrite subst_tvar_in_typ_fresh_eq; auto.
            constructor. apply IHd_wl_red; eauto.
-           ++ repeat (constructor; simpl; auto).
-              ** admit.
-              ** eapply a_worklist_subst_wf_typ; simpl; eauto. admit. admit. admit.
-              ** admit.
-              ** admit.
-              ** admit.
+           ++ assert (binds X2 abind_etvar_empty (awl_to_aenv (subst_tvar_in_aworklist (typ_arrow ` X1 ` X2) X Γ3 ⧺ Γ2))) 
+                by (eapply a_worklist_subst_binds_same_atvar with (Γ:=(X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ0)); simpl; eauto).
+              assert (binds X1 abind_etvar_empty (awl_to_aenv (subst_tvar_in_aworklist (typ_arrow ` X1 ` X2) X Γ3 ⧺ Γ2))) 
+                by (eapply a_worklist_subst_binds_same_atvar with (Γ:=(X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ0)); simpl; eauto).
+              repeat (constructor; simpl; eauto).
+              ** eapply a_worklist_subst_wf_typ with (Γ:=(X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ0)); simpl; eauto.
+                 apply a_wf_typ_weaken_cons...  apply a_wf_typ_weaken_cons...
+              ** eapply a_worklist_subst_wf_typ with (Γ:=(X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ0)); simpl; eauto.
+                 apply a_wf_typ_weaken_cons...  apply a_wf_typ_weaken_cons...
+              ** eapply a_worklist_subst_wf_wl with (Γ:=(X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ0)); simpl; eauto. 
            ++ exists θ'... 
               repeat (constructor; simpl; auto).
               ** dependent destruction Htransws...
               ** eapply trans_typ_reorder with (θ:=((X2, dbind_typ A2) :: (X1, dbind_typ A1) :: θ0))...
-                 admit. admit.
+                 intros. apply Hbinds; auto. apply notin_union_1 in H4. solve_false.
               ** apply Hbinds... 
-              ** apply Hbinds... 
+              ** apply Hbinds; auto.
               ** eapply trans_typ_reorder with (θ:=((X2, dbind_typ A2) :: (X1, dbind_typ A1) :: θ0))...
-                 admit. admit. 
-        -- admit.
+                 intros. apply Hbinds; auto. apply notin_union_2 in H4. solve_false.
+        -- repeat (constructor; simpl; eauto); apply a_wf_typ_weaken_cons; eauto; apply a_wf_typ_weaken_cons; eauto. 
         -- constructor...
-        -- constructor; auto.
+        -- constructor...
     (* A1 -> B1 < A2 -> B2 *)
     + destruct_a_wf_wl...
       constructor...
