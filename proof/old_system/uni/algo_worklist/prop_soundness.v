@@ -23,55 +23,34 @@ Hint Constructors a_wf_wl : core.
 
 Open Scope aworklist_scope.
 
+
+Ltac rename_typ_to_fresh' :=
+  repeat 
+    lazymatch goal with
+    | H : trans_typ ?θ (open_typ_wrt_typ _ _) ?Aᵈ |- _ => fail
+    | H : trans_typ ?θ (?C_T _ _) ?Aᵈ |- _ => fail
+    | H : trans_typ ?θ ?A1ᵃ ?A1ᵈ |- _ => 
+      let A1ᵃ1 := fresh A1ᵃ"ᵈ0" in 
+      rename A1ᵈ into A1ᵃ1;
+      generalize dependent H
+    end.
+    
+Ltac rename_typ' :=
+  repeat 
+    lazymatch goal with
+    | H : trans_typ ?θ (open_typ_wrt_typ _ _) ?Aᵈ |- _ => fail
+    | H : trans_typ ?θ (?C_T _ _) ?Aᵈ |- _ => fail
+    | H : trans_typ ?θ ?A1ᵃ ?A1ᵈ |- _ => 
+      let A1ᵃ1 := fresh A1ᵃ"ᵈ" in 
+      rename A1ᵈ into A1ᵃ1;
+      generalize dependent H
+    end.
+
 Ltac rename_typ :=
-  lazymatch goal with
-  | H : trans_typ ?θ (open_typ_wrt_typ _ _) ?Aᵈ |- _ => fail
-  | H : trans_typ ?θ (?C_T _ _) ?Aᵈ |- _ => fail
-  | _ : trans_typ ?θ ?A1ᵃ ?A1ᵈ, _ : trans_typ ?θ ?A2ᵃ ?A2ᵈ, _ : trans_typ ?θ ?A3ᵃ ?A3ᵈ, _ : trans_typ ?θ ?A4ᵃ ?A4ᵈ |- _ => 
-    let A1ᵃ1 := fresh A1ᵃ"ᵈ0" in 
-    rename A1ᵈ into A1ᵃ1;
-    let A2ᵃ1 := fresh A2ᵃ"ᵈ0" in
-    rename A2ᵈ into A2ᵃ1;
-    let A3ᵃ1 := fresh A3ᵃ"ᵈ0" in
-    rename A3ᵈ into A3ᵃ1;
-    let A4ᵃ1 := fresh A4ᵃ"ᵈ0" in
-    rename A4ᵈ into A4ᵃ1;
-    let A1ᵃ2 := fresh A1ᵃ"ᵈ" in 
-    rename A1ᵃ1 into A1ᵃ2;
-    let A2ᵃ2 := fresh A2ᵃ"ᵈ" in
-    rename A2ᵃ1 into A2ᵃ2;
-    let A3ᵃ2 := fresh A3ᵃ"ᵈ" in
-    rename A3ᵃ1 into A3ᵃ2;
-    let A4ᵃ2 := fresh A4ᵃ"ᵈ" in
-    rename A4ᵃ1 into A4ᵃ2
-  | _ : trans_typ ?θ ?A1ᵃ ?A1ᵈ, _ : trans_typ ?θ ?A2ᵃ ?A2ᵈ, _ : trans_typ ?θ ?A3ᵃ ?A3ᵈ |- _ => 
-    let A1ᵃ1 := fresh A1ᵃ"ᵈ0" in 
-    rename A1ᵈ into A1ᵃ1;
-    let A2ᵃ1 := fresh A2ᵃ"ᵈ0" in
-    rename A2ᵈ into A2ᵃ1;
-    let A3ᵃ1 := fresh A3ᵃ"ᵈ0" in
-    rename A3ᵈ into A3ᵃ1;
-    let A1ᵃ2 := fresh A1ᵃ"ᵈ" in 
-    rename A1ᵃ1 into A1ᵃ2;
-    let A2ᵃ2 := fresh A2ᵃ"ᵈ" in
-    rename A2ᵃ1 into A2ᵃ2;
-    let A3ᵃ2 := fresh A3ᵃ"ᵈ" in
-    rename A3ᵃ1 into A3ᵃ2
-  | _ : trans_typ ?θ ?A1ᵃ ?A1ᵈ, _ : trans_typ ?θ ?A2ᵃ ?A2ᵈ |- _ => 
-    let A1ᵃ1 := fresh A1ᵃ"ᵈ0" in 
-    rename A1ᵈ into A1ᵃ1;
-    let A2ᵃ1 := fresh A2ᵃ"ᵈ0" in
-    rename A2ᵈ into A2ᵃ1;
-    let A1ᵃ2 := fresh A1ᵃ"ᵈ" in 
-    rename A1ᵃ1 into A1ᵃ2;
-    let A2ᵃ2 := fresh A2ᵃ"ᵈ" in
-    rename A2ᵃ1 into A2ᵃ2
-  | _ : trans_typ ?θ ?A1ᵃ ?A1ᵈ |- _ => 
-    let A1ᵃ1 := fresh A1ᵃ"ᵈ0" in 
-    rename A1ᵈ into A1ᵃ1;
-    let A1ᵃ2 := fresh A1ᵃ"ᵈ" in 
-    rename A1ᵃ1 into A1ᵃ2
-  end. 
+  rename_typ_to_fresh';
+  intros;
+  rename_typ';
+  intros.
 
 (* dependent destruction all non-atomic trans_* relation *)
 Ltac destruct_trans :=
