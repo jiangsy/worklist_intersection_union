@@ -828,6 +828,25 @@ Proof.
   intros. unfold open_typ_wrt_typ. eapply d_more_num_arr_open_typ_rec.
 Qed.
 
+Lemma d_same_num_arr_open_typ_rec_tvar : forall A X n,
+  num_arrow_in_typ (open_typ_wrt_typ_rec n `X A) = num_arrow_in_typ A.
+Proof.
+  intros. generalize dependent n. induction A; simpl; intros; try lia.
+  - destruct (lt_eq_lt_dec n n0).
+    + destruct s; auto.
+    + auto.
+  - specialize (IHA1 n). specialize (IHA2 n). lia.
+  - specialize (IHA (S n)). lia.
+  - specialize (IHA1 n). specialize (IHA2 n). lia.
+  - specialize (IHA1 n). specialize (IHA2 n). lia.
+Qed.
+
+Lemma d_same_num_arr_open_typ_tvar : forall A X,
+  num_arrow_in_typ (open_typ_wrt_typ A `X) = num_arrow_in_typ A.
+Proof.
+  intros. unfold open_typ_wrt_typ. eapply d_same_num_arr_open_typ_rec_tvar.
+Qed.
+
 
 Lemma d_sub_more_num_arrow_in_mono_typ : forall Ψ A B,
   Ψ ⊢ A <: B ->
@@ -843,6 +862,47 @@ Proof.
     apply H6 in Hmono.
     specialize (d_more_num_arr_open_typ A T). lia.
 Qed.  
+
+
+
+Lemma trans_typ_etvar_s_in_more_num_arrow' : forall θ Aᵃ Aᵈ X T,
+  wf_ss θ ->
+  binds X (dbind_typ T) θ ->
+  θ ⫦ᵗ Aᵃ ⇝ Aᵈ ->
+  s_in X Aᵃ ->
+  (num_arrow_in_typ Aᵈ) >= (num_arrow_in_typ T).
+Proof.
+  intros * Hwf Hbinds Htrans Hsin. dependent induction Htrans; simpl in *; dependent destruction Hsin; try lia.
+  - apply wf_ss_etvar_tvar_false in Hbinds; auto. contradiction.
+  - apply wf_ss_etvar_stvar_false in Hbinds; auto. contradiction.
+  - assert (uniq θ) by auto.
+    pose proof (binds_unique _ _ _ _ _ Hbinds H0 H1); eauto. 
+    dependent destruction H2. auto.
+  - apply IHHtrans1 in Hsin; auto. lia.
+  - apply IHHtrans2 in Hsin; auto. lia.
+  - inst_cofinites_by (L `union` L0) using_name X.
+    rewrite <- d_same_num_arr_open_typ_tvar with (X:=X0).
+    apply H0; eauto.
+  - apply IHHtrans1 in Hsin1; auto. 
+    apply IHHtrans2 in Hsin2; auto.
+    lia.
+  - apply IHHtrans1 in Hsin1; auto. 
+    apply IHHtrans2 in Hsin2; auto.
+    lia.
+Qed.
+
+
+Lemma trans_typ_etvar_s_in_more_num_arrow : forall θ A1ᵃ A2ᵃ A1ᵈ A2ᵈ X T,
+  binds X (dbind_typ T) θ ->
+  θ ⫦ᵗ (typ_arrow A1ᵃ A2ᵃ) ⇝ (typ_arrow A1ᵈ A2ᵈ) ->
+  s_in X (typ_arrow A1ᵃ A2ᵃ) ->
+  (num_arrow_in_typ (typ_arrow A1ᵈ A2ᵈ)) > (num_arrow_in_typ T).
+Proof.
+  intros. dependent destruction H0.
+  dependent destruction H1.
+  - eapply trans_typ_etvar_s_in_more_num_arrow' in H0_; eauto. simpl. lia.
+  - eapply trans_typ_etvar_s_in_more_num_arrow' in H0_0; eauto. simpl. lia.
+Qed.
 
 
 Lemma trans_typ_tvar_etvar : forall θ1 θ2 Aᵃ Aᵈ Tᵃ Tᵈ X,
