@@ -110,7 +110,12 @@ Proof.
     induction* HE.
     gen Σ1 A1 A2.
     induction Σ2; intros; cbn in *.
-    + inverts* HE.
+    + admit.
+    + admit.
+    + admit.
+    + admit.
+    + admit.
+    + admit.
   - introv HB HT. clear a_wf_body_var_binds_another.
 Admitted.
 

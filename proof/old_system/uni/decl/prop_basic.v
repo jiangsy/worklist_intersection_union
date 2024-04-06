@@ -425,6 +425,17 @@ Proof.
   intros; induction H; eauto...
 Qed.
 
+Lemma d_mono_typ_neq_union : forall Ψ A,
+  d_mono_typ Ψ A -> neq_union A.
+Proof.
+  intros; induction H; eauto...
+Qed.
+
+Lemma d_mono_typ_neq_intersection : forall Ψ A,
+  d_mono_typ Ψ A -> neq_intersection A.
+Proof.
+  intros; induction H; eauto...
+Qed.
 
 Lemma d_neq_all_subst_neq_all : forall Ψ A X T,
   lc_typ A ->

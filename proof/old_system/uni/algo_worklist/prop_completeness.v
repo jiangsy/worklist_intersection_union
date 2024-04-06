@@ -1021,6 +1021,9 @@ Proof.
 Qed.
 
 
+#[local] Hint Constructors a_mono_typ : core.
+
+
 #[local] Hint Resolve trans_typ_lc_atyp trans_typ_lc_dtyp trans_wl_d_wl_mono_ss : core.
 
 #[local] Hint Immediate trans_wl_ss_binds_tvar_a_wl trans_wl_ss_binds_stvar_a_wl trans_wl_ss_binds_etvar_a_wl : core.
@@ -1206,11 +1209,11 @@ Proof with eauto.
           repeat apply trans_typ_weaken_cons...
         }
         eapply a_worklist_subst_transfer_same_dworklist_rev in H8 as Htransws; eauto.
-        destruct Htransws as [θ' [Htransws [Hbinds Hwfss]]]...
-        
+        destruct Htransws as [θ' [Htransws [Hbinds Hwfss]]]; auto.
+      
         -- simpl. destruct_eq_atom.
            dependent destruction H8... 
-           simpl in *. destruct_eq_atom. repeat rewrite subst_tvar_in_typ_fresh_eq...
+           simpl in *. destruct_eq_atom. repeat rewrite subst_tvar_in_typ_fresh_eq; auto.
            constructor. apply IHd_wl_red; eauto.
            ++ repeat (constructor; simpl; auto).
               ** eapply a_worklist_subst_wf_typ; simpl; eauto. admit. admit. admit.
@@ -1226,7 +1229,7 @@ Proof with eauto.
                  admit. admit.
               ** eapply trans_typ_reorder with (θ:=((X2, dbind_typ B2) :: (X1, dbind_typ B1) :: θ0))...
                  admit. admit. 
-              ** apply Hbinds... 
+              ** apply Hbinds; auto. 
         -- admit.
         -- constructor...
         -- constructor...
@@ -1300,7 +1303,7 @@ Proof with eauto.
                  admit. admit. 
         -- admit.
         -- constructor...
-        -- constructor...
+        -- constructor; auto.
     (* A1 -> B1 < A2 -> B2 *)
     + destruct_a_wf_wl...
       constructor...
