@@ -249,11 +249,24 @@ Proof with eauto with typing.
     constructor.
     eapply d_sub__all with (L:=L `union` L0 `union` L1 `union` dom (dwl_to_denv Ω)); intros; auto.
     inst_cofinites_with X.
-    assert ( d_wf_wl  (dworklist_conswork (dworklist_consvar Ω X dbind_stvar_empty) (work_sub (A ^ᵗ X) (B ^ᵗ X)) ) ).
+    assert ( ⊢ᵈʷ (work_sub (A ^ᵗ X) (B ^ᵗ X) ⫤ᵈ X ~ᵈ ■ ;ᵈ Ω) ). {
+      repeat constructor; eauto; simpl in *.
+      admit. admit.
+    }
     admit.
     admit.
-    admit.
-  - admit.
+  - destruct_d_wl_wf.
+    dependent destruction H.
+    assert (Hwf: ⊢ᵈʷ (work_sub (A ^^ᵗ T) B ⫤ᵈ Ω)). {
+      repeat (constructor; auto).
+      apply d_wft_all_open; auto.
+      apply d_mono_typ_d_wf_typ...
+      admit.
+      admit.
+    }
+    apply IHd_wl_red in Hwf.
+    destruct_d_wl_del_red. 
+    econstructor...
   - admit.
   - destruct_d_wl_wf. econstructor.
     apply d_chk_inf__chk_abstop with (L:=L `union` L0 `union` dom (dwl_to_denv Ω)).

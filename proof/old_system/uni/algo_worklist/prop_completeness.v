@@ -972,20 +972,6 @@ Proof.
     + right. unfold not. intros. dependent destruction H2. contradiction.
 Qed.
 
-
-(* build a arrow type A' out of A from subtyping relation 
-  the A' must contain fewer arrows than T
-  but if A contains ^a, this path shall not exist
-
-  forall a. a < Int -> Int .. the path is forall a. a
-  forall a. a /\ a < Int -> Int .. the path is still forall a. a?
-
-
-  a nondeterministic measure?
-*)
-
-
-
 Lemma trans_typ_subst_tvar_cons : forall θ Aᵃ Aᵈ Bᵃ Bᵈ X,
   (X , dbind_tvar_empty) :: θ ⫦ᵗ Aᵃ ⇝ Aᵈ ->
   θ ⫦ᵗ Bᵃ ⇝ Bᵈ ->

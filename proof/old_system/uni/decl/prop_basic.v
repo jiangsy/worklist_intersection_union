@@ -57,11 +57,11 @@ Proof.
 Qed.
 
 
-Lemma d_wf_typ_subst_stvar_tvar : forall Ψ1 Ψ2 X T,
-  Ψ2 ++ [(X, dbind_stvar_empty)] ++ Ψ1 ⊢ T  ->
-  Ψ2 ++ [(X, dbind_tvar_empty)]  ++ Ψ1 ⊢ T.
+Lemma d_wf_typ_subst_stvar_tvar : forall Ψ1 Ψ2 X A,
+  Ψ2 ++ [(X, dbind_stvar_empty)] ++ Ψ1 ⊢ A ->
+  Ψ2 ++ [(X, dbind_tvar_empty)]  ++ Ψ1 ⊢ A.
 Proof.
-  intros Ψ1 Ψ2 X T H.
+  intros Ψ1 Ψ2 X A H.
   dependent induction H; try solve [simpl; auto].
   - simpl. constructor.
     induction Ψ2.
@@ -97,10 +97,9 @@ Proof.
     + apply IHd_wf_typ2; auto.
 Qed.
 
-Corollary d_wf_typ_subst_stvar_tvar_cons : forall Ψ X A,
-  X `notin` ftvar_in_typ A ->
-  X ~ dbind_tvar_empty ++ Ψ ⊢ₛ A ^ᵗ X ->
-  X ~ dbind_stvar_empty ++ Ψ ⊢ₛ A ^ᵗ X.
+Corollary d_wf_typ_s_subst_stvar_tvar_cons : forall Ψ X A,
+  X ~ dbind_tvar_empty ++ Ψ ⊢ₛ A ->
+  X ~ dbind_stvar_empty ++ Ψ ⊢ₛ A .
 Proof.
   intros.
   rewrite_env (nil ++ X ~ dbind_stvar_empty ++ Ψ).
@@ -108,15 +107,15 @@ Proof.
   auto.
 Qed.
 
-Corollary d_wf_typ_subst_tvar_stvar_cons : forall Ψ X T,
-  X `notin` ftvar_in_typ T ->
-  X ~ dbind_stvar_empty ++ Ψ ⊢ T ^ᵗ X ->
-  X ~ dbind_tvar_empty ++ Ψ ⊢ T ^ᵗ X.
+Corollary d_wf_typ_subst_tvar_stvar_cons : forall Ψ X A,
+  X ~ dbind_stvar_empty ++ Ψ ⊢ A ->
+  X ~ dbind_tvar_empty ++ Ψ ⊢ A.
 Proof.
   intros.
   rewrite_env (nil ++ X ~ dbind_tvar_empty ++ Ψ).
   apply d_wf_typ_subst_stvar_tvar; eauto.
 Qed.
+
 
 Lemma d_wf_typ_d_wf_typ_s : forall Ψ A,
   Ψ ⊢ A -> Ψ ⊢ₛ A.
@@ -125,7 +124,7 @@ Proof.
   induction H; auto.
   - eapply d_wf_typ_s__all with (L:= (L `union` ftvar_in_typ A));
     intros; auto.
-    + apply d_wf_typ_subst_stvar_tvar_cons; auto.
+    + apply d_wf_typ_s_subst_stvar_tvar_cons; auto.
 Qed.
 
 Lemma d_wf_typ_s_d_wf_typ : forall Ψ A,
@@ -137,6 +136,19 @@ Proof.
     + auto.
     + eapply d_wf_typ_subst_tvar_stvar_cons; auto.
 Qed.
+
+
+
+Corollary d_wf_typ_subst_stvar_tvar_cons : forall Ψ X A,
+  X ~ dbind_tvar_empty ++ Ψ ⊢ A ->
+  X ~ dbind_stvar_empty ++ Ψ ⊢ A.
+Proof.
+  intros.
+  apply d_wf_typ_s_d_wf_typ.
+  apply d_wf_typ_s_subst_stvar_tvar_cons.
+  apply d_wf_typ_d_wf_typ_s. auto.
+Qed.
+
 
 Hint Immediate d_wf_typ_d_wf_typ_s : core.
 Hint Immediate d_wf_typ_s_d_wf_typ : core.

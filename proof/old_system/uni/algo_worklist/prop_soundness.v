@@ -1223,9 +1223,8 @@ Proof with eauto.
     destruct Htrans as [θ].
     destruct_trans.
     exists (work_check (exp_abs (close_exp_wrt_exp x eᵈ)) typ_top ⫤ᵈ Ω). split.
-    + exists θ. 
-      econstructor...
-      econstructor...
+    + exists θ.
+      repeat constructor...
       inst_cofinites_for trans_exp__abs. intros.
       rewrite_close_open_subst.
       admit. (* *, inf rename *)
@@ -1252,7 +1251,7 @@ Proof with eauto.
     dependent destruction H; subst.
     assert (⊢ᵃʷ (work_applys cs A ⫤ᵃ Γ)). econstructor... econstructor...
     admit. (* *, wf *)
-    apply IHHared in H as IH. destruct IH as [Ω [[θ Htrans] Hdred]].
+    _apply_IH_a_wl_red.
     destruct_trans. rename_typ.
     exists (work_infer (exp_var_f x) csᵈ ⫤ᵈ Ω).
     split... econstructor... econstructor...
