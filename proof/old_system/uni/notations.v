@@ -7,37 +7,37 @@ Require Export uni.decl.def_extra.
 Require Export uni.prop_ln.
 
 
-Notation "⊢ E" :=
-  (d_wf_env E)
+Notation "⊢ Ψ" :=
+  (d_wf_env Ψ)
     (at level 65, no associativity) : type_scope.
 
-Notation "E ⊢ T" :=
-  (d_wf_typ E T)
+Notation "Ψ ⊢ A" :=
+  (d_wf_typ Ψ A)
     (at level 65, no associativity) : type_scope.
 
-Notation "E ⊢ₛ T" :=
-  (d_wf_typ_s E T)
+Notation "Ψ ⊢ₛ A" :=
+  (d_wf_typ_s Ψ A)
     (at level 65, no associativity) : type_scope.
 
-Notation "E ⊢ S1 <: T1" :=
-  (d_sub E S1 T1)
-    (at level 65, S1 at next level, no associativity) : type_scope.
+Notation "Ψ ⊢ A <: B" :=
+  (d_sub Ψ A B)
+    (at level 65, A at next level, no associativity) : type_scope.
 
-Notation "E ⊢ e ⇐ T" :=
-    (d_chk_inf E e typingmode__chk T) 
+Notation "Ψ ⊢ e ⇐ A" :=
+    (d_chk_inf Ψ e typingmode__chk A) 
       (at level 65, e at next level, no associativity) : type_scope.
 
-Notation "E ⊢ e ⇒ T" := 
-    (d_chk_inf E e typingmode__inf T) 
+Notation "Ψ ⊢ e ⇒ A" := 
+    (d_chk_inf Ψ e typingmode__inf A) 
       (at level 65, e at next level, no associativity) : type_scope.
 
-Notation "E ⊢ T1 ○ T2 ⇒⇒ T3" :=
-    (d_inftapp E T1 T2 T3) 
-      (at level 65, T1 at next level, T2 at next level, no associativity) : type_scope. 
+Notation "Ψ ⊢ A ○ B ⇒⇒ C" :=
+    (d_inftapp Ψ A B C) 
+      (at level 65, A at next level, B at next level, no associativity) : type_scope. 
 
-Notation "E ⊢ T1 ▹ T2 → T3" :=
-  (d_infabs E T1 T2 T3) 
-    (at level 65, T1 at next level, T2 at next level, no associativity) : type_scope. 
+Notation "Ψ ⊢ A ▹ B → C" :=
+  (d_infabs Ψ A B C) 
+    (at level 65, A at next level, B at next level, no associativity) : type_scope. 
 
 
 Notation "□" := dbind_tvar_empty.

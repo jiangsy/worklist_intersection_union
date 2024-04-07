@@ -255,6 +255,13 @@ Delimit Scope aworklist_scope with aworklist.
 Bind Scope aworklist_scope with aworklist.
 
 
+Notation "Σ ᵗ⊢ᵃ A" :=
+  (a_wf_typ Σ A)
+    (at level 65, no associativity) : type_scope.
+
+Notation "Σ ᵉ⊢ᵃ e" :=
+  (a_wf_exp Σ e)
+    (at level 65, no associativity) : type_scope.
 
 Notation " x ~ᵃ A ;ᵃ Γ " :=
   (aworklist_consvar Γ x (abind_var_typ A))
