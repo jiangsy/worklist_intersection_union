@@ -1245,14 +1245,14 @@ Proof with eauto.
       exists (exp_app e1ᵈ e2ᵈ)...
     + inst_cofinites_by (L `union` dom (awl_to_aenv Γ) `union` ftvar_in_body body5 `union` dom θ) using_name X.
       assert (⊢ᵃʷ aworklist_constvar Γ X abind_tvar_empty) by auto.
-      eapply trans_body_total with (Ω:=dworklist_constvar Ω X dbind_tvar_empty) (θ:=(X, dbind_tvar_empty)::θ) in H2...
-      destruct H2 as [bᵈ].
+      eapply trans_body_total with (Ω:=dworklist_constvar Ω X dbind_tvar_empty) (θ:=(X, dbind_tvar_empty)::θ) in H3...
+      destruct H3 as [bᵈ].
       exists (exp_tabs (close_body_wrt_typ X bᵈ)).
       eapply trans_exp__tabs with (L:=L `union` dom θ). intros.
       erewrite (subst_tvar_in_body_intro X)...
       erewrite (subst_tvar_in_body_intro X (close_body_wrt_typ X bᵈ)) by apply close_body_wrt_typ_notin_rec.
       rewrite open_body_wrt_typ_close_body_wrt_typ.
-      apply trans_body_rename_tvar_cons with (X':=X0) in H2; auto.
+      apply trans_body_rename_tvar_cons with (X':=X0) in H3; auto.
     + apply IHa_wf_exp in H2 as Htrans_e; auto.
       eapply trans_typ_total with (θ:=θ) (Ω:=Ω) in H as Htrans_A; auto.  
       destruct Htrans_e as [eᵈ].

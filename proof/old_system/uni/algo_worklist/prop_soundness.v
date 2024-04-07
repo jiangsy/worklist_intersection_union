@@ -1267,7 +1267,7 @@ Proof with eauto.
     assert (Hwf: ⊢ᵃʷ (work_check (e ^ᵉₜ ` X) (A ^ᵗ X) ⫤ᵃ X ~ᵃ □ ;ᵃ work_applys cs (typ_all A) ⫤ᵃ Γ)) by admit.
     _apply_IH_a_wl_red.
     destruct_trans.
-    dependent destruction H9.
+    dependent destruction H10.
     (*  *)
     exists (work_infer (exp_tabs (body_anno (close_exp_wrt_typ X eᵈ) (close_typ_wrt_typ X Aᵈ0))) csᵈ ⫤ᵈ Ω). split.
     + exists θ...
@@ -1277,7 +1277,7 @@ Proof with eauto.
       intros. simpl. repeat rewrite open_body_wrt_typ_anno. 
       constructor.
       -- rewrite_close_open_subst.
-         apply trans_exp_rename_tvar_cons with (X':=X0) in H12; eauto.          
+         apply trans_exp_rename_tvar_cons with (X':=X0) in H13; eauto.          
           admit. (* *, inf rename *)
       -- solve_trans_typ_open_close.
     + assert (θ ᵗ⫦ typ_all A ⇝ typ_all A1ᵈ). {
@@ -1288,7 +1288,7 @@ Proof with eauto.
         inst_cofinites_for trans_typ__all. intros.
         solve_trans_typ_open_close.
       }
-      unify_trans_typ. inversion H15. subst.
+      unify_trans_typ. inversion H16. subst.
       apply d_wl_del_red__inf with (A:=typ_all (close_typ_wrt_typ X Aᵈ0)).
       * inst_cofinites_for  d_chk_inf__inf_tabs. 
         admit. (* *, wf *)

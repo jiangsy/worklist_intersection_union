@@ -91,7 +91,7 @@ Proof with eauto using a_wf_typ_weaken.
       (L:=union L (union (dom Σ2) (union (dom Σ1) (union (dom Σ3) (ftvar_in_typ T)))))...
       intros. rewrite_env ((x ~ abind_var_typ T ++ Σ3) ++ Σ2 ++ Σ1).
       apply H1...
-    + intros. inst_cofinites_for a_wf_exp__tabs. intros.
+    + intros. inst_cofinites_for a_wf_exp__tabs... intros.
       inst_cofinites_with X.
       rewrite_env ((X ~ abind_tvar_empty ++ Σ3) ++ Σ2 ++ Σ1).
       apply a_wf_body_weaken...
@@ -156,9 +156,11 @@ with a_wf_body_var_binds_another : forall Σ1 x Σ2 e A1 A2,
   a_wf_body (Σ2 ++ x ~ abind_var_typ A2 ++ Σ1) e.
 Proof.
   - introv HE HT. clear a_wf_exp_var_binds_another.
-    induction* HE.
+    induction HE.
     gen Σ1 A1 A2.
     induction Σ2; intros; cbn in *.
+    + admit.
+    + admit.
     + admit.
     + admit.
     + admit.
@@ -179,9 +181,92 @@ Proof.
 Qed.
 
 
+Ltac destruct_binds_eq :=
+  repeat
+    lazymatch goal with
+    | H1 : (?X1, ?b1) = (?X2, ?b2) |- _ =>
+      dependent destruction H1
+    end.
+
+Ltac destruct_binds :=
+  simpl in *;
+  repeat
+  match goal with
+  | H1 : binds ?X ?b ((?X', ?b') :: ?θ) |- _ =>
+    let H_1 := fresh "H" in
+    let H_2 := fresh "H" in
+    inversion H1 as [H_1 | H_2];
+    clear H1;
+    try destruct_binds_eq;
+    try solve [solve_notin_eq X];
+    try solve [solve_notin_eq X']
+  end.
+
+
+Ltac destruct_in :=
+  simpl in *;
+  match goal with
+  | H1 : ((?X, ?b) = (?X', ?b')) \/  In ?b'' ?θ |- _ =>
+    let H1_1 := fresh "H" in
+    let H1_2 := fresh "H" in
+    inversion H1 as [H1_1 | H1_2];
+    clear H1;
+    try destruct_binds_eq;
+    try solve [solve_notin_eq X];
+    try solve [solve_notin_eq X']
+  end.
+
+
+Corollary a_wf_typ_tvar_stvar_cons : forall Σ X A,
+  X ~ abind_tvar_empty ++ Σ ᵗ⊢ᵃ A ->
+  X ~ abind_stvar_empty ++ Σ ᵗ⊢ᵃ A.
+Proof.
+Admitted.
+
+
+Corollary a_wf_typ_tvar_etvar_cons : forall Σ X A,
+  X ~ abind_tvar_empty ++ Σ ᵗ⊢ᵃ A ->
+  X ~ abind_etvar_empty ++ Σ ᵗ⊢ᵃ A.
+Proof.
+Admitted.
+
+Lemma a_wf_typ_rename_tvar : forall Σ1 Σ2 X Y A,
+  Σ2 ++ X ~ abind_tvar_empty ++ Σ1 ᵗ⊢ᵃ A  ->
+  map (subst_tvar_in_abind (typ_var_f Y) X ) Σ2 ++ Y ~ abind_tvar_empty ++ Σ1 ᵗ⊢ᵃ { typ_var_f Y /ᵗ X } A.
+Admitted.
+
+Corollary a_wf_typ_rename_tvar_cons : forall Σ X Y A,
+  X ~ abind_tvar_empty ++ Σ ᵗ⊢ᵃ A  ->
+  Y ~ abind_tvar_empty ++ Σ ᵗ⊢ᵃ { typ_var_f Y /ᵗ X } A.
+Proof.
+  intros.
+  rewrite_env ((map (subst_tvar_in_abind (typ_var_f Y) X ) nil) ++ Y ~ abind_tvar_empty ++ Σ).
+  apply a_wf_typ_rename_tvar; auto.
+Qed.
+
+
+Lemma a_wft_all_open : forall Σ A B,
+  a_wf_env Σ ->
+  Σ ᵗ⊢ᵃ typ_all A ->
+  Σ ᵗ⊢ᵃ B ->
+  Σ ᵗ⊢ᵃ A ^^ᵗ B.
+Proof.
+Admitted.
+
+
 #[export] Hint Resolve a_mono_typ_wf a_wf_wl_a_wf_env a_wf_env_uniq : core.
 
 
+Lemma a_wf_wl_a_wf_bind_typ : forall Γ x A,
+  ⊢ᵃʷ Γ ->
+  binds x (abind_var_typ A) (awl_to_aenv Γ) ->
+  (awl_to_aenv Γ) ᵗ⊢ᵃ A.
+Proof with eauto.
+  intros. dependent induction H; eauto; 
+    try (destruct_binds; apply a_wf_typ_weaken_cons; eauto).
+  inversion H0.
+Qed.
+  
 Lemma aworklist_binds_split : forall Γ X,
   ⊢ᵃʷ Γ ->
   binds X abind_etvar_empty (awl_to_aenv Γ) ->
@@ -189,21 +274,21 @@ Lemma aworklist_binds_split : forall Γ X,
 Proof.
   intros. induction H.
   - inversion H0.
-  - inversion H0; try dependent destruction H3.
-    + apply IHa_wf_wl in H3. destruct H3 as [Γ1 [Γ2 Heq]].
-      exists Γ1, (x ~ᵃ A ;ᵃ Γ2).
-      rewrite <- Heq. auto.
-  - inversion H0; try dependent destruction H2.
-    + apply IHa_wf_wl in H2. destruct H2 as [Γ1 [Γ2 Heq]].
-      exists Γ1, (X0 ~ᵃ □ ;ᵃ Γ2).
-      rewrite <- Heq. auto.
-  - inversion H0; try dependent destruction H2.
-    + apply IHa_wf_wl in H2. destruct H2 as [Γ1 [Γ2 Heq]].
-      exists Γ1, (X0 ~ᵃ ■ ;ᵃ Γ2).
-      rewrite <- Heq. auto.
-  - inversion H0; try dependent destruction H2.
+  - destruct_binds.
+    apply IHa_wf_wl in H4. destruct H4 as [Γ1 [Γ2 Heq]].
+    exists Γ1, (x ~ᵃ A ;ᵃ Γ2).
+    rewrite <- Heq. auto.
+  - destruct_binds.
+    apply IHa_wf_wl in H3. destruct H3 as [Γ1 [Γ2 Heq]].
+    exists Γ1, (X0 ~ᵃ □ ;ᵃ Γ2).
+    rewrite <- Heq. auto.
+  - destruct_binds.
+    apply IHa_wf_wl in H3. destruct H3 as [Γ1 [Γ2 Heq]].
+    exists Γ1, (X0 ~ᵃ ■ ;ᵃ Γ2).
+    rewrite <- Heq. auto.
+  - destruct_binds.
     + exists Γ, aworklist_empty; auto.
-    + apply IHa_wf_wl in H2. destruct H2 as [Γ1 [Γ2 Heq]].
+    + apply IHa_wf_wl in H3. destruct H3 as [Γ1 [Γ2 Heq]].
       exists Γ1, (X0 ~ᵃ ⬒ ;ᵃ Γ2).
       rewrite <- Heq. auto.
   - simpl in H0.
@@ -636,40 +721,6 @@ Ltac destruct_wf_arrow :=
   end.
 
 
-Ltac destruct_binds_eq :=
-  repeat
-    lazymatch goal with
-    | H1 : (?X1, ?b1) = (?X2, ?b2) |- _ =>
-      dependent destruction H1
-    end.
-
-Ltac destruct_binds :=
-  simpl in *;
-  repeat
-  match goal with
-  | H1 : binds ?X ?b ((?X', ?b') :: ?θ) |- _ =>
-    let H_1 := fresh "H" in
-    let H_2 := fresh "H" in
-    inversion H1 as [H_1 | H_2];
-    clear H1;
-    try destruct_binds_eq;
-    try solve [solve_notin_eq X];
-    try solve [solve_notin_eq X']
-  end.
-
-
-Ltac destruct_in :=
-  simpl in *;
-  match goal with
-  | H1 : ((?X, ?b) = (?X', ?b')) \/  In ?b'' ?θ |- _ =>
-    let H1_1 := fresh "H" in
-    let H1_2 := fresh "H" in
-    inversion H1 as [H1_1 | H1_2];
-    clear H1;
-    try destruct_binds_eq;
-    try solve [solve_notin_eq X];
-    try solve [solve_notin_eq X']
-  end.
 
 Lemma a_worklist_subst_binds_same_atvar' : forall Γ1 Γ2 X b X1 A Γ'1 Γ'2,
   ⊢ᵃʷ (awl_app Γ2 (aworklist_constvar Γ1 X abind_etvar_empty)) ->

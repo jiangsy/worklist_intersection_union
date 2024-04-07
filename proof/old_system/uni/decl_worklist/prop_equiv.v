@@ -489,7 +489,7 @@ Proof with auto.
     apply d_wf_typ_weaken_cons...
   - destruct_d_wl_wf. 
     eapply d_wl_red__inf_tabs with (L:=L `union` L0 `union` dom (dwl_to_denv Ω)); eauto. 
-    intros. inst_cofinites_with X. dependent destruction H2.
+    intros. inst_cofinites_with X. dependent destruction H3.
     apply H1; auto.
   - destruct_d_wl_wf.
     apply d_chk_inf_wft in H0.

@@ -351,16 +351,16 @@ Proof with simpl in *; try solve_by_invert; eauto using uniq_app_1, uniq_app_2.
       econstructor...
 Qed.
 
-Lemma d_wft_all_open : forall Ψ1 A1 T1,
-  ⊢ Ψ1 ->
-  Ψ1 ⊢ typ_all A1 ->
-  Ψ1 ⊢ T1 ->
-  Ψ1 ⊢ A1 ^^ᵗ T1.
+Lemma d_wft_all_open : forall Ψ A B,
+  ⊢ Ψ ->
+  Ψ ⊢ typ_all A ->
+  Ψ ⊢ B ->
+  Ψ ⊢ A ^^ᵗ B.
 Proof.
   intros.
   inversion H0.
-  inst_cofinites_by (L `union` ftvar_in_typ A1 `union` dom Ψ1) using_name X.
-  rewrite_env (map (subst_tvar_in_dbind T1 X) nil ++ Ψ1).
+  inst_cofinites_by (L `union` ftvar_in_typ A `union` dom Ψ) using_name X.
+  rewrite_env (map (subst_tvar_in_dbind B X) nil ++ Ψ).
   erewrite <- subst_tvar_in_typ_open_typ_wrt_typ_tvar2; eauto.
   apply d_wft_typ_subst; eauto.
   econstructor; auto.
@@ -1047,11 +1047,11 @@ Proof with eauto using d_wf_typ_bound_typ.
     forwards: H1. rewrite_env ( (Y ~ dbind_typ T ++ Ψ2) ++ x ~ dbind_typ A1 ++ Ψ1)...
     all: eauto.
   - eauto.
-  - pick fresh Y and apply d_wf_exp__tabs.
-    inst_cofinites_with Y.
-    rewrite_env ( (Y ~ □ ++ Ψ2) ++ x ~ dbind_typ A1 ++ Ψ1) in H.
+  - pick fresh Y and apply d_wf_exp__tabs...
+    inst_cofinites_with Y...
+    rewrite_env ( (Y ~ □ ++ Ψ2) ++ x ~ dbind_typ A1 ++ Ψ1) in H0.
     rewrite_env ( (Y ~ □ ++ Ψ2) ++ x ~ dbind_typ A2 ++ Ψ1).
-    applys* d_wf_body_bound_typ H.
+    applys* d_wf_body_bound_typ H0.
   - econstructor. eapply d_wf_typ_bound_typ; eauto.
     eauto.
   - econstructor. eapply d_wf_typ_bound_typ; eauto.

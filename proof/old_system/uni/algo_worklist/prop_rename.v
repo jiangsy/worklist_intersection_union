@@ -97,10 +97,10 @@ Proof.
       rewrite IHa_wf_exp2; eauto.
       fsetdec.
     + inst_cofinites_by (L `union` dom (awl_to_aenv Γ) `union` ftvar_in_body body5) using_name X.
-      replace (X ~ abind_tvar_empty ++ awl_to_aenv Γ) with (awl_to_aenv (X ~ᵃ □ ;ᵃ Γ)) in H by auto.
+      replace (X ~ abind_tvar_empty ++ awl_to_aenv Γ) with (awl_to_aenv (X ~ᵃ □ ;ᵃ Γ)) in H0 by auto.
       assert (ftvar_in_body body5 [<=] ftvar_in_body (open_body_wrt_typ body5 ` X)) by apply
         ftvar_in_body_open_body_wrt_typ_lower.
-      apply ftvar_in_wf_body_upper in H.
+      apply ftvar_in_wf_body_upper in H0.
       simpl in *.
       fsetdec.
     + simpl. rewrite IHa_wf_exp; eauto.
@@ -552,9 +552,13 @@ Proof.
 Qed.
 
 
-Lemma ftvar_in_typ_subst_tvar_in_typ_replace: forall A X Y,
-   X `in` ftvar_in_typ A→ ftvar_in_typ ({`Y /ᵗ X} A) [=] ftvar_in_typ A `union` (singleton Y).
-Admitted.
+Lemma ftvar_in_typ_rename : forall A X Y,
+   X `in` ftvar_in_typ A -> Y `in` ftvar_in_typ ({`Y /ᵗ X} A).
+Proof.
+  intros. induction A; simpl in *; auto; try fsetdec.
+  - simpl in *. apply singleton_iff in H. subst.
+    destruct_eq_atom. simpl. fsetdec.
+Qed.
 
 Lemma worklist_subst_rename_tvar : forall Γ X1 X2 X' A Γ1 Γ2,
   ⊢ᵃʷ Γ ->
@@ -605,7 +609,7 @@ Proof with auto.
       applys a_ws1__etvar_move H4... applys* ftvar_in_typ_subst_tvar_in_typ_lower.
     + rewrite_aworklist_rename_tvar'.
       forwards*: a_ws1__etvar_move X' H4.
-      rewrite ftvar_in_typ_subst_tvar_in_typ_replace...
+      apply ftvar_in_typ_rename...
     + rewrite_aworklist_rename_tvar'.
       applys a_ws1__etvar_move H4... applys* ftvar_in_typ_subst_tvar_in_typ_lower.
     + autorewrite with core. rewrite ftvar_in_aworklist'_awl_app in H0.
