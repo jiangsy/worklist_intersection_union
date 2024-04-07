@@ -689,8 +689,6 @@ Proof with eauto; solve_false.
         rewrite rename_tvar_in_aworklist_rev_eq in Hws; auto.
         rewrite rename_tvar_in_typ_rev_eq in *...
         rewrite rename_tvar_in_typ_rev_eq in *...
-        rewrite subst_tvar_in_typ_fresh_eq in H9; auto.
-        rewrite subst_tvar_in_typ_fresh_eq in H9; auto.
         apply H6 in Hws as Hawlred; simpl; auto.
         destruct_eq_atom.
         rewrite_aworklist_rename; simpl; eauto.
@@ -739,8 +737,6 @@ Proof with eauto; solve_false.
         rewrite rename_tvar_in_aworklist_rev_eq in Hws; auto...
         rewrite rename_tvar_in_typ_rev_eq in *...
         rewrite rename_tvar_in_typ_rev_eq in *...
-        rewrite subst_tvar_in_typ_fresh_eq in H10; auto.
-        rewrite subst_tvar_in_typ_fresh_eq in H10; auto.
         apply H8 in Hws as Hawlred; simpl; auto.
         destruct_eq_atom.
         rewrite_aworklist_rename; simpl; eauto.
@@ -774,7 +770,7 @@ Proof with eauto; solve_false.
            simpl. apply binds_cons. apply binds_cons...
         -- rewrite (a_worklist_subst_ftavr_in_aworklist _ _ _ _ _ Hws); auto...
       * admit. (* wf *)
-      * solve_notin_rename_tvar; auto.
+      * solve_notin_rename_tvar; auto. 
   - simpl in *. destruct_a_wf_wl.
     eapply worklist_subst_rename_tvar with (X':=X') (X1:=X) in H7 as Hsubst...
     destruct_eq_atom;
