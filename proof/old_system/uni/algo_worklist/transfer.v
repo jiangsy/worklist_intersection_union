@@ -1561,6 +1561,22 @@ Proof with eauto.
     dependent destruction H1...
 Qed.
 
+Lemma trans_wl_ss_wf_typ_d_wf_typ : forall Γ Ω θ Aᵈ,
+  nil ⫦ Γ ⇝ Ω ⫣ θ ->
+  d_wf_typ (ss_to_denv θ) Aᵈ ->
+  d_wf_typ (dwl_to_denv Ω) Aᵈ.
+Proof with eauto. 
+  intros. generalize dependent Γ; generalize dependent Ω; dependent induction H0; intros...
+  - constructor. eapply trans_wl_a_wl_binds_tvar_d_wl; eauto. eapply trans_wl_ss_binds_tvar_a_wl; eauto.
+    apply binds_ss_to_denv_binds_ss...
+  - apply d_wf_typ__stvar. eapply trans_wl_a_wl_binds_stvar_d_wl; eauto. eapply trans_wl_ss_binds_stvar_a_wl; eauto.
+    apply binds_ss_to_denv_binds_ss...
+  - inst_cofinites_for d_wf_typ__all; intros; inst_cofinites_with X...
+    + replace (X ~ □ ++ dwl_to_denv Ω) with (dwl_to_denv (dworklist_constvar Ω X dbind_tvar_empty))...
+      eapply H1 with (Γ:=aworklist_constvar Γ X abind_tvar_empty) (θ:=(X, dbind_tvar_empty)::θ); eauto.
+Qed.
+
+
 Lemma trans_wl_a_wf_typ_d_wf_typ : forall Γ Ω θ Aᵃ Aᵈ,
   nil ⫦ Γ ⇝ Ω ⫣ θ ->
   θ ⫦ᵗ Aᵃ ⇝ Aᵈ ->
