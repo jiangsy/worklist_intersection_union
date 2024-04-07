@@ -868,7 +868,7 @@ Lemma trans_wl_a_wl_binds_etvar_d_wl : forall Γ X Ω θ,
 Proof with eauto.
 Admitted.
 
-Lemma trans_wl_d_wl_mono_ss : forall θ θ' Γ Ω T,
+Lemma trans_wl_d_wl_mono_typ_ss_mono_typ : forall θ θ' Γ Ω T,
   θ ⫦ Γ ⇝ Ω ⫣ θ' ->
   d_mono_typ (dwl_to_denv Ω) T -> 
   d_mono_typ (ss_to_denv θ') T.
@@ -876,6 +876,18 @@ Proof.
   intros. dependent induction H0; eauto.
   - constructor. eapply trans_wl_d_wl_binds_tvar_ss; eauto.
 Qed.
+
+Lemma trans_wl_ss_mono_typ_d_wl_mono_typ : forall θ Γ Ω T,
+  nil ⫦ Γ ⇝ Ω ⫣ θ ->
+  d_mono_typ (ss_to_denv θ) T ->
+  d_mono_typ (dwl_to_denv Ω) T.
+Proof.
+  intros. dependent induction H0; eauto.
+  - constructor. eapply trans_wl_a_wl_binds_tvar_d_wl; eauto.
+    eapply trans_wl_ss_binds_tvar_a_wl; eauto.
+    apply binds_ss_to_denv_binds_ss. auto.
+Qed.
+
 
 Lemma wf_ss_rename_tvar : forall θ1 θ2 X X',
   wf_ss (θ2 ++ (X, □) :: θ1) ->

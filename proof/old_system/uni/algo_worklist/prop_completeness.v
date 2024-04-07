@@ -1072,21 +1072,6 @@ Proof.
   intuition.
 Qed.
 
-Lemma trans_wl_ss_mono_typ_d_wl_mono_typ : forall Γ Ω θ A,
-  ⊢ᵃʷ Γ ->
-  nil ⫦ Γ ⇝ Ω ⫣ θ ->
-  d_mono_typ (ss_to_denv θ) A ->
-  d_mono_typ (dwl_to_denv Ω) A.
-Proof.
-  intros * Hwf Htrans Hmono.
-  generalize dependent Γ. generalize dependent Ω.
-  dependent induction Hmono; intros; simpl; eauto.  
-  - apply binds_ss_to_denv_binds_ss in H. 
-    eapply trans_wl_ss_binds_tvar_a_wl in H; eauto.
-    eapply trans_wl_a_wl_binds_tvar_d_wl in H; eauto.
-Qed.
-
-
 Lemma trans_typ_weaken_cons2 : forall θ X1 X2 b1 b2 Aᵃ Aᵈ,
   θ ⫦ᵗ Aᵃ ⇝ Aᵈ ->
   wf_ss ((X2, b2) :: (X1, b1) :: θ) ->
@@ -1096,17 +1081,54 @@ Proof.
   dependent destruction H0; apply trans_typ_weaken_cons; auto.
 Qed.
 
+Ltac destruct_for_solve_mono := 
+  destruct_mono_arrow;
+  repeat
+  match goal with
+  | _ : _ |- d_mono_typ ?θ (typ_arrow ?A1 ?A2) =>
+    constructor
+  end.
+
+Ltac solve_mono_typ :=
+  destruct_for_solve_mono;
+  match goal with 
+  | H_1 : d_mono_typ (ss_to_denv ?θ) ?A,
+    H_2: nil ⫦ ?Γ ⇝ ?Ω ⫣ ?θ |- d_mono_typ (dwl_to_denv ?Ω ) ?A =>
+    eapply trans_wl_ss_mono_typ_d_wl_mono_typ; eauto
+  | H_1 : a_mono_typ (awl_to_aenv ?Γ) ?Aᵃ,
+    H_2: nil ⫦ ?Γ ⇝ ?Ω ⫣ ?θ,
+    H_3: ?θ ⫦ᵗ ?Aᵃ ⇝ ?Aᵈ |- d_mono_typ (ss_to_denv ?θ) ?Aᵈ =>
+    eapply trans_wl_a_mono_typ_d_mono_typ; eauto
+  | H_1 : a_mono_typ (ss_to_aenv ?θ) ?Aᵃ,
+    H_2: nil ⫦ ?Γ ⇝ ?Ω ⫣ ?θ,
+    H_3: ?θ ⫦ᵗ ?Aᵃ ⇝ ?Aᵈ |- d_mono_typ (ss_to_denv ?θ) ?Aᵈ =>
+    eapply trans_typ_a_mono_typ_d_mono_typ; eauto
+ | H_1 : a_mono_typ (awl_to_aenv ?Γ) ?Aᵃ,
+    H_2: nil ⫦ ?Γ ⇝ ?Ω ⫣ ?θ |- d_mono_typ (dwl_to_denv ?Ω ) ?Aᵈ =>
+    eapply trans_wl_ss_mono_typ_d_wl_mono_typ with (θ:=θ) (Γ:=Γ); eauto; eapply trans_wl_a_mono_typ_d_mono_typ; eauto
+  | _ : _ |- _ => idtac
+  end.
+
+Ltac solve_wf_typ := 
+  match goal with
+  | H_1 : a_wf_typ (awl_to_aenv ?Γ) ?Aᵃ,
+    H_2: nil ⫦ ?Γ ⇝ ?Ω ⫣ ?θ,
+    H_3: ?θ ⫦ᵗ ?Aᵃ ⇝ ?Aᵈ |- d_wf_typ (dwl_to_denv ?Ω) ?Aᵈ =>
+    eapply trans_wl_a_wf_typ_d_wf_typ; eauto
+  | H_1 : d_mono_typ (ss_to_denv ?θ) ?A,
+    H_2: nil ⫦ ?Γ ⇝ ?Ω ⫣ ?θ |- dwl_to_denv ?Ω ⊢ ?A =>
+    eapply d_mono_typ_d_wf_typ; eauto;
+    eapply trans_wl_ss_mono_typ_d_wl_mono_typ; eauto
+  | _ : _ |- _ => idtac
+  end.
 
 #[local] Hint Constructors a_mono_typ : core.
 
-
-#[local] Hint Resolve trans_typ_lc_atyp trans_typ_lc_dtyp trans_wl_d_wl_mono_ss : core.
+#[local] Hint Resolve trans_typ_lc_atyp trans_typ_lc_dtyp trans_wl_d_wl_mono_typ_ss_mono_typ : core.
 
 #[local] Hint Immediate trans_wl_ss_binds_tvar_a_wl trans_wl_ss_binds_stvar_a_wl trans_wl_ss_binds_etvar_a_wl : core.
 
 #[local] Hint Resolve trans_wl_d_wf_typ_a_wf_typ trans_typ_refl trans_wl_a_wf_wl_d_wf_wl : core.
-
-#[local] Hint Immediate trans_typ_a_mono_typ_d_mono_typ trans_wl_a_mono_typ_d_mono_typ : core.
 
 #[local] Hint Resolve trans_typ_weaken_cons2 : core.
 
@@ -1214,11 +1236,10 @@ Proof with eauto.
       * destruct_d_wl_wf.
         destruct_a_wf_wl.
         apply d_wl_red_sound in H...
-        destruct_mono_arrow.
         dependent destruction H.
         dependent destruction H0; simpl in *...
-        apply d_sub_mono_refl in H; eauto using trans_wl_ss_mono_typ_d_wl_mono_typ. subst.
-        apply d_sub_mono_refl in H0; eauto using trans_wl_ss_mono_typ_d_wl_mono_typ. subst.
+        apply d_sub_mono_refl in H; solve_mono_typ. subst.
+        apply d_sub_mono_refl in H0; solve_mono_typ. subst.
         -- eapply a_worklist_subst_transfer_same_dworklist_rev_exist with (T:=`X0) (Tᵈ:= typ_arrow A1 B2) 
               in Htrans_et as Htransws... 
            destruct Htransws as [Γ1 [Γ2 [θ' [Hsubst [Htransws [Hbinds Hwfss]]]]]].
@@ -1247,42 +1268,48 @@ Proof with eauto.
     + apply wf_ss_binds_monotyp in H2 as Hmonob...
       destruct_a_wf_wl.
       assert (a_wf_typ (awl_to_aenv Γ0) (typ_arrow A1ᵃ A2ᵃ)) by auto.
-      assert (s_in X (typ_arrow A1ᵃ A2ᵃ) → False) by admit.  (* ***, needs to know X notin (A1 -> A2) *)
-      simpl in *.
-      (* ***, needs to know X notin (A1 -> A2) *)
+      assert ( ~ s_in X (typ_arrow A1ᵃ A2ᵃ)). {
+        unfold not. intros Hcontra.
+        eapply trans_typ_etvar_s_in_more_num_arrow in Hcontra...
+        apply d_wl_red_sound in H.
+        dependent destruction H. dependent destruction H0. simpl in *.
+        assert (dwl_to_denv Ω ⊢ typ_arrow A1 A2 <: typ_arrow B1 B2) by auto.
+        apply d_sub_more_num_arrow_in_mono_typ in H6 as [Harr1 Harr2].
+        assert (d_mono_typ (dwl_to_denv Ω) (typ_arrow B1 B2)) by solve_mono_typ. 
+        apply Harr2 in H6. simpl in *. lia.
+        repeat (constructor; simpl; auto); solve_mono_typ; solve_wf_typ...
+      }
       apply a_mono_typ_dec in H0 as Hmono... inversion Hmono.
       * destruct_d_wl_wf.
         destruct_a_wf_wl.
         apply d_wl_red_sound in H.
-        destruct_mono_arrow.
-        dependent destruction H.
-        dependent destruction H0; simpl in *...
+        destruct_d_wl_del_red; simpl in *.
         rename_typ_rev.
-        assert (d_mono_typ (ss_to_denv θ0) A1) by eauto.
-        assert (d_mono_typ (ss_to_denv θ0) A2) by eauto.
-        apply d_sub_mono_refl in H; eauto using trans_wl_ss_mono_typ_d_wl_mono_typ. subst.
-        apply d_sub_mono_refl in H0; eauto using trans_wl_ss_mono_typ_d_wl_mono_typ. subst.
+        assert (d_mono_typ (ss_to_denv θ0) A1) by solve_mono_typ.
+        assert (d_mono_typ (ss_to_denv θ0) A2) by solve_mono_typ.
+        apply d_sub_mono_refl in H; solve_mono_typ. subst.
+        apply d_sub_mono_refl in H0; solve_mono_typ. subst.
         rename_typ_rev.
         assert (X `notin` ftvar_in_typ (typ_arrow A1 B2)) by (eapply etvar_bind_no_etvar; eauto).
+        assert (X `notin` ftvar_in_typ (typ_arrow A1ᵃ B2ᵃ)). {unfold not. intros. eapply a_mono_typ_in_s_in in H0; eauto. }
         simpl in *.
         eapply a_worklist_subst_transfer_same_dworklist_rev_exist with (T:=typ_arrow A1ᵃ B2ᵃ) (Tᵈ:= typ_arrow A1 B2) 
               in Htrans_et as Htransws... 
         ++ destruct Htransws as [Γ1 [Γ2 [θ' [Hsubst [Htransws [Hbinds Hwfss]]]]]].
-           apply a_wl_red__sub_etvarmono1 with (Γ1:=Γ1) (Γ2:=Γ2); eauto. admit. 
+           apply a_wl_red__sub_etvarmono1 with (Γ1:=Γ1) (Γ2:=Γ2); eauto. 
            eapply a_wl_red_aworklist_trailing_sub_weaken with 
             (Γ:=work_sub B2 B2 ⫤ᵃ work_sub A1 A1 ⫤ᵃ (subst_tvar_in_aworklist (typ_arrow A1ᵃ B2ᵃ) X Γ2 ⧺ Γ1)); eauto.
-           ** eapply trans_wl_d_mono_typ_a_mono_typ_no_etvar in H6; eauto.
-              eapply trans_wl_d_mono_typ_a_mono_typ_no_etvar in H7; eauto. intuition.
+           ** eapply trans_wl_d_mono_typ_a_mono_typ_no_etvar in H7; eauto.
+              eapply trans_wl_d_mono_typ_a_mono_typ_no_etvar in H8; eauto. intuition.
               constructor; simpl in *...
               constructor...
               admit. admit. admit. admit. admit. admit. admit. admit.
            ** apply IHd_wl_red...
-              --- eapply trans_wl_d_mono_typ_a_mono_typ_no_etvar in H6; eauto.
-              eapply trans_wl_d_mono_typ_a_mono_typ_no_etvar in H7; eauto. intuition.
+              --- eapply trans_wl_d_mono_typ_a_mono_typ_no_etvar in H7; eauto.
+              eapply trans_wl_d_mono_typ_a_mono_typ_no_etvar in H8; eauto. intuition.
               repeat (constructor; simpl; eauto using a_worklist_subst_wf_wl); eapply a_worklist_subst_wf_typ; eauto.
               --- exists θ'. repeat (constructor; auto); apply trans_typ_refl...
               admit. admit. admit. admit.
-        ++ admit.
         ++ destruct_d_wl_wf. repeat (constructor; simpl; auto)... 
            admit. admit. admit. admit.
       * inst_cofinites_for a_wl_red__sub_arrow2... 
@@ -1323,31 +1350,43 @@ Proof with eauto.
         -- constructor...
         -- constructor...
     (* ^X < A -> B *)
-    + apply wf_ss_binds_monotyp in H1 as Hmonob...
+    + rename_typ_rev.
+      apply wf_ss_binds_monotyp in H1 as Hmonob...
       destruct_a_wf_wl.
-      assert (a_wf_typ (awl_to_aenv Γ0) (typ_arrow A1ᵃ A2ᵃ)) by auto.
-      assert (s_in X (typ_arrow A1ᵃ A2ᵃ) → False) by admit.  (* ***, needs to know X notin (A1 -> A2) *)
-      simpl in *.
+      assert (a_wf_typ (awl_to_aenv Γ0) (typ_arrow B1ᵃ B2ᵃ)) by auto.
+      assert ( ~ s_in X (typ_arrow B1ᵃ B2ᵃ)). {
+        unfold not. intros Hcontra.
+        eapply trans_typ_etvar_s_in_more_num_arrow in Hcontra...
+        apply d_wl_red_sound in H.
+        dependent destruction H. dependent destruction H0. simpl in *.
+        assert (dwl_to_denv Ω ⊢ typ_arrow A1 A2 <: typ_arrow B1 B2) by auto.
+        apply d_sub_more_num_arrow_in_mono_typ in H6 as [Harr1 Harr2].
+        assert (d_mono_typ (dwl_to_denv Ω) (typ_arrow A1 A2)) by (eapply trans_wl_ss_mono_typ_d_wl_mono_typ; eauto).
+        apply Harr1 in H6.
+        simpl in *. lia.
+        destruct_mono_arrow.
+        repeat (constructor; simpl; auto); solve_mono_typ; solve_wf_typ...
+        }
       (* ***, needs to know X notin (A1 -> A2) *)
       apply a_mono_typ_dec in H3 as Hmono... inversion Hmono.
       * destruct_d_wl_wf.
         destruct_a_wf_wl.
         apply d_wl_red_sound in H.
         destruct_mono_arrow.
-        dependent destruction H.
-        dependent destruction H0; simpl in *...
+        destruct_d_wl_del_red; simpl in *.
         rename_typ_rev.
-        assert (d_mono_typ (ss_to_denv θ0) A1) by eauto.
-        assert (d_mono_typ (ss_to_denv θ0) A2) by eauto.
-        apply d_sub_mono_refl in H; eauto using trans_wl_ss_mono_typ_d_wl_mono_typ. subst.
-        apply d_sub_mono_refl in H0; eauto using trans_wl_ss_mono_typ_d_wl_mono_typ. subst.
+        assert (d_mono_typ (ss_to_denv θ0) B1) by solve_mono_typ.
+        assert (d_mono_typ (ss_to_denv θ0) B2) by solve_mono_typ.
+        apply d_sub_mono_refl in H; solve_mono_typ. subst.
+        apply d_sub_mono_refl in H0; solve_mono_typ. subst.
         rename_typ_rev.
         assert (X `notin` ftvar_in_typ (typ_arrow A1 B2)) by (eapply etvar_bind_no_etvar; eauto).
+        assert (X `notin` ftvar_in_typ (typ_arrow A1ᵃ B2ᵃ)). {unfold not. intros. eapply a_mono_typ_in_s_in in H0; eauto. }
         simpl in *.
         eapply a_worklist_subst_transfer_same_dworklist_rev_exist with (T:=typ_arrow A1ᵃ B2ᵃ) (Tᵈ:= typ_arrow A1 B2) 
               in Htrans_et as Htransws... 
         ++ destruct Htransws as [Γ1 [Γ2 [θ' [Hsubst [Htransws [Hbinds Hwfss]]]]]].
-           apply a_wl_red__sub_etvarmono2 with (Γ1:=Γ1) (Γ2:=Γ2); eauto. admit.
+           apply a_wl_red__sub_etvarmono2 with (Γ1:=Γ1) (Γ2:=Γ2); eauto. 
            eapply a_wl_red_aworklist_trailing_sub_weaken with 
             (Γ:=work_sub B2 B2 ⫤ᵃ work_sub A1 A1 ⫤ᵃ (subst_tvar_in_aworklist (typ_arrow A1ᵃ B2ᵃ) X Γ2 ⧺ Γ1)); eauto.
            ** eapply trans_wl_d_mono_typ_a_mono_typ_no_etvar in H6; eauto.
@@ -1360,7 +1399,6 @@ Proof with eauto.
                   admit. admit. admit. admit.
               --- exists θ'. repeat (constructor; auto); apply trans_typ_refl...
                   admit. admit. admit. admit.
-        ++ admit.
         ++ destruct_d_wl_wf. repeat (constructor; simpl; auto)... 
            admit. admit. admit. admit.
       * inst_cofinites_for a_wl_red__sub_arrow1... 

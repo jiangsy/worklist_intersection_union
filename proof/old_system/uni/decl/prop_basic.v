@@ -503,6 +503,20 @@ Proof.
 Qed.
 
 
+Lemma d_mono_typ_in_s_in : forall Ψ A X,
+  d_mono_typ Ψ A ->
+  X `in` ftvar_in_typ A ->
+  s_in X A.
+Proof.
+  intros. induction H; simpl in *; auto.
+  - fsetdec. 
+  - apply singleton_iff in H0. subst. constructor.
+  - apply union_iff in H0. destruct H0.
+    + apply s_in__arrow1; auto. eapply d_mono_typ_lc; eauto.
+    + apply s_in__arrow2; auto. eapply d_mono_typ_lc; eauto.
+Qed.
+
+
 Lemma d_mono_typ_subst_mono_mono : forall F Ψ A T X,
   d_mono_typ (F ++ X ~ □ ++ Ψ) A ->
   d_mono_typ Ψ T ->

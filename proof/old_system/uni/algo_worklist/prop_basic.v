@@ -29,6 +29,27 @@ Proof.
   intros. induction H; auto.
 Qed.
 
+Lemma a_mono_typ_lc : forall Σ A,
+  a_mono_typ Σ A ->
+  lc_typ A.
+Proof.
+  intros. induction H; auto.
+Qed.
+
+Lemma a_mono_typ_in_s_in : forall Σ A X,
+  a_mono_typ Σ A ->
+  X `in` ftvar_in_typ A ->
+  s_in X A.
+Proof.
+  intros. induction H; simpl in *; auto.
+  - fsetdec. 
+  - apply singleton_iff in H0. subst. constructor.
+  - apply singleton_iff in H0. subst. constructor.
+  - apply union_iff in H0. destruct H0.
+    + apply s_in__arrow1; auto. eapply a_mono_typ_lc; eauto.
+    + apply s_in__arrow2; auto. eapply a_mono_typ_lc; eauto.
+Qed.
+
 
 Theorem a_mono_typ_wf : forall Σ A,
   a_mono_typ Σ A -> a_wf_typ Σ A.
