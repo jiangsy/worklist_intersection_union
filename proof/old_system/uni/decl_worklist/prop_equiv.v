@@ -626,6 +626,3 @@ Proof with auto.
   - destruct_d_wl_wf. econstructor; eauto.
     apply IHd_wl_del_red. eapply d_wf_work_apply_contd in H3; eauto.
 Qed.
-
-
-Print Assumptions  d_wl_red_complete.

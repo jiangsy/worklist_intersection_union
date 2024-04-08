@@ -340,12 +340,6 @@ Ltac _apply_IH_a_wl_red :=
       apply H in H1 as H2
     end.
 
-
-Ltac auto_apply :=
-  match goal with
-  | H : context [ ?P -> ?Q ] |- ?Q => apply H
-  end.
-
 (* destruct conjunctions *)
 Ltac destruct_conj :=
   repeat match goal with H: ?T |- _ =>

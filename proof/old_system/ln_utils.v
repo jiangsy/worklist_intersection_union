@@ -57,11 +57,16 @@ Ltac destruct_eq_atom :=
   repeat
     match goal with
     | H : context [EqDec_eq_of_X ?X0 ?X] |- _ => destruct (EqDec_eq_of_X X0 X); subst;
-        try solve_notin_eq X0; try solve_notin_eq X
+        try contradiction; try solve_notin_eq X0; try solve_notin_eq X
     | H : _ |- context [EqDec_eq_of_X ?X0 ?X] => destruct (EqDec_eq_of_X X0 X); subst;
-        try solve_notin_eq X0; try solve_notin_eq X
+        try contradiction; try solve_notin_eq X0; try solve_notin_eq X
     end.
 
+
+Ltac auto_apply :=
+  match goal with
+  | H : context [ ?P -> ?Q ] |- ?Q => apply H
+  end.
 
 
 Ltac gather_atoms ::=

@@ -462,58 +462,61 @@ Qed.
 
 Ltac solve_notin_rename_tvar :=
   repeat
-  match goal with
-  | H : _ |- context [?e1 ^ᵉₑ ?e2] => rewrite ftvar_in_exp_open_exp_wrt_exp_upper
-  | H : _ |- context [rename_tvar_in_aworklist ?X' ?X ?Γ] =>
-    (* assert True *)
     match goal with
-    | H1 : X `notin` ftvar_in_aworklist' (rename_tvar_in_aworklist X' X Γ) |- _ => fail 1
-    | _ =>
-      assert (X `notin` ftvar_in_aworklist' (rename_tvar_in_aworklist X' X Γ)) by now apply notin_rename_tvar_in_aworklist
-    end
-  | H : _ |- context [subst_tvar_in_conts ?X' ?X ?c] =>
-    match goal with
-    | H1 : (X `notin` (ftvar_in_conts (subst_tvar_in_conts X' X c))) |- _ => fail 1
-    | _ =>
-      assert (X `notin` (ftvar_in_conts (subst_tvar_in_conts X' X c))) by (simpl; apply subst_tvar_in_conts_fresh_same; auto)
-    end
-  | H : _ |- context [subst_tvar_in_contd ?X' ?X ?c] =>
-    match goal with
-    | H1 : (X `notin` (ftvar_in_contd (subst_tvar_in_contd X' X c))) |- _ => fail 1
-    | _ =>
-      assert (X `notin` (ftvar_in_contd (subst_tvar_in_contd X' X c))) by (simpl; apply subst_tvar_in_contd_fresh_same; auto)
-    end
-  | H : _ |- context [subst_tvar_in_exp ?X' ?X ?e] =>
-    match goal with
-    | H1 : (X `notin` (ftvar_in_exp (subst_tvar_in_exp X' X e))) |- _ => fail 1
-    | _ =>
-      assert (X `notin` (ftvar_in_exp (subst_tvar_in_exp X' X e))) by (simpl; apply subst_tvar_in_exp_fresh_same; auto)
-    end
-  | H : _ |- context [subst_tvar_in_typ ?X' ?X ?t] =>
-    match goal with
-    | H1 : (X `notin` (ftvar_in_typ (subst_tvar_in_typ X' X t))) |- _ => fail 1
-    | _ =>
-      assert (X `notin` (ftvar_in_typ (subst_tvar_in_typ X' X t))) by (simpl; apply subst_tvar_in_typ_fresh_same; auto)
-    end
-  | H : _ |- _ => idtac
-  end; auto.
+    | H : _ |- context [?e1 ^ᵉₑ ?e2] => rewrite ftvar_in_exp_open_exp_wrt_exp_upper
+    | H : _ |- context [rename_tvar_in_aworklist ?X' ?X ?Γ] =>
+      (* assert True *)
+      match goal with
+      | H1 : X `notin` ftvar_in_aworklist' (rename_tvar_in_aworklist X' X Γ) |- _ => fail 1
+      | _ =>
+        assert (X `notin` ftvar_in_aworklist' (rename_tvar_in_aworklist X' X Γ)) by now apply notin_rename_tvar_in_aworklist
+      end
+    | H : _ |- context [subst_tvar_in_conts ?X' ?X ?c] =>
+      match goal with
+      | H1 : (X `notin` (ftvar_in_conts (subst_tvar_in_conts X' X c))) |- _ => fail 1
+      | _ =>
+        assert (X `notin` (ftvar_in_conts (subst_tvar_in_conts X' X c))) by (simpl; apply subst_tvar_in_conts_fresh_same; auto)
+      end
+    | H : _ |- context [subst_tvar_in_contd ?X' ?X ?c] =>
+      match goal with
+      | H1 : (X `notin` (ftvar_in_contd (subst_tvar_in_contd X' X c))) |- _ => fail 1
+      | _ =>
+        assert (X `notin` (ftvar_in_contd (subst_tvar_in_contd X' X c))) by (simpl; apply subst_tvar_in_contd_fresh_same; auto)
+      end
+    | H : _ |- context [subst_tvar_in_exp ?X' ?X ?e] =>
+      match goal with
+      | H1 : (X `notin` (ftvar_in_exp (subst_tvar_in_exp X' X e))) |- _ => fail 1
+      | _ =>
+        assert (X `notin` (ftvar_in_exp (subst_tvar_in_exp X' X e))) by (simpl; apply subst_tvar_in_exp_fresh_same; auto)
+      end
+    | H : _ |- context [subst_tvar_in_typ ?X' ?X ?t] =>
+      match goal with
+      | H1 : (X `notin` (ftvar_in_typ (subst_tvar_in_typ X' X t))) |- _ => fail 1
+      | _ =>
+        assert (X `notin` (ftvar_in_typ (subst_tvar_in_typ X' X t))) by (simpl; apply subst_tvar_in_typ_fresh_same; auto)
+      end
+    | H : aworklist_subst ?Γ ?X' ?A ?Γ1 ?Γ2 |- context [ftvar_in_aworklist' ?Γ2] =>
+      rewrite (a_worklist_subst_ftavr_in_aworklist_2 _ _ _ _ _ H); eauto
+    | H : aworklist_subst ?Γ ?X' ?A ?Γ1 ?Γ2 |- context [ftvar_in_aworklist' ?Γ1] =>
+      rewrite (a_worklist_subst_ftavr_in_aworklist_1 _ _ _ _ _ H); eauto
+    | H : _ |- _ => idtac
+    end; auto.
 
 
-Ltac solve_tvar_notin_ftvarlist_worklist_subst :=
-  repeat
+(* Ltac solve_tvar_notin_ftvarlist_worklist_subst :=
+  (* repeat *)
     lazymatch goal with
     | H : aworklist_subst ?Γ ?X' ?A ?Γ1 ?Γ2 |- ?X ∉ ftvar_in_aworklist' ?Γ2 =>
       rewrite (a_worklist_subst_ftavr_in_aworklist_2 _ _ _ _ _ H); eauto; try (progress simpl; auto); try (progress solve_notin_rename_tvar; auto)
     | H : aworklist_subst ?Γ ?X' ?A ?Γ1 ?Γ2 |- ?X ∉ ftvar_in_aworklist' ?Γ1 =>
       rewrite (a_worklist_subst_ftavr_in_aworklist_1 _ _ _ _ _ H); eauto; try (progress simpl; auto); try (progress solve_notin_rename_tvar; auto)
-   end.
-
+    end. *)
 
 Ltac rewrite_aworklist_rename_rev' :=
   lazymatch goal with
   | H : context [rename_tvar_in_aworklist _ _ (rename_tvar_in_aworklist ?X' ?X ?Γ)] |- _ =>
     let H1 := fresh "H" in
-    assert (H1: X' `notin` ftvar_in_aworklist' Γ) by (try solve [solve_notin_rename_tvar; solve_tvar_notin_ftvarlist_worklist_subst]);
+    assert (H1: X' `notin` ftvar_in_aworklist' Γ) by (auto; solve_notin_rename_tvar);
     rewrite rename_tvar_in_aworklist_rev_eq in H; auto
   end.
 
@@ -694,11 +697,10 @@ Proof with eauto; solve_false.
         rewrite rename_tvar_in_typ_rev_eq in *...
         rewrite rename_tvar_in_typ_rev_eq in *...
         apply H6 in Hws as Hawlred; simpl; auto.
-        destruct_eq_atom.
-        rewrite_aworklist_rename; simpl; eauto.
-        rewrite_aworklist_rename_rev.
-        simpl in *. destruct_eq_atom.
-        -- auto.
+        -- destruct_eq_atom. clear Hws.
+           rewrite_aworklist_rename; simpl; eauto.
+           rewrite_aworklist_rename_rev.
+           simpl in *. destruct_eq_atom. auto.
         -- eapply a_worklist_subst_wf_wl in Hws; eauto.
            admit.
            simpl. apply binds_cons. apply binds_cons...
