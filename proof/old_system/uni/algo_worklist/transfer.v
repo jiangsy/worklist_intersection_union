@@ -14,6 +14,8 @@ Require Import ln_utils.
 
 Definition subst_set := denv.
 
+Open Scope dbind.
+
 
 Fixpoint ss_to_denv (θ : subst_set) : denv := 
   match θ with 
@@ -628,7 +630,7 @@ Proof with eauto.
     + inst_cofinites_by (L `union` L0 `union` (ftvar_in_body bᵈ) `union` (ftvar_in_body bᵈ0) `union`  dom θ) using_name X.
       apply f_equal.
       eapply open_body_wrt_typ_inj with (X1:=X); auto.
-      eapply trans_body_det with (θ:=(X, □) :: θ)...
+      eapply trans_body_det with (θ:=((X, □) :: θ))...
     + specialize (IHtrans_exp H _ H2).
       eapply trans_typ_det with (A₂ᵈ:=A1ᵈ0) in H1; auto.
       subst...

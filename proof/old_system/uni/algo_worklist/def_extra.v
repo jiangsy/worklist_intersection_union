@@ -294,3 +294,7 @@ Notation " Γ ⟶ᵃʷ⁎⋅ " :=
 Notation " ⊢ᵃʷ Γ " :=
   (a_wf_wl Γ)
       (at level 58, no associativity) : type_scope.
+
+Notation " ⌊ Γ ⌋ᵃ " :=
+    (awl_to_aenv Γ)
+        (at level 58, no associativity) : type_scope.
