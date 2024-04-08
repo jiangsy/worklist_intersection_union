@@ -123,7 +123,7 @@ Proof.
   - apply notin_singleton. unfold not. intros. subst.
     apply wf_ss_uniq in H as Huniq.
     apply binds_ss_to_denv_binds_ss in H1.
-    assert (Y ~ □ ∈ (θ2 ++ (X, dbind_typ ` Y) :: θ1)) by auto.
+    assert (Y ~ □ ∈ᵈ (θ2 ++ (X, dbind_typ ` Y) :: θ1)) by auto.
     eapply binds_app_uniq_iff in H2; auto. 
     inversion H2; destruct H3.
     + apply binds_dom_contradiction in H1; auto.
@@ -223,7 +223,6 @@ Proof.
   auto.
 Qed.
 
-(* Hint Resolve  : idents …. *)
 
 Lemma trans_typ_etvar_subst : forall θ1 θ2 Tᵃ Tᵈ X Aᵃ Aᵈ,
   lc_typ Aᵃ -> 

@@ -75,8 +75,8 @@ Qed.
 Lemma d_subenv_same_var : forall Ψ Ψ' A x,
   ⊢ Ψ ->
   d_subenv Ψ' Ψ ->
-  x ~ A ∈ Ψ ->
-  exists A', x ~ A' ∈ Ψ' /\ Ψ ⊢ A' <: A.
+  x ~ A ∈ᵈ Ψ ->
+  exists A', x ~ A' ∈ᵈ Ψ' /\ Ψ ⊢ A' <: A.
 Proof.
   intros. induction H0; simpl; intros; auto.
   - inversion H1; auto.
@@ -106,8 +106,8 @@ Qed.
 
 Lemma d_subenv_same_stvar : forall Ψ Ψ' X,
   d_subenv Ψ' Ψ ->
-  binds X dbind_stvar_empty Ψ ->
-  binds X dbind_stvar_empty Ψ'.
+  X ~ ■ ∈ᵈ  Ψ ->
+  X ~ ■ ∈ᵈ  Ψ'.
 Proof.
   intros. induction H; simpl; intros; auto.
   - inversion H0; auto.
@@ -176,7 +176,7 @@ Ltac solve_wf_subenv := match goal with
 end.
 
 Lemma binds_subenv: forall Ψ X Ψ',
-    X ~ □ ∈ Ψ -> d_subenv Ψ' Ψ -> X ~ □ ∈ Ψ'.
+    X ~ □ ∈ᵈ Ψ -> d_subenv Ψ' Ψ -> X ~ □ ∈ᵈ Ψ'.
 Proof with try solve_by_invert.
   intros* HD HS. induction* HS.
   - forwards* [?|?]: binds_app_1 HD.

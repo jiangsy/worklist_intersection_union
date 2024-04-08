@@ -52,15 +52,15 @@ Inductive wf_ss : subst_set -> Prop :=
 Inductive trans_typ : subst_set -> typ -> typ -> Prop := 
   | trans_typ__tvar : forall θ X, 
       wf_ss θ -> 
-      X ~ □ ∈ θ ->
+      X ~ □ ∈ᵈ θ ->
       trans_typ θ (typ_var_f X) (typ_var_f X)
   | trans_typ__stvar : forall θ X, 
       wf_ss θ -> 
-      X ~ ■ ∈ θ ->
+      X ~ ■ ∈ᵈ θ ->
       trans_typ θ (typ_var_f X) (typ_var_f X)
   | trans_typ__etvar : forall θ X A1,
       wf_ss θ ->
-      X ~ A1 ∈ θ ->
+      X ~ A1 ∈ᵈ θ ->
       trans_typ θ (typ_var_f X) A1
   | trans_typ_unit : forall θ,
       wf_ss θ ->
@@ -385,7 +385,7 @@ Proof.
 Qed.
 
 Lemma wf_ss_etvar_tvar_false : forall θ X A,
-  wf_ss θ -> X ~ A ∈ θ -> X ~ □ ∈ θ -> False.
+  wf_ss θ -> X ~ A ∈ᵈ θ -> X ~ □ ∈ᵈ θ -> False.
 Proof.
   intros. apply wf_ss_uniq in H.
   specialize (binds_unique _ _ _ _ _ H0 H1 H).
@@ -393,7 +393,7 @@ Proof.
 Qed.
 
 Lemma wf_ss_etvar_stvar_false : forall θ X A,
-  wf_ss θ -> X ~ A ∈ θ -> X ~ ■ ∈ θ -> False.
+  wf_ss θ -> X ~ A ∈ᵈ θ -> X ~ ■ ∈ᵈ θ -> False.
 Proof.
   intros. apply wf_ss_uniq in H.
   specialize (binds_unique _ _ _ _ _ H0 H1 H).
@@ -401,7 +401,7 @@ Proof.
 Qed.
 
 Lemma wf_ss_tvar_stvar_false : forall θ X,
-  wf_ss θ -> X ~ □ ∈ θ -> X ~ ■ ∈ θ -> False.
+  wf_ss θ -> X ~ □ ∈ᵈ θ -> X ~ ■ ∈ᵈ θ -> False.
 Proof.
   intros. apply wf_ss_uniq in H.
   specialize (binds_unique _ _ _ _ _ H0 H1 H).
@@ -754,7 +754,7 @@ Qed.
 Lemma trans_wl_a_wl_binds_etvar_ss : forall Γ X Ω θ θ',
   θ ⫦ Γ ⇝ Ω ⫣ θ' ->
   binds X abind_etvar_empty (awl_to_aenv Γ) ->
-  exists T, X ~ T ∈ θ'.
+  exists T, X ~ T ∈ᵈ θ'.
 Proof with eauto.
   intros. dependent induction H.
   - inversion H0.
@@ -776,7 +776,7 @@ Qed.
 Lemma trans_wl_a_wl_binds_tvar_ss : forall Γ X Ω θ,
   nil ⫦ Γ ⇝ Ω ⫣ θ ->
   binds X abind_tvar_empty (awl_to_aenv Γ) ->
-  X ~ □ ∈ θ.
+  X ~ □ ∈ᵈ θ.
 Proof with eauto.
   intros. dependent induction H; destruct_binds...
 Qed.
@@ -791,7 +791,7 @@ Qed.
 
 Lemma trans_wl_ss_binds_tvar_a_wl : forall θ Γ Ω X,
   nil ⫦ Γ ⇝ Ω ⫣ θ ->
-  X ~ □ ∈ θ ->
+  X ~ □ ∈ᵈ  θ ->
   binds X abind_tvar_empty (awl_to_aenv Γ).
 Proof.
   intros. dependent induction H; destruct_binds; auto.
@@ -799,7 +799,7 @@ Qed.
 
 Lemma trans_wl_ss_binds_stvar_a_wl : forall θ Γ Ω X,
   nil ⫦ Γ ⇝ Ω ⫣ θ ->
-  X ~ ■ ∈ θ ->
+  X ~ ■ ∈ᵈ θ ->
   binds X abind_stvar_empty (awl_to_aenv Γ).
 Proof.
   intros. dependent induction H; destruct_binds; auto.
@@ -808,7 +808,7 @@ Qed.
 
 Lemma trans_wl_ss_binds_etvar_a_wl : forall θ Γ Ω X T,
   nil ⫦ Γ ⇝ Ω ⫣ θ ->
-  X ~ T ∈ θ ->
+  X ~ T ∈ᵈ θ ->
   binds X abind_etvar_empty (awl_to_aenv Γ).
 Proof.
   intros. dependent induction H; eauto.
@@ -828,7 +828,7 @@ Qed.
 Lemma trans_wl_a_wl_binds_stvar_ss : forall Γ X Ω θ,
   nil ⫦ Γ ⇝ Ω ⫣ θ ->
   binds X abind_stvar_empty (awl_to_aenv Γ) ->
-  X ~ ■ ∈ θ.
+  X ~ ■ ∈ᵈ θ.
 Proof with eauto.
   intros. dependent induction H; destruct_binds...
 Qed.
@@ -1964,7 +1964,7 @@ Qed.
 Lemma wf_ss_typ_no_etvar: forall θ X A T,
   wf_ss θ ->
   ss_to_denv θ ⊢ A ->
-  X ~ T ∈ θ ->
+  X ~ T ∈ᵈ θ ->
   X \notin ftvar_in_typ A.
 Proof with eauto.
   intros. dependent induction H0...
@@ -1983,8 +1983,8 @@ Qed.
 
 Corollary etvar_bind_no_etvar: forall θ X1 X2 A1 A2,
   wf_ss θ ->
-  X1 ~ A1 ∈ θ ->
-  X2 ~ A2 ∈ θ ->
+  X1 ~ A1 ∈ᵈ θ ->
+  X2 ~ A2 ∈ᵈ θ ->
   X1 \notin ftvar_in_typ A2.
 Proof with eauto.
   intros; eapply wf_ss_typ_no_etvar...

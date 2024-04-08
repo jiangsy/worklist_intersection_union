@@ -40,17 +40,13 @@ Notation "Ψ ⊢ A ▹ B → C" :=
     (at level 65, A at next level, B at next level, no associativity) : type_scope. 
 
 
-Notation "□" := dbind_tvar_empty.
-Notation "■" := dbind_stvar_empty.
-
-
-Notation "X ~ □ ∈ E" := (binds X (dbind_tvar_empty) E)
+Notation "X ~ □ ∈ᵈ E" := (binds X (dbind_tvar_empty) E)
   (at level 50, no associativity) : type_scope.
 
-Notation "X ~ ■ ∈ E" := (binds X (dbind_stvar_empty) E)
+Notation "X ~ ■ ∈ᵈ E" := (binds X (dbind_stvar_empty) E)
   (at level 50, no associativity) : type_scope.
 
-Notation "x ~ T ∈ E" := (binds x (dbind_typ T) E)
+Notation "x ~ T ∈ᵈ E" := (binds x (dbind_typ T) E)
   (at level 50, T at next level, no associativity) : type_scope.
 
 Notation "` X" := (typ_var_f X)
@@ -102,3 +98,17 @@ Notation "e ^ᵉₜ A" := (open_exp_wrt_typ e A)
   (at level 48, left associativity) : type_scope.
 
 
+Declare Scope dbind_scope.
+Delimit Scope dbind_scope with dbind.
+Bind Scope dbind_scope with dbind.
+
+Notation "□" := dbind_tvar_empty : dbind_scope.
+Notation "■" := dbind_stvar_empty : dbind_scope.
+  
+Declare Scope abind_scope.
+Delimit Scope abind_scope with abind.
+Bind Scope abind_scope with abind.
+
+Notation "□" := abind_tvar_empty : abind_scope.
+Notation "■" := abind_stvar_empty : abind_scope.
+Notation "⬒" := abind_stvar_empty : abind_scope.

@@ -605,7 +605,7 @@ Proof with eauto.
          apply d_wf_typ_subst; auto.
          inst_cofinites_for d_wf_typ__all.
          ++ auto.
-         ++ intros. eapply d_wf_typ_open_inv with (X:=X1) (T1:=T); eauto.
+         ++ intros. eapply d_wf_typ_open_inv with (X:=X1) (B:=T); eauto.
             rewrite subst_tvar_in_typ_open_typ_wrt_typ; eauto.
             simpl. rewrite (subst_tvar_in_typ_fresh_eq); eauto.
             unfold eq_dec. destruct (EqDec_eq_of_X X1 X1); eauto.
@@ -668,7 +668,7 @@ Qed.
 Theorem d_sub_open_mono_stvar_false: forall n1 n2 Ψ A T X L,
     d_typ_order (A ^^ᵗ T) < n1 ->
     d_typ_size (A ^^ᵗ T) < n2 ->
-    X ~ ■ ∈ Ψ ->
+    X ~ ■ ∈ᵈ Ψ ->
     Ψ ⊢ A ^^ᵗ T <: typ_var_f X ->
     (forall X, X `notin` L -> s_in X (A ^ᵗ X)) ->
     d_mono_typ Ψ T ->
@@ -739,7 +739,7 @@ Theorem d_mono_notin_stvar : forall Ψ2 Ψ1 A X,
 Proof.
   intros. dependent induction H0; simpl in *; auto.
   - case_eq (X0 == X); intros; subst*; try solve_notin.
-    assert (X ~ ■ ∈ (Ψ2 ++ (X, ■) :: Ψ1)) by eauto.
+    assert (X ~ ■ ∈ᵈ (Ψ2 ++ (X, ■) :: Ψ1)) by eauto.
     exfalso. forwards*: binds_two_thing_false X.
   - dependent destruction H; auto... apply notin_union; eauto.
 Qed.
@@ -881,8 +881,8 @@ Qed.
 
 Lemma d_sub_size_rename_stvar : forall Ψ1 Ψ2 X Y A B n,
   Ψ2 ++ X ~ ■ ++ Ψ1 ⊢ A <: B | n ->
-      Y ∉ (dom Ψ1 `union` dom Ψ2) ->
-      (map (subst_tvar_in_dbind (typ_var_f Y) X) Ψ2) ++ Y ~ ■ ++ Ψ1 ⊢
+  Y ∉ (dom Ψ1 `union` dom Ψ2) ->
+  (map (subst_tvar_in_dbind (typ_var_f Y) X) Ψ2) ++ Y ~ ■ ++ Ψ1 ⊢
         {typ_var_f Y /ᵗ X} A <: {typ_var_f Y /ᵗ X} B | n.
 Proof with (simpl in *; eauto using d_wf_env_subst_tvar_typ).
   intros * HS HN.
@@ -892,22 +892,22 @@ Proof with (simpl in *; eauto using d_wf_env_subst_tvar_typ).
 
   gen Y.
   inductions HS; intros...
-  - econstructor...
-    applys d_wf_env_subst_stvar_typ...
+  - constructor.
+    applys d_wf_env_subst_stvar_typ; auto.
     rewrite_env ((Ψ2 ++ (X, ■) :: nil ) ++ [(Y, ■)] ++ Ψ1).
     applys d_wf_env_weaken_stvar.
     rewrite_env (Ψ2 ++ X ~ ■ ++ Ψ1)...
     solve_notin.
     applys d_wf_typ_rename_stvar...
-  - econstructor...
-    applys d_wf_env_subst_stvar_typ...
+  - constructor.
+    applys d_wf_env_subst_stvar_typ; auto.
     rewrite_env ((Ψ2 ++ (X, ■) :: nil ) ++ [(Y, ■)] ++ Ψ1).
     applys d_wf_env_weaken_stvar.
     rewrite_env (Ψ2 ++ X ~ ■ ++ Ψ1)...
     solve_notin.
     applys d_wf_typ_rename_stvar...
-  - econstructor...
-    applys d_wf_env_subst_stvar_typ...
+  - constructor. 
+    applys d_wf_env_subst_stvar_typ; auto.
     rewrite_env ((Ψ2 ++ (X, ■) :: nil ) ++ [(Y, ■)] ++ Ψ1).
     applys d_wf_env_weaken_stvar.
     rewrite_env (Ψ2 ++ X ~ ■ ++ Ψ1)...
