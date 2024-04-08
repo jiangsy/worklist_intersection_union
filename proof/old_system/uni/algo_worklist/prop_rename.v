@@ -662,30 +662,6 @@ Proof.
 Admitted.
 
 
-Ltac destruct_eq_atom' :=
-  unfold eq_dec in *;
-  repeat
-    match goal with
-    | H : context [EqDec_eq_of_X ?X0 ?X] |- _ => destruct (EqDec_eq_of_X X0 X);
-        [subst | idtac]
-    | H : _ |- context [EqDec_eq_of_X ?X0 ?X] => destruct (EqDec_eq_of_X X0 X);
-        [subst | idtac]
-    end.
-
-
-
-Ltac auto_solve_not_in' :=
-  match goal with 
-  | H : ?X <> ?X |- _ => contradiction
-  | H : ?X `notin` ?L |- _ => 
-    match goal with 
-    | H : context [singleton ?X] |- _ => solve_notin_eq X
-    end
-  end.
-
-Ltac sdasdsd :=
-  destruct_eq_atom'; try auto_solve_not_in'.
-
 Theorem a_wl_red_rename_tvar : forall Γ X X',
   X <> X' ->
   ⊢ᵃʷ Γ ->
@@ -1023,7 +999,6 @@ Proof.
   induction Γ; simpl in *; auto; intros; destruct_a_wf_wl.
   - destruct_eq_atom. 
     + rewrite IHΓ; auto.
-    + subst. solve_notin_eq x'.
     + rewrite IHΓ; auto.
   - rewrite IHΓ; auto.
   - rewrite IHΓ; auto.
