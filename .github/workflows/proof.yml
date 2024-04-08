@@ -1,0 +1,32 @@
+name: "Compile proofs"
+
+on:
+  push:
+    branches:
+      - "master"
+    paths:
+      - proof/old_system
+  workflow_dispatch: # Allow manual triggering
+
+jobs:
+  compile:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Install Nix
+      uses: cachix/install-nix-action@v26
+      with:
+        nix_path: nixpkgs=channel:nixos-unstable
+    - name: Add NUR package repository
+      run: |
+        mkdir -p ~/.config/nixpkgs/
+        echo '{
+          packageOverrides = pkgs: {
+            nur = import (builtins.fetchTarball "https://github.com/nix-community/NUR/archive/master.tar.gz") {
+              inherit pkgs;
+            };
+          };
+        }' > ~/.config/nixpkgs/config.nix
+    - name: Check out repository
+      uses: actions/checkout@v4
+    - name: Install packages and compile proofs 
+      run: nix-shell -p coqPackages_8_15.coq coqPackages_8_15.metalib lngen nur.repos.chen.ott-sweirich --run "cd proof/old_system && make coq"
