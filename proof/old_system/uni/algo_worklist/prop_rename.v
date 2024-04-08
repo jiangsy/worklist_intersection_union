@@ -511,10 +511,24 @@ Ltac solve_notin_rename_tvar :=
     | H : aworklist_subst ?Γ ?X' ?A ?Γ1 ?Γ2 |- ?X ∉ ftvar_in_aworklist' ?Γ1 =>
       rewrite (a_worklist_subst_ftavr_in_aworklist_1 _ _ _ _ _ H); eauto; try (progress simpl; auto); try (progress solve_notin_rename_tvar; auto)
     end. *)
+Ltac preprocess_ftvar_aworklist_subst X :=
+  match goal with 
+  | H : aworklist_subst ?Γ ?X' ?A ?Γ1 ?Γ2 |- _ =>
+    match goal with 
+    | H_1 : X `notin` ftvar_in_aworklist' Γ |- _ => fail 1
+    | _ : _ |- _ => assert (X `notin` ftvar_in_aworklist' Γ) by (auto; solve_notin_rename_tvar)
+    end;
+    match goal with 
+    | H_1 :  (X `notin` ftvar_in_typ A) |- _ => fail 1
+    | _ : _ |- _ => assert (X `notin` ftvar_in_typ A) by (auto; solve_notin_rename_tvar)
+    end
+  end.
+    
 
 Ltac rewrite_aworklist_rename_rev' :=
   lazymatch goal with
   | H : context [rename_tvar_in_aworklist _ _ (rename_tvar_in_aworklist ?X' ?X ?Γ)] |- _ =>
+    try preprocess_ftvar_aworklist_subst X';
     let H1 := fresh "H" in
     assert (H1: X' `notin` ftvar_in_aworklist' Γ) by (auto; solve_notin_rename_tvar);
     rewrite rename_tvar_in_aworklist_rev_eq in H; auto
@@ -648,7 +662,6 @@ Proof.
 Admitted.
 
 
-
 Theorem a_wl_red_rename_tvar : forall Γ X X',
   X <> X' ->
   ⊢ᵃʷ Γ ->
@@ -697,7 +710,7 @@ Proof with eauto; solve_false.
         rewrite rename_tvar_in_typ_rev_eq in *...
         rewrite rename_tvar_in_typ_rev_eq in *...
         apply H6 in Hws as Hawlred; simpl; auto.
-        -- destruct_eq_atom. clear Hws.
+        -- clear Hws.
            rewrite_aworklist_rename; simpl; eauto.
            rewrite_aworklist_rename_rev.
            simpl in *. destruct_eq_atom. auto.
@@ -719,11 +732,10 @@ Proof with eauto; solve_false.
         rewrite rename_tvar_in_typ_rev_eq in *...
         rewrite rename_tvar_in_aworklist_rev_eq in Hws; auto...
         apply H6 in Hws as Hawlred; simpl; auto.
-        destruct_eq_atom.
-        rewrite_aworklist_rename; simpl; eauto.
-        rewrite_aworklist_rename_rev.
-        simpl in Hawlred. destruct_eq_atom.
-        -- auto.
+        -- destruct_eq_atom. clear Hws.
+           rewrite_aworklist_rename; simpl; eauto.
+           rewrite_aworklist_rename_rev.
+           simpl in Hawlred. destruct_eq_atom. auto.
         -- eapply a_worklist_subst_wf_wl in Hws; eauto.
            admit.
            simpl; apply binds_cons. apply binds_cons...
@@ -744,11 +756,10 @@ Proof with eauto; solve_false.
         rewrite rename_tvar_in_typ_rev_eq in *...
         rewrite rename_tvar_in_typ_rev_eq in *...
         apply H8 in Hws as Hawlred; simpl; auto.
-        destruct_eq_atom.
-        rewrite_aworklist_rename; simpl; eauto.
-        rewrite_aworklist_rename_rev.
-        simpl in Hawlred. destruct_eq_atom.
-        -- auto.
+        -- clear Hws. destruct_eq_atom.
+           rewrite_aworklist_rename; simpl; eauto.
+           rewrite_aworklist_rename_rev.
+           simpl in Hawlred. destruct_eq_atom. auto.
         -- eapply a_worklist_subst_wf_wl in Hws; eauto.
            admit.
            simpl. apply binds_cons. apply binds_cons...
@@ -766,11 +777,10 @@ Proof with eauto; solve_false.
         rewrite rename_tvar_in_typ_rev_eq in *...
         rewrite rename_tvar_in_aworklist_rev_eq in Hws; auto...
         apply H8 in Hws as Hawlred; simpl; auto.
-        destruct_eq_atom.
-        rewrite_aworklist_rename; simpl; eauto.
-        rewrite_aworklist_rename_rev.
-        simpl in Hawlred. destruct_eq_atom.
-        -- auto.
+        -- clear Hws. destruct_eq_atom.
+           rewrite_aworklist_rename; simpl; eauto.
+           rewrite_aworklist_rename_rev.
+           simpl in Hawlred. destruct_eq_atom. auto.
         -- eapply a_worklist_subst_wf_wl in Hws; eauto.
            admit.
            simpl. apply binds_cons. apply binds_cons...
@@ -837,17 +847,16 @@ Proof with eauto; solve_false.
         replace (exp_var_f x) with (subst_tvar_in_exp (` X') X (exp_var_f x)) in Hws by auto.
         rewrite <- subst_tvar_in_exp_open_exp_wrt_exp in Hws.
         rewrite rename_tvar_in_exp_rev_eq in Hws.
-        eapply H7 with (x:=x) in Hws as Hawlred; simpl in *; auto.
-        assert (X `notin` (ftvar_in_exp (subst_tvar_in_exp ` X' X e ^ᵉₑ exp_var_f x))) by (solve_notin_rename_tvar; auto).
-        destruct_eq_atom.
-        rewrite_aworklist_rename; simpl; auto.
-        rewrite_aworklist_rename_rev.
-        simpl in Hawlred. destruct_eq_atom.
-        -- auto.
-        -- eapply a_worklist_subst_wf_wl in Hws; eauto. admit. admit. (* wf *)
-        -- rewrite a_worklist_subst_ftavr_in_aworklist with
-            (Γ:=(work_check (e ^ᵉₑ exp_var_f x) ` X2 ⫤ᵃ x ~ᵃ ` X1;ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ)); auto. simpl.
-          solve_notin_rename_tvar; auto.
+        -- eapply H7 with (x:=x) in Hws as Hawlred; simpl in *; auto.
+           ++ assert (X `notin` (ftvar_in_exp (subst_tvar_in_exp ` X' X e ^ᵉₑ exp_var_f x))) by (solve_notin_rename_tvar; auto).
+              clear Hws. destruct_eq_atom.
+              rewrite_aworklist_rename; simpl; auto.
+              rewrite_aworklist_rename_rev.
+              simpl in Hawlred. destruct_eq_atom. auto.
+           ++ eapply a_worklist_subst_wf_wl in Hws; eauto. admit. admit. (* wf *)
+           ++ rewrite a_worklist_subst_ftavr_in_aworklist with
+                (Γ:=(work_check (e ^ᵉₑ exp_var_f x) ` X2 ⫤ᵃ x ~ᵃ ` X1;ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ)); auto. simpl.
+              solve_notin_rename_tvar; auto.
         -- solve_notin_rename_tvar; auto.
       * admit. (* wf *)
       * simpl. solve_notin_rename_tvar; auto.
@@ -861,16 +870,15 @@ Proof with eauto; solve_false.
         replace (exp_var_f x) with (subst_tvar_in_exp (` X') X (exp_var_f x)) in Hws by auto.
         rewrite <- subst_tvar_in_exp_open_exp_wrt_exp in Hws.
         rewrite rename_tvar_in_exp_rev_eq in Hws.
-        eapply H7 with (x:=x) in Hws as Hawlred; simpl; auto.
-        assert (X `notin`(ftvar_in_exp (subst_tvar_in_exp ` X' X e ^ᵉₑ exp_var_f x))) by (solve_notin_rename_tvar; auto).
-        destruct_eq_atom.
-        rewrite_aworklist_rename; simpl; auto.
-        rewrite_aworklist_rename_rev.
-        simpl in Hawlred. destruct_eq_atom.
-        -- auto.
-        -- eapply a_worklist_subst_wf_wl in Hws; eauto. admit.
-           repeat (apply binds_cons). auto.
-        -- admit. (* wf *)
+        -- eapply H7 with (x:=x) in Hws as Hawlred; simpl; auto.
+           ++ assert (X `notin`(ftvar_in_exp (subst_tvar_in_exp ` X' X e ^ᵉₑ exp_var_f x))) by (solve_notin_rename_tvar; auto).
+              clear Hws. destruct_eq_atom.
+              rewrite_aworklist_rename; simpl; auto.
+              rewrite_aworklist_rename_rev.
+              simpl in Hawlred. destruct_eq_atom. auto.
+           ++ eapply a_worklist_subst_wf_wl in Hws; eauto. admit.
+              repeat (apply binds_cons). auto.
+           ++ admit. (* wf *)
         -- rewrite ftvar_in_exp_open_exp_wrt_exp_upper; auto.
       * admit. (* wf *)
       * simpl; solve_notin_rename_tvar; auto.
@@ -929,11 +937,10 @@ Proof with eauto; solve_false.
         rewrite rename_tvar_in_contd_rev_eq in Hws; auto.
         assert (X `notin` (ftvar_in_contd ({` X' /ᶜᵈₜ X} cd))) by (solve_notin_rename_tvar; auto).
         apply H6 in Hws as Hawlred; simpl; auto.
-        destruct_eq_atom.
-        rewrite_aworklist_rename; simpl; auto.
-        rewrite_aworklist_rename_rev.
-        simpl in Hawlred. destruct_eq_atom.
-        -- auto.
+        -- clear Hws. destruct_eq_atom.
+           rewrite_aworklist_rename; simpl; auto.
+           rewrite_aworklist_rename_rev.
+           simpl in Hawlred. destruct_eq_atom. auto.
         -- admit. (* wf *)
         -- rewrite a_worklist_subst_ftavr_in_aworklist with
             (Γ:=(work_infabs (typ_arrow ` X1 ` X2) cd ⫤ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ));
@@ -950,11 +957,9 @@ Proof with eauto; solve_false.
         rewrite rename_tvar_in_contd_rev_eq in Hws; auto.
         assert (X `notin` (ftvar_in_contd ({` X' /ᶜᵈₜ X} cd))) by now solve_notin_rename_tvar.
         apply H6 in Hws as Hawlred; simpl; auto.
-        destruct_eq_atom.
-        rewrite_aworklist_rename; simpl; auto.
-        rewrite_aworklist_rename_rev.
-        simpl in Hawlred. destruct_eq_atom.
-        -- auto.
+        -- clear Hws. destruct_eq_atom. rewrite_aworklist_rename; simpl; auto.
+           rewrite_aworklist_rename_rev.
+           simpl in Hawlred. destruct_eq_atom. auto.
         -- admit. (* wf *)
         -- rewrite a_worklist_subst_ftavr_in_aworklist with
             (Γ:=(work_infabs (typ_arrow ` X1 ` X2) cd ⫤ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ)); auto.
@@ -992,7 +997,7 @@ Lemma rename_var_in_aworklist_rev_eq : forall x x' Γ,
   rename_var_in_aworklist x x' (rename_var_in_aworklist x' x Γ) = Γ.
 Proof.
   induction Γ; simpl in *; auto; intros; destruct_a_wf_wl.
-  - destruct_eq_atom.  unfold eq_dec in *. destruct_eq_atom.
+  - destruct_eq_atom. 
     + rewrite IHΓ; auto.
     + rewrite IHΓ; auto.
   - rewrite IHΓ; auto.

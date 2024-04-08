@@ -51,17 +51,17 @@ Ltac solve_notin_eq X :=
     assert (H: X `notin` singleton X) by auto;
     apply notin_singleton_1 in H; contradiction.
 
-
 Ltac destruct_eq_atom :=
   unfold eq_dec in *;
   repeat
-    match goal with
+    lazymatch goal with
+    | H : context [EqDec_eq_of_X ?X ?X] |- _ => destruct (EqDec_eq_of_X X X); [ idtac | contradiction]
+    | H : _ |- context [EqDec_eq_of_X ?X ?X] => destruct (EqDec_eq_of_X X X); [ idtac | contradiction]
     | H : context [EqDec_eq_of_X ?X0 ?X] |- _ => destruct (EqDec_eq_of_X X0 X); subst;
         try contradiction; try solve_notin_eq X0; try solve_notin_eq X
     | H : _ |- context [EqDec_eq_of_X ?X0 ?X] => destruct (EqDec_eq_of_X X0 X); subst;
         try contradiction; try solve_notin_eq X0; try solve_notin_eq X
     end.
-
 
 Ltac auto_apply :=
   match goal with
