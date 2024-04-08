@@ -13,3 +13,4 @@ Require Import uni.algo_worklist.prop_completeness.
 Require Import uni.algo_worklist.prop_decidability.
 
 Print Assumptions d_chk_inf_subsumption.
+Print Assumptions a_wl_red_completeness.

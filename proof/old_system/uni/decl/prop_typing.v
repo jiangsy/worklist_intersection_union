@@ -199,7 +199,7 @@ Proof with eauto using d_mono_typ_subenv.
 Qed.
 
 
-#[local] Hint Resolve d_subenv_wf_typ d_subenv_wf_env d_wft_typ_subst 
+#[local] Hint Resolve d_subenv_wf_typ d_subenv_wf_env d_wf_typ_subst 
                       d_wf_env_subst_tvar_typ bind_typ_subst d_wf_typ_dlc_type : core.
 
 
@@ -297,7 +297,7 @@ Lemma d_inftapp_wft : forall Ψ A B C,
   ⊢ Ψ /\ Ψ ⊢ A /\ Ψ ⊢ B /\ Ψ ⊢ C.
 Proof.
   intros. induction H; intuition.
-  - eapply d_wft_all_open; eauto.
+  - eapply d_wf_typ_all_open; eauto.
 Qed.
 
 Hint Resolve d_inftapp_wft : typing.
@@ -326,7 +326,7 @@ Proof with auto.
       inst_cofinites_with X.
       erewrite <- subst_tvar_in_typ_open_typ_wrt_typ_tvar2; eauto...
       rewrite_env ((map (subst_tvar_in_dbind B X) nil) ++ Ψ).
-      eapply d_wft_typ_subst; eauto...
+      eapply d_wf_typ_subst; eauto...
       econstructor; eauto.
     + exists (A0 ^^ᵗ B). split; auto...
       pick fresh X. inst_cofinites_with X.
@@ -338,7 +338,7 @@ Proof with auto.
       inst_cofinites_for d_wf_typ__all; intros.
       * inst_cofinites_with X. auto.
       * inst_cofinites_with X.
-        apply d_wf_typ_subst_tvar_stvar_cons; eauto...
+        apply d_wf_typ_stvar_tvar_cons; eauto...
         apply d_sub_dwft in H5; intuition.
     + inversion H5.
     + specialize (IHd_sub _ H H0 H1 (eq_refl _)).

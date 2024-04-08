@@ -29,12 +29,22 @@ Proof.
   intros. induction H; auto.
 Qed.
 
+Lemma a_wf_typ_lc : forall Σ A,
+  a_wf_typ Σ A ->
+  lc_typ A.
+Proof.
+  intros. induction H; auto.
+Qed.
+
+
 Lemma a_mono_typ_lc : forall Σ A,
   a_mono_typ Σ A ->
   lc_typ A.
 Proof.
   intros. induction H; auto.
 Qed.
+
+#[global] Hint Resolve a_wf_typ_lc a_mono_typ_lc : core.
 
 Lemma a_mono_typ_in_s_in : forall Σ A X,
   a_mono_typ Σ A ->
@@ -245,7 +255,7 @@ Proof.
 Qed.
 
 
-Lemma a_wft_all_open : forall Σ A B,
+Lemma a_wf_typ_all_open : forall Σ A B,
   a_wf_env Σ ->
   Σ ᵗ⊢ᵃ typ_all A ->
   Σ ᵗ⊢ᵃ B ->
@@ -775,6 +785,7 @@ Proof.
     eapply a_worklist_subst_binds_same_atvar'; eauto. auto.
 Qed.
 
+
 Lemma a_worklist_subst_wf_typ : forall Γ X A B Γ1 Γ2,
   binds X abind_etvar_empty (awl_to_aenv Γ) ->
   X `notin` ftvar_in_typ B ->
@@ -807,6 +818,58 @@ Proof with (autorewrite with core in *); simpl; eauto; solve_false; try solve_no
   - simpl in *. constructor; eauto.
 Qed.
 
+Lemma a_worklist_subst_wf_typ_subst : forall Γ X A B Γ1 Γ2,
+  binds X abind_etvar_empty (awl_to_aenv Γ) ->
+  X `notin` ftvar_in_typ A ->
+  a_wf_typ (awl_to_aenv Γ) A ->
+  a_wf_typ (awl_to_aenv Γ) B ->
+  ⊢ᵃʷ Γ ->
+  aworklist_subst Γ X A Γ1 Γ2 ->
+  a_wf_typ (awl_to_aenv (awl_app (subst_tvar_in_aworklist A X Γ2) Γ1)) ({A /ᵗ X} B).
+Proof with (autorewrite with core in *); simpl; eauto; solve_false; try solve_notin.
+  introv HB HN WFA WFB HW HS.
+  generalize dependent Γ1. generalize dependent Γ2. dependent induction WFB; auto; intros.
+  - destruct (X == X0); subst.
+    + simpl. destruct_eq_atom. eapply a_worklist_subst_wf_typ; eauto.
+    + simpl. destruct_eq_atom. eapply a_worklist_subst_wf_typ; eauto. 
+  - destruct (X == X0); subst.
+    + simpl. destruct_eq_atom. eapply a_worklist_subst_wf_typ; eauto.
+    + simpl. destruct_eq_atom. eapply a_worklist_subst_wf_typ; eauto.
+  - destruct (X == X0); subst.
+    + simpl. destruct_eq_atom. eapply a_worklist_subst_wf_typ; eauto.
+    + simpl. destruct_eq_atom. eapply a_worklist_subst_wf_typ; eauto.
+  - simpl in *. constructor; eauto.
+  - simpl in *. pick fresh X0 and apply a_wf_typ__all.
+    + inst_cofinites_with X0. rewrite subst_tvar_in_typ_open_typ_wrt_typ_fresh2; auto.
+      apply s_in_subst_inv... eauto.
+    + inst_cofinites_with X0. rewrite subst_tvar_in_typ_open_typ_wrt_typ_fresh2; auto.
+      replace (X0 ~ abind_tvar_empty ++ awl_to_aenv (subst_tvar_in_aworklist A X Γ2 ⧺ Γ1)) with
+      (awl_to_aenv ((subst_tvar_in_aworklist A X (aworklist_constvar Γ2 X0 abind_tvar_empty) ⧺ Γ1))) by auto.
+      eapply H1 with (Γ:=aworklist_constvar Γ X0 abind_tvar_empty); eauto...
+      apply a_wf_typ_weaken_cons... eauto.
+  - simpl in *. constructor; eauto.
+  - simpl in *. constructor; eauto.
+Qed.
+
+
+Lemma a_worklist_subst_wf_contd_subst : forall Γ X A cd Γ1 Γ2,
+  binds X abind_etvar_empty (awl_to_aenv Γ) ->
+  X `notin` ftvar_in_typ A ->
+  a_wf_typ (awl_to_aenv Γ) A ->
+  a_wf_contd (awl_to_aenv Γ) cd ->
+  ⊢ᵃʷ Γ ->
+  aworklist_subst Γ X A Γ1 Γ2 ->
+  a_wf_contd (awl_to_aenv (awl_app (subst_tvar_in_aworklist A X Γ2) Γ1)) ({A /ᶜᵈₜ X} cd)
+with a_worklist_subst_wf_conts_subst : forall Γ X A cs Γ1 Γ2,
+  binds X abind_etvar_empty (awl_to_aenv Γ) ->
+  X `notin` ftvar_in_typ A ->
+  a_wf_typ (awl_to_aenv Γ) A ->
+  a_wf_conts (awl_to_aenv Γ) cs ->
+  ⊢ᵃʷ Γ ->
+  aworklist_subst Γ X A Γ1 Γ2 ->
+  a_wf_conts (awl_to_aenv (awl_app (subst_tvar_in_aworklist A X Γ2) Γ1)) ({A /ᶜˢₜ X} cs).
+Proof with (autorewrite with core in *); simpl; eauto; solve_false; try solve_notin.
+Admitted.
 
 Lemma a_worklist_subst_mono_typ : forall Γ X A T Γ1 Γ2,
   binds X abind_etvar_empty (awl_to_aenv Γ) ->

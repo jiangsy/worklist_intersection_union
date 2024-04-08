@@ -259,7 +259,7 @@ Proof with eauto with typing.
     dependent destruction H.
     assert (Hwf: ⊢ᵈʷ (work_sub (A ^^ᵗ T) B ⫤ᵈ Ω)). {
       repeat (constructor; auto).
-      apply d_wft_all_open; auto.
+      apply d_wf_typ_all_open; auto.
       apply d_mono_typ_d_wf_typ...
       admit.
       admit.
@@ -291,12 +291,12 @@ Proof with eauto with typing.
     + eapply d_wl_red_weaken_work2; eauto.
   - destruct_d_wl_wf. 
     assert (⊢ᵈʷ (work_applys cs (A ^^ᵗ B) ⫤ᵈ Ω)).
-    { repeat constructor... apply d_wft_all_open... }
+    { repeat constructor... apply d_wf_typ_all_open... }
     apply IHd_wl_red in H4. dependent destruction H4.
     eapply d_wl_del_red__inftapp; eauto.
   - destruct_d_wl_wf. 
     assert (⊢ᵈʷ (work_infabs (A ^^ᵗ T) cd ⫤ᵈ Ω)).
-    { repeat constructor... apply d_wft_all_open... apply d_mono_typ_d_wf_typ... }
+    { repeat constructor... apply d_wf_typ_all_open... apply d_mono_typ_d_wf_typ... }
     apply IHd_wl_red in H4. dependent destruction H4.
     eapply d_wl_del_red__infabs with (B:=B) (C:=C); eauto.
     eapply d_infabs__all with (T:=T)...
@@ -327,7 +327,7 @@ Proof with auto.
     eapply d_wl_red__sub_alll with (T:=T); eauto. 
     apply IHHsub; eauto. 
     econstructor; auto. econstructor; auto.
-    apply d_wft_all_open; eauto; auto.
+    apply d_wf_typ_all_open; eauto; auto.
     eapply d_mono_typ_d_wf_typ; auto.
 Qed.
 

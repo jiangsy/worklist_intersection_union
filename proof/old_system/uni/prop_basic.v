@@ -296,7 +296,7 @@ Proof.
 Qed.
 
 
-Lemma ftv_sin_typ_subst : forall X Y A T,
+Lemma s_in_subst : forall X Y A T,
   lc_typ T ->
   X `notin` ftvar_in_typ T ->
   X <> Y ->
@@ -358,7 +358,7 @@ Proof.
 Qed.
 
 
-Lemma ftv_sin_typ_subst_inv : forall X Y T1 S1,
+Lemma s_in_subst_inv : forall X Y T1 S1,
   lc_typ S1 ->
   X <> Y ->
   s_in X T1 ->
@@ -378,6 +378,26 @@ Proof.
     rewrite subst_tvar_in_typ_open_typ_wrt_typ_fresh2; auto.
 Qed.
 
+
+Lemma s_in_lc_typ : forall A X,
+  s_in X A ->
+  lc_typ A.
+Proof.
+  intros; induction H; auto.
+Qed.
+
+
+Lemma s_in_rename : forall A X Y,
+  s_in X A ->
+  s_in Y ({typ_var_f Y /ᵗ X} A).
+Proof.
+  intros. induction H; simpl; eauto.
+  - destruct_eq_atom; auto.
+  - apply s_in__arrow1; auto. apply lc_typ_subst; auto.
+  - apply s_in__arrow2; auto. apply lc_typ_subst; auto.
+  - apply s_in__all with (L:=L `union` singleton X). intros. inst_cofinites_with Y0. 
+    rewrite subst_tvar_in_typ_open_typ_wrt_typ_fresh2; auto...
+Qed.
 
 Lemma neq_all_rename: forall A X Y,
   neq_all A ->
