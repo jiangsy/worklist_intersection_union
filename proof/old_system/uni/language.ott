@@ -1,5 +1,6 @@
 metavar typvar, X, Y, Z     ::= {{ repr-locally-nameless }}
 metavar expvar, x, y, z     ::= {{ repr-locally-nameless }}
+metavar num, n              ::= {{ coq nat }}
 
 grammar
 
@@ -53,7 +54,7 @@ conts, cs :: 'conts_' ::=
 
 contd, cd :: 'contd_' ::=
   | _ ⊔▹ A ▹ cd           ::   :: infabsunion
-  | _ • e =>=> cs          ::   :: infapp
+  | _ ≤ n • e =>=> cs          ::   :: infapp
   | _ ⊔▹ A ~> B >> cd     ::   :: unioninfabs
   | ( cd )                :: S :: app {{ coq ( [[cd]] )}}
 
@@ -596,7 +597,7 @@ dE |- _ ⊔▹ A ▹ cd
 dE |- e 
 dE |- cs
 -------------------- :: infapp
-dE |- _ • e =>=> cs  
+dE |- _ ≤ n • e =>=> cs  
 
 dE |- A -> B
 dE |- cd
@@ -987,7 +988,7 @@ aE |- _ ⊔▹ A ▹ cd
 aE |- e 
 aE |- cs
 -------------------- :: infapp
-aE |- _ • e =>=> cs  
+aE |- _ ≤ n • e =>=> cs  
 
 aE |- A -> B
 aE |- cd

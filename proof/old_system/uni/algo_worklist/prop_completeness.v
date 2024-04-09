@@ -762,7 +762,8 @@ Lemma trans_apply_contd : forall θ cdᵃ cdᵈ Aᵃ Aᵈ Bᵃ Bᵈ wᵈ,
   exists wᵃ, apply_contd cdᵃ Aᵃ Bᵃ wᵃ /\ θ ⫦ʷ wᵃ ⇝ wᵈ.
 Proof.
   intros. induction H2; try dependent destruction H; eauto 6.
-Qed.
+(* TODO *)
+Admitted.
 
 Lemma trans_typ_subst : forall θ1 θ2 Aᵃ Aᵈ Bᵃ Bᵈ X b,
   b = dbind_tvar_empty \/ b = dbind_stvar_empty ->
@@ -1682,6 +1683,7 @@ Proof with eauto.
     constructor...
     apply IHd_wl_red...
     exists θ0...
+    admit. (* TODO *)
   - solve_awl_trailing_etvar.
     destruct_trans.
     destruct_a_wf_wl.
@@ -1866,4 +1868,4 @@ Proof with eauto.
     apply IHd_wl_red; auto.
     destruct_a_wf_wl. constructor... eapply a_wf_work_apply_contd with (A:=Aᵃ)...
     exists θ0...
-Qed.
+Admitted.

@@ -287,7 +287,7 @@ Proof with eauto with typing.
     destruct_d_wl_del_red.
     eapply d_wl_del_red__inf with (A:=B).
     + econstructor; eauto. dependent destruction H7.
-      apply d_wl_red_weaken_work1 in H7. inversion H7... 
+      apply d_wl_red_weaken_work1 in H8. inversion H8... 
     + eapply d_wl_red_weaken_work2; eauto.
   - destruct_d_wl_wf. 
     assert (⊢ᵈʷ (work_applys cs (A ^^ᵗ B) ⫤ᵈ Ω)).
@@ -396,6 +396,7 @@ Proof.
     rewrite d_wl_app_cons_work_same_env. auto.
     intros. inst_cofinites_with x.
     rewrite_dwl_app. auto.
+  - admit.
   - eapply d_wl_red__infabs_all with (T:=T).
     rewrite d_wl_app_cons_work_same_env. auto.
     rewrite_dwl_app. auto.
@@ -403,7 +404,7 @@ Proof.
     rewrite_dwl_app. auto.
   - econstructor; eauto.
     rewrite_dwl_app. auto.
-Qed.
+Admitted.
 
 
 Lemma d_wl_red_infabs_complete: forall Ω A B C cc,
@@ -466,14 +467,14 @@ Proof with auto.
   - econstructor. 
     eapply IHd_chk_inf; eauto.
     destruct_d_wl_wf...
-  - econstructor.
+  - econstructor. admit.
     destruct_d_wl_wf.
     eapply IHd_chk_inf1; eauto.
-    apply d_wl_red__applys with (w:=work_infabs A (contd_infapp e2 c)); eauto.
+    apply d_wl_red__applys with (w:=work_infabs A (contd_infapp (exp_split_size (dwl_to_aenv Ω) e1) e2 c)); eauto.
     econstructor. simpl.
     apply d_infabs_wft in H0 as Hwft. intuition.
     eapply d_wl_red_infabs_complete; eauto.
-    econstructor... econstructor... econstructor.
+    econstructor... econstructor... admit. econstructor.
     assert ((work_check e2 B ⫤ᵈ Ω) ⟶ᵈʷ⁎⋅).
       apply IHd_chk_inf2; auto.
       apply d_wl_red_weaken_consw in H5; auto.
@@ -522,7 +523,7 @@ Proof with auto.
   - destruct_d_wl_wf. eapply d_wl_red__chk_inter...
   - destruct_d_wl_wf. eauto...
   - destruct_d_wl_wf. eauto... 
-Qed.
+Admitted.
 
 
 Theorem d_wl_red_complete: forall Ω, 

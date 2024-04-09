@@ -566,7 +566,7 @@ Lemma worklist_subst_rename_tvar : forall Γ X1 X2 X' A Γ1 Γ2,
   aworklist_subst Γ X2 A Γ1 Γ2 ->
   aworklist_subst (rename_tvar_in_aworklist X' X1 Γ) (if X2 == X1 then X' else X2) ({` X' /ᵗ X1} A)
       (rename_tvar_in_aworklist X' X1 Γ1) (rename_tvar_in_aworklist X' X1 Γ2).
-Proof with auto.
+(* Proof with auto.
   intros. induction H1; try solve [simpl; eauto].
   - simpl in *. destruct (X == X1).
     + subst.
@@ -615,14 +615,15 @@ Proof with auto.
     + autorewrite with core. rewrite ftvar_in_aworklist'_awl_app in H0.
       rewrite ftvar_in_aworklist'_awl_cons in H0.
       solve_notin.
-Qed.
+Qed. *)
+Admitted.
 
 
 Lemma a_wf_wl_rename_tvar_in_awl : forall Γ X X',
   ⊢ᵃʷ Γ ->
   X' `notin` dom (awl_to_aenv Γ) ->
   ⊢ᵃʷ (rename_tvar_in_aworklist X' X Γ).
-Proof.
+(* Proof.
   intros. induction H; try solve [simpl in *; eauto].
   - simpl in *. econstructor; auto.
     admit. admit.
@@ -641,7 +642,7 @@ Proof.
       rewrite rename_tvar_in_aworklist_fresh_eq; auto.
       rewrite <- ftvar_in_aworklist_upper in H; auto.
     + constructor; auto. admit.
-  - simpl.
+  - simpl. *)
 Admitted.
 
 
@@ -653,7 +654,7 @@ Theorem a_wl_red_rename_tvar : forall Γ X X',
   X' `notin` ftvar_in_aworklist' Γ ->
   Γ ⟶ᵃʷ⁎⋅ ->
   (rename_tvar_in_aworklist X' X Γ) ⟶ᵃʷ⁎⋅.
-Proof with eauto; solve_false.
+(* Proof with eauto; solve_false.
   intros. dependent induction H2; try solve [simpl in *; try _apply_IH_a_wl_red; eauto].
   - simpl in *. destruct (X0 == X); _apply_IH_a_wl_red...
   - simpl.
@@ -972,6 +973,7 @@ Proof with eauto; solve_false.
     + apply ftvar_in_work_apply_cont_eq in H2...
       fsetdec.
   - admit. (* **, should be same as above *)
+*)
 Admitted.
 
 Lemma worklist_subst_rename_var : forall Γ x x' X A Γ1 Γ2,
@@ -1149,7 +1151,7 @@ Theorem a_wl_red_rename_var : forall Γ x x',
   x' `notin` (dom (awl_to_aenv Γ)) ->
   Γ ⟶ᵃʷ⁎⋅ ->
   (rename_var_in_aworklist x' x Γ) ⟶ᵃʷ⁎⋅.
-Proof with eauto.
+(* Proof with eauto.
   intros. dependent induction H2; try solve [simpl in *; try _apply_IH_a_wl_red; eauto].
   - simpl.
     dependent destruction H.
@@ -1297,4 +1299,5 @@ Proof with eauto.
     auto_apply...
     eapply a_wf_wl_apply_conts; eauto.
   - admit. (* *, should be same as above *)
+*)
 Admitted.

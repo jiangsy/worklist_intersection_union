@@ -178,8 +178,8 @@ Inductive a_wl_red : aworklist -> Prop :=    (* defn a_wl_red *)
  | a_wl_red__inf_unit : forall (Γ:aworklist) (cs:conts),
      a_wl_red (aworklist_conswork Γ (work_applys cs typ_unit)) ->
      a_wl_red (aworklist_conswork Γ (work_infer exp_unit cs))
- | a_wl_red__inf_app : forall (Γ:aworklist) (e1 e2:exp) (cs:conts),
-     a_wl_red (aworklist_conswork Γ (work_infer e1  (  (conts_infabs  (  (contd_infapp e2 cs)  ) )  ) )) ->
+ | a_wl_red__inf_app : forall (Γ:aworklist) (e1 e2:exp) (cs:conts) (n:nat),
+     a_wl_red (aworklist_conswork Γ (work_infer e1  (  (conts_infabs  (  (contd_infapp (exp_split_size (awl_to_aenv Γ) e1) e2 cs)  ) )  ) )) ->
      a_wl_red (aworklist_conswork Γ (work_infer  ( (exp_app e1 e2) )  cs))
  | a_wl_red__infapp : forall (Γ:aworklist) (A B:typ) (e:exp) (cs:conts),
      a_wl_red (aworklist_conswork (aworklist_conswork Γ (work_check e A)) (work_applys cs B)) ->

@@ -150,10 +150,10 @@ Inductive trans_conts : subst_set -> conts -> conts -> Prop :=
     trans_typ θ Aᵃ Aᵈ ->
     trans_conts θ (conts_sub Aᵃ) (conts_sub Aᵈ)
 with trans_contd : subst_set -> contd -> contd -> Prop :=
-  | trans_contd__infapp : forall θ eᵃ eᵈ csᵃ csᵈ,
+  | trans_contd__infapp : forall θ eᵃ eᵈ csᵃ csᵈ n,
     trans_exp θ eᵃ eᵈ ->
     trans_conts θ csᵃ csᵈ ->
-    trans_contd θ (contd_infapp eᵃ csᵃ) (contd_infapp eᵈ csᵈ)
+    trans_contd θ (contd_infapp n eᵃ csᵃ) (contd_infapp n eᵈ csᵈ)
   | trans_contd__infabs_union : forall θ Aᵃ Aᵈ cdᵃ cdᵈ,
     trans_typ θ Aᵃ Aᵈ ->
     trans_contd θ cdᵃ cdᵈ ->

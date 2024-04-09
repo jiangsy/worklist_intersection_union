@@ -12,19 +12,19 @@ LNGEN_OUTS := $(addsuffix /prop_ln.v,${SYSTEMS})
 
 %/def_ott.v : %/language.ott
 	ott -i $^ -o $@ ${OTT_FLAGS}
-	sed -e "/Ott.ott_list_core/d" -i "" $@
-	sed -e "/lc_typ[ ](exp_tabs[ ](body_anno/d" -i "" $@ 
-	sed -e "s/dW/Ω/g" -i "" $@ 
-	sed -e "s/aW/Γ/g" -i "" $@ 
-	sed -e "s/dE/Ψ/g" -i "" $@
-	sed -e "s/aE/Σ/g" -i "" $@ 
+	sed -e "/Ott.ott_list_core/d" -i $@
+	sed -e "/lc_typ[ ](exp_tabs[ ](body_anno/d" -i $@ 
+	sed -e "s/dW/Ω/g" -i $@ 
+	sed -e "s/aW/Γ/g" -i $@ 
+	sed -e "s/dE/Ψ/g" -i $@
+	sed -e "s/aE/Σ/g" -i $@ 
 
 ott : ${OTT_OUTS}
 
 %/prop_ln.v : %/def_ott.v
 	lngen --coq $@ --coq-ott $*.ott $*/language.ott
-	sed -e "s/.ott./.def_ott./" -i "" $@ 
-	sed -f ./scripts/$*_prop_ln.sed -i "" $@ || true
+	sed -e "s/.ott./.def_ott./" -i $@ 
+	sed -f ./scripts/$*_prop_ln.sed -i $@ || true
 
 lngen : ${LNGEN_OUTS}
 

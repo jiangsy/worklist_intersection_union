@@ -896,7 +896,7 @@ Lemma a_worklist_subst_wf_wl : forall Γ X A Γ1 Γ2,
   binds X abind_etvar_empty (awl_to_aenv Γ) ->
   aworklist_subst Γ X A Γ1 Γ2 ->
   ⊢ᵃʷ awl_app (subst_tvar_in_aworklist A X Γ2) Γ1.
-Proof.
+(* Proof.
   intros. induction H1; auto.
   - dependent destruction H; auto.
   - simpl. inversion H0; auto.
@@ -933,5 +933,5 @@ Proof.
     + dependent destruction H4. contradiction.
     + apply* IHaworklist_subst.
       admit.
-      admit.
+      admit. *)
 Admitted.
