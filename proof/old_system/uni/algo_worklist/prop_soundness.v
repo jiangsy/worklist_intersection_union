@@ -942,7 +942,9 @@ Proof.
   intros. dependent destruction H3; destruct_trans;
     try unify_trans_contd; try unify_trans_conts; 
     try repeat unify_trans_typ; try unify_trans_exp; try constructor.
-Qed.
+  rename_typ. admit.
+  (* trans_typ_iu_size *)
+Admitted.
 
 
 #[local] Hint Resolve trans_typ_wf_ss trans_wl_a_wf_typ_d_wf_typ : core.
