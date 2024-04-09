@@ -1685,7 +1685,7 @@ Proof.
            eapply abind_etvar_tvar_false; eauto.
         -- right. intro Hcontra. dependent destruction Hcontra.
             eapply abind_etvar_stvar_false; eauto.
-        -- destruct (aworklist_subst_dec Γ X typ_unit) as [[Γ1 [Γ2 Hsubst]] | Hsubst].
+        -- destruct (a_wf_wl_binds_etvar_aworklist_subst_dec Γ X typ_unit) as [[Γ1 [Γ2 Hsubst]] | Hsubst]; eauto.
            ++ edestruct JgInst2 as [JgInst2' | JgInst2']; eauto.
               right. intro Hcontra. dependent destruction Hcontra.
               assert (Heq: Γ1 = Γ3 /\ Γ2 = Γ4).
@@ -1740,7 +1740,7 @@ Proof.
               right; intro Hcontra; dependent destruction Hcontra; try unify_binds.
            ++ right. intro Hcontra. dependent destruction Hcontra; try unify_binds.
         -- destruct (eq_dec X X0) as [Heq | Hneq]; subst; try unify_binds. 
-           destruct (aworklist_subst_dec Γ X0 (` X)) as [[Γ1 [Γ2 Hsubst]] | Hsubst].
+           destruct (a_wf_wl_binds_etvar_aworklist_subst_dec Γ X0 (` X)) as [[Γ1 [Γ2 Hsubst]] | Hsubst]; eauto.
            ++ edestruct JgInst2 as [JgInst2' | JgInst2']; eauto.
               right. intro Hcontra. dependent destruction Hcontra; try unify_binds.
               assert (Heq: Γ1 = Γ3 /\ Γ2 = Γ4).
@@ -1771,7 +1771,7 @@ Proof.
         -- edestruct JgInter1 as [JgInter1' | JgInter1']; eauto.
            right. intro Hcontra. dependent destruction Hcontra; try unify_binds. eauto.
       * dependent destruction H0.
-        -- destruct (aworklist_subst_dec Γ X typ_unit) as [[Γ1 [Γ2 Hsubst]] | Hsubst].
+        -- destruct (a_wf_wl_binds_etvar_aworklist_subst_dec Γ X typ_unit) as [[Γ1 [Γ2 Hsubst]] | Hsubst]; eauto.
            ++ edestruct JgInst1 as [JgInst1' | JgInst1']; eauto.
               right. intro Hcontra. dependent destruction Hcontra; try unify_binds.
               assert (Heq: Γ1 = Γ3 /\ Γ2 = Γ4).
@@ -1784,7 +1784,7 @@ Proof.
            right; intro Hcontra; dependent destruction Hcontra; try unify_binds; eauto.
            dependent destruction H5.
         -- destruct (eq_dec X X0) as [Heq | Hneq]; subst; try unify_binds. 
-           destruct (aworklist_subst_dec Γ X (` X0)) as [[Γ1 [Γ2 Hsubst]] | Hsubst].
+           destruct (a_wf_wl_binds_etvar_aworklist_subst_dec Γ X (` X0)) as [[Γ1 [Γ2 Hsubst]] | Hsubst]; eauto.
            ++ edestruct JgInst1 as [JgInst1' | JgInst1']; eauto.
               right. intro Hcontra. dependent destruction Hcontra; try unify_binds.
               assert (Heq: Γ1 = Γ3 /\ Γ2 = Γ4).
@@ -1797,9 +1797,9 @@ Proof.
            ++ destruct Jg as [Jg | Jg]; eauto.
               right; intro Hcontra; dependent destruction Hcontra;
                 try unify_binds; simpl in *; eauto.
-           ++ destruct (aworklist_subst_dec Γ X (` X0)) as [[Γ1 [Γ2 Hsubst]] | Hsubst].
+           ++ destruct (a_wf_wl_binds_etvar_aworklist_subst_dec Γ X (` X0)) as [[Γ1 [Γ2 Hsubst]] | Hsubst]; eauto.
               ** edestruct JgInst1 as [JgInst1' | JgInst1']; eauto.
-                 destruct (aworklist_subst_dec Γ X0 (` X)) as [[Γ1' [Γ2' Hsubst']] | Hsubst'].
+                 destruct (a_wf_wl_binds_etvar_aworklist_subst_dec Γ X0 (` X)) as [[Γ1' [Γ2' Hsubst']] | Hsubst']; eauto.
                  --- edestruct JgInst2 as [JgInst2' | JgInst2']; eauto.
                      right. intro Hcontra. dependent destruction Hcontra; try unify_binds.
                      +++ assert (Heq: Γ1' = Γ3 /\ Γ2' = Γ4).
@@ -1812,7 +1812,7 @@ Proof.
                      assert (Heq: Γ1 = Γ3 /\ Γ2 = Γ4).
                      { eapply aworklist_subst_det; eauto. }
                      destruct Heq as [Heq1 Heq2]. subst. eauto.
-              ** destruct (aworklist_subst_dec Γ X0 (` X)) as [[Γ1' [Γ2' Hsubst']] | Hsubst'].
+              ** destruct (a_wf_wl_binds_etvar_aworklist_subst_dec Γ X0 (` X)) as [[Γ1' [Γ2' Hsubst']] | Hsubst']; eauto.
                  --- edestruct JgInst2 as [JgInst2' | JgInst2']; eauto.
                      right. intro Hcontra. dependent destruction Hcontra; try unify_binds.
                      assert (Heq: Γ1' = Γ1 /\ Γ2' = Γ2).
@@ -1822,7 +1822,7 @@ Proof.
         -- assert (FV: X ∉ ftvar_in_typ (typ_arrow A1 A2) \/ not (X ∉ ftvar_in_typ (typ_arrow A1 A2))) by fsetdec.
            destruct FV as [FV | FV]; eauto.
            destruct (a_mono_typ_dec Γ (typ_arrow A1 A2)); eauto.
-           ++ destruct (aworklist_subst_dec Γ X (typ_arrow A1 A2)) as [[Γ1' [Γ2' Hsubst']] | Hsubst'].
+           ++ destruct (a_wf_wl_binds_etvar_aworklist_subst_dec Γ X (typ_arrow A1 A2)) as [[Γ1' [Γ2' Hsubst']] | Hsubst']; eauto.
               ** edestruct JgInst1 as [JgInst1' | JgInst1']; eauto.
                  right. intro Hcontra. dependent destruction Hcontra; try unify_binds.
                  assert (Heq: Γ1' = Γ1 /\ Γ2' = Γ2).
@@ -1830,7 +1830,8 @@ Proof.
                  destruct Heq as [Heq1 Heq2]. subst. eauto.
               ** right. intro Hcontra. dependent destruction Hcontra; try unify_binds.
            ++ pick fresh X1. pick fresh X2.
-              destruct (aworklist_subst_dec (aworklist_conswork (aworklist_constvar (aworklist_constvar Γ X1 abind_etvar_empty) X2 abind_etvar_empty) (work_sub (typ_var_f X) (typ_arrow A1 A2))) X (typ_arrow (typ_var_f X1) (typ_var_f X2))) as [[Γ1 [Γ2 Hsubst]] | Hsubst].
+              destruct (a_wf_wl_binds_etvar_aworklist_subst_dec (aworklist_conswork (aworklist_constvar (aworklist_constvar Γ X1 abind_etvar_empty) X2 abind_etvar_empty) (work_sub (typ_var_f X) (typ_arrow A1 A2))) X (typ_arrow (typ_var_f X1) (typ_var_f X2))) as [[Γ1 [Γ2 Hsubst]] | Hsubst]; eauto.
+              admit. (* wf *) simpl. auto.
               ** assert (JgArr1: (subst_tvar_in_aworklist (typ_arrow ` X1 ` X2) X Γ2 ⧺ Γ1) ⟶ᵃʷ⁎⋅ \/
                                 ~ (subst_tvar_in_aworklist (typ_arrow ` X1 ` X2) X Γ2 ⧺ Γ1) ⟶ᵃʷ⁎⋅) by admit.
                  dependent destruction JgArr1; eauto.
