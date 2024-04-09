@@ -9,7 +9,7 @@ Require Import uni.decl_worklist.prop_equiv.
 Require Import uni.decl.prop_subtyping.
 Require Import uni.algo_worklist.def_extra.
 Require Import uni.algo_worklist.prop_basic.
-Require Import ln_utils.
+Require Import ltac_utils.
 
 
 Definition subst_set := denv.

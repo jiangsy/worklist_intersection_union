@@ -7,7 +7,7 @@ Require Import uni.decl.prop_typing.
 Require Import uni.def_ott.
 Require Import uni.notations.
 Require Import uni.decl_worklist.def.
-Require Import ln_utils.
+Require Import ltac_utils.
 
 
 (* Declare Scope dworklist_scope.

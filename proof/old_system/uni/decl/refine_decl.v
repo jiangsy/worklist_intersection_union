@@ -4,7 +4,7 @@ Require Import Lia.
 Require Import Metalib.Metatheory.
 Require Import LibTactics.
 
-Require Import ln_utils.
+Require Import ltac_utils.
 Require Import uni.notations.
 Require Import uni.decl.prop_basic.
 Require Import uni.decl.prop_subtyping.

@@ -8,7 +8,7 @@ Require Import uni.notations.
 Require Import uni.prop_basic.
 Require Import uni.algo_worklist.def_extra.
 Require Import uni.algo_worklist.prop_basic.
-Require Import ln_utils.
+Require Import ltac_utils.
 Require Import LibTactics.
 
 

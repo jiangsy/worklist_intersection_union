@@ -1,4 +1,4 @@
-Require Import ln_utils.
+Require Import ltac_utils.
 Require Import uni.def_ott.
 Require Import uni.decl.def_extra.
 Require Import uni.notations.

@@ -5,7 +5,7 @@ Require Import Metalib.Metatheory.
 Require Import LibTactics.
 
 Require Import uni.notations.
-Require Import ln_utils.
+Require Import ltac_utils.
 
 
 #[export] Hint Constructors d_wf_typ: core.

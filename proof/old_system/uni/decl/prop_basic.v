@@ -6,7 +6,7 @@ Require Import LibTactics.
 
 Require Import uni.notations.
 Require Export uni.prop_basic.
-Require Import ln_utils.
+Require Import ltac_utils.
 
 
 Open Scope dbind_scope.

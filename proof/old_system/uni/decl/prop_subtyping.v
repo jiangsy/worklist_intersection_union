@@ -4,7 +4,7 @@ Require Import LibTactics.
 
 Require Import uni.notations.
 Require Import uni.decl.prop_basic.
-Require Import ln_utils.
+Require Import ltac_utils.
 
 
 Lemma dsub_refl' : forall Ψ A,
