@@ -165,34 +165,6 @@ Proof.
 Qed.
 
 
-(* Lemma close_exp_wrt_typ_notin_rec : forall X e n,
-  X `notin` ftvar_in_exp (close_exp_wrt_typ_rec n X e)
-with close_body_wrt_typ_notin_rec : forall X b n,
-  X `notin` ftvar_in_body (close_body_wrt_typ_rec n X b).
-Proof.
-  - intros until e.
-    induction e; simpl; intros; auto.
-    + specialize (close_typ_wrt_typ_notin_rec X A n); intros; auto.
-    + specialize (close_typ_wrt_typ_notin_rec X A n); intros; auto.
-  - intros. destruct b.
-    + simpl. specialize (close_typ_wrt_typ_notin_rec X A n); intros; auto.
-Qed.
-
-
-Lemma close_exp_wrt_typ_notin : forall X e,
-  X `notin` ftvar_in_exp (close_exp_wrt_typ X e).
-Proof.
-  intros. unfold close_exp_wrt_typ.
-  apply close_exp_wrt_typ_notin_rec.
-Qed. *)
-
-(* Lemma close_typ_wrt_typ_notin : forall X A,
-    X `notin` ftvar_in_typ (close_typ_wrt_typ X A).
-Proof.
-  intros. apply close_typ_wrt_typ_notin_rec.
-Qed. *)
-
-
 Lemma close_exp_wrt_exp_notin_rec : forall x e n,
     x `notin` fvar_in_exp (close_exp_wrt_exp_rec n x e)
 with close_body_wrt_exp_notin_rec : forall x b n,
