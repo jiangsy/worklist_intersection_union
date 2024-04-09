@@ -9,6 +9,7 @@ Require Import uni.prop_basic.
 Require Import uni.algo_worklist.def_extra.
 Require Import uni.algo_worklist.prop_basic.
 Require Import uni.algo_worklist.prop_rename.
+Require Import uni.algo_worklist.prop_completeness.
 Require Import ln_utils.
 
 Fixpoint iu_size (A : typ) : nat :=
@@ -903,6 +904,10 @@ Proof with eauto.
   intros. induction H; destruct_a_wf_wl...
 Qed.
 
+Lemma aworklist_subst_dec : forall Γ X A,
+  (exists Γ1 Γ2, aworklist_subst Γ X A Γ1 Γ2) \/ ~ (exists Γ1 Γ2, aworklist_subst Γ X A Γ1 Γ2).
+Admitted. (* TODO: @jiangsy *)
+
 Lemma decidablity_lemma : forall ne nj nt ntj na naj nm nw Γ m,
   ⊢ᵃʷ Γ ->
   exp_size_wl Γ < ne ->
@@ -1487,14 +1492,21 @@ Proof.
         assert (Heq': weight (A1 ^ᵗ X) = weight A1) by admit. (* safe *)
         assert (Hgt: weight A0 >= 1) by apply weight_gt_0.
         simpl in *. rewrite <- Heq. rewrite Heq'. lia. }
-      (* assert (JgInst1: forall (E:list typvar) (Γ1 Γ2:aworklist) (X:typvar),
+      assert (JgInst1: forall (Γ1 Γ2:aworklist) (X:typvar),
                 A = typ_var_f X ->
                 binds X abind_etvar_empty (awl_to_aenv Γ) ->
                 a_mono_typ (awl_to_aenv Γ) A0 ->
-                aworklist_subst Γ X A0 E Γ1 Γ2 ->
-                a_wl_red (awl_app (subst_tvar_in_aworklist A0 X Γ2) (awl_app (etvar_list_to_awl E) Γ1)) \/
-                ~ a_wl_red (awl_app (subst_tvar_in_aworklist A0 X Γ2) (awl_app (etvar_list_to_awl E) Γ1))).
-      { intros E Γ1 Γ2 X Heq Hbin Hmono Hsub. subst.
+                aworklist_subst Γ X A0 Γ1 Γ2 ->
+                (subst_tvar_in_aworklist A0 X Γ2 ⧺ Γ1) ⟶ᵃʷ⁎⋅ \/
+              ~ (subst_tvar_in_aworklist A0 X Γ2 ⧺ Γ1) ⟶ᵃʷ⁎⋅) by admit.
+      assert (JgInst2: forall (Γ1 Γ2:aworklist) (X:typvar),
+                A0 = typ_var_f X ->
+                binds X abind_etvar_empty (awl_to_aenv Γ) ->
+                a_mono_typ (awl_to_aenv Γ) A ->
+                aworklist_subst Γ X A Γ1 Γ2 ->
+                (subst_tvar_in_aworklist A X Γ2 ⧺ Γ1) ⟶ᵃʷ⁎⋅ \/
+              ~ (subst_tvar_in_aworklist A X Γ2 ⧺ Γ1) ⟶ᵃʷ⁎⋅) by admit.
+      (* { intros E Γ1 Γ2 X Heq Hbin Hmono Hsub. subst.
         eapply IHnw.
         admit. (* safe: wf *)
         - rewrite exp_size_wl_awl_app.
@@ -1526,7 +1538,14 @@ Proof.
            eapply abind_etvar_tvar_false; eauto.
         -- right. intro Hcontra. dependent destruction Hcontra.
             eapply abind_etvar_stvar_false; eauto.
-        -- admit. (* TODO *)
+        -- destruct (aworklist_subst_dec Γ X typ_unit) as [[Γ1 [Γ2 Hsubst]] | Hsubst].
+           ++ edestruct JgInst2 as [JgInst2' | JgInst2']; eauto.
+              right. intro Hcontra. dependent destruction Hcontra.
+              assert (Heq: Γ1 = Γ3 /\ Γ2 = Γ4).
+              { eapply aworklist_subst_det; eauto. }
+              destruct Heq as [Heq1 Heq2]. subst. eauto.
+           ++ right. intro Hcontra. dependent destruction Hcontra.
+              eapply Hsubst; eauto.
         -- edestruct JgUnion1 as [JgUnion1' | JgUnion1']; eauto.
            edestruct JgUnion2 as [JgUnion2' | JgUnion2']; eauto.
            right. intro Hcontra. dependent destruction Hcontra.
