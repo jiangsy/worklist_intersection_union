@@ -905,9 +905,155 @@ Proof with eauto.
   intros. induction H; destruct_a_wf_wl...
 Qed.
 
-Lemma aworklist_subst_dec : forall Γ X A,
+
+Lemma a_wf_wl_binds_etvar_aworklist_subst_dec' : forall Γ1 Γ2 X A,
+  ⊢ᵃʷ (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) -> 
+  (exists Γ'1 Γ'2, aworklist_subst (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) X A Γ'1 Γ'2) \/ ~ (exists Γ'1 Γ'2, aworklist_subst (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) X A Γ'1 Γ'2).
+Proof with eauto.
+  intros. generalize dependent Γ1. induction Γ2.
+  - left. exists Γ1, aworklist_empty. simpl. constructor.
+  - intros. dependent destruction H.
+    apply IHΓ2 in H1. destruct H1.
+    + destruct H1 as [Γ'1 [Γ'2 Hsubst]]. left. exists Γ'1, (x ~ᵃ A0;ᵃ Γ'2). simpl...
+    + right. unfold not. intros Hcontra. destruct Hcontra as [Γ'1 [Γ'2 Hsubst]].
+      dependent destruction Hsubst. eauto.
+  - intros. assert (X0 `in` ftvar_in_typ A \/ (~ X0 `in` ftvar_in_typ A)) by fsetdec. 
+    dependent destruction H. 
+    + apply IHΓ2 in H0. destruct H1.
+      * right. unfold not. intros Hcontra. destruct Hcontra as [Γ'1 [Γ'2 Hsubst]].
+        dependent destruction Hsubst. contradiction. 
+      * destruct H0. 
+        -- destruct H0 as [Γ'1 [Γ'2 Hsubst]]. left. exists Γ'1, (X0 ~ᵃ □ ;ᵃ Γ'2). simpl...
+           constructor... rewrite awl_to_aenv_app in H. simpl in H. unfold not. intros. subst. solve_notin_eq X.
+        -- right. unfold not. intros Hcontra. destruct Hcontra as [Γ'1 [Γ'2 Hsubst]].
+           dependent destruction Hsubst. eauto.
+    + apply IHΓ2 in H0. destruct H1.
+      * right. unfold not. intros Hcontra. destruct Hcontra as [Γ'1 [Γ'2 Hsubst]].
+        dependent destruction Hsubst. contradiction.
+      * destruct H0. 
+        -- destruct H0 as [Γ'1 [Γ'2 Hsubst]]. left. exists Γ'1, (X0 ~ᵃ ■ ;ᵃ Γ'2). simpl...
+           constructor... rewrite awl_to_aenv_app in H. simpl in H. unfold not. intros. subst. solve_notin_eq X.
+        -- right. unfold not. intros Hcontra. destruct Hcontra as [Γ'1 [Γ'2 Hsubst]].
+           dependent destruction Hsubst. eauto.
+    + destruct H1.
+      * assert (⊢ᵃʷ (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ X0 ~ᵃ ⬒ ;ᵃ Γ1)) by (eapply a_wf_wl_move_etvar_back; eauto).
+        apply IHΓ2 in H2. destruct H2.
+        -- destruct H2 as [Γ'1 [Γ'2 Hsubst]]. left. exists Γ'1, Γ'2. simpl...
+           constructor...  rewrite awl_to_aenv_app in H. simpl in H. unfold not. intros. subst. solve_notin_eq X.
+        -- right. unfold not. intros Hcontra. destruct Hcontra as [Γ'1 [Γ'2 Hsubst]].
+           dependent destruction Hsubst.
+           ++ rewrite awl_to_aenv_app in H. simpl in H. unfold not. intros. subst. solve_notin_eq X0.
+           ++ contradiction.
+           ++ apply worklist_split_etvar_det in x...
+              destruct x; subst.
+              eauto.
+              assert (X ∉ union (dom (awl_to_aenv Γ1)) (dom (awl_to_aenv Γ2))) by (eapply a_wf_wl_tvar_notin_remaining; eauto)...
+      * apply IHΓ2 in H0. destruct H0.
+        -- left. destruct H0 as [Γ'1 [Γ'2 Hsubst]]. exists Γ'1, (X0 ~ᵃ ⬒ ;ᵃ Γ'2). simpl...
+           constructor... rewrite awl_to_aenv_app in H. simpl in H. unfold not. intros. subst. solve_notin_eq X.
+        -- right. unfold not. intros Hcontra. destruct Hcontra as [Γ'1 [Γ'2 Hsubst]].
+           dependent destruction Hsubst.
+           ++ rewrite awl_to_aenv_app in H. simpl in H. unfold not. intros. subst. solve_notin_eq X0. 
+           ++ eauto.
+           ++ contradiction.
+  - intros. dependent destruction H.
+    apply IHΓ2 in H0. destruct H0.
+    + destruct H0 as [Γ'1 [Γ'2 Hsubst]]. left. exists Γ'1, (w ⫤ᵃ Γ'2). simpl...
+    + right. unfold not. intros Hcontra. destruct Hcontra as [Γ'1 [Γ'2 Hsubst]].
+      dependent destruction Hsubst. 
+      assert ((∃ Γ'1 Γ'2 : aworklist, aworklist_subst (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) X A Γ'1 Γ'2)) by eauto.
+      contradiction.
+Qed.
+
+Lemma a_wf_wl_binds_etvar_aworklist_subst_dec : forall Γ X A,
+  ⊢ᵃʷ Γ -> 
+  binds X abind_etvar_empty (awl_to_aenv Γ) ->
   (exists Γ1 Γ2, aworklist_subst Γ X A Γ1 Γ2) \/ ~ (exists Γ1 Γ2, aworklist_subst Γ X A Γ1 Γ2).
-Admitted. (* TODO: @jiangsy *)
+Proof with eauto. 
+  intros. apply aworklist_binds_split in H0... destruct H0 as [Γ1 [Γ2 Hsplit]]...
+  subst. apply a_wf_wl_binds_etvar_aworklist_subst_dec'...
+Qed.
+
+Lemma aworklist_subst_no_etvar_false : forall Γ Γ1 Γ2 X A,
+  ⊢ᵃʷ Γ ->
+  (binds X abind_etvar_empty (awl_to_aenv Γ) -> False) ->
+  aworklist_subst Γ X A Γ1 Γ2 -> False.
+Proof with eauto.
+  intros. dependent induction H1.
+  - assert (binds X abind_etvar_empty (awl_to_aenv (X ~ᵃ ⬒ ;ᵃ Γ))).
+    { simpl. constructor; auto. } auto.
+  - apply IHaworklist_subst.
+    + dependent destruction H...
+    + intros. apply H0. simpl...
+  - apply IHaworklist_subst.
+    + dependent destruction H...
+    + intros. apply H0. simpl...
+  - apply IHaworklist_subst.
+    + dependent destruction H...
+    + intros. apply H0. simpl...  
+  - apply IHaworklist_subst.
+    + dependent destruction H...
+    + intros. apply H0. simpl...  
+    - apply IHaworklist_subst.
+    + dependent destruction H...
+    + intros. apply H0. simpl...
+  - apply IHaworklist_subst.
+    + eapply a_wf_wl_move_etvar_back; eauto. 
+    + intros. apply H0. simpl...
+      rewrite awl_to_aenv_app. simpl... 
+Qed.
+
+
+Lemma typ_eq_bool : forall (A1 A2:typ),
+  sumbool (A1 = A2) (A1 <> A2).
+Proof.
+  intro A1. induction A1; intro A2; induction A2; eauto;
+    try solve [right; unfold not; intros Hcontra; inversion Hcontra].
+  - destruct (n == n0); auto.
+    right. unfold not. intros. inversion H. contradiction. 
+  - destruct (X == X0); subst. auto.
+    right. unfold not. intros. inversion H. contradiction. 
+  - pose proof (IHA1_1 A2_1).
+    pose proof (IHA1_2 A2_2).
+    destruct H; destruct H0; subst; eauto;  
+      right; unfold not; intros Hcontra; inversion Hcontra; contradiction. 
+  - pose proof (IHA1 A2). destruct H.
+    + subst. auto.
+    + right. unfold not. intros Hcontra. dependent destruction Hcontra. contradiction.
+  - pose proof (IHA1_1 A2_1).
+    pose proof (IHA1_2 A2_2).
+    destruct H; destruct H0; subst; eauto;  
+      right; unfold not; intros Hcontra; inversion Hcontra; contradiction.
+  - pose proof (IHA1_1 A2_1).
+    pose proof (IHA1_2 A2_2).
+    destruct H; destruct H0; subst; eauto;  
+      right; unfold not; intros Hcontra; inversion Hcontra; contradiction.  
+Qed.
+
+Lemma a_bind_eq_bool : forall (b1 b2:abind),
+  sumbool (b1 = b2) (b1 <> b2).
+Proof.
+  intros. destruct b1; destruct b2; eauto;
+    try solve [right; unfold not; intros Hcontra; inversion Hcontra].
+  - pose proof (typ_eq_bool A A0).
+    destruct H; subst; eauto;
+      right; unfold not; intros Hcontra; inversion Hcontra; contradiction.
+Qed.
+
+
+Lemma a_wf_wl_aworklist_subst_dec : forall Γ X A,
+  ⊢ᵃʷ Γ -> 
+  (exists Γ1 Γ2, aworklist_subst Γ X A Γ1 Γ2) \/ ~ (exists Γ1 Γ2, aworklist_subst Γ X A Γ1 Γ2).
+Proof.
+  intros.
+  assert (sumbool (binds X abind_etvar_empty (awl_to_aenv Γ)) (~ binds X abind_etvar_empty (awl_to_aenv Γ))). {
+    apply binds_dec. apply a_bind_eq_bool.
+  }
+  destruct H0.
+  - apply a_wf_wl_binds_etvar_aworklist_subst_dec; eauto.
+  - right. unfold not. intros. destruct H0 as [Γ1 [Γ2 Hsubst]]. 
+    eapply aworklist_subst_no_etvar_false; eauto.
+Qed.
 
 Lemma decidablity_lemma : forall ne nj nt ntj na naj nm nw Γ m,
   ⊢ᵃʷ Γ ->
