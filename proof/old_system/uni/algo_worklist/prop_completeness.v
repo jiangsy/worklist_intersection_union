@@ -223,6 +223,7 @@ Proof.
   auto.
 Qed.
 
+#[local] Hint Resolve trans_typ_lc_atyp trans_typ_lc_dtyp : core.
 
 Lemma trans_typ_etvar_subst : forall θ1 θ2 Tᵃ Tᵈ X Aᵃ Aᵈ,
   lc_typ Aᵃ -> 
@@ -249,20 +250,17 @@ Proof with eauto using wf_ss_strengthen_etvar.
         apply binds_remove_mid in H0...
   - simpl in Hinsta. 
     dependent destruction Hinsta...
-    inst_cofinites_for trans_typ__all. intros.
-    inst_cofinites_with X0.
-    rewrite_env (((X0, □) :: θ2) ++ θ1).
-    rewrite subst_tvar_in_typ_open_typ_wrt_typ_fresh2...
-    apply H0; auto.
-    + simpl. constructor; auto.
-    + simpl. rewrite_env (nil ++ (X0 ~ □) ++ (θ2 ++ θ1)). 
-      apply trans_typ_weaken; auto.
-      constructor; auto.
-    + eapply trans_typ_lc_atyp...
+    inst_cofinites_for trans_typ__all; intros;
+    inst_cofinites_with X0; rewrite subst_tvar_in_typ_open_typ_wrt_typ_fresh2...
+    + apply s_in_subst_inv...
+    + rewrite_env (((X0, □) :: θ2) ++ θ1).  
+      apply H0; auto.
+      * simpl. constructor; auto.
+      * simpl. rewrite_env (nil ++ (X0 ~ □) ++ (θ2 ++ θ1)). 
+        apply trans_typ_weaken; auto.
+        constructor; auto.
 Qed.
 
-
-#[local] Hint Resolve trans_typ_lc_atyp trans_typ_lc_dtyp : core.
 
 Lemma trans_typ_etvar_subst_same_ss : forall θ Tᵃ Tᵈ X Aᵃ Aᵈ,
   wf_ss θ ->
@@ -779,23 +777,19 @@ Proof with eauto.
   - apply trans_typ__stvar...
     apply binds_remove_mid in H0...
   - assert (binds X b ((θ2 ++ (X, b) :: θ1))) by auto.
-    apply wf_ss_uniq in H1 as Huniq.
-    pose proof (binds_unique _ _ _ _ _  H0 H5 Huniq); inversion H; subst.
-    inversion H7.
-    inversion H7.
+    unify_binds. inversion H; inversion H6.
   - constructor...
     apply binds_remove_mid in H0...
     apply H2 in H0 as Hfr...
     rewrite subst_tvar_in_typ_fresh_eq...
-  - inst_cofinites_for trans_typ__all. intros.
-    inst_cofinites_with X0.
-    rewrite subst_tvar_in_typ_open_typ_wrt_typ_fresh2...
-    rewrite subst_tvar_in_typ_open_typ_wrt_typ_fresh2...
-    rewrite_env (((X0, □) :: θ2) ++ θ1).
-    eapply H0; eauto...
-    + intros. destruct_binds...
-    + constructor...
-    + simpl... apply trans_typ_weaken_cons...
+  - inst_cofinites_for trans_typ__all; intros;
+    inst_cofinites_with X0; repeat rewrite subst_tvar_in_typ_open_typ_wrt_typ_fresh2... 
+    + apply s_in_subst_inv...
+    + rewrite_env (((X0, □) :: θ2) ++ θ1).
+      eapply H1; eauto...
+      * intros. destruct_binds...
+      * constructor...
+      * simpl... apply trans_typ_weaken_cons...
 Qed.
 
 
@@ -894,14 +888,12 @@ Proof.
   intros * Hwf Hbinds Htrans Hsin. dependent induction Htrans; simpl in *; dependent destruction Hsin; try lia.
   - apply wf_ss_etvar_tvar_false in Hbinds; auto. contradiction.
   - apply wf_ss_etvar_stvar_false in Hbinds; auto. contradiction.
-  - assert (uniq θ) by auto.
-    pose proof (binds_unique _ _ _ _ _ Hbinds H0 H1); eauto. 
-    dependent destruction H2. auto.
+  - unify_binds. auto.
   - apply IHHtrans1 in Hsin; auto. lia.
   - apply IHHtrans2 in Hsin; auto. lia.
   - inst_cofinites_by (L `union` L0) using_name X.
     rewrite <- d_same_num_arr_open_typ_tvar with (X:=X0).
-    apply H0; eauto.
+    apply H1; eauto.
   - apply IHHtrans1 in Hsin1; auto. 
     apply IHHtrans2 in Hsin2; auto.
     lia.
@@ -929,25 +921,26 @@ Lemma trans_typ_tvar_etvar : forall θ1 θ2 Aᵃ Aᵈ Tᵃ Tᵈ X,
   d_mono_typ (ss_to_denv (θ2 ++ θ1)) Tᵈ ->
   θ1 ᵗ⫦ Tᵃ ⇝ Tᵈ ->
   map (subst_tvar_in_dbind Tᵈ X) θ2 ++ (X , dbind_typ Tᵈ) :: θ1 ᵗ⫦ Aᵃ ⇝ {Tᵈ /ᵗ X} Aᵈ.
-Proof.
+Proof with auto.
   intros. generalize dependent Tᵃ. generalize dependent Tᵈ. 
   dependent induction H; intros; simpl; destruct_eq_atom; eauto.
   - apply trans_typ_binds_etvar; eauto. 
     admit.
   - econstructor; auto. admit. admit.
-  - admit. (* false *)
-  - apply trans_typ__stvar; auto. admit. admit.
+  - assert (X ~ □ ∈ᵈ (θ2 ++ (X, □) :: θ1)) by auto.
+    unify_binds.
+  - apply trans_typ__stvar; auto.
+    admit. admit.
   - admit.
   - constructor. admit.
   - constructor. admit.
   - constructor. admit.
-  - inst_cofinites_for trans_typ__all. intros.
-    inst_cofinites_with X0.
-    rewrite subst_tvar_in_typ_open_typ_wrt_typ_fresh2; auto.
+  - inst_cofinites_for trans_typ__all; intros; 
+    inst_cofinites_with X0...
+    rewrite subst_tvar_in_typ_open_typ_wrt_typ_fresh2; eauto.
     rewrite_env (map (subst_tvar_in_dbind Tᵈ X) ((X0, □) :: θ2) ++ (X, dbind_typ Tᵈ) :: θ1).
-    eapply H0; eauto.
-    admit.
-    admit.
+    eapply H1; eauto.
+    + simpl. admit.
 Admitted.
 
 
@@ -978,10 +971,8 @@ Proof.
   intros. dependent induction H0; auto; try solve [solve_right].  
   - right. unfold not. intros.
     dependent destruction H1.
-    + apply a_wf_wl_a_wf_env in H. apply a_wf_env_uniq in H. 
-      pose proof (binds_unique _ _ _ _ _ H0 H1 H). inversion H2.  
-    + apply a_wf_wl_a_wf_env in H. apply a_wf_env_uniq in H. 
-      pose proof (binds_unique _ _ _ _ _ H0 H1 H). inversion H2.  
+    + unify_binds.
+    + unify_binds. 
   - specialize (IHa_wf_typ1 _ H (eq_refl _)). 
     specialize (IHa_wf_typ2 _ H (eq_refl _)). 
     dependent destruction IHa_wf_typ1; dependent destruction IHa_wf_typ2.
@@ -1049,14 +1040,14 @@ Proof with auto.
       apply binds_ss_to_denv_binds_ss in H.
       eapply trans_wl_a_wl_binds_etvar_ss in H2; eauto.
       destruct H2 as [T].
-      assert (uniq θ) by eauto.
-      pose proof (binds_unique _ _ _ _ _ H H2 H3). inversion H4.
+      unify_binds; eauto.
   - split;
     specialize (IHd_mono_typ1 _ (eq_refl _) _ _ H H0);
     specialize (IHd_mono_typ2 _ (eq_refl _) _ _ H H0);
     simpl; intuition.
     apply union_iff in H6. inversion H6; eauto.
 Qed.
+
 
 
 Lemma trans_wl_aworklist_trailing_sub : forall Γ Ω θ A1 A2 B1 B2,
@@ -1209,11 +1200,9 @@ Proof with eauto.
   - solve_awl_trailing_etvar.
     destruct_trans.
     + destruct_a_wf_wl... 
-    + apply wf_ss_uniq in H0. 
-      pose proof (binds_unique _ _ _ _ _ H1 H3 H0).
-      inversion H4.
+    + unify_binds.
     + apply a_worklist_subst_transfer_same_dworklist_rev_exist with (X:=X0) (T:=`X) (Tᵈ:=`X) 
-      in Htrans_et as Htransws...
+        in Htrans_et as Htransws...
       destruct Htransws as [Γ1 [Γ2 [θ' [Hsubst [Htransws [Hbinds Hwfss]]]]]].
       apply a_wl_red__sub_etvarmono2 with (Γ1:=Γ1) (Γ2:=Γ2); eauto.
       * unfold not. intros. simpl in *. apply singleton_iff in H4. subst. apply wf_ss_etvar_tvar_false in H1; eauto.
@@ -1228,7 +1217,7 @@ Proof with eauto.
       apply binds_ss_to_denv_binds_ss in H4.
       apply wf_ss_tvar_stvar_false in H3... contradiction.
     + apply a_worklist_subst_transfer_same_dworklist_rev_exist with (X:=X0) (T:=`X) (Tᵈ:=`X) 
-      in Htrans_et as Htransws...
+        in Htrans_et as Htransws...
       destruct Htransws as [Γ1 [Γ2 [θ' [Hsubst [Htransws [Hbinds Hwfss]]]]]].
       apply a_wl_red__sub_etvarmono1 with (Γ1:=Γ1) (Γ2:=Γ2); eauto.
       * unfold not. intros. simpl in *. apply singleton_iff in H4. subst. apply wf_ss_etvar_tvar_false in H3; eauto.
@@ -1242,7 +1231,7 @@ Proof with eauto.
     + destruct (X0 == X1)...
       * subst. destruct_a_wf_wl... 
       * apply a_worklist_subst_transfer_same_dworklist_rev_exist with (X:=X0) (T:=`X1) (Tᵈ:=`X) 
-        in Htrans_et as Htransws...
+          in Htrans_et as Htransws...
         destruct Htransws as [Γ1 [Γ2 [θ' [Hsubst [Htransws [Hbinds Hwfss]]]]]].
         apply a_wl_red__sub_etvarmono1 with (Γ1:=Γ1) (Γ2:=Γ2); eauto.
         -- apply IHd_wl_red; eauto. destruct_a_wf_wl. eapply a_worklist_subst_wf_wl; eauto.
@@ -1342,7 +1331,7 @@ Proof with eauto.
         }
         dependent destruction H8...
         assert (aworklist_subst (work_sub (typ_arrow A1ᵃ A2ᵃ) ` X  ⫤ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ0) X (typ_arrow ` X1 ` X2) 
-                         Γ2 (work_sub (typ_arrow A1ᵃ A2ᵃ) ` X  ⫤ᵃ Γ3)) by auto...
+                                Γ2 (work_sub (typ_arrow A1ᵃ A2ᵃ) ` X  ⫤ᵃ Γ3)) by auto...
         destruct_trans_wl.
         dependent destruction H11.
         eapply a_worklist_subst_transfer_same_dworklist_rev in H11 as Htransws; eauto.
@@ -1414,9 +1403,9 @@ Proof with eauto.
            ** eapply trans_wl_aworklist_trailing_sub; eauto. 
               eapply a_worklist_subst_wf_wl...
            ** apply IHd_wl_red...
-              ---  eapply trans_wl_d_mono_typ_a_mono_typ_no_etvar in H6; eauto.
-                   eapply trans_wl_d_mono_typ_a_mono_typ_no_etvar in H7; eauto. intuition.
-                   repeat (constructor; simpl; eauto using a_worklist_subst_wf_wl); eapply a_worklist_subst_wf_typ; eauto.
+              --- eapply trans_wl_d_mono_typ_a_mono_typ_no_etvar in H6; eauto.
+                  eapply trans_wl_d_mono_typ_a_mono_typ_no_etvar in H7; eauto. intuition.
+                  repeat (constructor; simpl; eauto using a_worklist_subst_wf_wl); eapply a_worklist_subst_wf_typ; eauto.
               --- exists θ'. repeat (constructor; auto); apply trans_typ_refl...
         ++ destruct_d_wl_wf. repeat (constructor; simpl; auto); solve_wf_typ...
       * inst_cofinites_for a_wl_red__sub_arrow1... 
@@ -1469,8 +1458,8 @@ Proof with eauto.
   - solve_awl_trailing_etvar. 
     destruct_trans; try solve_binds_nonmono_contradiction.
     + destruct_a_wf_wl. 
-      dependent destruction H3.
       dependent destruction H5.
+      dependent destruction H7.
       pick fresh X and apply a_wl_red__sub_all. 
       inst_cofinites_with X.
       apply H0; auto.
@@ -1485,7 +1474,7 @@ Proof with eauto.
   - solve_awl_trailing_etvar. 
     destruct_trans.
     + solve_binds_nonmono_contradiction.
-    + destruct_a_wf_wl. dependent destruction H6. 
+    + destruct_a_wf_wl. dependent destruction H7. 
       pick fresh X and apply a_wl_red__sub_alll.
       inst_cofinites_with X.
       * eapply trans_typ_neq_all_rev...
@@ -1498,8 +1487,8 @@ Proof with eauto.
            ++ apply a_wf_typ_weaken_cons...
         -- exists ((X, dbind_typ T) :: θ0).
            repeat (constructor; auto)...
-           ++ eapply trans_typ_tvar_etvar_cons with (θ:=θ0) (Tᵃ:=T) (Tᵈ:=T) in H4; eauto...
-              rewrite subst_tvar_in_typ_open_typ_wrt_typ_tvar2 in H4...
+           ++ eapply trans_typ_tvar_etvar_cons with (θ:=θ0) (Tᵃ:=T) (Tᵈ:=T) in H5; eauto...
+              rewrite subst_tvar_in_typ_open_typ_wrt_typ_tvar2 in H5...
            ++ rewrite_env (nil ++ (X ~ dbind_typ T) ++ θ0). 
               apply trans_typ_weaken. auto.
               constructor...
@@ -1646,10 +1635,13 @@ Proof with eauto.
         rewrite subst_tvar_in_typ_open_typ_wrt_typ_tvar2 in H6...
     + exists ((X, dbind_tvar_empty) :: θ0). 
       repeat constructor...
-      * inst_cofinites_for trans_typ__all. intros.
-        apply trans_typ_rename_tvar_cons with (X':=X0) in H2...
-        rewrite subst_tvar_in_typ_open_typ_wrt_typ_tvar2 in H2...
-        rewrite subst_tvar_in_typ_open_typ_wrt_typ_tvar2 in H2...
+      * inst_cofinites_for trans_typ__all; intros.
+        -- dependent destruction H4...
+           replace (open_typ_wrt_typ_rec 0 ` X A0) with (open_typ_wrt_typ A0 ` X) in * by auto.
+           apply s_in_rename with (Y:=X0) in H5. rewrite subst_tvar_in_typ_open_typ_wrt_typ_tvar2 in H5...
+        -- apply trans_typ_rename_tvar_cons with (X':=X0) in H2...
+           rewrite subst_tvar_in_typ_open_typ_wrt_typ_tvar2 in H2...
+           rewrite subst_tvar_in_typ_open_typ_wrt_typ_tvar2 in H2...
   - solve_awl_trailing_etvar.
     destruct_trans...
     destruct_a_wf_wl.
@@ -1704,7 +1696,7 @@ Proof with eauto.
         pick fresh X. inst_cofinites_with X.
         erewrite <- subst_tvar_in_typ_open_typ_wrt_typ_tvar2; eauto...
         erewrite <- subst_tvar_in_typ_open_typ_wrt_typ_tvar2 with (A:=A); eauto...
-        eapply trans_typ_subst_tvar_cons with (θ:=θ0) in H0; auto; eauto.
+        eapply trans_typ_subst_tvar_cons with (θ:=θ0) in H1; auto; eauto.
   - solve_awl_trailing_etvar.
     destruct_trans.
     + solve_binds_nonmono_contradiction.
@@ -1799,7 +1791,7 @@ Proof with eauto.
   - solve_awl_trailing_etvar.
     destruct_trans.
     + solve_binds_nonmono_contradiction.
-    + destruct_a_wf_wl. dependent destruction H3. 
+    + destruct_a_wf_wl. dependent destruction H4. 
       pick fresh X and apply a_wl_red__infabs_all.
       inst_cofinites_with X.
       apply IHd_wl_red. 
@@ -1809,8 +1801,8 @@ Proof with eauto.
            apply a_wf_contd_weaken...
       * exists ((X, dbind_typ T)::θ0).
         repeat (constructor; eauto)...
-        -- eapply trans_typ_tvar_etvar_cons with (θ:=θ0) (Tᵃ:=T) (Tᵈ:=T) in H1; eauto...
-           rewrite subst_tvar_in_typ_open_typ_wrt_typ_tvar2 in H1...
+        -- eapply trans_typ_tvar_etvar_cons with (θ:=θ0) (Tᵃ:=T) (Tᵈ:=T) in H2; eauto...
+           rewrite subst_tvar_in_typ_open_typ_wrt_typ_tvar2 in H2...
         -- apply trans_contd_weaken_cons; auto. constructor... 
   - solve_awl_trailing_etvar.
     destruct_trans.

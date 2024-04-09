@@ -18,7 +18,6 @@ Ltac inst_cofinite_impl H x :=
   end
 .
 
-
 Ltac inst_cofinites_with x :=
   repeat
     match goal with

@@ -47,6 +47,51 @@ Proof.
 Qed.
 
 
+Lemma ls_binds_split {A : Type} : forall (ls : list (atom * A)) X b,
+  binds X b ls ->
+  exists ls1 ls2, ls = ls1 ++ (X, b) :: ls2.
+Proof.
+  intros. induction ls.
+  - inversion H.
+  - inversion H. subst.
+    + exists (@nil (atom * A)). exists ls. auto.
+    + apply IHls in H0. destruct H0 as [ls1 [ls2]].
+      exists (a :: ls1). exists ls2. simpl. subst. auto.
+Qed.
+
+Lemma eq_ls_eq_length : forall {A : Type} (ls1 ls2 : list A),
+  ls1 = ls2 -> length ls1 = length ls2.
+Proof.
+  intros. generalize dependent ls2. induction ls1; intros.
+  - inversion H; auto.
+  - destruct ls2. inversion H.
+    + inversion H; simpl; apply f_equal; eauto.
+Qed.
+
+Lemma ls_cons_eq_false : forall {A : Type} (a : A) ls1 ls2,
+  a :: ls2 ++ ls1 = ls1 -> False.
+Proof.
+  intros.
+  apply eq_ls_eq_length in H.
+  simpl in H.
+  rewrite app_length in H. lia.
+Qed.
+
+Lemma ls_app_eq_inv {A : Type} : forall (ls1 ls2 ls2' : list A),
+  ls2 ++ ls1 = ls2' ++ ls1 ->
+  ls2 = ls2'.
+Proof.
+  intros. generalize dependent ls2'. induction ls2; intros.
+  - destruct ls2'; auto.
+    simpl in H. inversion H.
+    exfalso. eapply ls_cons_eq_false; eauto.
+  - destruct ls2'; auto.
+    + exfalso. eapply ls_cons_eq_false; eauto.
+    + dependent destruction H.
+      apply IHls2 in x; subst; auto.
+Qed.
+
+
 Lemma subst_tvar_in_typ_open_typ_wrt_typ_tvar2 : forall X A T,
   lc_typ T ->
   X `notin` ftvar_in_typ A ->
