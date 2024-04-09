@@ -770,40 +770,67 @@ Proof with simpl; eauto.
     all: rewrite IHΨ...
 Qed.
 
-Lemma d_wf_typ_rename_stvar : forall Ψ1 Ψ2 X Y A,
-  Ψ2 ++ X ~ ■ ++ Ψ1  ⊢ A  ->
-  map (subst_tvar_in_dbind (typ_var_f Y) X ) Ψ2 ++ Y ~ ■ ++ Ψ1 ⊢ { typ_var_f Y /ᵗ X } A.
+
+Lemma d_wf_typ_rename_dtvar : forall Ψ1 Ψ2 X Y A b,
+  b = ■ \/ b = □ ->
+  Ψ2 ++ X ~ b ++ Ψ1  ⊢ A  ->
+  map (subst_tvar_in_dbind (typ_var_f Y) X ) Ψ2 ++ Y ~ b ++ Ψ1 ⊢ { typ_var_f Y /ᵗ X } A.
 Proof with try solve_notin; simpl in *; eauto.
-  intros * HT.
+  intros * Hb HT.
   case_eq (X==Y); intros.
   1: { subst. rewrite* subst_same_tvar_map_id. rewrite subst_same_tvar_typ_id... }
   clear H.
   inductions HT...
-  - case_if... induction Ψ2...
-    all: inverts H; try solve_by_invert...
-    + remember (let (x, a0) := a in (x, subst_tvar_in_dbind (typ_var_f Y) X a0)).
-      remember (map (subst_tvar_in_dbind (typ_var_f Y) X) Ψ1 ++ (Y, ■) :: Ψ2).
-      destruct p.
-      apply d_wf_typ_weaken_cons.
-      applys IHΨ2...
-  - case_if... induction Ψ2...
-    + eapply d_wf_typ__stvar. case_eq (X0==Y); intros; subst...
-      inverts* H. exfalso. applys C. inverts~ H1.
-    + destruct a. inverts H.
-      * inverts H0...
-      * forwards: IHΨ2...
-        remember (map (subst_tvar_in_dbind (typ_var_f Y) X) Ψ2 ++ (Y, ■) :: Ψ1).
-        rewrite_env ([(a, subst_tvar_in_dbind (typ_var_f Y) X d)] ++ l).
-        applys* d_wf_typ_weaken_cons.
+  - case_if...
+    + subst. inversion Hb; subst. apply d_wf_typ__stvar... apply d_wf_typ__tvar...
+    + apply binds_remove_mid in H...
+      apply binds_app_iff in H. inversion H...
+      * eapply binds_map_2  with (f:=(subst_tvar_in_dbind ` Y X) ) in H0. simpl in *...
+  - case_if...
+    + subst. inversion Hb; subst. apply d_wf_typ__stvar... apply d_wf_typ__tvar...
+    + apply binds_remove_mid in H...
+      apply binds_app_iff in H. inversion H...
+      * eapply binds_map_2  with (f:=(subst_tvar_in_dbind ` Y X) ) in H0. simpl in *...
   - eapply d_wf_typ__all with (L:=L `union` singleton X); intros; inst_cofinites_with X0.
     + rewrite subst_tvar_in_typ_open_typ_wrt_typ_fresh2; eauto.
       apply s_in_subst_inv; auto.
     + intros.
       rewrite subst_tvar_in_typ_open_typ_wrt_typ_fresh2; eauto.
-      rewrite_env (map (subst_tvar_in_dbind ` Y X) (X0 ~ □ ++ Ψ2) ++ (Y, ■) :: Ψ1).
+      rewrite_env (map (subst_tvar_in_dbind ` Y X) (X0 ~ □ ++ Ψ2) ++ (Y, b) :: Ψ1).
       auto.
 Qed.
 
+
+Lemma d_wf_typ_rename_stvar : forall Ψ1 Ψ2 X Y A,
+  Ψ2 ++ X ~ ■ ++ Ψ1  ⊢ A  ->
+  map (subst_tvar_in_dbind (typ_var_f Y) X ) Ψ2 ++ Y ~ ■ ++ Ψ1 ⊢ { typ_var_f Y /ᵗ X } A.
+Proof with try solve_notin; simpl in *; eauto.
+  intros. eapply d_wf_typ_rename_dtvar; eauto.
+Qed.
+
+Lemma d_wf_typ_rename_tvar : forall Ψ1 Ψ2 X Y A,
+  Ψ2 ++ X ~ □ ++ Ψ1  ⊢ A  ->
+  map (subst_tvar_in_dbind (typ_var_f Y) X ) Ψ2 ++ Y ~ □ ++ Ψ1 ⊢ { typ_var_f Y /ᵗ X } A.
+Proof with try solve_notin; simpl in *; eauto.
+  intros. eapply d_wf_typ_rename_dtvar; eauto.
+Qed.
+
+
+Lemma d_wf_typ_rename_stvar_cons : forall Ψ X Y A,
+  X ~ ■ ++ Ψ  ⊢ A  ->
+  Y ~ ■ ++ Ψ ⊢ { typ_var_f Y /ᵗ X } A.
+Proof with try solve_notin; simpl in *; eauto.
+  intros. rewrite_env (map (subst_tvar_in_dbind (typ_var_f Y) X ) nil ++ Y ~ ■ ++ Ψ). 
+  eapply d_wf_typ_rename_stvar; eauto.
+Qed.
+
+Lemma d_wf_typ_rename_tvar_cons : forall Ψ X Y A,
+  X ~ □ ++ Ψ ⊢ A  ->
+  Y ~ □ ++ Ψ ⊢ { typ_var_f Y /ᵗ X } A.
+Proof with try solve_notin; simpl in *; eauto.
+  intros. rewrite_env (map (subst_tvar_in_dbind (typ_var_f Y) X ) nil ++ Y ~ □ ++ Ψ).
+  eapply d_wf_typ_rename_tvar; eauto.
+Qed.
 
 Corollary d_wf_env_rename_stvar : forall Ψ1 X Ψ2 Y,
   ⊢ Ψ2 ++ X ~ ■ ++ Ψ1 ->
@@ -833,11 +860,10 @@ Proof with try solve_notin; simpl; eauto.
 Qed.
 
 
-
 Lemma d_mono_typ_rename_dtvar : forall Ψ1 Ψ2 X X' b T,
     ⊢ (Ψ2 ++ X ~ b ++ Ψ1) -> 
     X' ∉ (dom (Ψ2 ++ Ψ1)) ->
-    (b = dbind_tvar_empty \/ b = dbind_stvar_empty) ->
+    b = ■ \/ b = □ ->
     d_mono_typ (Ψ2 ++ X ~ b ++ Ψ1) T ->
     d_mono_typ (map (subst_tvar_in_dbind ` X' X) Ψ2 ++ (X', b) :: Ψ1) ({`X' /ᵗ X} T).
 Proof with simpl in *; eauto.

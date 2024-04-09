@@ -1,13 +1,13 @@
 Require Import Coq.Program.Equality.
 Require Import Coq.Unicode.Utf8.
 
-Require Import ln_utils.
 Require Import uni.decl.def_extra.
 Require Import uni.decl.prop_basic.
 Require Import uni.decl.prop_typing.
 Require Import uni.def_ott.
 Require Import uni.notations.
 Require Import uni.decl_worklist.def.
+Require Import ln_utils.
 
 
 (* Declare Scope dworklist_scope.
@@ -16,18 +16,24 @@ Bind Scope dworklist_scope with dworklist.
  *)
 
 
-Ltac destruct_d_wl_wf :=
-  repeat
-    match goal with
-    | H : d_wf_wl (dworklist_conswork ?Ω ?w) |- _ => dependent destruction H
-    | H : d_wf_wl (dworklist_consvar ?Ω ?w ?b) |- _ => dependent destruction H
-    | H : d_wf_wl (dworklist_constvar ?Ω ?w ?b) |- _ => dependent destruction H
-    | H : d_wf_work ?Ω ?w |- _ => dependent destruction H
-    | H : d_wf_typ ?E (?Ct ?A1 ?A2) |- _ => dependent destruction H
-    | H : d_wf_exp ?E (?Ce ?b) |- _ => dependent destruction H
-    | H : d_wf_exp ?E (?Ce ?e1 ?e2) |- _ => dependent destruction H
-    end.
+ Ltac destruct_d_wl_wf' :=
+  lazymatch goal with
+  | H : d_wf_wl (dworklist_conswork ?Ω ?w) |- _ => dependent destruction H
+  | H : d_wf_wl (dworklist_consvar ?Ω ?w ?b) |- _ => dependent destruction H
+  | H : d_wf_wl (dworklist_constvar ?Ω ?w ?b) |- _ => dependent destruction H
+  | H : d_wf_work ?Ω (?Cw _) |- _ => dependent destruction H
+  | H : d_wf_work ?Ω (?Cw _ _) |- _ => dependent destruction H
+  | H : d_wf_work ?Ω (?Cw _ _ _) |- _ => dependent destruction H
+  | H : d_wf_typ ?E (open_typ_wrt_typ _ _) |- _ => fail
+  | H : d_wf_typ ?E (?Ct ?A1 ?A2) |- _ => dependent destruction H
+  | H : d_wf_exp ?E (open_exp_wrt_exp _ _) |- _ => fail
+  | H : d_wf_exp ?E (open_exp_wrt_typ _ _) |- _ => fail
+  | H : d_wf_exp ?E (?Ce ?b) |- _ => dependent destruction H
+  | H : d_wf_exp ?E (?Ce ?e1 ?e2) |- _ => dependent destruction H
+  end.
 
+Ltac destruct_d_wl_wf :=
+  repeat destruct_d_wl_wf'.
 
 Lemma d_wf_wl_wf_env : forall Ω,
   ⊢ᵈʷ Ω -> ⊢ (dwl_to_denv Ω).
@@ -224,65 +230,128 @@ Ltac destruct_d_wl_del_red' :=
 Ltac destruct_d_wl_del_red := repeat destruct_d_wl_del_red'.
 
 Ltac _apply_IH_d_wl_red :=
-  let H := fresh "H" in
-    match goal with 
-    | H : (⊢ᵈʷ ?Ω) -> (?Ω ⟶ᵈ⁎⋅) |- _ => destruct_d_wl_wf; 
-      let H1 := fresh "H" in
-      assert (H1 : ⊢ᵈʷ Ω) by auto;
-      apply H in H1
-    end.
-(* 
-(* remove later *)
-Hint Constructors d_chk_inf : typing. *)
+  match goal with 
+  | H : (⊢ᵈʷ ?Ω) -> (?Ω ⟶ᵈ⁎⋅) |- _ => try destruct_d_wl_wf; 
+    let H1 := fresh "H" in
+    assert (H1 : ⊢ᵈʷ Ω) by auto 6;
+    apply H in H1
+  end.
 
 #[local] Hint Immediate d_wf_wl_wf_env : core.
 
-(* This direction is not so important because soundness is proven against decl system directly *)
+
+#[local] Hint Immediate d_mono_typ_d_wf_typ : core.
+
 Theorem d_wl_red_sound: forall Ω, 
     ⊢ᵈʷ Ω -> Ω ⟶ᵈʷ⁎⋅ -> Ω ⟶ᵈ⁎⋅.
-Proof with eauto with typing.
+Proof with eauto.
   intros. induction H0; try solve [dependent destruction H; auto];
     try solve [destruct_d_wl_wf; _apply_IH_d_wl_red; destruct_d_wl_del_red; eauto].
   (* sub *)
 
-  - destruct_d_wl_wf. dependent destruction H. dependent destruction H1.
+  - destruct_d_wl_wf.
+    dependent destruction H. dependent destruction H1.
     constructor.
     eapply d_sub__all with (L:=L `union` L0 `union` L1 `union` dom (dwl_to_denv Ω)); intros; auto.
     inst_cofinites_with X.
-    assert ( ⊢ᵈʷ (work_sub (A ^ᵗ X) (B ^ᵗ X) ⫤ᵈ X ~ᵈ ■ ;ᵈ Ω) ). {
-      repeat constructor; eauto; simpl in *.
-      admit. admit.
-    }
-    admit.
-    admit.
+    + assert ( ⊢ᵈʷ (work_sub (A ^ᵗ X) (B ^ᵗ X) ⫤ᵈ X ~ᵈ ■ ;ᵈ Ω) ) by 
+      (repeat constructor; eauto; simpl in *; eapply d_wf_typ_tvar_stvar_cons; eauto ).
+      _apply_IH_d_wl_red. destruct_d_wl_del_red...
+    + pick fresh X. inst_cofinites_with X.
+      assert ( ⊢ᵈʷ (work_sub (A ^ᵗ X) (B ^ᵗ X) ⫤ᵈ X ~ᵈ ■ ;ᵈ Ω) ) by 
+      (repeat constructor; eauto; simpl in *; eapply d_wf_typ_tvar_stvar_cons; eauto ).
+      _apply_IH_d_wl_red. destruct_d_wl_del_red...
   - destruct_d_wl_wf.
     dependent destruction H.
     assert (Hwf: ⊢ᵈʷ (work_sub (A ^^ᵗ T) B ⫤ᵈ Ω)). {
       repeat (constructor; auto).
       apply d_wf_typ_all_open; auto.
-      apply d_mono_typ_d_wf_typ...
-      admit.
-      admit.
+      inst_cofinites_for d_wf_typ__all...
     }
-    apply IHd_wl_red in Hwf.
-    destruct_d_wl_del_red. 
-    econstructor...
-  - admit.
+    _apply_IH_d_wl_red... destruct_d_wl_del_red...
+  - destruct_d_wl_wf. constructor.
+    + inst_cofinites_for d_chk_inf__chk_abs...
+      intros. inst_cofinites_with x.
+      assert (Hwf: ⊢ᵈʷ (work_check (e ^ᵉₑ exp_var_f x) A2 ⫤ᵈ x ~ᵈ A1;ᵈ Ω)). {
+        repeat (constructor; simpl; auto)...
+        eapply d_wf_exp_var_binds_another_cons...
+        apply d_wf_typ_weaken_cons...
+      }
+      _apply_IH_d_wl_red... destruct_d_wl_del_red...
+    + pick fresh x. inst_cofinites_with x.
+      assert (Hwf: ⊢ᵈʷ (work_check (e ^ᵉₑ exp_var_f x) A2 ⫤ᵈ x ~ᵈ A1;ᵈ Ω)). {
+        repeat (constructor; simpl; auto)...
+        eapply d_wf_exp_var_binds_another_cons...
+        apply d_wf_typ_weaken_cons...
+      }
+      _apply_IH_d_wl_red... destruct_d_wl_del_red...
   - destruct_d_wl_wf. econstructor.
-    apply d_chk_inf__chk_abstop with (L:=L `union` L0 `union` dom (dwl_to_denv Ω)).
-    intros. inst_cofinites_with x...
-    assert (⊢ᵈʷ (work_check (e ^ᵉₑ exp_var_f x) typ_top ⫤ᵈ x ~ᵈ typ_bot;ᵈ Ω)).
-    { repeat constructor... admit. }
-    apply H4 in H6. dependent destruction H6...
-    inst_cofinites_by (L `union` L0 `union` dom (dwl_to_denv Ω)). 
-    assert (⊢ᵈʷ (work_check (e ^ᵉₑ exp_var_f x) typ_top ⫤ᵈ x ~ᵈ typ_bot;ᵈ Ω)).
-    { repeat constructor... admit. }
-    apply H4 in H5. dependent destruction H5...  dependent destruction H6...
-  - eapply d_wl_del_red__inf with (A:=A)...
-    econstructor... destruct_d_wl_wf...
-    apply IHd_wl_red. admit.
-  - admit.
-  - admit.
+    + apply d_chk_inf__chk_abstop with (L:=L `union` L0 `union` dom (dwl_to_denv Ω)).
+      intros. inst_cofinites_with x...
+      assert (⊢ᵈʷ (work_check (e ^ᵉₑ exp_var_f x) typ_top ⫤ᵈ x ~ᵈ typ_bot;ᵈ Ω)).
+      { repeat constructor... simpl. eapply d_wf_exp_var_binds_another_cons...  }
+      _apply_IH_d_wl_red... destruct_d_wl_del_red...
+    + pick fresh x. inst_cofinites_with x.
+      assert (⊢ᵈʷ (work_check (e ^ᵉₑ exp_var_f x) typ_top ⫤ᵈ x ~ᵈ typ_bot;ᵈ Ω)).
+      { repeat constructor... simpl. eapply d_wf_exp_var_binds_another_cons...  }
+      _apply_IH_d_wl_red... destruct_d_wl_del_red...
+  - destruct_d_wl_wf...
+    eapply d_wl_del_red__inf with (A:=A)...
+    assert (uniq (dwl_to_denv Ω))...
+    pose proof (binds_unique _ _ _ _ _ H H2 H4). dependent destruction H5.
+    apply IHd_wl_red...
+    repeat (constructor; simpl; auto)...
+    eapply d_wf_env_binds_d_wf_typ; eauto...
+  - destruct_d_wl_wf.
+    apply d_wl_del_red__inf with (A:=typ_all A)...
+    + inst_cofinites_for d_chk_inf__inf_tabs...
+      * inst_cofinites_for d_wf_typ__all...
+        intros. inst_cofinites_with X. dependent destruction H...
+        intros. inst_cofinites_with X.
+        dependent destruction H0...
+      * destruct_d_wl_wf. intros. inst_cofinites_with X.
+        dependent destruction H0.  dependent destruction H... 
+        assert (Hwf: ⊢ᵈʷ (work_check (e ^ᵉₜ ` X) (A ^ᵗ X) ⫤ᵈ X ~ᵈ □ ;ᵈ work_applys cs (typ_all A) ⫤ᵈ Ω)). {
+          repeat (constructor; simpl; auto)...
+          replace (open_typ_wrt_typ_rec 0 ` X A) with (open_typ_wrt_typ A ` X) in * by auto.
+          inst_cofinites_for d_wf_typ__all...
+          - intros. eapply s_in_rename with (Y:=X0) in H0... 
+            rewrite subst_tvar_in_typ_open_typ_wrt_typ_tvar2 in H0...
+          - intros. apply d_wf_typ_rename_tvar_cons with (Y:=X0) in H1. 
+            rewrite subst_tvar_in_typ_open_typ_wrt_typ_tvar2 in H1...
+        }
+        _apply_IH_d_wl_red. destruct_d_wl_del_red...
+    + pick fresh X. inst_cofinites_with X.
+      dependent destruction H0.  dependent destruction H... 
+      assert (Hwf: ⊢ᵈʷ (work_check (e ^ᵉₜ ` X) (A ^ᵗ X) ⫤ᵈ X ~ᵈ □ ;ᵈ work_applys cs (typ_all A) ⫤ᵈ Ω)). {
+        repeat (constructor; simpl; auto)...
+        replace (open_typ_wrt_typ_rec 0 ` X A) with (open_typ_wrt_typ A ` X) in * by auto.
+        inst_cofinites_for d_wf_typ__all...
+        - intros. eapply s_in_rename with (Y:=X0) in H0... 
+          rewrite subst_tvar_in_typ_open_typ_wrt_typ_tvar2 in H0...
+        - intros. apply d_wf_typ_rename_tvar_cons with (Y:=X0) in H1. 
+          rewrite subst_tvar_in_typ_open_typ_wrt_typ_tvar2 in H1...
+      }
+      _apply_IH_d_wl_red. destruct_d_wl_del_red...
+  - destruct_d_wl_wf. 
+    eapply d_wl_del_red__inf with (A:=(typ_arrow T1 T2))...
+    + inst_cofinites_for d_chk_inf__inf_abs_mono...
+      intros. inst_cofinites_with x...
+      assert (Hwf: ⊢ᵈʷ (work_check (e ^ᵉₑ exp_var_f x) T2 ⫤ᵈ x ~ᵈ T1;ᵈ work_applys cs (typ_arrow T1 T2) ⫤ᵈ Ω)). {
+        dependent destruction H3.
+        repeat (constructor; simpl; eauto)...
+        - eapply d_wf_exp_var_binds_another_cons...
+        - apply d_wf_typ_weaken_cons...
+      }
+      _apply_IH_d_wl_red. destruct_d_wl_del_red...
+    + pick fresh x. inst_cofinites_with x...
+      assert (Hwf: ⊢ᵈʷ (work_check (e ^ᵉₑ exp_var_f x) T2 ⫤ᵈ x ~ᵈ T1;ᵈ work_applys cs (typ_arrow T1 T2) ⫤ᵈ Ω)). {
+        dependent destruction H3.
+        repeat (constructor; simpl; eauto)...
+        - eapply d_wf_exp_var_binds_another_cons...
+        - apply d_wf_typ_weaken_cons...
+      }
+      _apply_IH_d_wl_red. destruct_d_wl_del_red...
   - destruct_d_wl_wf. _apply_IH_d_wl_red.
     destruct_d_wl_del_red.
     eapply d_wl_del_red__inf with (A:=B).
@@ -292,22 +361,18 @@ Proof with eauto with typing.
   - destruct_d_wl_wf. 
     assert (⊢ᵈʷ (work_applys cs (A ^^ᵗ B) ⫤ᵈ Ω)).
     { repeat constructor... apply d_wf_typ_all_open... }
-    apply IHd_wl_red in H4. dependent destruction H4.
-    eapply d_wl_del_red__inftapp; eauto.
+    _apply_IH_d_wl_red. destruct_d_wl_del_red...
   - destruct_d_wl_wf. 
     assert (⊢ᵈʷ (work_infabs (A ^^ᵗ T) cd ⫤ᵈ Ω)).
-    { repeat constructor... apply d_wf_typ_all_open... apply d_mono_typ_d_wf_typ... }
-    apply IHd_wl_red in H4. dependent destruction H4.
-    eapply d_wl_del_red__infabs with (B:=B) (C:=C); eauto.
-    eapply d_infabs__all with (T:=T)...
-    apply d_mono_typ_d_wf_typ; eauto.
+    { repeat constructor... apply d_wf_typ_all_open...  }
+    _apply_IH_d_wl_red. destruct_d_wl_del_red...
   - econstructor; eauto.
     destruct_d_wl_wf.
     eapply d_wf_work_apply_conts in H0; eauto.
   - econstructor; eauto.
     destruct_d_wl_wf.
     eapply d_wf_work_apply_contd with (A:=A) in H0; eauto.
-Admitted.
+Qed.
 
 
 Lemma d_wl_red_sub_complete: forall Ω A B,
@@ -328,7 +393,6 @@ Proof with auto.
     apply IHHsub; eauto. 
     econstructor; auto. econstructor; auto.
     apply d_wf_typ_all_open; eauto; auto.
-    eapply d_mono_typ_d_wf_typ; auto.
 Qed.
 
 
@@ -563,6 +627,3 @@ Proof with auto.
   - destruct_d_wl_wf. econstructor; eauto.
     apply IHd_wl_del_red. eapply d_wf_work_apply_contd in H3; eauto.
 Qed.
-
-
-Print Assumptions  d_wl_red_complete.

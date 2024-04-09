@@ -111,4 +111,4 @@ Bind Scope abind_scope with abind.
 
 Notation "□" := abind_tvar_empty : abind_scope.
 Notation "■" := abind_stvar_empty : abind_scope.
-Notation "⬒" := abind_stvar_empty : abind_scope.
+Notation "⬒" := abind_etvar_empty : abind_scope.
