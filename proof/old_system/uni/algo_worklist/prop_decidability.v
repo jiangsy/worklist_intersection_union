@@ -1055,6 +1055,26 @@ Proof.
     eapply aworklist_subst_no_etvar_false; eauto.
 Qed.
 
+Lemma exp_size_wl_aworklist_subst' : forall Γ2 Γ X A Γ1 Γ1' Γ2',
+  ⊢ᵃʷ (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) -> 
+  aworklist_subst (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) X A Γ1' Γ2' -> a_mono_typ (awl_to_aenv Γ) A ->
+  exp_size_wl (subst_tvar_in_aworklist A X Γ2' ⧺ Γ1') = exp_size_wl (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1).
+Proof.
+  intros Γ2. induction Γ2; intros;
+    dependent destruction H0; dependent destruction H; simpl in *; eauto;
+    try solve [exfalso; eauto].
+  - eapply worklist_split_etvar_det in x. destruct x. subst.
+    eapply IHΓ2 in H1; eauto.
+Admitted.
+
+Lemma exp_size_wl_aworklist_subst : forall Γ X A Γ1 Γ2,
+  ⊢ᵃʷ Γ -> 
+  aworklist_subst Γ X A Γ1 Γ2 -> a_mono_typ (awl_to_aenv Γ) A ->
+  exp_size_wl (subst_tvar_in_aworklist A X Γ2 ⧺ Γ1) = exp_size_wl Γ.
+Admitted.
+
+
+
 Lemma decidablity_lemma : forall ne nj nt ntj na naj nm nw Γ m,
   ⊢ᵃʷ Γ ->
   exp_size_wl Γ < ne ->
@@ -1645,7 +1665,18 @@ Proof.
                 a_mono_typ (awl_to_aenv Γ) A0 ->
                 aworklist_subst Γ X A0 Γ1 Γ2 ->
                 (subst_tvar_in_aworklist A0 X Γ2 ⧺ Γ1) ⟶ᵃʷ⁎⋅ \/
-              ~ (subst_tvar_in_aworklist A0 X Γ2 ⧺ Γ1) ⟶ᵃʷ⁎⋅) by admit.
+              ~ (subst_tvar_in_aworklist A0 X Γ2 ⧺ Γ1) ⟶ᵃʷ⁎⋅).
+      { intros Γ1 Γ2 X Heq Hbin Hmono Hsub. subst.
+        eapply IHnm; eauto; simpl in *; try lia.
+        admit. (* safe: wf *)
+        erewrite exp_size_wl_aworklist_subst; eauto.
+        admit. (* TODO: should be fine *)
+        admit. (* TODO: should be fine *)
+        admit. (* TODO: should be fine *)
+        admit. (* TODO: should be fine *)
+        admit. (* TODO: should be fine *)
+        admit. admit. (* TODO: should be fine *)
+      } 
       assert (JgInst2: forall (Γ1 Γ2:aworklist) (X:typvar),
                 A0 = typ_var_f X ->
                 binds X abind_etvar_empty (awl_to_aenv Γ) ->
@@ -1831,19 +1862,29 @@ Proof.
               ** right. intro Hcontra. dependent destruction Hcontra; try unify_binds.
            ++ pick fresh X1. pick fresh X2.
               destruct (a_wf_wl_aworklist_subst_dec (aworklist_conswork (aworklist_constvar (aworklist_constvar Γ X1 abind_etvar_empty) X2 abind_etvar_empty) (work_sub (typ_var_f X) (typ_arrow A1 A2))) X (typ_arrow (typ_var_f X1) (typ_var_f X2))) as [[Γ1 [Γ2 Hsubst]] | Hsubst]; eauto.
-              admit. (* wf *) simpl. auto.
-              ** assert (JgArr1: (subst_tvar_in_aworklist (typ_arrow ` X1 ` X2) X Γ2 ⧺ Γ1) ⟶ᵃʷ⁎⋅ \/
-                                ~ (subst_tvar_in_aworklist (typ_arrow ` X1 ` X2) X Γ2 ⧺ Γ1) ⟶ᵃʷ⁎⋅) by admit.
+              admit. (* wf *)
+              ** dependent destruction Hsubst. simpl in *.
+                 assert (JgArr1: (work_sub (typ_arrow ` X1 ` X2) (typ_arrow A1 A2) ⫤ᵃ subst_tvar_in_aworklist (typ_arrow ` X1 ` X2) X Γ2 ⧺ Γ1) ⟶ᵃʷ⁎⋅ \/
+                               ~ (work_sub (typ_arrow ` X1 ` X2) (typ_arrow A1 A2) ⫤ᵃ subst_tvar_in_aworklist (typ_arrow ` X1 ` X2) X Γ2 ⧺ Γ1) ⟶ᵃʷ⁎⋅).
+                 { admit. }          
                  dependent destruction JgArr1; eauto.
                  left. eapply a_wl_red__sub_arrow1; eauto.
                  intro Hsin. eapply sin_in in Hsin. eauto.
+                 intros. dependent destruction H8. simpl.
                  admit. admit. (* TODO *)
               ** admit. (* TODO *)
            ++ right. intro Hcontra. dependent destruction Hcontra; try unify_binds.
               admit. (* TODO *)
-        -- admit.
-        -- admit.
-        -- admit.   
+        -- right. intro Hcontra. dependent destruction Hcontra; try unify_binds.
+           dependent destruction H7; try unify_binds.
+        -- edestruct JgUnion1 as [JgUnion1' | JgUnion1']; eauto.
+           edestruct JgUnion2 as [JgUnion2' | JgUnion2']; eauto.
+           right. intro Hcontra. dependent destruction Hcontra; try unify_binds.
+           dependent destruction H5. 
+           eapply JgUnion1'; eauto. eapply JgUnion2'; eauto.
+        -- edestruct JgInter1 as [JgInter1' | JgInter1']; eauto.
+           right. intro Hcontra. dependent destruction Hcontra; try unify_binds.
+           dependent destruction H5. eauto.
       * dependent destruction H1;
           try solve [right; intro Hcontra;
             dependent destruction Hcontra];
@@ -1856,7 +1897,7 @@ Proof.
         -- right. intro Hcontra. dependent destruction Hcontra.
            eapply abind_etvar_stvar_false; eauto.
            eapply abind_etvar_stvar_false; eauto.
-        -- admit. (* TODO *)
+        -- admit. (* arrow case *)
         -- assert (JgArr: a_wl_red (aworklist_conswork (aworklist_conswork Γ (work_sub A0 A1)) (work_sub A2 A3)) \/
                         ~ a_wl_red (aworklist_conswork (aworklist_conswork Γ (work_sub A0 A1)) (work_sub A2 A3))).
            { assert (Hle: forall ns1 ns2 ns0 ns3,
