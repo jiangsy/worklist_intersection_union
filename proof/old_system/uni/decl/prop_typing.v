@@ -783,7 +783,7 @@ Proof with auto with typing.
          ++ eapply d_chk_inf__inf_abs_mono with (L:=L `union` dom Ψ').
             eapply d_mono_typ_subenv; eauto.
             intros.
-            replace (open_exp_wrt_exp e (exp_var_f x0)) with ({exp_var_f x0 /ᵉₑ x} open_exp_wrt_exp e (exp_var_f x)).
+            replace (open_exp_wrt_exp e (exp_var_f x0)) with ({exp_var_f x0 ᵉ/ₑ x} open_exp_wrt_exp e (exp_var_f x)).
             apply d_chk_inf_rename_var_cons. apply Hty; eauto. 
             ** apply dsub_refl. eapply d_chk_inf_wf_env; eauto.
                dependent destruction H. apply d_mono_typ_d_wf_typ in H0.

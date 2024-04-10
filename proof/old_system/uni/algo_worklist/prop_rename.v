@@ -339,10 +339,10 @@ Qed.
 
 Lemma subst_tvar_in_conts_rename : forall X X' A cs,
   X' `notin` ftvar_in_conts cs ->
-  {` X' /ᶜˢₜ X} {A /ᶜˢₜ X} cs = {({` X' /ᵗ X} A) /ᶜˢₜ X'} {` X' /ᶜˢₜ X} cs
+  {` X' ᶜˢ/ₜ X} {A ᶜˢ/ₜ X} cs = {({` X' /ᵗ X} A) ᶜˢ/ₜ X'} {` X' ᶜˢ/ₜ X} cs
 with subst_tvar_in_contd_rename : forall X X' A cd,
   X' `notin` ftvar_in_contd cd ->
-  {` X' /ᶜᵈₜ X} {A /ᶜᵈₜ X} cd = {({` X' /ᵗ X} A) /ᶜᵈₜ X'} {` X' /ᶜᵈₜ X} cd.
+  {` X' ᶜᵈ/ₜ X} {A ᶜᵈ/ₜ X} cd = {({` X' /ᵗ X} A) ᶜᵈ/ₜ X'} {` X' ᶜᵈ/ₜ X} cd.
 Proof.
   - intros. induction cs; simpl in *;
     try repeat rewrite subst_tvar_in_typ_rename_tvar; auto;
@@ -359,7 +359,7 @@ Qed.
 
 Lemma subst_tvar_in_work_rename : forall X X' w A,
   X' `notin` ftvar_in_work w ->
-  {` X' /ʷₜ X} {A /ʷₜ X} w = {({` X' /ᵗ X} A) /ʷₜ X'} {` X' /ʷₜ X} w.
+  {` X' ʷ/ₑ X} {A ʷ/ₑ X} w = {({` X' /ᵗ X} A) ʷ/ₑ X'} {` X' ʷ/ₑ X} w.
 Proof.
   intros. destruct w; simpl in *;
     try repeat rewrite subst_tvar_in_typ_rename_tvar; auto;
@@ -935,7 +935,7 @@ Proof with eauto; solve_false.
         destruct_eq_atom.
         rewrite rename_tvar_in_aworklist_rev_eq in Hws; auto...
         rewrite rename_tvar_in_contd_rev_eq in Hws; auto.
-        assert (X `notin` (ftvar_in_contd ({` X' /ᶜᵈₜ X} cd))) by (solve_notin_rename_tvar; auto).
+        assert (X `notin` (ftvar_in_contd ({` X' ᶜᵈ/ₜ X} cd))) by (solve_notin_rename_tvar; auto).
         apply H6 in Hws as Hawlred; simpl; auto.
         -- clear Hws. destruct_eq_atom.
            rewrite_aworklist_rename; simpl; auto.
@@ -955,7 +955,7 @@ Proof with eauto; solve_false.
         destruct_eq_atom.
         rewrite rename_tvar_in_aworklist_rev_eq in Hws; auto...
         rewrite rename_tvar_in_contd_rev_eq in Hws; auto.
-        assert (X `notin` (ftvar_in_contd ({` X' /ᶜᵈₜ X} cd))) by now solve_notin_rename_tvar.
+        assert (X `notin` (ftvar_in_contd ({` X' ᶜᵈ/ₜ X} cd))) by now solve_notin_rename_tvar.
         apply H6 in Hws as Hawlred; simpl; auto.
         -- clear Hws. destruct_eq_atom. rewrite_aworklist_rename; simpl; auto.
            rewrite_aworklist_rename_rev.
@@ -1239,8 +1239,8 @@ Proof with eauto.
       simpl in Hws. destruct_eq_atom.
       rewrite_aworklist_rename_var_rev.
       * simpl in Hws.
-        replace (({exp_var_f x' /ᵉₑ x} e) ^ᵉₑ exp_var_f x0) with
-          (({exp_var_f x' /ᵉₑ x} e) ^ᵉₑ ({exp_var_f x' /ᵉₑ x} exp_var_f x0)) in Hws by (simpl; destruct_eq_atom; auto).
+        replace (({exp_var_f x' ᵉ/ₑ x} e) ^ᵉₑ exp_var_f x0) with
+          (({exp_var_f x' ᵉ/ₑ x} e) ^ᵉₑ ({exp_var_f x' ᵉ/ₑ x} exp_var_f x0)) in Hws by (simpl; destruct_eq_atom; auto).
         rewrite <- subst_var_in_exp_open_exp_wrt_exp in Hws; auto.
         rewrite rename_var_in_exp_rev_eq in Hws.
         -- apply H7 in Hws; auto.
@@ -1253,7 +1253,7 @@ Proof with eauto.
       * admit. (* wf *)
       * simpl.
         rewrite fvar_in_exp_open_exp_wrt_exp_upper.
-        assert (x `notin` fvar_in_exp ({exp_var_f x' /ᵉₑ x} e)) by (apply subst_var_in_exp_fresh_same; auto).
+        assert (x `notin` fvar_in_exp ({exp_var_f x' ᵉ/ₑ x} e)) by (apply subst_var_in_exp_fresh_same; auto).
         solve_notin_rename_var.
   - simpl in *.
     inst_cofinites_for a_wl_red__chk_abstop. intros.

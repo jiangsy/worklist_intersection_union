@@ -271,22 +271,21 @@ Lemma trans_typ_subst_etvar_same_ss : forall θ Tᵃ Tᵈ X Aᵃ Aᵈ,
   θ ᵗ⫦ Aᵃ ⇝ Aᵈ.
 Proof.
   intros.
-  assert (exists θ1 θ2, θ = θ2 ++ X ~ dbind_typ Tᵈ ++ θ1) by admit.
-  destruct H4 as [θ1 [θ2 Heq]].
-  rewrite  Heq in *.
+  apply ls_binds_split in H0 as Hsplit.
+  destruct Hsplit as [θ2 [θ1 Heq]]. subst.
   apply trans_typ_strengthen_etvar in H2; auto.
   apply trans_typ_strengthen_etvar in H3; auto.
   eapply trans_typ_subst_etvar; eauto.
   - apply lc_typ_subst_inv with (T:=Tᵃ) (X:=X).
     eapply trans_typ_lc_atyp; eauto.
     eapply trans_typ_lc_atyp; eauto.
-  - admit.
-  - clear H0 H1 Heq H2 H3. induction θ2; simpl in *. 
+  - rewrite_env (θ2 ++ (X ~ dbind_typ Tᵈ) ++ θ1) in H. 
+    eapply wf_ss_notin_remaining; eauto. 
+  - clear H0 H1 H2 H3. induction θ2; simpl in *. 
     + inversion H; auto.
     + inversion H; apply IHθ2; eauto.
   - apply subst_tvar_in_typ_fresh_same; auto.
-Admitted.
-
+Qed.
 
 Lemma trans_exp_subst_etvar_same_ss' : forall θ Tᵃ Tᵈ X eᵃ eᵈ,
   lc_exp eᵃ ->
@@ -545,7 +544,7 @@ Proof with auto.
     exists θ'1. exists Tᵈ. repeat split; auto.
     + constructor. auto.
       eapply trans_typ_subst_etvar_same_ss; eauto.
-      eapply trans_typ_reorder with (θ:=θ'); eauto.
+      eapply trans_typ_reorder_ss with (θ:=θ'); eauto.
       intros. apply Hbinds... 
       unfold not. intros. subst.
       apply subst_tvar_in_typ_fresh_same in H5...
@@ -602,7 +601,7 @@ Proof with auto.
     exists θ'1. exists Tᵈ. repeat split; auto.
     + constructor; auto.
       eapply trans_work_subst_etvar_same_ss; eauto.
-      apply trans_work_reorder with (θ:=θ'); eauto.
+      apply trans_work_reorder_ss with (θ:=θ'); eauto.
       * intros. apply Hbinds; auto.
         unfold not. intros. subst.
         apply subst_tvar_in_work_fresh_same in H5; auto.
@@ -649,7 +648,7 @@ Proof with auto.
     + constructor.
       rewrite_env ((X ~ dbind_typ T) ++ (Y, dbind_typ T0) :: θ') in Htrans2.
       rewrite_env ((θ'' ++ X ~ dbind_typ T) ++ (Y, dbind_typ T0) :: θ') in Htrans2.
-      apply trans_wl_strengthen_etvar_gen in Htrans2.
+      apply trans_wl_strengthen_etvar in Htrans2.
       replace (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1)%aworklist with (Γ2 ⧺ (X ~ᵃ ⬒ ;ᵃ Γ1))%aworklist by admit.
       rewrite Heq.
       eapply trans_wl_app with (θ2:= X ~ dbind_typ T ++ θ'); eauto.
@@ -658,7 +657,7 @@ Proof with auto.
       admit. (* *, notin *)
       admit. (* *, notin *)
       admit. (* *, mono *)
-    + eapply trans_typ_reorder with (θ:=θ'' ++ (X, dbind_typ T) :: (Y, dbind_typ T0) :: θ'); auto.
+    + eapply trans_typ_reorder_ss with (θ:=θ'' ++ (X, dbind_typ T) :: (Y, dbind_typ T0) :: θ'); auto.
       admit. (* *, wf_ss *)
       intros.
       apply binds_same_move_etvar_before...

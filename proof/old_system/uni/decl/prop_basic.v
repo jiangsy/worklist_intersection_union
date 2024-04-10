@@ -544,28 +544,34 @@ Proof with eauto using d_mono_typ_weaken_app; try solve_by_invert; try solve [ex
 Qed.
 
 
+Lemma d_mono_typ_strengthen : forall Ψ1 Ψ2 X b T,
+  d_mono_typ (Ψ2 ++ (X, b) :: Ψ1) T ->
+  X `notin` ftvar_in_typ T ->
+  d_mono_typ (Ψ2 ++ Ψ1) T.
+Proof.
+  intros. dependent induction H; eauto.
+  - destruct b; simpl in *. 
+    + apply binds_remove_mid in H; auto.
+    + apply binds_remove_mid in H; auto.
+    + apply binds_remove_mid in H; auto.
+  - simpl in *. eauto.  
+Qed.
+
+
 Lemma d_mono_typ_strengthen_cons : forall Ψ X b T,
-  ⊢ (X, b) :: Ψ ->
   d_mono_typ ((X, b) :: Ψ) T ->
   X `notin` ftvar_in_typ T ->
   d_mono_typ Ψ T.
 Proof.
-  intros. dependent induction H0; eauto.
-  - destruct b; simpl in *. 
-    + inversion H0. dependent destruction H2. solve_notin_eq X0.
-      constructor; auto.
-    + inversion H0. dependent destruction H2.
-      constructor; auto.
-    + inversion H0. dependent destruction H2.
-      constructor; auto.
-  - simpl in *. eauto.
+  intros. rewrite_env (nil ++ Ψ).
+  eapply d_mono_typ_strengthen; eauto.
 Qed.
 
-Lemma d_mono_typ_drop_stvar : forall Ψ1 Ψ2 A X,
-    d_mono_typ (Ψ2 ++ X ~ ■ ++ Ψ1) A ->
-    d_mono_typ (Ψ2 ++ Ψ1) A.
+Lemma d_mono_typ_strengthen_stvar : forall Ψ1 Ψ2 T X,
+    d_mono_typ (Ψ2 ++ X ~ ■ ++ Ψ1) T ->
+    d_mono_typ (Ψ2 ++ Ψ1) T.
 Proof with eauto using d_mono_typ_weaken_app; try solve_by_invert; try solve [exfalso; jauto].
-  intros. induction A; simpl in *...
+  intros. induction T; simpl in *...
   1: { simpl. destruct (X0 == X); subst; auto...
        - inverts H. forwards* [?|?]: binds_app_1 H2.
          forwards[(?&Heq)|?]: binds_cons_1 H; try inverts Heq; subst; eauto...
@@ -580,7 +586,7 @@ Lemma d_mono_typ_stvar_tvar : forall Ψ1 Ψ2 A X,
     d_mono_typ (Ψ2 ++ X ~ ■ ++ Ψ1) A ->
     d_mono_typ (Ψ2 ++ X ~ □ ++ Ψ1) A.
 Proof.
-  intros. apply d_mono_typ_drop_stvar in H.
+  intros. apply d_mono_typ_strengthen_stvar in H.
   apply d_mono_typ_weaken; auto.
 Qed.
 

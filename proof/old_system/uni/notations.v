@@ -3,7 +3,6 @@ Require Export Coq.Unicode.Utf8.
 Require Export uni.def_ott.
 Require Export uni.def_extra.
 Require Export uni.decl.def_extra.
-(* Require Export uni.worklist.def. *)
 Require Export uni.prop_ln.
 
 
@@ -63,7 +62,7 @@ Notation "{ T' /ᵗ X } T" :=
     ( at level 49, T' at level 50, X at level 0
     , right associativity) : type_scope.
 
-Notation "{ e' /ᵉₑ x } e" :=
+Notation "{ e' ᵉ/ₑ x } e" :=
   (subst_var_in_exp e' x e)
     ( at level 49, e' at level 50, x at level 0
     , right associativity) : type_scope.
@@ -74,17 +73,17 @@ Notation "{ b' /ᵇₑ x } b" :=
     , right associativity) : type_scope.
 
 
-Notation "{ A /ᶜˢₜ X } cs" :=
+Notation "{ A ᶜˢ/ₜ X } cs" :=
   (subst_tvar_in_conts A X cs)
     ( at level 49, A at level 50, X at level 0
     , right associativity) : type_scope. 
 
-Notation "{ A /ᶜᵈₜ X } cd" :=
+Notation "{ A ᶜᵈ/ₜ X } cd" :=
   (subst_tvar_in_contd A X cd)
     ( at level 49, A at level 50, X at level 0
     , right associativity) : type_scope. 
 
-Notation "{ A /ʷₜ X } w" :=
+Notation "{ A ʷ/ₑ X } w" :=
   (subst_tvar_in_work A X w)
     ( at level 49, A at level 50, X at level 0
     , right associativity) : type_scope. 

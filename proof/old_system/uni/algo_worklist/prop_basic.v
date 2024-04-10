@@ -70,8 +70,8 @@ Qed.
 
 
 Lemma a_wf_typ_weaken: forall Σ1 Σ2 Σ3 A,
-    a_wf_typ (Σ3 ++ Σ1) A ->
-    a_wf_typ (Σ3 ++ Σ2 ++ Σ1) A.
+  a_wf_typ (Σ3 ++ Σ1) A ->
+  a_wf_typ (Σ3 ++ Σ2 ++ Σ1) A.
 Proof.
   introv H. dependent induction H; eauto.
   - pick fresh X0 and apply a_wf_typ__all.
@@ -825,7 +825,7 @@ Lemma a_worklist_subst_wf_contd_subst : forall Γ X A cd Γ1 Γ2,
   a_wf_contd (awl_to_aenv Γ) cd ->
   ⊢ᵃʷ Γ ->
   aworklist_subst Γ X A Γ1 Γ2 ->
-  a_wf_contd (awl_to_aenv (awl_app (subst_tvar_in_aworklist A X Γ2) Γ1)) ({A /ᶜᵈₜ X} cd)
+  a_wf_contd (awl_to_aenv (awl_app (subst_tvar_in_aworklist A X Γ2) Γ1)) ({A ᶜᵈ/ₜ X} cd)
 with a_worklist_subst_wf_conts_subst : forall Γ X A cs Γ1 Γ2,
   binds X abind_etvar_empty (awl_to_aenv Γ) ->
   X `notin` ftvar_in_typ A ->
@@ -833,7 +833,7 @@ with a_worklist_subst_wf_conts_subst : forall Γ X A cs Γ1 Γ2,
   a_wf_conts (awl_to_aenv Γ) cs ->
   ⊢ᵃʷ Γ ->
   aworklist_subst Γ X A Γ1 Γ2 ->
-  a_wf_conts (awl_to_aenv (awl_app (subst_tvar_in_aworklist A X Γ2) Γ1)) ({A /ᶜˢₜ X} cs).
+  a_wf_conts (awl_to_aenv (awl_app (subst_tvar_in_aworklist A X Γ2) Γ1)) ({A ᶜˢ/ₜX} cs).
 Proof with (autorewrite with core in *); simpl; eauto; solve_false; try solve_notin.
 Admitted.
 
