@@ -596,34 +596,6 @@ Proof with solve_false.
   - destruct_eq_atom; dependent destruction H; auto.
 Qed.
 
-Lemma aworklist_subst_bind_same_gen : forall Γ Γ' Γ'' Γ1 Γ2 X Y A,
-    ⊢ᵃʷ (Γ ⧺ X ~ᵃ ⬒ ;ᵃ Γ' ⧺ Y ~ᵃ ⬒ ;ᵃ Γ'') ->
-    aworklist_subst (Γ ⧺ X ~ᵃ ⬒ ;ᵃ Γ' ⧺ Y ~ᵃ ⬒ ;ᵃ Γ'') X A Γ1 Γ2 ->
-    binds Y abind_etvar_empty (awl_to_aenv Γ1) \/ binds Y abind_etvar_empty (awl_to_aenv (subst_tvar_in_aworklist A X Γ2)).
-Proof with solve_false.
-  introv WF H. gen Γ' Γ'' Γ1 Γ2. induction Γ; intros; simpl in *; auto.
-  - dependent destruction H; destruct_eq_atom; autorewrite with core; auto...
-  - inverts H. forwards* [?|?]: IHΓ; simpl.
-    now inverts* WF. eauto.
-  - inverts H; inverts WF.
-    all: autorewrite with core in *; jauto.
-    all: try solve [forwards* [?|?]: IHΓ; simpl; now eauto].
-    { left. rewrite_env ( (awl_to_aenv Γ ++
-                             (X, abind_etvar_empty) :: awl_to_aenv Γ') ++ ((Y, abind_etvar_empty) :: awl_to_aenv Γ'')).
-      eauto. }
-    { forwards: a_wf_wl_tvar_notin_remaining H4. forwards (?&?): worklist_split_etvar_det H0. autorewrite with core in *. solve_notin. subst.
-      rewrite_env ((Γ ⧺ X ~ᵃ ⬒ ;ᵃ (X0 ~ᵃ ⬒ ;ᵃ Γ') ⧺ Y ~ᵃ ⬒ ;ᵃ Γ'')) in H3.
-      forwards* [?|?]: IHΓ H3. rewrite awl_rewrite_middle.
-      rewrite_env ((Γ ⧺ X ~ᵃ ⬒ ;ᵃ aworklist_empty) ⧺ ((X0 ~ᵃ ⬒ ;ᵃ Γ') ⧺ Y ~ᵃ ⬒ ;ᵃ Γ'')).
-      rewrite awl_rewrite_middle in H4.
-      applys a_wf_wl_weaken_atvar H4.
-      autorewrite with core in *. solve_notin.
-      solve_false.
-    }
-  - inverts H; inverts WF.
-    all: autorewrite with core in *; jauto.
-    all: try solve [forwards* [?|?]: IHΓ; simpl; now eauto].
-Qed.
 
 Lemma aworklist_app_assoc : forall Γ1 Γ2 Γ3,
     ((Γ1 ⧺ Γ2) ⧺ Γ3) = (Γ1 ⧺ Γ2 ⧺ Γ3).
