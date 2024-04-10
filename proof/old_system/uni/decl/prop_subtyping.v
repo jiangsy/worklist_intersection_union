@@ -298,6 +298,16 @@ Proof.
       auto.
 Qed.
 
+Theorem d_sub_mono_stvar_false : forall Ψ T X,
+  X ~ ■ ∈ᵈ Ψ ->
+  Ψ ⊢ T <: typ_var_f X ->
+  Ψ ⊢ₘ T ->
+  False.
+Proof.
+  intros.
+  induction H1; dependent destruction H0; auto.
+  applys* binds_two_thing_false.
+Qed.
 
 Theorem d_sub_tvar_ind_open_inv_complete: forall n1 n2 Ψ S1 T1 X L,
     d_typ_order (T1 ^^ᵗ S1) < n1 ->

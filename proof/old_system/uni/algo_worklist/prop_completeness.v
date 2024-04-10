@@ -29,7 +29,7 @@ Ltac destruct_trans' :=
   | H : trans_conts ?θ ?wᵃ (?C_CS _) |- _ => dependent destruction H
   | H : trans_conts ?θ ?wᵃ (?C_CS _ _) |- _ => dependent destruction H
   | H : trans_contd ?θ ?wᵃ (?C_CD _ _) |- _ => dependent destruction H
-  | H : trans_contd ?θ ?wᵃ (?C_CD _ _) |- _ => dependent destruction H
+  | H : trans_contd ?θ ?wᵃ (?C_CD _ _ _) |- _ => dependent destruction H
   | H : trans_exp ?θ ?eᵃ (open_exp_wrt_exp _ _) |- _ => fail
   | H : trans_exp ?θ ?eᵃ exp_unit |- _ => dependent destruction H
   | H : trans_exp ?θ ?eᵃ (?C_E _) |- _ => dependent destruction H
@@ -1215,6 +1215,7 @@ Ltac solve_wf_typ :=
 
 #[local] Hint Resolve trans_typ_weaken_cons2 : core.
 
+
 Theorem a_wl_red_completeness: forall Ω Γ,
    Ω ⟶ᵈʷ⁎⋅ -> ⊢ᵃʷ Γ -> transfer Γ Ω  -> Γ ⟶ᵃʷ⁎⋅.
 Proof with eauto.
@@ -1921,3 +1922,4 @@ Proof with eauto.
     destruct_a_wf_wl. constructor... eapply a_wf_work_apply_contd with (A:=Aᵃ)...
     exists θ0...
 Qed.
+  

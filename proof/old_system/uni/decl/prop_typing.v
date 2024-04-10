@@ -164,7 +164,7 @@ Lemma d_subenv_wf_env_inv : forall Ψ',
 Proof with subst; try solve_notin; eauto using d_sub_dwft_2.
   intros * HW Ψ HS. induction* HS.
   all: forwards HE: d_subenv_same_dom HS;
-    forwards*: d_wf_env_strenthening_head HW;
+    forwards*: d_wf_env_strengthen_cons HW;
     inverts HW;
     econstructor; try rewrite HE...
 Qed.

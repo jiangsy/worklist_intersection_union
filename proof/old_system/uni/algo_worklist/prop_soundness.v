@@ -531,6 +531,7 @@ Proof with auto.
     assert (wf_ss ((X ~ dbind_typ Aᵈ) ++ θ)). { 
       constructor; eauto.
       erewrite trans_wl_ss_dom_upper_bound; eauto. 
+      apply a_mono_typ_strengthen_cons in H1; eauto.
       admit. }
     dependent destruction H5.
     repeat split; auto.
