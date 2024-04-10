@@ -1074,6 +1074,55 @@ Lemma exp_size_wl_aworklist_subst : forall Γ X A Γ1 Γ2,
 Admitted.
 
 
+Inductive elim_polarity : Type :=
+  | neg 
+  | pos.
+
+Definition flip (p : elim_polarity) : elim_polarity :=
+  match p with
+  | neg => pos
+  | pos => neg
+  end.
+
+Inductive elim_etvar_for_split : typ -> typvar -> elim_polarity -> typ -> Prop :=
+  | ee__arrow : forall A1 A2 p X A1' A2',
+    elim_etvar_for_split A1 X (flip p) A1' ->
+    elim_etvar_for_split A1 X p A2' ->
+    elim_etvar_for_split (typ_arrow A1 A2) X p (typ_arrow A1' A2')
+  | ee_top : forall X p,
+    elim_etvar_for_split typ_top X p typ_top
+  | ee_bot : forall X p,
+    elim_etvar_for_split typ_bot X p typ_bot
+  | ee_unit : forall X p,
+    elim_etvar_for_split typ_unit X p typ_unit
+  | ee__var_neq : forall X Y p,
+    X <> Y ->
+    elim_etvar_for_split (typ_var_f Y) X p (typ_var_f Y)
+  | ee__var_eq_neg : forall X,
+    elim_etvar_for_split (typ_var_f X) X neg typ_top
+  | ee__var_eq_pos : forall X,
+    elim_etvar_for_split (typ_var_f X) X pos typ_bot
+  | ee_all : forall A X p A' L,
+    (forall Y, Y `notin` L -> elim_etvar_for_split (open_typ_wrt_typ A (typ_var_f Y)) X p (open_typ_wrt_typ A' (typ_var_f Y))) ->
+    elim_etvar_for_split (typ_all A) X p (typ_all A')
+  | ee_intersection : forall A1 A2 X p A1' A2',  
+    elim_etvar_for_split A1 X p A1' ->
+    elim_etvar_for_split A2 X p A2' ->
+    elim_etvar_for_split (typ_intersection A1 A2) X p (typ_intersection A1' A2')
+  | ee_union : forall A1 A2 X p A1' A2',  
+    elim_etvar_for_split A1 X p A1' ->
+    elim_etvar_for_split A2 X p A2' ->
+    elim_etvar_for_split (typ_union A1 A2) X p (typ_union A1' A2').
+
+Lemma elim_etvar_not_in_ftvar : forall A X p A',
+  elim_etvar_for_split A X p A' ->
+  X `notin` ftvar_in_typ A'.
+Proof.
+  intros. induction H; simpl; auto.
+  - pick fresh Y. inst_cofinites_with Y.
+    rewrite ftvar_in_typ_open_typ_wrt_typ_lower; eauto.
+Qed.
+
 
 Lemma decidablity_lemma : forall ne nj nt ntj na naj nm nw Γ m,
   ⊢ᵃʷ Γ ->
