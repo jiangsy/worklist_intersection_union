@@ -378,8 +378,8 @@ Lemma trans_work_etvar_subst_same_ss : forall θ Tᵃ Tᵈ X wᵃ wᵈ,
   binds X (dbind_typ Tᵈ) θ ->
   X `notin` ftvar_in_typ Tᵃ ->
   θ ᵗ⫦ Tᵃ ⇝ Tᵈ ->
-  θ ⫦ʷ wᵃ ⇝ wᵈ ->
-  θ ⫦ʷ (subst_tvar_in_work Tᵃ X wᵃ) ⇝ wᵈ.
+  θ ʷ⫦ wᵃ ⇝ wᵈ ->
+  θ ʷ⫦ (subst_tvar_in_work Tᵃ X wᵃ) ⇝ wᵈ.
 Proof.
   intros. destruct wᵃ; try simpl in *; dependent destruction H3;
     constructor; 
@@ -700,7 +700,7 @@ Proof.
 Qed.
   
 
-(* transform (Γ0, ^X, ^Y, more existential tvars) to Γ0 *)
+(* reduce Γ with multiple trailing exsitential vars to the base case *)
 Ltac solve_awl_trailing_etvar :=
   match goal with
   | H_1 : ⊢ᵃʷ ?Γ, H_2: ?θ ⫦ ?Γ ⇝ ?Ω ⫣ ?θ' |- _ =>
@@ -727,7 +727,7 @@ Lemma trans_apply_conts : forall θ csᵃ csᵈ Aᵃ Aᵈ wᵈ,
   θ ᶜˢ⫦ csᵃ ⇝ csᵈ ->
   θ ᵗ⫦ Aᵃ ⇝ Aᵈ ->
   apply_conts csᵈ Aᵈ wᵈ ->
-  exists wᵃ, apply_conts csᵃ Aᵃ wᵃ /\ θ ⫦ʷ wᵃ ⇝ wᵈ.
+  exists wᵃ, apply_conts csᵃ Aᵃ wᵃ /\ θ ʷ⫦ wᵃ ⇝ wᵈ.
 Proof.
   intros. induction H1; try dependent destruction H; eauto.
 Qed.
@@ -737,7 +737,7 @@ Lemma trans_apply_contd : forall θ cdᵃ cdᵈ Aᵃ Aᵈ Bᵃ Bᵈ wᵈ,
   θ ᵗ⫦ Aᵃ ⇝ Aᵈ ->
   θ ᵗ⫦ Bᵃ ⇝ Bᵈ ->
   apply_contd cdᵈ Aᵈ Bᵈ wᵈ ->
-  exists wᵃ, apply_contd cdᵃ Aᵃ Bᵃ wᵃ /\ θ ⫦ʷ wᵃ ⇝ wᵈ.
+  exists wᵃ, apply_contd cdᵃ Aᵃ Bᵃ wᵃ /\ θ ʷ⫦ wᵃ ⇝ wᵈ.
 Proof.
   intros. induction H2; try dependent destruction H; eauto 6.
 Qed.
@@ -1539,8 +1539,8 @@ Proof with eauto.
     + destruct_a_wf_wl. inst_cofinites_for a_wl_red__chk_absetvar; intros.
       eapply trans_wl_ss_binds_etvar_a_wl; eauto.
       inst_cofinites_with x. inst_cofinites_with X1. inst_cofinites_with X2.
-      assert (nil ⫦ work_check (eᵃ ^ᵉₑ exp_var_f x) ` X2 ⫤ᵃ x ~ᵃ ` X1;ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ0 ⇝
-                    work_check (e ^ᵉₑ exp_var_f x) A2 ⫤ᵈ x ~ᵈ A1;ᵈ Ω ⫣ (X2, dbind_typ A2) :: (X1, dbind_typ A1) :: θ0).
+      assert (nil ⫦ work_check (eᵃ ᵉ^ₑ exp_var_f x) ` X2 ⫤ᵃ x ~ᵃ ` X1;ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ0 ⇝
+                    work_check (e ᵉ^ₑ exp_var_f x) A2 ⫤ᵈ x ~ᵈ A1;ᵈ Ω ⫣ (X2, dbind_typ A2) :: (X1, dbind_typ A1) :: θ0).
       { apply wf_ss_binds_mono_typ in H3 as Hmono...
         dependent destruction Hmono.
         repeat (constructor; auto); simpl in *.
@@ -1550,7 +1550,7 @@ Proof with eauto.
       eapply aworklist_subst_transfer_same_dworklist_rev in H10 as Htransws...
       destruct Htransws as [θ' [Htransws [Hbinds Hwfss]]]...
       * apply H0; eauto. eapply aworklist_subst_wf_wl with 
-        (Γ:=(work_check (eᵃ ^ᵉₑ exp_var_f x) ` X2 ⫤ᵃ x ~ᵃ ` X1;ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ0))... 
+        (Γ:=(work_check (eᵃ ᵉ^ₑ exp_var_f x) ` X2 ⫤ᵃ x ~ᵃ ` X1;ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ0))... 
         repeat (econstructor; simpl; auto).
         eapply a_wf_exp_var_binds_another_cons with (A1:=T)...
         rewrite_env (x ~ abind_var_typ T ++ ((X2, abind_etvar_empty) :: (X1 ~ abind_etvar_empty)) ++ awl_to_aenv Γ0).

@@ -94,10 +94,10 @@ Notation "T ^ᵗ X" := (open_typ_wrt_typ T (typ_var_f X))
 Notation "T1 ^^ᵗ T2" := (open_typ_wrt_typ T1 T2)
   (at level 48, left associativity) : type_scope.
 
-Notation "e1 ^ᵉₑ e2" := (open_exp_wrt_exp e1 e2)
+Notation "e1 ᵉ^ₑ e2" := (open_exp_wrt_exp e1 e2)
   (at level 48, left associativity) : type_scope.
 
-Notation "e ^ᵉₜ A" := (open_exp_wrt_typ e A)
+Notation "e ᵉ^ₜ A" := (open_exp_wrt_typ e A)
   (at level 48, left associativity) : type_scope.
 
 

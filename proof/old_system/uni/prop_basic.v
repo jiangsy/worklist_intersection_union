@@ -92,6 +92,25 @@ Proof.
 Qed.
 
 
+Lemma ls_split_det {A : Type} : forall (ls1 ls2 ls'1 ls'2 : list (atom * A)) X b,
+  X `notin` dom (ls'1 ++ ls'2) ->
+  ls2 ++ (X, b) :: ls1 = ls'2 ++ (X, b) :: ls'1 ->
+  ls1 = ls'1 /\ ls2 = ls'2.
+Proof.
+  intros. generalize dependent ls1. generalize dependent ls'1. generalize dependent ls'2.
+  induction ls2; intros.
+  - destruct ls'2; simpl in H0.
+    + dependent destruction H0; intuition.
+    + dependent destruction H0. rewrite dom_app in H. simpl in *. solve_notin_eq X.
+  - destruct ls'2; simpl in H0.
+    + dependent destruction H0.  rewrite dom_app in H. simpl in *. solve_notin_eq X.
+    + dependent destruction H0. eapply IHls2 in x; eauto.
+      * dependent destruction x. subst. intuition.
+      * destruct p. rewrite dom_app in H. simpl in *.
+        rewrite dom_app... destruct_notin; eauto.
+Qed.
+
+
 Lemma subst_tvar_in_typ_open_typ_wrt_typ_tvar2 : forall X A T,
   lc_typ T ->
   X `notin` ftvar_in_typ A ->
@@ -223,9 +242,7 @@ Proof.
   - inst_cofinites_by (L `union` singleton X).
     rewrite ftvar_in_typ_open_typ_wrt_typ_upper in H0.
     apply AtomSetImpl.union_1 in H0; inversion H0; auto.
-    + simpl in H1. apply AtomSetImpl.singleton_1 in H1.
-      apply notin_union_2 in Fr. subst.
-      apply notin_singleton_1 in Fr. contradiction.
+    + simpl in H1. apply AtomSetImpl.singleton_1 in H1. subst. solve_notin_eq X.
 Qed.
 
 Lemma lc_typ_subst_inv : forall A X T,

@@ -999,8 +999,8 @@ Proof.
       * dependent destruction H1; simpl in *;
           try solve [right; intro Hcontra; dependent destruction Hcontra; eapply Jg; eauto].
         -- inst_cofinites_by (L `union` (ftvar_in_typ T) `union` (ftvar_in_aworklist aW)).
-           assert (Jgt:   (work_check (e ^ᵉₑ exp_var_f x) typ_top ⫤ x ~ᵃ typ_bot;ᵃ aW) ⟶ᵃʷ⁎⋅ \/ 
-                        ¬ (work_check (e ^ᵉₑ exp_var_f x) typ_top ⫤ x ~ᵃ typ_bot;ᵃ aW) ⟶ᵃʷ⁎⋅).
+           assert (Jgt:   (work_check (e ᵉ^ₑ exp_var_f x) typ_top ⫤ x ~ᵃ typ_bot;ᵃ aW) ⟶ᵃʷ⁎⋅ \/ 
+                        ¬ (work_check (e ᵉ^ₑ exp_var_f x) typ_top ⫤ x ~ᵃ typ_bot;ᵃ aW) ⟶ᵃʷ⁎⋅).
            { eapply IHne; eauto; simpl; try lia. admit. (* safe: wf *)
              assert (Hexp: exp_size (open_exp_wrt_exp e (exp_var_f x)) = exp_size e) by admit. (* should be fine *)
              lia. }
@@ -1019,8 +1019,8 @@ Proof.
         -- right. intro Hcontra. dependent destruction Hcontra; eauto.
            admit. (* TODO *)
         -- pick fresh x.
-           assert (JgArr:   (work_check (e ^ᵉₑ exp_var_f x) A2 ⫤ x ~ᵃ A1;ᵃ aW) ⟶ᵃʷ⁎⋅ \/ 
-                          ¬ (work_check (e ^ᵉₑ exp_var_f x) A2 ⫤ x ~ᵃ A1;ᵃ aW) ⟶ᵃʷ⁎⋅).
+           assert (JgArr:   (work_check (e ᵉ^ₑ exp_var_f x) A2 ⫤ x ~ᵃ A1;ᵃ aW) ⟶ᵃʷ⁎⋅ \/ 
+                          ¬ (work_check (e ᵉ^ₑ exp_var_f x) A2 ⫤ x ~ᵃ A1;ᵃ aW) ⟶ᵃʷ⁎⋅).
            { eapply IHne; eauto; simpl; try lia. admit. (* safe: wf *)
              assert (Hexp: exp_size (open_exp_wrt_exp e (exp_var_f x)) = exp_size e) by admit. (* should be fine *)
              rewrite Hexp. lia. } 

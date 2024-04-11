@@ -87,7 +87,7 @@ with ftvar_in_wf_body_upper : forall Γ b,
 Proof.
   - intros. dependent induction H; try solve [simpl; fsetdec].
     + inst_cofinites_by (L `union` dom (awl_to_aenv Γ) `union` ftvar_in_exp e).
-      assert (ftvar_in_exp e [<=] ftvar_in_exp (e ^ᵉₑ exp_var_f x)) by apply ftvar_in_exp_open_exp_wrt_exp_lower.
+      assert (ftvar_in_exp e [<=] ftvar_in_exp (e ᵉ^ₑ exp_var_f x)) by apply ftvar_in_exp_open_exp_wrt_exp_lower.
       assert (x ~ abind_var_typ T ++ awl_to_aenv Γ = awl_to_aenv (x ~ᵃ T ;ᵃ Γ)) by (simpl; auto).
       eapply H1 in H3.
       simpl in *.
@@ -463,7 +463,7 @@ Qed.
 Ltac solve_notin_rename_tvar :=
   repeat
     match goal with
-    | H : _ |- context [?e1 ^ᵉₑ ?e2] => rewrite ftvar_in_exp_open_exp_wrt_exp_upper
+    | H : _ |- context [?e1 ᵉ^ₑ ?e2] => rewrite ftvar_in_exp_open_exp_wrt_exp_upper
     | H : _ |- context [rename_tvar_in_aworklist ?X' ?X ?Γ] =>
       (* assert True *)
       match goal with
@@ -848,14 +848,14 @@ Proof with eauto; solve_false.
         rewrite <- subst_tvar_in_exp_open_exp_wrt_exp in Hws.
         rewrite rename_tvar_in_exp_rev_eq in Hws.
         -- eapply H7 with (x:=x) in Hws as Hawlred; simpl in *; auto.
-           ++ assert (X `notin` (ftvar_in_exp (subst_tvar_in_exp ` X' X e ^ᵉₑ exp_var_f x))) by (solve_notin_rename_tvar; auto).
+           ++ assert (X `notin` (ftvar_in_exp (subst_tvar_in_exp ` X' X e ᵉ^ₑ exp_var_f x))) by (solve_notin_rename_tvar; auto).
               clear Hws. destruct_eq_atom.
               rewrite_aworklist_rename; simpl; auto.
               rewrite_aworklist_rename_rev.
               simpl in Hawlred. destruct_eq_atom. auto.
            ++ eapply aworklist_subst_wf_wl in Hws; eauto. admit. admit. (* wf *)
            ++ rewrite aworklist_subst_ftavr_in_aworklist with
-                (Γ:=(work_check (e ^ᵉₑ exp_var_f x) ` X2 ⫤ᵃ x ~ᵃ ` X1;ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ)); auto. simpl.
+                (Γ:=(work_check (e ᵉ^ₑ exp_var_f x) ` X2 ⫤ᵃ x ~ᵃ ` X1;ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ)); auto. simpl.
               solve_notin_rename_tvar; auto.
         -- solve_notin_rename_tvar; auto.
       * admit. (* wf *)
@@ -871,7 +871,7 @@ Proof with eauto; solve_false.
         rewrite <- subst_tvar_in_exp_open_exp_wrt_exp in Hws.
         rewrite rename_tvar_in_exp_rev_eq in Hws.
         -- eapply H7 with (x:=x) in Hws as Hawlred; simpl; auto.
-           ++ assert (X `notin`(ftvar_in_exp (subst_tvar_in_exp ` X' X e ^ᵉₑ exp_var_f x))) by (solve_notin_rename_tvar; auto).
+           ++ assert (X `notin`(ftvar_in_exp (subst_tvar_in_exp ` X' X e ᵉ^ₑ exp_var_f x))) by (solve_notin_rename_tvar; auto).
               clear Hws. destruct_eq_atom.
               rewrite_aworklist_rename; simpl; auto.
               rewrite_aworklist_rename_rev.
@@ -1239,8 +1239,8 @@ Proof with eauto.
       simpl in Hws. destruct_eq_atom.
       rewrite_aworklist_rename_var_rev.
       * simpl in Hws.
-        replace (({exp_var_f x' ᵉ/ₑ x} e) ^ᵉₑ exp_var_f x0) with
-          (({exp_var_f x' ᵉ/ₑ x} e) ^ᵉₑ ({exp_var_f x' ᵉ/ₑ x} exp_var_f x0)) in Hws by (simpl; destruct_eq_atom; auto).
+        replace (({exp_var_f x' ᵉ/ₑ x} e) ᵉ^ₑ exp_var_f x0) with
+          (({exp_var_f x' ᵉ/ₑ x} e) ᵉ^ₑ ({exp_var_f x' ᵉ/ₑ x} exp_var_f x0)) in Hws by (simpl; destruct_eq_atom; auto).
         rewrite <- subst_var_in_exp_open_exp_wrt_exp in Hws; auto.
         rewrite rename_var_in_exp_rev_eq in Hws.
         -- apply H7 in Hws; auto.
