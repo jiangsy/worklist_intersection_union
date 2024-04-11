@@ -7,6 +7,7 @@ Require Import LibTactics.
 
 Require Import uni.notations.
 Require Import uni.decl.prop_basic.
+Require Import uni.decl.prop_rename.
 Require Import uni.decl.prop_subtyping.
 Require Import ltac_utils.
 
@@ -689,33 +690,6 @@ Proof.
     rewrite_env (nil ++ (X, dbind_typ A1) :: Ψ ) in H2.
     forwards*: d_wf_typ_strengthen_var H2.
   - eauto using d_sub_dwft_2.
-Qed.
-
-Theorem d_chk_inf_rename_var : forall Ψ1 Ψ2 x y T e A mode, 
-  d_chk_inf (Ψ2 ++ x ~ T ++ Ψ1) e mode A ->
-  y `notin` (dom Ψ1 `union` dom Ψ2) ->
-  d_chk_inf (Ψ2 ++ y ~ T ++ Ψ1) (subst_var_in_exp (exp_var_f y) x e) mode A.
-Proof.
-  intros. dependent induction H.
-  - simpl. case_if; admit.
-  - simpl. econstructor. admit.
-    apply IHd_chk_inf; auto.
-  - simpl. apply d_chk_inf__inf_unit. admit.
-  - simpl. eapply d_chk_inf__inf_app; eauto 3. 
-    apply IHd_chk_inf1; auto.
-    admit.
-    apply IHd_chk_inf2; auto.
-Admitted.
-
-
-Theorem d_chk_inf_rename_var_cons : forall Ψ x y T e A mode, 
-  d_chk_inf (x ~ T ++ Ψ) e mode A ->
-  y `notin` (dom Ψ) ->
-  d_chk_inf (y ~ T ++ Ψ) (subst_var_in_exp (exp_var_f y) x e) mode A.
-Proof.
-  intros.
-  rewrite_env (nil ++ y ~ T ++ Ψ).
-  eapply  d_chk_inf_rename_var; eauto.
 Qed.
 
 

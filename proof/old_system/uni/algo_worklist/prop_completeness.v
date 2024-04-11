@@ -100,17 +100,6 @@ Proof.
       erewrite <- wf_ss_etvar_same_denv; eauto.
 Qed.
 
-Lemma wf_ss_tvar_notin_remaining : forall θ1 θ2 X b,
-  wf_ss (θ2 ++ (X, b) :: θ1)->
-  X `notin` dom θ2 `union` dom θ1.
-Proof.
-  intros. induction θ2; try dependent destruction H; auto.
-  - simpl in *. apply IHθ2 in H; auto.
-  - simpl in *. apply IHθ2 in H; auto.
-  - simpl in *. apply IHθ2 in H; auto.
-Qed.
-
-
 Lemma wf_ss_late_dom_notin_ftver_bind_typ : forall θ1 θ2 X T,
   wf_ss (θ2 ++ (X, dbind_typ T) :: θ1) ->
   (forall Y, Y `in` dom θ2 -> Y `notin` ftvar_in_typ T).
@@ -277,8 +266,7 @@ Proof.
   apply trans_typ_weaken; auto.
   apply trans_typ_strengthen_etvar in H2 as Htranst; auto.
   eapply trans_typ_etvar_subst with (Tᵈ:=Tᵈ); eauto.
-  - apply wf_ss_tvar_notin_remaining in H.
-    rewrite dom_app; auto.
+  - apply wf_ss_notin_remaining in H; auto.
   - apply wf_ss_strengthen_app in H. dependent destruction H; auto.
 Qed.
 
@@ -791,30 +779,6 @@ Proof with eauto.
       * simpl... apply trans_typ_weaken_cons...
 Qed.
 
-
-(* maybe only b=tvar is used *)
-(* Lemma trans_typ_tvar_etvar : forall θ1 θ2 Aᵃ Aᵈ Tᵃ Tᵈ X b,
-  b = dbind_tvar_empty \/ b = dbind_stvar_empty ->
-  θ2 ++ (X , b) :: θ1 ᵗ⫦ Aᵃ ⇝ Aᵈ ->
-  d_mono_typ (ss_to_denv (θ2 ++ θ1)) Tᵈ ->
-  θ1 ᵗ⫦ Tᵃ ⇝ Tᵈ ->
-  θ2 ++ (X , dbind_typ Tᵈ) :: θ1 ᵗ⫦ Aᵃ ⇝ {Tᵈ /ᵗ X} Aᵈ.
-Proof.
-  intros. generalize dependent Tᵃ. generalize dependent Tᵈ. 
-  dependent induction H0; intros; simpl; destruct_eq_atom; eauto with Hdb_a_wl_red_completness.
-  - apply trans_typ_binds_etvar; eauto. admit.
-  - admit.
-  - admit.
-  - constructor. admit. admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - inst_cofinites_for trans_typ__all. intros.
-    inst_cofinites_with X0.
-    admit.
-Admitted. *)
-
 Fixpoint num_arrow_in_typ (A : typ) : nat :=
   match A with
   | typ_arrow A1 A2 => 1 + num_arrow_in_typ A1 + num_arrow_in_typ A2
@@ -885,8 +849,8 @@ Lemma trans_typ_etvar_s_in_more_num_arrow' : forall θ Aᵃ Aᵈ X T,
   (num_arrow_in_typ Aᵈ) >= (num_arrow_in_typ T).
 Proof.
   intros * Hwf Hbinds Htrans Hsin. dependent induction Htrans; simpl in *; dependent destruction Hsin; try lia.
-  - apply wf_ss_etvar_tvar_false in Hbinds; auto. contradiction.
-  - apply wf_ss_etvar_stvar_false in Hbinds; auto. contradiction.
+  - unify_binds.
+  - unify_binds.
   - unify_binds. auto.
   - apply IHHtrans1 in Hsin; auto. lia.
   - apply IHHtrans2 in Hsin; auto. lia.
@@ -973,7 +937,7 @@ Proof with eauto using wf_ss_tvar_etvar, d_mono_typ_strengthen_to_wf_env.
       destruct H0.
       * apply binds_app_iff. left. apply binds_map with (f:=(subst_tvar_in_dbind Tᵈ X)) in H0...
       * apply binds_app_iff. right... 
-        assert (wf_ss ((X, dbind_typ Tᵈ) :: θ1)). { constructor... apply wf_ss_tvar_notin_remaining in H... }
+        assert (wf_ss ((X, dbind_typ Tᵈ) :: θ1)). { constructor... apply wf_ss_notin_remaining in H... }
         eapply wf_ss_typ_no_etvar with (A:=A1) (X:=X) in H3...
         -- rewrite subst_tvar_in_typ_fresh_eq...
         -- simpl... eapply trans_typ_wf_dtyp...
@@ -1250,29 +1214,29 @@ Proof with eauto.
         in Htrans_et as Htransws...
       destruct Htransws as [Γ1 [Γ2 [θ' [Hsubst [Htransws [Hbinds Hwfss]]]]]].
       apply a_wl_red__sub_etvarmono2 with (Γ1:=Γ1) (Γ2:=Γ2); eauto.
-      * unfold not. intros. simpl in *. apply singleton_iff in H4. subst. apply wf_ss_etvar_tvar_false in H1; eauto.
+      * unfold not. intros. simpl in *. apply singleton_iff in H4. subst. unify_binds.
       * apply IHd_wl_red; eauto. destruct_a_wf_wl. eapply a_worklist_subst_wf_wl; eauto.
       * destruct_a_wf_wl...
-      * unfold not. intros. simpl in *. apply singleton_iff in H4. subst. apply wf_ss_etvar_tvar_false in H1; eauto.
-    + exfalso. eapply wf_ss_tvar_stvar_false; eauto.
+      * unfold not. intros. simpl in *. apply singleton_iff in H4. subst. unify_binds.
+    + unify_binds. 
     + destruct_a_wf_wl... 
     + solve_binds_mono.
       dependent destruction Hmono.
       apply wf_ss_binds_mono_typ in H1...
       apply binds_ss_to_denv_binds_ss in H4.
-      apply wf_ss_tvar_stvar_false in H3... contradiction.
+      unify_binds.
     + apply a_worklist_subst_transfer_same_dworklist_rev_exist with (X:=X0) (T:=`X) (Tᵈ:=`X) 
         in Htrans_et as Htransws...
       destruct Htransws as [Γ1 [Γ2 [θ' [Hsubst [Htransws [Hbinds Hwfss]]]]]].
       apply a_wl_red__sub_etvarmono1 with (Γ1:=Γ1) (Γ2:=Γ2); eauto.
-      * unfold not. intros. simpl in *. apply singleton_iff in H4. subst. apply wf_ss_etvar_tvar_false in H3; eauto.
+      * unfold not. intros. simpl in *. apply singleton_iff in H4. subst. unify_binds.
       * apply IHd_wl_red; eauto. destruct_a_wf_wl. eapply a_worklist_subst_wf_wl; eauto.
       * destruct_a_wf_wl...
-      * unfold not. intros. simpl in *. apply singleton_iff in H4. subst. apply wf_ss_etvar_tvar_false in H3; eauto.
+      * unfold not. intros. simpl in *. apply singleton_iff in H4. subst. unify_binds.
     + solve_binds_mono.
       dependent destruction Hmono.
       apply binds_ss_to_denv_binds_ss in H4.
-      apply wf_ss_tvar_stvar_false in H4... contradiction.
+      unify_binds.
     + destruct (X0 == X1)...
       * subst. destruct_a_wf_wl... 
       * apply a_worklist_subst_transfer_same_dworklist_rev_exist with (X:=X0) (T:=`X1) (Tᵈ:=`X) 

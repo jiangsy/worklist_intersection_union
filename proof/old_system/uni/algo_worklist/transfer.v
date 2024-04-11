@@ -456,32 +456,10 @@ Proof with auto.
      eapply d_mono_typ_lc; eauto.
 Qed.
 
-Lemma wf_ss_etvar_tvar_false : forall θ X A,
-  wf_ss θ -> X ~ A ∈ᵈ θ -> X ~ □ ∈ᵈ θ -> False.
-Proof.
-  intros. apply wf_ss_uniq in H.
-  specialize (binds_unique _ _ _ _ _ H0 H1 H).
-  intros. inversion H2.
-Qed.
-
-Lemma wf_ss_etvar_stvar_false : forall θ X A,
-  wf_ss θ -> X ~ A ∈ᵈ θ -> X ~ ■ ∈ᵈ θ -> False.
-Proof.
-  intros. apply wf_ss_uniq in H.
-  specialize (binds_unique _ _ _ _ _ H0 H1 H).
-  intros. inversion H2.
-Qed.
-
-Lemma wf_ss_tvar_stvar_false : forall θ X,
-  wf_ss θ -> X ~ □ ∈ᵈ θ -> X ~ ■ ∈ᵈ θ -> False.
-Proof.
-  intros. apply wf_ss_uniq in H.
-  specialize (binds_unique _ _ _ _ _ H0 H1 H).
-  intros. inversion H2.
-Qed.
+#[global] Hint Resolve wf_ss_uniq : core.
 
 Lemma wf_ss_notin_remaining : forall θ1 θ2 X b,
-  wf_ss (θ2 ++ X ~ b ++ θ1) ->
+  wf_ss (θ2 ++ (X , b) :: θ1) ->
   X `notin` dom (θ2 ++ θ1).
 Proof.
   intros. induction θ2; simpl in *; auto.
@@ -497,7 +475,6 @@ Proof.
   - auto.
   - destruct a. destruct d; auto; simpl; now rewrite IHθ'.
 Qed.
-
 
 Lemma wf_ss_binds_mono_typ : forall θ X T,
   wf_ss θ -> binds X (dbind_typ T) θ -> d_mono_typ (ss_to_denv θ) T.
@@ -626,10 +603,10 @@ Proof with eauto.
   intros. dependent induction H0...
   + destruct (X == X0)...
     subst. apply in_ss_denv_in_ss in H0.
-    exfalso. eapply wf_ss_etvar_tvar_false...
+    unify_binds.
   + destruct (X == X0)...
     subst. apply in_ss_denv_in_ss in H0.
-    exfalso. eapply wf_ss_etvar_stvar_false...
+    unify_binds.
   + inst_cofinites_by (L `union` dom θ `union` singleton X) using_name X.
     simpl.
     rewrite ftvar_in_typ_open_typ_wrt_typ_lower.
@@ -783,11 +760,7 @@ Lemma trans_typ_det : forall θ Aᵃ A₁ᵈ A₂ᵈ,
   A₁ᵈ = A₂ᵈ.
 Proof with eauto.
   intros * Huniq Htrans1 Htrans2. generalize dependent A₂ᵈ.
-  induction Htrans1; (intros A₂ᵈ Htrans2; dependent destruction Htrans2; auto).
-  - exfalso. eapply wf_ss_etvar_tvar_false... 
-  - exfalso. eapply wf_ss_etvar_stvar_false... 
-  - exfalso. eapply wf_ss_etvar_tvar_false...
-  - exfalso. eapply wf_ss_etvar_stvar_false... 
+  induction Htrans1; (intros A₂ᵈ Htrans2; dependent destruction Htrans2; auto; try solve unify_binds).
   - unify_binds. auto.
   - apply f_equal2... 
   - inst_cofinites_by (L `union` L0 `union` (ftvar_in_typ A1ᵈ) `union` (ftvar_in_typ A1ᵈ0) `union`  dom θ) using_name X.  
@@ -1131,9 +1104,7 @@ Lemma trans_typ_dtvar_atyp_s_in_dtyp : forall θ X Aᵃ Aᵈ b,
   s_in X Aᵈ.
 Proof.
   intros. induction H0; try dependent destruction H2; auto.
-  - exfalso. dependent destruction H; subst.
-    + eapply wf_ss_etvar_tvar_false; eauto.
-    + eapply wf_ss_etvar_stvar_false; eauto.
+  - exfalso. dependent destruction H; subst; unify_binds.
   - econstructor; eauto.
   - eapply s_in__arrow2; auto. 
     eapply trans_typ_lc_dtyp; eauto.
@@ -1607,13 +1578,13 @@ Lemma trans_typ_a_mono_typ_d_mono_typ : forall θ Aᵃ Aᵈ,
 Proof with eauto using binds_ss_to_denv_binds_ss, binds_tvar_ss_binds_ss_to_denv.
   intros * Htrans Hmono. generalize dependent Aᵈ. dependent induction Hmono; 
     intros; dependent destruction Htrans; intros; eauto 6...
+  - apply binds_tvar_ss_to_aenv_binds_ss in H.
+    unify_binds. 
   - apply binds_tvar_ss_to_aenv_binds_ss in H. 
-    apply wf_ss_tvar_stvar_false in H; eauto... contradiction.
-  - apply binds_tvar_ss_to_aenv_binds_ss in H. 
-    apply wf_ss_etvar_tvar_false in H1; eauto... contradiction.
+    unify_binds.
   - apply binds_etvar_ss_to_aenv_binds_ss in H...
     destruct H as [T].
-    apply wf_ss_etvar_stvar_false in H; eauto... contradiction.
+    unify_binds.
   - eapply wf_ss_binds_mono_typ; eauto.
 Qed.
 

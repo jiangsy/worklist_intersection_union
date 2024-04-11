@@ -8,6 +8,7 @@ Require Import uni.notations.
 Require Import uni.decl.prop_basic.
 Require Import uni.decl.prop_subtyping.
 Require Import uni.decl.prop_typing.
+Require Import uni.decl.prop_rename.
 Require Import uni.decl_worklist.prop_equiv.
 Require Import uni.algo_worklist.def_extra.
 Require Import uni.algo_worklist.prop_basic.
@@ -279,8 +280,7 @@ Proof.
   - apply lc_typ_subst_inv with (T:=Tᵃ) (X:=X).
     eapply trans_typ_lc_atyp; eauto.
     eapply trans_typ_lc_atyp; eauto.
-  - rewrite_env (θ2 ++ (X ~ dbind_typ Tᵈ) ++ θ1) in H. 
-    eapply wf_ss_notin_remaining; eauto. 
+  - eapply wf_ss_notin_remaining; eauto. 
   - clear H0 H1 H2 H3. induction θ2; simpl in *. 
     + inversion H; auto.
     + inversion H; apply IHθ2; eauto.
@@ -531,7 +531,8 @@ Proof with auto.
       constructor; eauto.
       erewrite trans_wl_ss_dom_upper_bound; eauto. 
       apply a_mono_typ_strengthen_cons in H1; eauto.
-      admit. }
+      eapply trans_wl_a_mono_typ_d_mono_typ with (Aᵃ:=A); eauto.
+    }
     dependent destruction H5.
     repeat split; auto.
     + econstructor; auto.  
@@ -558,6 +559,7 @@ Proof with auto.
     destruct IH as [θ'1 [Tᵈ [Htrans [Htranst [Htranst' [Hbinds [Htransx Hwfss]]]]]]].    
     exists ((Y , dbind_tvar_empty) :: θ'1), Tᵈ. repeat split; auto.
     + econstructor; auto.
+      unfold not. intros. 
       admit. (* *, notin *)
     + rewrite_env (nil ++ (Y ~ □) ++ θ'). apply trans_typ_weaken...
       constructor; auto.
