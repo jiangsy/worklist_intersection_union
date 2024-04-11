@@ -396,7 +396,7 @@ Proof.
   - apply f_equal. rewrite subst_tvar_in_work_subst_tvar_in_work; auto.
 Qed.
 
-Lemma a_worklist_subst_ftavr_in_aworklist : forall Γ X A Γ1 Γ2,
+Lemma aworklist_subst_ftavr_in_aworklist : forall Γ X A Γ1 Γ2,
   aworklist_subst Γ X A Γ1 Γ2 ->
   ftvar_in_aworklist'
     (awl_app (subst_tvar_in_aworklist A X Γ2) Γ1) [<=] ftvar_in_aworklist' Γ `union` ftvar_in_typ A.
@@ -407,7 +407,7 @@ Proof.
   - autorewrite with core in *. fsetdec.
 Qed.
 
-Lemma a_worklist_subst_ftavr_in_aworklist_1 : forall Γ X A Γ1 Γ2,
+Lemma aworklist_subst_ftavr_in_aworklist_1 : forall Γ X A Γ1 Γ2,
   aworklist_subst Γ X A Γ1 Γ2 ->
   ftvar_in_aworklist' Γ1 [<=] ftvar_in_aworklist' Γ `union` ftvar_in_typ A.
 Proof.
@@ -416,7 +416,7 @@ Proof.
 Qed.
 
 
-Lemma a_worklist_subst_ftavr_in_aworklist_2 : forall Γ X A Γ1 Γ2,
+Lemma aworklist_subst_ftavr_in_aworklist_2 : forall Γ X A Γ1 Γ2,
   aworklist_subst Γ X A Γ1 Γ2 ->
   ftvar_in_aworklist' Γ2 [<=] ftvar_in_aworklist' Γ `union` ftvar_in_typ A.
 Proof.
@@ -442,7 +442,7 @@ Ltac rewrite_aworklist_rename_subst :=
   match goal with
   | H : context [rename_tvar_in_aworklist _ ?X (subst_tvar_in_aworklist ?A ?X _)] |- _ =>
     rewrite subst_tvar_in_awl_rename_tvar_comm_eq in H; try solve
-      [rewrite a_worklist_subst_ftavr_in_aworklist_2; eauto; simpl; eauto]
+      [rewrite aworklist_subst_ftavr_in_aworklist_2; eauto; simpl; eauto]
   | H : context [rename_tvar_in_aworklist _ ?X (subst_tvar_in_aworklist _ ?X0 _)] |- _ =>
     rewrite subst_tvar_in_awl_rename_tvar_comm_neq in H; auto
   end.
@@ -496,9 +496,9 @@ Ltac solve_notin_rename_tvar :=
         assert (X `notin` (ftvar_in_typ (subst_tvar_in_typ X' X t))) by (simpl; apply subst_tvar_in_typ_fresh_same; auto)
       end
     | H : aworklist_subst ?Γ ?X' ?A ?Γ1 ?Γ2 |- context [ftvar_in_aworklist' ?Γ2] =>
-      rewrite (a_worklist_subst_ftavr_in_aworklist_2 _ _ _ _ _ H); eauto
+      rewrite (aworklist_subst_ftavr_in_aworklist_2 _ _ _ _ _ H); eauto
     | H : aworklist_subst ?Γ ?X' ?A ?Γ1 ?Γ2 |- context [ftvar_in_aworklist' ?Γ1] =>
-      rewrite (a_worklist_subst_ftavr_in_aworklist_1 _ _ _ _ _ H); eauto
+      rewrite (aworklist_subst_ftavr_in_aworklist_1 _ _ _ _ _ H); eauto
     | H : _ |- _ => idtac
     end; auto.
 
@@ -507,9 +507,9 @@ Ltac solve_notin_rename_tvar :=
   (* repeat *)
     lazymatch goal with
     | H : aworklist_subst ?Γ ?X' ?A ?Γ1 ?Γ2 |- ?X ∉ ftvar_in_aworklist' ?Γ2 =>
-      rewrite (a_worklist_subst_ftavr_in_aworklist_2 _ _ _ _ _ H); eauto; try (progress simpl; auto); try (progress solve_notin_rename_tvar; auto)
+      rewrite (aworklist_subst_ftavr_in_aworklist_2 _ _ _ _ _ H); eauto; try (progress simpl; auto); try (progress solve_notin_rename_tvar; auto)
     | H : aworklist_subst ?Γ ?X' ?A ?Γ1 ?Γ2 |- ?X ∉ ftvar_in_aworklist' ?Γ1 =>
-      rewrite (a_worklist_subst_ftavr_in_aworklist_1 _ _ _ _ _ H); eauto; try (progress simpl; auto); try (progress solve_notin_rename_tvar; auto)
+      rewrite (aworklist_subst_ftavr_in_aworklist_1 _ _ _ _ _ H); eauto; try (progress simpl; auto); try (progress solve_notin_rename_tvar; auto)
     end. *)
 Ltac preprocess_ftvar_aworklist_subst X :=
   match goal with 
@@ -542,7 +542,7 @@ Ltac rewrite_aworklist_rename_subst' :=
   match goal with
   | H : context [rename_tvar_in_aworklist _ ?X (subst_tvar_in_aworklist ?A ?X _)] |- _ =>
     rewrite subst_tvar_in_awl_rename_tvar_comm_eq in H; try solve [apply notin_rename_tvar_in_aworklist; auto]; try solve
-      [rewrite a_worklist_subst_ftavr_in_aworklist_2; eauto; simpl; eauto]
+      [rewrite aworklist_subst_ftavr_in_aworklist_2; eauto; simpl; eauto]
   | H : context [rename_tvar_in_aworklist _ ?X (subst_tvar_in_aworklist _ ?X0 _)] |- _ =>
     rewrite subst_tvar_in_awl_rename_tvar_comm_neq in H; auto
   end.
@@ -714,10 +714,10 @@ Proof with eauto; solve_false.
            rewrite_aworklist_rename; simpl; eauto.
            rewrite_aworklist_rename_rev.
            simpl in *. destruct_eq_atom. auto.
-        -- eapply a_worklist_subst_wf_wl in Hws; eauto.
+        -- eapply aworklist_subst_wf_wl in Hws; eauto.
            admit.
            simpl. apply binds_cons. apply binds_cons...
-        -- rewrite (a_worklist_subst_ftavr_in_aworklist _ _ _ _ _ Hws); eauto.
+        -- rewrite (aworklist_subst_ftavr_in_aworklist _ _ _ _ _ Hws); eauto.
       * admit. (* wf *)
       * solve_notin_rename_tvar; auto.
     + apply rename_tvar_in_aworklist_bind_same_neq; auto...
@@ -736,10 +736,10 @@ Proof with eauto; solve_false.
            rewrite_aworklist_rename; simpl; eauto.
            rewrite_aworklist_rename_rev.
            simpl in Hawlred. destruct_eq_atom. auto.
-        -- eapply a_worklist_subst_wf_wl in Hws; eauto.
+        -- eapply aworklist_subst_wf_wl in Hws; eauto.
            admit.
            simpl; apply binds_cons. apply binds_cons...
-        -- rewrite (a_worklist_subst_ftavr_in_aworklist _ _ _ _ _ Hws); auto.
+        -- rewrite (aworklist_subst_ftavr_in_aworklist _ _ _ _ _ Hws); auto.
       * admit. (* wf *)
       * solve_notin_rename_tvar; auto.
   - simpl in *. destruct_a_wf_wl.
@@ -760,10 +760,10 @@ Proof with eauto; solve_false.
            rewrite_aworklist_rename; simpl; eauto.
            rewrite_aworklist_rename_rev.
            simpl in Hawlred. destruct_eq_atom. auto.
-        -- eapply a_worklist_subst_wf_wl in Hws; eauto.
+        -- eapply aworklist_subst_wf_wl in Hws; eauto.
            admit.
            simpl. apply binds_cons. apply binds_cons...
-        -- rewrite (a_worklist_subst_ftavr_in_aworklist _ _ _ _ _ Hws); auto.
+        -- rewrite (aworklist_subst_ftavr_in_aworklist _ _ _ _ _ Hws); auto.
       * admit. (* wf *)
       * solve_notin_rename_tvar; auto.
     + apply rename_tvar_in_aworklist_bind_same_neq; auto...
@@ -781,10 +781,10 @@ Proof with eauto; solve_false.
            rewrite_aworklist_rename; simpl; eauto.
            rewrite_aworklist_rename_rev.
            simpl in Hawlred. destruct_eq_atom. auto.
-        -- eapply a_worklist_subst_wf_wl in Hws; eauto.
+        -- eapply aworklist_subst_wf_wl in Hws; eauto.
            admit.
            simpl. apply binds_cons. apply binds_cons...
-        -- rewrite (a_worklist_subst_ftavr_in_aworklist _ _ _ _ _ Hws); auto...
+        -- rewrite (aworklist_subst_ftavr_in_aworklist _ _ _ _ _ Hws); auto...
       * admit. (* wf *)
       * solve_notin_rename_tvar; auto. 
   - simpl in *. destruct_a_wf_wl.
@@ -798,15 +798,15 @@ Proof with eauto; solve_false.
     + subst.
       rewrite_aworklist_rename.
       apply IHa_wl_red; auto.
-      eapply a_worklist_subst_wf_wl; eauto.
-      rewrite a_worklist_subst_ftavr_in_aworklist with (Γ:=Γ); auto.
+      eapply aworklist_subst_wf_wl; eauto.
+      rewrite aworklist_subst_ftavr_in_aworklist with (Γ:=Γ); auto.
     + admit. (* bind *)
     + apply a_mono_typ_rename_tvar...
     + admit.
     + rewrite_aworklist_rename.
       apply IHa_wl_red; auto.
-      * eapply a_worklist_subst_wf_wl; eauto.
-      * rewrite a_worklist_subst_ftavr_in_aworklist; auto...
+      * eapply aworklist_subst_wf_wl; eauto.
+      * rewrite aworklist_subst_ftavr_in_aworklist; auto...
   - simpl in *. destruct_a_wf_wl.
     eapply worklist_subst_rename_tvar with (X':=X') (X1:=X) in H7 as Hsubst...
     destruct_eq_atom;
@@ -818,15 +818,15 @@ Proof with eauto; solve_false.
     + subst.
       rewrite_aworklist_rename.
       apply IHa_wl_red; auto.
-      eapply a_worklist_subst_wf_wl; eauto.
-      rewrite a_worklist_subst_ftavr_in_aworklist; auto.
+      eapply aworklist_subst_wf_wl; eauto.
+      rewrite aworklist_subst_ftavr_in_aworklist; auto.
     + apply rename_tvar_in_aworklist_bind_same_neq; auto...
     + apply a_mono_typ_rename_tvar...
     + admit.
     + rewrite_aworklist_rename.
       apply IHa_wl_red; auto.
-      * eapply a_worklist_subst_wf_wl; eauto.
-      * rewrite a_worklist_subst_ftavr_in_aworklist; auto.
+      * eapply aworklist_subst_wf_wl; eauto.
+      * rewrite aworklist_subst_ftavr_in_aworklist; auto.
   - simpl in *. destruct_a_wf_wl.
     inst_cofinites_for a_wl_red__chk_absarrow. intros.
     inst_cofinites_with x.
@@ -853,8 +853,8 @@ Proof with eauto; solve_false.
               rewrite_aworklist_rename; simpl; auto.
               rewrite_aworklist_rename_rev.
               simpl in Hawlred. destruct_eq_atom. auto.
-           ++ eapply a_worklist_subst_wf_wl in Hws; eauto. admit. admit. (* wf *)
-           ++ rewrite a_worklist_subst_ftavr_in_aworklist with
+           ++ eapply aworklist_subst_wf_wl in Hws; eauto. admit. admit. (* wf *)
+           ++ rewrite aworklist_subst_ftavr_in_aworklist with
                 (Γ:=(work_check (e ^ᵉₑ exp_var_f x) ` X2 ⫤ᵃ x ~ᵃ ` X1;ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ)); auto. simpl.
               solve_notin_rename_tvar; auto.
         -- solve_notin_rename_tvar; auto.
@@ -876,7 +876,7 @@ Proof with eauto; solve_false.
               rewrite_aworklist_rename; simpl; auto.
               rewrite_aworklist_rename_rev.
               simpl in Hawlred. destruct_eq_atom. auto.
-           ++ eapply a_worklist_subst_wf_wl in Hws; eauto. admit.
+           ++ eapply aworklist_subst_wf_wl in Hws; eauto. admit.
               repeat (apply binds_cons). auto.
            ++ admit. (* wf *)
         -- rewrite ftvar_in_exp_open_exp_wrt_exp_upper; auto.
@@ -942,7 +942,7 @@ Proof with eauto; solve_false.
            rewrite_aworklist_rename_rev.
            simpl in Hawlred. destruct_eq_atom. auto.
         -- admit. (* wf *)
-        -- rewrite a_worklist_subst_ftavr_in_aworklist with
+        -- rewrite aworklist_subst_ftavr_in_aworklist with
             (Γ:=(work_infabs (typ_arrow ` X1 ` X2) cd ⫤ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ));
             auto.
       * admit. (* wf *)
@@ -961,7 +961,7 @@ Proof with eauto; solve_false.
            rewrite_aworklist_rename_rev.
            simpl in Hawlred. destruct_eq_atom. auto.
         -- admit. (* wf *)
-        -- rewrite a_worklist_subst_ftavr_in_aworklist with
+        -- rewrite aworklist_subst_ftavr_in_aworklist with
             (Γ:=(work_infabs (typ_arrow ` X1 ` X2) cd ⫤ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ)); auto.
       * admit. (* wf *)
       * simpl; solve_notin_rename_tvar; auto...
@@ -1048,7 +1048,7 @@ Proof.
 Admitted.
 
 
-Lemma a_worklist_subst_fvar_in_aworklist_2 : forall Γ X A Γ1 Γ2,
+Lemma aworklist_subst_fvar_in_aworklist_2 : forall Γ X A Γ1 Γ2,
   aworklist_subst Γ X A Γ1 Γ2 ->
   fvar_in_aworklist' Γ2 [<=] fvar_in_aworklist' Γ.
 Proof.
@@ -1057,7 +1057,7 @@ Proof.
 Admitted.
 
 
-Lemma a_worklist_subst_fvar_in_aworklist_1 : forall Γ X A Γ1 Γ2,
+Lemma aworklist_subst_fvar_in_aworklist_1 : forall Γ X A Γ1 Γ2,
   aworklist_subst Γ X A Γ1 Γ2 ->
   fvar_in_aworklist' Γ1 [<=] fvar_in_aworklist' Γ.
 Proof.
@@ -1119,9 +1119,9 @@ Ltac solve_notin_rename_var' :=
         (apply notin_rename_var_in_aworklist; auto)
     end
   | H : aworklist_subst ?Γ ?X ?A ?Γ1 ?Γ2 |- context [fvar_in_aworklist' ?Γ2] =>
-      rewrite a_worklist_subst_fvar_in_aworklist_2; eauto
+      rewrite aworklist_subst_fvar_in_aworklist_2; eauto
   | H : aworklist_subst ?Γ ?X ?A ?Γ1 ?Γ2 |- context [fvar_in_aworklist' ?Γ1] =>
-      rewrite a_worklist_subst_fvar_in_aworklist_1; eauto
+      rewrite aworklist_subst_fvar_in_aworklist_1; eauto
   end; auto.
 
 Ltac solve_notin_rename_var :=

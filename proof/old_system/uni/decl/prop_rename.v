@@ -9,6 +9,33 @@ Require Import uni.notations.
 Require Import uni.decl.prop_basic.
 Require Import ltac_utils.
 
+Lemma d_wf_typ_raname_var : forall Ψ1 Ψ2 x y A B,
+  (Ψ2 ++ (x , dbind_typ B) :: Ψ1) ⊢ A ->
+  y `notin` dom (Ψ2 ++ (x , dbind_typ B) :: Ψ1) ->
+  (Ψ2 ++ (y , dbind_typ B) :: Ψ1) ⊢ A.
+Proof.
+  intros. dependent induction H; eauto.
+  - econstructor; eauto.
+    admit.
+  - eapply d_wf_typ__stvar.
+    admit.
+  - inst_cofinites_for d_wf_typ__all; intros; inst_cofinites_with X; auto.
+    rewrite_env ((X ~ □ ++ Ψ2) ++ (y, dbind_typ B) :: Ψ1).
+    eapply H1; simpl; eauto.
+Admitted.
+
+Lemma d_wf_env_rename_var : forall Ψ1 Ψ2 x y A,
+  ⊢ Ψ2 ++ (x , dbind_typ A) :: Ψ1 ->
+  y `notin` dom (Ψ2 ++ (x , dbind_typ A) :: Ψ1) ->
+  ⊢ Ψ2  ++ (y , dbind_typ A) :: Ψ1.
+Proof with eauto.
+  intros. induction Ψ2. 
+  - dependent destruction H... constructor...
+  - dependent destruction H; try solve [constructor; eauto].
+    + simpl. constructor...
+      eapply d_wf_typ_raname_var with (x:=x); eauto.
+Qed.
+
 
 Lemma subst_var_in_exp_refl : forall x e,
   subst_var_in_exp (exp_var_f x) x e = e
@@ -71,3 +98,14 @@ Proof.
   intros. rewrite_env (nil ++ y ~ (dbind_typ B) ++ Ψ).
   eapply  d_chk_inf_rename_var; eauto.
 Qed.
+
+
+
+(* Lemma d_subtying_rename_tvar : *)
+(* Lemma d_subtying_rename_var : *)
+(* Lemma d_infabs_rename_tvar : *)
+(* Lemma d_infabs_rename_var : *)
+(* Lemma d_inftapp_rename_tvar : *)
+(* Lemma d_inftapp_rename_var : *)
+(* Lemma d_chk_inf_rename_tvar : *)
+(* Lemma d_chk_inf_rename_var : *)

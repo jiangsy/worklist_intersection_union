@@ -1124,33 +1124,3 @@ Proof with eauto.
     forwards: H1. rewrite_env ((Y ~ □ ++ Ψ2) ++ x ~ dbind_typ B ++ Ψ1)...
     rewrite_env ((Y ~ □ ++ Ψ2)++ Ψ1)...
 Qed.
-
-Lemma d_wf_typ_raname_var : forall Ψ1 Ψ2 x y A B,
-  (Ψ2 ++ (x , dbind_typ B) :: Ψ1) ⊢ A ->
-  y `notin` dom (Ψ2 ++ (x , dbind_typ B) :: Ψ1) ->
-  (Ψ2 ++ (y , dbind_typ B) :: Ψ1) ⊢ A.
-Admitted.
-
-Lemma d_wf_env_rename_var : forall Ψ1 Ψ2 x y A,
-  ⊢ Ψ2 ++ (x , dbind_typ A) :: Ψ1 ->
-  y `notin` dom (Ψ2 ++ (x , dbind_typ A) :: Ψ1) ->
-  ⊢ Ψ2  ++ (y , dbind_typ A) :: Ψ1.
-Proof with eauto.
-  intros. induction Ψ2. 
-  - dependent destruction H... constructor...
-  - dependent destruction H; try solve [constructor; eauto].
-    + simpl. constructor...
-      eapply d_wf_typ_raname_var with (x:=x); eauto.
-Qed.
-
-
-
-
-(* Lemma d_subtying_rename_tvar : *)
-(* Lemma d_subtying_rename_var : *)
-(* Lemma d_infabs_rename_tvar : *)
-(* Lemma d_infabs_rename_var : *)
-(* Lemma d_inftapp_rename_tvar : *)
-(* Lemma d_inftapp_rename_var : *)
-(* Lemma d_chk_inf_rename_tvar : *)
-(* Lemma d_chk_inf_rename_var : *)

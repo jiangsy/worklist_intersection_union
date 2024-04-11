@@ -1849,7 +1849,7 @@ Proof with auto.
 Qed.
 
 
-Lemma trans_wl_ss_dom_upper_bound : forall θ Γ Ω,  
+Lemma trans_wl_ss_dom_upper : forall θ Γ Ω,  
   nil ⫦ Γ ⇝ Ω ⫣ θ ->
   dom θ [<=] dom (awl_to_aenv Γ).
 Proof with auto.
@@ -2401,5 +2401,3 @@ Proof with eauto.
     intros. apply H1; auto.
     intros. apply H1; eauto.
 Qed.
-
-    
