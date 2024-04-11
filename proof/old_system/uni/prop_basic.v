@@ -111,6 +111,28 @@ Proof.
 Qed.
 
 
+Lemma binds_remove_mid_diff_bind {A} : forall θ1 θ2 X Y (b1 b2 : A),
+  binds X b1 (θ2 ++ (Y, b2) :: θ1) ->
+  b1 <> b2 ->
+  binds X b1 (θ2 ++ θ1).
+Proof.  
+  intros. induction θ2; simpl in *; eauto.
+  - inversion H. dependent destruction H1.
+    + contradiction.
+    + auto. 
+  - destruct a. inversion H.
+    + dependent destruction H1. auto.
+    + auto.
+Qed.
+
+Lemma binds_weaken_mid {A} : forall θ1 θ2 X Y (b1 b2 : A),
+  binds X b1 (θ2 ++ θ1) ->
+  binds X b1 (θ2 ++ (Y, b2) :: θ1).
+Proof.  
+  intros. rewrite_env (θ2 ++ (Y ~ b2) ++ θ1).
+  apply binds_weaken. auto.
+Qed.
+
 Lemma subst_tvar_in_typ_open_typ_wrt_typ_tvar2 : forall X A T,
   lc_typ T ->
   X `notin` ftvar_in_typ A ->

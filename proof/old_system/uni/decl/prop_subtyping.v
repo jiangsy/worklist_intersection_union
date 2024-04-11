@@ -306,7 +306,7 @@ Theorem d_sub_mono_stvar_false : forall Ψ T X,
 Proof.
   intros.
   induction H1; dependent destruction H0; auto.
-  applys* binds_two_thing_false.
+  unify_binds.
 Qed.
 
 Theorem d_sub_tvar_ind_open_inv_complete: forall n1 n2 Ψ S1 T1 X L,
@@ -699,7 +699,7 @@ Proof.
       * destruct A; simpl in *; try solve [inversion Heq].
         -- destruct n.
           ++ unfold open_typ_wrt_typ in Heq. simpl in *.
-            subst. dependent destruction H5. applys* binds_two_thing_false X.
+            subst. dependent destruction H5. unify_binds. 
           ++ unfold open_typ_wrt_typ in Heq. simpl in *.
             inversion Heq.
         -- inst_cofinites_by (L `union` singleton X0) using_name X. inversion H4.
@@ -750,7 +750,7 @@ Proof.
   intros. dependent induction H0; simpl in *; auto.
   - case_eq (X0 == X); intros; subst*; try solve_notin.
     assert (X ~ ■ ∈ᵈ (Ψ2 ++ (X, ■) :: Ψ1)) by eauto.
-    exfalso. forwards*: binds_two_thing_false X.
+    unify_binds.
   - dependent destruction H; auto... apply notin_union; eauto.
 Qed.
 
