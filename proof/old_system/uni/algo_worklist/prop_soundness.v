@@ -536,6 +536,36 @@ Proof.
   - simpl in *. apply union_iff in H1. inversion H1; eauto.
 Qed.
 
+Lemma wf_ss_move_etvar_before : forall θ1 θ2 X1 X2 T1 T2,
+  wf_ss (θ2 ++ (X1, dbind_typ T1) :: (X2, dbind_typ T2) :: θ1) ->
+  wf_ss ((X2, dbind_typ T2) :: θ2 ++ (X1, dbind_typ T1) :: θ1).
+Proof.
+  constructor; auto.
+  - rewrite_env ((θ2 ++ (X1 ~ dbind_typ T1)) ++ (X2, dbind_typ T2) :: θ1) in H.  
+    eapply wf_ss_strengthen_etvar with (X:=X2) in H. 
+    rewrite_env ((θ2 ++ X1 ~ dbind_typ T1) ++ θ1). auto.
+  - rewrite_env ((θ2 ++ (X1 ~ dbind_typ T1)) ++ (X2, dbind_typ T2) :: θ1) in H. 
+    apply wf_ss_notin_remaining in H.
+    rewrite_env ((θ2 ++ X1 ~ dbind_typ T1) ++ θ1). auto.
+  - apply wf_ss_strengthen_app in H. simpl in *. 
+    dependent destruction H. dependent destruction H. simpl in *.
+    rewrite ss_to_denv_app. apply d_mono_typ_weaken_app. simpl. auto.
+Qed.
+
+Lemma a_mono_typ_move_etvar_back : forall Γ1 Γ2 A X Y ,  
+  a_mono_typ (⌊ Y ~ᵃ ⬒ ;ᵃ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1 ⌋ᵃ) A ->
+  a_mono_typ (⌊ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Y ~ᵃ ⬒ ;ᵃ Γ1 ⌋ᵃ) A.
+Proof.
+  intros. dependent induction H; auto.
+  - simpl in *. rewrite awl_to_aenv_app in *.
+    destruct_binds. simpl in *. apply binds_app_iff in H1; destruct H1; auto.
+    destruct_binds. eauto.
+  - apply a_mono_typ__etvar. simpl in *. rewrite awl_to_aenv_app in *.
+    destruct_binds. eauto.
+    apply binds_app_iff in H1; destruct H1; auto.
+    destruct_binds; eauto.
+Qed.
+
 Lemma aworklist_subst_transfer_same_dworklist: forall Γ Ω θ X T Γ1 Γ2,
   ⊢ᵃʷ Γ ->
   a_mono_typ (awl_to_aenv Γ) T ->
@@ -553,15 +583,16 @@ Lemma aworklist_subst_transfer_same_dworklist: forall Γ Ω θ X T Γ1 Γ2,
 Proof with auto.
   intros. generalize dependent θ. generalize dependent Ω. dependent induction H3; intros.
   - simpl in *.
-    assert (exists Aᵈ, θ ᵗ⫦ A ⇝ Aᵈ) by admit. (* *, trans_typ_total s*)
-    destruct H3 as [Aᵈ].
+    apply a_mono_typ_strengthen_mtvar in H0...
+    apply a_mono_typ_wf in H0 as Hwf.
+    eapply trans_typ_total in Hwf; eauto.
+    destruct Hwf as [Aᵈ].
     destruct_a_wf_wl.
     exists ((X ~ dbind_typ Aᵈ) ++ θ). 
     exists Aᵈ.
     assert (wf_ss ((X ~ dbind_typ Aᵈ) ++ θ)). { 
       constructor; eauto.
       erewrite trans_wl_ss_dom_upper; eauto. 
-      apply a_mono_typ_strengthen_mtvar in H1; eauto.
       eapply trans_wl_a_mono_typ_d_mono_typ with (Aᵃ:=A); eauto.
     }
     dependent destruction H6.
@@ -570,6 +601,7 @@ Proof with auto.
     + apply trans_typ_weaken_cons...
     + intros. destruct_binds...
     + constructor...
+    + destruct_a_wf_wl...
   - dependent destruction H4. 
     apply IHaworklist_subst in H4 as IH.
     destruct IH as [θ'1 [Tᵈ [Htrans [Htranst [Htranst' [Hbinds [Htransx Hwfss]]]]]]].
@@ -646,32 +678,30 @@ Proof with auto.
   - dependent destruction H6.
     apply IHaworklist_subst in H6 as IH.
     destruct IH as [θ'1 [Tᵈ [Htrans [Htranst [Htranst' [Hbinds [Htransx Hwfss]]]]]]].    
-    exists (Y ~ dbind_typ T ++ θ'1). exists Tᵈ. repeat split; auto.
-    + econstructor; auto. 
-      eapply notin_dom_reorder...
-      apply d_mono_typ_reorder_ss with (θ:=θ'); eauto.
-      intros. apply Hbinds; auto.
-      admit. (* *, mono *)
-    + rewrite_env (nil ++ (Y ~ dbind_typ T) ++ θ'). apply trans_typ_weaken...
-      constructor; auto.
-      eapply trans_wl_wf_ss; eauto.
-    + rewrite_env (nil ++ (Y ~ dbind_typ T) ++ θ'1). apply trans_typ_weaken...
-      constructor; auto.
-      eapply notin_dom_reorder...
+    exists (Y ~ dbind_typ T ++ θ'1). exists Tᵈ.
+    assert (ss_to_denv θ'1 ⊢ₘ T). {
       apply d_mono_typ_reorder_ss with (θ:=θ'); eauto.
       intros. apply Hbinds; auto. apply neq_comm.
       eapply tvar_notin_dom_neq_tvar_in_ss_wf_typ with (X:=X0); eauto.
       rewrite trans_wl_ss_dom_upper; eauto.
       eapply aworklist_subst_remove_target_tvar with (Γ:=Γ)...
       destruct_a_wf_wl... destruct_binds...
+    }
+    repeat split; auto.
+    + econstructor; auto. 
+      eapply notin_dom_reorder...
+    + rewrite_env (nil ++ (Y ~ dbind_typ T) ++ θ'). apply trans_typ_weaken...
+      constructor; auto.
+      eapply trans_wl_wf_ss; eauto.
+    + rewrite_env (nil ++ (Y ~ dbind_typ T) ++ θ'1). apply trans_typ_weaken...
+      constructor; auto.
+      eapply notin_dom_reorder...
     + intros. destruct_binds... 
       * simpl. apply binds_cons... apply Hbinds...
     + intros. destruct_binds... 
       * simpl. apply binds_cons... apply Hbinds...
     + constructor; auto. 
       eapply notin_dom_reorder...
-      eapply d_mono_typ_reorder_ss with (θ:=θ'); eauto... 
-      admit. (* *, X `notin` θ' so notin T *)
     + destruct_a_wf_wl...
     + simpl in *. eapply a_mono_typ_strengthen_mtvar; eauto. 
     + destruct_binds...
@@ -701,9 +731,8 @@ Proof with auto.
         apply wf_ss_notin_remaining in Hwfss...
       * rewrite ss_to_denv_app. simpl. apply d_mono_typ_weaken_app...
     + eapply trans_typ_reorder_ss with (θ:=θ'' ++ (X, dbind_typ T) :: (Y, dbind_typ T0) :: θ'); auto.
-      admit. (* *, wf_ss *)
-      intros.
-      apply binds_same_move_etvar_before...
+      * subst. apply wf_ss_move_etvar_before...
+      * intros. apply binds_same_move_etvar_before...
     + intros. 
       apply binds_same_move_etvar_before...
       apply Hbinds...
@@ -711,12 +740,12 @@ Proof with auto.
       apply Hbinds...
       apply binds_same_move_etvar_before...
     + subst. apply binds_same_move_etvar_before... 
-    + admit. (* wf_ss *)
+    + apply wf_ss_move_etvar_before...
     + apply a_wf_wl_move_etvar_back... 
-    + admit. (* *, mono *)
+    + apply a_mono_typ_move_etvar_back...
     + rewrite awl_to_aenv_app; simpl...
     + auto.
-Admitted.
+Qed.
 
 
 Lemma trans_wl_a_wl_binds_var_trans_typ_d_wl' : forall θ Γ Ω x Aᵃ Aᵈ,

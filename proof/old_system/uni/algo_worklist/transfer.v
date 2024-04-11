@@ -502,6 +502,15 @@ Proof.
 Qed.
 
 
+Lemma wf_ss_strengthen_app : forall θ1 θ2,
+  wf_ss (θ2 ++ θ1) ->
+  wf_ss θ1.
+Proof.
+  intros. induction θ2; auto.
+  - destruct a; destruct d; dependent destruction H; auto.
+Qed.
+
+
 Lemma wf_ss_weaken_tvar: forall θ1 θ2 X,
   wf_ss (θ2 ++ θ1) ->
   X `notin` dom (θ2 ++ θ1) ->

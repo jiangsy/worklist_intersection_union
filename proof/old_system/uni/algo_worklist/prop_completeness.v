@@ -79,13 +79,6 @@ Open Scope aworklist_scope.
 
 #[local] Hint Resolve wf_ss_uniq trans_typ_wf_ss trans_wl_wf_ss : core.
 
-Lemma wf_ss_strengthen_app : forall θ1 θ2,
-  wf_ss (θ2 ++ θ1) ->
-  wf_ss θ1.
-Proof.
-  intros. induction θ2; auto.
-  - destruct a; destruct d; dependent destruction H; auto.
-Qed.
 
 Lemma wf_ss_etvar_bind_another : forall θ1 θ2 X T1 T2,
   wf_ss (θ2 ++ (X, dbind_typ T1) :: θ1) ->
