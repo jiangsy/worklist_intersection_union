@@ -467,7 +467,7 @@ Qed.
 
 #[export] Hint Immediate d_infabs_wft_0 d_infabs_wft_1 d_infabs_wft_2 d_infabs_wft_3 : core.
 
-(* @shengyi:todo *** *)
+
 Theorem d_infabs_subsumption_same_env : forall Ψ A A' B C,
   Ψ ⊢ A ▹ B → C ->
   Ψ ⊢ A' <: A ->
