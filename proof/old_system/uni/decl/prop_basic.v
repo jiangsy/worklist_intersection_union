@@ -2,7 +2,6 @@ Require Import Coq.Program.Equality.
 Require Import Program.Tactics.
 Require Import Lia.
 Require Import Metalib.Metatheory.
-Require Import LibTactics.
 
 Require Import uni.notations.
 Require Export uni.prop_basic.
@@ -430,22 +429,41 @@ Proof.
   intros; induction H; eauto...
 Qed.
 
-Lemma d_neq_all_subst_neq_all : forall Ψ A X T,
-  lc_typ A ->
+
+#[local] Hint Constructors neq_all neq_intersection neq_union : core.
+
+Lemma neq_all_subst_mono_neq_all : forall Ψ A X T,
   Ψ ⊢ₘ T  ->
   neq_all A ->
   neq_all ( {T /ᵗ X} A ).
-Proof.
-  intros. induction H; simpl; eauto...
+Proof with eauto 6 using subst_tvar_in_typ_lc_typ.
+  intros. induction H0; simpl; eauto...
   - destruct (X0 == X); auto.
     eapply d_mono_typ_neq_all; eauto.
-  - eapply neq_all__arrow;
-    apply subst_tvar_in_typ_lc_typ; eauto...
-  - inversion H1.
-  - eapply neq_all__union;
-    apply subst_tvar_in_typ_lc_typ; eauto...
-  - eapply neq_all__intersection;
-    apply subst_tvar_in_typ_lc_typ; eauto...
+Qed.
+
+Lemma neq_union_subst_mono_neq_union : forall Ψ A X T,
+  Ψ ⊢ₘ T  ->
+  neq_union A ->
+  neq_union ( {T /ᵗ X} A ).
+Proof with eauto 7 using subst_tvar_in_typ_lc_typ.
+  intros. induction H0; simpl; eauto...
+  - destruct (X0 == X); auto.
+    eapply d_mono_typ_neq_union; eauto.
+  - eapply neq_union__all.
+    replace ((typ_all ({T /ᵗ X} A))) with ({T /ᵗ X} (typ_all A)) by auto...
+Qed.
+
+Lemma neq_intersection_subst_mono_neq_intersection : forall Ψ A X T,
+  Ψ ⊢ₘ T  ->
+  neq_intersection A ->
+  neq_intersection ( {T /ᵗ X} A ).
+Proof with eauto 7 using subst_tvar_in_typ_lc_typ.
+  intros. induction H0; simpl; eauto... 
+  - destruct (X0 == X); auto.
+    eapply d_mono_typ_neq_intersection; eauto.
+  - eapply neq_intersection__all.
+    replace ((typ_all ({T /ᵗ X} A))) with ({T /ᵗ X} (typ_all A)) by auto...
 Qed.
 
 

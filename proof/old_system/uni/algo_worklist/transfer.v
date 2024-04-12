@@ -875,7 +875,7 @@ Lemma trans_wl_split_ss : forall Γ Ω θ θ',
   exists θ'', θ' = θ'' ++ θ.
 Proof.  
   intros. induction H; eauto.
-  - exists nil; auto.
+  - exists (@nil (atom * dbind)); auto.
   - destruct IHtrans_worklist as [θ''].
     exists ((X, □) :: θ''). rewrite H1. auto.
   - destruct IHtrans_worklist as [θ''].

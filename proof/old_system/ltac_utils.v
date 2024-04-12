@@ -2,6 +2,7 @@
 Require Export Metalib.Metatheory.
 
 Require Import uni.notations.
+Require Export LibTactics.
 (* Require Import algo.notations. *)
 
 
@@ -111,6 +112,33 @@ Tactic Notation "inst_cofinites_for" constr(H) ident(argname1)":="constr(arg1) "
   let L1 := beautify_fset L1 in
   apply H with (L:=L1) (argname1:=arg1) (argname2:=arg2).
 
+(* destruct conjunctions *)
+Ltac destruct_conj :=
+  repeat match goal with H: ?T |- _ =>
+                         lazymatch T with
+                         | exists _ , _ => destruct H
+                         | _ /\ _ => destruct H
+                         end
+    end.
+
+
+Ltac solve_by_inverts n :=
+  match goal with | H : ?T |- _ =>
+  match type of T with Prop =>
+    solve [
+      inversion H;
+      match n with S (S (?n')) => subst; solve_by_inverts (S n') end ]
+  end end.
+
+Ltac solve_by_invert :=
+  solve_by_inverts 1.
+
+Create HintDb FalseHd.
+Ltac solve_false := let HF := fresh "HF" in
+                    try solve [ try intro HF; destruct_conj; try solve_by_invert;
+                                false; eauto 3 with FalseHd ].
+
+                              
 (* 
 
 Tactic Notation "pick" "fresh" ident(x) "and" "apply" constr(H) "for" "weaken" :=

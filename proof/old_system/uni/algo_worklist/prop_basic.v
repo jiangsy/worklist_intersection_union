@@ -8,7 +8,6 @@ Require Import uni.notations.
 Require Import uni.prop_basic.
 Require Import uni.algo_worklist.def_extra.
 Require Import ltac_utils.
-Require Import LibTactics.
 
 
 Open Scope aworklist_scope.
@@ -350,26 +349,6 @@ Ltac _apply_IH_a_wl_red :=
       apply H in H1 as H2
     end.
 
-(* destruct conjunctions *)
-Ltac destruct_conj :=
-  repeat match goal with H: ?T |- _ =>
-                         lazymatch T with
-                         | exists _ , _ => destruct H
-                         | _ /\ _ => destruct H
-                         end
-    end.
-
-
-Ltac solve_by_inverts n :=
-  match goal with | H : ?T |- _ =>
-  match type of T with Prop =>
-    solve [
-      inversion H;
-      match n with S (S (?n')) => subst; solve_by_inverts (S n') end ]
-  end end.
-
-Ltac solve_by_invert :=
-  solve_by_inverts 1.
 
 
 (********************************************)
@@ -378,11 +357,6 @@ Ltac solve_by_invert :=
 (*  try solve the goal by contradiction     *)
 (*                                          *)
 (********************************************)
-Create HintDb FalseHd.
-Ltac solve_false := let HF := fresh "HF" in
-                    try solve [ try intro HF; destruct_conj; try solve_by_invert;
-                                false; eauto 3 with FalseHd ].
-
 
 Lemma awl_to_aenv_cons: forall Γ X t,
     awl_to_aenv (aworklist_constvar Γ X t) = (X,t) :: (awl_to_aenv Γ).
