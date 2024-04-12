@@ -983,6 +983,14 @@ Proof.
     try repeat unify_trans_typ; try unify_trans_exp; try constructor.
 Qed.
 
+Ltac fold_open_wrt_rec' := 
+  match goal with 
+  | H : context [open_typ_wrt_typ_rec 0 ?B ?A] |- _ => replace (open_typ_wrt_typ_rec 0 B A) with (open_typ_wrt_typ A B) in H by auto
+  | H : context [open_exp_wrt_typ_rec 0 ?A ?e] |- _ => replace (open_exp_wrt_typ_rec 0 A e) with (open_exp_wrt_typ e A) in H by auto
+  end.
+
+Ltac fold_open_wrt_rec :=
+  repeat fold_open_wrt_rec'.
 
 #[local] Hint Resolve trans_typ_wf_ss trans_wl_a_wf_typ_d_wf_typ : core.
 
@@ -1006,16 +1014,16 @@ Proof with eauto.
   - exists Ω.
     split... exists ((X, dbind_typ typ_unit) :: θ)...
     constructor... rewrite trans_wl_ss_dom_upper; eauto. 
-  - exists (dworklist_conswork Ω (work_sub B1ᵈ typ_top)); split...
-  - exists (dworklist_conswork Ω (work_sub typ_bot Aᵈ)); split... 
-  - exists (dworklist_conswork Ω (work_sub typ_unit typ_unit)).
+  - exists (work_sub B1ᵈ typ_top ⫤ᵈ Ω); split...
+  - exists (work_sub typ_bot Aᵈ ⫤ᵈ Ω); split... 
+  - exists (work_sub typ_unit typ_unit ⫤ᵈ Ω).
     split... exists θ... 
   - clear H0. dependent destruction H.
-    + exists (dworklist_conswork Ω (work_sub ` X ` X)). split.
+    + exists (work_sub ` X ` X ⫤ᵈ Ω). split.
       * exists θ... 
         eapply trans_wl_a_wl_binds_tvar_ss in H; eauto...
       * eapply trans_wl_a_wl_binds_tvar_d_wl in H...
-    + exists (dworklist_conswork Ω (work_sub ` X ` X)). split.
+    + exists (work_sub ` X ` X ⫤ᵈ Ω). split.
       * exists θ... 
         eapply trans_wl_a_wl_binds_stvar_ss in H...
       * eapply trans_wl_a_wl_binds_stvar_d_wl in H... 
@@ -1284,12 +1292,17 @@ Proof with eauto.
            admit. (* *, chk rename var *) 
         -- destruct_d_wl_del_red...
       * repeat (constructor; simpl; eauto).
-        admit. (* d_wf_exp_weaken *)
+        apply a_wf_exp_var_binds_another_cons with (A1:=T)...
+        rewrite_env ((x ~ abind_var_typ T) ++ ((X2, ⬒) :: (X1 ~ ⬒)) ++ ⌊ Γ ⌋ᵃ).
+        apply a_wf_exp_weaken...
       * simpl. constructor... 
       * simpl...  
     + eapply aworklist_subst_wf_wl with 
         (Γ:=(work_check (e ᵉ^ₑ exp_var_f x) ` X2  ⫤ᵃ x ~ᵃ ` X1;ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ)); eauto. 
-      * repeat (constructor; simpl; auto). admit. (* d_wf_exp_weaken *)
+      * repeat (constructor; simpl; auto).
+        apply a_wf_exp_var_binds_another_cons with (A1:=T)...
+        rewrite_env ((x ~ abind_var_typ T) ++ ((X2, ⬒) :: (X1 ~ ⬒)) ++ ⌊ Γ ⌋ᵃ).
+        apply a_wf_exp_weaken...
       * simpl...
   (* \ x. e <= ⊤ *)
   - destruct_a_wf_wl. pick fresh x. inst_cofinites_with x. 
@@ -1337,7 +1350,15 @@ Proof with eauto.
   (* /\ a. e : A => _ *)
   - destruct_a_wf_wl. 
     pick fresh X. inst_cofinites_with X.
-    assert (Hwf: ⊢ᵃʷ (work_check (e ᵉ^ₜ ` X) (A ^ᵗ X) ⫤ᵃ X ~ᵃ □ ;ᵃ work_applys cs (typ_all A) ⫤ᵃ Γ)) by admit.
+    assert (Hwf: ⊢ᵃʷ (work_check (e ᵉ^ₜ ` X) (A ^ᵗ X) ⫤ᵃ X ~ᵃ □ ;ᵃ work_applys cs (typ_all A) ⫤ᵃ Γ)). {
+      dependent destruction H0...
+      dependent destruction H...
+      repeat (constructor; simpl; auto). fold_open_wrt_rec.
+      inst_cofinites_for a_wf_typ__all; intros.
+      solve_s_in.
+      apply a_wf_typ_rename_tvar_cons with (Y:=X0) in H1. 
+      simpl_open_subst_typ.
+    }
     _apply_IH_a_wl_red.
     destruct_trans.
     rename_typ.
@@ -1350,8 +1371,10 @@ Proof with eauto.
       intros. simpl. repeat rewrite open_body_wrt_typ_anno. 
       constructor.
       -- rewrite_close_open_subst.
-         apply trans_exp_rename_tvar_cons with (X':=X0) in H8; eauto.          
-          admit. (* *, trans exp rename tvar *)
+         apply trans_exp_rename_tvar_cons with (X':=X0) in H8; eauto. 
+         rewrite subst_tvar_in_exp_open_exp_wrt_typ in H8...
+         simpl in *. destruct_eq_atom.
+         rewrite subst_tvar_in_exp_fresh_eq in H8; eauto.
       -- solve_trans_typ_open_close.
     + assert (θ ᵗ⫦ typ_all A ⇝ typ_all A1ᵈ). {
         inst_cofinites_for trans_typ__all; intros;
@@ -1363,10 +1386,17 @@ Proof with eauto.
       }
       unify_trans_typ. inversion H11. subst.
       apply d_wl_del_red__inf with (A:=typ_all (close_typ_wrt_typ X Axᵈ)).
-      * inst_cofinites_for d_chk_inf__inf_tabs. 
-        admit. (* *, wf close all *)
-        intros. inst_cofinites_with X0. rewrite_close_open_subst.
-        rewrite_close_open_subst. admit. (* *, chk rename tvar *)
+      * dependent destruction H. dependent destruction H1. fold_open_wrt_rec.
+        inst_cofinites_for d_chk_inf__inf_tabs. 
+        -- inst_cofinites_for d_wf_typ__all; intros; inst_cofinites_with X0; 
+           rewrite_close_open_subst. apply s_in_rename. 
+           eapply trans_typ_dtvar_atyp_s_in_dtyp with (b:=dbind_tvar_empty)... 
+           apply d_wf_typ_rename_tvar_cons.
+           rewrite_env (dwl_to_denv (X ~ᵈ □ ;ᵈ Ω)).
+           eapply trans_wl_a_wf_typ_d_wf_typ with (Γ:= X ~ᵃ □ ;ᵃ Γ)...
+           constructor...
+        -- intros. inst_cofinites_with X0. rewrite_close_open_subst.
+           rewrite_close_open_subst. admit. (* *, chk rename tvar *)
       * destruct_d_wl_del_red... 
   (* \x. e => _ *)
   - destruct_a_wf_wl.
@@ -1455,7 +1485,12 @@ Proof with eauto.
       eapply d_infabs__all with (T:=T)...
       * eapply trans_wl_ss_mono_typ_d_wl_mono_typ... 
       * apply d_mono_typ_d_wf_typ. eapply trans_wl_ss_mono_typ_d_wl_mono_typ... 
-      * admit. (* *, wf *)
+      * inst_cofinites_for d_wf_typ__all; intros; inst_cofinites_with X0; rewrite_close_open_subst.
+        apply s_in_rename. eapply trans_typ_dtvar_atyp_s_in_dtyp with (b:=dbind_tvar_empty)...
+        apply d_wf_typ_rename_tvar_cons.
+        rewrite_env (dwl_to_denv (X ~ᵈ □ ;ᵈ Ω)).
+        eapply trans_wl_a_wf_typ_d_wf_typ with (Γ:= X ~ᵃ □ ;ᵃ Γ)...
+        constructor...
       * rewrite_close_open_subst. rewrite Hsubst...
   - exists (work_infabs (typ_intersection A1ᵈ A2ᵈ) cdᵈ ⫤ᵈ Ω)...
     split...
