@@ -16,6 +16,9 @@ jobs:
       uses: cachix/install-nix-action@v26
       with:
         nix_path: nixpkgs=channel:nixos-unstable
+        extra_nix_config: |
+          extra-substituters = https://chen.cachix.org
+          extra-trusted-public-keys = chen.cachix.org-1:QzFtWpjuwQylPYCuX7k6m6anRVi/e658FfWZRcTnRgs=
     - name: Add NUR package repository
       run: |
         mkdir -p ~/.config/nixpkgs/
