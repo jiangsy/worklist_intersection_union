@@ -467,13 +467,13 @@ Proof.
 Qed. *)
 
 
-Theorem d_sub_tvar_ind_open_subst : forall Ψ F X A B,
-  ⊢ F ++ (X ~ dbind_tvar_empty) ++ Ψ ->
+Theorem d_sub_tvar_ind_open_subst : forall Ψ1 Ψ2 X A B,
+  ⊢ Ψ2 ++ (X ~ dbind_tvar_empty) ++ Ψ1 ->
   d_sub_tvar_open_inv X A ->
-  d_mono_typ Ψ B ->
-  (X ~ dbind_tvar_empty) ++ Ψ ⊢ A ->
-  Ψ ⊢ B ->
-  map (subst_tvar_in_dbind B X) F ++ Ψ ⊢ ({B /ᵗ X} A) <: B.
+  d_mono_typ Ψ1 B ->
+  (X ~ dbind_tvar_empty) ++ Ψ1 ⊢ A ->
+  Ψ1 ⊢ B ->
+  map (subst_tvar_in_dbind B X) Ψ2 ++ Ψ1 ⊢ ({B /ᵗ X} A) <: B.
 Proof with auto.
   intros * Hwfenv H. induction H; intros.
   - simpl. destruct (X == X).
@@ -552,7 +552,7 @@ Proof.
     + auto.
     + auto.
     + inst_cofinites_by (L `union` L0 `union` ftvar_in_typ A `union` dom Ψ) using_name X.
-      apply d_sub_tvar_ind_open_subst with (Ψ:= Ψ) (B:=T1) (F:=nil) in H; auto.
+      apply d_sub_tvar_ind_open_subst with (Ψ1:= Ψ) (B:=T1) (Ψ2:=nil) in H; auto.
       * rewrite subst_tvar_in_typ_open_typ_wrt_typ_tvar2 in H; eauto.
       * simpl. constructor; auto.
   - inversion Hmono.
@@ -566,17 +566,17 @@ Theorem  d_sub_subst_mono : forall Ψ1 X Ψ2 A B T,
   Ψ1 ⊢ₘ T ->
   map (subst_tvar_in_dbind T X) Ψ2 ++ Ψ1 ⊢ {T /ᵗ X} A <: {T /ᵗ X} B.
 Proof with eauto using d_mono_typ_d_wf_typ.
-  intros Ψ X F A1 B1 T1 Hwfenv Hsub Hmono.
+  intros Ψ1 X Ψ2 A1 B1 T1 Hwfenv Hsub Hmono.
   dependent induction Hsub; try solve [simpl in *; eauto 7 using d_mono_typ_d_wf_typ].
   - eapply dsub_refl; auto...
-  - simpl. eapply d_sub__all with (L:=L `union` singleton X `union` dom Ψ `union` dom F); intros X0 Hfr; inst_cofinites_with X.
+  - simpl. eapply d_sub__all with (L:=L `union` singleton X `union` dom Ψ1 `union` dom Ψ2); intros X0 Hfr; inst_cofinites_with X.
     + rewrite subst_tvar_in_typ_open_typ_wrt_typ_fresh2; auto...
       applys* s_in_subst_inv.
     + rewrite subst_tvar_in_typ_open_typ_wrt_typ_fresh2; auto...
       applys* s_in_subst_inv.
     + inst_cofinites_with X0. repeat rewrite subst_tvar_in_typ_open_typ_wrt_typ_fresh2; eauto...
-      replace (X0 ~ dbind_stvar_empty ++ map (subst_tvar_in_dbind T1 X) F ++ Ψ) with
-      (map (subst_tvar_in_dbind T1 X) (X0 ~ dbind_stvar_empty ++ F) ++ Ψ) by auto.
+      replace (X0 ~ dbind_stvar_empty ++ map (subst_tvar_in_dbind T1 X) Ψ2 ++ Ψ1) with
+      (map (subst_tvar_in_dbind T1 X) (X0 ~ dbind_stvar_empty ++ Ψ2) ++ Ψ1) by auto.
       eapply H2; auto... simpl. constructor; eauto.
   - simpl. eapply d_sub__alll with (L:=L `union` singleton X) (T:={T1 /ᵗ X} T); auto...
     + eapply neq_all_subst_mono_neq_all...

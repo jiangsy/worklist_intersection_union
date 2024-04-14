@@ -662,34 +662,7 @@ Proof.
 Qed.
 
 
-Lemma d_chk_inf_wf_env: forall Ψ e mode A,
-  d_chk_inf Ψ e mode A ->
-  ⊢ Ψ.
-Proof.
-  intros. induction H; auto.
-  - inst_cofinites_by L. inversion H1; auto.
-  - inst_cofinites_by L. inversion H1; auto.
-  - inst_cofinites_by L. inversion H0; auto.
-  - inst_cofinites_by L. inversion H1; auto.
-Qed.
-
 #[local] Hint Resolve d_wf_typ_weaken_cons : core.
-
-Lemma d_chk_inf_wft: forall Ψ e mode A,
-  d_chk_inf Ψ e mode A ->
-  Ψ ⊢ A.
-Proof.
-  intros. induction~ H.
-  - induction H; try solve_by_invert.
-    all: forwards[(?&Heq)|?]: binds_cons_1 H0; try inverts Heq; subst; eauto.
-  - apply d_infabs_wft in H0; intuition.
-  - apply d_mono_typ_d_wf_typ in H; auto.
-  - apply d_inftapp_wft in H1; intuition.
-  - pick fresh X. forwards*: H1 X.
-    rewrite_env (nil ++ (X, dbind_typ A1) :: Ψ ) in H2.
-    forwards*: d_wf_typ_strengthen_var H2.
-  - eauto using d_sub_dwft_2.
-Qed.
 
 
 #[export] Hint Resolve d_sub_dwft_0 d_sub_dwft_1 d_sub_dwft_2 : subtyping.

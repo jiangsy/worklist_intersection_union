@@ -279,6 +279,14 @@ Proof with auto.
   inverts* H.
 Qed.
 
+
+Lemma d_wf_env_strengthen_app : forall Ψ1 Ψ2,
+  ⊢ Ψ2 ++ Ψ1 -> ⊢ Ψ1.
+Proof with auto.
+  intros * H. induction Ψ2; auto. 
+    dependent destruction H; auto.
+Qed.
+
 #[local] Hint Resolve d_wf_typ_weaken_cons : core.
 
 Lemma d_wf_env_binds_d_wf_typ : forall Ψ x A,
@@ -409,7 +417,16 @@ Proof.
   intros. induction H; eauto.
 Qed.
 
-#[export] Hint Resolve d_mono_typ_lc : core.
+Lemma d_wf_exp_lc_exp : forall Ψ e,
+  d_wf_exp Ψ e -> lc_exp e
+with d_wf_body_lc_body : forall Ψ b,
+  d_wf_body Ψ b -> lc_body b.
+Proof with eauto using d_wf_typ_lc_typ.
+  - intros. clear d_wf_exp_lc_exp. dependent induction H...
+  - clear d_wf_body_lc_body. intros. dependent induction H...
+Qed.
+
+#[export] Hint Resolve d_wf_exp_lc_exp d_mono_typ_lc : core.
 
 Lemma d_mono_typ_neq_all : forall Ψ T,
   Ψ ⊢ₘ T -> neq_all T.
@@ -662,6 +679,86 @@ Proof.
   intros. forwards*: d_sub_dwft H.
 Qed.
 
+Lemma d_infabs_d_wf : forall Ψ A B C,
+  Ψ ⊢ A ▹ B → C ->
+  ⊢ Ψ /\ Ψ ⊢ A /\ Ψ ⊢ B /\ Ψ ⊢ C.
+Proof.
+  intros. induction H; intuition.
+Qed.
+
+Lemma d_infabs_d_wf_env : forall Ψ A B C,
+  Ψ ⊢ A ▹ B → C ->
+  ⊢ Ψ.
+Proof.
+  intros. forwards*: d_infabs_d_wf H.
+Qed.
+
+Lemma d_infabs_d_wf_typ1 : forall Ψ A B C,
+  Ψ ⊢ A ▹ B → C ->
+  Ψ ⊢ A.
+Proof.
+  intros. forwards*: d_infabs_d_wf H.
+Qed.
+
+Lemma d_infabs_d_wf_typ2 : forall Ψ A B C,
+  Ψ ⊢ A ▹ B → C ->
+  Ψ ⊢ B.
+Proof.
+  intros. forwards*: d_infabs_d_wf H.
+Qed.
+
+Lemma d_infabs_d_wf_typ3 : forall Ψ A B C,
+  Ψ ⊢ A ▹ B → C ->
+  Ψ ⊢ C.
+Proof.
+  intros. forwards*: d_infabs_d_wf H.
+Qed.
+
+
+Lemma d_inftapp_d_wf : forall Ψ A B C,
+  Ψ ⊢ A ○ B ⇒⇒ C ->
+  ⊢ Ψ /\ Ψ ⊢ A /\ Ψ ⊢ B /\ Ψ ⊢ C.
+Proof.
+  intros. induction H; intuition.
+  apply d_wf_typ_all_open; auto.
+Qed.
+
+Lemma d_inftapp_d_wf_env : forall Ψ A B C,
+  Ψ ⊢ A ○ B ⇒⇒ C ->
+  ⊢ Ψ.
+Proof.
+  intros. forwards*: d_inftapp_d_wf H.
+Qed.
+
+
+Lemma d_inftapp_d_wf_typ1 : forall Ψ A B C,
+  Ψ ⊢ A ○ B ⇒⇒ C ->
+  Ψ ⊢ A.
+Proof.
+  intros. forwards*: d_inftapp_d_wf H.
+Qed.
+
+
+Lemma d_inftapp_d_wf_typ2 : forall Ψ A B C,
+  Ψ ⊢ A ○ B ⇒⇒ C ->
+  Ψ ⊢ B.
+Proof.
+  intros. forwards*: d_inftapp_d_wf H.
+Qed.
+
+
+Lemma d_inftapp_d_wf_typ3 : forall Ψ A B C,
+  Ψ ⊢ A ○ B ⇒⇒ C ->
+  Ψ ⊢ C.
+Proof.
+  intros. forwards*: d_inftapp_d_wf H.
+Qed.
+
+
+(* Lemma d_wf_env_binds_d_wf_typ *)
+
+
+
 Lemma d_wf_typ_strengthen : forall Ψ1 Ψ2 X A b,
   ⊢ Ψ2 ++ X ~ b ++ Ψ1 ->
   Ψ2 ++ X ~ b ++ Ψ1 ⊢ A ->
@@ -703,20 +800,116 @@ Proof with eauto.
   - simpl in *. eauto.
 Qed.
 
+
+Lemma d_wf_typ_var_notin : forall Ψ x A B,
+  ⊢ Ψ ->
+  Ψ ⊢ A ->
+  x ~ B ∈ᵈ Ψ -> 
+  x `notin` ftvar_in_typ A.
+Proof with auto using d_wf_env_uniq. 
+  intros. induction H0; auto...
+  - unfold not. intros. simpl in *. apply singleton_iff in H2. subst. 
+    unify_binds. 
+  - unfold not. intros. simpl in *. apply singleton_iff in H2. subst. 
+    unify_binds. 
+  - pick fresh X0. inst_cofinites_with X0.
+    simpl. 
+    rewrite <- ftvar_in_typ_open_typ_wrt_typ_lower in H3.
+    auto.
+Qed.
+
+Lemma d_wf_typ_strengthen_var : forall Ψ1 Ψ2 x A B,
+  ⊢ Ψ2 ++ x ~ (dbind_typ B) ++ Ψ1 ->
+  Ψ2 ++ x ~ (dbind_typ B) ++ Ψ1 ⊢ A ->
+  Ψ2 ++ Ψ1 ⊢ A.
+Proof with eauto.
+  intros.
+  eapply d_wf_typ_strengthen...
+  eapply d_wf_typ_var_notin...
+Qed.
+
+Corollary d_wf_typ_strengthen_var_cons : forall Ψ x A B,
+  ⊢ x ~ (dbind_typ B) ++ Ψ ->
+  (x, dbind_typ B) :: Ψ ⊢ A ->
+  Ψ ⊢ A.
+Proof.
+  intros. rewrite_env (nil ++ Ψ).
+  eapply d_wf_typ_strengthen_var; eauto.
+Qed.
+
+
+Lemma d_chk_inf_wf : forall Ψ e A mode,
+  d_chk_inf Ψ e mode A ->
+  ⊢ Ψ /\ Ψ ⊢ A /\ d_wf_exp Ψ e.
+Proof with eauto.
+  intros. induction H; try solve intuition.
+  - intuition...
+    apply d_wf_env_binds_d_wf_typ in H0...
+  - intuition.
+  - intuition.
+  - intuition...
+    eapply d_infabs_d_wf_typ3...
+  - repeat split.
+    + inst_cofinites_by L. intuition. dependent destruction H2...
+    + apply d_mono_typ_d_wf_typ... 
+    + inst_cofinites_for d_wf_exp__abs T:=A.
+      * inst_cofinites_by L. intuition. dependent destruction H2...
+      * intros. inst_cofinites_with x. intuition. 
+  - repeat split.
+    + inst_cofinites_by L. intuition. dependent destruction H2... 
+    + auto. 
+    + dependent destruction H. inst_cofinites_for d_wf_exp__tabs.
+      * intros. inst_cofinites_with X. rewrite open_body_wrt_typ_anno...
+        constructor... intuition... 
+      * intros. inst_cofinites_with X. rewrite open_body_wrt_typ_anno...
+        constructor... intuition.
+  - intuition. eapply d_inftapp_d_wf_typ3...
+  - repeat split. 
+    + inst_cofinites_by L. intuition. dependent destruction H1...
+    + inst_cofinites_by L. intuition. 
+    + inst_cofinites_for d_wf_exp__abs T:=typ_bot...  
+      intros. inst_cofinites_with x. intuition.
+  - repeat split.
+    + inst_cofinites_by L. intuition. dependent destruction H2...
+    + inst_cofinites_by L. intuition. dependent destruction H2...
+      constructor...
+      eapply d_wf_typ_strengthen_var_cons...
+    + inst_cofinites_for d_wf_exp__abs T:=A1... intros. 
+      inst_cofinites_with x. intuition.
+  - intuition. eapply d_sub_dwft_2...
+  - intuition.
+  - intuition.
+  - intuition.
+Qed.
+
+Lemma d_chk_inf_wf_env : forall Ψ e A mode,
+  d_chk_inf Ψ e mode A ->
+  ⊢ Ψ.
+Proof.
+  intros. forwards*: d_chk_inf_wf H.
+Qed.
+
+Lemma d_chk_inf_wf_typ : forall Ψ e A mode,
+  d_chk_inf Ψ e mode A ->
+  Ψ ⊢ A.
+Proof.
+  intros. forwards*: d_chk_inf_wf H.
+Qed.
+
 (* Properties of d_wf_env *)
-Lemma d_wf_env_subst_tvar_typ : forall Ψ1 X Ψ2 T,
+Lemma d_wf_env_subst_tvar_typ : forall Ψ1 X Ψ2 A,
   ⊢ Ψ2 ++ X ~ dbind_tvar_empty ++ Ψ1 ->
-  Ψ1 ⊢ T ->
-  ⊢ (map (subst_tvar_in_dbind T X) Ψ2 ++ Ψ1).
+  Ψ1 ⊢ A ->
+  ⊢ (map (subst_tvar_in_dbind A X) Ψ2 ++ Ψ1).
 Proof with eauto using d_wf_typ_subst.
-  intros * HE HT.
+  intros * HE HA.
   induction Ψ2; intros; simpl.
   - inverts~ HE.
   - destruct a. rewrite_env ((a, d) :: (Ψ2 ++ X ~ dbind_tvar_empty ++ Ψ1)) in HE.
     forwards HE': d_wf_env_strengthen_cons HE.
     forwards~ IH: IHΨ2.
-    rewrite_env ([(a, subst_tvar_in_dbind T X d)]
-                   ++ (map (subst_tvar_in_dbind T X) Ψ2 ++ Ψ1)).
+    rewrite_env ([(a, subst_tvar_in_dbind A X d)]
+                   ++ (map (subst_tvar_in_dbind A X) Ψ2 ++ Ψ1)).
     forwards: d_wf_env_uniq HE.
     inverts H. destruct d...
     + econstructor...
@@ -725,10 +918,10 @@ Proof with eauto using d_wf_typ_subst.
 Qed.
 
 (* This lemma cannot be used for svar subst because Ψ1 ⊢ SY does not hold when SY is not in Ψ1 *)
-Lemma d_wf_env_subst_stvar_typ : forall Ψ1 X Ψ2 T,
+Lemma d_wf_env_subst_stvar_typ : forall Ψ1 X Ψ2 A,
   ⊢ Ψ2 ++ X ~ dbind_stvar_empty ++ Ψ1 ->
-  Ψ1 ⊢ T ->
-  ⊢ (map (subst_tvar_in_dbind T X) Ψ2 ++ Ψ1).
+  Ψ1 ⊢ A ->
+  ⊢ (map (subst_tvar_in_dbind A X) Ψ2 ++ Ψ1).
 Proof with eauto using d_wf_typ_subst.
   intros * HE HT.
   induction Ψ2; intros; simpl.
@@ -736,8 +929,8 @@ Proof with eauto using d_wf_typ_subst.
   - destruct a. rewrite_env ((a, d) :: (Ψ2 ++ X ~ dbind_stvar_empty ++ Ψ1)) in HE.
     forwards HE': d_wf_env_strengthen_cons HE.
     forwards~ IH: IHΨ2.
-    rewrite_env ([(a, subst_tvar_in_dbind T X d)]
-                   ++ (map (subst_tvar_in_dbind T X) Ψ2 ++ Ψ1)).
+    rewrite_env ([(a, subst_tvar_in_dbind A X d)]
+                   ++ (map (subst_tvar_in_dbind A X) Ψ2 ++ Ψ1)).
     forwards: d_wf_env_uniq HE.
     inverts H. destruct d...
     + econstructor...
@@ -1120,7 +1313,7 @@ Proof.
   eapply d_wf_exp_var_binds_another; eauto.
 Qed.
 
-Lemma d_wf_typ_strengthen_var : forall Ψ1 x Ψ2 A B,
+(* Lemma d_wf_typ_strengthen_var : forall Ψ1 x Ψ2 A B,
   (Ψ2 ++ x ~ dbind_typ B ++ Ψ1) ⊢ A ->
   (Ψ2 ++ Ψ1) ⊢ A.
 Proof with eauto.
@@ -1134,4 +1327,4 @@ Proof with eauto.
     now eauto.
     forwards: H1. rewrite_env ((Y ~ □ ++ Ψ2) ++ x ~ dbind_typ B ++ Ψ1)...
     rewrite_env ((Y ~ □ ++ Ψ2)++ Ψ1)...
-Qed.
+Qed. *)

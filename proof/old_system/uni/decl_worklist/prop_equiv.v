@@ -556,7 +556,7 @@ Proof with auto.
     intros. inst_cofinites_with X. dependent destruction H3.
     apply H1; auto.
   - destruct_d_wl_wf.
-    apply d_chk_inf_wft in H0.
+    apply d_chk_inf_wf_typ in H0.
     econstructor.
     apply IHd_chk_inf; auto...
     apply d_wl_red__applys with (w:=(work_inftapp A B c)); eauto.
@@ -582,7 +582,7 @@ Proof with auto.
     eapply d_wl_red__applys with (w:=(work_sub B A)); eauto.
     constructor; auto. simpl.
     apply d_wl_red_sub_complete; auto.
-    apply d_chk_inf_wft in H. auto.
+    apply d_chk_inf_wf_typ in H. auto.
   - destruct_d_wl_wf. eapply d_wl_red__chk_inter...
   - destruct_d_wl_wf. eauto...
   - destruct_d_wl_wf. eauto... 
@@ -597,7 +597,7 @@ Proof with auto.
   - destruct_d_wl_wf. refine (d_wl_red_chk_inf_complete _ _ _ _ H2 _ _); auto...
   - destruct_d_wl_wf.
     refine (d_wl_red_chk_inf_complete _ _ _ _ H2 _ _ _); auto...
-    apply d_chk_inf_wft in H2.
+    apply d_chk_inf_wf_typ in H2.
     apply IHd_wl_del_red. auto.
   - destruct_d_wl_wf. eapply d_wl_red_infabs_complete; eauto...
   - destruct_d_wl_wf. 

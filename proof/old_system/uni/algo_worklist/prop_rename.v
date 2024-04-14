@@ -51,7 +51,7 @@ Qed.
 #[local] Hint Rewrite dom_app dom_cons : core.
 
 
-Lemma ftvar_in_wf_typ_upper : forall Γ A,
+Lemma ftvar_in_a_wf_typ_upper : forall Γ A,
   a_wf_typ (awl_to_aenv Γ) A ->
   ftvar_in_typ A [<=] dom (awl_to_aenv Γ).
 Proof.
@@ -104,15 +104,15 @@ Proof.
       simpl in *.
       fsetdec.
     + simpl. rewrite IHa_wf_exp; eauto.
-      rewrite ftvar_in_wf_typ_upper; eauto.
+      rewrite ftvar_in_a_wf_typ_upper; eauto.
       fsetdec.
     + simpl. rewrite IHa_wf_exp; eauto.
-      rewrite ftvar_in_wf_typ_upper; eauto.
+      rewrite ftvar_in_a_wf_typ_upper; eauto.
       fsetdec.
   - intros. destruct b; simpl.
     + dependent destruction H.
       rewrite ftvar_in_wf_exp_upper; eauto.
-      rewrite ftvar_in_wf_typ_upper; eauto.
+      rewrite ftvar_in_a_wf_typ_upper; eauto.
       fsetdec.
 Qed.
 
@@ -126,7 +126,7 @@ with ftvar_in_wf_contd_upper : forall Γ cd,
 Proof.
   - intros. intros; dependent induction H;
     simpl in *;
-    try repeat erewrite ftvar_in_wf_typ_upper; eauto;
+    try repeat erewrite ftvar_in_a_wf_typ_upper; eauto;
     try erewrite ftvar_in_wf_exp_upper; eauto;
     try rewrite IHa_wf_conts; eauto; 
     try rewrite ftvar_in_wf_contd_upper; eauto;
@@ -135,7 +135,7 @@ Proof.
     simpl in *;
     try solve [
     try destruct_wf_arrow;
-    try repeat erewrite ftvar_in_wf_typ_upper; eauto;
+    try repeat erewrite ftvar_in_a_wf_typ_upper; eauto;
     try erewrite ftvar_in_wf_exp_upper; eauto;
     try rewrite ftvar_in_wf_conts_upper; eauto;
     try rewrite IHa_wf_contd; eauto; 
@@ -150,7 +150,7 @@ Proof.
     simpl in *;
     try solve [
     try repeat destruct_wf_arrow;
-    try repeat erewrite ftvar_in_wf_typ_upper; eauto;
+    try repeat erewrite ftvar_in_a_wf_typ_upper; eauto;
     try erewrite ftvar_in_wf_exp_upper; eauto;
     try rewrite ftvar_in_wf_conts_upper; eauto; 
     try rewrite ftvar_in_wf_contd_upper; eauto; try fsetdec].
@@ -161,7 +161,7 @@ Lemma ftvar_in_aworklist_upper : forall Γ ,
   ftvar_in_aworklist' Γ [<=] dom (awl_to_aenv Γ).
 Proof.
   intros; induction H; auto; try solve [simpl; fsetdec].
-  - simpl. rewrite ftvar_in_wf_typ_upper; eauto. fsetdec.
+  - simpl. rewrite ftvar_in_a_wf_typ_upper; eauto. fsetdec.
   - simpl. rewrite ftvar_in_wf_work_upper; eauto. fsetdec.
 Qed.
 
