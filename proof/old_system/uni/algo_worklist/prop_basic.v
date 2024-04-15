@@ -844,6 +844,14 @@ Proof with eauto.
   intros. induction H; destruct_a_wf_wl...
 Qed.
 
+Lemma a_wf_wl_apply_contd : forall Γ w A B cd,
+  apply_contd cd A B w ->
+  a_wf_wl (work_applyd cd A B ⫤ᵃ Γ) ->
+  a_wf_wl (w ⫤ᵃ Γ).
+Proof with eauto.
+  intros. induction H; destruct_a_wf_wl...
+Qed.
+
 
 Lemma a_wf_wl_wf_bind_typ : forall Γ x A,
   ⊢ᵃʷ Γ ->
