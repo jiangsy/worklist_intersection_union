@@ -19,82 +19,33 @@ Qed.
 Lemma d_wf_s_typ_tvar_stvar : forall Ψ1 Ψ2 X A,
   Ψ2 ++ X ~ □ ++ Ψ1 ⊢ₛ A  ->
   Ψ2 ++ X ~ ■ ++ Ψ1 ⊢ₛ A.
-Proof.
-  intros Ψ1 Ψ2 X A H.
-  dependent induction H; try solve [simpl; auto].
-  - simpl. unfold eq_dec. destruct (EqDec_eq_of_X X0 X).
+Proof with eauto.
+  intros Ψ1 Ψ2 X A H...
+  dependent induction H...
+  - destruct (X0 == X). 
     + subst. eapply d_wf_typ_s__stvar. auto.
-    + econstructor.
-      induction Ψ2.
-      * simpl in *. inversion H.
-        -- inversion H0. subst. contradiction.
-        -- auto.
-      * destruct a. inversion H.
-        -- inversion H0. subst. simpl. auto.
-        -- simpl. auto.
-  - simpl. eapply d_wf_typ_s__stvar. auto.
-    induction Ψ2.
-    * simpl in *. inversion H.
-      -- inversion H0.
-      -- auto.
-    * destruct a. inversion H.
-      -- inversion H0. subst. simpl. auto.
-      -- simpl. auto.
-  - simpl. constructor.
-    + apply IHd_wf_typ_s1; auto.
-    + apply IHd_wf_typ_s2; auto.
-  - simpl. eapply d_wf_typ_s__all with (L:=L);
-    intros X1 Hf; inst_cofinites_with X1.
-    + auto.
-    + rewrite_env ((X1 ~ ■ ++ Ψ2) ++ (X, ■) :: Ψ1).
+    + apply binds_remove_mid in H...
+  - apply binds_remove_mid_diff_bind in H...
+    solve_false.
+  - inst_cofinites_for d_wf_typ_s__all; intros; inst_cofinites_with X0...
+    + rewrite_env ((X0 ~ ■ ++ Ψ2) ++ (X, ■) :: Ψ1)...
       apply H1; eauto.
-  - simpl. constructor.
-    + apply IHd_wf_typ_s1; auto.
-    + apply IHd_wf_typ_s2; auto.
-  - simpl. constructor.
-    + apply IHd_wf_typ_s1; auto.
-    + apply IHd_wf_typ_s2; auto.
 Qed.
-
 
 Lemma d_wf_typ_stvar_tvar : forall Ψ1 Ψ2 X A,
   Ψ2 ++ (X ~ ■) ++ Ψ1 ⊢ A ->
   Ψ2 ++ (X ~ □) ++ Ψ1 ⊢ A.
-Proof.
-  intros Ψ1 Ψ2 X A H.
-  dependent induction H; try solve [simpl; auto].
-  - simpl. constructor.
-    induction Ψ2.
-    * simpl in *. inversion H.
-      -- inversion H0.
-      -- auto.
-    * destruct a. inversion H.
-      -- inversion H0. subst. simpl. auto.
-      -- simpl. auto.
-  - simpl. unfold eq_dec. destruct (EqDec_eq_of_X X0 X).
-    + econstructor; auto.
-    + apply d_wf_typ__stvar.
-      induction Ψ2.
-      * simpl in *. inversion H.
-        -- inversion H0. subst. contradiction.
-        -- auto.
-      * destruct a. inversion H.
-        -- inversion H0. subst. simpl. auto.
-        -- simpl. auto.
-  - simpl. constructor.
-    + apply IHd_wf_typ1; auto.
-    + apply IHd_wf_typ2; auto.
-  - simpl. eapply d_wf_typ__all with (L:=L);
-    intros; inst_cofinites_with X.
-    + auto.
+Proof with eauto.
+  intros Ψ1 Ψ2 X A H...
+  dependent induction H...
+  - apply binds_remove_mid_diff_bind in H...
+    solve_false.
+  - destruct (X0 == X). 
+    + subst. eapply d_wf_typ__tvar...
+    + apply binds_remove_mid in H...
+  - inst_cofinites_for d_wf_typ__all; intros; inst_cofinites_with X0...
     + rewrite_env ((X0 ~ □ ++ Ψ2) ++ (X, □) :: Ψ1).
       apply H1; eauto.
-  - simpl. constructor.
-    + apply IHd_wf_typ1; auto.
-    + apply IHd_wf_typ2; auto.
-  - simpl. constructor.
-    + apply IHd_wf_typ1; auto.
-    + apply IHd_wf_typ2; auto.
 Qed.
 
 Corollary d_wf_s_typ_tvar_stvar_cons : forall Ψ X A,
@@ -176,7 +127,7 @@ Lemma d_wf_typ_open_inv : forall Ψ A B X,
   X ~ □ ∈ᵈ Ψ ->
   Ψ ⊢ A.
 Proof.
-  intros. dependent induction H0; auto.
+  intros. dependent induction H0; auto...
   - destruct A; simpl in *; try solve [inversion x].
     + econstructor.
     + destruct (X0 == X).

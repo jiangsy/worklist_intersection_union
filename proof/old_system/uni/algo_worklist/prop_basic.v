@@ -173,16 +173,14 @@ with a_wf_body_var_binds_another : forall Σ1 x Σ2 e A1 A2,
   a_wf_body (Σ2 ++ x ~ abind_var_typ A1 ++ Σ1) e ->
   a_wf_typ Σ1 A2 ->
   a_wf_body (Σ2 ++ x ~ abind_var_typ A2 ++ Σ1) e.
-Proof.
+Proof with eauto.
   - introv HE HT. clear a_wf_exp_var_binds_another.
     induction HE.
     gen Σ1 A1 A2.
-    induction Σ2; intros; cbn in *.
+    induction Σ2; intros; cbn in *...
+    + econstructor. admit.
     + admit.
-    + admit.
-    + admit.
-    + admit.
-    + admit.
+    + constructor; eauto. 
     + admit.
     + admit.
     + admit.
@@ -236,22 +234,62 @@ Ltac destruct_in :=
   end.
 
 
-Corollary a_wf_typ_tvar_stvar_cons : forall Σ X A,
-  X ~ □ ++ Σ ᵗ⊢ᵃ A ->
-  X ~ ■ ++ Σ ᵗ⊢ᵃ A.
+Corollary a_wf_typ_tvar_stvar : forall Σ1 Σ2 X A,
+  Σ2 ++ (X , □) :: Σ1 ᵗ⊢ᵃ A ->
+  Σ2 ++ (X , ■) :: Σ1 ᵗ⊢ᵃ A.
 Proof.
-Admitted.
+  intros. dependent induction H; eauto.
+  - destruct (X0 == X).
+    + subst. apply a_wf_typ__stvar; eauto.
+    + apply binds_remove_mid in H; auto. constructor. apply binds_weaken_mid; auto.
+  - apply binds_remove_mid_diff_bind in H.
+    apply a_wf_typ__stvar... apply binds_weaken_mid; auto. solve_false.
+  - apply binds_remove_mid_diff_bind in H.
+    apply a_wf_typ__etvar... apply binds_weaken_mid; auto. solve_false. 
+  - inst_cofinites_for a_wf_typ__all; intros; inst_cofinites_with X0; auto.
+    rewrite_env ((X0 ~ □ ++ Σ2) ++ (X, ■) :: Σ1); eauto.
+Qed.
+
+
+Corollary a_wf_typ_tvar_stvar_cons : forall Σ X A,
+  (X , □) :: Σ ᵗ⊢ᵃ A ->
+  (X , ■) :: Σ ᵗ⊢ᵃ A.
+Proof.
+  intros. rewrite_env (nil ++ (X , ■) :: Σ).
+  apply a_wf_typ_tvar_stvar; auto.
+Qed.
+
+
+Corollary a_wf_typ_tvar_etvar : forall Σ1 Σ2 X A,
+  Σ2 ++ (X , □) :: Σ1 ᵗ⊢ᵃ A ->
+  Σ2 ++ (X , ⬒) :: Σ1 ᵗ⊢ᵃ A.
+Proof.
+  intros. dependent induction H; eauto.
+  - destruct (X0 == X).
+    + subst. apply a_wf_typ__etvar; eauto.
+    + apply binds_remove_mid in H; auto. constructor. apply binds_weaken_mid; auto.
+  - apply binds_remove_mid_diff_bind in H.
+    apply a_wf_typ__stvar... apply binds_weaken_mid; auto. solve_false.
+  - apply binds_remove_mid_diff_bind in H.
+    apply a_wf_typ__etvar... apply binds_weaken_mid; auto. solve_false. 
+  - inst_cofinites_for a_wf_typ__all; intros; inst_cofinites_with X0; auto.
+    rewrite_env ((X0 ~ □ ++ Σ2) ++ (X, ⬒) :: Σ1); eauto.
+Qed.
 
 
 Corollary a_wf_typ_tvar_etvar_cons : forall Σ X A,
   X ~ □ ++ Σ ᵗ⊢ᵃ A ->
   X ~ ⬒ ++ Σ ᵗ⊢ᵃ A.
 Proof.
-Admitted.
+  intros. rewrite_env (nil ++ (X , ⬒) :: Σ).
+  apply a_wf_typ_tvar_etvar; auto.
+Qed.
+
 
 Lemma a_wf_typ_rename_tvar : forall Σ1 Σ2 X Y A,
   Σ2 ++ X ~ □ ++ Σ1 ᵗ⊢ᵃ A  ->
   map (subst_tvar_in_abind (typ_var_f Y) X ) Σ2 ++ Y ~ □ ++ Σ1 ᵗ⊢ᵃ { typ_var_f Y /ᵗ X } A.
+
 Admitted.
 
 Corollary a_wf_typ_rename_tvar_cons : forall Σ X Y A,

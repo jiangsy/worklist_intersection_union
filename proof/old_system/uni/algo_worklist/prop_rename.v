@@ -635,7 +635,7 @@ Proof with auto.
 Qed.
 
 
-Lemma a_wf_wl_rename_tvar_in_awl : forall Γ X X',
+Lemma a_wf_wl_rename_tvar : forall Γ X X',
   ⊢ᵃʷ Γ ->
   X' `notin` dom (awl_to_aenv Γ) ->
   ⊢ᵃʷ (rename_tvar_in_aworklist X' X Γ).
