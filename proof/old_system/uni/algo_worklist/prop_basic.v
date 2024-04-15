@@ -79,6 +79,14 @@ Proof.
       forwards*: H1 X0  Σ1 (X0 ~ abind_tvar_empty ++ Σ3); auto.
 Qed.
 
+Lemma a_wf_typ_weaken_app: forall Σ1 Σ2 A,
+  a_wf_typ Σ1 A ->
+  a_wf_typ (Σ2 ++ Σ1) A.
+Proof.
+  intros. rewrite_env (nil ++ Σ2 ++ Σ1).
+  apply a_wf_typ_weaken; auto.
+Qed.
+
 Corollary a_wf_typ_weaken_cons: forall Σ X t A,
   a_wf_typ Σ A ->
   a_wf_typ ((X, t) :: Σ) A.
@@ -380,7 +388,26 @@ Lemma a_wf_typ_rename_tvar : forall Σ1 Σ2 X Y A,
   Σ2 ++ X ~ □ ++ Σ1 ᵗ⊢ᵃ A  ->
   map (subst_tvar_in_abind (typ_var_f Y) X ) Σ2 ++ Y ~ □ ++ Σ1 ᵗ⊢ᵃ { typ_var_f Y ᵗ/ₜ X } A.
 Proof.
-Admitted.
+  intros. dependent induction H; simpl in *; destruct_eq_atom; auto.
+  - constructor.
+    + forwards* [?|?]: binds_app_1 H.
+      * forwards: binds_map_2 (subst_tvar_in_abind ` Y X) H0; eauto.
+      * apply binds_cons_iff in H0. iauto.
+  - apply a_wf_typ__stvar. 
+    forwards* [?|?]: binds_app_1 H.
+    forwards: binds_map_2 (subst_tvar_in_abind ` Y X) H0; eauto.
+    apply binds_cons_iff in H0. iauto.
+  - apply a_wf_typ__etvar. 
+    forwards* [?|?]: binds_app_1 H.
+    forwards: binds_map_2 (subst_tvar_in_abind ` Y X) H0; eauto.
+    apply binds_cons_iff in H0. iauto.  
+  - inst_cofinites_for a_wf_typ__all; intros; inst_cofinites_with X0; auto.
+    + rewrite subst_tvar_in_typ_open_typ_wrt_typ_fresh2; auto.
+      apply s_in_subst_inv; auto.
+    + rewrite subst_tvar_in_typ_open_typ_wrt_typ_fresh2; auto.
+      rewrite_env (map (subst_tvar_in_abind ` Y X) (X0 ~ □ ++ Σ2) ++ (Y, □) :: Σ1).
+      apply H1; eauto.
+Qed.
 
 Corollary a_wf_typ_rename_tvar_cons : forall Σ X Y A,
   X ~ □ ++ Σ ᵗ⊢ᵃ A  ->
@@ -392,13 +419,55 @@ Proof.
 Qed.
 
 
+Lemma a_wf_typ_subst : forall Σ1 X Σ2 A B,
+  a_wf_env (Σ2 ++ X ~ □ ++ Σ1) ->
+  Σ2 ++ X ~ □ ++ Σ1 ᵗ⊢ᵃ A ->
+  Σ1 ᵗ⊢ᵃ B ->
+  map (subst_tvar_in_abind B X) Σ2 ++ Σ1 ᵗ⊢ᵃ {B ᵗ/ₜ X} A.
+Proof with simpl in *; try solve_by_invert; eauto using uniq_app_1, uniq_app_2.
+  intros * Hwfenv Hwft1 Hwft2.
+  inductions Hwft1; intros; forwards: a_wf_env_uniq Hwfenv; try solve [simpl; auto]...
+  - destruct (X0 == X).
+    + subst. simpl. apply a_wf_typ_weaken_app...
+      (* solve_uniq. *)
+    + forwards* [?|?]: binds_app_1 H.
+      * forwards: binds_map_2 (subst_tvar_in_abind B X) H1...
+      * apply binds_cons_iff in H1. iauto.
+  - destruct (X0 == X).
+    + subst. simpl. apply a_wf_typ_weaken_app...
+    + eapply a_wf_typ__stvar.
+      forwards* [?|?]: binds_app_1 H. forwards*: binds_map_2 (subst_tvar_in_abind B X) H1.
+      forwards* [(?&?&?)|?]: binds_cons_uniq_1 H1...
+  - destruct (X0 == X).
+      + subst. simpl. apply a_wf_typ_weaken_app...
+      + eapply a_wf_typ__etvar.
+        forwards* [?|?]: binds_app_1 H. forwards*: binds_map_2 (subst_tvar_in_abind B X) H1.
+        forwards* [(?&?&?)|?]: binds_cons_uniq_1 H1...
+  - simpl. inst_cofinites_for a_wf_typ__all; intros; inst_cofinites_with X0.
+    + rewrite subst_tvar_in_typ_open_typ_wrt_typ_var...
+      applys* s_in_subst_inv...
+    + rewrite subst_tvar_in_typ_open_typ_wrt_typ_var...
+      replace ((X0, abind_tvar_empty) :: map (subst_tvar_in_abind B X) Σ2 ++ Σ1)
+      with (map (subst_tvar_in_abind B X) ((X0, abind_tvar_empty) :: Σ2) ++ Σ1) by auto.
+      apply H1; auto...
+      econstructor...
+Qed.
+
+
+
 Lemma a_wf_typ_all_open : forall Σ A B,
   a_wf_env Σ ->
   Σ ᵗ⊢ᵃ typ_all A ->
   Σ ᵗ⊢ᵃ B ->
   Σ ᵗ⊢ᵃ A ^^ₜ B.
 Proof.
-Admitted.
+  intros. dependent destruction H0.
+  pick fresh X. inst_cofinites_with X.
+  rewrite subst_tvar_in_typ_intro with (X1:=X) (A2:=B); auto.
+  rewrite_env (map (subst_tvar_in_abind B X) nil ++ Σ).
+  apply a_wf_typ_subst; auto.
+  econstructor; auto.
+Qed.
 
 
 #[export] Hint Resolve a_mono_typ_wf a_wf_wl_a_wf_env a_wf_env_uniq : core.
