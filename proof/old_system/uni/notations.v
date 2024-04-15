@@ -62,6 +62,7 @@ Notation "{ e' ᵉ/ₑ x } e" :=
   (subst_var_in_exp e' x e)
     ( at level 49, e' at level 50, x at level 0
     , right associativity) : type_scope.
+
 Notation "{ b' ᵇ/ₑ x } b" :=
   (subst_var_in_body b' x b)
     ( at level 49, b' at level 50, x at level 0
@@ -80,6 +81,11 @@ Notation "{ A ᶜᵈ/ₜ X } cd" :=
 
 Notation "{ A ʷ/ₜ X } w" :=
   (subst_tvar_in_work A X w)
+    ( at level 49, A at level 50, X at level 0
+    , right associativity) : type_scope. 
+
+Notation "{ A ᵃʷ/ₜ X } Γ" :=
+  (subst_tvar_in_aworklist A X Γ)
     ( at level 49, A at level 50, X at level 0
     , right associativity) : type_scope. 
 

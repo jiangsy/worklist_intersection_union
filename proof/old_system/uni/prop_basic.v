@@ -46,7 +46,7 @@ Proof.
 Qed.
 
 
-Lemma subst_tvar_in_exp_open_exp_exp_typ_fresh2: forall X e1 e2 A,
+Lemma subst_tvar_in_exp_open_exp_wrt_typ_fresh2: forall X e1 e2 A,
   lc_typ A ->
   X `notin` ftvar_in_exp e2 ->
   (subst_tvar_in_exp A X e1) ᵉ^ₑ e2 = subst_tvar_in_exp A X (e1 ᵉ^ₑ e2).
@@ -338,7 +338,7 @@ with lc_body_subst_tvar_in_body : forall b A X,
 Proof with eauto using lc_typ_subst.
   - intros. clear lc_exp_subst_tvar_in_exp. induction H; simpl...
     + pick fresh x0. apply lc_exp_abs_exists with (x1:=x0). 
-      rewrite subst_tvar_in_exp_open_exp_exp_typ_fresh2...
+      rewrite subst_tvar_in_exp_open_exp_wrt_typ_fresh2...
     + pick fresh X0. apply lc_exp_tabs_exists with (X1:=X0).
       rewrite subst_tvar_in_body_open_body_wrt_typ_fresh2...
   - intros. clear lc_body_subst_tvar_in_body. destruct b. 
