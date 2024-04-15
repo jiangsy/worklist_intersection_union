@@ -1433,14 +1433,14 @@ Proof.
       { intros A1 X L Heq HneqAll HneqInter HneqUnion Hnin. subst. dependent destruction H1.
         assert (HspA: split_size (aworklist_constvar Γ X abind_etvar_empty) ( open_typ_wrt_typ A1 (typ_var_f X) ) n0) by admit.
         assert (HspA0: split_size (aworklist_constvar Γ X abind_etvar_empty) A0 m0) by admit.
-        assert (Heq: iu_size (typ_all A1) = iu_size (A1 ^ᵗ X)) by admit. (* safe *)
-        eapply IHnw with (m := (3 * n0 + all_size (A1 ^ᵗ X)) * (1 + iu_size A0) +
-                                (3 * m0 + all_size A0) * (1 + iu_size (A1 ^ᵗ X)) + S n); eauto; try lia.
+        assert (Heq: iu_size (typ_all A1) = iu_size (A1 ^ₜ X)) by admit. (* safe *)
+        eapply IHnw with (m := (3 * n0 + all_size (A1 ^ₜ X)) * (1 + iu_size A0) +
+                                (3 * m0 + all_size A0) * (1 + iu_size (A1 ^ₜ X)) + S n); eauto; try lia.
         admit. (* safe: wf *)
         eapply measp_wl_conswork; eauto.
-        assert (Heq': all_size (typ_all A1) = all_size (A1 ^ᵗ X) + 1) by admit. (* safe *)
+        assert (Heq': all_size (typ_all A1) = all_size (A1 ^ₜ X) + 1) by admit. (* safe *)
         rewrite Heq in Hlt. rewrite Heq' in Hlt. lia.
-        assert (Heq': weight (A1 ^ᵗ X) = weight A1) by admit. (* safe *)
+        assert (Heq': weight (A1 ^ₜ X) = weight A1) by admit. (* safe *)
         assert (Hgt: weight A0 >= 1) by apply weight_gt_0.
         simpl in *. rewrite <- Heq. rewrite Heq'. lia. }
       assert (JgInst1: forall (E:list typvar) (Γ1 Γ2:aworklist) (X:typvar),
@@ -1760,15 +1760,15 @@ Proof.
               ** simpl. rewrite ftvar_in_typ_open_typ_wrt_typ_upper. auto.
         -- dependent destruction H3. dependent destruction H5.
            pick fresh X. inst_cofinites_with X.
-           assert (Heq: all_size A = all_size (A ^ᵗ X)) by admit. (* safe *)
-           assert (Heq0: all_size A0 = all_size (A0 ^ᵗ X)) by admit. (* safe *)
-           assert (Heq': iu_size A = iu_size (A ^ᵗ X)) by admit. (* safe *)
-           assert (Heq0': iu_size A0 = iu_size (A0 ^ᵗ X)) by admit. (* safe *)
-           assert (Heq'': weight A = weight (A ^ᵗ X)) by admit. (* safe *)
-           assert (Heq0'': weight A0 = weight (A0 ^ᵗ X)) by admit. (* safe *)
+           assert (Heq: all_size A = all_size (A ^ₜ X)) by admit. (* safe *)
+           assert (Heq0: all_size A0 = all_size (A0 ^ₜ X)) by admit. (* safe *)
+           assert (Heq': iu_size A = iu_size (A ^ₜ X)) by admit. (* safe *)
+           assert (Heq0': iu_size A0 = iu_size (A0 ^ₜ X)) by admit. (* safe *)
+           assert (Heq'': weight A = weight (A ^ₜ X)) by admit. (* safe *)
+           assert (Heq0'': weight A0 = weight (A0 ^ₜ X)) by admit. (* safe *)
            assert (JgAll: a_wl_red (aworklist_conswork (aworklist_constvar Γ X abind_stvar_empty) (work_sub  ( open_typ_wrt_typ A (typ_var_f X) )   ( open_typ_wrt_typ A0 (typ_var_f X) ) )) \/
                         ~ a_wl_red (aworklist_conswork (aworklist_constvar Γ X abind_stvar_empty) (work_sub  ( open_typ_wrt_typ A (typ_var_f X) )   ( open_typ_wrt_typ A0 (typ_var_f X) ) ))).
-           { eapply IHnw with (m := (3 * n1 + all_size (A ^ᵗ X)) * iu_size (A0 ^ᵗ X) + (3 * n3 + all_size (A0 ^ᵗ X)) * iu_size (A ^ᵗ X) + n); eauto; simpl in *; try lia.
+           { eapply IHnw with (m := (3 * n1 + all_size (A ^ₜ X)) * iu_size (A0 ^ₜ X) + (3 * n3 + all_size (A0 ^ₜ X)) * iu_size (A ^ₜ X) + n); eauto; simpl in *; try lia.
              admit. (* safe: wf *)
              eapply measp_wl_conswork; eauto; try lia. 
              admit.

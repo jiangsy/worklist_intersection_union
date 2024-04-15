@@ -143,8 +143,8 @@ Lemma trans_typ_subst_tvar : forall θ1 θ2 Bᵃ Bᵈ X Aᵃ A'ᵈ,
   wf_ss (θ2 ++ θ1) ->
   X `notin` dom (θ2 ++ θ1) ->
   θ1 ᵗ⫦ Bᵃ ⇝ Bᵈ ->
-  θ2 ++ θ1 ᵗ⫦ {Bᵃ /ᵗ X} Aᵃ ⇝ A'ᵈ -> 
-  exists Aᵈ, {Bᵈ /ᵗ X} Aᵈ = A'ᵈ /\ θ2 ++ (X, dbind_tvar_empty) :: θ1 ᵗ⫦ Aᵃ ⇝ Aᵈ.
+  θ2 ++ θ1 ᵗ⫦ {Bᵃ ᵗ/ₜ X} Aᵃ ⇝ A'ᵈ -> 
+  exists Aᵈ, {Bᵈ ᵗ/ₜ X} Aᵈ = A'ᵈ /\ θ2 ++ (X, dbind_tvar_empty) :: θ1 ᵗ⫦ Aᵃ ⇝ Aᵈ.
 Proof with eauto.
   intros *  Hlc Hwfss Hfv Hwft Hinst. 
   generalize dependent θ2. generalize dependent X. generalize dependent A'ᵈ.
@@ -206,8 +206,8 @@ Lemma trans_typ_subst_tvar_cons : forall θ Bᵃ Bᵈ X Aᵃ A'ᵈ,
   lc_typ Aᵃ -> 
   X `notin` dom θ ->
   θ ᵗ⫦ Bᵃ ⇝ Bᵈ ->
-  θ ᵗ⫦ {Bᵃ /ᵗ X} Aᵃ ⇝ A'ᵈ -> 
-  exists Aᵈ, {Bᵈ /ᵗ X} Aᵈ = A'ᵈ /\ (X, dbind_tvar_empty) :: θ ᵗ⫦ Aᵃ ⇝ Aᵈ.
+  θ ᵗ⫦ {Bᵃ ᵗ/ₜ X} Aᵃ ⇝ A'ᵈ -> 
+  exists Aᵈ, {Bᵈ ᵗ/ₜ X} Aᵈ = A'ᵈ /\ (X, dbind_tvar_empty) :: θ ᵗ⫦ Aᵃ ⇝ Aᵈ.
 Proof with eauto.
   intros.
   rewrite_env (nil ++ θ) in H2.
@@ -221,7 +221,7 @@ Lemma trans_typ_subst_etvar : forall θ1 θ2 Tᵃ Tᵈ X Aᵃ Aᵈ,
   X `notin` dom (θ2 ++ θ1) ->
   d_mono_typ (ss_to_denv θ1) Tᵈ ->
   θ2 ++ θ1 ᵗ⫦ Tᵃ ⇝ Tᵈ ->
-  θ2 ++ θ1 ᵗ⫦ {Tᵃ /ᵗ X} Aᵃ ⇝ Aᵈ -> 
+  θ2 ++ θ1 ᵗ⫦ {Tᵃ ᵗ/ₜ X} Aᵃ ⇝ Aᵈ -> 
   θ2 ++ X ~ dbind_typ Tᵈ ++ θ1 ᵗ⫦ Aᵃ ⇝ Aᵈ.
 Proof.
   intros * Hlc Hwfss Hnotin Hmono Hinstt Hinsta.
@@ -283,7 +283,7 @@ Lemma trans_typ_subst_etvar_same_ss : forall θ Tᵃ Tᵈ X Aᵃ Aᵈ,
   binds X (dbind_typ Tᵈ) θ ->
   X `notin` ftvar_in_typ Tᵃ ->
   θ ᵗ⫦ Tᵃ ⇝ Tᵈ ->
-  θ ᵗ⫦ {Tᵃ /ᵗ X} Aᵃ ⇝ Aᵈ -> 
+  θ ᵗ⫦ {Tᵃ ᵗ/ₜ X} Aᵃ ⇝ Aᵈ -> 
   θ ᵗ⫦ Aᵃ ⇝ Aᵈ.
 Proof.
   intros.
@@ -436,7 +436,7 @@ Lemma trans_typ_etvar_tvar_subst : forall θ1 θ2 T X Aᵃ A'ᵈ,
   X `notin` dom (θ2 ++ θ1) ->
   d_mono_typ (ss_to_denv θ1) T ->
   θ2 ++ (X, dbind_typ T) :: θ1 ᵗ⫦ Aᵃ ⇝ A'ᵈ -> 
-  exists Aᵈ, {T /ᵗ X} Aᵈ = A'ᵈ /\ θ2 ++ (X, dbind_tvar_empty) :: θ1 ᵗ⫦ Aᵃ ⇝ Aᵈ.
+  exists Aᵈ, {T ᵗ/ₜ X} Aᵈ = A'ᵈ /\ θ2 ++ (X, dbind_tvar_empty) :: θ1 ᵗ⫦ Aᵃ ⇝ Aᵈ.
 Proof with eauto.
   intros * Hlc Hfv Hwft Hinst.
   generalize dependent θ2. generalize dependent X. generalize dependent A'ᵈ.
@@ -510,7 +510,7 @@ Lemma trans_typ_etvar_tvar_subst_cons : forall θ1 T X Aᵃ A'ᵈ,
   X `notin` dom θ1 ->
   d_mono_typ (ss_to_denv θ1) T ->
   (X, dbind_typ T) :: θ1 ᵗ⫦ Aᵃ ⇝ A'ᵈ -> 
-  exists Aᵈ, {T /ᵗ X} Aᵈ = A'ᵈ /\ (X, dbind_tvar_empty) :: θ1 ᵗ⫦ Aᵃ ⇝ Aᵈ.
+  exists Aᵈ, {T ᵗ/ₜ X} Aᵈ = A'ᵈ /\ (X, dbind_tvar_empty) :: θ1 ᵗ⫦ Aᵃ ⇝ Aᵈ.
 Proof with auto. 
   intros. 
   rewrite_env (nil ++ (X, □) :: θ1).  
@@ -1042,7 +1042,7 @@ Proof with eauto.
   (* forall x. A < B  *)
   - destruct_a_wf_wl. dependent destruction H. 
     pick fresh X. inst_cofinites_with X.  
-    assert (⊢ᵃʷ (work_sub (B1 ^ᵗ X) A1 ⫤ᵃ X ~ᵃ ⬒ ;ᵃ Γ)). {
+    assert (⊢ᵃʷ (work_sub (B1 ^ₜ X) A1 ⫤ᵃ X ~ᵃ ⬒ ;ᵃ Γ)). {
       repeat (constructor; simpl; auto).
       apply a_wf_typ_tvar_etvar_cons in H0...
       apply a_wf_typ_weaken_cons...
@@ -1074,7 +1074,7 @@ Proof with eauto.
   - destruct_a_wf_wl.
     dependent destruction H. dependent destruction H1.
     pick fresh X. inst_cofinites_with X.
-    assert ( ⊢ᵃʷ (work_sub (B1 ^ᵗ X) (A1 ^ᵗ X) ⫤ᵃ X ~ᵃ ■ ;ᵃ Γ) ). {
+    assert ( ⊢ᵃʷ (work_sub (B1 ^ₜ X) (A1 ^ₜ X) ⫤ᵃ X ~ᵃ ■ ;ᵃ Γ) ). {
       repeat (constructor; simpl; auto).
       apply a_wf_typ_tvar_stvar_cons...
       apply a_wf_typ_tvar_stvar_cons...    }
@@ -1356,7 +1356,7 @@ Proof with eauto.
   (* /\ a. e : A => _ *)
   - destruct_a_wf_wl. 
     pick fresh X. inst_cofinites_with X.
-    assert (Hwf: ⊢ᵃʷ (work_check (e ᵉ^ₜ ` X) (A ^ᵗ X) ⫤ᵃ X ~ᵃ □ ;ᵃ work_applys cs (typ_all A) ⫤ᵃ Γ)). {
+    assert (Hwf: ⊢ᵃʷ (work_check (e ᵉ^ₜ ` X) (A ^ₜ X) ⫤ᵃ X ~ᵃ □ ;ᵃ work_applys cs (typ_all A) ⫤ᵃ Γ)). {
       dependent destruction H0...
       dependent destruction H...
       repeat (constructor; simpl; auto). fold_open_wrt_rec.
@@ -1470,7 +1470,7 @@ Proof with eauto.
   - destruct_a_wf_wl. 
     dependent destruction H.
     pick fresh X. inst_cofinites_with X.
-    assert (⊢ᵃʷ (work_infabs (A ^ᵗ X) cd ⫤ᵃ X ~ᵃ ⬒ ;ᵃ Γ)). {
+    assert (⊢ᵃʷ (work_infabs (A ^ₜ X) cd ⫤ᵃ X ~ᵃ ⬒ ;ᵃ Γ)). {
       repeat (constructor; simpl; auto).
       apply a_wf_typ_tvar_etvar_cons...
       rewrite_env (nil ++ (X ~ ⬒) ++ ⌊ Γ ⌋ᵃ).
@@ -1562,7 +1562,7 @@ Proof with eauto.
     destruct_d_wl_del_red...
   (* ∀ a. A ∘ B =>=> _ *)
   - destruct_a_wf_wl. 
-    assert (⊢ᵃʷ (work_applys cs (A ^^ᵗ B) ⫤ᵃ Γ)). {
+    assert (⊢ᵃʷ (work_applys cs (A ^^ₜ B) ⫤ᵃ Γ)). {
       repeat (constructor; simpl; auto).
       apply a_wf_typ_all_open...
     }

@@ -53,7 +53,7 @@ Proof.
 Qed.
 
 Theorem trans_typ_open_dtyp_wrt_dtyp : forall T1 T2,
-  trans_typ (T1 ^^ᵗ T2) = open_ftyp_wrt_ftyp (trans_typ T1) (trans_typ T2).
+  trans_typ (T1 ^^ₜ T2) = open_ftyp_wrt_ftyp (trans_typ T1) (trans_typ T2).
 Proof.
   unfold open_dtyp_wrt_dtyp. unfold open_ftyp_wrt_ftyp.
   intros. apply trans_typ_open_dtyp_wrt_dtyp_rec.
@@ -385,7 +385,7 @@ Proof with eauto with safety.
     repeat rewrite open_fexp_wrt_ftyp_rec_lc_fexp;
     try rewrite open_fexp_wrt_ftyp_rec_lc_fexp; auto.
     replace (ftyp_var_f X) with (trans_typ (dtyp_svar X)); auto.
-    apply typing_app with (T1:=trans_typ (S1 ^^ᵗ dtyp_svar X)).
+    apply typing_app with (T1:=trans_typ (S1 ^^ₜ dtyp_svar X)).
     + rewrite <- trans_typ_open_dtyp_wrt_dtyp with (T1:=T1) (T2:=dtyp_svar X).
     admit. (* weaken *)
     + rewrite trans_typ_open_dtyp_wrt_dtyp.
@@ -398,7 +398,7 @@ Proof with eauto with safety.
     { apply sub_elab_lc_fexp in H5. auto. }
     repeat rewrite open_fexp_wrt_fexp_rec_lc_fexp;
     try rewrite open_fexp_wrt_fexp_rec_lc_fexp; auto.
-    apply typing_app with (T1:=trans_typ (S1 ^^ᵗ T2)).
+    apply typing_app with (T1:=trans_typ (S1 ^^ₜ T2)).
     + admit. (* weaken *)
     + rewrite trans_typ_open_dtyp_wrt_dtyp.
     apply typing_tapp; eauto with safety.

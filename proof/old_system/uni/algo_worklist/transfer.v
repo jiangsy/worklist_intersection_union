@@ -1155,7 +1155,7 @@ Proof with eauto.
   - eapply wf_ss_binds_wf_typ...
   - inst_cofinites_for d_wf_typ__all; intros; inst_cofinites_with X...
     simpl in *.
-    eapply trans_typ_dtvar_atyp_s_in_dtyp with (b:=□) (Aᵃ:=A1ᵃ ^ᵗ X); eauto.
+    eapply trans_typ_dtvar_atyp_s_in_dtyp with (b:=□) (Aᵃ:=A1ᵃ ^ₜ X); eauto.
 Qed.
 
 
@@ -1272,7 +1272,7 @@ Qed.
 Lemma trans_typ_rename_tvar : forall θ1 θ2 Aᵃ Aᵈ X X', 
   θ2 ++ (X, dbind_tvar_empty) :: θ1 ᵗ⫦ Aᵃ ⇝ Aᵈ ->
   X' `notin` dom (θ2 ++ θ1) ->
-  map (subst_tvar_in_dbind (` X') X) θ2  ++ (X', dbind_tvar_empty) :: θ1 ᵗ⫦ {` X' /ᵗ X} Aᵃ ⇝ {` X' /ᵗ X} Aᵈ.
+  map (subst_tvar_in_dbind (` X') X) θ2  ++ (X', dbind_tvar_empty) :: θ1 ᵗ⫦ {` X' ᵗ/ₜ X} Aᵃ ⇝ {` X' ᵗ/ₜ X} Aᵈ.
 Proof with eauto using wf_ss_rename_tvar.
   intros. dependent induction H; simpl; auto...
   - destruct_eq_atom... 
@@ -1299,7 +1299,7 @@ Qed.
 Corollary trans_typ_rename_tvar_cons : forall θ Aᵃ Aᵈ X X', 
   (X, dbind_tvar_empty) :: θ ᵗ⫦ Aᵃ ⇝ Aᵈ ->
   X' `notin` dom θ ->
-  (X', dbind_tvar_empty) :: θ ᵗ⫦ {` X' /ᵗ X} Aᵃ ⇝ {` X' /ᵗ X} Aᵈ.
+  (X', dbind_tvar_empty) :: θ ᵗ⫦ {` X' ᵗ/ₜ X} Aᵃ ⇝ {` X' ᵗ/ₜ X} Aᵈ.
 Proof.
   intros. 
   rewrite_env (map (subst_tvar_in_dbind (` X') X) nil  ++ (X', dbind_tvar_empty) :: θ).
@@ -1420,7 +1420,7 @@ Lemma trans_exp_rename_var : forall θ eᵃ eᵈ x x',
   θ ᵉ⫦ {(exp_var_f x') ᵉ/ₑ x} eᵃ ⇝ {(exp_var_f x') ᵉ/ₑ x} eᵈ
 with trans_body_rename_var : forall θ bᵃ bᵈ x x', 
   θ ᵇ⫦ bᵃ ⇝ bᵈ ->
-  θ ᵇ⫦ {(exp_var_f x') /ᵇₑ x} bᵃ ⇝ {(exp_var_f x') /ᵇₑ x} bᵈ.
+  θ ᵇ⫦ {(exp_var_f x') ᵇ/ₑ x} bᵃ ⇝ {(exp_var_f x') ᵇ/ₑ x} bᵈ.
 Proof with auto.
   - intros. dependent induction H; simpl; auto...
     + unfold eq_dec. destruct (EqDec_eq_of_X x0 x); subst.
@@ -1514,11 +1514,11 @@ Ltac rewrite_close_open_subst :=
 
 Ltac simpl_open_subst_typ' :=
   match goal with
-  | H : context [ {?B /ᵗ ?X} (?A ^ᵗ (?X')) ] |- _ =>
+  | H : context [ {?B ᵗ/ₜ ?X} (?A ^ₜ (?X')) ] |- _ =>
     rewrite subst_tvar_in_typ_open_typ_wrt_typ in H; auto;
     simpl in H; try destruct_eq_atom; auto
     (* try solve [rewrite subst_tvar_in_typ_fresh_eq in H; auto] *)
-  | H1 : context [ {?B /ᵗ ?X} ?A ], H2 : context [ftvar_in_typ ?A] |- _ =>
+  | H1 : context [ {?B ᵗ/ₜ ?X} ?A ], H2 : context [ftvar_in_typ ?A] |- _ =>
       let H := fresh "H" in
       try (
         assert (H : X `notin` ftvar_in_typ A) by auto;
@@ -1548,7 +1548,7 @@ Ltac  simpl_open_subst_exp :=
 
 Ltac solve_trans_typ_open_close' :=
   match goal with
-  | H : ?θ ᵗ⫦ ?A1ᵃ ⇝ ?Aᵈ |- ?θ' ᵗ⫦ ?A2ᵃ ⇝ ({(` ?X1') /ᵗ ?X} ?Aᵈ) => 
+  | H : ?θ ᵗ⫦ ?A1ᵃ ⇝ ?Aᵈ |- ?θ' ᵗ⫦ ?A2ᵃ ⇝ ({(` ?X1') ᵗ/ₜ ?X} ?Aᵈ) => 
       apply trans_typ_rename_tvar_cons with (X':=X1') in H; eauto
   end.
 
@@ -1562,7 +1562,7 @@ Ltac solve_trans_exp_open_close' :=
 
 Ltac solve_s_in' :=
   match goal with 
-  | H : s_in ?X1 (?A ^ᵗ ?X1) |- s_in ?X (?A ^ᵗ ?X) => 
+  | H : s_in ?X1 (?A ^ₜ ?X1) |- s_in ?X (?A ^ₜ ?X) => 
     eapply s_in_rename with (Y:=X) in H
   end.
 
@@ -1810,7 +1810,7 @@ Proof.
     apply union_iff in Hfv. inversion Hfv; simpl; eauto.
   - dependent destruction Htrans.
     pick fresh X0. inst_cofinites_with X0.
-    assert (X `in` ftvar_in_typ (A1ᵈ ^ᵗ X0)). {
+    assert (X `in` ftvar_in_typ (A1ᵈ ^ₜ X0)). {
       eapply H0; eauto.
       rewrite ftvar_in_typ_open_typ_wrt_typ_lower  with (A2:=` X0) in Hfv.
       auto. inversion Hbinds; auto.
@@ -1853,7 +1853,7 @@ Proof.
     apply union_iff in Hfv. inversion Hfv; simpl; eauto.
   - dependent destruction Htrans. 
     pick fresh X0. inst_cofinites_with X0.
-    assert (Y `in` ftvar_in_typ (A1ᵈ ^ᵗ X0)). {
+    assert (Y `in` ftvar_in_typ (A1ᵈ ^ₜ X0)). {
       rewrite ftvar_in_typ_open_typ_wrt_typ_lower  with (A2:=` X0) in Hfv.
       eapply H0 with (Y:=Y) in Hfv; eauto.
     }
@@ -2596,7 +2596,7 @@ Proof.
   - apply binds_In in H0. fsetdec.
   - rewrite wf_ss_ftvar_in_typ_upper; eauto. fsetdec. 
   - inst_cofinites_by (L `union` dom θ `union` ftvar_in_typ A1ᵈ) using_name X.
-    assert (ftvar_in_typ A1ᵈ [<=] ftvar_in_typ (A1ᵈ ^ᵗ X)). {
+    assert (ftvar_in_typ A1ᵈ [<=] ftvar_in_typ (A1ᵈ ^ₜ X)). {
       eapply ftvar_in_typ_open_typ_wrt_typ_lower.
     }
     simpl in *. fsetdec.

@@ -10,12 +10,6 @@ Require Import uni.decl_worklist.def.
 Require Import ltac_utils.
 
 
-(* Declare Scope dworklist_scope.
-Delimit Scope dworklist_scope with dworklist.
-Bind Scope dworklist_scope with dworklist.
- *)
-
-
  Ltac destruct_d_wl_wf' :=
   lazymatch goal with
   | H : d_wf_wl (dworklist_conswork ?Ω ?w) |- _ => dependent destruction H
@@ -254,16 +248,16 @@ Proof with eauto.
     constructor.
     eapply d_sub__all with (L:=L `union` L0 `union` L1 `union` dom (dwl_to_denv Ω)); intros; auto.
     inst_cofinites_with X.
-    + assert ( ⊢ᵈʷ (work_sub (A ^ᵗ X) (B ^ᵗ X) ⫤ᵈ X ~ᵈ ■ ;ᵈ Ω) ) by 
+    + assert ( ⊢ᵈʷ (work_sub (A ^ₜ X) (B ^ₜ X) ⫤ᵈ X ~ᵈ ■ ;ᵈ Ω) ) by 
       (repeat constructor; eauto; simpl in *; eapply d_wf_typ_tvar_stvar_cons; eauto ).
       _apply_IH_d_wl_red. destruct_d_wl_del_red...
     + pick fresh X. inst_cofinites_with X.
-      assert ( ⊢ᵈʷ (work_sub (A ^ᵗ X) (B ^ᵗ X) ⫤ᵈ X ~ᵈ ■ ;ᵈ Ω) ) by 
+      assert ( ⊢ᵈʷ (work_sub (A ^ₜ X) (B ^ₜ X) ⫤ᵈ X ~ᵈ ■ ;ᵈ Ω) ) by 
       (repeat constructor; eauto; simpl in *; eapply d_wf_typ_tvar_stvar_cons; eauto ).
       _apply_IH_d_wl_red. destruct_d_wl_del_red...
   - destruct_d_wl_wf.
     dependent destruction H.
-    assert (Hwf: ⊢ᵈʷ (work_sub (A ^^ᵗ T) B ⫤ᵈ Ω)). {
+    assert (Hwf: ⊢ᵈʷ (work_sub (A ^^ₜ T) B ⫤ᵈ Ω)). {
       repeat (constructor; auto).
       apply d_wf_typ_all_open; auto.
       inst_cofinites_for d_wf_typ__all...
@@ -311,7 +305,7 @@ Proof with eauto.
         dependent destruction H0...
       * destruct_d_wl_wf. intros. inst_cofinites_with X.
         dependent destruction H0.  dependent destruction H... 
-        assert (Hwf: ⊢ᵈʷ (work_check (e ᵉ^ₜ ` X) (A ^ᵗ X) ⫤ᵈ X ~ᵈ □ ;ᵈ work_applys cs (typ_all A) ⫤ᵈ Ω)). {
+        assert (Hwf: ⊢ᵈʷ (work_check (e ᵉ^ₜ ` X) (A ^ₜ X) ⫤ᵈ X ~ᵈ □ ;ᵈ work_applys cs (typ_all A) ⫤ᵈ Ω)). {
           repeat (constructor; simpl; auto)...
           replace (open_typ_wrt_typ_rec 0 ` X A) with (open_typ_wrt_typ A ` X) in * by auto.
           inst_cofinites_for d_wf_typ__all...
@@ -323,7 +317,7 @@ Proof with eauto.
         _apply_IH_d_wl_red. destruct_d_wl_del_red...
     + pick fresh X. inst_cofinites_with X.
       dependent destruction H0.  dependent destruction H... 
-      assert (Hwf: ⊢ᵈʷ (work_check (e ᵉ^ₜ ` X) (A ^ᵗ X) ⫤ᵈ X ~ᵈ □ ;ᵈ work_applys cs (typ_all A) ⫤ᵈ Ω)). {
+      assert (Hwf: ⊢ᵈʷ (work_check (e ᵉ^ₜ ` X) (A ^ₜ X) ⫤ᵈ X ~ᵈ □ ;ᵈ work_applys cs (typ_all A) ⫤ᵈ Ω)). {
         repeat (constructor; simpl; auto)...
         replace (open_typ_wrt_typ_rec 0 ` X A) with (open_typ_wrt_typ A ` X) in * by auto.
         inst_cofinites_for d_wf_typ__all...
@@ -359,11 +353,11 @@ Proof with eauto.
       apply d_wl_red_weaken_work1 in H7. inversion H7... 
     + eapply d_wl_red_weaken_work2; eauto.
   - destruct_d_wl_wf. 
-    assert (⊢ᵈʷ (work_applys cs (A ^^ᵗ B) ⫤ᵈ Ω)).
+    assert (⊢ᵈʷ (work_applys cs (A ^^ₜ B) ⫤ᵈ Ω)).
     { repeat constructor... apply d_wf_typ_all_open... }
     _apply_IH_d_wl_red. destruct_d_wl_del_red...
   - destruct_d_wl_wf. 
-    assert (⊢ᵈʷ (work_infabs (A ^^ᵗ T) cd ⫤ᵈ Ω)).
+    assert (⊢ᵈʷ (work_infabs (A ^^ₜ T) cd ⫤ᵈ Ω)).
     { repeat constructor... apply d_wf_typ_all_open...  }
     _apply_IH_d_wl_red. destruct_d_wl_del_red...
   - econstructor; eauto.

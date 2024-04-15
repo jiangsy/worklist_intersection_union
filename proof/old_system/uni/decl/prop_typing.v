@@ -207,13 +207,13 @@ Qed.
 Theorem d_chkinf_subst_mono: forall Ψ1 Ψ2 X e m A T,
   d_chk_inf (Ψ2 ++ X ~ dbind_tvar_empty ++ Ψ1) e m A ->
   d_mono_typ Ψ1 T ->
-  d_chk_inf (map (subst_tvar_in_dbind T X) Ψ2  ++ Ψ1) (subst_tvar_in_exp T X e) m ({T /ᵗ X} A).
+  d_chk_inf (map (subst_tvar_in_dbind T X) Ψ2  ++ Ψ1) (subst_tvar_in_exp T X e) m ({T ᵗ/ₜ X} A).
 Proof with auto.
   (* intros.
   generalize dependent T2.
   dependent induction H; intros; try solve [simpl in *; eauto 5 with typing].
   - simpl in *. eapply d_chk_inf__inf_tabs with (L:=L `union` singleton X).
-    + replace (typ_all ({T2 /ᵗ X} T1)) with ({T2 /ᵗ X}  typ_all T1) by auto.
+    + replace (typ_all ({T2 ᵗ/ₜ X} T1)) with ({T2 ᵗ/ₜ X}  typ_all T1) by auto.
       auto...
     + intros. specialize (notin_union_1 _ _ _ H4). intros.
       specialize (H1 _ H5 Ψ (X0 ~ dbind_tvar_empty ++ F) X (JMeq_refl _) T2 H2 H3).
@@ -239,7 +239,7 @@ Proof with auto.
     replace (exp_var_f X1) with (d_subst_tv_in_exp T0 X (exp_var_f X1)) by (simpl; auto).
     rewrite <- d_subst_tv_in_exp_open_exp_wrt_exp; eauto...
   - simpl in *. eapply d_chk_inf__chkall with (L:=L `union` singleton X); eauto...
-    + replace (typ_all ({T2 /ᵗ X} T1)) with ({T2 /ᵗ X} typ_all T1) by auto.
+    + replace (typ_all ({T2 ᵗ/ₜ X} T1)) with ({T2 ᵗ/ₜ X} typ_all T1) by auto.
       auto...
     + intros. inst_cofinites_with X0.
       rewrite subst_tvar_in_typ_open_typ_wrt_typ_fresh2; eauto...
@@ -247,11 +247,11 @@ Proof with auto.
       (map (d_subst_tv_in_binding T2 X) (X0 ~ dbind_tvar_empty ++ F) ++ Ψ) by auto.
       auto.
   - simpl in *.
-    apply d_chk_inf__chk_sub with (S1:=({T2 /ᵗ X} S1)); eauto.
+    apply d_chk_inf__chk_sub with (S1:=({T2 ᵗ/ₜ X} S1)); eauto.
     eapply d_sub_subst_mono; eauto.
-  - simpl in *. eapply d_chk_inf__inf_appall with (T3:={T0 /ᵗ X} T3); eauto...
+  - simpl in *. eapply d_chk_inf__inf_appall with (T3:={T0 ᵗ/ₜ X} T3); eauto...
     + apply d_mono_typ_subst_mono_mono; auto.
-    + replace (typ_all ({T0 /ᵗ X} T1)) with ({T0 /ᵗ X} typ_all T1) by auto.
+    + replace (typ_all ({T0 ᵗ/ₜ X} T1)) with ({T0 ᵗ/ₜ X} typ_all T1) by auto.
       auto...
     + rewrite <- d_subst_tv_in_typ_open_typ_wrt_typ; eauto... *)
 Abort.
@@ -327,7 +327,7 @@ Proof with auto.
       rewrite_env ((map (subst_tvar_in_dbind B X) nil) ++ Ψ).
       eapply d_wf_typ_subst; eauto...
       econstructor; eauto.
-    + exists (A0 ^^ᵗ B). split; auto...
+    + exists (A0 ^^ₜ B). split; auto...
       pick fresh X. inst_cofinites_with X.
       erewrite <- subst_tvar_in_typ_open_typ_wrt_typ_tvar2; eauto.
       erewrite <- subst_tvar_in_typ_open_typ_wrt_typ_tvar2 with (A:=A); eauto.
@@ -524,7 +524,7 @@ Proof with auto using d_mono_typ_d_wf_typ with typing.
   - dependent induction H3.
     + exists typ_top typ_bot.
       econstructor; eauto...
-    + assert (Ψ ⊢ A0 ^^ᵗ T <: A ^^ᵗ T). {
+    + assert (Ψ ⊢ A0 ^^ₜ T <: A ^^ₜ T). {
         pick fresh SZ. forwards*: H5 SZ.
         rewrite_env (nil++ (SZ, ■) :: Ψ ) in H7.
         forwards*: d_sub_subst_stvar T H7.

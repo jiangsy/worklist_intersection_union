@@ -82,7 +82,7 @@ Qed.
 
 Lemma d_wf_typ_open_inv : forall Ψ A B X,
   lc_typ B ->
-  Ψ ⊢ {B /ᵗ X} A ->
+  Ψ ⊢ {B ᵗ/ₜ X} A ->
   X ~ □ ∈ᵈ Ψ ->
   Ψ ⊢ A.
 Proof.
@@ -222,7 +222,7 @@ Lemma d_wf_typ_subst : forall Ψ1 X Ψ2 A B,
   ⊢ Ψ2 ++ X ~ □ ++ Ψ1 ->
   Ψ2 ++ X ~ □ ++ Ψ1 ⊢ A ->
   Ψ1 ⊢ B ->
-  map (subst_tvar_in_dbind B X) Ψ2  ++ Ψ1 ⊢ {B /ᵗ X} A.
+  map (subst_tvar_in_dbind B X) Ψ2  ++ Ψ1 ⊢ {B ᵗ/ₜ X} A.
 Proof with simpl in *; try solve_by_invert; eauto using uniq_app_1, uniq_app_2.
   intros * Hwfenv Hwft1 Hwft2.
   inductions Hwft1; intros; forwards: d_wf_env_uniq Hwfenv; try solve [simpl; auto]...
@@ -251,7 +251,7 @@ Lemma d_wf_typ_all_open : forall Ψ A B,
   ⊢ Ψ ->
   Ψ ⊢ typ_all A ->
   Ψ ⊢ B ->
-  Ψ ⊢ A ^^ᵗ B.
+  Ψ ⊢ A ^^ₜ B.
 Proof.
   intros.
   inversion H0.
@@ -267,7 +267,7 @@ Lemma d_wf_typ_subst_stvar : forall Ψ1 X Ψ2 A B,
   ⊢ Ψ2 ++ X ~ ■ ++ Ψ1 ->
   Ψ2 ++ X ~ ■ ++ Ψ1 ⊢ A ->
   Ψ1 ⊢ B ->
-  map (subst_tvar_in_dbind B X) Ψ2 ++ Ψ1 ⊢ {B /ᵗ X} A.
+  map (subst_tvar_in_dbind B X) Ψ2 ++ Ψ1 ⊢ {B ᵗ/ₜ X} A.
 Proof with simpl in *; try solve_by_invert; eauto using uniq_app_1, uniq_app_2, binds_app_1, binds_app_2.
   intros * Hwfenv Hwft1 Hwft2.
   inductions Hwft1; intros; forwards: d_wf_env_uniq Hwfenv; try solve [simpl; auto]...
@@ -354,7 +354,7 @@ Qed.
 Lemma neq_all_subst_mono_neq_all : forall Ψ A X T,
   Ψ ⊢ₘ T  ->
   neq_all A ->
-  neq_all ( {T /ᵗ X} A ).
+  neq_all ( {T ᵗ/ₜ X} A ).
 Proof with eauto 6 using subst_tvar_in_typ_lc_typ.
   intros. induction H0; simpl; eauto...
   - destruct (X0 == X); auto.
@@ -364,25 +364,25 @@ Qed.
 Lemma neq_union_subst_mono_neq_union : forall Ψ A X T,
   Ψ ⊢ₘ T  ->
   neq_union A ->
-  neq_union ( {T /ᵗ X} A ).
+  neq_union ( {T ᵗ/ₜ X} A ).
 Proof with eauto 7 using subst_tvar_in_typ_lc_typ.
   intros. induction H0; simpl; eauto...
   - destruct (X0 == X); auto.
     eapply d_mono_typ_neq_union; eauto.
   - eapply neq_union__all.
-    replace ((typ_all ({T /ᵗ X} A))) with ({T /ᵗ X} (typ_all A)) by auto...
+    replace ((typ_all ({T ᵗ/ₜ X} A))) with ({T ᵗ/ₜ X} (typ_all A)) by auto...
 Qed.
 
 Lemma neq_intersection_subst_mono_neq_intersection : forall Ψ A X T,
   Ψ ⊢ₘ T  ->
   neq_intersection A ->
-  neq_intersection ( {T /ᵗ X} A ).
+  neq_intersection ( {T ᵗ/ₜ X} A ).
 Proof with eauto 7 using subst_tvar_in_typ_lc_typ.
   intros. induction H0; simpl; eauto... 
   - destruct (X0 == X); auto.
     eapply d_mono_typ_neq_intersection; eauto.
   - eapply neq_intersection__all.
-    replace ((typ_all ({T /ᵗ X} A))) with ({T /ᵗ X} (typ_all A)) by auto...
+    replace ((typ_all ({T ᵗ/ₜ X} A))) with ({T ᵗ/ₜ X} (typ_all A)) by auto...
 Qed.
 
 
@@ -390,7 +390,7 @@ Lemma bind_typ_subst : forall Ψ2 X Ψ1 x A B,
   ⊢ Ψ2 ++ (X, dbind_tvar_empty) :: Ψ1 ->
   x ~ A ∈ᵈ (Ψ2 ++ (X, dbind_tvar_empty) :: Ψ1) ->
   Ψ1 ⊢ B ->
-  x ~ ({B /ᵗ X} A) ∈ᵈ (map (subst_tvar_in_dbind B X) Ψ2 ++ Ψ1).
+  x ~ ({B ᵗ/ₜ X} A) ∈ᵈ (map (subst_tvar_in_dbind B X) Ψ2 ++ Ψ1).
 Proof.
   intros. induction Ψ2; simpl in *; auto.
   - inversion H0.
@@ -440,7 +440,7 @@ Qed.
 Lemma d_mono_typ_subst_mono_mono : forall Ψ1 Ψ2 T1 T2 X,
   Ψ2 ++ X ~ □ ++ Ψ1 ⊢ₘ T1 ->
   Ψ1 ⊢ₘ T2 ->
-  map (subst_tvar_in_dbind T2 X) Ψ2 ++ Ψ1 ⊢ₘ {T2 /ᵗ X} T1.
+  map (subst_tvar_in_dbind T2 X) Ψ2 ++ Ψ1 ⊢ₘ {T2 ᵗ/ₜ X} T1.
 Proof with eauto using d_mono_typ_weaken_app; try solve_by_invert; try solve [exfalso; jauto].
   intros. induction T1; simpl in *...
   1: { simpl. destruct (X0 == X); subst; auto...
@@ -523,7 +523,7 @@ Lemma d_mono_typ_subst_stvar : forall Ψ1 Ψ2 A T X,
   Ψ2 ++ X ~ ■ ++ Ψ1 ⊢ₘ A ->
   ⊢ Ψ2 ++ X ~ ■ ++ Ψ1 ->
   Ψ1 ⊢ T ->
-  map (subst_tvar_in_dbind T X) Ψ2 ++ Ψ1 ⊢ₘ {T /ᵗ X} A.
+  map (subst_tvar_in_dbind T X) Ψ2 ++ Ψ1 ⊢ₘ {T ᵗ/ₜ X} A.
 Proof with eauto using d_mono_typ_weaken_app; try solve_by_invert; try solve [exfalso; jauto].
   intros. induction A; simpl in *...
   1: { simpl. destruct (X0 == X); subst; auto...
@@ -876,7 +876,7 @@ Qed.
 
 
 Lemma subst_same_tvar_typ_id : forall X T,
-    {typ_var_f X /ᵗ X} T = T.
+    {typ_var_f X ᵗ/ₜ X} T = T.
 Proof with (try progress case_if); subst; simpl; eauto.
   intros. induction T; simpl...
   all: try rewrite IHT; try rewrite IHT1; try rewrite IHT2...
@@ -908,7 +908,7 @@ Qed.
 Lemma d_wf_typ_rename_dtvar : forall Ψ1 Ψ2 X Y A b,
   b = ■ \/ b = □ ->
   Ψ2 ++ X ~ b ++ Ψ1  ⊢ A  ->
-  map (subst_tvar_in_dbind (typ_var_f Y) X ) Ψ2 ++ Y ~ b ++ Ψ1 ⊢ { typ_var_f Y /ᵗ X } A.
+  map (subst_tvar_in_dbind (typ_var_f Y) X ) Ψ2 ++ Y ~ b ++ Ψ1 ⊢ { typ_var_f Y ᵗ/ₜ X } A.
 Proof with try solve_notin; simpl in *; eauto.
   intros * Hb HT.
   case_eq (X==Y); intros.
@@ -937,14 +937,14 @@ Qed.
 
 Lemma d_wf_typ_rename_stvar : forall Ψ1 Ψ2 X Y A,
   Ψ2 ++ X ~ ■ ++ Ψ1  ⊢ A  ->
-  map (subst_tvar_in_dbind (typ_var_f Y) X ) Ψ2 ++ Y ~ ■ ++ Ψ1 ⊢ { typ_var_f Y /ᵗ X } A.
+  map (subst_tvar_in_dbind (typ_var_f Y) X ) Ψ2 ++ Y ~ ■ ++ Ψ1 ⊢ { typ_var_f Y ᵗ/ₜ X } A.
 Proof with try solve_notin; simpl in *; eauto.
   intros. eapply d_wf_typ_rename_dtvar; eauto.
 Qed.
 
 Lemma d_wf_typ_rename_tvar : forall Ψ1 Ψ2 X Y A,
   Ψ2 ++ X ~ □ ++ Ψ1  ⊢ A  ->
-  map (subst_tvar_in_dbind (typ_var_f Y) X ) Ψ2 ++ Y ~ □ ++ Ψ1 ⊢ { typ_var_f Y /ᵗ X } A.
+  map (subst_tvar_in_dbind (typ_var_f Y) X ) Ψ2 ++ Y ~ □ ++ Ψ1 ⊢ { typ_var_f Y ᵗ/ₜ X } A.
 Proof with try solve_notin; simpl in *; eauto.
   intros. eapply d_wf_typ_rename_dtvar; eauto.
 Qed.
@@ -952,7 +952,7 @@ Qed.
 
 Lemma d_wf_typ_rename_stvar_cons : forall Ψ X Y A,
   X ~ ■ ++ Ψ  ⊢ A  ->
-  Y ~ ■ ++ Ψ ⊢ { typ_var_f Y /ᵗ X } A.
+  Y ~ ■ ++ Ψ ⊢ { typ_var_f Y ᵗ/ₜ X } A.
 Proof with try solve_notin; simpl in *; eauto.
   intros. rewrite_env (map (subst_tvar_in_dbind (typ_var_f Y) X ) nil ++ Y ~ ■ ++ Ψ). 
   eapply d_wf_typ_rename_stvar; eauto.
@@ -960,7 +960,7 @@ Qed.
 
 Lemma d_wf_typ_rename_tvar_cons : forall Ψ X Y A,
   X ~ □ ++ Ψ ⊢ A  ->
-  Y ~ □ ++ Ψ ⊢ { typ_var_f Y /ᵗ X } A.
+  Y ~ □ ++ Ψ ⊢ { typ_var_f Y ᵗ/ₜ X } A.
 Proof with try solve_notin; simpl in *; eauto.
   intros. rewrite_env (map (subst_tvar_in_dbind (typ_var_f Y) X ) nil ++ Y ~ □ ++ Ψ).
   eapply d_wf_typ_rename_tvar; eauto.
@@ -999,7 +999,7 @@ Lemma d_mono_typ_rename_dtvar : forall Ψ1 Ψ2 X X' b T,
     X' ∉ (dom (Ψ2 ++ Ψ1)) ->
     b = ■ \/ b = □ ->
     d_mono_typ (Ψ2 ++ X ~ b ++ Ψ1) T ->
-    d_mono_typ (map (subst_tvar_in_dbind ` X' X) Ψ2 ++ (X', b) :: Ψ1) ({`X' /ᵗ X} T).
+    d_mono_typ (map (subst_tvar_in_dbind ` X' X) Ψ2 ++ (X', b) :: Ψ1) ({`X' ᵗ/ₜ X} T).
 Proof with simpl in *; eauto.
   intros. dependent induction H2...
   - destruct (X0 == X).
@@ -1018,7 +1018,7 @@ Lemma d_mono_typ_rename_tvar : forall Ψ1 Ψ2 X X' T,
     ⊢ (Ψ2 ++ X ~ □ ++ Ψ1) -> 
     X' ∉ (dom (Ψ2 ++ Ψ1)) ->
     d_mono_typ (Ψ2 ++ X ~ □ ++ Ψ1) T ->
-    d_mono_typ (map (subst_tvar_in_dbind ` X' X) Ψ2 ++ (X', □) :: Ψ1) ({`X' /ᵗ X} T).
+    d_mono_typ (map (subst_tvar_in_dbind ` X' X) Ψ2 ++ (X', □) :: Ψ1) ({`X' ᵗ/ₜ X} T).
 Proof with simpl in *; eauto.
   intros. apply d_mono_typ_rename_dtvar...
 Qed.
@@ -1028,14 +1028,14 @@ Lemma d_mono_typ_rename_stvar : forall Ψ1 Ψ2 X X' T,
     ⊢ (Ψ2 ++ X ~ ■ ++ Ψ1) -> 
     X' ∉ (dom (Ψ2 ++ Ψ1)) ->
     d_mono_typ (Ψ2 ++ X ~ ■ ++ Ψ1) T ->
-    d_mono_typ (map (subst_tvar_in_dbind ` X' X) Ψ2 ++ (X', ■) :: Ψ1) ({`X' /ᵗ X} T).
+    d_mono_typ (map (subst_tvar_in_dbind ` X' X) Ψ2 ++ (X', ■) :: Ψ1) ({`X' ᵗ/ₜ X} T).
 Proof with simpl in *; eauto.
   intros. apply d_mono_typ_rename_dtvar...
 Qed.
 
 
 Lemma lc_typ_open_stvar_subst_mono : forall A Ψ T X,
-    lc_typ (A ^^ᵗ T) -> d_mono_typ Ψ T -> lc_typ (A ^ᵗ X).
+    lc_typ (A ^^ₜ T) -> d_mono_typ Ψ T -> lc_typ (A ^ₜ X).
 Proof with try solve_notin; try solve_by_invert; simpl in *; eauto.
   intros * HD HM.
   inductions HD.
@@ -1050,10 +1050,10 @@ Qed.
 
 
 Lemma s_in_open_stvar_subst_mono : forall A T Ψ X Y,
-  s_in X (A ^^ᵗ T) -> 
+  s_in X (A ^^ₜ T) -> 
   d_mono_typ Ψ T -> 
   X ∉ ftvar_in_typ T -> 
-  s_in X (A ^ᵗ Y).
+  s_in X (A ^ₜ Y).
 Proof with try solve_notin; try solve_by_invert; simpl in *; eauto using lc_typ_open_stvar_subst_mono.
   intros * HD HM HN.
   inductions HD.
@@ -1076,32 +1076,32 @@ Proof with try solve_notin; try solve_by_invert; simpl in *; eauto using lc_typ_
 Qed.
 
 Lemma d_wf_typ_open_tvar_subst_mono : forall Ψ1 Ψ2 A T X,
-  Ψ1 ++ Ψ2 ⊢ A ^^ᵗ T -> 
+  Ψ1 ++ Ψ2 ⊢ A ^^ₜ T -> 
   d_mono_typ (Ψ1 ++ Ψ2) T -> X ∉ (dom Ψ2)
-  -> Ψ1 ++ X ~ □ ++ Ψ2 ⊢ A ^ᵗ X.
+  -> Ψ1 ++ X ~ □ ++ Ψ2 ⊢ A ^ₜ X.
 Proof with try solve_notin; simpl in *; eauto.
   intros * HT HD HN.
   inductions HT...
 
   all: destruct A; destruct T;
       lazymatch goal with
-      | n : nat, Hx: _ = ↑ ?n ^^ᵗ _ |- _ =>
+      | n : nat, Hx: _ = ↑ ?n ^^ₜ _ |- _ =>
         try solve [
             induction n; unfold open_typ_wrt_typ in *; simpl in *; try solve_by_invert Hx; eauto using d_wf_env_weaken_tvar]
-      | n : nat, Hx: _ = ↑ (S ?n) ^^ᵗ _ |- _ =>
+      | n : nat, Hx: _ = ↑ (S ?n) ^^ₜ _ |- _ =>
         try solve [
             induction n; unfold open_typ_wrt_typ in Hx; simpl in Hx; inverts Hx]
-      | Hx:` _ = ` _ ^^ᵗ _ |- _ =>
+      | Hx:` _ = ` _ ^^ₜ _ |- _ =>
           try solve [
               unfold open_typ_wrt_typ in *; simpl in *; inverts x;
               rewrite_env (Ψ1 ++ [(X, □)] ++ Ψ2); applys* d_wf_typ_weaken;
               eauto using d_wf_typ_weaken]
-      (* | Hx: dtyp_svar _ = dtyp_svar _ ^^ᵗ _ |- _ => *)
+      (* | Hx: dtyp_svar _ = dtyp_svar _ ^^ₜ _ |- _ => *)
       (*     try solve [ *)
       (*         unfold open_typ_wrt_typ in *; simpl in *; inverts x; *)
       (*         rewrite_env (Ψ1 ++ [(SY, □)] ++ Ψ2); applys* d_wf_typ_weaken; *)
       (*         eauto using d_wf_typ_weaken] *)
-      | Hx: _ = _ ^^ᵗ _ |- _ =>
+      | Hx: _ = _ ^^ₜ _ |- _ =>
           try solve [unfold open_typ_wrt_typ in Hx; simpl in x; inverts x];
           try solve [unfold open_typ_wrt_typ; simpl; eauto using d_wf_env_weaken_tvar];
           try solve [unfold open_typ_wrt_typ in *; simpl in *; inverts* x]
