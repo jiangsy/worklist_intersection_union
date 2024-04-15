@@ -20,38 +20,6 @@ Fixpoint ftv_sin_typ (T:typ) : vars :=
 end.
 
 
-(* defns Jd_wf_typ_s *)
-Inductive d_wf_typ_s : denv -> typ -> Prop :=    (* defn d_wf_typ_s *)
- | d_wf_typ_s__unit : forall (Ψ:denv),
-     d_wf_typ_s Ψ typ_unit
- | d_wf_typ_s__bot : forall (Ψ:denv),
-     d_wf_typ_s Ψ typ_bot
- | d_wf_typ_s__top : forall (Ψ:denv),
-     d_wf_typ_s Ψ typ_top
- | d_wf_typ_s__var : forall (Ψ:denv) (X:typvar),
-      binds ( X )  ( dbind_tvar_empty ) ( Ψ )  ->
-     d_wf_typ_s Ψ (typ_var_f X)
- | d_wf_typ_s__stvar : forall (Ψ:denv) (X:typvar),
-      binds ( X ) ( dbind_stvar_empty ) ( Ψ )  ->
-     d_wf_typ_s Ψ (typ_var_f X)
- | d_wf_typ_s__arrow : forall (Ψ:denv) (A1 A2:typ),
-     d_wf_typ_s Ψ A1 ->
-     d_wf_typ_s Ψ A2 ->
-     d_wf_typ_s Ψ (typ_arrow A1 A2)
- | d_wf_typ_s__all : forall (L:vars) (Ψ:denv) (A:typ),
-     ( forall X , X \notin L -> s_in X  (open_typ_wrt_typ  A   (typ_var_f X) ) ) ->
-     ( forall X , X \notin L -> d_wf_typ_s  ( X ~ dbind_stvar_empty  ++  Ψ )   (open_typ_wrt_typ  A   (typ_var_f X) ) ) ->
-     d_wf_typ_s Ψ (typ_all A)
- | d_wf_typ_s__union : forall (Ψ:denv) (A1 A2:typ),
-    d_wf_typ_s Ψ A1 ->
-    d_wf_typ_s Ψ A2 ->
-     d_wf_typ_s Ψ (typ_union A1 A2)
- | d_wf_typ_s__intersection : forall (Ψ:denv) (A1 A2:typ),
-     d_wf_typ_s Ψ A1 ->
-     d_wf_typ_s Ψ A2 ->
-     d_wf_typ_s Ψ (typ_intersection A1 A2).
-
-
 Inductive d_inftapp : denv -> typ -> typ -> typ -> Prop := 
 | d_inftapp__bot : forall (Ψ:denv) (B:typ),
     d_wf_env Ψ -> 

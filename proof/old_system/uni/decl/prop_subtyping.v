@@ -6,21 +6,14 @@ Require Import uni.decl.prop_basic.
 Require Import ltac_utils.
 
 
-Lemma dsub_refl' : forall Ψ A,
-  ⊢ Ψ -> Ψ ⊢ₛ A -> Ψ ⊢ A <: A.
-Proof with auto.
-  intros; dependent induction H0; eauto...
-  eapply d_sub__all with (L:=L `union` dom Ψ); eauto.
-Qed.
-
-
 Lemma dsub_refl : forall Ψ A,
   ⊢ Ψ -> Ψ ⊢ A -> Ψ ⊢ A <: A.
 Proof.
-  intros.
-  apply dsub_refl'. auto.
-  apply d_wf_typ_d_wf_s_typ.
-  auto.
+  intros *Hwfenv Hwfa. apply d_wf_typ_lc_typ in Hwfa as Hlc.  
+  generalize dependent Ψ. induction Hlc; intros; try dependent destruction Hwfa; auto.
+  - inst_cofinites_for d_sub__all; 
+    intros; inst_cofinites_with X; auto. 
+    apply d_wf_typ_tvar_stvar_cons in H2; eauto.
 Qed.
 
 
@@ -127,11 +120,11 @@ Proof.
   - rewrite IHd_mono_typ1. rewrite IHd_mono_typ2. auto.
 Qed.
 
-Lemma d_open_rec_mono_same_order : forall Ψ T1 T2 n,
-  d_mono_typ Ψ T2 ->
-  d_typ_order (open_typ_wrt_typ_rec n T2 T1) = d_typ_order T1.
+Lemma d_open_rec_mono_same_order : forall Ψ A T n,
+  d_mono_typ Ψ T ->
+  d_typ_order (open_typ_wrt_typ_rec n T A) = d_typ_order A.
 Proof.
-  induction T1; simpl; intros; auto.
+  induction A; simpl; intros; auto.
   - destruct (lt_eq_lt_dec n n0).
     + destruct s; auto. eapply d_mono_type_order_0; eauto.
     + auto.
@@ -409,7 +402,7 @@ Proof with subst; eauto using d_wf_typ_weaken_app.
       * intros. rewrite subst_tvar_in_typ_open_typ_wrt_typ_fresh2; auto...
         apply s_in_subst_inv; auto...
       * applys* d_mono_typ_subst_stvar... eauto using d_sub_dwft_0.
-      * rewrite <- subst_tvar_in_typ_open_typ_wrt_typ; eauto using d_wf_typ_dlc_type.
+      * rewrite <- subst_tvar_in_typ_open_typ_wrt_typ; eauto using d_wf_typ_lc_typ.
     + eapply d_sub_open_mono_stvar_false in H3; eauto. contradiction.
   - simpl. apply d_sub__intersection2. eauto.
     apply d_wf_typ_subst_stvar; auto...
@@ -581,7 +574,7 @@ Proof with (simpl in *; eauto using d_wf_env_subst_tvar_typ).
       repeat rewrite subst_tvar_in_typ_open_typ_wrt_typ_fresh2...
   - pick fresh SZ and apply d_subs__alll.
     6: forwards* H4: IHHS;
-    rewrite subst_tvar_in_typ_open_typ_wrt_typ in H4; eauto using d_wf_typ_dlc_type.
+    rewrite subst_tvar_in_typ_open_typ_wrt_typ in H4; eauto using d_wf_typ_lc_typ.
     1-3: auto...
     + rewrite subst_tvar_in_typ_open_typ_wrt_typ_fresh2...
       applys~ s_in_subst_inv.

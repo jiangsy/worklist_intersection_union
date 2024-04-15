@@ -20,7 +20,6 @@ Defined. *)
 
 Hint Constructors d_wf_typ: core.
 Hint Constructors d_wf_env: core.
-Hint Constructors d_wf_typ_s: core.
 
 
 Inductive d_subenv : denv -> denv -> Prop :=
@@ -200,7 +199,7 @@ Qed.
 
 
 #[local] Hint Resolve d_subenv_wf_typ d_subenv_wf_env d_wf_typ_subst 
-                      d_wf_env_subst_tvar_typ bind_typ_subst d_wf_typ_dlc_type : core.
+                      d_wf_env_subst_tvar_typ bind_typ_subst d_wf_typ_lc_typ : core.
 
 
 

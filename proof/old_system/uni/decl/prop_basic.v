@@ -10,27 +10,21 @@ Require Import ltac_utils.
 
 Open Scope dbind_scope.
 
+
+Lemma d_wf_typ_lc_typ : forall Ψ A,
+  Ψ ⊢ A -> lc_typ A.
+Proof.
+  intros; induction H; auto.
+Qed.
+
+
 Lemma d_mono_typ_lc : forall Ψ T,
   Ψ ⊢ₘ T  -> lc_typ T.
 Proof.
   intros; induction H; auto.
 Qed.
 
-Lemma d_wf_s_typ_tvar_stvar : forall Ψ1 Ψ2 X A,
-  Ψ2 ++ X ~ □ ++ Ψ1 ⊢ₛ A  ->
-  Ψ2 ++ X ~ ■ ++ Ψ1 ⊢ₛ A.
-Proof with eauto.
-  intros Ψ1 Ψ2 X A H...
-  dependent induction H...
-  - destruct (X0 == X). 
-    + subst. eapply d_wf_typ_s__stvar. auto.
-    + apply binds_remove_mid in H...
-  - apply binds_remove_mid_diff_bind in H...
-    solve_false.
-  - inst_cofinites_for d_wf_typ_s__all; intros; inst_cofinites_with X0...
-    + rewrite_env ((X0 ~ ■ ++ Ψ2) ++ (X, ■) :: Ψ1)...
-      apply H1; eauto.
-Qed.
+#[global] Hint Resolve d_wf_typ_lc_typ d_mono_typ_lc : core.
 
 Lemma d_wf_typ_stvar_tvar : forall Ψ1 Ψ2 X A,
   Ψ2 ++ (X ~ ■) ++ Ψ1 ⊢ A ->
@@ -48,15 +42,23 @@ Proof with eauto.
       apply H1; eauto.
 Qed.
 
-Corollary d_wf_s_typ_tvar_stvar_cons : forall Ψ X A,
-  X ~ □ ++ Ψ ⊢ₛ A ->
-  X ~ ■ ++ Ψ ⊢ₛ A .
-Proof.
-  intros.
-  rewrite_env (nil ++ X ~ ■ ++ Ψ).
-  apply d_wf_s_typ_tvar_stvar.
-  auto.
+
+Lemma d_wf_typ_tvar_stvar : forall Ψ1 Ψ2 X A,
+  Ψ2 ++ (X ~ □) ++ Ψ1 ⊢ A ->
+  Ψ2 ++ (X ~ ■) ++ Ψ1 ⊢ A.
+Proof with eauto.
+  intros Ψ1 Ψ2 X A H...
+  dependent induction H...
+  - destruct (X0 == X). 
+    + subst. eapply d_wf_typ__stvar...
+    + apply binds_remove_mid in H...
+  - apply binds_remove_mid_diff_bind in H...
+    solve_false.
+  - inst_cofinites_for d_wf_typ__all; intros; inst_cofinites_with X0...
+    + rewrite_env ((X0 ~ □ ++ Ψ2) ++ (X, ■) :: Ψ1).
+      apply H1; eauto.
 Qed.
+
 
 Corollary d_wf_typ_stvar_tvar_cons : forall Ψ X A,
   X ~ ■ ++ Ψ ⊢ A ->
@@ -68,58 +70,15 @@ Proof.
 Qed.
 
 
-Lemma d_wf_typ_d_wf_s_typ : forall Ψ A,
-  Ψ ⊢ A -> Ψ ⊢ₛ A.
-Proof.
-  intros.
-  induction H; auto.
-  - eapply d_wf_typ_s__all with (L:= (L `union` ftvar_in_typ A));
-    intros; auto.
-    + apply d_wf_s_typ_tvar_stvar_cons; auto.
-Qed.
-
-Lemma d_wf_s_typ_d_wf_typ : forall Ψ A,
-  Ψ ⊢ₛ A -> Ψ ⊢ A.
-Proof.
-  intros. induction H; auto.
-  - eapply d_wf_typ__all with (L:= (L `union` ftvar_in_typ A));
-    intros; inst_cofinites_with X.
-    + auto.
-    + eapply d_wf_typ_stvar_tvar_cons; auto.
-Qed.
-
-
-
 Corollary d_wf_typ_tvar_stvar_cons : forall Ψ X A,
   X ~ □ ++ Ψ ⊢ A ->
   X ~ ■ ++ Ψ ⊢ A.
 Proof.
   intros.
-  apply d_wf_s_typ_d_wf_typ.
-  apply d_wf_s_typ_tvar_stvar_cons.
-  apply d_wf_typ_d_wf_s_typ. auto.
+  rewrite_env (nil ++ X ~ dbind_stvar_empty ++ Ψ).
+  apply d_wf_typ_tvar_stvar; auto.
 Qed.
 
-
-Hint Immediate d_wf_s_typ_d_wf_typ : core.
-Hint Immediate d_wf_typ_d_wf_s_typ : core.
-
-Lemma d_wf_typ_dlc_type : forall Ψ A,
-  Ψ ⊢ A -> lc_typ A.
-Proof.
-  intros; induction H; auto.
-Qed.
-
-Lemma d_wf_s_typ_lc_typ : forall Ψ A,
-  Ψ ⊢ₛ A -> lc_typ A.
-Proof.
-  intros.
-  eapply d_wf_typ_dlc_type.
-  apply d_wf_s_typ_d_wf_typ.
-  eauto.
-Qed.
-
-Hint Resolve d_wf_s_typ_lc_typ : core.
 
 Lemma d_wf_typ_open_inv : forall Ψ A B X,
   lc_typ B ->
@@ -179,8 +138,6 @@ Qed.
 
 Hint Constructors d_wf_typ: core.
 Hint Constructors d_wf_env: core.
-Hint Constructors d_wf_typ_s: core.
-
 
 Lemma d_wf_typ_weaken : forall Ψ1 Ψ2 Ψ3 A,
   Ψ3 ++ Ψ1 ⊢ A ->
@@ -282,7 +239,7 @@ Proof with simpl in *; try solve_by_invert; eauto using uniq_app_1, uniq_app_2.
       forwards* [(?&?&?)|?]: binds_cons_uniq_1 H1...
   - simpl. inst_cofinites_for d_wf_typ__all; intros; inst_cofinites_with X0.
     + rewrite subst_tvar_in_typ_open_typ_wrt_typ_var...
-      applys* s_in_subst_inv.
+      applys* s_in_subst_inv...
     + rewrite subst_tvar_in_typ_open_typ_wrt_typ_var...
       replace ((X0, dbind_tvar_empty) :: map (subst_tvar_in_dbind B X) Ψ2 ++ Ψ1)
       with (map (subst_tvar_in_dbind B X) ((X0, dbind_tvar_empty) :: Ψ2) ++ Ψ1) by auto.
@@ -360,12 +317,6 @@ Proof.
       dependent destruction H; auto.
     + specialize (H2 H3).
       rewrite ftvar_in_typ_open_typ_wrt_typ_lower; auto.
-Qed.
-
-Lemma d_wf_typ_lc_typ : forall Ψ A,
-  Ψ ⊢ A -> lc_typ A.
-Proof.
-  intros. induction H; eauto.
 Qed.
 
 Lemma d_wf_exp_lc_exp : forall Ψ e,

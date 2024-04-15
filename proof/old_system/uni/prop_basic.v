@@ -10,7 +10,6 @@ Require Import ltac_utils.
 
 #[export] Hint Constructors d_wf_typ: core.
 #[export] Hint Constructors d_wf_env: core.
-#[export] Hint Constructors d_wf_typ_s: core.
 #[export] Hint Constructors s_in: core.
 
 Ltac solve_by_inverts n :=

@@ -14,10 +14,6 @@ Notation "Ψ ⊢ A" :=
   (d_wf_typ Ψ A)
     (at level 65, no associativity) : type_scope.
     
-Notation "Ψ ⊢ₛ A" :=
-  (d_wf_typ_s Ψ A)
-    (at level 65, no associativity) : type_scope.
-
 Notation "Ψ ⊢ₘ T" :=
   (d_mono_typ Ψ T)
     (at level 65, no associativity) : type_scope.
