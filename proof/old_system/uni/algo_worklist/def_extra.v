@@ -7,11 +7,6 @@ Require Export uni.def_ott.
 Require Export uni.decl_worklist.def.
 
 
-(* Definition fv_env_gen (fv : abind -> atoms) (E : aenv) : atoms :=
-  fold_right (fun xb acc => match xb with (x , b) => acc `union` fv b end ) {} E.
-
-Definition ftvar_in_aenv := fv_env_gen ftvar_in_abind. *)
-
 Fixpoint awl_app (Γ1 Γ2 : aworklist) :=
   match Γ1 with 
   | aworklist_empty => Γ2 

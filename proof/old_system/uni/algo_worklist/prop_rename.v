@@ -167,34 +167,6 @@ Qed.
 
 (* -- *)
 
-Lemma dom_aworklist_subst : forall Γ X A Γ1 Γ2,
-    aworklist_subst Γ X A Γ1 Γ2 -> dom (awl_to_aenv Γ) [=] dom (awl_to_aenv Γ1) `union` dom (awl_to_aenv (subst_tvar_in_aworklist A X Γ2)) `union` (singleton X).
-Proof with simpl in *; fsetdec.
-  introv HS. induction HS.
-  1: auto...
-  -  simpl. rewrite KeySetProperties.union_add. rewrite IHHS.
-     repeat rewrite KeySetProperties.add_union_singleton.
-     fsetdec.
-  -  simpl. rewrite KeySetProperties.union_add. rewrite IHHS.
-     repeat rewrite KeySetProperties.add_union_singleton.
-     clear H H0.
-     fsetdec.
-  -  simpl. rewrite KeySetProperties.union_add. rewrite IHHS.
-     repeat rewrite KeySetProperties.add_union_singleton.
-     clear H H0.
-     fsetdec.
-  -  simpl. rewrite IHHS. fsetdec.
-  -  simpl. rewrite KeySetProperties.union_add. rewrite IHHS.
-     repeat rewrite KeySetProperties.add_union_singleton.
-     clear H H0.
-     fsetdec.
-  -  simpl. rewrite awl_to_aenv_app, awl_to_aenv_cons in *.
-     autorewrite with core in *. rewrite <- IHHS.
-     rewrite AtomSetProperties.add_union_singleton.
-     clear IHHS H0 H.
-     fsetdec.
-Qed.
-
 
 #[local] Hint Rewrite ftvar_in_aworklist'_awl_cons ftvar_in_aworklist'_awl_app : core.
 
@@ -716,7 +688,8 @@ Proof with eauto; solve_false.
            simpl in *. destruct_eq_atom. auto.
         -- eapply aworklist_subst_wf_wl in Hws; eauto.
            admit.
-           simpl. apply binds_cons. apply binds_cons...
+           simpl. apply binds_cons. apply binds_cons... 
+           simpl... constructor...
         -- rewrite (aworklist_subst_ftavr_in_aworklist _ _ _ _ _ Hws); eauto.
       * admit. (* wf *)
       * solve_notin_rename_tvar; auto.
@@ -739,6 +712,7 @@ Proof with eauto; solve_false.
         -- eapply aworklist_subst_wf_wl in Hws; eauto.
            admit.
            simpl; apply binds_cons. apply binds_cons...
+           simpl... constructor...
         -- rewrite (aworklist_subst_ftavr_in_aworklist _ _ _ _ _ Hws); auto.
       * admit. (* wf *)
       * solve_notin_rename_tvar; auto.
@@ -763,6 +737,7 @@ Proof with eauto; solve_false.
         -- eapply aworklist_subst_wf_wl in Hws; eauto.
            admit.
            simpl. apply binds_cons. apply binds_cons...
+           simpl. constructor...
         -- rewrite (aworklist_subst_ftavr_in_aworklist _ _ _ _ _ Hws); auto.
       * admit. (* wf *)
       * solve_notin_rename_tvar; auto.
@@ -784,6 +759,7 @@ Proof with eauto; solve_false.
         -- eapply aworklist_subst_wf_wl in Hws; eauto.
            admit.
            simpl. apply binds_cons. apply binds_cons...
+           simpl. constructor...
         -- rewrite (aworklist_subst_ftavr_in_aworklist _ _ _ _ _ Hws); auto...
       * admit. (* wf *)
       * solve_notin_rename_tvar; auto. 
@@ -853,7 +829,10 @@ Proof with eauto; solve_false.
               rewrite_aworklist_rename; simpl; auto.
               rewrite_aworklist_rename_rev.
               simpl in Hawlred. destruct_eq_atom. auto.
-           ++ eapply aworklist_subst_wf_wl in Hws; eauto. admit. admit. (* wf *)
+           ++ eapply aworklist_subst_wf_wl in Hws; eauto. 
+              admit.
+              simpl. eauto... 
+              simpl. constructor...
            ++ rewrite aworklist_subst_ftavr_in_aworklist with
                 (Γ:=(work_check (e ᵉ^ₑ exp_var_f x) ` X2 ⫤ᵃ x ~ᵃ ` X1;ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ)); auto. simpl.
               solve_notin_rename_tvar; auto.
@@ -878,6 +857,7 @@ Proof with eauto; solve_false.
               simpl in Hawlred. destruct_eq_atom. auto.
            ++ eapply aworklist_subst_wf_wl in Hws; eauto. admit.
               repeat (apply binds_cons). auto.
+              simpl. constructor...
            ++ admit. (* wf *)
         -- rewrite ftvar_in_exp_open_exp_wrt_exp_upper; auto.
       * admit. (* wf *)

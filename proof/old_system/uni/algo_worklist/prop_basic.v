@@ -741,6 +741,38 @@ Proof with eauto.
     rewrite awl_to_aenv_app; simpl...
 Qed.
 
+#[local] Hint Rewrite dom_app dom_cons : core.
+#[local] Hint Rewrite awl_to_aenv_cons awl_to_aenv_app: core.
+
+
+Lemma dom_aworklist_subst : forall Γ X A Γ1 Γ2,
+    aworklist_subst Γ X A Γ1 Γ2 -> dom (awl_to_aenv Γ) [=] dom (awl_to_aenv Γ1) `union` dom (awl_to_aenv (subst_tvar_in_aworklist A X Γ2)) `union` (singleton X).
+Proof with simpl in *; fsetdec.
+  introv HS. induction HS.
+  1: auto...
+  -  simpl. rewrite KeySetProperties.union_add. rewrite IHHS.
+     repeat rewrite KeySetProperties.add_union_singleton.
+     fsetdec.
+  -  simpl. rewrite KeySetProperties.union_add. rewrite IHHS.
+     repeat rewrite KeySetProperties.add_union_singleton.
+     clear H H0.
+     fsetdec.
+  -  simpl. rewrite KeySetProperties.union_add. rewrite IHHS.
+     repeat rewrite KeySetProperties.add_union_singleton.
+     clear H H0.
+     fsetdec.
+  -  simpl. rewrite IHHS. fsetdec.
+  -  simpl. rewrite KeySetProperties.union_add. rewrite IHHS.
+     repeat rewrite KeySetProperties.add_union_singleton.
+     clear H H0.
+     fsetdec.
+  -  simpl. rewrite awl_to_aenv_app, awl_to_aenv_cons in *.
+     autorewrite with core in *. rewrite <- IHHS.
+     rewrite AtomSetProperties.add_union_singleton.
+     clear IHHS H0 H.
+     fsetdec.
+Qed.
+
 Lemma aworklist_subst_binds_same_atvar' : forall Γ1 Γ2 X b X1 A Γ'1 Γ'2,
   ⊢ᵃʷ (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) ->
   b = □ \/ b = ■ \/ b = ⬒ ->
@@ -876,7 +908,7 @@ with aworklist_subst_wf_conts_subst : forall Γ X A cs Γ1 Γ2,
   a_wf_conts (awl_to_aenv Γ) cs ->
   ⊢ᵃʷ Γ ->
   aworklist_subst Γ X A Γ1 Γ2 ->
-  a_wf_conts (awl_to_aenv (awl_app (subst_tvar_in_aworklist A X Γ2) Γ1)) ({A ᶜˢ/ₜX} cs).
+  a_wf_conts (awl_to_aenv (awl_app (subst_tvar_in_aworklist A X Γ2) Γ1)) ({A ᶜˢ/ₜ X} cs).
 Proof with (autorewrite with core in *); simpl; eauto; solve_false; try solve_notin.
 Admitted.
 
@@ -903,44 +935,45 @@ Qed.
 Lemma aworklist_subst_wf_wl : forall Γ X A Γ1 Γ2,
   ⊢ᵃʷ Γ ->
   binds X abind_etvar_empty (awl_to_aenv Γ) ->
+  ⌊ Γ ⌋ᵃ ᵗ⊢ᵃ A ->
+  X ∉ ftvar_in_typ A ->
   aworklist_subst Γ X A Γ1 Γ2 ->
   ⊢ᵃʷ (subst_tvar_in_aworklist A X Γ2 ⧺ Γ1).
-Proof.
-  intros. induction H1; auto.
-  - dependent destruction H; auto.
-  - simpl. inversion H0; auto.
-    + dependent destruction H2.
+Proof with eauto; autorewrite with core in *; auto.
+  intros. induction H3...
+  - dependent destruction H...
+  - simpl. destruct_binds.
     + constructor; auto.
-      * admit.
-      * eapply aworklist_subst_wf_typ; eauto.
-        admit. admit. admit.
+      * destruct_a_wf_wl.
+        erewrite dom_aworklist_subst with (X:=X) (A:=A) (Γ1:=Γ1) (Γ2:=Γ2) in H...
+      * destruct_a_wf_wl. eapply aworklist_subst_wf_typ_subst; eauto.
+        admit. 
       * apply IHaworklist_subst; auto.
-        dependent destruction H; auto.
-  - simpl. inversion H0; auto.
-      + dependent destruction H4.
-      + constructor; auto.
-        * admit.
-        * apply IHaworklist_subst; auto.
-          dependent destruction H; auto.
-  - simpl. inversion H0; auto.
-    + dependent destruction H4.
+        dependent destruction H; auto. admit.
+  - simpl. destruct_binds.
     + constructor; auto.
-      * admit.
+      * destruct_a_wf_wl.
+        erewrite dom_aworklist_subst with (X:=X) (A:=A) (Γ1:=Γ1) (Γ2:=Γ2) in H...
       * apply IHaworklist_subst; auto.
-        dependent destruction H; auto.
+        dependent destruction H; auto. admit.
+  - simpl. destruct_binds.
+    + constructor; auto.
+      * destruct_a_wf_wl.
+        erewrite dom_aworklist_subst with (X:=X) (A:=A) (Γ1:=Γ1) (Γ2:=Γ2) in H...
+      * apply IHaworklist_subst; auto.
+        dependent destruction H; auto. admit.
   - simpl in *. constructor.
-    admit.
-    apply IHaworklist_subst; auto.
-    dependent destruction H; auto.
-  - simpl in *. inversion H0.
-    + dependent destruction H4. contradiction.
+    + admit.
+    + apply IHaworklist_subst; auto.
+      dependent destruction H; auto.
+  - simpl in *. destruct_binds.
     + constructor.
-      * admit.
+      * destruct_a_wf_wl.
+        erewrite dom_aworklist_subst with (X:=X) (A:=A) (Γ1:=Γ1) (Γ2:=Γ2) in H...
       * apply IHaworklist_subst; auto.
-        dependent destruction H; auto.
-  - simpl in *. inversion H0.
-    + dependent destruction H4. contradiction.
-    + apply* IHaworklist_subst.
-      admit.
+        dependent destruction H; auto. admit.
+  - simpl in *. destruct_binds.
+    + apply IHaworklist_subst...
+      apply a_wf_wl_move_etvar_back...
       admit.
 Admitted.
