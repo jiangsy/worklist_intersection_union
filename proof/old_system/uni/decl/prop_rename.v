@@ -311,7 +311,7 @@ Proof.
   - simpl. apply binds_In in H. fsetdec.
   - pick fresh X.
     inst_cofinites_with X.
-    assert ((ftvar_in_typ A) [<=] (ftvar_in_typ (A ^ₜ X))) by apply ftvar_in_typ_open_typ_wrt_typ_lower.
+    assert ((ftvar_in_typ A) [<=] (ftvar_in_typ (A ᵗ^ₜ X))) by apply ftvar_in_typ_open_typ_wrt_typ_lower.
     simpl in *.
     fsetdec.
 Qed.
@@ -346,7 +346,7 @@ Theorem d_chk_inf_rename_dtvar : forall Ψ1 Ψ2 X Y e A b mode,
   b = dbind_tvar_empty \/ b = dbind_stvar_empty ->
   d_chk_inf (Ψ2 ++ (X, b) :: Ψ1) e mode A ->
   Y `notin` (dom (Ψ2 ++ (X, b) :: Ψ1)) ->
-  d_chk_inf (map (subst_tvar_in_dbind `Y X) Ψ2 ++ (Y, b) :: Ψ1) (subst_tvar_in_exp `Y X e) mode (subst_tvar_in_typ `Y X A).
+  d_chk_inf (map (subst_tvar_in_dbind `Y X) Ψ2 ++ (Y, b) :: Ψ1) ({` Y ᵉ/ₜ X} e) mode ({` Y ᵗ/ₜ X} A).
 Proof with eauto using d_wf_typ_rename_dtvar, d_mono_typ_rename_dtvar, d_wf_env_rename_tvar, d_sub_rename_dtvar, d_infabs_rename_dtvar, d_inftapp_rename_dtvar.
   intros. dependent induction H0; simpl in *; eauto...
   - constructor...

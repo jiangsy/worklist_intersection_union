@@ -251,7 +251,7 @@ Lemma d_wf_typ_all_open : forall Ψ A B,
   ⊢ Ψ ->
   Ψ ⊢ typ_all A ->
   Ψ ⊢ B ->
-  Ψ ⊢ A ^^ₜ B.
+  Ψ ⊢ A ᵗ^^ₜ B.
 Proof.
   intros.
   inversion H0.
@@ -1035,7 +1035,7 @@ Qed.
 
 
 Lemma lc_typ_open_stvar_subst_mono : forall A Ψ T X,
-    lc_typ (A ^^ₜ T) -> d_mono_typ Ψ T -> lc_typ (A ^ₜ X).
+    lc_typ (A ᵗ^^ₜ T) -> d_mono_typ Ψ T -> lc_typ (A ᵗ^ₜ X).
 Proof with try solve_notin; try solve_by_invert; simpl in *; eauto.
   intros * HD HM.
   inductions HD.
@@ -1050,10 +1050,10 @@ Qed.
 
 
 Lemma s_in_open_stvar_subst_mono : forall A T Ψ X Y,
-  s_in X (A ^^ₜ T) -> 
+  s_in X (A ᵗ^^ₜ T) -> 
   d_mono_typ Ψ T -> 
   X ∉ ftvar_in_typ T -> 
-  s_in X (A ^ₜ Y).
+  s_in X (A ᵗ^ₜ Y).
 Proof with try solve_notin; try solve_by_invert; simpl in *; eauto using lc_typ_open_stvar_subst_mono.
   intros * HD HM HN.
   inductions HD.
@@ -1076,32 +1076,32 @@ Proof with try solve_notin; try solve_by_invert; simpl in *; eauto using lc_typ_
 Qed.
 
 Lemma d_wf_typ_open_tvar_subst_mono : forall Ψ1 Ψ2 A T X,
-  Ψ1 ++ Ψ2 ⊢ A ^^ₜ T -> 
+  Ψ1 ++ Ψ2 ⊢ A ᵗ^^ₜ T -> 
   d_mono_typ (Ψ1 ++ Ψ2) T -> X ∉ (dom Ψ2)
-  -> Ψ1 ++ X ~ □ ++ Ψ2 ⊢ A ^ₜ X.
+  -> Ψ1 ++ X ~ □ ++ Ψ2 ⊢ A ᵗ^ₜ X.
 Proof with try solve_notin; simpl in *; eauto.
   intros * HT HD HN.
   inductions HT...
 
   all: destruct A; destruct T;
       lazymatch goal with
-      | n : nat, Hx: _ = ↑ ?n ^^ₜ _ |- _ =>
+      | n : nat, Hx: _ = ↑ ?n ᵗ^^ₜ _ |- _ =>
         try solve [
             induction n; unfold open_typ_wrt_typ in *; simpl in *; try solve_by_invert Hx; eauto using d_wf_env_weaken_tvar]
-      | n : nat, Hx: _ = ↑ (S ?n) ^^ₜ _ |- _ =>
+      | n : nat, Hx: _ = ↑ (S ?n) ᵗ^^ₜ _ |- _ =>
         try solve [
             induction n; unfold open_typ_wrt_typ in Hx; simpl in Hx; inverts Hx]
-      | Hx:` _ = ` _ ^^ₜ _ |- _ =>
+      | Hx:` _ = ` _ ᵗ^^ₜ _ |- _ =>
           try solve [
               unfold open_typ_wrt_typ in *; simpl in *; inverts x;
               rewrite_env (Ψ1 ++ [(X, □)] ++ Ψ2); applys* d_wf_typ_weaken;
               eauto using d_wf_typ_weaken]
-      (* | Hx: dtyp_svar _ = dtyp_svar _ ^^ₜ _ |- _ => *)
+      (* | Hx: dtyp_svar _ = dtyp_svar _ ᵗ^^ₜ _ |- _ => *)
       (*     try solve [ *)
       (*         unfold open_typ_wrt_typ in *; simpl in *; inverts x; *)
       (*         rewrite_env (Ψ1 ++ [(SY, □)] ++ Ψ2); applys* d_wf_typ_weaken; *)
       (*         eauto using d_wf_typ_weaken] *)
-      | Hx: _ = _ ^^ₜ _ |- _ =>
+      | Hx: _ = _ ᵗ^^ₜ _ |- _ =>
           try solve [unfold open_typ_wrt_typ in Hx; simpl in x; inverts x];
           try solve [unfold open_typ_wrt_typ; simpl; eauto using d_wf_env_weaken_tvar];
           try solve [unfold open_typ_wrt_typ in *; simpl in *; inverts* x]

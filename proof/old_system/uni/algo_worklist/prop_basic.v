@@ -396,7 +396,7 @@ Proof.
   - apply binds_In in H; fsetdec.
   - pick fresh X. 
     inst_cofinites_with X.
-    assert (ftvar_in_typ A [<=] ftvar_in_typ (A ^ₜ X)) by apply ftvar_in_typ_open_typ_wrt_typ_lower.
+    assert (ftvar_in_typ A [<=] ftvar_in_typ (A ᵗ^ₜ X)) by apply ftvar_in_typ_open_typ_wrt_typ_lower.
     simpl in *.
     fsetdec.
 Qed.
@@ -476,7 +476,7 @@ Lemma a_wf_typ_all_open : forall Σ A B,
   a_wf_env Σ ->
   Σ ᵗ⊢ᵃ typ_all A ->
   Σ ᵗ⊢ᵃ B ->
-  Σ ᵗ⊢ᵃ A ^^ₜ B.
+  Σ ᵗ⊢ᵃ A ᵗ^^ₜ B.
 Proof.
   intros. dependent destruction H0.
   pick fresh X. inst_cofinites_with X.

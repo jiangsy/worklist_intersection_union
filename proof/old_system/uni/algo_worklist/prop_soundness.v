@@ -1042,7 +1042,7 @@ Proof with eauto.
   (* forall x. A < B  *)
   - destruct_a_wf_wl. dependent destruction H. 
     pick fresh X. inst_cofinites_with X.  
-    assert (⊢ᵃʷ (work_sub (B1 ^ₜ X) A1 ⫤ᵃ X ~ᵃ ⬒ ;ᵃ Γ)). {
+    assert (⊢ᵃʷ (work_sub (B1 ᵗ^ₜ X) A1 ⫤ᵃ X ~ᵃ ⬒ ;ᵃ Γ)). {
       repeat (constructor; simpl; auto).
       apply a_wf_typ_tvar_etvar_cons in H0...
       apply a_wf_typ_weaken_cons...
@@ -1074,7 +1074,7 @@ Proof with eauto.
   - destruct_a_wf_wl.
     dependent destruction H. dependent destruction H1.
     pick fresh X. inst_cofinites_with X.
-    assert ( ⊢ᵃʷ (work_sub (B1 ^ₜ X) (A1 ^ₜ X) ⫤ᵃ X ~ᵃ ■ ;ᵃ Γ) ). {
+    assert ( ⊢ᵃʷ (work_sub (B1 ᵗ^ₜ X) (A1 ᵗ^ₜ X) ⫤ᵃ X ~ᵃ ■ ;ᵃ Γ) ). {
       repeat (constructor; simpl; auto).
       apply a_wf_typ_tvar_stvar_cons...
       apply a_wf_typ_tvar_stvar_cons...    }
@@ -1356,7 +1356,7 @@ Proof with eauto.
   (* /\ a. e : A => _ *)
   - destruct_a_wf_wl. 
     pick fresh X. inst_cofinites_with X.
-    assert (Hwf: ⊢ᵃʷ (work_check (e ᵉ^ₜ ` X) (A ^ₜ X) ⫤ᵃ X ~ᵃ □ ;ᵃ work_applys cs (typ_all A) ⫤ᵃ Γ)). {
+    assert (Hwf: ⊢ᵃʷ (work_check (e ᵉ^ₜ ` X) (A ᵗ^ₜ X) ⫤ᵃ X ~ᵃ □ ;ᵃ work_applys cs (typ_all A) ⫤ᵃ Γ)). {
       dependent destruction H0...
       dependent destruction H...
       repeat (constructor; simpl; auto). fold_open_wrt_rec.
@@ -1470,7 +1470,7 @@ Proof with eauto.
   - destruct_a_wf_wl. 
     dependent destruction H.
     pick fresh X. inst_cofinites_with X.
-    assert (⊢ᵃʷ (work_infabs (A ^ₜ X) cd ⫤ᵃ X ~ᵃ ⬒ ;ᵃ Γ)). {
+    assert (⊢ᵃʷ (work_infabs (A ᵗ^ₜ X) cd ⫤ᵃ X ~ᵃ ⬒ ;ᵃ Γ)). {
       repeat (constructor; simpl; auto).
       apply a_wf_typ_tvar_etvar_cons...
       rewrite_env (nil ++ (X ~ ⬒) ++ ⌊ Γ ⌋ᵃ).
@@ -1562,7 +1562,7 @@ Proof with eauto.
     destruct_d_wl_del_red...
   (* ∀ a. A ∘ B =>=> _ *)
   - destruct_a_wf_wl. 
-    assert (⊢ᵃʷ (work_applys cs (A ^^ₜ B) ⫤ᵃ Γ)). {
+    assert (⊢ᵃʷ (work_applys cs (A ᵗ^^ₜ B) ⫤ᵃ Γ)). {
       repeat (constructor; simpl; auto).
       apply a_wf_typ_all_open...
     }

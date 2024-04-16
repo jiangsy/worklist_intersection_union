@@ -1155,7 +1155,7 @@ Proof with eauto.
   - eapply wf_ss_binds_wf_typ...
   - inst_cofinites_for d_wf_typ__all; intros; inst_cofinites_with X...
     simpl in *.
-    eapply trans_typ_dtvar_atyp_s_in_dtyp with (b:=□) (Aᵃ:=A1ᵃ ^ₜ X); eauto.
+    eapply trans_typ_dtvar_atyp_s_in_dtyp with (b:=□) (Aᵃ:=A1ᵃ ᵗ^ₜ X); eauto.
 Qed.
 
 
@@ -1514,7 +1514,7 @@ Ltac rewrite_close_open_subst :=
 
 Ltac simpl_open_subst_typ' :=
   match goal with
-  | H : context [ {?B ᵗ/ₜ ?X} (?A ^ₜ (?X')) ] |- _ =>
+  | H : context [ {?B ᵗ/ₜ ?X} (?A ᵗ^ₜ (?X')) ] |- _ =>
     rewrite subst_tvar_in_typ_open_typ_wrt_typ in H; auto;
     simpl in H; try destruct_eq_atom; auto
     (* try solve [rewrite subst_tvar_in_typ_fresh_eq in H; auto] *)
@@ -1562,7 +1562,7 @@ Ltac solve_trans_exp_open_close' :=
 
 Ltac solve_s_in' :=
   match goal with 
-  | H : s_in ?X1 (?A ^ₜ ?X1) |- s_in ?X (?A ^ₜ ?X) => 
+  | H : s_in ?X1 (?A ᵗ^ₜ ?X1) |- s_in ?X (?A ᵗ^ₜ ?X) => 
     eapply s_in_rename with (Y:=X) in H
   end.
 
@@ -1810,7 +1810,7 @@ Proof.
     apply union_iff in Hfv. inversion Hfv; simpl; eauto.
   - dependent destruction Htrans.
     pick fresh X0. inst_cofinites_with X0.
-    assert (X `in` ftvar_in_typ (A1ᵈ ^ₜ X0)). {
+    assert (X `in` ftvar_in_typ (A1ᵈ ᵗ^ₜ X0)). {
       eapply H0; eauto.
       rewrite ftvar_in_typ_open_typ_wrt_typ_lower  with (A2:=` X0) in Hfv.
       auto. inversion Hbinds; auto.
@@ -1853,7 +1853,7 @@ Proof.
     apply union_iff in Hfv. inversion Hfv; simpl; eauto.
   - dependent destruction Htrans. 
     pick fresh X0. inst_cofinites_with X0.
-    assert (Y `in` ftvar_in_typ (A1ᵈ ^ₜ X0)). {
+    assert (Y `in` ftvar_in_typ (A1ᵈ ᵗ^ₜ X0)). {
       rewrite ftvar_in_typ_open_typ_wrt_typ_lower  with (A2:=` X0) in Hfv.
       eapply H0 with (Y:=Y) in Hfv; eauto.
     }
@@ -2596,7 +2596,7 @@ Proof.
   - apply binds_In in H0. fsetdec.
   - rewrite wf_ss_ftvar_in_typ_upper; eauto. fsetdec. 
   - inst_cofinites_by (L `union` dom θ `union` ftvar_in_typ A1ᵈ) using_name X.
-    assert (ftvar_in_typ A1ᵈ [<=] ftvar_in_typ (A1ᵈ ^ₜ X)). {
+    assert (ftvar_in_typ A1ᵈ [<=] ftvar_in_typ (A1ᵈ ᵗ^ₜ X)). {
       eapply ftvar_in_typ_open_typ_wrt_typ_lower.
     }
     simpl in *. fsetdec.

@@ -38,7 +38,7 @@ Qed.
 Lemma subst_tvar_in_typ_open_typ_wrt_typ_fresh2 : forall X A T B,
   lc_typ T ->
   X `notin` ftvar_in_typ B ->
-  ({T ᵗ/ₜ X} A) ^^ₜ B = {T ᵗ/ₜ X} A ^^ₜ B.
+  ({T ᵗ/ₜ X} A) ᵗ^^ₜ B = {T ᵗ/ₜ X} A ᵗ^^ₜ B.
 Proof.
   intros.
   rewrite subst_tvar_in_typ_open_typ_wrt_typ; auto.
@@ -156,7 +156,7 @@ Qed.
 Lemma subst_tvar_in_typ_open_typ_wrt_typ_tvar2 : forall X A T,
   lc_typ T ->
   X `notin` ftvar_in_typ A ->
-  {T ᵗ/ₜ X} A ^ₜ X = A ^^ₜ T.
+  {T ᵗ/ₜ X} A ᵗ^ₜ X = A ᵗ^^ₜ T.
 Proof.
   intros.
   rewrite subst_tvar_in_typ_open_typ_wrt_typ; auto.
@@ -304,7 +304,7 @@ Proof.
     inversion x.
     inst_cofinites_by (singleton X).
     eapply lc_typ_all_exists with (X1:=x0). intros.
-    specialize (H0 x0 (A ^ₜ x0) X T). apply H0.
+    specialize (H0 x0 (A ᵗ^ₜ x0) X T). apply H0.
     subst. rewrite <- subst_tvar_in_typ_open_typ_wrt_typ_fresh2; auto.
     auto.
   - destruct A; try solve [inversion x]; auto.
@@ -322,7 +322,7 @@ Proof.
   intros. induction H; simpl; auto.
   - destruct (X0 == X); auto.
   - inst_cofinites_by (singleton X) using_name X. eapply lc_typ_all_exists with (X1:=X0).
-    replace (({T ᵗ/ₜ X} A) ^ₜ X0) with ({T ᵗ/ₜ X} A ^ₜ X0); eauto.
+    replace (({T ᵗ/ₜ X} A) ᵗ^ₜ X0) with ({T ᵗ/ₜ X} A ᵗ^ₜ X0); eauto.
     rewrite subst_tvar_in_typ_open_typ_wrt_typ_fresh2; auto.
 Qed.
 

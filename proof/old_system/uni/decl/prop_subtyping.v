@@ -141,14 +141,14 @@ Qed.
 
 Lemma d_open_mono_same_order : forall Ψ A T,
   d_mono_typ Ψ T ->
-  d_typ_order (A ^^ₜ T) = d_typ_order A.
+  d_typ_order (A ᵗ^^ₜ T) = d_typ_order A.
 Proof.
   intros. unfold open_typ_wrt_typ. eapply d_open_rec_mono_same_order; eauto.
 Qed.
 
 
 Lemma d_open_svar_same_order : forall A X,
-  d_typ_order (A ^ₜ X) = d_typ_order A.
+  d_typ_order (A ᵗ^ₜ X) = d_typ_order A.
 Proof.
   intros. unfold open_typ_wrt_typ. apply d_open_rec_tvar_same_order; auto.
 Qed.
@@ -302,11 +302,11 @@ Proof.
 Qed.
 
 Theorem d_sub_open_mono_stvar_false: forall n1 n2 Ψ A T X L,
-    d_typ_order (A ^^ₜ T) < n1 ->
-    d_typ_size (A ^^ₜ T) < n2 ->
+    d_typ_order (A ᵗ^^ₜ T) < n1 ->
+    d_typ_size (A ᵗ^^ₜ T) < n2 ->
     X ~ ■ ∈ᵈ Ψ ->
-    Ψ ⊢ A ^^ₜ T <: typ_var_f X ->
-    (forall X, X `notin` L -> s_in X (A ^ₜ X)) ->
+    Ψ ⊢ A ᵗ^^ₜ T <: typ_var_f X ->
+    (forall X, X `notin` L -> s_in X (A ᵗ^ₜ X)) ->
     d_mono_typ Ψ T ->
     False.
 Proof.
@@ -600,8 +600,8 @@ Qed.
 Corollary d_sub_size_rename : forall n X Y Ψ1 Ψ2 A B,
     X `notin`  (ftvar_in_typ A `union` ftvar_in_typ B) ->
     Y `notin` ((dom Ψ1) `union` (dom Ψ2)) ->
-    Ψ2 ++ X ~ ■ ++ Ψ1 ⊢ A ^^ₜ typ_var_f X <: B ^^ₜ typ_var_f X | n ->
-    map (subst_tvar_in_dbind (typ_var_f Y) X) Ψ2 ++ Y ~ ■ ++ Ψ1 ⊢ A ^^ₜ typ_var_f Y <: B ^^ₜ typ_var_f Y | n.
+    Ψ2 ++ X ~ ■ ++ Ψ1 ⊢ A ᵗ^^ₜ typ_var_f X <: B ᵗ^^ₜ typ_var_f X | n ->
+    map (subst_tvar_in_dbind (typ_var_f Y) X) Ψ2 ++ Y ~ ■ ++ Ψ1 ⊢ A ᵗ^^ₜ typ_var_f Y <: B ᵗ^^ₜ typ_var_f Y | n.
 Proof with eauto.
   intros.
   forwards: d_sub_size_rename_stvar Y H1. solve_notin.
@@ -766,10 +766,10 @@ Proof.
 Qed.
 
 Theorem d_sub_open_mono_bot_false: forall n1 n2 Ψ A T L,
-    d_typ_order (A ^^ₜ T) < n1 ->
-    d_typ_size (A ^^ₜ T) < n2 ->
-    Ψ ⊢ A ^^ₜ T <: typ_bot ->
-    (forall X, X `notin` L -> s_in X (A ^ₜ X)) ->
+    d_typ_order (A ᵗ^^ₜ T) < n1 ->
+    d_typ_size (A ᵗ^^ₜ T) < n2 ->
+    Ψ ⊢ A ᵗ^^ₜ T <: typ_bot ->
+    (forall X, X `notin` L -> s_in X (A ᵗ^ₜ X)) ->
     d_mono_typ Ψ T ->
     False.
 Proof.
@@ -945,7 +945,7 @@ Proof with auto.
            simpl in H6. auto.
       * eapply d_sub__all with (L:=L `union` L0 `union` dom Ψ); auto.
         intros. inst_cofinites_with X.
-        eapply IHn_d_typ_order with (B:= B1 ^ₜ X); eauto...
+        eapply IHn_d_typ_order with (B:= B1 ᵗ^ₜ X); eauto...
         -- simpl in *. rewrite d_open_svar_same_order...
       * pick fresh Y and apply d_sub__alll. 5: applys H6. all: eauto.
         ** pick fresh X. inst_cofinites_with X.
@@ -953,7 +953,7 @@ Proof with auto.
         rewrite_env  (nil ++ (X, ■) :: Ψ) in H1.
         eapply d_sub_size_subst_stvar with (T:=T1) in H1; simpl; eauto.
         destruct H1 as [n' Hsub].
-        eapply IHn_d_typ_order with (B:=B1 ^^ₜ T1) (n1:=n'); eauto...
+        eapply IHn_d_typ_order with (B:=B1 ᵗ^^ₜ T1) (n1:=n'); eauto...
         erewrite d_open_mono_same_order; eauto. 
         rewrite 2 subst_tvar_in_typ_open_typ_wrt_typ in Hsub... simpl in Hsub.
         unfold eq_dec in Hsub. destruct (EqDec_eq_of_X X X) in Hsub.
