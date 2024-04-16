@@ -669,19 +669,47 @@ Proof.
   induction A; simpl; auto; try lia.
 Qed.
 
+Lemma iuv_size_open_typ_wrt_typ_rec : forall A B n,
+  iuv_size (open_typ_wrt_typ_rec n B A) <= iuv_size A * (1 + iuv_size B).
+Proof.
+  intros A B.
+  induction A; intros; simpl; eauto; try lia.
+  - destruct (lt_eq_lt_dec n n0).
+    + destruct s; simpl; eauto; lia.
+    + simpl; eauto; lia.
+  - specialize (IHA1 n). specialize (IHA2 n). lia.
+  - specialize (IHA1 n). specialize (IHA2 n). lia.
+  - specialize (IHA1 n). specialize (IHA2 n). lia.
+Qed.
+
+Lemma iuv_size_open_typ_wrt_typ : forall A B,
+  iuv_size (open_typ_wrt_typ A B) <= (1 + iuv_size A) * (2 + iuv_size B).
+Proof.
+  intros. unfold open_typ_wrt_typ.
+  specialize (iuv_size_open_typ_wrt_typ_rec A B 0). lia.
+Qed.
+
 Lemma inftapp_iuv_size : forall Ψ A B C,
   Ψ ⊢ A ○ B ⇒⇒ C ->
   iuv_size C <= (1 + iuv_size A) * (2 + iuv_size B).
 Proof.
-  intros. induction H; simpl; auto; try lia. admit.
+  intros. induction H; simpl; auto; try lia.
+  eapply iuv_size_open_typ_wrt_typ.
+Qed.
+
+Lemma binds_lookup_bind : forall Ω x A,
+  ⊢ᵈʷ Ω ->
+  x ~ A ∈ᵈ dwl_to_denv Ω ->
+  lookup_bind (dwl_to_aenv Ω) x = Some A.
 Admitted.
 
 Lemma inf_iuv_size_exp_split_size : forall Ω A e,
+  ⊢ᵈʷ Ω ->
   (dwl_to_denv Ω) ⊢ e ⇒ A ->
   iuv_size A <= exp_split_size (dwl_to_aenv Ω) e.
 Proof.
-  intros Ω A e Hinf. dependent induction Hinf; simpl; auto; try lia.
-  - assert (Hbind: lookup_bind (dwl_to_aenv Ω) x = Some A) by admit.
+  intros Ω A e Hwf Hinf. dependent induction Hinf; simpl; auto; try lia.
+  - assert (Hbind: lookup_bind (dwl_to_aenv Ω) x = Some A). { eapply binds_lookup_bind; eauto. }
     rewrite Hbind. lia.
   - assert (Hle: iuv_size C <= iuv_size A). { eapply infabs_iuv_size_C; eauto. }
     assert (Hle': iuv_size A ≤ exp_split_size (dwl_to_aenv Ω) e1) by auto.
@@ -689,9 +717,11 @@ Proof.
   - dependent destruction H.
     eapply iuv_size_d_mono in H. eapply iuv_size_d_mono in H0. subst. lia.
   - assert (Hle: iuv_size C <= (1 + iuv_size A) * (2 + iuv_size B)). { eapply inftapp_iuv_size; eauto. }
-    assert (Hle': iuv_size A ≤ exp_split_size (dwl_to_aenv Ω) e1) by auto.
-    admit. (* oh my lia *)
-Admitted.
+    assert (Hle': iuv_size A <= exp_split_size (dwl_to_aenv Ω) e1) by auto.
+    eapply le_trans with (m := (1 + iuv_size A) * (2 + iuv_size B)); try lia.
+    replace (S (S (iuv_size B + exp_split_size (dwl_to_aenv Ω) e1 * S (S (iuv_size B))))) with ((1 + exp_split_size (dwl_to_aenv Ω) e1) * (2 + iuv_size B)) by lia.
+    eapply mult_le_compat_r. lia.
+Qed.
 
 Lemma d_wl_red_chk_inf_complete: forall Ω e A mode,
   d_chk_inf (dwl_to_denv Ω) e mode A -> 
@@ -713,7 +743,7 @@ Proof with auto.
     apply d_infabs_wft in H0 as Hwft. intuition.
     eapply d_wl_red_infabs_complete; eauto.
     econstructor... econstructor...
-    eapply inf_iuv_size_exp_split_size in H as Hle1.
+    eapply inf_iuv_size_exp_split_size in H as Hle1; eauto.
     eapply infabs_iuv_size_B in H0 as Hle2.
     specialize (iu_size_le_iuv_size B) as Hle3. lia.
     econstructor.
@@ -765,7 +795,7 @@ Proof with auto.
   - destruct_d_wl_wf. eapply d_wl_red__chk_inter...
   - destruct_d_wl_wf. eauto...
   - destruct_d_wl_wf. eauto... 
-Admitted.
+Qed.
 
 
 Theorem d_wl_red_complete: forall Ω, 

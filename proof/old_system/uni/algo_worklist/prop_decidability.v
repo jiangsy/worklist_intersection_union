@@ -6,6 +6,7 @@ Require Import Coq.micromega.Lia.
 
 Require Import uni.notations.
 Require Import uni.prop_basic.
+Require Import uni.decl_worklist.prop_equiv.
 Require Import uni.algo_worklist.def_extra.
 Require Import uni.algo_worklist.prop_basic.
 Require Import uni.algo_worklist.prop_rename.
@@ -643,7 +644,7 @@ Proof.
     try erewrite exp_size_subst_tvar_in_exp_mono;
     try erewrite exp_size_conts_subst_tvar_in_conts_mono;
     try erewrite exp_size_contd_subst_tvar_in_contd_mono;
-    try erewrite iu_size_subst_mono; eauto.
+    try erewrite iu_size_subst_a_mono; eauto.
 Qed.
 
 Lemma exp_size_wl_subst_tvar_in_aworklist_mono : forall Γ Γ' X A,
