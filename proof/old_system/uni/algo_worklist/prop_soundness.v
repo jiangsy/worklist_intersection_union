@@ -119,7 +119,7 @@ Ltac _apply_IH_a_wl_red :=
 
 Ltac trans_all_typ :=
   match goal with 
-  | H5 : nil ⫦ ?Γ ⇝ ?Ω ⫣ ?θ |- _ => 
+  | H5 : nil ⊩ ?Γ ⇝ ?Ω ⫣ ?θ |- _ => 
     repeat
     match goal with 
     | H1 : a_wf_typ (awl_to_aenv ?Γ) ?C |- _ =>
@@ -142,9 +142,9 @@ Lemma trans_typ_subst_tvar : forall θ1 θ2 Bᵃ Bᵈ X Aᵃ A'ᵈ,
   lc_typ Aᵃ -> 
   wf_ss (θ2 ++ θ1) ->
   X `notin` dom (θ2 ++ θ1) ->
-  θ1 ᵗ⫦ Bᵃ ⇝ Bᵈ ->
-  θ2 ++ θ1 ᵗ⫦ {Bᵃ ᵗ/ₜ X} Aᵃ ⇝ A'ᵈ -> 
-  exists Aᵈ, {Bᵈ ᵗ/ₜ X} Aᵈ = A'ᵈ /\ θ2 ++ (X, dbind_tvar_empty) :: θ1 ᵗ⫦ Aᵃ ⇝ Aᵈ.
+  θ1 ᵗ⊩ Bᵃ ⇝ Bᵈ ->
+  θ2 ++ θ1 ᵗ⊩ {Bᵃ ᵗ/ₜ X} Aᵃ ⇝ A'ᵈ -> 
+  exists Aᵈ, {Bᵈ ᵗ/ₜ X} Aᵈ = A'ᵈ /\ θ2 ++ (X, dbind_tvar_empty) :: θ1 ᵗ⊩ Aᵃ ⇝ Aᵈ.
 Proof with eauto.
   intros *  Hlc Hwfss Hfv Hwft Hinst. 
   generalize dependent θ2. generalize dependent X. generalize dependent A'ᵈ.
@@ -205,9 +205,9 @@ Qed.
 Lemma trans_typ_subst_tvar_cons : forall θ Bᵃ Bᵈ X Aᵃ A'ᵈ,
   lc_typ Aᵃ -> 
   X `notin` dom θ ->
-  θ ᵗ⫦ Bᵃ ⇝ Bᵈ ->
-  θ ᵗ⫦ {Bᵃ ᵗ/ₜ X} Aᵃ ⇝ A'ᵈ -> 
-  exists Aᵈ, {Bᵈ ᵗ/ₜ X} Aᵈ = A'ᵈ /\ (X, dbind_tvar_empty) :: θ ᵗ⫦ Aᵃ ⇝ Aᵈ.
+  θ ᵗ⊩ Bᵃ ⇝ Bᵈ ->
+  θ ᵗ⊩ {Bᵃ ᵗ/ₜ X} Aᵃ ⇝ A'ᵈ -> 
+  exists Aᵈ, {Bᵈ ᵗ/ₜ X} Aᵈ = A'ᵈ /\ (X, dbind_tvar_empty) :: θ ᵗ⊩ Aᵃ ⇝ Aᵈ.
 Proof with eauto.
   intros.
   rewrite_env (nil ++ θ) in H2.
@@ -220,9 +220,9 @@ Lemma trans_typ_subst_etvar : forall θ1 θ2 Tᵃ Tᵈ X Aᵃ Aᵈ,
   wf_ss (θ2 ++ θ1) ->
   X `notin` dom (θ2 ++ θ1) ->
   d_mono_typ (ss_to_denv θ1) Tᵈ ->
-  θ2 ++ θ1 ᵗ⫦ Tᵃ ⇝ Tᵈ ->
-  θ2 ++ θ1 ᵗ⫦ {Tᵃ ᵗ/ₜ X} Aᵃ ⇝ Aᵈ -> 
-  θ2 ++ X ~ dbind_typ Tᵈ ++ θ1 ᵗ⫦ Aᵃ ⇝ Aᵈ.
+  θ2 ++ θ1 ᵗ⊩ Tᵃ ⇝ Tᵈ ->
+  θ2 ++ θ1 ᵗ⊩ {Tᵃ ᵗ/ₜ X} Aᵃ ⇝ Aᵈ -> 
+  θ2 ++ X ~ dbind_typ Tᵈ ++ θ1 ᵗ⊩ Aᵃ ⇝ Aᵈ.
 Proof.
   intros * Hlc Hwfss Hnotin Hmono Hinstt Hinsta.
   generalize dependent θ2. generalize dependent X. generalize dependent Aᵈ.
@@ -282,9 +282,9 @@ Lemma trans_typ_subst_etvar_same_ss : forall θ Tᵃ Tᵈ X Aᵃ Aᵈ,
   wf_ss θ ->
   binds X (dbind_typ Tᵈ) θ ->
   X `notin` ftvar_in_typ Tᵃ ->
-  θ ᵗ⫦ Tᵃ ⇝ Tᵈ ->
-  θ ᵗ⫦ {Tᵃ ᵗ/ₜ X} Aᵃ ⇝ Aᵈ -> 
-  θ ᵗ⫦ Aᵃ ⇝ Aᵈ.
+  θ ᵗ⊩ Tᵃ ⇝ Tᵈ ->
+  θ ᵗ⊩ {Tᵃ ᵗ/ₜ X} Aᵃ ⇝ Aᵈ -> 
+  θ ᵗ⊩ Aᵃ ⇝ Aᵈ.
 Proof.
   intros.
   apply ls_binds_split in H0 as Hsplit.
@@ -307,17 +307,17 @@ Lemma trans_exp_subst_etvar_same_ss' : forall θ Tᵃ Tᵈ X eᵃ eᵈ,
   wf_ss θ ->
   binds X (dbind_typ Tᵈ) θ ->
   X `notin` ftvar_in_typ Tᵃ ->
-  θ ᵗ⫦ Tᵃ ⇝ Tᵈ ->
-  θ ᵉ⫦ (subst_tvar_in_exp Tᵃ X eᵃ) ⇝ eᵈ -> 
-  θ ᵉ⫦ eᵃ ⇝ eᵈ
+  θ ᵗ⊩ Tᵃ ⇝ Tᵈ ->
+  θ ᵉ⊩ (subst_tvar_in_exp Tᵃ X eᵃ) ⇝ eᵈ -> 
+  θ ᵉ⊩ eᵃ ⇝ eᵈ
 with trans_body_subst_etvar_same_ss' : forall θ Tᵃ Tᵈ X bᵃ bᵈ,
   lc_body bᵃ ->
   wf_ss θ ->
   binds X (dbind_typ Tᵈ) θ ->
   X `notin` ftvar_in_typ Tᵃ ->
-  θ ᵗ⫦ Tᵃ ⇝ Tᵈ ->
-  θ ᵇ⫦ (subst_tvar_in_body Tᵃ X bᵃ) ⇝ bᵈ -> 
-  θ ᵇ⫦ bᵃ ⇝ bᵈ.
+  θ ᵗ⊩ Tᵃ ⇝ Tᵈ ->
+  θ ᵇ⊩ (subst_tvar_in_body Tᵃ X bᵃ) ⇝ bᵈ -> 
+  θ ᵇ⊩ bᵃ ⇝ bᵈ.
 Proof.
   - intros * Hlc.
     generalize dependent θ. generalize dependent eᵈ.
@@ -358,16 +358,16 @@ Lemma trans_exp_subst_etvar_same_ss : forall θ Tᵃ Tᵈ X eᵃ eᵈ,
   wf_ss θ ->
   binds X (dbind_typ Tᵈ) θ ->
   X `notin` ftvar_in_typ Tᵃ ->
-  θ ᵗ⫦ Tᵃ ⇝ Tᵈ ->
-  θ ᵉ⫦ (subst_tvar_in_exp Tᵃ X eᵃ) ⇝ eᵈ -> 
-  θ ᵉ⫦ eᵃ ⇝ eᵈ
+  θ ᵗ⊩ Tᵃ ⇝ Tᵈ ->
+  θ ᵉ⊩ (subst_tvar_in_exp Tᵃ X eᵃ) ⇝ eᵈ -> 
+  θ ᵉ⊩ eᵃ ⇝ eᵈ
 with trans_body_subst_etvar_same_ss : forall θ Tᵃ Tᵈ X bᵃ bᵈ,
   wf_ss θ ->
   binds X (dbind_typ Tᵈ) θ ->
   X `notin` ftvar_in_typ Tᵃ ->
-  θ ᵗ⫦ Tᵃ ⇝ Tᵈ ->
-  θ ᵇ⫦ (subst_tvar_in_body Tᵃ X bᵃ) ⇝ bᵈ -> 
-  θ ᵇ⫦ bᵃ ⇝ bᵈ.
+  θ ᵗ⊩ Tᵃ ⇝ Tᵈ ->
+  θ ᵇ⊩ (subst_tvar_in_body Tᵃ X bᵃ) ⇝ bᵈ -> 
+  θ ᵇ⊩ bᵃ ⇝ bᵈ.
 Proof.
   - intros. clear trans_exp_subst_etvar_same_ss. clear  trans_body_subst_etvar_same_ss.
     apply trans_exp_lc_aexp in H3 as Hlce.
@@ -386,16 +386,16 @@ Lemma trans_conts_subst_etvar_same_ss : forall θ Tᵃ Tᵈ X csᵃ csᵈ,
   wf_ss θ ->
   binds X (dbind_typ Tᵈ) θ ->
   X `notin` ftvar_in_typ Tᵃ ->
-  θ ᵗ⫦ Tᵃ ⇝ Tᵈ ->
-  θ ᶜˢ⫦ (subst_tvar_in_conts Tᵃ X csᵃ) ⇝ csᵈ -> 
-  θ ᶜˢ⫦ csᵃ ⇝ csᵈ
+  θ ᵗ⊩ Tᵃ ⇝ Tᵈ ->
+  θ ᶜˢ⊩ (subst_tvar_in_conts Tᵃ X csᵃ) ⇝ csᵈ -> 
+  θ ᶜˢ⊩ csᵃ ⇝ csᵈ
 with trans_contd_subst_etvar_same_ss : forall θ Tᵃ Tᵈ X cdᵃ cdᵈ,
   wf_ss θ ->
   binds X (dbind_typ Tᵈ) θ ->
   X `notin` ftvar_in_typ Tᵃ ->
-  θ ᵗ⫦ Tᵃ ⇝ Tᵈ ->
-  θ ᶜᵈ⫦ (subst_tvar_in_contd Tᵃ X cdᵃ) ⇝ cdᵈ -> 
-  θ ᶜᵈ⫦ cdᵃ ⇝ cdᵈ.
+  θ ᵗ⊩ Tᵃ ⇝ Tᵈ ->
+  θ ᶜᵈ⊩ (subst_tvar_in_contd Tᵃ X cdᵃ) ⇝ cdᵈ -> 
+  θ ᶜᵈ⊩ cdᵃ ⇝ cdᵈ.
 Proof.
   intros. generalize dependent θ. generalize dependent csᵈ.
   induction csᵃ; intros; simpl in *; dependent destruction H3;
@@ -417,9 +417,9 @@ Lemma trans_work_subst_etvar_same_ss : forall θ Tᵃ Tᵈ X wᵃ wᵈ,
   wf_ss θ ->
   binds X (dbind_typ Tᵈ) θ ->
   X `notin` ftvar_in_typ Tᵃ ->
-  θ ᵗ⫦ Tᵃ ⇝ Tᵈ ->
-  θ ʷ⫦ (subst_tvar_in_work Tᵃ X wᵃ) ⇝ wᵈ -> 
-  θ ʷ⫦ wᵃ ⇝ wᵈ.
+  θ ᵗ⊩ Tᵃ ⇝ Tᵈ ->
+  θ ʷ⊩ (subst_tvar_in_work Tᵃ X wᵃ) ⇝ wᵈ -> 
+  θ ʷ⊩ wᵃ ⇝ wᵈ.
 Proof.
   intros. destruct wᵃ; try simpl in *; dependent destruction H3;
     constructor; 
@@ -435,8 +435,8 @@ Lemma trans_typ_etvar_tvar_subst : forall θ1 θ2 T X Aᵃ A'ᵈ,
   lc_typ Aᵃ -> 
   X `notin` dom (θ2 ++ θ1) ->
   d_mono_typ (ss_to_denv θ1) T ->
-  θ2 ++ (X, dbind_typ T) :: θ1 ᵗ⫦ Aᵃ ⇝ A'ᵈ -> 
-  exists Aᵈ, {T ᵗ/ₜ X} Aᵈ = A'ᵈ /\ θ2 ++ (X, dbind_tvar_empty) :: θ1 ᵗ⫦ Aᵃ ⇝ Aᵈ.
+  θ2 ++ (X, dbind_typ T) :: θ1 ᵗ⊩ Aᵃ ⇝ A'ᵈ -> 
+  exists Aᵈ, {T ᵗ/ₜ X} Aᵈ = A'ᵈ /\ θ2 ++ (X, dbind_tvar_empty) :: θ1 ᵗ⊩ Aᵃ ⇝ Aᵈ.
 Proof with eauto.
   intros * Hlc Hfv Hwft Hinst.
   generalize dependent θ2. generalize dependent X. generalize dependent A'ᵈ.
@@ -509,8 +509,8 @@ Lemma trans_typ_etvar_tvar_subst_cons : forall θ1 T X Aᵃ A'ᵈ,
   lc_typ Aᵃ -> 
   X `notin` dom θ1 ->
   d_mono_typ (ss_to_denv θ1) T ->
-  (X, dbind_typ T) :: θ1 ᵗ⫦ Aᵃ ⇝ A'ᵈ -> 
-  exists Aᵈ, {T ᵗ/ₜ X} Aᵈ = A'ᵈ /\ (X, dbind_tvar_empty) :: θ1 ᵗ⫦ Aᵃ ⇝ Aᵈ.
+  (X, dbind_typ T) :: θ1 ᵗ⊩ Aᵃ ⇝ A'ᵈ -> 
+  exists Aᵈ, {T ᵗ/ₜ X} Aᵈ = A'ᵈ /\ (X, dbind_tvar_empty) :: θ1 ᵗ⊩ Aᵃ ⇝ Aᵈ.
 Proof with auto. 
   intros. 
   rewrite_env (nil ++ (X, □) :: θ1).  
@@ -578,8 +578,8 @@ Lemma aworklist_subst_transfer_same_dworklist: forall Γ Ω θ X T Γ1 Γ2,
   trans_worklist nil (awl_app (subst_tvar_in_aworklist T X Γ2) Γ1)  Ω θ ->
   exists θ' Tᵈ, 
       trans_worklist nil Γ Ω θ' /\ 
-      θ ᵗ⫦ T ⇝ Tᵈ /\ 
-      θ' ᵗ⫦ T ⇝ Tᵈ /\
+      θ ᵗ⊩ T ⇝ Tᵈ /\ 
+      θ' ᵗ⊩ T ⇝ Tᵈ /\
       (forall Y b, X <> Y -> binds Y b θ <-> binds Y b θ') /\ 
       binds X (dbind_typ Tᵈ) θ' /\
       wf_ss θ'.
@@ -754,9 +754,9 @@ Qed.
 Lemma trans_wl_a_wl_binds_var_trans_typ_d_wl' : forall θ Γ Ω x Aᵃ Aᵈ,
   ⊢ᵃʷ Γ ->
   ⊢ᵈʷ Ω ->
-  nil ⫦ Γ ⇝ Ω ⫣ θ ->
+  nil ⊩ Γ ⇝ Ω ⫣ θ ->
   binds x (abind_var_typ Aᵃ) (awl_to_aenv Γ) ->
-  θ ᵗ⫦ Aᵃ ⇝ Aᵈ ->
+  θ ᵗ⊩ Aᵃ ⇝ Aᵈ ->
   binds x (dbind_typ Aᵈ) (dwl_to_denv Ω).
 Proof with eauto.
   intros.
@@ -768,9 +768,9 @@ Qed.
 
 Lemma trans_wl_a_wl_binds_var_trans_typ_d_wl : forall θ Γ Ω x Aᵃ Aᵈ,
   ⊢ᵃʷ Γ ->
-  nil ⫦ Γ ⇝ Ω ⫣ θ ->
+  nil ⊩ Γ ⇝ Ω ⫣ θ ->
   binds x (abind_var_typ Aᵃ) (awl_to_aenv Γ) ->
-  θ ᵗ⫦ Aᵃ ⇝ Aᵈ ->
+  θ ᵗ⊩ Aᵃ ⇝ Aᵈ ->
   binds x (dbind_typ Aᵈ) (dwl_to_denv Ω).
 Proof.
   intros. eapply trans_wl_a_wf_wl_d_wf_wl in H0 as Hdwf; auto.
@@ -958,9 +958,9 @@ Qed.
 
 
 Lemma trans_apply_conts : forall θ csᵃ csᵈ Aᵃ Aᵈ wᵃ wᵈ,
-  θ ᶜˢ⫦ csᵃ ⇝ csᵈ ->
-  θ ᵗ⫦ Aᵃ ⇝ Aᵈ ->
-  θ ʷ⫦ wᵃ ⇝ wᵈ ->
+  θ ᶜˢ⊩ csᵃ ⇝ csᵈ ->
+  θ ᵗ⊩ Aᵃ ⇝ Aᵈ ->
+  θ ʷ⊩ wᵃ ⇝ wᵈ ->
   apply_conts csᵃ Aᵃ wᵃ ->
   apply_conts csᵈ Aᵈ wᵈ.
 Proof.
@@ -970,10 +970,10 @@ Proof.
 Qed.
 
 Lemma trans_apply_contd : forall θ cdᵃ cdᵈ Aᵃ Aᵈ Bᵃ Bᵈ wᵃ wᵈ,
-  θ ᶜᵈ⫦ cdᵃ ⇝ cdᵈ ->
-  θ ᵗ⫦ Aᵃ ⇝ Aᵈ ->
-  θ ᵗ⫦ Bᵃ ⇝ Bᵈ ->
-  θ ʷ⫦ wᵃ ⇝ wᵈ ->
+  θ ᶜᵈ⊩ cdᵃ ⇝ cdᵈ ->
+  θ ᵗ⊩ Aᵃ ⇝ Aᵈ ->
+  θ ᵗ⊩ Bᵃ ⇝ Bᵈ ->
+  θ ʷ⊩ wᵃ ⇝ wᵈ ->
   apply_contd cdᵃ Aᵃ Bᵃ wᵃ ->
   apply_contd cdᵈ Aᵈ Bᵈ wᵈ.
 Proof with eauto.
@@ -1167,8 +1167,8 @@ Proof with eauto.
     + eapply aworklist_subst_transfer_same_dworklist in Hsubst as Htransws; eauto...
       destruct Htransws as [θ'1 [Tᵈ [Htrans_rev [Htransa [Htransa' [Hbinds [Hbindsx Hwfss]]]]]]].
       destruct_trans.
-      assert (Hbindsx1: ((X2, dbind_typ T) :: (X1, dbind_typ T0) :: θ') ᵗ⫦ `X1 ⇝ T0 ) by eauto.
-      assert (Hbindsx2: ((X2, dbind_typ T) :: (X1, dbind_typ T0) :: θ') ᵗ⫦ `X2 ⇝ T ) by eauto.
+      assert (Hbindsx1: ((X2, dbind_typ T) :: (X1, dbind_typ T0) :: θ') ᵗ⊩ `X1 ⇝ T0 ) by eauto.
+      assert (Hbindsx2: ((X2, dbind_typ T) :: (X1, dbind_typ T0) :: θ') ᵗ⊩ `X2 ⇝ T ) by eauto.
       apply trans_typ_binds_etvar in Hbindsx as Htransx3...
       repeat unify_trans_typ.
       exists (dworklist_conswork Ω (work_sub(typ_arrow A1ᵈ A2ᵈ) (typ_arrow T0 T) )). split.
@@ -1272,8 +1272,8 @@ Proof with eauto.
     + eapply aworklist_subst_transfer_same_dworklist in Hsubst as Htransws; eauto...
       destruct Htransws as [θ'1 [Tᵈ [Htrans_rev [Htransa [Htransa' [Hbinds [Hbindsx Hwfss]]]]]]].
       destruct_trans.
-      assert (Hbindsx1: ((X2, dbind_typ T0) :: (X1, dbind_typ T1) :: θ') ᵗ⫦ `X1 ⇝ T1 ) by eauto.
-      assert (Hbindsx2: ((X2, dbind_typ T0) :: (X1, dbind_typ T1) :: θ') ᵗ⫦ `X2 ⇝ T0 ) by eauto.
+      assert (Hbindsx1: ((X2, dbind_typ T0) :: (X1, dbind_typ T1) :: θ') ᵗ⊩ `X1 ⇝ T1 ) by eauto.
+      assert (Hbindsx2: ((X2, dbind_typ T0) :: (X1, dbind_typ T1) :: θ') ᵗ⊩ `X2 ⇝ T0 ) by eauto.
       repeat unify_trans_typ.
       exists (dworklist_conswork Ω (work_check (exp_abs (close_exp_wrt_exp x eᵈ)) (typ_arrow T1 T0)))... split.
       * exists θ'... constructor; auto.
@@ -1382,11 +1382,11 @@ Proof with eauto.
          simpl in *. destruct_eq_atom.
          rewrite subst_tvar_in_exp_fresh_eq in H8; eauto.
       -- solve_trans_typ_open_close.
-    + assert (θ ᵗ⫦ typ_all A ⇝ typ_all A1ᵈ). {
+    + assert (θ ᵗ⊩ typ_all A ⇝ typ_all A1ᵈ). {
         inst_cofinites_for trans_typ__all; intros;
         inst_cofinites_with X0; auto.
       }
-      assert (θ ᵗ⫦ typ_all A ⇝ typ_all (close_typ_wrt_typ X Axᵈ)). {
+      assert (θ ᵗ⊩ typ_all A ⇝ typ_all (close_typ_wrt_typ X Axᵈ)). {
         inst_cofinites_for trans_typ__all; intros; auto;
         solve_trans_typ_open_close.
       }
@@ -1435,8 +1435,8 @@ Proof with eauto.
         eapply trans_conts_strengthen_etvar with (X:=X1) (T:=T1); eauto.
         eapply trans_conts_strengthen_etvar with (X:=X2) (T:=T0); eauto.
     + eapply d_wl_del_red__inf with (A:=typ_arrow A1ᵈ Aᵈ0). 
-      * assert (Hbindsx1: ((X2, dbind_typ T0) :: (X1, dbind_typ T1) :: θ') ᵗ⫦ `X1 ⇝ T1 ) by eauto.
-        assert (Hbindsx2: ((X2, dbind_typ T0) :: (X1, dbind_typ T1) :: θ') ᵗ⫦ `X2 ⇝ T0 ) by eauto.
+      * assert (Hbindsx1: ((X2, dbind_typ T0) :: (X1, dbind_typ T1) :: θ') ᵗ⊩ `X1 ⇝ T1 ) by eauto.
+        assert (Hbindsx2: ((X2, dbind_typ T0) :: (X1, dbind_typ T1) :: θ') ᵗ⊩ `X2 ⇝ T0 ) by eauto.
         repeat unify_trans_typ.
         destruct_d_wl_del_red... simpl in *...
         inst_cofinites_for d_chk_inf__inf_abs_mono; auto.
@@ -1540,8 +1540,8 @@ Proof with eauto.
     + eapply aworklist_subst_transfer_same_dworklist in Hsubst as Htransws; eauto...
       destruct Htransws as [θ'1 [Tᵈ [Htrans_rev [Htransa [Htransa' [Hbinds [Hbindsx Hwfss]]]]]]].
       destruct_trans.
-      assert (Hbindsx1: ((X2, dbind_typ T) :: (X1, dbind_typ T0) :: θ') ᵗ⫦ `X1 ⇝ T0 ) by eauto.
-      assert (Hbindsx2: ((X2, dbind_typ T) :: (X1, dbind_typ T0) :: θ') ᵗ⫦ `X2 ⇝ T ) by eauto.
+      assert (Hbindsx1: ((X2, dbind_typ T) :: (X1, dbind_typ T0) :: θ') ᵗ⊩ `X1 ⇝ T0 ) by eauto.
+      assert (Hbindsx2: ((X2, dbind_typ T) :: (X1, dbind_typ T0) :: θ') ᵗ⊩ `X2 ⇝ T ) by eauto.
       repeat unify_trans_typ.
       exists (dworklist_conswork Ω (work_infabs (typ_arrow T0 T) cdᵈ)). split.
       * exists θ'. constructor; auto.
