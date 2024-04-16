@@ -9,6 +9,7 @@ Require Import uni.notations.
 Require Import uni.decl_worklist.def.
 Require Import ln_utils.
 
+Require Import Lia.
 
 (* Declare Scope dworklist_scope.
 Delimit Scope dworklist_scope with dworklist.
@@ -79,6 +80,14 @@ Lemma d_wl_app_cons_work_same_env : forall Ω1 Ω2 w,
     rewrite IHΩ2. auto.
     rewrite IHΩ2. auto.
   Qed.
+
+Lemma d_wl_app_cons_work_same_aenv : forall Ω1 Ω2 w,
+  dwl_to_aenv (dwl_app Ω2 (w ⫤ᵈ Ω1)) = dwl_to_aenv (dwl_app Ω2 Ω1).
+Proof.
+  intros. induction Ω2; simpl; auto.
+  rewrite IHΩ2. auto.
+  rewrite IHΩ2. auto.
+Qed.
 
 Ltac inv_all_work := 
   match goal with
@@ -460,7 +469,9 @@ Proof.
     rewrite d_wl_app_cons_work_same_env. auto.
     intros. inst_cofinites_with x.
     rewrite_dwl_app. auto.
-  - admit.
+  - eapply d_wl_red__inf_app; auto.
+    rewrite d_wl_app_cons_work_same_aenv. auto.
+    rewrite_dwl_app. auto.
   - eapply d_wl_red__infabs_all with (T:=T).
     rewrite d_wl_app_cons_work_same_env. auto.
     rewrite_dwl_app. auto.
@@ -468,7 +479,7 @@ Proof.
     rewrite_dwl_app. auto.
   - econstructor; eauto.
     rewrite_dwl_app. auto.
-Admitted.
+Qed.
 
 
 Lemma d_wl_red_infabs_complete: forall Ω A B C cc,
@@ -518,6 +529,169 @@ Proof with auto.
     econstructor...
 Qed.
 
+Lemma iu_size_a_mono : forall Γ A,
+  a_mono_typ Γ A -> iu_size A = 0.
+Proof.
+  intros Γ A Hmono.
+  induction Hmono; simpl; eauto; try lia.
+Qed.
+
+Lemma iu_size_d_mono : forall Γ A,
+  d_mono_typ Γ A -> iu_size A = 0.
+Proof.
+  intros Γ A Hmono.
+  induction Hmono; simpl; eauto; try lia.
+Qed.
+
+Lemma iu_size_subst_a_mono : forall Γ A X A0,
+  a_mono_typ Γ A ->
+  iu_size (subst_tvar_in_typ A X A0) = iu_size A0.
+Proof.
+  intros Γ A X A0 Hmono.
+  induction A0; simpl; auto.
+  destruct (eq_dec X0 X); subst; simpl; eauto.
+  eapply iu_size_a_mono; eauto.
+Qed.
+
+Lemma iu_size_subst_d_mono : forall Γ A X A0,
+  d_mono_typ Γ A ->
+  iu_size (subst_tvar_in_typ A X A0) = iu_size A0.
+Proof.
+  intros Γ A X A0 Hmono.
+  induction A0; simpl; auto.
+  destruct (eq_dec X0 X); subst; simpl; eauto.
+  eapply iu_size_d_mono; eauto.
+Qed.
+
+Lemma iu_size_open_d_mono_rec : forall Ψ A T n,
+  d_mono_typ Ψ T ->
+  iu_size (open_typ_wrt_typ_rec n T A) <= iu_size A.
+Proof.
+  intros Ψ A T n Hmono.
+  generalize dependent n.
+  induction A; intros; simpl; auto;
+    try specialize (IHA1 n); try specialize (IHA2 n); try lia.
+  destruct (lt_eq_lt_dec n n0); simpl; auto.
+  destruct s; simpl; auto; subst.
+  erewrite iu_size_d_mono; eauto.
+Qed.
+
+Lemma iu_size_open_d_mono : forall Ψ A T,
+  d_mono_typ Ψ T ->
+  iu_size (open_typ_wrt_typ A T) <= iu_size A.
+Proof.
+  intros Ψ A T Hmono.
+  eapply iu_size_open_d_mono_rec; eauto.
+Qed.
+
+Lemma iuv_size_a_mono : forall Γ A,
+  a_mono_typ Γ A -> iuv_size A = 0.
+Proof.
+  intros Γ A Hmono.
+  induction Hmono; simpl; eauto; try lia.
+Qed.
+
+Lemma iuv_size_d_mono : forall Γ A,
+  d_mono_typ Γ A -> iuv_size A = 0.
+Proof.
+  intros Γ A Hmono.
+  induction Hmono; simpl; eauto; try lia.
+Qed.
+
+Lemma iuv_size_subst_a_mono : forall Γ A X A0,
+  a_mono_typ Γ A ->
+  iuv_size (subst_tvar_in_typ A X A0) = iuv_size A0.
+Proof.
+  intros Γ A X A0 Hmono.
+  induction A0; simpl; auto.
+  destruct (eq_dec X0 X); subst; simpl; eauto.
+  eapply iuv_size_a_mono; eauto.
+Qed.
+
+Lemma iuv_size_subst_d_mono : forall Γ A X A0,
+  d_mono_typ Γ A ->
+  iuv_size (subst_tvar_in_typ A X A0) = iuv_size A0.
+Proof.
+  intros Γ A X A0 Hmono.
+  induction A0; simpl; auto.
+  destruct (eq_dec X0 X); subst; simpl; eauto.
+  eapply iuv_size_d_mono; eauto.
+Qed.
+
+Lemma iuv_size_open_d_mono_rec : forall Ψ A T n,
+  d_mono_typ Ψ T ->
+  iuv_size (open_typ_wrt_typ_rec n T A) <= iuv_size A.
+Proof.
+  intros Ψ A T n Hmono.
+  generalize dependent n.
+  induction A; intros; simpl; auto;
+    try specialize (IHA1 n); try specialize (IHA2 n); try lia.
+  destruct (lt_eq_lt_dec n n0); simpl; auto.
+  destruct s; simpl; auto; subst.
+  erewrite iuv_size_d_mono; eauto.
+Qed.
+
+Lemma iuv_size_open_d_mono : forall Ψ A T,
+  d_mono_typ Ψ T ->
+  iuv_size (open_typ_wrt_typ A T) <= iuv_size A.
+Proof.
+  intros Ψ A T Hmono.
+  eapply iuv_size_open_d_mono_rec; eauto.
+Qed.
+
+Lemma infabs_iu_size : forall Ψ A B C,
+  Ψ ⊢ A ▹ B → C -> iu_size B <= iu_size A.
+Proof.
+  intros. induction H; simpl; auto; try lia.
+  assert (iu_size (A ^^ᵗ T) <= iu_size A). { eapply iu_size_open_d_mono; eauto. }
+  lia.
+Qed.
+
+Lemma infabs_iuv_size_B : forall Ψ A B C,
+  Ψ ⊢ A ▹ B → C -> iuv_size B <= iuv_size A.
+Proof.
+  intros. induction H; simpl; auto; try lia.
+  assert (iuv_size (A ^^ᵗ T) <= iuv_size A). { eapply iuv_size_open_d_mono; eauto. }
+  lia.
+Qed.
+
+Lemma infabs_iuv_size_C : forall Ψ A B C,
+  Ψ ⊢ A ▹ B → C -> iuv_size C <= iuv_size A.
+Proof.
+  intros. induction H; simpl; auto; try lia.
+  assert (iuv_size (A ^^ᵗ T) <= iuv_size A). { eapply iuv_size_open_d_mono; eauto. }
+  lia.
+Qed.
+
+Lemma iu_size_le_iuv_size : forall A,
+  iu_size A <= iuv_size A.
+Proof.
+  induction A; simpl; auto; try lia.
+Qed.
+
+Lemma inftapp_iuv_size : forall Ψ A B C,
+  Ψ ⊢ A ○ B ⇒⇒ C ->
+  iuv_size C <= (1 + iuv_size A) * (2 + iuv_size B).
+Proof.
+  intros. induction H; simpl; auto; try lia. admit.
+Admitted.
+
+Lemma inf_iuv_size_exp_split_size : forall Ω A e,
+  (dwl_to_denv Ω) ⊢ e ⇒ A ->
+  iuv_size A <= exp_split_size (dwl_to_aenv Ω) e.
+Proof.
+  intros Ω A e Hinf. dependent induction Hinf; simpl; auto; try lia.
+  - assert (Hbind: lookup_bind (dwl_to_aenv Ω) x = Some A) by admit.
+    rewrite Hbind. lia.
+  - assert (Hle: iuv_size C <= iuv_size A). { eapply infabs_iuv_size_C; eauto. }
+    assert (Hle': iuv_size A ≤ exp_split_size (dwl_to_aenv Ω) e1) by auto.
+    lia.
+  - dependent destruction H.
+    eapply iuv_size_d_mono in H. eapply iuv_size_d_mono in H0. subst. lia.
+  - assert (Hle: iuv_size C <= (1 + iuv_size A) * (2 + iuv_size B)). { eapply inftapp_iuv_size; eauto. }
+    assert (Hle': iuv_size A ≤ exp_split_size (dwl_to_aenv Ω) e1) by auto.
+    admit. (* oh my lia *)
+Admitted.
 
 Lemma d_wl_red_chk_inf_complete: forall Ω e A mode,
   d_chk_inf (dwl_to_denv Ω) e mode A -> 
@@ -531,14 +705,18 @@ Proof with auto.
   - econstructor. 
     eapply IHd_chk_inf; eauto.
     destruct_d_wl_wf...
-  - econstructor. admit.
+  - econstructor.
     destruct_d_wl_wf.
     eapply IHd_chk_inf1; eauto.
     apply d_wl_red__applys with (w:=work_infabs A (contd_infapp (exp_split_size (dwl_to_aenv Ω) e1) e2 c)); eauto.
     econstructor. simpl.
     apply d_infabs_wft in H0 as Hwft. intuition.
     eapply d_wl_red_infabs_complete; eauto.
-    econstructor... econstructor... admit. econstructor.
+    econstructor... econstructor...
+    eapply inf_iuv_size_exp_split_size in H as Hle1.
+    eapply infabs_iuv_size_B in H0 as Hle2.
+    specialize (iu_size_le_iuv_size B) as Hle3. lia.
+    econstructor.
     assert ((work_check e2 B ⫤ᵈ Ω) ⟶ᵈʷ⁎⋅).
       apply IHd_chk_inf2; auto.
       apply d_wl_red_weaken_consw in H5; auto.

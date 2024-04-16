@@ -78,8 +78,8 @@ Fixpoint iuv_size (A : typ) : nat :=
   | typ_var_b _ => 1
   | typ_arrow A1 A2 => iuv_size A1 + iuv_size A2
   | typ_all A => iuv_size A
-  | typ_union A1 A2 => 1 + iuv_size A1 + iuv_size A2
-  | typ_intersection A1 A2 => 1 + iuv_size A1 + iuv_size A2
+  | typ_union A1 A2 => 2 + iuv_size A1 + iuv_size A2
+  | typ_intersection A1 A2 => 2 + iuv_size A1 + iuv_size A2
   | _ => 0
   end.
 
@@ -220,7 +220,7 @@ Inductive d_wl_red : dworklist -> Prop :=    (* defn d_wl_red *)
      (forall x, x `notin` L ->
         d_wl_red (dworklist_conswork (dworklist_consvar (dworklist_conswork Ω (work_applys cs (typ_arrow T1 T2))) x (dbind_typ T1)) (work_check (open_exp_wrt_exp e (exp_var_f x)) T2))) ->
      d_wl_red (dworklist_conswork Ω (work_infer (exp_abs e) cs))
- | d_wl_red__inf_app : forall (Ω:dworklist) (e1 e2:exp) (cs:conts) (n:nat),
+ | d_wl_red__inf_app : forall (Ω:dworklist) (e1 e2:exp) (cs:conts),
      d_wl_red (dworklist_conswork Ω (work_infer e1 (conts_infabs (contd_infapp (exp_split_size (dwl_to_aenv Ω) e1) e2 cs)))) ->
      d_wl_red (dworklist_conswork Ω (work_infer  ( (exp_app e1 e2) )  cs))
  | d_wl_red__inf_tapp : forall (Ω:dworklist) (e:exp) (B:typ) (cs:conts),

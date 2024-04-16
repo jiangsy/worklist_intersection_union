@@ -596,23 +596,6 @@ Lemma abind_tvar_stvar_false : forall Γ X,
   binds X abind_stvar_empty (awl_to_aenv Γ) -> False.
 Admitted.
 
-Lemma iu_size_mono : forall Γ A,
-  a_mono_typ Γ A -> iu_size A = 0.
-Proof.
-  intros Γ A Hmono.
-  induction Hmono; simpl; eauto; try lia.
-Qed.
-
-Lemma iu_size_subst_mono : forall Γ A X A0,
-  a_mono_typ Γ A ->
-  iu_size (subst_tvar_in_typ A X A0) = iu_size A0.
-Proof.
-  intros Γ A X A0 Hmono.
-  induction A0; simpl; auto.
-  destruct (eq_dec X0 X); subst; simpl; eauto.
-  eapply iu_size_mono; eauto.
-Qed.
-
 (* Lemma exp_size_wl_awl_app : forall Γ1 Γ2,
   exp_size_wl (awl_app Γ1 Γ2) = exp_size_wl Γ1 + exp_size_wl Γ2.
 Proof.

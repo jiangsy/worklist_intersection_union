@@ -996,6 +996,57 @@ Proof.
   rewrite wf_ss_ftvar_in_typ_upper with (θ:=θ); eauto.
 Qed.
 
+Lemma iuv_size_a_mono : forall Σ A,
+  a_mono_typ Σ A ->
+  iuv_size A = 0.
+Proof.
+  intros. induction H; simpl; lia.
+Qed.
+
+Lemma iuv_size_d_mono : forall Ψ A,
+  d_mono_typ Ψ A ->
+  iuv_size A = 0.
+Proof.
+  intros. induction H; simpl; lia.
+Qed.
+
+(* Lemma trans_typ_iuv_size_open : forall θ Aᵃ Aᵈ X,
+  θ ᵗ⫦ Aᵃ ^ᵗ X ⇝ Aᵈ ^ᵗ X ->
+  iuv_size (Aᵃ ^ᵗ X) = iuv_size (Aᵈ ^ᵗ X) ->
+  iuv_size Aᵃ = iuv_size Aᵈ.
+Proof.
+  intros. simpl in *. lia.
+Qed. *)
+
+Lemma trans_typ_iuv_size : forall θ Aᵃ Aᵈ,
+  θ ᵗ⫦ Aᵃ ⇝ Aᵈ ->
+  iuv_size Aᵃ = iuv_size Aᵈ.
+Proof.
+  intros θ Aᵃ Aᵈ Htrans. apply trans_typ_wf_ss in Htrans as Hwf.
+  induction Htrans; simpl; auto.
+  - eapply wf_ss_binds_monotyp in H0; auto.
+    apply iuv_size_d_mono in H0. rewrite H0. simpl. reflexivity.
+  - admit. (* TODO *)
+Admitted.
+
+Lemma trans_typ_exp_split_size_exp : forall Γ Ω θ eᵃ eᵈ,
+  ⊢ᵃʷ Γ ->
+  ⊢ᵈʷ Ω ->
+  nil ⫦ Γ ⇝ Ω ⫣ θ ->
+  θ ᵉ⫦ eᵃ ⇝ eᵈ ->
+  exp_split_size (⌊ Γ ⌋ᵃ) eᵃ = exp_split_size (dwl_to_aenv Ω) eᵈ.
+(* Proof.
+  intros Γ Ω θ eᵃ eᵈ Hlc HwfΓ HwfΩ Htranswl Htranse.
+  (* generalize dependent Ω. generalize dependent θ.  *)
+  dependent induction HwfΓ; intros; simpl in *.
+  - dependent destruction Htranswl. admit.
+  - dependent destruction H4. dependent destruction H3. simpl.
+    eapply IHa_wf_wl with (Ω := Ω) in H2 as He; eauto. admit.
+    eapply trans_typ_iuv_size in H7 as Hiu. eauto.
+  
+  dependent destruction H2; auto. simpl. *)
+Admitted.
+
 #[local] Hint Resolve d_wf_wl_wf_env trans_wl_ss_binds_etvar_a_wl : core.
 
 Lemma trans_wl_a_wl_binds_var_binds_d_wl_trans_typ' : forall θ Γ Ω x Aᵃ Aᵈ,
@@ -1674,8 +1725,8 @@ Proof with eauto.
     destruct_a_wf_wl.
     constructor...
     apply IHd_wl_red...
+    erewrite trans_typ_exp_split_size_exp with (Ω := Ω) (eᵈ := e1); eauto.
     exists θ0...
-    admit. (* TODO *)
   - solve_awl_trailing_etvar.
     destruct_trans.
     destruct_a_wf_wl.
