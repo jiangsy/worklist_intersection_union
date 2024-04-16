@@ -401,7 +401,6 @@ Proof.
     fsetdec.
 Qed.
 
-
 Lemma a_wf_typ_rename_tvar : forall Σ1 Σ2 X Y A,
   Σ2 ++ X ~ □ ++ Σ1 ᵗ⊢ᵃ A  ->
   map (subst_tvar_in_abind (typ_var_f Y) X ) Σ2 ++ Y ~ □ ++ Σ1 ᵗ⊢ᵃ { typ_var_f Y ᵗ/ₜ X } A.
@@ -709,68 +708,6 @@ Proof with rewrite awl_to_aenv_app, awl_to_aenv_cons in *; try solve_notin.
 Qed.
 
 
-Fixpoint rename_tvar_in_aworklist (X' X:typvar) (Γ:aworklist) {struct Γ} : aworklist :=
-  match Γ with
-  | aworklist_empty => aworklist_empty
-  | (aworklist_consvar Γ' x b) => aworklist_consvar (rename_tvar_in_aworklist X' X Γ') x (subst_tvar_in_abind (typ_var_f X') X b)
-  | (aworklist_constvar Γ' X0 b) => aworklist_constvar (rename_tvar_in_aworklist X' X Γ') (if X0 == X then X' else X0) (subst_tvar_in_abind (typ_var_f X') X b)
-  | (aworklist_conswork Γ' w) => aworklist_conswork (rename_tvar_in_aworklist X' X Γ') (subst_tvar_in_work (typ_var_f X') X w)
-end.
-
-Fixpoint rename_var_in_aworklist (x' x:expvar) (Γ:aworklist) {struct Γ} : aworklist :=
-  match Γ with
-  | aworklist_empty => aworklist_empty
-  | (aworklist_consvar Γ' x0 b) => aworklist_consvar (rename_var_in_aworklist x' x Γ')  (if x0 == x then x' else x0) b
-  | (aworklist_constvar Γ' X b) => aworklist_constvar (rename_var_in_aworklist x' x Γ') X b
-  | (aworklist_conswork Γ' w) => aworklist_conswork (rename_var_in_aworklist x' x Γ') (subst_var_in_work (exp_var_f x') x w)
-  end.
-
-(* a group of rename lemmas for tvar *)
-Lemma rename_tvar_in_aworklist_bind_same : forall Γ X1 X2 X' b,
-  ⊢ᵃʷ Γ ->
-  X' `notin` ftvar_in_aworklist' Γ ->
-  binds X1 b (awl_to_aenv Γ) ->
-  (~ exists A, b = abind_var_typ A) ->
-  binds (if X1 == X2 then X' else X1) b
-    (awl_to_aenv (rename_tvar_in_aworklist X' X2 Γ)).
-Proof with solve_false.
-  intros. induction Γ; simpl in *; auto.
-  - dependent destruction H. destruct_eq_atom.
-    + inversion H3.
-      * dependent destruction H5...
-      * apply binds_cons; auto.
-    + inversion H3.
-      * dependent destruction H5...
-      * apply binds_cons; auto.
-  - dependent destruction H; destruct_eq_atom; subst;
-    try solve constructor; inversion H2; try dependent destruction H4; try solve [apply binds_cons; auto]...
-    all: try solve [simpl; constructor; auto].
-  - destruct_eq_atom; dependent destruction H; auto.
-Qed.
-
-Corollary rename_tvar_in_aworklist_bind_same_neq : forall Γ X1 X2 X' b,
-  ⊢ᵃʷ Γ ->
-  X1 <> X2 ->
-  X' `notin` ftvar_in_aworklist' Γ ->
-  binds X1 b (awl_to_aenv Γ) ->
-  (~ exists A, b = abind_var_typ A) ->
-  binds X1 b (awl_to_aenv (rename_tvar_in_aworklist X' X2 Γ)).
-Proof.
-  intros. eapply rename_tvar_in_aworklist_bind_same with (X2:=X2) in H1; eauto.
-  destruct_eq_atom; auto.
-Qed.
-
-Corollary rename_tvar_in_aworklist_bind_same_eq : forall Γ X X' b,
-  ⊢ᵃʷ Γ ->
-  X' `notin` ftvar_in_aworklist' Γ ->
-  binds X b (awl_to_aenv Γ) ->
-  (~ exists A, b = abind_var_typ A) ->
-  binds (X') b (awl_to_aenv (rename_tvar_in_aworklist X' X Γ)).
-Proof with solve_false.
-  intros. eapply rename_tvar_in_aworklist_bind_same with (X2:=X) in H1; eauto...
-  destruct_eq_atom; auto.
-Qed.
-
 
 Lemma subst_tvar_in_aworklist_bind_same : forall Γ X Y A b,
   ⊢ᵃʷ Γ ->
@@ -796,38 +733,6 @@ Proof with simpl; auto.
   all: try rewrite IHΓ1...
 Qed.
 
-Lemma binds_var_typ_rename_tvar : forall x A X X' Γ,
-  ⊢ᵃʷ Γ ->
-  binds x (abind_var_typ A) (awl_to_aenv Γ) ->
-  binds x (abind_var_typ ({` X' ᵗ/ₜ X} A)) (awl_to_aenv (rename_tvar_in_aworklist X' X Γ)).
-Proof with auto.
-  intros. induction Γ.
-  - simpl in *. inversion H0.
-  - simpl in *. inversion H0.
-    + dependent destruction H1.
-      simpl. constructor...
-    + apply binds_cons...
-      dependent destruction H...
-  - simpl in *. inversion H0.
-    + dependent destruction H1.
-      inversion H.
-    + dependent destruction H; apply binds_cons...
-  - dependent destruction H. simpl in *...
-Qed.
-
-Lemma a_mono_typ_rename_tvar : forall Γ A X X',
-  ⊢ᵃʷ Γ ->  X' `notin` ftvar_in_aworklist' Γ ->
-  a_mono_typ (awl_to_aenv Γ) A ->
-  a_mono_typ (awl_to_aenv (rename_tvar_in_aworklist X' X Γ)) ({` X' ᵗ/ₜ X} A).
-Proof with solve_false.
-  introv WF HN HA. dependent induction HA; simpl; eauto.
-  - destruct (X0 == X).
-    + subst. forwards*: rename_tvar_in_aworklist_bind_same_eq H...
-    + forwards*: rename_tvar_in_aworklist_bind_same_neq H...
-  - destruct (X0 == X).
-    + subst. forwards*: rename_tvar_in_aworklist_bind_same_eq H...
-    + forwards*: rename_tvar_in_aworklist_bind_same_neq H...
-Qed.
 
 Lemma ftvar_in_work_apply_cont_eq : forall w A cs,
   apply_conts cs A w ->
