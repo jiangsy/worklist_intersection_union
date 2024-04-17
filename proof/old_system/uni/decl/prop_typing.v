@@ -2,13 +2,13 @@ Require Import Coq.Program.Equality.
 Require Import Program.Tactics.
 Require Import Lia.
 Require Import Metalib.Metatheory.
-Require Import LibTactics.
 
 
 Require Import uni.notations.
 Require Import uni.decl.prop_basic.
+Require Import uni.decl.prop_rename.
 Require Import uni.decl.prop_subtyping.
-Require Import ln_utils.
+Require Import ltac_utils.
 
 
 (* Definition wf_dom : forall {Ψ}, ⊢ Ψ -> atoms.
@@ -20,7 +20,6 @@ Defined. *)
 
 Hint Constructors d_wf_typ: core.
 Hint Constructors d_wf_env: core.
-Hint Constructors d_wf_typ_s: core.
 
 
 Inductive d_subenv : denv -> denv -> Prop :=
@@ -75,8 +74,8 @@ Qed.
 Lemma d_subenv_same_var : forall Ψ Ψ' A x,
   ⊢ Ψ ->
   d_subenv Ψ' Ψ ->
-  x ~ A ∈ Ψ ->
-  exists A', x ~ A' ∈ Ψ' /\ Ψ ⊢ A' <: A.
+  x ~ A ∈ᵈ Ψ ->
+  exists A', x ~ A' ∈ᵈ Ψ' /\ Ψ ⊢ A' <: A.
 Proof.
   intros. induction H0; simpl; intros; auto.
   - inversion H1; auto.
@@ -106,8 +105,8 @@ Qed.
 
 Lemma d_subenv_same_stvar : forall Ψ Ψ' X,
   d_subenv Ψ' Ψ ->
-  binds X dbind_stvar_empty Ψ ->
-  binds X dbind_stvar_empty Ψ'.
+  X ~ ■ ∈ᵈ  Ψ ->
+  X ~ ■ ∈ᵈ  Ψ'.
 Proof.
   intros. induction H; simpl; intros; auto.
   - inversion H0; auto.
@@ -164,7 +163,7 @@ Lemma d_subenv_wf_env_inv : forall Ψ',
 Proof with subst; try solve_notin; eauto using d_sub_dwft_2.
   intros * HW Ψ HS. induction* HS.
   all: forwards HE: d_subenv_same_dom HS;
-    forwards*: d_wf_env_strenthening_head HW;
+    forwards*: d_wf_env_strengthen_cons HW;
     inverts HW;
     econstructor; try rewrite HE...
 Qed.
@@ -176,7 +175,7 @@ Ltac solve_wf_subenv := match goal with
 end.
 
 Lemma binds_subenv: forall Ψ X Ψ',
-    X ~ □ ∈ Ψ -> d_subenv Ψ' Ψ -> X ~ □ ∈ Ψ'.
+    X ~ □ ∈ᵈ Ψ -> d_subenv Ψ' Ψ -> X ~ □ ∈ᵈ Ψ'.
 Proof with try solve_by_invert.
   intros* HD HS. induction* HS.
   - forwards* [?|?]: binds_app_1 HD.
@@ -199,8 +198,8 @@ Proof with eauto using d_mono_typ_subenv.
 Qed.
 
 
-#[local] Hint Resolve d_subenv_wf_typ d_subenv_wf_env d_wft_typ_subst 
-                      d_wf_env_subst_tvar_typ bind_typ_subst d_wf_typ_dlc_type : core.
+#[local] Hint Resolve d_subenv_wf_typ d_subenv_wf_env d_wf_typ_subst 
+                      d_wf_env_subst_tvar_typ bind_typ_subst d_wf_typ_lc_typ : core.
 
 
 
@@ -208,13 +207,13 @@ Qed.
 Theorem d_chkinf_subst_mono: forall Ψ1 Ψ2 X e m A T,
   d_chk_inf (Ψ2 ++ X ~ dbind_tvar_empty ++ Ψ1) e m A ->
   d_mono_typ Ψ1 T ->
-  d_chk_inf (map (subst_tvar_in_dbind T X) Ψ2  ++ Ψ1) (subst_tvar_in_exp T X e) m ({T /ᵗ X} A).
+  d_chk_inf (map (subst_tvar_in_dbind T X) Ψ2  ++ Ψ1) (subst_tvar_in_exp T X e) m ({T ᵗ/ₜ X} A).
 Proof with auto.
   (* intros.
   generalize dependent T2.
   dependent induction H; intros; try solve [simpl in *; eauto 5 with typing].
   - simpl in *. eapply d_chk_inf__inf_tabs with (L:=L `union` singleton X).
-    + replace (typ_all ({T2 /ᵗ X} T1)) with ({T2 /ᵗ X}  typ_all T1) by auto.
+    + replace (typ_all ({T2 ᵗ/ₜ X} T1)) with ({T2 ᵗ/ₜ X}  typ_all T1) by auto.
       auto...
     + intros. specialize (notin_union_1 _ _ _ H4). intros.
       specialize (H1 _ H5 Ψ (X0 ~ dbind_tvar_empty ++ F) X (JMeq_refl _) T2 H2 H3).
@@ -240,7 +239,7 @@ Proof with auto.
     replace (exp_var_f X1) with (d_subst_tv_in_exp T0 X (exp_var_f X1)) by (simpl; auto).
     rewrite <- d_subst_tv_in_exp_open_exp_wrt_exp; eauto...
   - simpl in *. eapply d_chk_inf__chkall with (L:=L `union` singleton X); eauto...
-    + replace (typ_all ({T2 /ᵗ X} T1)) with ({T2 /ᵗ X} typ_all T1) by auto.
+    + replace (typ_all ({T2 ᵗ/ₜ X} T1)) with ({T2 ᵗ/ₜ X} typ_all T1) by auto.
       auto...
     + intros. inst_cofinites_with X0.
       rewrite subst_tvar_in_typ_open_typ_wrt_typ_fresh2; eauto...
@@ -248,11 +247,11 @@ Proof with auto.
       (map (d_subst_tv_in_binding T2 X) (X0 ~ dbind_tvar_empty ++ F) ++ Ψ) by auto.
       auto.
   - simpl in *.
-    apply d_chk_inf__chk_sub with (S1:=({T2 /ᵗ X} S1)); eauto.
+    apply d_chk_inf__chk_sub with (S1:=({T2 ᵗ/ₜ X} S1)); eauto.
     eapply d_sub_subst_mono; eauto.
-  - simpl in *. eapply d_chk_inf__inf_appall with (T3:={T0 /ᵗ X} T3); eauto...
+  - simpl in *. eapply d_chk_inf__inf_appall with (T3:={T0 ᵗ/ₜ X} T3); eauto...
     + apply d_mono_typ_subst_mono_mono; auto.
-    + replace (typ_all ({T0 /ᵗ X} T1)) with ({T0 /ᵗ X} typ_all T1) by auto.
+    + replace (typ_all ({T0 ᵗ/ₜ X} T1)) with ({T0 ᵗ/ₜ X} typ_all T1) by auto.
       auto...
     + rewrite <- d_subst_tv_in_typ_open_typ_wrt_typ; eauto... *)
 Abort.
@@ -297,7 +296,7 @@ Lemma d_inftapp_wft : forall Ψ A B C,
   ⊢ Ψ /\ Ψ ⊢ A /\ Ψ ⊢ B /\ Ψ ⊢ C.
 Proof.
   intros. induction H; intuition.
-  - eapply d_wft_all_open; eauto.
+  - eapply d_wf_typ_all_open; eauto.
 Qed.
 
 Hint Resolve d_inftapp_wft : typing.
@@ -326,9 +325,9 @@ Proof with auto.
       inst_cofinites_with X.
       erewrite <- subst_tvar_in_typ_open_typ_wrt_typ_tvar2; eauto...
       rewrite_env ((map (subst_tvar_in_dbind B X) nil) ++ Ψ).
-      eapply d_wft_typ_subst; eauto...
+      eapply d_wf_typ_subst; eauto...
       econstructor; eauto.
-    + exists (A0 ^^ᵗ B). split; auto...
+    + exists (A0 ᵗ^^ₜ B). split; auto...
       pick fresh X. inst_cofinites_with X.
       erewrite <- subst_tvar_in_typ_open_typ_wrt_typ_tvar2; eauto.
       erewrite <- subst_tvar_in_typ_open_typ_wrt_typ_tvar2 with (A:=A); eauto.
@@ -338,7 +337,7 @@ Proof with auto.
       inst_cofinites_for d_wf_typ__all; intros.
       * inst_cofinites_with X. auto.
       * inst_cofinites_with X.
-        apply d_wf_typ_subst_tvar_stvar_cons; eauto...
+        apply d_wf_typ_stvar_tvar_cons; eauto...
         apply d_sub_dwft in H5; intuition.
     + inversion H5.
     + specialize (IHd_sub _ H H0 H1 (eq_refl _)).
@@ -466,7 +465,7 @@ Qed.
 
 #[export] Hint Immediate d_infabs_wft_0 d_infabs_wft_1 d_infabs_wft_2 d_infabs_wft_3 : core.
 
-(* @shengyi:todo *** *)
+
 Theorem d_infabs_subsumption_same_env : forall Ψ A A' B C,
   Ψ ⊢ A ▹ B → C ->
   Ψ ⊢ A' <: A ->
@@ -525,7 +524,7 @@ Proof with auto using d_mono_typ_d_wf_typ with typing.
   - dependent induction H3.
     + exists typ_top typ_bot.
       econstructor; eauto...
-    + assert (Ψ ⊢ A0 ^^ᵗ T <: A ^^ᵗ T). {
+    + assert (Ψ ⊢ A0 ᵗ^^ₜ T <: A ᵗ^^ₜ T). {
         pick fresh SZ. forwards*: H5 SZ.
         rewrite_env (nil++ (SZ, ■) :: Ψ ) in H7.
         forwards*: d_sub_subst_stvar T H7.
@@ -662,61 +661,7 @@ Proof.
 Qed.
 
 
-Lemma d_chk_inf_wf_env: forall Ψ e mode A,
-  d_chk_inf Ψ e mode A ->
-  ⊢ Ψ.
-Proof.
-  intros. induction H; auto.
-  - inst_cofinites_by L. inversion H1; auto.
-  - inst_cofinites_by L. inversion H1; auto.
-  - inst_cofinites_by L. inversion H0; auto.
-  - inst_cofinites_by L. inversion H1; auto.
-Qed.
-
 #[local] Hint Resolve d_wf_typ_weaken_cons : core.
-
-Lemma d_chk_inf_wft: forall Ψ e mode A,
-  d_chk_inf Ψ e mode A ->
-  Ψ ⊢ A.
-Proof.
-  intros. induction~ H.
-  - induction H; try solve_by_invert.
-    all: forwards[(?&Heq)|?]: binds_cons_1 H0; try inverts Heq; subst; eauto.
-  - apply d_infabs_wft in H0; intuition.
-  - apply d_mono_typ_d_wf_typ in H; auto.
-  - apply d_inftapp_wft in H1; intuition.
-  - pick fresh X. forwards*: H1 X.
-    rewrite_env (nil ++ (X, dbind_typ A1) :: Ψ ) in H2.
-    forwards*: d_wf_typ_strengthen_var H2.
-  - eauto using d_sub_dwft_2.
-Qed.
-
-Theorem d_chk_inf_rename_var : forall Ψ1 Ψ2 x y T e A mode, 
-  d_chk_inf (Ψ2 ++ x ~ T ++ Ψ1) e mode A ->
-  y `notin` (dom Ψ1 `union` dom Ψ2) ->
-  d_chk_inf (Ψ2 ++ y ~ T ++ Ψ1) (subst_var_in_exp (exp_var_f y) x e) mode A.
-Proof.
-  intros. dependent induction H.
-  - simpl. case_if; admit.
-  - simpl. econstructor. admit.
-    apply IHd_chk_inf; auto.
-  - simpl. apply d_chk_inf__inf_unit. admit.
-  - simpl. eapply d_chk_inf__inf_app; eauto 3. 
-    apply IHd_chk_inf1; auto.
-    admit.
-    apply IHd_chk_inf2; auto.
-Admitted.
-
-
-Theorem d_chk_inf_rename_var_cons : forall Ψ x y T e A mode, 
-  d_chk_inf (x ~ T ++ Ψ) e mode A ->
-  y `notin` (dom Ψ) ->
-  d_chk_inf (y ~ T ++ Ψ) (subst_var_in_exp (exp_var_f y) x e) mode A.
-Proof.
-  intros.
-  rewrite_env (nil ++ y ~ T ++ Ψ).
-  eapply  d_chk_inf_rename_var; eauto.
-Qed.
 
 
 #[export] Hint Resolve d_sub_dwft_0 d_sub_dwft_1 d_sub_dwft_2 : subtyping.
@@ -783,7 +728,7 @@ Proof with auto with typing.
          ++ eapply d_chk_inf__inf_abs_mono with (L:=L `union` dom Ψ').
             eapply d_mono_typ_subenv; eauto.
             intros.
-            replace (open_exp_wrt_exp e (exp_var_f x0)) with ({exp_var_f x0 /ᵉₑ x} open_exp_wrt_exp e (exp_var_f x)).
+            replace (open_exp_wrt_exp e (exp_var_f x0)) with ({exp_var_f x0 ᵉ/ₑ x} open_exp_wrt_exp e (exp_var_f x)).
             apply d_chk_inf_rename_var_cons. apply Hty; eauto. 
             ** apply dsub_refl. eapply d_chk_inf_wf_env; eauto.
                dependent destruction H. apply d_mono_typ_d_wf_typ in H0.

@@ -2,6 +2,7 @@
 Require Export Metalib.Metatheory.
 
 Require Import uni.notations.
+Require Export LibTactics.
 (* Require Import algo.notations. *)
 
 
@@ -17,7 +18,6 @@ Ltac inst_cofinite_impl H x :=
       specialize (H x Fr); clear Fr
   end
 .
-
 
 Ltac inst_cofinites_with x :=
   repeat
@@ -51,17 +51,22 @@ Ltac solve_notin_eq X :=
     assert (H: X `notin` singleton X) by auto;
     apply notin_singleton_1 in H; contradiction.
 
-
 Ltac destruct_eq_atom :=
   unfold eq_dec in *;
   repeat
-    match goal with
+    lazymatch goal with
+    | H : context [EqDec_eq_of_X ?X ?X] |- _ => destruct (EqDec_eq_of_X X X); [ idtac | contradiction]
+    | H : _ |- context [EqDec_eq_of_X ?X ?X] => destruct (EqDec_eq_of_X X X); [ idtac | contradiction]
     | H : context [EqDec_eq_of_X ?X0 ?X] |- _ => destruct (EqDec_eq_of_X X0 X); subst;
-        try solve_notin_eq X0; try solve_notin_eq X
+        try contradiction; try solve_notin_eq X0; try solve_notin_eq X
     | H : _ |- context [EqDec_eq_of_X ?X0 ?X] => destruct (EqDec_eq_of_X X0 X); subst;
-        try solve_notin_eq X0; try solve_notin_eq X
+        try contradiction; try solve_notin_eq X0; try solve_notin_eq X
     end.
 
+Ltac auto_apply :=
+  match goal with
+  | H : context [ ?P -> ?Q ] |- ?Q => apply H
+  end.
 
 
 Ltac gather_atoms ::=
@@ -71,15 +76,19 @@ Ltac gather_atoms ::=
   let C2 := gather_atoms_with (fun x : aenv => dom x) in
   (* let C2 := gather_atoms_with (fun x : list (atom * dbind) => dom x) in *)
   let D1 := gather_atoms_with (fun x => ftvar_in_typ x) in
-  let D2 := gather_atoms_with (fun x => ftvar_in_conts x) in
-  let D3 := gather_atoms_with (fun x => ftvar_in_contd x) in
-  let D4 := gather_atoms_with (fun x => ftvar_in_work x) in
-  let D5 := gather_atoms_with (fun x => ftvar_in_aworklist' x) in
-  let E :=  gather_atoms_with (fun x => dom (awl_to_aenv x)) in
-  let F :=  gather_atoms_with (fun x => dom (dwl_to_denv x)) in
+  let D2 := gather_atoms_with (fun x => ftvar_in_exp x) in
+  let D3 := gather_atoms_with (fun x => ftvar_in_conts x) in
+  let D4 := gather_atoms_with (fun x => ftvar_in_contd x) in
+  let D5 := gather_atoms_with (fun x => ftvar_in_work x) in
+  let D6 := gather_atoms_with (fun x => ftvar_in_aworklist' x) in
+
+  let E1 := gather_atoms_with (fun x => fvar_in_exp x) in
+
+  let F1 :=  gather_atoms_with (fun x => dom (awl_to_aenv x)) in
+  let F2 :=  gather_atoms_with (fun x => dom (dwl_to_denv x)) in
   (* let D3 := gather_atoms_with (fun x => fv_typ_in_binding x) in *)
   (* let D4 := gather_atoms_with (fun x => fv_exp_in_exp x) in *)
-  constr:(A \u B \u C1 \u C2 \u D1 \u D2 \u D3 \u D4 \u D5 \u E \u F).
+  constr:(A \u B \u C1 \u C2 \u D1 \u D2 \u D3 \u D4 \u D5 \u D6 \u E1 \u F1 \u F2).
 
   
 (* Ltac apply_fresh_base_fixed H gather_vars atom_name :=
@@ -103,6 +112,33 @@ Tactic Notation "inst_cofinites_for" constr(H) ident(argname1)":="constr(arg1) "
   let L1 := beautify_fset L1 in
   apply H with (L:=L1) (argname1:=arg1) (argname2:=arg2).
 
+(* destruct conjunctions *)
+Ltac destruct_conj :=
+  repeat match goal with H: ?T |- _ =>
+                         lazymatch T with
+                         | exists _ , _ => destruct H
+                         | _ /\ _ => destruct H
+                         end
+    end.
+
+
+Ltac solve_by_inverts n :=
+  match goal with | H : ?T |- _ =>
+  match type of T with Prop =>
+    solve [
+      inversion H;
+      match n with S (S (?n')) => subst; solve_by_inverts (S n') end ]
+  end end.
+
+Ltac solve_by_invert :=
+  solve_by_inverts 1.
+
+Create HintDb FalseHd.
+Ltac solve_false := let HF := fresh "HF" in
+                    try solve [ try intro HF; destruct_conj; try solve_by_invert;
+                                false; eauto 3 with FalseHd ].
+
+                              
 (* 
 
 Tactic Notation "pick" "fresh" ident(x) "and" "apply" constr(H) "for" "weaken" :=

@@ -7,11 +7,6 @@ Require Export uni.def_ott.
 Require Export uni.decl_worklist.def.
 
 
-(* Definition fv_env_gen (fv : abind -> atoms) (E : aenv) : atoms :=
-  fold_right (fun xb acc => match xb with (x , b) => acc `union` fv b end ) {} E.
-
-Definition ftvar_in_aenv := fv_env_gen ftvar_in_abind. *)
-
 Fixpoint awl_app (Γ1 Γ2 : aworklist) :=
   match Γ1 with 
   | aworklist_empty => Γ2 
@@ -89,7 +84,7 @@ Inductive a_wl_red : aworklist -> Prop :=    (* defn a_wl_red *)
  | a_wl_red__sub_arrow1 : forall (L:vars) (Γ:aworklist) (X:typvar) (A1 A2:typ),
       binds ( X )  ( abind_etvar_empty ) (  ( awl_to_aenv  Γ  )  )  ->
       ( a_mono_typ   ( awl_to_aenv  Γ  )     ( (typ_arrow A1 A2) )   -> False )  ->
-      X `notin` ftvar_in_typ (typ_arrow A1 A2) ->
+      (s_in X (typ_arrow A1 A2) -> False) ->
       (forall X1, X1 `notin` L -> forall X2, X2 `notin` (L `union` singleton X1) -> forall Γ1 Γ2,
       (aworklist_subst (aworklist_conswork (aworklist_constvar (aworklist_constvar Γ X1 abind_etvar_empty) X2 abind_etvar_empty) (work_sub (typ_var_f X) (typ_arrow A1 A2))) X (typ_arrow (typ_var_f X1) (typ_var_f X2)) Γ1 Γ2) ->
       (a_wl_red  (awl_app (subst_tvar_in_aworklist (typ_arrow (typ_var_f X1) (typ_var_f X2)) X Γ2) Γ1 )   ) ) ->
@@ -97,7 +92,7 @@ Inductive a_wl_red : aworklist -> Prop :=    (* defn a_wl_red *)
  | a_wl_red__sub_arrow2 : forall (L:vars) (Γ:aworklist) (A1 A2:typ) (X:typvar),
       binds ( X )  ( abind_etvar_empty ) (  ( awl_to_aenv  Γ  )  )  ->
       ( a_mono_typ   ( awl_to_aenv  Γ  )     ( (typ_arrow A1 A2) )   -> False )  ->
-      X `notin` ftvar_in_typ (typ_arrow A1 A2) ->
+      (s_in X (typ_arrow A1 A2) -> False) ->
       (forall X1, X1 `notin` L -> forall X2, X2 `notin` (L `union` singleton X1) -> forall Γ1 Γ2,
       (aworklist_subst (aworklist_conswork (aworklist_constvar (aworklist_constvar Γ X1 abind_etvar_empty) X2 abind_etvar_empty) (work_sub (typ_arrow A1 A2) (typ_var_f X))) X (typ_arrow (typ_var_f X1) (typ_var_f X2)) Γ1 Γ2) ->
       (a_wl_red  (awl_app (subst_tvar_in_aworklist (typ_arrow (typ_var_f X1) (typ_var_f X2)) X Γ2) Γ1 )   ) ) ->
@@ -255,6 +250,25 @@ Delimit Scope aworklist_scope with aworklist.
 Bind Scope aworklist_scope with aworklist.
 
 
+Notation "Σ ᵗ⊢ᵃ A" :=
+  (a_wf_typ Σ A)
+    (at level 65, no associativity) : type_scope.
+
+Notation "Σ ᵉ⊢ᵃ e" :=
+  (a_wf_exp Σ e)
+    (at level 65, no associativity) : type_scope.
+
+Notation "X ~ □ ∈ᵃ Σ" := (binds X (abind_tvar_empty) Σ)
+  (at level 50, no associativity) : type_scope.
+
+Notation "X ~ ■ ∈ᵃ Σ" := (binds X (abind_stvar_empty) Σ)
+  (at level 50, no associativity) : type_scope.
+
+Notation "X ~ ⬒ ∈ᵃ Σ" := (binds X (abind_etvar_empty) Σ)
+  (at level 50, no associativity) : type_scope.
+
+Notation "x ~ T ∈ᵃ Σ" := (binds x (abind_var_typ T) Σ)
+  (at level 50, T at next level, no associativity) : type_scope.
 
 Notation " x ~ᵃ A ;ᵃ Γ " :=
   (aworklist_consvar Γ x (abind_var_typ A))
@@ -287,3 +301,7 @@ Notation " Γ ⟶ᵃʷ⁎⋅ " :=
 Notation " ⊢ᵃʷ Γ " :=
   (a_wf_wl Γ)
       (at level 58, no associativity) : type_scope.
+
+Notation " ⌊ Γ ⌋ᵃ " :=
+    (awl_to_aenv Γ)
+        (at level 49, no associativity) : type_scope.
