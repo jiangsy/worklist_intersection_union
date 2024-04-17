@@ -52,7 +52,7 @@ Lemma a_mono_typ_in_s_in : forall Σ A X,
   s_in X A.
 Proof.
   intros. induction H; simpl in *; auto.
-  - fsetdec. 
+  - fsetdec.
   - apply singleton_iff in H0. subst. constructor.
   - apply singleton_iff in H0. subst. constructor.
   - apply union_iff in H0. destruct H0.
@@ -131,7 +131,7 @@ Lemma a_wf_conts_weaken_cons : forall Σ X b cs,
   a_wf_conts Σ cs ->
   a_wf_conts ((X, b) :: Σ) cs.
 Proof.
-  intros. 
+  intros.
   rewrite_env (nil ++ (X ~ b) ++ Σ).
   apply a_wf_conts_weaken; auto.
 Qed.
@@ -140,7 +140,7 @@ Lemma a_wf_contd_weaken_cons : forall Σ X b cd,
   a_wf_contd Σ cd ->
   a_wf_contd ((X, b) :: Σ) cd.
 Proof.
-  intros. 
+  intros.
   rewrite_env (nil ++ (X ~ b) ++ Σ).
   apply a_wf_contd_weaken; auto.
 Qed.
@@ -159,11 +159,11 @@ Lemma a_wf_typ_strengthen: forall Σ1 Σ2 A X b,
   a_wf_typ (Σ2 ++ Σ1) A.
 Proof.
   intros * Hwf Hnotin. dependent induction Hwf; simpl in *; eauto.
-  - apply notin_singleton_1 in Hnotin. 
+  - apply notin_singleton_1 in Hnotin.
     apply binds_remove_mid in H; eauto.
-  - apply notin_singleton_1 in Hnotin. 
+  - apply notin_singleton_1 in Hnotin.
     apply binds_remove_mid in H; eauto.
-  - apply notin_singleton_1 in Hnotin. 
+  - apply notin_singleton_1 in Hnotin.
     apply binds_remove_mid in H; eauto.
   - inst_cofinites_for a_wf_typ__all; intros; inst_cofinites_with X0; auto.
     rewrite_env ((X0 ~ □ ++ Σ2) ++ Σ1).
@@ -200,7 +200,7 @@ Qed.
 Corollary a_wf_typ_strengthen_var_cons: forall Σ X A B,
   a_wf_typ ((X, abind_var_typ B) :: Σ) A ->
   a_wf_typ Σ A.
-Proof. 
+Proof.
   intros. rewrite_env (nil ++ Σ).
   eapply a_wf_typ_strengthen_var; eauto.
 Qed.
@@ -218,7 +218,7 @@ Proof.
     auto.
   - inversion H0. dependent destruction H2.
     simpl in *. solve_notin_eq X0.
-    auto. 
+    auto.
   - simpl in *; eauto.
 Qed.
 
@@ -261,7 +261,7 @@ Proof with eauto 5.
     solve_false.
   - inst_cofinites_for a_wf_typ__all; intros; inst_cofinites_with X; auto.
     rewrite_env ((X ~ □ ++ Σ2) ++ x ~ abind_var_typ B2 ++ Σ1); eauto.
-    eapply H1 with (B1:=B1)... 
+    eapply H1 with (B1:=B1)...
 Qed.
 
 Lemma a_wf_exp_var_binds_another : forall Σ1 x Σ2 e A1 A2,
@@ -277,7 +277,7 @@ Proof with eauto 5 using a_wf_typ_var_binds_another.
     + destruct (x==x0).
       * subst. econstructor...
       * apply binds_remove_mid in H; auto.
-        econstructor... 
+        econstructor...
     + inst_cofinites_for a_wf_exp__abs T:=T; intros; inst_cofinites_with x0; auto...
       rewrite_env ((x0 ~ abind_var_typ T ++ Σ2) ++ x ~ abind_var_typ A2 ++ Σ1); eauto.
       eapply H1 with (A1:=A1)...
@@ -285,7 +285,7 @@ Proof with eauto 5 using a_wf_typ_var_binds_another.
       rewrite_env ((X ~ □ ++ Σ2) ++ x ~ abind_var_typ A2 ++ Σ1); eauto.
       eapply a_wf_body_var_binds_another with (A1:=A1)...
   - intros. clear a_wf_body_var_binds_another.
-    dependent destruction H... 
+    dependent destruction H...
 Qed.
 
 Lemma a_wf_exp_var_binds_another_cons : forall Σ1 x e A1 A2,
@@ -346,7 +346,7 @@ Proof.
   - apply binds_remove_mid_diff_bind in H.
     apply a_wf_typ__stvar... apply binds_weaken_mid; auto. solve_false.
   - apply binds_remove_mid_diff_bind in H.
-    apply a_wf_typ__etvar... apply binds_weaken_mid; auto. solve_false. 
+    apply a_wf_typ__etvar... apply binds_weaken_mid; auto. solve_false.
   - inst_cofinites_for a_wf_typ__all; intros; inst_cofinites_with X0; auto.
     rewrite_env ((X0 ~ □ ++ Σ2) ++ (X, ■) :: Σ1); eauto.
 Qed.
@@ -372,7 +372,7 @@ Proof.
   - apply binds_remove_mid_diff_bind in H.
     apply a_wf_typ__stvar... apply binds_weaken_mid; auto. solve_false.
   - apply binds_remove_mid_diff_bind in H.
-    apply a_wf_typ__etvar... apply binds_weaken_mid; auto. solve_false. 
+    apply a_wf_typ__etvar... apply binds_weaken_mid; auto. solve_false.
   - inst_cofinites_for a_wf_typ__all; intros; inst_cofinites_with X0; auto.
     rewrite_env ((X0 ~ □ ++ Σ2) ++ (X, ⬒) :: Σ1); eauto.
 Qed.
@@ -386,7 +386,7 @@ Proof.
   apply a_wf_typ_tvar_etvar; auto.
 Qed.
 
-Lemma ftvar_in_a_wf_typ_upper : forall Σ A, 
+Lemma ftvar_in_a_wf_typ_upper : forall Σ A,
   a_wf_typ Σ A ->
   ftvar_in_typ A [<=] dom Σ.
 Proof.
@@ -394,7 +394,7 @@ Proof.
   - apply binds_In in H; fsetdec.
   - apply binds_In in H; fsetdec.
   - apply binds_In in H; fsetdec.
-  - pick fresh X. 
+  - pick fresh X.
     inst_cofinites_with X.
     assert (ftvar_in_typ A [<=] ftvar_in_typ (A ᵗ^ₜ X)) by apply ftvar_in_typ_open_typ_wrt_typ_lower.
     simpl in *.
@@ -410,14 +410,14 @@ Proof.
     + forwards* [?|?]: binds_app_1 H.
       * forwards: binds_map_2 (subst_tvar_in_abind ` Y X) H0; eauto.
       * apply binds_cons_iff in H0. iauto.
-  - apply a_wf_typ__stvar. 
+  - apply a_wf_typ__stvar.
     forwards* [?|?]: binds_app_1 H.
     forwards: binds_map_2 (subst_tvar_in_abind ` Y X) H0; eauto.
     apply binds_cons_iff in H0. iauto.
-  - apply a_wf_typ__etvar. 
+  - apply a_wf_typ__etvar.
     forwards* [?|?]: binds_app_1 H.
     forwards: binds_map_2 (subst_tvar_in_abind ` Y X) H0; eauto.
-    apply binds_cons_iff in H0. iauto.  
+    apply binds_cons_iff in H0. iauto.
   - inst_cofinites_for a_wf_typ__all; intros; inst_cofinites_with X0; auto.
     + rewrite subst_tvar_in_typ_open_typ_wrt_typ_fresh2; auto.
       apply s_in_subst_inv; auto.
@@ -495,11 +495,11 @@ Lemma a_wf_wl_a_wf_bind_typ : forall Γ x A,
   binds x (abind_var_typ A) (awl_to_aenv Γ) ->
   (awl_to_aenv Γ) ᵗ⊢ᵃ A.
 Proof with eauto.
-  intros. dependent induction H; eauto; 
+  intros. dependent induction H; eauto;
     try (destruct_binds; apply a_wf_typ_weaken_cons; eauto).
   inversion H0.
 Qed.
-  
+
 Lemma aworklist_binds_split : forall Γ X,
   ⊢ᵃʷ Γ ->
   binds X abind_etvar_empty (awl_to_aenv Γ) ->
@@ -811,12 +811,12 @@ Proof with eauto.
   - dependent destruction H...
   - destruct_binds. destruct_a_wf_wl.
     assert (X <> Y). { unfold not. intros. subst. apply binds_dom_contradiction in H3... }
-    simpl. eauto. 
-  - destruct_binds. destruct_a_wf_wl.   
-    simpl. eauto. 
-  - destruct_binds. destruct_a_wf_wl. 
-    simpl. eauto. 
-  - dependent destruction H... 
+    simpl. eauto.
+  - destruct_binds. destruct_a_wf_wl.
+    simpl. eauto.
+  - destruct_binds. destruct_a_wf_wl.
+    simpl. eauto.
+  - dependent destruction H...
   - dependent destruction H...
     destruct_binds...
   - apply IHaworklist_subst...
@@ -885,7 +885,7 @@ Proof.
     + solve_notin_eq X.
     + solve_notin_eq X.
   - dependent destruction H.
-    dependent destruction H3. 
+    dependent destruction H3.
     simpl in *. destruct_binds; eauto.
   - dependent destruction H.
     + dependent destruction H2. destruct_binds; eauto.
@@ -893,7 +893,7 @@ Proof.
     + dependent destruction H2.
       * rewrite awl_to_aenv_app in H. simpl in H. solve_notin_eq X0.
       * simpl in *. destruct_binds; auto.
-        apply binds_cons. eauto. 
+        apply binds_cons. eauto.
       * apply worklist_split_etvar_det in x; auto.
         -- destruct x. subst. apply IHΓ2 in H2; auto.
            apply a_wf_wl_move_etvar_back; eauto.
@@ -920,7 +920,7 @@ Lemma aworklist_subst_binds_same_atvar : forall Γ X b X1 A Γ1 Γ2,
 Proof.
   intros.
   apply aworklist_binds_split in H0. destruct H0 as [Γ'1 [Γ'2 Heq]]; rewrite <- Heq in *.
-    replace b with (subst_tvar_in_abind A X b); auto. 
+    replace b with (subst_tvar_in_abind A X b); auto.
     eapply aworklist_subst_binds_same_avar'; eauto.
     intuition; subst; auto.
   auto.
@@ -937,7 +937,7 @@ Lemma aworklist_subst_binds_same_var : forall Γ x X B A Γ1 Γ2,
 Proof.
   intros.
   apply aworklist_binds_split in H0. destruct H0 as [Γ'1 [Γ'2 Heq]]; rewrite <- Heq in *.
-    replace (abind_var_typ (subst_tvar_in_typ A X B)) with (subst_tvar_in_abind A X (abind_var_typ B)); auto. 
+    replace (abind_var_typ (subst_tvar_in_typ A X B)) with (subst_tvar_in_abind A X (abind_var_typ B)); auto.
     eapply aworklist_subst_binds_same_avar'; eauto.
     auto.
 Qed.
@@ -987,7 +987,7 @@ Proof with (autorewrite with core in *); simpl; eauto; solve_false; try solve_no
   generalize dependent Γ1. generalize dependent Γ2. dependent induction WFB; simpl in *; intros; eauto.
   - destruct (X == X0); subst.
     + simpl. destruct_eq_atom. eapply aworklist_subst_wf_typ; eauto.
-    + simpl. destruct_eq_atom. eapply aworklist_subst_wf_typ; eauto. 
+    + simpl. destruct_eq_atom. eapply aworklist_subst_wf_typ; eauto.
   - destruct (X == X0); subst.
     + simpl. destruct_eq_atom. eapply aworklist_subst_wf_typ; eauto.
     + simpl. destruct_eq_atom. eapply aworklist_subst_wf_typ; eauto.
@@ -1007,7 +1007,7 @@ Qed.
 Ltac unify_binds :=
   match goal with
   | H_1 : binds ?X ?b1 ?θ, H_2 : binds ?X ?b2 ?θ |- _ =>
-    let H_3 := fresh "H" in 
+    let H_3 := fresh "H" in
     apply binds_unique with (a:=b2) in H_1 as H_3; eauto; dependent destruction H_3; subst
   end.
 
@@ -1033,11 +1033,11 @@ Proof with eauto using aworklist_subst_wf_typ_subst.
     + simpl in *. eapply aworklist_subst_binds_same_var in H... unfold not. intros. subst. unify_binds.
     + simpl in *. inst_cofinites_for a_wf_exp__abs T:=({A ᵗ/ₜ X} T)...
       intros. inst_cofinites_with x.
-      replace ( x ~ abind_var_typ ({A ᵗ/ₜ X} T) ++ ⌊ {A ᵃʷ/ₜ X} Γ2 ⧺ Γ1 ⌋ᵃ) with 
+      replace ( x ~ abind_var_typ ({A ᵗ/ₜ X} T) ++ ⌊ {A ᵃʷ/ₜ X} Γ2 ⧺ Γ1 ⌋ᵃ) with
                 (⌊ {A ᵃʷ/ₜ X} (x ~ᵃ T ;ᵃ Γ2) ⧺ Γ1 ⌋ᵃ) by (simpl; auto).
       rewrite subst_tvar_in_exp_open_exp_wrt_typ_fresh2...
       assert (aworklist_subst (x ~ᵃ T ;ᵃ Γ) X A Γ1 (x ~ᵃ T ;ᵃ Γ2))...
-      eapply H1 with (Γ:=(x ~ᵃ T ;ᵃ Γ)); simpl...  
+      eapply H1 with (Γ:=(x ~ᵃ T ;ᵃ Γ)); simpl...
       -- apply a_wf_typ_weaken_cons...
     + simpl in *. inst_cofinites_for a_wf_exp__tabs; intros; inst_cofinites_with X0.
       * rewrite subst_tvar_in_body_open_body_wrt_typ_fresh2...
@@ -1070,8 +1070,8 @@ with aworklist_subst_wf_conts_subst : forall Γ X A cs Γ1 Γ2,
   a_wf_conts (⌊ {A ᵃʷ/ₜ X} Γ2 ⧺ Γ1 ⌋ᵃ) ({A ᶜˢ/ₜ X} cs).
 Proof with eauto 6 using aworklist_subst_wf_typ_subst, aworklist_subst_wf_exp_subst.
 - intros *Hbinds Hnotin Hwfa Hwfc Hwfaw Haws. clear aworklist_subst_wf_contd_subst.
-  generalize dependent Γ1. generalize dependent Γ2. dependent induction Hwfc; intros; simpl in *... 
-  + destruct_wf_arrow... 
+  generalize dependent Γ1. generalize dependent Γ2. dependent induction Hwfc; intros; simpl in *...
+  + destruct_wf_arrow...
 - intros *Hbinds Hnotin Hwfa Hwfc Hwfaw Haws. clear aworklist_subst_wf_conts_subst.
   generalize dependent Γ1. generalize dependent Γ2. dependent induction Hwfc; intros; simpl...
 Qed.
@@ -1084,13 +1084,13 @@ Lemma aworklist_subst_wf_work_subst : forall Γ X A w Γ1 Γ2,
   ⊢ᵃʷ Γ ->
   aworklist_subst Γ X A Γ1 Γ2 ->
   a_wf_work (⌊ {A ᵃʷ/ₜ X} Γ2 ⧺ Γ1 ⌋ᵃ) ({A ʷ/ₜ X} w).
-Proof with eauto 8 using aworklist_subst_wf_typ_subst, aworklist_subst_wf_exp_subst, 
+Proof with eauto 8 using aworklist_subst_wf_typ_subst, aworklist_subst_wf_exp_subst,
               aworklist_subst_wf_conts_subst, aworklist_subst_wf_contd_subst.
   intros. dependent destruction H2; simpl...
-  - destruct_wf_arrow... 
-  - destruct_wf_arrow... 
-  - destruct_wf_arrow... 
-    destruct_wf_arrow... 
+  - destruct_wf_arrow...
+  - destruct_wf_arrow...
+  - destruct_wf_arrow...
+    destruct_wf_arrow...
     constructor...
 Qed.
 
@@ -1120,15 +1120,15 @@ Lemma a_wf_typ_reorder_aenv : forall Σ Σ' A,
   Σ ᵗ⊢ᵃ A ->
   Σ' ᵗ⊢ᵃ A.
 Proof.
-  intros * Hwfenv1 Hwfenv2 Hbinds Hwfa. apply a_wf_typ_lc in Hwfa as Hlc. generalize dependent Σ. generalize dependent Σ'. 
+  intros * Hwfenv1 Hwfenv2 Hbinds Hwfa. apply a_wf_typ_lc in Hwfa as Hlc. generalize dependent Σ. generalize dependent Σ'.
   induction Hlc; intros; simpl in *; try solve [dependent destruction Hwfa; eauto].
   - dependent destruction Hwfa; eauto.
     constructor; eauto 6.
-  - dependent destruction Hwfa. inst_cofinites_for a_wf_typ__all; intros; inst_cofinites_with X; eauto. 
+  - dependent destruction Hwfa. inst_cofinites_for a_wf_typ__all; intros; inst_cofinites_with X; eauto.
     eapply H0 with (Σ:=X ~ □ ++ Σ); eauto.
     intros. rewrite ftvar_in_typ_open_typ_wrt_typ_upper in H4. apply union_iff in H4. destruct H4.
     + simpl in H4. apply singleton_iff in H4; subst. destruct_binds. auto.
-      apply binds_dom_contradiction in H6. contradiction. auto. 
+      apply binds_dom_contradiction in H6. contradiction. auto.
     + destruct_binds. apply binds_cons; eauto.
   - dependent destruction Hwfa; eauto.
     constructor; eauto 6.
@@ -1154,14 +1154,14 @@ Proof with eauto using a_wf_typ_strengthen_cons, a_wf_typ_strengthen_var_cons.
         autorewrite with core in *...
       * destruct_a_wf_wl. eapply aworklist_subst_wf_typ_subst...
       * apply IHaworklist_subst; auto.
-        dependent destruction H... 
+        dependent destruction H...
         eapply a_wf_typ_strengthen_var_cons...
   - simpl. destruct_binds.
     + constructor; auto.
       * destruct_a_wf_wl.
         erewrite dom_aworklist_subst with (X:=X) (A:=A) (Γ1:=Γ1) (Γ2:=Γ2) in H...
         autorewrite with core in *...
-      * dependent destruction H... 
+      * dependent destruction H...
   - simpl. destruct_binds.
     + constructor; auto.
       * destruct_a_wf_wl.
@@ -1170,7 +1170,7 @@ Proof with eauto using a_wf_typ_strengthen_cons, a_wf_typ_strengthen_var_cons.
       * dependent destruction H. apply IHaworklist_subst...
   - simpl in *. constructor.
     + dependent destruction H. eapply aworklist_subst_wf_work_subst...
-    + dependent destruction H... 
+    + dependent destruction H...
   - simpl in *. destruct_binds.
     + constructor.
       * destruct_a_wf_wl.
