@@ -10,9 +10,9 @@ Require Import uni.decl.prop_basic.
 Require Import ltac_utils.
 
 Lemma d_wf_typ_rename_var : forall Ψ1 Ψ2 x y A B,
-  (Ψ2 ++ (x , dbind_typ B) :: Ψ1) ⊢ A ->
+  (Ψ2 ++ (x , dbind_typ B) :: Ψ1) ᵗ⊢ᵈ A ->
   y `notin` dom (Ψ2 ++ (x , dbind_typ B) :: Ψ1) ->
-  (Ψ2 ++ (y , dbind_typ B) :: Ψ1) ⊢ A.
+  (Ψ2 ++ (y , dbind_typ B) :: Ψ1) ᵗ⊢ᵈ A.
 Proof with auto.
   intros. dependent induction H; eauto.
   - econstructor; eauto.
@@ -29,9 +29,9 @@ Proof with auto.
 Qed.
 
 Lemma d_mono_typ_rename_var : forall Ψ1 Ψ2 x y T A,
-  (Ψ2 ++ (x , dbind_typ A) :: Ψ1) ⊢ₘ T ->
+  (Ψ2 ++ (x , dbind_typ A) :: Ψ1) ᵗ⊢ᵈₘ T ->
   y `notin` dom (Ψ2 ++ (x , dbind_typ A) :: Ψ1) ->
-  (Ψ2 ++ (y , dbind_typ A) :: Ψ1) ⊢ₘ T.
+  (Ψ2 ++ (y , dbind_typ A) :: Ψ1) ᵗ⊢ᵈₘ T.
 Proof with auto.
   intros. dependent induction H; eauto.
   - econstructor; eauto.
@@ -54,9 +54,9 @@ Qed.
 
 
 Lemma subst_var_in_exp_refl : forall x e,
-  subst_var_in_exp (exp_var_f x) x e = e
+  {exp_var_f x ᵉ/ₑ x} e = e
 with subst_var_in_body_refl : forall x b,
-  subst_var_in_body (exp_var_f x) x b = b.
+  {exp_var_f x ᵇ/ₑ x} b = b.
 Proof.
   - intros. dependent induction e; simpl; auto.
     + destruct_eq_atom; eauto.
@@ -157,10 +157,10 @@ Qed.
 
 
 Lemma d_wf_typ_rename_dtvar : forall Ψ1 Ψ2 X Y b A,
-  b = dbind_tvar_empty \/ b = dbind_stvar_empty ->
-  (Ψ2 ++ (X, b) :: Ψ1) ⊢ A ->
+  b = □ \/ b = ■ ->
+  (Ψ2 ++ (X, b) :: Ψ1) ᵗ⊢ᵈ A ->
   Y `notin` dom (Ψ2 ++ (X, b) :: Ψ1) ->
-  (map (subst_tvar_in_dbind `Y X) Ψ2 ++ (Y, b) :: Ψ1) ⊢ {`Y ᵗ/ₜ X} A.
+  (map (subst_tvar_in_dbind `Y X) Ψ2 ++ (Y, b) :: Ψ1) ᵗ⊢ᵈ {`Y ᵗ/ₜ X} A.
 Proof with auto.
   intros. dependent induction H0; eauto; simpl in *; destruct_eq_atom...
   - destruct H...
@@ -179,11 +179,11 @@ Proof with auto.
 Qed.
 
 Lemma d_mono_typ_rename_tvar : forall Ψ1 Ψ2 X Y T b,
-  b = dbind_tvar_empty \/ b = dbind_stvar_empty ->
+  b = □ \/ b = ■  ->
   uniq (Ψ2 ++ (X, b) :: Ψ1) ->
-  (Ψ2 ++ (X, b) :: Ψ1) ⊢ₘ T ->
+  (Ψ2 ++ (X, b) :: Ψ1) ᵗ⊢ᵈₘ T ->
   Y `notin` dom (Ψ2 ++ (X, b) :: Ψ1) ->
-  (map (subst_tvar_in_dbind `Y X) Ψ2 ++ (Y, b) :: Ψ1) ⊢ₘ {`Y ᵗ/ₜ X} T.
+  (map (subst_tvar_in_dbind `Y X) Ψ2 ++ (Y, b) :: Ψ1) ᵗ⊢ᵈₘ {`Y ᵗ/ₜ X} T.
 Proof with auto.
   intros. dependent induction H1; eauto; simpl in *;  destruct_eq_atom...
   - destruct H...
@@ -195,7 +195,7 @@ Proof with auto.
 Qed.
 
 Lemma d_wf_env_rename_tvar : forall Ψ1 Ψ2 X Y b,
-  b = dbind_tvar_empty \/ b = dbind_stvar_empty ->
+  b = □ \/ b = ■  ->
   ⊢ (Ψ2 ++ (X, b) :: Ψ1) ->
   Y `notin` dom (Ψ2 ++ (X, b) :: Ψ1) ->
   ⊢ (map (subst_tvar_in_dbind `Y X) Ψ2 ++ (Y, b) :: Ψ1).
@@ -209,7 +209,7 @@ Qed.
 
 
 Theorem d_sub_rename_dtvar : forall Ψ1 Ψ2 X Y b A B, 
-  b = dbind_tvar_empty \/ b = dbind_stvar_empty ->
+  b = □ \/ b = ■  ->
   Ψ2 ++ (X, b) :: Ψ1 ⊢ A <: B ->
   Y `notin` (dom (Ψ2 ++ (X, b) :: Ψ1)) ->
   map (subst_tvar_in_dbind `Y X) Ψ2 ++ (Y, b) :: Ψ1 ⊢ {`Y ᵗ/ₜ X} A <:  {`Y ᵗ/ₜ X} B.
@@ -266,7 +266,7 @@ Proof with auto.
 Qed.
 
 Theorem d_sub_rename_dtvar_cons : forall Ψ X Y A B b,
-  b = dbind_tvar_empty \/ b = dbind_stvar_empty ->
+  b = □ \/ b = ■ ->
   (X, b) :: Ψ ⊢ A <: B ->
   Y `notin` dom Ψ ->
   (Y, b):: Ψ ⊢ {` Y ᵗ/ₜ X} A <: {` Y ᵗ/ₜ X} B.
@@ -278,7 +278,7 @@ Proof.
 Qed.
 
 Theorem d_infabs_rename_dtvar : forall Ψ1 Ψ2 X Y b A B C, 
-  b = dbind_tvar_empty \/ b = dbind_stvar_empty ->
+  b = □ \/ b = ■ ->
   d_infabs (Ψ2 ++ (X, b) :: Ψ1) A B C ->
   Y `notin` (dom (Ψ2 ++ (X, b) :: Ψ1)) ->
   d_infabs (map (subst_tvar_in_dbind `Y X) Ψ2 ++ (Y, b) :: Ψ1) ({`Y ᵗ/ₜ X} A) ({`Y ᵗ/ₜ X} B) ({`Y ᵗ/ₜ X} C).
@@ -291,7 +291,7 @@ Proof with eauto using d_mono_typ_rename_tvar, d_wf_typ_rename_dtvar, d_wf_env_r
 Qed.
 
 Theorem d_inftapp_rename_dtvar : forall Ψ1 Ψ2 X Y b A B C, 
-  b = dbind_tvar_empty \/ b = dbind_stvar_empty ->
+  b = □ \/ b = ■ ->
   d_inftapp (Ψ2 ++ (X, b) :: Ψ1) A B C ->
   Y `notin` (dom (Ψ2 ++ (X, b) :: Ψ1)) ->
   d_inftapp (map (subst_tvar_in_dbind `Y X) Ψ2 ++ (Y, b) :: Ψ1) ({`Y ᵗ/ₜ X} A) ({`Y ᵗ/ₜ X} B) ({`Y ᵗ/ₜ X} C).
@@ -343,7 +343,7 @@ Qed.
 
 
 Theorem d_chk_inf_rename_dtvar : forall Ψ1 Ψ2 X Y e A b mode, 
-  b = dbind_tvar_empty \/ b = dbind_stvar_empty ->
+  b = □ \/ b = ■ ->
   d_chk_inf (Ψ2 ++ (X, b) :: Ψ1) e mode A ->
   Y `notin` (dom (Ψ2 ++ (X, b) :: Ψ1)) ->
   d_chk_inf (map (subst_tvar_in_dbind `Y X) Ψ2 ++ (Y, b) :: Ψ1) ({` Y ᵉ/ₜ X} e) mode ({` Y ᵗ/ₜ X} A).
@@ -380,10 +380,10 @@ Proof with eauto using d_wf_typ_rename_dtvar, d_mono_typ_rename_dtvar, d_wf_env_
 Qed.
 
 Theorem d_chk_inf_rename_dtvar_cons : forall Ψ X Y b e A mode, 
-  b = dbind_tvar_empty \/ b = dbind_stvar_empty ->
+  b = □ \/ b = ■ ->
   d_chk_inf ((X, b) :: Ψ) e mode A ->
   Y `notin` (dom Ψ) ->
-  d_chk_inf ((Y, b):: Ψ) (subst_tvar_in_exp `Y X e) mode (subst_tvar_in_typ `Y X A).
+  d_chk_inf ((Y, b) :: Ψ) ({` Y ᵉ/ₜ X} e) mode ({` Y ᵗ/ₜ X} A).
 Proof.
   intros. destruct (X == Y).
   - subst. rewrite subst_tvar_in_typ_refl_eq...

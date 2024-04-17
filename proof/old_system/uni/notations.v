@@ -10,11 +10,11 @@ Notation "⊢ Ψ" :=
   (d_wf_env Ψ)
     (at level 65, no associativity) : type_scope.
 
-Notation "Ψ ⊢ A" :=
+Notation "Ψ ᵗ⊢ᵈ A" :=
   (d_wf_typ Ψ A)
     (at level 65, no associativity) : type_scope.
     
-Notation "Ψ ⊢ₘ T" :=
+Notation "Ψ ᵗ⊢ᵈₘ T" :=
   (d_mono_typ Ψ T)
     (at level 65, no associativity) : type_scope.
 

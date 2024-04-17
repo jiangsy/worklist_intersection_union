@@ -168,19 +168,19 @@ Qed.
 
 
 Theorem d_wf_work_apply_conts : forall Ω c A w,
-  ⊢ᵈʷ Ω -> d_wf_conts (dwl_to_denv Ω) c -> dwl_to_denv Ω ⊢ A -> apply_conts c A w ->
+  ⊢ᵈʷ Ω -> d_wf_conts (dwl_to_denv Ω) c -> dwl_to_denv Ω ᵗ⊢ᵈ A -> apply_conts c A w ->
   ⊢ᵈʷ dworklist_conswork Ω w.
 Proof.
   intros. induction H2; simpl; auto;
     dependent destruction H0; auto.
 Qed.
 
-Theorem d_wf_work_apply_contd : forall Ω cc A B w,
+Theorem d_wf_work_apply_contd : forall Ω cd A B w,
   ⊢ᵈʷ Ω -> 
-  d_wf_contd (dwl_to_denv Ω) cc -> 
-  dwl_to_denv Ω ⊢ A -> 
-  dwl_to_denv Ω ⊢ B -> 
-  apply_contd cc A B w ->
+  d_wf_contd (dwl_to_denv Ω) cd -> 
+  dwl_to_denv Ω ᵗ⊢ᵈ A -> 
+  dwl_to_denv Ω ᵗ⊢ᵈ B -> 
+  apply_contd cd A B w ->
   ⊢ᵈʷ dworklist_conswork Ω w.
 Proof.
   intros. induction H3; simpl; auto;

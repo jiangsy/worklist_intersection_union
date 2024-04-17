@@ -11,13 +11,6 @@ Require Import uni.decl.prop_subtyping.
 Require Import ltac_utils.
 
 
-(* Definition wf_dom : forall {Ψ}, ⊢ Ψ -> atoms.
-Proof.
-  intros.
-  set (x := dom Ψ). exact x.
-Defined. *)
-
-
 Hint Constructors d_wf_typ: core.
 Hint Constructors d_wf_env: core.
 
@@ -118,8 +111,8 @@ Proof.
 Qed.
 
 
-Lemma d_subenv_wf_typ : forall Ψ Ψ' T,
-  Ψ ⊢ T -> d_subenv Ψ' Ψ -> Ψ' ⊢ T.
+Lemma d_subenv_wf_typ : forall Ψ Ψ' A,
+  Ψ ᵗ⊢ᵈ A -> d_subenv Ψ' Ψ -> Ψ' ᵗ⊢ᵈ A.
 Proof.
   intros * H. generalize dependent Ψ'. induction H; intros; auto.
   - econstructor.
@@ -170,7 +163,7 @@ Qed.
 
 
 Ltac solve_wf_subenv := match goal with
-  | H : d_subenv ?Ψ' ?Ψ |- ?Ψ' ⊢ ?T => eapply d_subenv_wf_typ; eauto
+  | H : d_subenv ?Ψ' ?Ψ |- ?Ψ' ᵗ⊢ᵈ ?A => eapply d_subenv_wf_typ; eauto
   | H : d_subenv ?Ψ' ?Ψ |- ⊢ ?Ψ' => eapply d_subenv_wf_env; eauto
 end.
 
@@ -293,7 +286,7 @@ Fixpoint typ_size (T:typ) : nat :=
 
 Lemma d_inftapp_wft : forall Ψ A B C,
   d_inftapp Ψ A B C ->
-  ⊢ Ψ /\ Ψ ⊢ A /\ Ψ ⊢ B /\ Ψ ⊢ C.
+  ⊢ Ψ /\ Ψ ᵗ⊢ᵈ A /\ Ψ ᵗ⊢ᵈ B /\ Ψ ᵗ⊢ᵈ C.
 Proof.
   intros. induction H; intuition.
   - eapply d_wf_typ_all_open; eauto.
@@ -391,19 +384,19 @@ Proof with eauto.
 Qed.
 
 Corollary d_inftapp_wft_1 : forall Ψ A B C,
-    d_inftapp Ψ A B C -> Ψ ⊢ A.
+    d_inftapp Ψ A B C -> Ψ ᵗ⊢ᵈ A.
 Proof with eauto.
   intros. forwards*: d_inftapp_wft.
 Qed.
 
 Corollary d_inftapp_wft_2 : forall Ψ A B C,
-    d_inftapp Ψ A B C -> Ψ ⊢ B.
+    d_inftapp Ψ A B C -> Ψ ᵗ⊢ᵈ B.
 Proof with eauto.
   intros. forwards*: d_inftapp_wft.
 Qed.
 
 Corollary d_inftapp_wft_3 : forall Ψ A B C,
-    d_inftapp Ψ A B C -> Ψ ⊢ C.
+    d_inftapp Ψ A B C -> Ψ ᵗ⊢ᵈ C.
 Proof with eauto.
   intros. forwards*: d_inftapp_wft.
 Qed.
@@ -434,7 +427,7 @@ Qed.
 
 Lemma d_infabs_wft : forall Ψ A B C,
   Ψ ⊢ A ▹ B → C ->
-  ⊢ Ψ /\ Ψ ⊢ A /\ Ψ ⊢ B /\ Ψ ⊢ C.
+  ⊢ Ψ /\ Ψ ᵗ⊢ᵈ A /\ Ψ ᵗ⊢ᵈ B /\ Ψ ᵗ⊢ᵈ C.
 Proof.
   intros. induction H; intuition.
 Qed.
@@ -446,19 +439,19 @@ Proof.
 Qed.
 
 Corollary d_infabs_wft_1 : forall Ψ A B C,
-  Ψ ⊢ A ▹ B → C -> Ψ ⊢ A.
+  Ψ ⊢ A ▹ B → C -> Ψ ᵗ⊢ᵈ A.
 Proof.
   intros. forwards*: d_infabs_wft H.
 Qed.
 
 Corollary d_infabs_wft_2 : forall Ψ A B C,
-  Ψ ⊢ A ▹ B → C -> Ψ ⊢ B.
+  Ψ ⊢ A ▹ B → C -> Ψ ᵗ⊢ᵈ B.
 Proof.
   intros. forwards*: d_infabs_wft H.
 Qed.
 
 Corollary d_infabs_wft_3 : forall Ψ A B C,
-  Ψ ⊢ A ▹ B → C -> Ψ ⊢ C.
+  Ψ ⊢ A ▹ B → C -> Ψ ᵗ⊢ᵈ C.
 Proof.
   intros. forwards*: d_infabs_wft H.
 Qed.
@@ -619,7 +612,7 @@ Proof with eauto.
 Qed.
 
 Hint Extern 1 (_ < _) => lia : typing.
-Hint Extern 1 (_ ⊢ _) => eapply d_subenv_wf_typ; eauto : typing.
+Hint Extern 1 (_ ᵗ⊢ᵈ _) => eapply d_subenv_wf_typ; eauto : typing.
 
 
 Lemma d_exp_size_open_var_rec : forall e x n,

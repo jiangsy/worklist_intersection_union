@@ -527,7 +527,7 @@ Qed.
 #[local] Hint Immediate trans_wl_wf_ss : core.
 
 Lemma tvar_notin_dom_neq_tvar_in_ss_wf_typ : forall θ T X Y,
-  ss_to_denv θ ⊢ₘ T ->
+  ss_to_denv θ ᵗ⊢ᵈₘ T ->
   X `in` ftvar_in_typ T ->
   Y `notin` dom θ ->
   X <> Y.
@@ -596,7 +596,7 @@ Proof with auto.
     assert (wf_ss ((X ~ dbind_typ Aᵈ) ++ θ)). { 
       constructor; eauto.
       erewrite trans_wl_ss_dom_upper; eauto. 
-      eapply trans_wl_a_mono_typ_d_mono_typ with (Aᵃ:=A); eauto.
+      eapply trans_wl_a_mono_typ_d_mono_typ with (Tᵃ:=A); eauto.
     }
     dependent destruction H6.
     repeat split; auto.
@@ -682,7 +682,7 @@ Proof with auto.
     apply IHaworklist_subst in H6 as IH.
     destruct IH as [θ'1 [Tᵈ [Htrans [Htranst [Htranst' [Hbinds [Htransx Hwfss]]]]]]].    
     exists (Y ~ dbind_typ T ++ θ'1). exists Tᵈ.
-    assert (ss_to_denv θ'1 ⊢ₘ T). {
+    assert (ss_to_denv θ'1 ᵗ⊢ᵈₘ T). {
       apply d_mono_typ_reorder_ss with (θ:=θ'); eauto.
       intros. apply Hbinds; auto. apply neq_comm.
       eapply tvar_notin_dom_neq_tvar_in_ss_wf_typ with (X:=X0); eauto.
@@ -783,8 +783,8 @@ Ltac solve_notin_dom :=
 
 Lemma worklist_subst_fresh_etvar_total : forall Γ1 Γ2 X X1 X2,
   ⊢ᵃʷ (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) ->
-  X1 `notin` dom (awl_to_aenv (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1)) ->
-  X2 `notin` add X1 (dom (awl_to_aenv (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1))) ->
+  X1 `notin` dom (⌊ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1 ⌋ᵃ) ->
+  X2 `notin` add X1 (dom (⌊ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1 ⌋ᵃ)) ->
   aworklist_subst (X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) X
     (typ_arrow ` X1 ` X2) (X1 ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1) Γ2.
 Proof with auto.
@@ -982,15 +982,6 @@ Proof.
     try unify_trans_contd; try unify_trans_conts; 
     try repeat unify_trans_typ; try unify_trans_exp; try constructor.
 Qed.
-
-Ltac fold_open_wrt_rec' := 
-  match goal with 
-  | H : context [open_typ_wrt_typ_rec 0 ?B ?A] |- _ => replace (open_typ_wrt_typ_rec 0 B A) with (open_typ_wrt_typ A B) in H by auto
-  | H : context [open_exp_wrt_typ_rec 0 ?A ?e] |- _ => replace (open_exp_wrt_typ_rec 0 A e) with (open_exp_wrt_typ e A) in H by auto
-  end.
-
-Ltac fold_open_wrt_rec :=
-  repeat fold_open_wrt_rec'.
 
 #[local] Hint Resolve trans_typ_wf_ss trans_wl_a_wf_typ_d_wf_typ : core.
 
@@ -1357,9 +1348,10 @@ Proof with eauto.
   - destruct_a_wf_wl. 
     pick fresh X. inst_cofinites_with X.
     assert (Hwf: ⊢ᵃʷ (work_check (e ᵉ^ₜ ` X) (A ᵗ^ₜ X) ⫤ᵃ X ~ᵃ □ ;ᵃ work_applys cs (typ_all A) ⫤ᵃ Γ)). {
+      rewrite open_body_wrt_typ_anno in *.
       dependent destruction H0...
       dependent destruction H...
-      repeat (constructor; simpl; auto). fold_open_wrt_rec.
+      repeat (constructor; simpl; auto).
       inst_cofinites_for a_wf_typ__all; intros.
       solve_s_in.
       apply a_wf_typ_rename_tvar_cons with (Y:=X0) in H1. 
@@ -1392,7 +1384,8 @@ Proof with eauto.
       }
       unify_trans_typ. inversion H11. subst.
       apply d_wl_del_red__inf with (A:=typ_all (close_typ_wrt_typ X Axᵈ)).
-      * dependent destruction H. dependent destruction H1. fold_open_wrt_rec.
+      * rewrite open_body_wrt_typ_anno in *.
+        dependent destruction H. dependent destruction H1. 
         inst_cofinites_for d_chk_inf__inf_tabs. 
         -- inst_cofinites_for d_wf_typ__all; intros; inst_cofinites_with X0; 
            rewrite_close_open_subst. apply s_in_rename. 

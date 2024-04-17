@@ -346,12 +346,33 @@ Proof with eauto using lc_typ_subst.
 Qed.
 
 
+Lemma lc_exp_subst_var_in_exp : forall e1 e2 x,
+  lc_exp e1 ->
+  lc_exp e2 ->
+  lc_exp ({e2 ᵉ/ₑ x} e1)
+with lc_body_subst_var_in_body : forall b e x,
+  lc_body b ->
+  lc_exp e ->
+  lc_body ({e ᵇ/ₑ x} b).
+Proof with eauto using lc_typ_subst.
+  - intros. clear lc_exp_subst_var_in_exp. induction H; simpl...
+    + destruct_eq_atom; auto.
+    + pick fresh x0. apply lc_exp_abs_exists with (x1:=x0). 
+      replace (({e2 ᵉ/ₑ x} e) ᵉ^ₑ exp_var_f x0) with ({e2 ᵉ/ₑ x} (e ᵉ^ₑ exp_var_f x0))...
+      rewrite subst_var_in_exp_open_exp_wrt_exp... simpl; destruct_eq_atom...
+    + pick fresh X0. apply lc_exp_tabs_exists with (X1:=X0).
+      replace (open_body_wrt_typ ({e2 ᵇ/ₑ x} body5) ` X0) with ({e2 ᵇ/ₑ x} (open_body_wrt_typ body5 ` X0))...
+      rewrite subst_var_in_body_open_body_wrt_typ...
+  - intros. clear lc_body_subst_var_in_body. destruct b. 
+      dependent destruction H; simpl...
+Qed.
+
 Lemma lc_exp_subst_tvar_in_exp_inv : forall e A X,
-  lc_exp (subst_tvar_in_exp A X e) ->
+  lc_exp ({A ᵉ/ₜ X} e) ->
   lc_typ A ->
   lc_exp e
 with lc_body_subst_tvar_in_body_inv : forall b A X,
-  lc_body (subst_tvar_in_body A X b) ->
+  lc_body ({A ᵇ/ₜ X} b) ->
   lc_typ A ->
   lc_body b.  
 Proof.
@@ -383,12 +404,6 @@ Proof.
   - intros. destruct b. dependent destruction H.
     + constructor; eauto.
       eapply lc_typ_subst_inv; eauto.
-Qed.
-
-Lemma d_mono_typ_d_wf_typ : forall Ψ A,
-  d_mono_typ Ψ A -> Ψ ⊢ A.
-Proof.
-  intros. induction H; auto.
 Qed.
 
 

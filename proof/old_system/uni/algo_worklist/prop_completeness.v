@@ -136,10 +136,10 @@ Qed.
 
 Lemma d_mono_typ_strengthen_app : forall θ1 θ2 X T1 T2,
   wf_ss (θ2 ++ (X, dbind_typ T1) :: θ1) ->
-  d_mono_typ (ss_to_denv (θ2 ++ (X, dbind_typ T1) :: θ1)) T2 ->
-  d_mono_typ (ss_to_denv θ1) T1 ->
+  ss_to_denv (θ2 ++ (X, dbind_typ T1) :: θ1) ᵗ⊢ᵈₘ T2 ->
+  ss_to_denv θ1 ᵗ⊢ᵈₘ T1 ->
   (∀ Y : atom, Y `in` ftvar_in_typ T2 → Y `in` ftvar_in_typ T1) ->
-  d_mono_typ (ss_to_denv θ1) T2.
+  ss_to_denv θ1 ᵗ⊢ᵈₘ T2.
 Proof.
   intros. induction θ2; simpl in *; auto.
   - destruct a as [X0 b]. destruct b.
@@ -1139,7 +1139,7 @@ Ltac solve_wf_typ :=
     H_3: ?θ ᵗ⊩ ?Aᵃ ⇝ ?Aᵈ |- d_wf_typ (dwl_to_denv ?Ω) ?Aᵈ =>
     eapply trans_wl_a_wf_typ_d_wf_typ; eauto
   | H_1 : d_wf_typ (ss_to_denv ?θ) ?A,
-    H_2: nil ⊩ ?Γ ⇝ ?Ω ⫣ ?θ |- dwl_to_denv ?Ω ⊢ ?A =>
+    H_2: nil ⊩ ?Γ ⇝ ?Ω ⫣ ?θ |- dwl_to_denv ?Ω ᵗ⊢ᵈ ?A =>
     eapply trans_wl_ss_wf_typ_d_wf_typ; eauto
   | _ : _ |- _ => idtac
   end.

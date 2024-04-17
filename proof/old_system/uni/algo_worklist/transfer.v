@@ -602,7 +602,7 @@ Qed.
 
 Lemma wf_ss_typ_no_etvar: forall θ X A T,
   wf_ss θ ->
-  ss_to_denv θ ⊢ A ->
+  ss_to_denv θ ᵗ⊢ᵈ A ->
   X ~ T ∈ᵈ θ ->
   X `notin` ftvar_in_typ A.
 Proof with eauto.
@@ -1145,7 +1145,7 @@ Qed.
 
 Lemma trans_typ_wf_dtyp : forall θ Aᵃ Aᵈ,
   θ ᵗ⊩ Aᵃ ⇝ Aᵈ ->
-  (ss_to_denv θ) ⊢ Aᵈ.
+  (ss_to_denv θ) ᵗ⊢ᵈ Aᵈ.
 Proof with eauto.
   intros. induction H...
   - constructor; auto.
@@ -1737,7 +1737,7 @@ Qed.
 Lemma trans_wl_wf_bind_typ : forall Γ Ω θ X T,
   nil ⊩ Γ ⇝ Ω ⫣ θ ->
   binds X (dbind_typ T) θ ->
-  dwl_to_denv Ω ⊢ T.
+  dwl_to_denv Ω ᵗ⊢ᵈ T.
 Proof.
   intros.
   apply trans_wl_wf_ss in H as Hwfss.
@@ -1763,14 +1763,14 @@ Proof with eauto using binds_ss_to_denv_binds_ss, binds_tvar_ss_binds_ss_to_denv
   - eapply wf_ss_binds_mono_typ; eauto.
 Qed.
 
-Lemma trans_wl_a_mono_typ_d_mono_typ : forall Γ Ω θ Aᵃ Aᵈ,
+Lemma trans_wl_a_mono_typ_d_mono_typ : forall Γ Ω θ Tᵃ Tᵈ,
   nil ⊩ Γ ⇝ Ω ⫣ θ ->
-  θ ᵗ⊩ Aᵃ ⇝ Aᵈ ->
-  a_mono_typ (awl_to_aenv Γ) Aᵃ ->
-  d_mono_typ (ss_to_denv θ) Aᵈ.
+  θ ᵗ⊩ Tᵃ ⇝ Tᵈ ->
+  a_mono_typ (awl_to_aenv Γ) Tᵃ ->
+  d_mono_typ (ss_to_denv θ) Tᵈ.
 Proof.
   intros * Htranswl Htransa Hmono. eapply trans_typ_a_mono_typ_d_mono_typ; eauto.
-   generalize dependent Aᵈ. dependent induction Hmono; intros.
+   generalize dependent Tᵈ. dependent induction Hmono; intros.
   - constructor.
   - constructor. eapply trans_wl_a_wl_binds_tvar_ss in H; eauto.
     apply binds_tvar_ss_binds_ss_to_aenv; eauto.
@@ -1794,7 +1794,7 @@ Qed.
 Lemma trans_typ_tvar_stvar_in_atyp_in_dtyp' : forall θ X Aᵃ Aᵈ,
   lc_typ Aᵃ ->
   θ ᵗ⊩ Aᵃ ⇝ Aᵈ ->
-  binds X dbind_tvar_empty θ \/ binds X dbind_stvar_empty θ ->
+  X ~ □ ∈ᵈ θ \/ X ~ ■ ∈ᵈ θ ->
   X `in` ftvar_in_typ Aᵃ -> 
   X `in` ftvar_in_typ Aᵈ.
 Proof.
@@ -1883,8 +1883,8 @@ Lemma trans_wl_a_wf_typ_d_wf_typ' : forall Γ Ω θ Aᵃ Aᵈ,
   lc_typ Aᵃ ->
   nil ⊩ Γ ⇝ Ω ⫣ θ ->
   θ ᵗ⊩ Aᵃ ⇝ Aᵈ ->
-  a_wf_typ (awl_to_aenv Γ) Aᵃ ->
-  d_wf_typ (dwl_to_denv Ω) Aᵈ.
+  ⌊ Γ ⌋ᵃ ᵗ⊢ᵃ Aᵃ ->
+  dwl_to_denv Ω ᵗ⊢ᵈ Aᵈ.
 Proof with eauto. 
   intros * Hlc. 
   generalize dependent Aᵈ.
@@ -2441,7 +2441,7 @@ Qed.
 
 
 Lemma trans_typ_refl: forall θ A,
-  ss_to_denv θ ⊢ A ->
+  ss_to_denv θ ᵗ⊢ᵈ A ->
   wf_ss θ ->
   θ ᵗ⊩ A ⇝ A.
 Proof with eauto.
