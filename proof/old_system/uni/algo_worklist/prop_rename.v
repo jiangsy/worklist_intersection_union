@@ -318,6 +318,35 @@ Fixpoint rename_var_in_aworklist (y x:expvar) (Γ:aworklist) {struct Γ} : awork
   end.
 
 
+Ltac create_notin_set :=
+  match goal with 
+  | H1 : ⊢ᵃʷ ?Γ , H2 : ?X `notin` dom (⌊ ?Γ ⌋ᵃ) |- _ =>
+    let Hfv := fresh "Hfv" in
+    assert (Hfv: X `notin` favar_in_aworklist Γ) by (rewrite favar_in_a_wf_wwl_upper; auto)
+  end.
+
+Ltac solve_a_wf_wl Γ :=
+  lazymatch goal with 
+  | H : ⊢ᵃʷ Γ |- _ => idtac
+  | _ : _ |- _ =>   
+    destruct_a_wf_wl; 
+    let H1 := fresh "H" in
+    assert (H1 : ⊢ᵃʷ Γ) by eauto 7
+  end.
+
+
+Ltac _apply_IH_a_wl_red :=
+  match goal with 
+  | H : (⊢ᵃʷ ?Γ) -> ?P |- _ => 
+    solve_a_wf_wl Γ
+  end;
+  match goal with
+  | H : (⊢ᵃʷ ?Γ) -> ?P, H1 : ⊢ᵃʷ ?Γ |- _ => 
+    let Hdred := fresh "IHHdred" in
+    apply H in H1 as Hdred
+  end.
+
+
 Theorem a_wf_wwl_red_rename_tvar : forall Γ X Y,
   X <> Y ->
   ⊢ᵃʷ Γ ->
@@ -325,6 +354,7 @@ Theorem a_wf_wwl_red_rename_tvar : forall Γ X Y,
   Γ ⟶ᵃʷ⁎⋅ ->
   (rename_tvar_in_aworklist Y X Γ) ⟶ᵃʷ⁎⋅.
 Proof.
+  intros. dependent induction H2; try solve [simpl in *; try _apply_IH_a_wl_red; eauto]; create_notin_set.
 Admitted.
 
 
@@ -359,6 +389,7 @@ Theorem a_wf_wwl_red_rename_var : forall Γ x y,
   Γ ⟶ᵃʷ⁎⋅ ->
   (rename_var_in_aworklist y x Γ) ⟶ᵃʷ⁎⋅.
 Proof.
+  intros. dependent induction H2; try solve [simpl in *; try _apply_IH_a_wl_red; eauto]; create_notin_set.
 Admitted.
 
 Theorem a_wf_twl_red_rename_var : forall Γ x y,
