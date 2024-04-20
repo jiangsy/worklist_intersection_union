@@ -311,7 +311,7 @@ Fixpoint rename_var_in_aworklist (y x:expvar) (Γ:aworklist) {struct Γ} : awork
   | aworklist_empty => aworklist_empty
   | (aworklist_cons_var Γ' x' b) => 
     match b with 
-    | abind_var_typ _ => aworklist_cons_var (rename_var_in_aworklist y x Γ') (if x' == x then y else x) b
+    | abind_var_typ _ => aworklist_cons_var (rename_var_in_aworklist y x Γ') (if x' == x then y else x') b
     | _ => aworklist_cons_var (rename_var_in_aworklist y x Γ') x' b
     end
   | (aworklist_cons_work Γ' w) => aworklist_cons_work (rename_var_in_aworklist y x Γ') (subst_var_in_work (exp_var_f y) x w)
@@ -334,6 +334,7 @@ Ltac solve_a_wf_wl Γ :=
     assert (H1 : ⊢ᵃʷ Γ) by eauto 7
   end.
 
+  #[local] Hint Extern 1 (_ -> False) => try solve_false : core. 
 
 Ltac _apply_IH_a_wl_red :=
   match goal with 
@@ -342,7 +343,7 @@ Ltac _apply_IH_a_wl_red :=
   end;
   match goal with
   | H : (⊢ᵃʷ ?Γ) -> ?P, H1 : ⊢ᵃʷ ?Γ |- _ => 
-    let Hdred := fresh "IHHdred" in
+    let Hdred := fresh "IHared" in
     apply H in H1 as Hdred
   end.
 
@@ -355,6 +356,7 @@ Theorem a_wf_wwl_red_rename_tvar : forall Γ X Y,
   (rename_tvar_in_aworklist Y X Γ) ⟶ᵃʷ⁎⋅.
 Proof.
   intros. dependent induction H2; try solve [simpl in *; try _apply_IH_a_wl_red; eauto]; create_notin_set.
+  -
 Admitted.
 
 
@@ -381,6 +383,45 @@ Proof.
   apply a_wf_wl_a_wf_wwl; auto.
 Qed.
 
+
+Lemma rename_var_in_aworklist_tvar_bind_same : forall Γ x X' y b,
+  ⊢ᵃʷ Γ ->
+  (~ exists A, b = abind_var_typ A) ->
+  y `notin` favar_in_aworklist Γ ->
+  binds X' b (awl_to_aenv Γ) ->
+  binds X' b (awl_to_aenv (rename_var_in_aworklist y x Γ)).
+Proof with solve_false.
+  intros. induction Γ; simpl in *; auto.
+  - dependent destruction H; destruct_eq_atom; simpl in *; destruct_binds; auto.
+  - dependent destruction H; eauto.
+Qed.
+
+Lemma rename_var_in_aworklist_var_bind_same : forall Γ x x' y A,
+  ⊢ᵃʷ Γ ->
+  y `notin` fvar_in_aworklist Γ ->
+  binds x' (abind_var_typ A) (awl_to_aenv Γ) ->
+  binds (if x' == x then y else x') (abind_var_typ A) (⌊ rename_var_in_aworklist y x Γ ⌋ᵃ).
+Proof with solve_false.
+  intros. induction Γ; simpl in *; auto.
+  - dependent destruction H; destruct_eq_atom; destruct_binds; auto.
+  - dependent destruction H;  auto.
+Qed.
+
+
+Lemma a_wf_typ_rename_var : forall Γ x y A,
+  ⊢ᵃʷ Γ ->
+  y ∉ favar_in_aworklist Γ ->
+  ⌊ Γ ⌋ᵃ ᵗ⊢ᵃ A ->
+  ⌊ rename_var_in_aworklist y x Γ ⌋ᵃ ᵗ⊢ᵃ A.
+Proof.
+  intros. dependent induction H1; try solve [simpl in *; eauto].
+  - constructor. apply rename_var_in_aworklist_tvar_bind_same; auto. 
+  - apply a_wf_typ__stvar. apply rename_var_in_aworklist_tvar_bind_same; auto.
+  - apply a_wf_typ__etvar. apply rename_var_in_aworklist_tvar_bind_same; auto.
+  - inst_cofinites_for a_wf_typ__all; intros; inst_cofinites_with X; auto.
+    replace (X ~ □ ++ ⌊ rename_var_in_aworklist y x Γ ⌋ᵃ ) with (⌊ rename_var_in_aworklist y x (X ~ᵃ □ ;ᵃ Γ) ⌋ᵃ) by (simpl; auto).
+    apply H1; auto.
+Qed.
 
 Theorem a_wf_wwl_red_rename_var : forall Γ x y,
   ⊢ᵃʷ Γ ->
