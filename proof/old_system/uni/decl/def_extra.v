@@ -6,27 +6,13 @@ Require Import uni.prop_ln.
 Require Export uni.def_ott.
 
 
-Fixpoint ftv_sin_typ (T:typ) : vars :=
-  match T with
-  | typ_unit => {}
-  | typ_top => {}
-  | typ_bot => {}
-  | (typ_var_b nat) => {}
-  | (typ_var_f X) => {{X}}
-  | (typ_arrow T1 T2) => (ftv_sin_typ T1) \u (ftv_sin_typ T2)
-  | (typ_all T) => (ftv_sin_typ T)
-  | (typ_union T1 T2) => AtomSetImpl.inter (ftv_sin_typ T1) (ftv_sin_typ T2)
-  | (typ_intersection T1 T2) => AtomSetImpl.inter (ftv_sin_typ T1) (ftv_sin_typ T2)
-end.
-
-
 Inductive d_inftapp : denv -> typ -> typ -> typ -> Prop := 
 | d_inftapp__bot : forall (Ψ:denv) (B:typ),
-    d_wf_env Ψ -> 
+    d_wf_tenv Ψ -> 
     d_wf_typ Ψ B ->
     d_inftapp Ψ typ_bot B typ_bot
 | d_inftapp__all : forall (Ψ:denv) (A B:typ),
-    d_wf_env Ψ -> 
+    d_wf_tenv Ψ -> 
     d_wf_typ Ψ (typ_all A) ->
     d_wf_typ Ψ B ->
     d_inftapp Ψ (typ_all A) B (open_typ_wrt_typ  A B )
@@ -47,10 +33,10 @@ Inductive d_inftapp : denv -> typ -> typ -> typ -> Prop :=
 
 Inductive d_infabs : denv -> typ -> typ -> typ -> Prop := 
 | d_infabs__bot : forall (Ψ:denv),
-    d_wf_env Ψ ->
+    d_wf_tenv Ψ ->
     d_infabs Ψ typ_bot typ_top typ_bot
 | d_infabs__arr : forall (Ψ:denv) (A B:typ),
-    d_wf_env Ψ ->
+    d_wf_tenv Ψ ->
     d_wf_typ Ψ A ->
     d_wf_typ Ψ B ->
     d_infabs Ψ (typ_arrow A B) A B
@@ -80,7 +66,7 @@ Inductive typing_mode :=
 
 Inductive d_chk_inf : denv -> exp -> typing_mode -> typ -> Prop :=
 | d_chk_inf__inf_var : forall (Ψ:denv) (x:expvar) (A:typ),
-    d_wf_env Ψ ->
+    d_wf_tenv Ψ ->
     binds ( x )  ( (dbind_typ A) ) ( Ψ )  ->
     d_chk_inf Ψ (exp_var_f x) typingmode__inf A
 | d_chk_inf__inf_anno : forall (Ψ:denv) (e:exp) (A:typ),
@@ -88,7 +74,7 @@ Inductive d_chk_inf : denv -> exp -> typing_mode -> typ -> Prop :=
     d_chk_inf Ψ e typingmode__chk A ->
     d_chk_inf Ψ  ( (exp_anno e A) )  typingmode__inf A
 | d_chk_inf__inf_unit : forall (Ψ:denv),
-    d_wf_env Ψ ->
+    d_wf_tenv Ψ ->
     d_chk_inf Ψ exp_unit typingmode__inf typ_unit
 | d_chk_inf__inf_app : forall (Ψ:denv) (e1 e2:exp) (A B C:typ),
     d_chk_inf Ψ e1 typingmode__inf A ->

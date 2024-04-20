@@ -144,7 +144,7 @@ Qed.
 
 Lemma d_sub_alt_complete : forall Ψ A B,
     d_sub Ψ A B -> d_sub_alt Ψ A B.
-Proof with eauto using d_sub_dwft_0, d_sub_dwft_1, d_sub_dwft_2.
+Proof with eauto using d_sub_d_wf_env, d_sub_d_wf_typ1, d_sub_d_wf_typ2.
   intros * HS. induction* HS.
   - (* forall l *)
     destruct B;
@@ -192,13 +192,13 @@ Qed.
 Lemma d_sub_alt_dwft_1 : forall Ψ A B,
     d_sub_alt Ψ A B -> Ψ ⊢ A.
 Proof with eauto using d_sub_alt_sound.
-  intros. applys d_sub_dwft_1...
+  intros. applys d_sub_d_wf_typ1...
 Qed.
 
 Lemma d_sub_alt_dwft_2 : forall Ψ A B,
     d_sub_alt Ψ A B -> Ψ ⊢ B.
 Proof with eauto using d_sub_alt_sound.
-  intros. applys d_sub_dwft_2...
+  intros. applys d_sub_d_wf_typ2...
 Qed.
 
 Lemma d_sub_alt_union_l_inv : forall Ψ A1 A2 B,

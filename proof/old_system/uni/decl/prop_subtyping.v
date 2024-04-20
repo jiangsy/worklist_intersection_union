@@ -6,8 +6,8 @@ Require Import uni.decl.prop_basic.
 Require Import ltac_utils.
 
 
-Lemma dsub_refl : forall Ψ A,
-  ⊢ Ψ -> Ψ ᵗ⊢ᵈ A -> Ψ ⊢ A <: A.
+Lemma d_sub_refl : forall Ψ A,
+  ⊢ᵈ Ψ -> Ψ ᵗ⊢ᵈ A -> Ψ ⊢ A <: A.
 Proof.
   intros *Hwfenv Hwfa. apply d_wf_typ_lc_typ in Hwfa as Hlc.  
   generalize dependent Ψ. induction Hlc; intros; try dependent destruction Hwfa; auto.
@@ -17,9 +17,9 @@ Proof.
 Qed.
 
 
-Lemma dsub_union_inversion : forall Ψ S1 S2 T1,
-  Ψ ⊢ typ_union S1 S2 <: T1 ->
-  Ψ ⊢ S1 <: T1 /\ Ψ ⊢ S2 <: T1.
+Lemma d_sub_union_inv : forall Ψ A1 A2 B,
+  Ψ ⊢ typ_union A1 A2 <: B ->
+  Ψ ⊢ A1 <: B /\ Ψ ⊢ A2 <: B.
 Proof with auto.
   intros.
   dependent induction H; auto...
@@ -35,9 +35,9 @@ Proof with auto.
 Qed.
 
 
-Lemma dsub_intersection_inversion : forall Ψ S1 T1 T2,
-  Ψ ⊢ S1 <: typ_intersection T1 T2 ->
-  Ψ ⊢ S1 <: T1 /\ Ψ ⊢ S1 <: T2.
+Lemma d_sub_intersection_inv : forall Ψ A B1 B2,
+  Ψ ⊢ A <: typ_intersection B1 B2 ->
+  Ψ ⊢ A <: B1 /\ Ψ ⊢ A <: B2.
 Proof with auto.
   intros.
   dependent induction H; auto...
@@ -55,7 +55,7 @@ Proof with auto.
 Qed.
 
 
-Theorem dsub_unit_all_false: forall Ψ A,
+Theorem d_sub_unit_all_false: forall Ψ A,
   Ψ ᵗ⊢ᵈ typ_all A ->
   Ψ ⊢ typ_unit <: typ_all A ->
   False.
@@ -63,7 +63,7 @@ Proof.
   intros. dependent induction H0.
 Qed.
 
-Theorem dsub_top_all_false: forall Ψ A,
+Theorem d_sub_top_all_false: forall Ψ A,
   Ψ ᵗ⊢ᵈ typ_all A ->
   Ψ ⊢ typ_top <: typ_all A ->
   False.
@@ -71,7 +71,7 @@ Proof.
   intros. dependent induction H0.
 Qed.
 
-Theorem dsub_top_fv_false: forall Ψ X A,
+Theorem d_sub_top_fv_false: forall Ψ X A,
   s_in X A ->
   Ψ ⊢ typ_top <: A ->
   False.
@@ -79,7 +79,7 @@ Proof.
   intros. dependent induction H0; try solve [inversion H; eauto].
 Qed.
 
-Theorem dsub_unit_fv_false: forall Ψ X A,
+Theorem d_sub_unit_fv_false: forall Ψ X A,
   s_in X A ->
   Ψ ⊢ typ_unit <: A ->
   False.
@@ -88,8 +88,8 @@ Proof.
 Qed.
 
 
-#[local] Hint Resolve dsub_refl d_wf_typ_subst d_wf_typ_subst_stvar d_wf_env_subst_tvar_typ : core.
-(* Hint Resolve dsub_refl : subtyping.
+#[local] Hint Resolve d_sub_refl d_wf_typ_subst d_wf_typ_subst_stvar d_wf_env_subst_tvar_typ : core.
+(* Hint Resolve d_sub_refl : subtyping.
 Hint Resolve d_wf_typ_subst : subtyping.
 Hint Resolve d_wf_typ_subst_stvar : subtyping.
 Hint Resolve d_wf_env_subst_tvar_typ : subtyping. *)
@@ -240,7 +240,7 @@ Hint Resolve d_wf_typ_weaken : weaken.
 
 Theorem d_sub_weaken: forall Ψ1 Ψ2 Ψ3 A B,
   Ψ3 ++ Ψ1 ⊢ A <: B ->
-  ⊢ Ψ3 ++ Ψ2 ++ Ψ1 ->
+  ⊢ᵈ Ψ3 ++ Ψ2 ++ Ψ1 ->
   Ψ3 ++ Ψ2 ++ Ψ1 ⊢ A <: B.
 Proof with auto with weaken.
   intros Ψ1 Ψ2 Ψ3 A B Hsub Hwf.
@@ -249,7 +249,7 @@ Proof with auto with weaken.
     try solve [eapply d_wf_typ_weaken with (Ψ2 := Ψ2) in H0; auto]; auto.
   - apply d_sub__all with (L :=  L `union` dom (Ψ3 ++ Ψ2 ++ Ψ1)); intros x Fr; inst_cofinites_with x; auto...
     eapply H2 with (Ψ1 := Ψ1) (Ψ3 := (x, ■) :: Ψ3); simpl; auto.
-    constructor; auto.
+    apply d_wf_env__stvar; auto.
   - apply d_sub__alll with (T := T) (L :=  L `union` dom (Ψ3 ++ Ψ2 ++ Ψ1)); auto...
     eauto using d_mono_typ_weaken.
   - apply d_sub__intersection2; eauto...
@@ -261,7 +261,7 @@ Qed.
 
 Corollary d_sub_weaken_cons: forall Ψ x b A B,
   Ψ ⊢ A <: B ->
-  ⊢ x ~ b ++ Ψ ->
+  ⊢ᵈ x ~ b ++ Ψ ->
   x ~ b ++ Ψ ⊢ A <: B.
 Proof.
   intros.
@@ -367,10 +367,10 @@ Proof.
            intros. inst_cofinites_with X0. dependent destruction H3; auto.
 Qed.
 
-Theorem d_mono_notin_stvar : forall Ψ2 Ψ1 A X,
-  Ψ2 ++ X ~ ■ ++ Ψ1 ᵗ⊢ᵈₘ A ->
-  ⊢ (Ψ2 ++ (X ~ dbind_stvar_empty) ++ Ψ1) ->
-  X `notin` ftvar_in_typ A.
+Theorem d_mono_notin_stvar : forall Ψ2 Ψ1 T X,
+  Ψ2 ++ X ~ ■ ++ Ψ1 ᵗ⊢ᵈₘ T ->
+  uniq (Ψ2 ++ (X ~ dbind_stvar_empty) ++ Ψ1) ->
+  X `notin` ftvar_in_typ T.
 Proof.
   intros. dependent induction H; simpl in *; auto.
   - case_eq (X0 == X); intros; subst*; try solve_notin.
@@ -387,7 +387,7 @@ Theorem d_sub_subst_stvar : forall Ψ1 X Ψ2 A B C,
   map (subst_tvar_in_dbind C X) Ψ2 ++ Ψ1 ⊢ {C ᵗ/ₜ X} A <: {C ᵗ/ₜ X} B.
 Proof with subst; eauto using d_wf_typ_weaken_app.
   intros. dependent induction H; try solve [simpl in *; eauto].
-  - eapply dsub_refl; auto...
+  - eapply d_sub_refl; auto...
   - simpl. inst_cofinites_for d_sub__all; intros X1 Hfr; inst_cofinites_with X1.
     + rewrite subst_tvar_in_typ_open_typ_wrt_typ_fresh2; auto...
       apply s_in_subst_inv; auto...
@@ -400,21 +400,21 @@ Proof with subst; eauto using d_wf_typ_weaken_app.
     + eapply d_sub__alll with (L:=L `union` singleton X) (T:={C ᵗ/ₜ X} T); auto...
       * intros. rewrite subst_tvar_in_typ_open_typ_wrt_typ_fresh2; auto...
         apply s_in_subst_inv; auto...
-      * applys* d_mono_typ_subst_stvar... eauto using d_sub_dwft_0.
+      * applys* d_mono_typ_subst_stvar... eauto using d_sub_d_wf_env.
       * rewrite <- subst_tvar_in_typ_open_typ_wrt_typ; eauto using d_wf_typ_lc_typ.
     + eapply d_sub_open_mono_stvar_false in H3; eauto. contradiction.
   - simpl. apply d_sub__intersection2. eauto.
     apply d_wf_typ_subst_stvar; auto...
-    destruct (d_sub_dwft _ _ _ H) as [? [? ?]]. auto.
+    destruct (d_sub_d_wf _ _ _ H) as [? [? ?]]. auto.
   - simpl. apply d_sub__intersection3. eauto.
     apply d_wf_typ_subst_stvar; auto...
-    destruct (d_sub_dwft _ _ _ H) as [? [? ?]]. auto.
+    destruct (d_sub_d_wf _ _ _ H) as [? [? ?]]. auto.
   - simpl. apply d_sub__union1. eauto.
     apply d_wf_typ_subst_stvar; auto...
-    destruct (d_sub_dwft _ _ _ H) as [? [? ?]]. auto.
+    destruct (d_sub_d_wf _ _ _ H) as [? [? ?]]. auto.
   - simpl. apply d_sub__union2. eauto.
     apply d_wf_typ_subst_stvar; auto...
-    destruct (d_sub_dwft _ _ _ H) as [? [? ?]]. auto.
+    destruct (d_sub_d_wf _ _ _ H) as [? [? ?]]. auto.
 Qed.
 
 
@@ -489,13 +489,13 @@ Qed.
 #[local] Hint Constructors d_sub_size : core.
 
 Lemma d_sub_dwft_sized : forall Ψ A B n,
-    Ψ ⊢ A <: B | n -> ⊢ Ψ /\ Ψ ᵗ⊢ᵈ A /\ Ψ ᵗ⊢ᵈ B.
+    Ψ ⊢ A <: B | n -> ⊢ᵈ Ψ /\ Ψ ᵗ⊢ᵈ A /\ Ψ ᵗ⊢ᵈ B.
 Proof.
-  intros. applys d_sub_dwft. applys* d_sub_size_sound.
+  intros. applys d_sub_d_wf. applys* d_sub_size_sound.
 Qed.
 
 Corollary d_sub_dwft_sized_0 : forall Ψ A B n,
-    Ψ ⊢ A <: B | n -> ⊢ Ψ.
+    Ψ ⊢ A <: B | n -> ⊢ᵈ Ψ.
 Proof.
   intros. forwards*: d_sub_dwft_sized H.
 Qed.
@@ -514,6 +514,19 @@ Qed.
 
 #[local] Hint Resolve d_sub_dwft_sized_0 d_sub_dwft_sized_1 d_sub_dwft_sized_2 : core.
 
+
+Lemma d_wf_env_all_stvar_after : forall Ψ1 Ψ2 X,
+  d_wf_env (Ψ2 ++ X ~ dbind_stvar_empty ++ Ψ1) ->
+  all_stvar (Ψ2 ++ X ~ dbind_stvar_empty).
+Proof.
+  intros. dependent induction H; auto.
+  - apply d_wf_tenv_stvar_false in H; contradiction.
+  - destruct Ψ2; dependent destruction x.
+    + constructor. constructor.
+    + simpl. constructor. eapply IHd_wf_env with (Ψ1:=Ψ1); eauto.
+Qed.
+
+
 Lemma d_sub_size_rename_stvar : forall Ψ1 Ψ2 X Y A B n,
   Ψ2 ++ X ~ ■ ++ Ψ1 ⊢ A <: B | n ->
   Y ∉ (dom Ψ1 `union` dom Ψ2) ->
@@ -522,8 +535,8 @@ Lemma d_sub_size_rename_stvar : forall Ψ1 Ψ2 X Y A B n,
 Proof with (simpl in *; eauto using d_wf_env_subst_tvar_typ).
   intros * HS HN.
   case_eq (Y == X); intros.
-  1: { subst. rewrite* subst_same_tvar_map_id.
-       repeat rewrite* subst_same_tvar_typ_id. } clear H.
+  1: { subst. rewrite* map_subst_tvar_in_dbind_refl_eq.
+       repeat rewrite* subst_tvar_in_typ_refl_eq. } clear H.
 
   gen Y.
   inductions HS; intros...
@@ -532,6 +545,7 @@ Proof with (simpl in *; eauto using d_wf_env_subst_tvar_typ).
     rewrite_env ((Ψ2 ++ (X, ■) :: nil ) ++ [(Y, ■)] ++ Ψ1).
     applys d_wf_env_weaken_stvar.
     rewrite_env (Ψ2 ++ X ~ ■ ++ Ψ1)...
+    eapply d_wf_env_all_stvar_after with (Ψ1:=Ψ1); eauto.
     solve_notin.
     applys d_wf_typ_rename_stvar...
   - constructor.
@@ -539,6 +553,7 @@ Proof with (simpl in *; eauto using d_wf_env_subst_tvar_typ).
     rewrite_env ((Ψ2 ++ (X, ■) :: nil ) ++ [(Y, ■)] ++ Ψ1).
     applys d_wf_env_weaken_stvar.
     rewrite_env (Ψ2 ++ X ~ ■ ++ Ψ1)...
+    eapply d_wf_env_all_stvar_after with (Ψ1:=Ψ1); eauto.
     solve_notin.
     applys d_wf_typ_rename_stvar...
   - constructor. 
@@ -546,6 +561,7 @@ Proof with (simpl in *; eauto using d_wf_env_subst_tvar_typ).
     rewrite_env ((Ψ2 ++ (X, ■) :: nil ) ++ [(Y, ■)] ++ Ψ1).
     applys d_wf_env_weaken_stvar.
     rewrite_env (Ψ2 ++ X ~ ■ ++ Ψ1)...
+    eapply d_wf_env_all_stvar_after with (Ψ1:=Ψ1); eauto.
     solve_notin.
   (* - econstructor...
     applys d_wf_env_subst_stvar_typ...
@@ -581,9 +597,9 @@ Proof with (simpl in *; eauto using d_wf_env_subst_tvar_typ).
       * rewrite_env ((Ψ2 ++ X ~ ■) ++ Y ~ ■ ++ Ψ1).
         applys* d_mono_typ_weaken. rewrite_env (Ψ2 ++ (X, ■) :: Ψ1)...
       * rewrite_env ((Ψ2 ++ X ~ ■) ++ Y ~ ■ ++ Ψ1).
-        applys d_wf_env_weaken_stvar.
-        forwards: d_sub_dwft_sized_0 HS. rewrite_env (Ψ2 ++ (X, ■) :: Ψ1)...
-        solve_notin.
+        apply d_sub_dwft_sized_0 in HS. apply d_wf_env_uniq.
+        apply d_wf_env_weaken_stvar; auto. rewrite_env (Ψ2 ++ (X, ■) :: Ψ1)...
+        eapply d_wf_env_all_stvar_after with (Ψ1:=Ψ1); eauto.
       * now eauto.
   - applys d_subs__intersection2; forwards: IHHS...
     forwards: d_wf_typ_rename_stvar Y H...
@@ -862,7 +878,7 @@ Ltac solve_trans_forall_B_C :=
       | _ => let H1 := fresh H in
              let Hwft1 := fresh "Hwft" in
               apply d_sub_size_sound in H as H1;
-              apply d_sub_dwft in H1; destruct H1 as [_ [_ Hwtf1]];
+              apply d_sub_d_wf in H1; destruct H1 as [_ [_ Hwtf1]];
               apply d_wft_ord_complete in Hwtf1; induction Hwtf1; solve_trans_forall_B_iu
    end
   end.
@@ -874,63 +890,63 @@ Ltac ord_inv :=
    end.
 
 
-Lemma d_sub_size_transitivity : forall n_d_typ_order n_dsub_size Ψ A B C n1 n2 ,
+Lemma d_sub_size_transitivity : forall n_d_typ_order n_d_sub_size Ψ A B C n1 n2 ,
   d_typ_order B < n_d_typ_order ->
-  n1 + n2 < n_dsub_size ->
+  n1 + n2 < n_d_sub_size ->
   Ψ ⊢ A <: B | n1 -> Ψ ⊢ B <: C | n2 -> Ψ ⊢ A <: C.
 Proof with auto.
-  induction n_d_typ_order; induction n_dsub_size; intros * Horder Hsize Hsub1 Hsub2.
+  induction n_d_typ_order; induction n_d_sub_size; intros * Horder Hsize Hsub1 Hsub2.
   - inversion Horder.
   - inversion Horder.
   - inversion Hsize.
   - dependent destruction Hsub1...
     + dependent destruction Hsub2...
       * econstructor.
-        eapply IHn_dsub_size with (B:=typ_top) (n1:=n2); eauto...
-        eapply IHn_dsub_size with (B:=typ_top) (n1:=n1); eauto...
+        eapply IHn_d_sub_size with (B:=typ_top) (n1:=n2); eauto...
+        eapply IHn_d_sub_size with (B:=typ_top) (n1:=n1); eauto...
       * simpl in H. eapply d_sub__union1.
-        eapply IHn_dsub_size with (B:=typ_top) (n1:=n); eauto...
+        eapply IHn_d_sub_size with (B:=typ_top) (n1:=n); eauto...
         auto.
       * simpl in H. eapply d_sub__union2.
-        eapply IHn_dsub_size with (B:=typ_top) (n1:=n); eauto...
+        eapply IHn_d_sub_size with (B:=typ_top) (n1:=n); eauto...
         auto.
     + apply d_sub_size_sound in Hsub2.
-      apply d_sub_dwft in Hsub2; auto.
+      apply d_sub_d_wf in Hsub2; auto.
       eapply d_sub__bot; intuition.
     + dependent destruction Hsub2...
       * econstructor.
-        eapply IHn_dsub_size with (B:=typ_unit) (n1:=n2); eauto...
-        eapply IHn_dsub_size with (B:=typ_unit) (n1:=n1); eauto...
+        eapply IHn_d_sub_size with (B:=typ_unit) (n1:=n2); eauto...
+        eapply IHn_d_sub_size with (B:=typ_unit) (n1:=n1); eauto...
       * simpl in H. eapply d_sub__union1.
-        eapply IHn_dsub_size with (B:=typ_unit) (n1:=n); eauto...
+        eapply IHn_d_sub_size with (B:=typ_unit) (n1:=n); eauto...
         auto.
       * simpl in H. eapply d_sub__union2.
-        eapply IHn_dsub_size with (B:=typ_unit) (n1:=n); eauto...
+        eapply IHn_d_sub_size with (B:=typ_unit) (n1:=n); eauto...
         auto.
     + dependent destruction Hsub2...
       * econstructor.
-        eapply IHn_dsub_size with (B:=` X) (n1:=n2); eauto...
-        eapply IHn_dsub_size with (B:=` X) (n1:=n1); eauto...
+        eapply IHn_d_sub_size with (B:=` X) (n1:=n2); eauto...
+        eapply IHn_d_sub_size with (B:=` X) (n1:=n1); eauto...
       * simpl in H. eapply d_sub__union1.
-        eapply IHn_dsub_size with (B:=` X) (n1:=n); eauto...
+        eapply IHn_d_sub_size with (B:=` X) (n1:=n); eauto...
         auto.
       * simpl in H. eapply d_sub__union2.
-        eapply IHn_dsub_size with (B:=` X) (n1:=n); eauto...
+        eapply IHn_d_sub_size with (B:=` X) (n1:=n); eauto...
         auto.
     + simpl in *. dependent destruction Hsub2...
       * econstructor... apply d_sub_size_sound in Hsub1_1. apply d_sub_size_sound in Hsub1_2.
-        apply d_sub_dwft in Hsub1_1. apply d_sub_dwft in Hsub1_2. econstructor; intuition.
+        apply d_sub_d_wf in Hsub1_1. apply d_sub_d_wf in Hsub1_2. econstructor; intuition.
       * econstructor.
-        eapply IHn_dsub_size with (B:=B1); eauto...
-        eapply IHn_dsub_size with (B:=B2); eauto...
+        eapply IHn_d_sub_size with (B:=B1); eauto...
+        eapply IHn_d_sub_size with (B:=B2); eauto...
       * econstructor.
-        eapply IHn_dsub_size with (B:=typ_arrow B1 B2) (n1:=S(n1+n0)); eauto...
-        eapply IHn_dsub_size with (B:=typ_arrow B1 B2) (n1:=S(n1+n0)); eauto...
+        eapply IHn_d_sub_size with (B:=typ_arrow B1 B2) (n1:=S(n1+n0)); eauto...
+        eapply IHn_d_sub_size with (B:=typ_arrow B1 B2) (n1:=S(n1+n0)); eauto...
       * apply d_sub__union1.
-        eapply IHn_dsub_size with (B:=typ_arrow B1 B2) (n1:=S(n1+n0)); eauto...
+        eapply IHn_d_sub_size with (B:=typ_arrow B1 B2) (n1:=S(n1+n0)); eauto...
         auto.
       * apply d_sub__union2.
-        eapply IHn_dsub_size with (B:=typ_arrow B1 B2) (n1:=S(n1+n0)); eauto...
+        eapply IHn_d_sub_size with (B:=typ_arrow B1 B2) (n1:=S(n1+n0)); eauto...
         auto.
     + simpl in *. dependent destruction Hsub2...
       * econstructor...
@@ -961,13 +977,13 @@ Proof with auto.
         contradiction.
         all: eauto using d_mono_typ_lc, d_mono_typ_d_wf_typ.
       * eapply d_sub__intersection1.
-        -- eapply IHn_dsub_size with (B:=typ_all B1) (n1:=S n) (n2:=n1); eauto...
-        -- eapply IHn_dsub_size with (B:=typ_all B1) (n1:=S n) (n2:=n2); eauto...
+        -- eapply IHn_d_sub_size with (B:=typ_all B1) (n1:=S n) (n2:=n1); eauto...
+        -- eapply IHn_d_sub_size with (B:=typ_all B1) (n1:=S n) (n2:=n2); eauto...
       * eapply d_sub__union1.
-        -- eapply IHn_dsub_size with (B:=typ_all B1) (n1:=S n) (n2:=n0); eauto...
+        -- eapply IHn_d_sub_size with (B:=typ_all B1) (n1:=S n) (n2:=n0); eauto...
         -- auto.
       * eapply d_sub__union2.
-        -- eapply IHn_dsub_size with (B:=typ_all B1) (n1:=S n) (n2:=n0); eauto...
+        -- eapply IHn_d_sub_size with (B:=typ_all B1) (n1:=S n) (n2:=n0); eauto...
         -- auto.
     + simpl in *. assert (Ψ ᵗ⊢ᵈ B1) as Hwft1 by applys* d_sub_dwft_sized_1.
       dependent destruction Hwft1; solve_trans_forall_B_C.
@@ -1015,33 +1031,33 @@ Proof with auto.
            applys* d_wf_typ_open_tvar_subst_mono.
         -- assert (Ψ ᵗ⊢ᵈ B1) by applys* d_sub_dwft_sized_1. assert (Ψ ᵗ⊢ᵈ B2) by applys* d_sub_dwft_sized_2.
           eapply d_sub__alll with (T:=T1); eauto...
-          eapply IHn_dsub_size with (B:=typ_arrow A0 A2) (n2:=S(n1+n2)); eauto...
+          eapply IHn_d_sub_size with (B:=typ_arrow A0 A2) (n2:=S(n1+n2)); eauto...
       * inversion H.
       * inversion H1.
       * inversion H0.
     + simpl in *. dependent destruction Hsub2...
-      * econstructor... apply d_sub_size_sound in Hsub1_1. apply d_sub_dwft in Hsub1_1.
+      * econstructor... apply d_sub_size_sound in Hsub1_1. apply d_sub_d_wf in Hsub1_1.
         intuition.
       * econstructor.
-        eapply IHn_dsub_size with (B:=typ_intersection B1 B2) (n1:=S(n1+n0)); eauto...
-        eapply IHn_dsub_size with (B:=typ_intersection B1 B2) (n1:=S(n1+n0)); eauto...
-      * eapply IHn_dsub_size with (B:=B1); eauto...
-      * eapply IHn_dsub_size with (B:=B2); eauto...
+        eapply IHn_d_sub_size with (B:=typ_intersection B1 B2) (n1:=S(n1+n0)); eauto...
+        eapply IHn_d_sub_size with (B:=typ_intersection B1 B2) (n1:=S(n1+n0)); eauto...
+      * eapply IHn_d_sub_size with (B:=B1); eauto...
+      * eapply IHn_d_sub_size with (B:=B2); eauto...
       * apply d_sub__union1...
-        eapply IHn_dsub_size with (B:=typ_intersection B1 B2) (n1:=S(n1+n0)); eauto...
+        eapply IHn_d_sub_size with (B:=typ_intersection B1 B2) (n1:=S(n1+n0)); eauto...
       * apply d_sub__union2...
-        eapply IHn_dsub_size with (B:=typ_intersection B1 B2) (n1:=S(n1+n0)); eauto...
+        eapply IHn_d_sub_size with (B:=typ_intersection B1 B2) (n1:=S(n1+n0)); eauto...
     + simpl in H. apply d_sub__intersection2...
-      * eapply IHn_dsub_size with (B:=B1) (n1:=n); eauto...
+      * eapply IHn_d_sub_size with (B:=B1) (n1:=n); eauto...
     + simpl in H. apply d_sub__intersection3...
-      * eapply IHn_dsub_size with (B:=B1) (n1:=n); eauto...
+      * eapply IHn_d_sub_size with (B:=B1) (n1:=n); eauto...
     + simpl in Horder. apply d_sub_size_union_inv in Hsub2.
-      eapply IHn_dsub_size with (B:=B1) (n2:=n2); eauto... intuition.
+      eapply IHn_d_sub_size with (B:=B1) (n2:=n2); eauto... intuition.
     + simpl in Horder. apply d_sub_size_union_inv in Hsub2.
-      eapply IHn_dsub_size with (B:=B2) (n2:=n2); eauto... intuition.
+      eapply IHn_d_sub_size with (B:=B2) (n2:=n2); eauto... intuition.
     + simpl in Horder. econstructor...
-      * eapply IHn_dsub_size with (B:=B1) (n1:=n1); eauto...
-      * eapply IHn_dsub_size with (B:=B1) (n1:=n0); eauto...
+      * eapply IHn_d_sub_size with (B:=B1) (n1:=n1); eauto...
+      * eapply IHn_d_sub_size with (B:=B1) (n1:=n0); eauto...
 Qed.
 
 

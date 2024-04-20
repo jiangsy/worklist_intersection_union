@@ -51,6 +51,7 @@ Ltac solve_notin_eq X :=
     assert (H: X `notin` singleton X) by auto;
     apply notin_singleton_1 in H; contradiction.
 
+  
 Ltac destruct_eq_atom :=
   unfold eq_dec in *;
   repeat
@@ -80,7 +81,7 @@ Ltac gather_atoms ::=
   let D3 := gather_atoms_with (fun x => ftvar_in_conts x) in
   let D4 := gather_atoms_with (fun x => ftvar_in_contd x) in
   let D5 := gather_atoms_with (fun x => ftvar_in_work x) in
-  let D6 := gather_atoms_with (fun x => ftvar_in_aworklist' x) in
+  let D6 := gather_atoms_with (fun x => favar_in_aworklist x) in
 
   let E1 := gather_atoms_with (fun x => fvar_in_exp x) in
 
@@ -90,7 +91,11 @@ Ltac gather_atoms ::=
   (* let D4 := gather_atoms_with (fun x => fv_exp_in_exp x) in *)
   constr:(A \u B \u C1 \u C2 \u D1 \u D2 \u D3 \u D4 \u D5 \u D6 \u E1 \u F1 \u F2).
 
-  
+Ltac solve_wf_twl_sub_false :=
+  match goal with
+  | H : (∃ A B : typ, work_sub ?A' ?B' = work_sub A B) → False |- _ => exfalso; eauto
+  | _ : _ |- _ => idtac
+  end.
 (* Ltac apply_fresh_base_fixed H gather_vars atom_name :=
   let L := gather_vars in
   let L := beautify_fset L in

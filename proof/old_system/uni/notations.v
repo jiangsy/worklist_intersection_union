@@ -6,8 +6,12 @@ Require Export uni.decl.def_extra.
 Require Export uni.prop_ln.
 
 
-Notation "⊢ Ψ" :=
+Notation "⊢ᵈ Ψ" :=
   (d_wf_env Ψ)
+    (at level 65, no associativity) : type_scope.
+  
+Notation "⊢ᵈₜ Ψ" :=
+  (d_wf_tenv Ψ)
     (at level 65, no associativity) : type_scope.
 
 Notation "Ψ ᵗ⊢ᵈ A" :=

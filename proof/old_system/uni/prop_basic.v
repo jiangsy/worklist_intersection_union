@@ -130,13 +130,31 @@ Proof.
         rewrite dom_app... destruct_notin; eauto.
 Qed.
 
+Lemma uniq_strengthen : forall {A} (ls1 ls2 : list (atom * A)) X b,
+  uniq (ls2 ++ ls1) ->
+  X `notin` dom (ls2 ++ ls1) ->
+  uniq (ls2 ++ (X, b) :: ls1).
+Proof.
+  intros. induction ls2; auto.
+  - dependent destruction H. simpl in *. auto.
+Qed.
 
-Lemma binds_remove_mid_diff_bind {A} : forall θ1 θ2 X Y (b1 b2 : A),
-  binds X b1 (θ2 ++ (Y, b2) :: θ1) ->
+Lemma uniq_notin_remaining {A : Type} : forall (ls1 ls2 : list (atom * A)) X b,
+  uniq (ls2 ++ (X, b) :: ls1) ->
+  X `notin` dom (ls2 ++ ls1).
+Proof.
+  intros. induction ls2; simpl in *; auto.
+  - dependent destruction H. auto.
+  - destruct a; simpl in *. dependent destruction H.
+    apply IHls2 in H. solve_notin.
+Qed.
+
+Lemma binds_remove_mid_diff_bind {A} : forall ls1 ls2 X Y (b1 b2 : A),
+  binds X b1 (ls2 ++ (Y, b2) :: ls1) ->
   b1 <> b2 ->
-  binds X b1 (θ2 ++ θ1).
+  binds X b1 (ls2 ++ ls1).
 Proof.  
-  intros. induction θ2; simpl in *; eauto.
+  intros. induction ls2; simpl in *; eauto.
   - inversion H. dependent destruction H1.
     + contradiction.
     + auto. 
@@ -145,11 +163,11 @@ Proof.
     + auto.
 Qed.
 
-Lemma binds_weaken_mid {A} : forall θ1 θ2 X Y (b1 b2 : A),
-  binds X b1 (θ2 ++ θ1) ->
-  binds X b1 (θ2 ++ (Y, b2) :: θ1).
+Lemma binds_weaken_mid {A} : forall ls1 ls2 X Y (b1 b2 : A),
+  binds X b1 (ls2 ++ ls1) ->
+  binds X b1 (ls2 ++ (Y, b2) :: ls1).
 Proof.  
-  intros. rewrite_env (θ2 ++ (Y ~ b2) ++ θ1).
+  intros. rewrite_env (ls2 ++ (Y ~ b2) ++ ls1).
   apply binds_weaken. auto.
 Qed.
 

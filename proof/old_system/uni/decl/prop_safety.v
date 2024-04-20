@@ -273,7 +273,7 @@ Proof.
   - apply lc_fexp_abs; auto. 
     intros. unfold open_fexp_wrt_fexp. simpl. auto.
   - apply sub_elab_sound in H. apply sub_elab_sound in H0.
-    apply d_sub_dwft in H. apply d_sub_dwft in H0.
+    apply d_sub_d_wf in H. apply d_sub_d_wf in H0.
     destruct H as [_ [? ?]]. destruct H0 as [_ [? ?]].
     apply lc_fexp_abs.
     + apply lc_ftyp_arrow; eauto with safety.
@@ -287,38 +287,38 @@ Proof.
   - admit.
   - admit.
   - apply sub_elab_sound in H. apply sub_elab_sound in H0.
-    apply d_sub_dwft in H. apply d_sub_dwft in H0.
+    apply d_sub_d_wf in H. apply d_sub_d_wf in H0.
     destruct H as [_ [? ?]]. destruct H0 as [_ [? ?]].
     apply lc_fexp_abs; eauto with safety.
     intros. unfold open_fexp_wrt_fexp. simpl.
     rewrite open_fexp_wrt_fexp_rec_lc_fexp; auto.
     rewrite open_fexp_wrt_fexp_rec_lc_fexp; auto.
   - apply sub_elab_sound in H.
-    apply d_sub_dwft in H.
+    apply d_sub_d_wf in H.
     destruct H as [_ [? ?]].
     apply lc_fexp_abs; eauto with safety.
     intros. unfold open_fexp_wrt_fexp. simpl.
     rewrite open_fexp_wrt_fexp_rec_lc_fexp; auto.
   - apply sub_elab_sound in H.
-    apply d_sub_dwft in H.
+    apply d_sub_d_wf in H.
     destruct H as [_ [? ?]].
     apply lc_fexp_abs; eauto with safety.
     intros. unfold open_fexp_wrt_fexp. simpl.
     rewrite open_fexp_wrt_fexp_rec_lc_fexp; auto.
   - apply sub_elab_sound in H.
-    apply d_sub_dwft in H.
+    apply d_sub_d_wf in H.
     destruct H as [_ [? ?]].
     apply lc_fexp_abs; eauto with safety.
     intros. unfold open_fexp_wrt_fexp. simpl.
     rewrite open_fexp_wrt_fexp_rec_lc_fexp; auto.
   - apply sub_elab_sound in H.
-    apply d_sub_dwft in H.
+    apply d_sub_d_wf in H.
     destruct H as [_ [? ?]].
     apply lc_fexp_abs; eauto with safety.
     intros. unfold open_fexp_wrt_fexp. simpl.
     rewrite open_fexp_wrt_fexp_rec_lc_fexp; auto.
   - apply sub_elab_sound in H. apply sub_elab_sound in H0.
-    apply d_sub_dwft in H. apply d_sub_dwft in H0.
+    apply d_sub_d_wf in H. apply d_sub_d_wf in H0.
     destruct H as [_ [? ?]]. destruct H0 as [_ [? ?]].
     apply lc_fexp_abs; eauto with safety.
     intros. unfold open_fexp_wrt_fexp. simpl.

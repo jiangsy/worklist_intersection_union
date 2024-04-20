@@ -4,21 +4,11 @@ Require Import List.
 Require Import uni.def_ott.
 
 
-Fixpoint ftvar_in_aworklist' (Γ_5:aworklist) : vars :=
+Fixpoint favar_in_aworklist (Γ_5:aworklist) : vars :=
   match Γ_5 with
   | aworklist_empty => empty
-  | (aworklist_consvar Γ x ab) => (ftvar_in_aworklist' Γ) \u (ftvar_in_abind ab)
-  | (aworklist_constvar Γ X ab) => (ftvar_in_aworklist' Γ) \u (ftvar_in_abind ab) \u (singleton X)
-  | (aworklist_conswork Γ w) => (ftvar_in_aworklist' Γ) \u (ftvar_in_work w)
-end.
-
-
-Fixpoint fvar_in_aworklist' (Γ_5:aworklist) : vars :=
-  match Γ_5 with
-  | aworklist_empty => {}
-  | (aworklist_consvar Γ x ab) => (fvar_in_aworklist' Γ) \u (singleton x) (* no var in abind *)
-  | (aworklist_constvar Γ X ab) => (fvar_in_aworklist' Γ) (* no var in abind *)
-  | (aworklist_conswork Γ w) => (fvar_in_aworklist' Γ) \u (fvar_in_work w)
+  | (aworklist_cons_var Γ x ab) => (favar_in_aworklist Γ) \u (ftvar_in_abind ab) \u (singleton x)
+  | (aworklist_cons_work Γ w) => (favar_in_aworklist Γ) \u (ftvar_in_work w) \u (fvar_in_work w)
 end.
   
 Inductive apply_conts : conts -> typ -> work -> Prop :=

@@ -103,16 +103,16 @@ aenv, aE, aF, aG :: '' ::= {{ coq list (atom*abind) }}
 %   | \ X . body          ::   :: tabs (+ bind X in body +)
 
 dworklist, dW :: 'dworklist_' ::=
-  | empty      ::   :: empty
-  | dW , x db    ::   :: consvar 
-  | dW , X db    ::   :: constvar 
-  | dW , w      ::   :: conswork
+  | empty       ::   :: empty
+  | dW , X db   ::   :: cons_var 
+  | dW , x db   :: M :: cons_evar {{ coq ( dworklist_cons_var [[dW]] [[x]] [[db]] )}} 
+  | dW , w      ::   :: cons_work
 
 aworklist, aW  :: 'aworklist_' ::=
   | empty       ::   :: empty 
-  | aW , x ab   ::   :: consvar 
-  | aW , X ab   ::   :: constvar
-  | aW , w      ::   :: conswork
+  | aW , X ab   ::   :: cons_var 
+  | aW , x ab   :: M :: cons_evar {{ coq ( aworklist_cons_var [[aW]] [[x]] [[ab]] )}} 
+  | aW , w      ::   :: cons_work
   | ( aW )      :: S :: paren {{ coq ( [[aW]] ) }}
   | aW1 ++ aW2  :: M :: app {{ coq ( awl_app [[aW2]] [[aW1]] )}} 
   
@@ -123,17 +123,17 @@ formula :: formula_ ::=
   | ( X db )  in dE    ::   :: binds2 {{ coq binds ([[X]])  ([[db]]) ([[dE]]) }}
   | ( x ab )  in aE    ::   :: binds3 {{ coq binds ([[x]])  ([[ab]]) ([[aE]]) }}
   | ( X ab )  in aE    ::   :: binds4 {{ coq binds ([[X]])  ([[ab]]) ([[aE]]) }}
-  % | uniq dE           ::   :: uniq   {{ coq uniq ([[dE]]) }}
   | x  `notin` dom dE ::   :: fresh1 {{ coq ([[x]]  `notin` dom ([[dE]])) }}
   | X  `notin` dom dE ::   :: fresh2 {{ coq ([[X]]  `notin` dom ([[dE]])) }}
   | x  `notin` dom aE ::   :: fresh3 {{ coq ([[x]]  `notin` dom ([[aE]])) }}
   | X  `notin` dom aE ::   :: fresh4 {{ coq ([[X]]  `notin` dom ([[aE]])) }}
-  % | X in A           ::   :: appear1 {{ coq [[X]] `in` ftvar_in_typ [[A]]}}
   | A ¬= TOP         ::   :: neqtop  {{ coq ~ ([[A]] = typ_top)}}
-  % | A = TOP          ::   :: eqtop  {{ coq ([[A]] = typ_top)}}
-  % | A = BOT          ::   :: eqbot  {{ coq ([[A]] = typ_bot)}}
   | ⌊ dW ⌋           ::   :: dwl_to_env {{ coq dwl_to_denv [[ dW ]] }}
   | ⌊ aW ⌋           ::   :: awl_to_env {{ coq awl_to_aenv [[ aW ]] }}
+  | w != * <: *      ::   :: neqsub {{ coq ((exists A B, [[w]] = work_sub A B) -> False) }}
+  % | A != ∀ *         ::   :: neqall {{ coq ((exists B, [[A]] = typ_all B) -> False) }}
+  % | A != * ⊓ *      ::   :: neqintersection {{ coq ((exists B1 B2, [[A]] = typ_intersection A B) -> False) }}
+  % | A != * ⊔ *      ::   :: nequnion {{ coq ((exists B1 B2, [[A]] = typ_union A B) -> False) }}
 
 
 
@@ -142,17 +142,15 @@ embed {{ coq
 Fixpoint dwl_to_denv (dW : dworklist) : denv :=
   match dW with 
   | dworklist_empty => nil
-  | dworklist_conswork dW' _ => dwl_to_denv dW'
-  | dworklist_constvar dW' X b => X ~ b ++ dwl_to_denv dW'
-  | dworklist_consvar dW' x b => x ~ b ++ dwl_to_denv dW'
+  | dworklist_cons_work dW' _ => dwl_to_denv dW'
+  | dworklist_cons_var dW' x b => x ~ b ++ dwl_to_denv dW'
   end.
 
 Fixpoint awl_to_aenv (aW : aworklist) : aenv :=
   match aW with 
   | aworklist_empty => nil
-  | aworklist_conswork aW' _ => awl_to_aenv aW'
-  | aworklist_constvar aW' X b => X ~ b ++ awl_to_aenv aW'
-  | aworklist_consvar aW' x b => x ~ b ++ awl_to_aenv aW'
+  | aworklist_cons_work aW' _ => awl_to_aenv aW'
+  | aworklist_cons_var aW' x b => x ~ b ++ awl_to_aenv aW'
   end.
 
 
@@ -203,36 +201,6 @@ X ∈ₛ A
 X ∈ₛ e : A 
 
 
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-% dvalue, v :: dvalue_ ::=
-%   | unit                 ::   :: unit
-%   | top                  ::   :: top
-%   | \ x . e              ::   :: abs  (+ bind x in e +)
-%   | \ X . body          ::   :: tabs (+ bind X in body +)
-
-
-% defns
-% Jd_is_value :: '' ::=
-
-% defn
-% is_v e  :: :: d_isval :: 'd_isval_' by
-
-% ------------------------ :: unit
-% is_v unit
-
-% ------------------------ :: top
-% is_v top
-
-% ------------------------ :: abs
-% is_v ( \ x . e )
-
-% ------------------------ :: tabs
-% is_v ( \ X . e : A )
-
-% ------------------------ :: annoabs
-% is_v ( \ x . e ): A
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 defns
@@ -497,30 +465,43 @@ dE |- e : A
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+
+
+defns
+J_d_wf_tenv :: '' ::=
+
+defn
+|-t dE :: :: d_wf_tenv :: 'd_wf_tenv__' by
+
+--------- :: empty
+|-t empty
+
+|-t dE
+X `notin` dom dE
+---------------- :: tvar
+|-t dE , X : ■
+
+|-t dE
+dE |- A
+x `notin` dom dE
+---------------- :: typ
+|-t dE , x : A
+
+
 defns
 J_d_wf_env :: '' ::=
 
 defn
 |- dE :: :: d_wf_env :: 'd_wf_env__' by
 
+|-t dE
 --------- :: empty
-|- empty
-
 |- dE
-X `notin` dom dE
----------------- :: tvar
-|- dE , X : ■
 
 |- dE
 X `notin` dom dE 
 ---------------- :: stvar
 |- dE , X : ~■
-
-|- dE
-dE |- A
-x `notin` dom dE
----------------- :: typ
-|- dE , x : A
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -679,8 +660,73 @@ dE |- cd
 dE |- cd $ A $ B
 
 
+% defns 
+% J_neq_sub :: '' ::= 
+
+% defn 
+% w != * <: * :: :: neq_sub :: 'neq_sub__' by 
+
+% ----------------- :: infer
+% e => cs != * <: *
+
+% ------------------ :: check
+% e <= A != * <: *
+
+% -------------------- :: infabs
+% A ▹ cd != * <: * 
+
+% --------------------------- :: infabsunion
+% A1 ~> B1 ⊔▹ A2 ▹ cd != * <: *
+
+% --------------------------- :: infapp
+% A ~> B • e =>=> cs != * <: *    
+
+% ---------------------------- :: inftapp
+% A1 ○ A2 =>=> cs  != * <: *
+
+% ---------------------------- :: inftappunion
+% A1 ⊔∘ A2 ○ B =>=> cs != * <: *  
+
+% ------------------------------ :: unioninftapp
+% A1 ⊔∘ A2 >> cs != * <: *
+
+% ------------------------------- :: unioninfabs
+% A1 ~> B1 ⊔▹ A2 ~> B2 >> cd != * <: *
+
+% -------------------- :: apply
+% cs $$ A != * <: *
+
+% -------------------- :: apply2
+% cd $ A $ B != * <: *
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+defns 
+Jd_wf_twl :: '' ::= 
+
+defn 
+|-t dW :: :: d_wf_twl :: 'd_wf_twl__' by 
+
+-------------------- :: empty
+|-t empty
+
+x `notin`  dom ⌊ dW ⌋
+⌊ dW ⌋ |- A
+|-t dW
+-------------------- :: consvar
+|-t dW , x : A
+
+X `notin`  dom ⌊ dW ⌋
+|-t dW
+-------------------- :: constvar
+|-t dW , X : ■
+
+⌊ dW ⌋ |- w
+w != * <: * 
+|-t dW
+-------------------- :: conswork
+|-t dW , w
+
 
 defns 
 Jd_wf_wl :: '' ::= 
@@ -688,30 +734,20 @@ Jd_wf_wl :: '' ::=
 defn 
 |- dW :: :: d_wf_wl :: 'd_wf_wl__' by 
 
--------------------- :: empty
-|- empty
-
-x `notin`  dom ⌊ dW ⌋
-⌊ dW ⌋ |- A
+|-t dW
+-------------------- :: twl
 |- dW
--------------------- :: consvar
-|- dW , x : A
-
-X `notin`  dom ⌊ dW ⌋
-|- dW
--------------------- :: constvar
-|- dW , X : ■
 
 X `notin` dom ⌊ dW ⌋
 |- dW
 -------------------- :: consstvar
 |- dW , X : ~■
 
-⌊ dW ⌋ |- w
+⌊ dW ⌋ |- A
+⌊ dW ⌋ |- B
 |- dW
--------------------- :: conswork
-|- dW , w
-
+-------------------- :: conswork_sub
+|- dW , A <: B
 
 
 defns
@@ -1072,25 +1108,85 @@ aE |- cd $ A $ B
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+
+defns 
+J_a_wf_wwl :: '' ::= 
+
+defn 
+|-w aW :: :: a_wf_wwl :: 'a_wf_wwl__' by 
+
+-------------------- :: empty
+|-w empty
+
+x `notin`  dom ⌊ aW ⌋
+⌊ aW ⌋ |- A
+|-w aW
+-------------------- :: consvar
+|-w aW , x : A
+
+X `notin`  dom ⌊ aW ⌋
+|-w aW
+-------------------- :: constvar
+|-w aW , X : ■
+
+X `notin` dom ⌊ aW ⌋
+|-w aW
+-------------------- :: consstvar
+|-w aW , X : ~■
+
+X `notin` dom ⌊ aW ⌋
+|-w aW
+-------------------- :: consetvar
+|-w aW , X : ^■
+
+⌊ aW ⌋ |- w
+|-w aW
+-------------------- :: conswork
+|-w aW , w
+
+
+defns 
+J_a_wf_twl :: '' ::= 
+
+defn 
+|-t aW :: :: a_wf_twl :: 'a_wf_twl__' by 
+
+-------------------- :: empty
+|-t empty
+
+x `notin`  dom ⌊ aW ⌋
+⌊ aW ⌋ |- A
+|-t aW
+-------------------- :: consvar
+|-t aW , x : A
+
+X `notin`  dom ⌊ aW ⌋
+|-t aW
+-------------------- :: constvar
+|-t aW , X : ■
+
+
+X `notin` dom ⌊ aW ⌋
+|-t aW
+-------------------- :: consetvar
+|-t aW , X : ^■
+
+⌊ aW ⌋ |- w
+w != * <: *
+|-t aW
+-------------------- :: conswork
+|-t aW , w
+
+
 defns 
 J_a_wf_wl :: '' ::= 
 
 defn 
 |- aW :: :: a_wf_wl :: 'a_wf_wl__' by 
 
--------------------- :: empty
-|- empty
-
-x `notin`  dom ⌊ aW ⌋
-⌊ aW ⌋ |- A
+|-t aW 
+-------------------- :: twl
 |- aW
--------------------- :: consvar
-|- aW , x : A
-
-X `notin`  dom ⌊ aW ⌋
-|- aW
--------------------- :: constvar
-|- aW , X : ■
 
 X `notin` dom ⌊ aW ⌋
 |- aW
@@ -1102,10 +1198,12 @@ X `notin` dom ⌊ aW ⌋
 -------------------- :: consetvar
 |- aW , X : ^■
 
-⌊ aW ⌋ |- w
+⌊ aW ⌋ |- A
+⌊ aW ⌋ |- B
 |- aW
--------------------- :: conswork
-|- aW , w
+-------------------- :: conswork_sub
+|- aW , A <: B
+
 
 
 defns
@@ -1127,6 +1225,7 @@ X `notin` dom aE
 ---------------- :: stvar
 |- aE , X : ~■
 
+
 |- aE
 X `notin` dom aE 
 ---------------- :: etvar
@@ -1137,3 +1236,24 @@ aE |- A
 x `notin` dom aE
 ---------------- :: typ
 |- aE , x : A
+
+
+% defns
+% J_a_wf_env :: '' ::=
+
+% defn
+% |- aE :: :: a_wf_env :: 'a_wf_env__' by
+
+% |-t aE
+% --------- :: tenv
+% |- aE
+
+% |- aE
+% X `notin` dom aE 
+% ---------------- :: stvar
+% |- aE , X : ~■
+
+% |- aE
+% X `notin` dom aE 
+% ---------------- :: etvar
+% |- aE , X : ^■
