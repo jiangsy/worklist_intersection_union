@@ -198,7 +198,7 @@ Proof.
     try rewrite fvar_in_wf_contd_upper; eauto; try fsetdec].
 Qed.
 
-Lemma fvar_in_a_wf_wwl_upper : forall Γ ,
+Lemma favar_in_a_wf_wwl_upper : forall Γ ,
   ⊢ᵃʷ Γ ->
   favar_in_aworklist Γ [<=] dom (awl_to_aenv Γ).
 Proof.
@@ -213,22 +213,18 @@ Lemma fvar_in_a_wf_twl_upper : forall Γ ,
   ⊢ᵃʷₜ Γ ->
   favar_in_aworklist Γ [<=] dom (awl_to_aenv Γ).
 Proof.
-  intros. induction H; simpl in *; try fsetdec.
-  - rewrite ftvar_in_a_wf_typ_upper; eauto. fsetdec.
-  - rewrite fvar_in_wf_work_upper; eauto.
-    rewrite ftvar_in_wf_work_upper; eauto.
-    fsetdec.
+  intros. rewrite favar_in_a_wf_wwl_upper; eauto.
+  - fsetdec.
+  - apply a_wf_twl_a_wf_wwl; eauto.
 Qed.
 
 Lemma fvar_in_a_wf_wl_upper : forall Γ ,
   ⊢ᵃʷₛ Γ ->
   favar_in_aworklist Γ [<=] dom (awl_to_aenv Γ).
 Proof.
-  intros. induction H; simpl in *; try fsetdec.
-  - rewrite fvar_in_a_wf_twl_upper; eauto. fsetdec.
-  - rewrite ftvar_in_a_wf_typ_upper; eauto.
-    rewrite ftvar_in_a_wf_typ_upper; eauto.
-    fsetdec.
+  intros. rewrite favar_in_a_wf_wwl_upper; eauto.
+  - fsetdec.
+  - apply a_wf_wl_a_wf_wwl; eauto.
 Qed.
 
 Lemma subst_tvar_in_typ_rev_eq : forall X X' A,
@@ -238,13 +234,9 @@ Proof.
   intros. induction A; simpl in *; auto;
     try rewrite IHA; try rewrite IHA1; try rewrite IHA2; auto.
   - destruct (X0 == X).
-    + simpl. unfold eq_dec.
-      destruct (EqDec_eq_of_X X' X'); auto.
+    + simpl. destruct_eq_atom. 
       * subst; auto.
-      * subst. solve_notin_eq X'.
-    + simpl. unfold eq_dec.
-      destruct (EqDec_eq_of_X X0 X'); auto.
-      * subst. solve_notin_eq X'.
+    + simpl. destruct_eq_atom; auto.
 Qed.
 
 Lemma subst_tvar_in_exp_rev_eq : forall X X' e,
@@ -252,7 +244,7 @@ Lemma subst_tvar_in_exp_rev_eq : forall X X' e,
   {` X ᵉ/ₜ X'} {` X' ᵉ/ₜ X} e = e
 with rename_tvar_in_body_rev_eq : forall X X' b,
   X' `notin` ftvar_in_body b ->
-  subst_tvar_in_body (typ_var_f X) X' (subst_tvar_in_body (typ_var_f X') X b) = b.
+  {` X ᵇ/ₜ X'} {` X' ᵇ/ₜ X} b = b.
 Proof.
   - intros. induction e; simpl in *; auto;
     try rewrite IHe; try rewrite IHe1; try rewrite IHe2; auto.
@@ -303,6 +295,93 @@ Proof.
 Qed.
 
 
+Fixpoint rename_tvar_in_aworklist (Y X:typvar) (Γ:aworklist) {struct Γ} : aworklist :=
+  match Γ with
+  | aworklist_empty => aworklist_empty
+  | (aworklist_cons_var Γ' X' b) => 
+    match b with 
+    | abind_var_typ A => aworklist_cons_var (rename_tvar_in_aworklist Y X Γ') X (subst_tvar_in_abind (`Y ) X b)
+    | _ => aworklist_cons_var (rename_tvar_in_aworklist Y X Γ') (if X' == X then Y else X') b
+    end
+  | (aworklist_cons_work Γ' w) => aworklist_cons_work (rename_tvar_in_aworklist Y X Γ') (subst_tvar_in_work (` Y) X w)
+end.
+
+Fixpoint rename_var_in_aworklist (y x:expvar) (Γ:aworklist) {struct Γ} : aworklist :=
+  match Γ with
+  | aworklist_empty => aworklist_empty
+  | (aworklist_cons_var Γ' x' b) => 
+    match b with 
+    | abind_var_typ _ => aworklist_cons_var (rename_var_in_aworklist y x Γ') (if x' == x then y else x) b
+    | _ => aworklist_cons_var (rename_var_in_aworklist y x Γ') x' b
+    end
+  | (aworklist_cons_work Γ' w) => aworklist_cons_work (rename_var_in_aworklist y x Γ') (subst_var_in_work (exp_var_f y) x w)
+  end.
+
+
+Theorem a_wf_wwl_red_rename_tvar : forall Γ X Y,
+  X <> Y ->
+  ⊢ᵃʷ Γ ->
+  Y `notin` dom (awl_to_aenv Γ) ->
+  Γ ⟶ᵃʷ⁎⋅ ->
+  (rename_tvar_in_aworklist Y X Γ) ⟶ᵃʷ⁎⋅.
+Proof.
+Admitted.
+
+
+Theorem a_wf_twl_red_rename_tvar : forall Γ X Y,
+  X <> Y ->
+  ⊢ᵃʷₜ Γ ->
+  Y `notin` dom (awl_to_aenv Γ) ->
+  Γ ⟶ᵃʷ⁎⋅ ->
+  (rename_tvar_in_aworklist Y X Γ) ⟶ᵃʷ⁎⋅.
+Proof.
+  intros. eapply a_wf_wwl_red_rename_tvar; eauto.
+  apply a_wf_twl_a_wf_wwl; auto.
+Qed.
+
+
+Theorem a_wf_wl_red_rename_tvar : forall Γ X Y,
+  X <> Y ->
+  ⊢ᵃʷₛ Γ ->
+  Y `notin` dom (awl_to_aenv Γ) ->
+  Γ ⟶ᵃʷ⁎⋅ ->
+  (rename_tvar_in_aworklist Y X Γ) ⟶ᵃʷ⁎⋅.
+Proof.
+  intros. eapply a_wf_wwl_red_rename_tvar; eauto.
+  apply a_wf_wl_a_wf_wwl; auto.
+Qed.
+
+
+Theorem a_wf_wwl_red_rename_var : forall Γ x y,
+  ⊢ᵃʷ Γ ->
+  y <> x ->
+  y `notin` (dom (awl_to_aenv Γ)) ->
+  Γ ⟶ᵃʷ⁎⋅ ->
+  (rename_var_in_aworklist y x Γ) ⟶ᵃʷ⁎⋅.
+Proof.
+Admitted.
+
+Theorem a_wf_twl_red_rename_var : forall Γ x y,
+  ⊢ᵃʷₜ Γ ->
+  y <> x ->
+  y `notin` (dom (awl_to_aenv Γ)) ->
+  Γ ⟶ᵃʷ⁎⋅ ->
+  (rename_var_in_aworklist y x Γ) ⟶ᵃʷ⁎⋅.
+Proof.
+  intros. eapply a_wf_wwl_red_rename_var; eauto.
+  apply a_wf_twl_a_wf_wwl; auto.
+Qed.
+
+Theorem a_wf_wl_red_rename_var : forall Γ x y,
+  ⊢ᵃʷₛ Γ ->
+  y <> x ->
+  y `notin` (dom (awl_to_aenv Γ)) ->
+  Γ ⟶ᵃʷ⁎⋅ ->
+  (rename_var_in_aworklist y x Γ) ⟶ᵃʷ⁎⋅.
+  Proof.
+  intros. eapply a_wf_wwl_red_rename_var; eauto.
+  apply a_wf_wl_a_wf_wwl; auto.
+Qed.
 
 
 (* a group of rename lemmas for tvar *)
