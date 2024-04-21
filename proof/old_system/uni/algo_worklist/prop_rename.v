@@ -17,10 +17,11 @@ Open Scope aworklist_scope.
 #[local] Hint Rewrite dom_app dom_cons : core.
 
 
-Lemma favar_in_aworklist_app : forall Γ1 Γ2,
-  favar_in_aworklist (Γ2 ⧺ Γ1) [=] favar_in_aworklist Γ2 `union` favar_in_aworklist Γ1.
+Lemma ftvar_in_aworklist'_app : forall Γ1 Γ2,
+  ftvar_in_aworklist' (Γ2 ⧺ Γ1) [=] ftvar_in_aworklist' Γ2 `union` ftvar_in_aworklist' Γ1.
 Proof.
-  intros. induction Γ2; simpl; fsetdec. 
+  intros. induction Γ2; simpl; try fsetdec.
+  - destruct ab; simpl; try fsetdec.
 Qed.
 
 Lemma ftvar_in_a_wf_typ_upper : forall Γ A,
@@ -198,31 +199,30 @@ Proof.
     try rewrite fvar_in_wf_contd_upper; eauto; try fsetdec].
 Qed.
 
-Lemma favar_in_a_wf_wwl_upper : forall Γ ,
+Lemma ftvar_in_a_wf_wwl_upper : forall Γ ,
   ⊢ᵃʷ Γ ->
-  favar_in_aworklist Γ [<=] dom (awl_to_aenv Γ).
+  ftvar_in_aworklist' Γ [<=] dom (awl_to_aenv Γ).
 Proof.
   intros. induction H; simpl in *; try fsetdec.
   - rewrite ftvar_in_a_wf_typ_upper; eauto. fsetdec.
-  - rewrite fvar_in_wf_work_upper; eauto.
-    rewrite ftvar_in_wf_work_upper; eauto.
+  - rewrite ftvar_in_wf_work_upper; eauto.
     fsetdec.
 Qed.
 
-Lemma fvar_in_a_wf_twl_upper : forall Γ ,
+Lemma ftvar_in_a_wf_twl_upper : forall Γ ,
   ⊢ᵃʷₜ Γ ->
-  favar_in_aworklist Γ [<=] dom (awl_to_aenv Γ).
+  ftvar_in_aworklist' Γ [<=] dom (awl_to_aenv Γ).
 Proof.
-  intros. rewrite favar_in_a_wf_wwl_upper; eauto.
+  intros. rewrite ftvar_in_a_wf_wwl_upper; eauto.
   - fsetdec.
   - apply a_wf_twl_a_wf_wwl; eauto.
 Qed.
 
 Lemma fvar_in_a_wf_wl_upper : forall Γ ,
   ⊢ᵃʷₛ Γ ->
-  favar_in_aworklist Γ [<=] dom (awl_to_aenv Γ).
+  ftvar_in_aworklist' Γ [<=] dom (awl_to_aenv Γ).
 Proof.
-  intros. rewrite favar_in_a_wf_wwl_upper; eauto.
+  intros. rewrite ftvar_in_a_wf_wwl_upper; eauto.
   - fsetdec.
   - apply a_wf_wl_a_wf_wwl; eauto.
 Qed.
@@ -295,6 +295,7 @@ Proof.
 Qed.
 
 
+
 Fixpoint rename_tvar_in_aworklist (Y X:typvar) (Γ:aworklist) {struct Γ} : aworklist :=
   match Γ with
   | aworklist_empty => aworklist_empty
@@ -327,6 +328,9 @@ Notation "{ y ᵃʷ/ₑᵥ x } Γ" :=
     ( at level 49, y at level 50, x at level 0
     , right associativity) : type_scope. 
 
+(*
+
+
 Lemma rename_tvar_in_aworklist_app : forall Γ1 Γ2 X Y,
   {Y ᵃʷ/ₜᵥ X} Γ2 ⧺ {Y ᵃʷ/ₜᵥ X} Γ1 = {Y ᵃʷ/ₜᵥ X} (Γ2 ⧺ Γ1).
 Proof.
@@ -344,6 +348,27 @@ Lemma rename_tvar_in_aworklist_cons : forall X X' Y b Γ,
 Proof.
   intros. destruct_eq_atom; destruct b; simpl; destruct_eq_atom; auto.
   solve_false.
+Qed.
+
+
+Lemma rename_tvar_in_aworklist_fresh_avar_rev_eq : forall X Y Γ,
+  Y `notin` ftvar_in_aworklist' Γ ->
+  {X ᵃʷ/ₜᵥ Y} {Y ᵃʷ/ₜᵥ X} Γ = Γ.
+Proof.
+  intros. induction Γ; simpl in *; auto.
+  - destruct ab; simpl; destruct_eq_atom; rewrite IHΓ; auto.
+    rewrite subst_tvar_in_typ_rev_eq; auto.
+  - rewrite subst_tvar_in_work_rev_eq; auto.
+    rewrite IHΓ; auto.
+Qed.
+
+Lemma rename_tvar_in_aworklist_fresh_dom_rev_eq : forall X Y Γ,
+  ⊢ᵃʷ Γ ->
+  Y `notin` dom (⌊ Γ ⌋ᵃ) ->
+  {X ᵃʷ/ₜᵥ Y} {Y ᵃʷ/ₜᵥ X} Γ = Γ.
+Proof.x
+  intros. rewrite <- favar_in_a_wf_wwl_upper in H0; auto. 
+  rewrite rename_tvar_in_aworklist_fresh_avar_rev_eq; auto.
 Qed.
 
 Ltac rewrite_aworklist_rename_tvar :=
@@ -436,7 +461,7 @@ Proof with auto.
       * rewrite_aworklist_rename_tvar. destruct_eq_atom...
         -- constructor... admit.
         -- constructor... admit.  
-    + repeat (rewrite favar_in_aworklist_app in *; simpl in *). solve_notin. 
+    + repeat (rewrite favar_in_aworklist_app in *; simpl in . solve_notin. 
 Admitted.
 
 
@@ -452,6 +477,191 @@ Proof.
 Qed.
 
 
+Lemma subst_tvar_in_typ_rename_tvar : forall X Y A B,
+  Y `notin` ftvar_in_typ A ->
+  {` Y ᵗ/ₜ X} {B ᵗ/ₜ X} A = {({` Y ᵗ/ₜ X} B) ᵗ/ₜ Y} {`Y ᵗ/ₜ X} A.
+Proof.
+  intros. induction A; simpl in *; auto; try rewrite IHA; try rewrite IHA1; try rewrite IHA2; auto.
+  - destruct_eq_atom.
+    + simpl. destruct_eq_atom. auto.
+    + simpl. destruct_eq_atom. auto.
+Qed.
+
+Lemma subst_tvar_in_exp_rename_tvar : forall X X' e A,
+  X' `notin` ftvar_in_exp e ->
+  {` X' ᵉ/ₜ X} {A ᵉ/ₜ X} e = {({` X' ᵗ/ₜ X} A) ᵉ/ₜ X'} {` X' ᵉ/ₜ X} e
+with subst_tvar_in_body_rename_tvar : forall X X' b A,
+  X' `notin` ftvar_in_body b ->
+  (subst_tvar_in_body ` X' X (subst_tvar_in_body A X b)) =
+  (subst_tvar_in_body ({` X' ᵗ/ₜ X} A) X' (subst_tvar_in_body ` X' X b)).
+Proof.
+  - intros. induction e; simpl in *; auto.
+    + rewrite IHe; auto.
+    + rewrite IHe1; auto.
+      rewrite IHe2; auto.
+    + erewrite subst_tvar_in_body_rename_tvar; auto.
+    + rewrite IHe; auto.
+      rewrite subst_tvar_in_typ_rename_tvar; auto.
+    + rewrite IHe; auto.
+      rewrite subst_tvar_in_typ_rename_tvar; auto.
+  - intros. induction b.
+    simpl in *.
+    erewrite subst_tvar_in_exp_rename_tvar; auto.
+    rewrite subst_tvar_in_typ_rename_tvar; auto.
+Qed.
+
+
+Lemma subst_tvar_in_conts_rename : forall X X' A cs,
+  X' `notin` ftvar_in_conts cs ->
+  {` X' ᶜˢ/ₜ X} {A ᶜˢ/ₜ X} cs = {({` X' ᵗ/ₜ X} A) ᶜˢ/ₜ X'} {` X' ᶜˢ/ₜ X} cs
+with subst_tvar_in_contd_rename : forall X X' A cd,
+  X' `notin` ftvar_in_contd cd ->
+  {` X' ᶜᵈ/ₜ X} {A ᶜᵈ/ₜ X} cd = {({` X' ᵗ/ₜ X} A) ᶜᵈ/ₜ X'} {` X' ᶜᵈ/ₜ X} cd.
+Proof.
+  - intros. induction cs; simpl in *;
+    try repeat rewrite subst_tvar_in_typ_rename_tvar; auto;
+    try rewrite subst_tvar_in_exp_rename_tvar; auto;
+    try rewrite IHcs; auto;
+    try rewrite subst_tvar_in_contd_rename; auto.
+  - intros. induction cd; simpl in *;
+    try repeat rewrite subst_tvar_in_typ_rename_tvar; auto;
+    try rewrite subst_tvar_in_exp_rename_tvar; auto;
+    try rewrite IHcd; auto;
+    try rewrite subst_tvar_in_conts_rename; auto.
+Qed.
+
+
+Lemma subst_tvar_in_work_rename : forall X X' w A,
+  X' `notin` ftvar_in_work w ->
+  {` X' ʷ/ₜ X} {A ʷ/ₜ X} w = {({` X' ᵗ/ₜ X} A) ʷ/ₜ X'} {` X' ʷ/ₜ X} w.
+Proof.
+  intros. destruct w; simpl in *;
+    try repeat rewrite subst_tvar_in_typ_rename_tvar; auto;
+    try rewrite subst_tvar_in_exp_rename_tvar; auto;
+    try rewrite subst_tvar_in_conts_rename; auto;
+    try rewrite subst_tvar_in_contd_rename; auto.
+Qed.
+
+Lemma subst_tvar_in_awl_rename_tvar: forall Γ X Y A,
+  Y `notin` ftvar_in_aworklist Γ ->
+  {Y ᵃʷ/ₜᵥ X} {A ᵃʷ/ₜ X} Γ = {({` Y ᵗ/ₜ X} A) ᵃʷ/ₜ Y} ({Y ᵃʷ/ₜᵥ X} Γ).
+Proof.
+  intros. induction Γ; simpl in *; auto; rewrite IHΓ; auto.
+  - destruct ab; auto; destruct_eq_atom; auto; simpl.
+    apply f_equal. 
+    + simpl. rewrite subst_tvar_in_typ_rename_tvar; auto.
+    + simpl. rewrite subst_tvar_in_typ_rename_tvar; auto.
+  - apply f_equal.
+      * simpl. rewrite subst_tvar_in_work_rename; auto.
+Qed.
+
+Lemma subst_typ_in_aworklist_dom_eq : forall Γ X A,
+  dom (⌊ {A ᵃʷ/ₜ X} Γ ⌋ᵃ) [=] dom (⌊ Γ ⌋ᵃ).
+Proof.
+  intros. induction Γ; simpl; fsetdec.
+Qed.
+
+Lemma favar_in_aworklist_subst_upper : forall Γ X A,
+  favar_in_aworklist ({A ᵃʷ/ₜ X} Γ) [<=] favar_in_aworklist Γ `union` ftvar_in_typ A.
+Proof.
+  intros. induction Γ; simpl; try fsetdec.
+  - destruct ab; simpl; try fsetdec. 
+    rewrite ftvar_in_typ_subst_tvar_in_typ_upper; fsetdec.
+  - rewrite ftvar_in_work_subst_tvar_in_work_upper.
+    rewrite fvar_in_work_subst_tvar_in_work_upper.
+    fsetdec.
+Qed.
+
+Lemma favar_in_aworklist_subst_lower : forall Γ X A,
+  remove X (favar_in_aworklist Γ) [<=] favar_in_aworklist ({A ᵃʷ/ₜ X} Γ).
+Proof.
+  intros. induction Γ; simpl; try fsetdec.
+  - destruct ab; simpl; try fsetdec. 
+    rewrite <- ftvar_in_typ_subst_tvar_in_typ_lower; fsetdec.
+  - rewrite <- ftvar_in_work_subst_tvar_in_work_lower.
+    rewrite <- fvar_in_work_subst_tvar_in_work_lower.
+    fsetdec.
+Qed.
+
+Lemma aworlist_subst_dom_upper1' : forall Γ X A Γ1 Γ2,
+  aworklist_subst Γ X A Γ1 Γ2 ->
+  dom (⌊ Γ1 ⌋ᵃ) [<=] dom (⌊ Γ ⌋ᵃ).
+Proof.
+  intros * Haws; simpl; induction Haws; simpl in *; try fsetdec.
+  - autorewrite with core in *. simpl in *. fsetdec.
+Qed.
+
+Lemma aworlist_subst_dom_upper2' : forall Γ X A Γ1 Γ2,
+  aworklist_subst Γ X A Γ1 Γ2 ->
+  dom (⌊ Γ2 ⌋ᵃ) [<=] dom (⌊ Γ ⌋ᵃ).
+Proof.
+  intros. induction H; simpl; try fsetdec.
+  - autorewrite with core in *. simpl in *. fsetdec.
+Qed.
+
+Theorem aworklist_subst_favar_in_aworklist_upper : forall Γ X A Γ1 Γ2,
+  ⊢ᵃʷ Γ ->
+  X ~ ⬒ ∈ᵃ ⌊ Γ ⌋ᵃ ->
+  X ∉ ftvar_in_typ A ->
+  ⌊ Γ ⌋ᵃ ᵗ⊢ᵃ A ->
+  aworklist_subst Γ X A Γ1 Γ2 ->
+  favar_in_aworklist Γ1 [<=] dom (⌊ Γ ⌋ᵃ) /\ favar_in_aworklist Γ2 [<=] dom (⌊ Γ ⌋ᵃ).
+Proof.
+  intros.
+  intros. apply aworklist_subst_wf_wwl in H3 as Hwf; auto.
+  apply favar_in_a_wf_wwl_upper in Hwf.
+  assert (favar_in_aworklist (Γ2 ⧺ Γ1) [<=] add X (favar_in_aworklist ({A ᵃʷ/ₜ X} Γ2 ⧺ Γ1))). {
+    repeat rewrite favar_in_aworklist_app. simpl.
+    specialize (favar_in_aworklist_subst_upper Γ2 X A). intros.
+    rewrite <- favar_in_aworklist_subst_lower. fsetdec.
+  }
+  rewrite awl_to_aenv_app in Hwf.
+  rewrite dom_app in Hwf.
+  rewrite subst_typ_in_aworklist_dom_eq in Hwf.
+  rewrite favar_in_aworklist_app in H4.
+  assert (dom (⌊ Γ1 ⌋ᵃ) [<=] dom (⌊ Γ ⌋ᵃ)) by (eapply aworlist_subst_dom_upper1'; eauto).
+  assert (dom (⌊ Γ2 ⌋ᵃ) [<=] dom (⌊ Γ ⌋ᵃ)) by (eapply aworlist_subst_dom_upper2'; eauto).
+  assert (singleton X [<=] dom (⌊ Γ ⌋ᵃ)) by (apply binds_In in H0; fsetdec).
+  split; fsetdec.
+Qed.
+
+Lemma rename_tvar_in_aworklist_rev_eq : forall X Y Γ,
+  Y `notin` ftvar_in_aworklist Γ ->
+  (subst_tvar_in_aworklist (`X) Y (subst_tvar_in_aworklist (`Y) X Γ)) = Γ.
+Proof.
+  intros. induction Γ; simpl in *; auto.
+  - rewrite subst_tvar_in_abind_rev_eq; auto.
+    rewrite IHΓ; auto.
+  - rewrite subst_tvar_in_work_rev_eq; auto.
+    rewrite IHΓ; auto.
+Qed.
+
+Ltac solve_notin_aworklist_subst_favar :=
+  match goal with 
+  | H : aworklist_subst ?Γ ?X' ?A ?Γ1 ?Γ2 |- ?X `notin` favar_in_aworklist ?Γ1 =>
+    apply aworklist_subst_favar_in_aworklist_upper in H; auto
+  | H : aworklist_subst ?Γ ?X' ?A ?Γ1 ?Γ2 |- ?X `notin` favar_in_aworklist ?Γ2 =>
+    apply aworklist_subst_favar_in_aworklist_upper in H; auto
+  end.
+
+(* Theorem rename_tvar_in_aworklist_fresh_same : forall Γ Y X,
+  Y <> X ->
+  X `notin` favar_in_aworklist ({Y ᵃʷ/ₜᵥ X} Γ).
+Proof.
+  intros. induction Γ; simpl in *; auto.
+  - destruct ab; simpl; destruct_eq_atom; simpl; try fsetdec.
+    assert (X `notin` ftvar_in_typ `Y) by auto. 
+    eapply subst_tvar_in_typ_fresh_same  with (A2:=A) in H0; eauto. fsetdec.
+    rewrite subst_tvar_in_typ_fresh_same. *)
+
+
+Theorem rename_tvar_in_aworklist_same_eq : forall Γ Y X,
+  X `notin` ftvar_in_aworklist ({Y ᵃʷ/ₜᵥ X} Γ).
+Proof.
+  intros.
+Admitted.
+   
+
 Theorem a_wf_wwl_red_rename_tvar : forall Γ X Y,
   X <> Y ->
   ⊢ᵃʷ Γ ->
@@ -461,8 +671,95 @@ Theorem a_wf_wwl_red_rename_tvar : forall Γ X Y,
 Proof with eauto.
   intros. dependent induction H2; try solve [simpl in *; try apply_IH_a_wf_wwl; eauto]; create_notin_set.
   - apply_IH_a_wf_wwl... simpl in *. destruct_eq_atom...
-  - admit.
-  - admit.
+  - destruct_a_wf_wl. simpl in *. dependent destruction H0.
+    inst_cofinites_for a_wl_red__sub_alll.
+    + apply neq_all_rename...
+    + apply neq_intersection_rename...
+    + apply neq_union_rename...
+    + intros. simpl in *. inst_cofinites_with X0.
+      rewrite subst_tvar_in_typ_open_typ_wrt_typ_fresh2...
+      destruct_eq_atom.
+      auto_apply.
+      * repeat (constructor; simpl; auto).
+        -- apply a_wf_typ_tvar_etvar_cons...
+        -- apply a_wf_typ_weaken_cons...
+      * repeat rewrite ftvar_in_typ_open_typ_wrt_typ_upper...
+  - simpl in *. destruct_a_wf_wl.
+    dependent destruction H0. dependent destruction H2.
+    inst_cofinites_for a_wl_red__sub_all.
+    intros. inst_cofinites_with X0.
+    simpl in H0.
+    rewrite subst_tvar_in_typ_open_typ_wrt_typ_fresh2...
+    rewrite subst_tvar_in_typ_open_typ_wrt_typ_fresh2...
+    destruct_eq_atom.
+    auto_apply.
+    + repeat (constructor; simpl; auto).
+      * apply a_wf_typ_tvar_stvar_cons...
+      * apply a_wf_typ_tvar_stvar_cons...
+    + repeat rewrite ftvar_in_typ_open_typ_wrt_typ_upper...
+  - simpl. 
+    destruct (X0 == X).
+    inst_cofinites_for a_wl_red__sub_arrow1...
+    + subst. admit.
+      (* apply rename_tvar_in_aworklist_bind_same_eq; auto... destruct_a_wf_wl; auto. *)
+    + destruct_a_wf_wl. admit. 
+      (* fold_subst. apply a_mono_typ_false_rename; simpl; eauto. *)
+    + intros. simpl in *. subst.
+      replace ((work_sub ` Y (typ_arrow ({` Y ᵗ/ₜ X} A1) ({` Y ᵗ/ₜ X} A2)) ⫤ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ rename_tvar_in_aworklist Y X Γ)) with 
+      (rename_tvar_in_aworklist Y X (work_sub ` X (typ_arrow A1 A2) ⫤ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ)) in H8 by (simpl; destruct_eq_atom; auto) .
+      apply aworklist_subst_rename_tvar with (Y:=X) (X:=Y) (X':=Y) in H8 as Hws.
+      * destruct_eq_atom. 
+        rewrite rename_tvar_in_aworklist_fresh_dom_rev_eq in Hws; simpl in Hws; auto. destruct_eq_atom.
+        apply H5 in Hws as Hawlred; simpl; auto.
+        -- rewrite <- rename_tvar_in_aworklist_app in Hawlred. 
+          rewrite subst_tvar_in_awl_rename_tvar in Hawlred. 
+          simpl in Hawlred. destruct_eq_atom.
+          rewrite rename_tvar_in_aworklist_fresh_avar_rev_eq in Hawlred; auto.    
+          admit.
+          solve_notin_aworklist_subst_favar; auto.
+          admit.
+          constructor. constructor.
+          assert (X `notin` (dom (⌊ {Y ᵃʷ/ₜᵥ X} Γ ⌋ᵃ))) by admit.
+          assert (X `notin` add X2 (add X1 (dom (⌊ {Y ᵃʷ/ₜᵥ X} Γ ⌋ᵃ)))) by auto.
+           destruct H10. rewrite H12. auto.
+          solve_notin.
+           rewrite <- subst_tvar_in_awl_rename_tvar in Hawlred.
+        -- eapply aworklist_subst_wf_wwl in Hws; simpl; eauto 7.
+            ++ destruct_a_wf_wl. repeat (constructor; simpl; auto).
+               apply a_wf_typ_weaken_cons... apply a_wf_typ_weaken_cons...  
+               apply a_wf_typ_weaken_cons... apply a_wf_typ_weaken_cons...  
+        -- admit.
+           (* rewrite aworklist_subst_dom_upper with 
+            (Γ:=(work_sub ` X (typ_arrow A1 A2) ⫤ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ)); eauto.  *)
+      * replace ((work_sub ` X' (typ_arrow ({` X' ᵗ/ₜ X} A1) ({` X' ᵗ/ₜ X} A2)) ⫤ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ rename_tvar_in_aworklist X' X Γ)) with 
+                  (rename_tvar_in_aworklist X' X (work_sub ` X (typ_arrow A1 A2) ⫤ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ)) by (simpl; destruct_eq_atom; auto).
+        apply a_wf_wl_rename_tvar...
+        destruct_a_wf_wl. repeat (constructor; simpl; auto).
+      * solve_notin_rename_tvar; auxto.
+    + apply rename_tvar_in_aworklist_bind_same_neq; auto...
+      destruct_a_wf_wl; auto.
+    + destruct_a_wf_wl.
+      fold_subst. apply a_mono_typ_false_rename; simpl; eauto.
+    + intros. simpl in *.
+      apply worklist_subst_rename_tvar with (X':=X) (X1:=X') (X2:=X0) in H8 as Hws.
+      * destruct_eq_atom. simpl in Hws.
+        destruct_eq_atom.
+        rewrite subst_tvar_in_typ_rev_eq in *...
+        rewrite subst_tvar_in_typ_rev_eq in *...
+        rewrite rename_tvar_in_aworklist_rev_eq in Hws; auto...
+        apply H5 in Hws as Hawlred; simpl; auto.
+        -- destruct_eq_atom. clear Hws.
+            rewrite_aworklist_rename; simpl; eauto.
+            rewrite_aworklist_rename_rev.
+            simpl in Hawlred. destruct_eq_atom. auto.
+        -- eapply aworklist_subst_wf_wl in Hws; simpl; eauto 7.
+            ++ destruct_a_wf_wl. repeat (constructor; simpl; auto).
+        -- rewrite aworklist_subst_dom_upper with (Γ:=(work_sub ` X0 (typ_arrow A1 A2) ⫤ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ))...
+      * replace ((work_sub ` X0 (typ_arrow ({` X' ᵗ/ₜ X} A1) ({` X' ᵗ/ₜ X} A2)) ⫤ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ rename_tvar_in_aworklist X' X Γ)) with 
+                  (rename_tvar_in_aworklist X' X (work_sub ` X0 (typ_arrow A1 A2) ⫤ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ)) by (simpl; destruct_eq_atom; auto).
+        apply a_wf_wl_rename_tvar.
+        destruct_a_wf_wl. repeat (constructor; simpl; auto). simpl...
+      * solve_notin_rename_tvar; auto.
   - admit.
   - admit.
   - admit.
@@ -563,7 +860,7 @@ Proof.
   intros. eapply a_wf_wwl_red_rename_var; eauto.
   apply a_wf_wl_a_wf_wwl; auto.
 Qed.
-
+*)
 
 (* a group of rename lemmas for tvar *)
 (* Lemma rename_tvar_in_aworklist_bind_same : forall Γ X1 X2 Y b,

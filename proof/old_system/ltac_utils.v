@@ -81,9 +81,10 @@ Ltac gather_atoms ::=
   let D3 := gather_atoms_with (fun x => ftvar_in_conts x) in
   let D4 := gather_atoms_with (fun x => ftvar_in_contd x) in
   let D5 := gather_atoms_with (fun x => ftvar_in_work x) in
-  let D6 := gather_atoms_with (fun x => favar_in_aworklist x) in
+  let D6 := gather_atoms_with (fun x => ftvar_in_aworklist' x) in
 
   let E1 := gather_atoms_with (fun x => fvar_in_exp x) in
+  let D6 := gather_atoms_with (fun x => fvar_in_aworklist' x) in
 
   let F1 :=  gather_atoms_with (fun x => dom (awl_to_aenv x)) in
   let F2 :=  gather_atoms_with (fun x => dom (dwl_to_denv x)) in

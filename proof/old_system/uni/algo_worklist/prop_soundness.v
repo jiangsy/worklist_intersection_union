@@ -57,11 +57,11 @@ Ltac rename_typ :=
   intros.
 
 (* dependent destruction all non-atomic trans_* relation *)
-Ltac destruct_trans :=
-  repeat
-    lazymatch goal with
+Ltac destruct_trans' :=
+  lazymatch goal with
     | H : trans_worklist ?θ (aworklist_cons_work ?Γ ?w) ?Ω ?θ' |- _ => dependent destruction H
     | H : trans_worklist ?θ (aworklist_cons_var ?Γ ?x ?b) ?Ω ?θ' |- _ => dependent destruction H
+    | H : trans_work ?θ (subst_tvar_in_work _ _ _) ?wᵈ |- _ => fail
     | H : trans_work ?θ (?wᵃ _) ?wᵈ |- _ => dependent destruction H
     | H : trans_work ?θ (?wᵃ _ _) ?wᵈ |- _ => dependent destruction H
     | H : trans_work ?θ (?wᵃ _ _ _) ?wᵈ |- _ => dependent destruction H
@@ -74,11 +74,15 @@ Ltac destruct_trans :=
     | H : trans_typ ?θ typ_bot ?Aᵈ |- _ => dependent destruction H
     | H : trans_typ ?θ typ_top ?Aᵈ |- _ => dependent destruction H
     | H : trans_typ ?θ (open_typ_wrt_typ _ _) ?Aᵈ |- _ => fail
+    | H : trans_typ ?θ (subst_tvar_in_typ _ _ _) ?Aᵈ |- _ => fail
     | H : trans_typ ?θ (?C_T _ _) ?Aᵈ |- _ => dependent destruction H
     end;
-    try unify_trans_typ;
-    try unify_trans_exp.
+  try unify_trans_typ;
+  try unify_trans_exp.
 
+
+Ltac destruct_trans :=
+  repeat destruct_trans'.
 
 Theorem a_mono_typ_wf : forall Σ A,
   a_mono_typ Σ A -> a_wf_typ Σ A.
@@ -603,7 +607,7 @@ Proof with auto.
     + apply trans_typ_weaken_cons...
     + intros. destruct_binds...
     + constructor...
-  - dependent destruction H4. 
+  - simpl in *. destruct_trans. 
     apply IHaworklist_subst in H4 as IH.
     destruct IH as [θ'1 [Tᵈ [Htrans [Htranst [Htranst' [Hbinds [Htransx Hwfss]]]]]]].
     exists θ'1. exists Tᵈ. repeat (split; eauto).
@@ -640,7 +644,7 @@ Proof with auto.
       eapply a_mono_typ_strengthen_mtvar with (b:=abind_tvar_empty); eauto. 
     + destruct_binds...
     + auto.
-  - dependent destruction H6.
+  - simpl in *. destruct_trans. 
     apply IHaworklist_subst in H6 as IH.
     destruct IH as [θ'1 [Tᵈ [Htrans [Htranst [Htranst' [Hbinds [Htransx Hwfss]]]]]]].    
     exists (Y ~ dbind_stvar_empty ++ θ'1), Tᵈ. repeat split; auto.
@@ -662,7 +666,7 @@ Proof with auto.
     + destruct_binds... 
     + auto.
   (* work_stay *)
-  - dependent destruction H4.
+  - simpl in *. destruct_trans. 
     apply IHaworklist_subst in H4 as IH.
     destruct IH as [θ'1 [Tᵈ [Htrans [Htranst [Htranst' [Hbinds [Htransx Hwfss]]]]]]].    
     exists θ'1. exists Tᵈ. repeat (split; auto).
@@ -676,7 +680,7 @@ Proof with auto.
     + simpl in H0...
     + auto.
     + auto.
-  - dependent destruction H6.
+  - simpl in *. destruct_trans. 
     apply IHaworklist_subst in H6 as IH.
     destruct IH as [θ'1 [Tᵈ [Htrans [Htranst [Htranst' [Hbinds [Htransx Hwfss]]]]]]].    
     exists (Y ~ dbind_typ T ++ θ'1). exists Tᵈ.
@@ -708,7 +712,7 @@ Proof with auto.
     + simpl in *. eapply a_mono_typ_strengthen_mtvar; eauto. 
     + destruct_binds...
     + auto.
-  - simpl in *.
+  - simpl in *. 
     apply IHaworklist_subst in H6 as IH.
     destruct IH as [θ'1 [Tᵈ [Htrans [Htranst [Htranst' [Hbinds [Htransx Hwfss]]]]]]].
     apply trans_wl_split in Htrans.
@@ -727,8 +731,8 @@ Proof with auto.
            eapply trans_wl_app with (θ2:= X ~ dbind_typ T ++ θ'); eauto.
            constructor; eauto.
            rewrite_env ((θ'' ++ X ~ dbind_typ T) ++ θ'). auto.
-        -- dependent destruction H. rewrite <- favar_in_a_wf_wwl_upper in H...
-           rewrite favar_in_aworklist_app in H...
+        -- dependent destruction H. rewrite <- ftvar_in_a_wf_wwl_upper in H...
+           rewrite ftvar_in_aworklist'_app in H...
       * subst. rewrite_env ((θ'' ++ (X ~ dbind_typ T)) ++ (Y, dbind_typ T0) :: θ') in Hwfss. 
         apply wf_ss_notin_remaining in Hwfss...
       * rewrite ss_to_denv_app. simpl. apply d_mono_typ_weaken_app...

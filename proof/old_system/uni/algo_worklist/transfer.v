@@ -2404,7 +2404,7 @@ Qed.
 
 
 Lemma trans_wl_strengthen_etvar : forall Γ Ω X T θ1 θ2 θ'1 θ'2,
-  X `notin` favar_in_aworklist Γ ->
+  X `notin` ftvar_in_aworklist' Γ ->
   θ2 ++ (X, dbind_typ T) :: θ1 ⊩ Γ ⇝ Ω ⫣ (θ'2 ++ (X, dbind_typ T) :: θ'1) ->
   (θ2 ++ θ1) ⊩ Γ ⇝ Ω ⫣ (θ'2 ++ θ'1).
 Proof.
@@ -2414,12 +2414,12 @@ Proof.
     eapply wf_ss_strengthen_etvar; eauto.
     apply wf_ss_notin_remaining in H0. rewrite dom_app in H0. destruct_notin; eauto.
   - simpl in H.
-    assert (X ∉ (favar_in_aworklist Γ)) by auto.
+    assert (X ∉ (ftvar_in_aworklist' Γ)) by auto.
     eapply IHtrans_worklist in H2; eauto.
     econstructor. auto. 
     eapply trans_work_strengthen_etvar; eauto.
   - simpl in H. 
-    assert (X ∉ (favar_in_aworklist Γ)) by auto.
+    assert (X ∉ (ftvar_in_aworklist' Γ)) by auto.
     destruct θ'2.
     + simpl in x. inversion x. 
     + simpl in x. inversion x. subst.  
@@ -2427,7 +2427,7 @@ Proof.
       simpl. 
       constructor; auto.
   - simpl in H. 
-    assert (X ∉ (favar_in_aworklist Γ)) by auto.
+    assert (X ∉ (ftvar_in_aworklist' Γ)) by auto.
     destruct θ'2.
     + simpl in x. inversion x. 
     + simpl in x. inversion x. subst.  
@@ -2435,12 +2435,12 @@ Proof.
       simpl. 
       constructor; auto.
   - simpl in H. 
-    assert (X ∉ (favar_in_aworklist Γ)) by auto.
+    assert (X ∉ (ftvar_in_aworklist' Γ)) by auto.
     eapply IHtrans_worklist in H2; eauto.
     constructor; auto.
     eapply trans_typ_strengthen_etvar; eauto.
   - simpl in H. 
-    assert (X ∉ (favar_in_aworklist Γ)) by auto.
+    assert (X ∉ (ftvar_in_aworklist' Γ)) by auto.
     destruct θ'2.
     + simpl in x. inversion x. subst. solve_notin_eq X. 
     + simpl in x. inversion x. subst.
@@ -2539,7 +2539,7 @@ Qed.
 
 
 Lemma trans_wl_weaken_etvar : forall Γ Ω X T θ1 θ2 θ',
-  X `notin` favar_in_aworklist Γ `union` dom θ' `union` dom θ1 `union` dom θ2 ->
+  X `notin` ftvar_in_aworklist' Γ `union` dom θ' `union` dom θ1 `union` dom θ2 ->
   (θ2 ++ θ1) ⊩ Γ ⇝ Ω ⫣ (θ' ++ θ2 ++ θ1) ->
   d_mono_typ (ss_to_denv θ1) T ->
   θ2 ++ (X, dbind_typ T) :: θ1 ⊩ Γ ⇝ Ω ⫣ (θ' ++ θ2 ++ (X, dbind_typ T) :: θ1).

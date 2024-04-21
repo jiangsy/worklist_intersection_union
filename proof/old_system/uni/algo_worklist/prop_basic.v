@@ -64,6 +64,12 @@ Qed.
 
 #[export] Hint Resolve a_wf_twl_a_wf_wl a_wf_wwl_uniq : core.
 
+Lemma a_wf_wwl_a_wf_env : forall Γ,
+  ⊢ᵃʷ Γ ->
+  ⊢ᵃ ⌊ Γ ⌋ᵃ.
+Proof.
+  introv HW. induction* HW; simpl; constructor; auto.
+Qed.
 
 Lemma a_wf_wl_a_wf_env : forall Γ,
   ⊢ᵃʷₛ Γ ->
@@ -1326,6 +1332,62 @@ Proof.
   - dependent destruction Hwfa; eauto.
     constructor; eauto 6.
 Qed.
+
+
+Lemma aworklist_subst_wf_wwl : forall Γ X A Γ1 Γ2,
+  ⊢ᵃʷ Γ ->
+  binds X abind_etvar_empty (awl_to_aenv Γ) ->
+  ⌊ Γ ⌋ᵃ ᵗ⊢ᵃ A ->
+  X ∉ ftvar_in_typ A ->
+  aworklist_subst Γ X A Γ1 Γ2 ->
+  ⊢ᵃʷ ({A ᵃʷ/ₜ X} Γ2 ⧺ Γ1).
+Proof with eauto using a_wf_typ_strengthen_cons, a_wf_typ_strengthen_var_cons.
+  intros. induction H3...
+  - dependent destruction H...
+  - simpl. destruct_binds.
+    + constructor; auto.
+      * destruct_a_wf_wl.
+        erewrite dom_aworklist_subst with (X:=X) (A:=A) (Γ1:=Γ1) (Γ2:=Γ2) in H;
+        autorewrite with core in *...
+      * destruct_a_wf_wl. eapply aworklist_subst_wf_typ_subst...
+        apply a_wf_wwl_a_wf_env...
+      * apply IHaworklist_subst; auto.
+        dependent destruction H...
+        eapply a_wf_typ_strengthen_var_cons...
+  - simpl. destruct_binds.
+    + constructor; auto.
+      * destruct_a_wf_wl.
+        erewrite dom_aworklist_subst with (X:=X) (A:=A) (Γ1:=Γ1) (Γ2:=Γ2) in H...
+        autorewrite with core in *...
+      * dependent destruction H...
+  - simpl. destruct_binds.
+    + constructor; auto.
+      * destruct_a_wf_wl.
+        erewrite dom_aworklist_subst with (X:=X) (A:=A) (Γ1:=Γ1) (Γ2:=Γ2) in H...
+        autorewrite with core in *...
+      * dependent destruction H...
+  - simpl in *. dependent destruction H. constructor.
+    + eapply aworklist_subst_wf_work_subst...
+      apply a_wf_wwl_a_wf_env...
+    + apply IHaworklist_subst; auto.
+  - simpl in *. destruct_binds.
+    + constructor.
+      * destruct_a_wf_wl.
+        erewrite dom_aworklist_subst with (X:=X) (A:=A) (Γ1:=Γ1) (Γ2:=Γ2) in H...
+        autorewrite with core in *...
+      * apply IHaworklist_subst; auto.
+        dependent destruction H; auto. eapply a_wf_typ_strengthen_cons; eauto.
+  - simpl in *. destruct_binds.
+    + apply IHaworklist_subst...
+      apply a_wf_wwl_move_etvar_back...
+      * autorewrite with core in *...
+      * eapply a_wf_typ_reorder_aenv with (Σ:=⌊ Y ~ᵃ ⬒ ;ᵃ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1 ⌋ᵃ); eauto.
+        apply a_wf_wwl_a_wf_env... apply a_wf_wwl_a_wf_env... apply a_wf_wwl_move_etvar_back...
+        autorewrite with core in *. simpl in *. intros.
+        rewrite_env (((Y, ⬒) :: ⌊ Γ2 ⌋ᵃ) ++ (X, ⬒) :: ⌊ Γ1 ⌋ᵃ) in H6.
+        apply binds_app_iff in H6; destruct H6; destruct_binds; eauto.
+Qed.
+
 
 
 Lemma aworklist_subst_wf_twl : forall Γ X A Γ1 Γ2,
