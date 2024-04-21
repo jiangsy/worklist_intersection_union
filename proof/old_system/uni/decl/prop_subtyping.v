@@ -277,8 +277,8 @@ Lemma dneq_all_intersection_union_subst_stv : forall T1 T2 X,
   lc_typ T1 -> lc_typ T2 ->
   neq_all T1 -> neq_intersection T1 -> neq_union T1 ->
   (neq_all ({T2 ᵗ/ₜ X} T1) /\
-   neq_intersection ({T2 ᵗ/ₜ X} T1) /\
-   neq_union ({T2 ᵗ/ₜ X} T1)) \/ T1 = ` X.
+    neq_intersection ({T2 ᵗ/ₜ X} T1) /\
+    neq_union ({T2 ᵗ/ₜ X} T1)) \/ T1 = ` X.
 Proof with eauto with lngen.
   intros. destruct T1; simpl in *; auto...
   - destruct (X0 == X); subst; auto.
@@ -302,13 +302,13 @@ Proof.
 Qed.
 
 Theorem d_sub_open_mono_stvar_false: forall n1 n2 Ψ A T X L,
-    d_typ_order (A ᵗ^^ₜ T) < n1 ->
-    d_typ_size (A ᵗ^^ₜ T) < n2 ->
-    X ~ ■ ∈ᵈ Ψ ->
-    Ψ ⊢ A ᵗ^^ₜ T <: typ_var_f X ->
-    (forall X, X ∉ L -> s_in X (A ᵗ^ₜ X)) ->
-    d_mono_typ Ψ T ->
-    False.
+  d_typ_order (A ᵗ^^ₜ T) < n1 ->
+  d_typ_size (A ᵗ^^ₜ T) < n2 ->
+  X ~ ■ ∈ᵈ Ψ ->
+  Ψ ⊢ A ᵗ^^ₜ T <: typ_var_f X ->
+  (forall X, X ∉ L -> s_in X (A ᵗ^ₜ X)) ->
+  d_mono_typ Ψ T ->
+  False.
 Proof.
   intro n1. induction n1.
   - intros. inversion H.
@@ -369,7 +369,7 @@ Qed.
 
 Theorem d_mono_notin_stvar : forall Ψ2 Ψ1 T X,
   Ψ2 ++ X ~ ■ ++ Ψ1 ᵗ⊢ᵈₘ T ->
-  uniq (Ψ2 ++ (X ~ dbind_stvar_empty) ++ Ψ1) ->
+  uniq (Ψ2 ++ (X ~ ■) ++ Ψ1) ->
   X ∉ ftvar_in_typ T.
 Proof.
   intros. dependent induction H; simpl in *; auto.
@@ -382,7 +382,7 @@ Qed.
 (* bookmark *)
 
 Theorem d_sub_subst_stvar : forall Ψ1 X Ψ2 A B C,
-  Ψ2 ++ (X ~ dbind_stvar_empty) ++ Ψ1 ⊢ A <: B ->
+  Ψ2 ++ (X ~ ■) ++ Ψ1 ⊢ A <: B ->
   Ψ1 ᵗ⊢ᵈ C ->
   map (subst_tvar_in_dbind C X) Ψ2 ++ Ψ1 ⊢ {C ᵗ/ₜ X} A <: {C ᵗ/ₜ X} B.
 Proof with subst; eauto using d_wf_typ_weaken_app.
@@ -476,12 +476,12 @@ Inductive d_sub_size : denv -> typ -> typ -> nat -> Prop :=    (* defn d_sub *)
      d_sub_size Ψ A2 B1 n2 ->
      d_sub_size Ψ (typ_union A1 A2) B1 (S (n1 + n2)).
      
-Notation "Ψ ⊢ S1 <: T1 | n" :=
-  (d_sub_size Ψ S1 T1 n)
-    (at level 65, S1 at next level, T1 at next level, no associativity) : type_scope.
+Notation "Ψ ⊢ A <: B | n" :=
+  (d_sub_size Ψ A B n)
+    (at level 65, A at next level, B at next level, no associativity) : type_scope.
 
-Theorem d_sub_size_sound : forall Ψ A1 B1 n,
-    Ψ ⊢ A1 <: B1 | n -> Ψ ⊢ A1 <: B1.
+Theorem d_sub_size_sound : forall Ψ A B n,
+    Ψ ⊢ A <: B | n -> Ψ ⊢ A <: B.
 Proof.
   intros. induction H; eauto.
 Qed.
@@ -516,8 +516,8 @@ Qed.
 
 
 Lemma d_wf_env_all_stvar_after : forall Ψ1 Ψ2 X,
-  d_wf_env (Ψ2 ++ X ~ dbind_stvar_empty ++ Ψ1) ->
-  all_stvar (Ψ2 ++ X ~ dbind_stvar_empty).
+  d_wf_env (Ψ2 ++ X ~ ■ ++ Ψ1) ->
+  all_stvar (Ψ2 ++ X ~ ■).
 Proof.
   intros. dependent induction H; auto.
   - apply d_wf_tenv_stvar_false in H; contradiction.
@@ -613,10 +613,10 @@ Proof with (simpl in *; eauto using d_wf_env_subst_tvar_typ).
 Qed.
 
 Corollary d_sub_size_rename : forall n X Y Ψ1 Ψ2 A B,
-    X ∉  (ftvar_in_typ A `union` ftvar_in_typ B) ->
-    Y ∉ ((dom Ψ1) `union` (dom Ψ2)) ->
-    Ψ2 ++ X ~ ■ ++ Ψ1 ⊢ A ᵗ^^ₜ typ_var_f X <: B ᵗ^^ₜ typ_var_f X | n ->
-    map (subst_tvar_in_dbind (typ_var_f Y) X) Ψ2 ++ Y ~ ■ ++ Ψ1 ⊢ A ᵗ^^ₜ typ_var_f Y <: B ᵗ^^ₜ typ_var_f Y | n.
+    X ∉ ftvar_in_typ A `union` ftvar_in_typ B ->
+    Y ∉ (dom Ψ1) `union` (dom Ψ2) ->
+    Ψ2 ++ X ~ ■ ++ Ψ1 ⊢ A ᵗ^^ₜ ` X <: B ᵗ^^ₜ ` X | n ->
+    map (subst_tvar_in_dbind (` Y) X) Ψ2 ++ Y ~ ■ ++ Ψ1 ⊢ A ᵗ^^ₜ ` Y <: B ᵗ^^ₜ ` Y | n.
 Proof with eauto.
   intros.
   forwards: d_sub_size_rename_stvar Y H1. solve_notin.
@@ -650,7 +650,8 @@ Proof with eauto.
 Qed.
 
 
-Lemma nat_suc: forall n n1, n >= S n1 ->
+Lemma nat_suc: forall n n1, 
+  n >= S n1 ->
   exists n1', n = S n1' /\ n1' >= n1.
 Proof.
   intros. induction H.
@@ -659,7 +660,8 @@ Proof.
     exists (S n1'). split; lia.
 Qed.
 
-Lemma nat_split: forall n n1 n2, n >= S (n1 + n2) ->
+Lemma nat_split: forall n n1 n2, 
+  n >= S (n1 + n2) ->
   exists n1' n2', n = S (n1' + n2') /\ n1' >= n1 /\ n2' >= n2.
 Proof.
   intros. induction H.
@@ -670,7 +672,8 @@ Qed.
 
 
 Lemma d_sub_size_more: forall Ψ A B n,
-  Ψ ⊢ A <: B | n -> forall n', n' >= n -> Ψ ⊢ A <: B | n'.
+  Ψ ⊢ A <: B | n -> 
+  forall n', n' >= n -> Ψ ⊢ A <: B | n'.
 Proof with auto.
   intros Ψ S1 T1 n H.
   dependent induction H; intros; auto...
@@ -711,7 +714,8 @@ Qed.
 
 
 Lemma d_sub_size_union_inv: forall Ψ A1 A2 B n,
-  Ψ ⊢ (typ_union A1 A2) <: B | n -> Ψ ⊢ A1 <: B | n /\ Ψ ⊢ A2 <: B | n.
+  Ψ ⊢ (typ_union A1 A2) <: B | n -> 
+  Ψ ⊢ A1 <: B | n /\ Ψ ⊢ A2 <: B | n.
 Proof with auto with trans.
   intros.
   dependent induction H.
@@ -731,7 +735,7 @@ Qed.
 
 
 Theorem d_sub_size_subst_stvar : forall Ψ1 Ψ2 X A B C n,
-  Ψ2 ++ (X ~ dbind_stvar_empty) ++ Ψ1 ⊢ A <: B | n ->
+  Ψ2 ++ (X ~ ■) ++ Ψ1 ⊢ A <: B | n ->
   Ψ1 ᵗ⊢ᵈ C ->
   exists n', map (subst_tvar_in_dbind C X) Ψ2 ++ Ψ1 ⊢ {C ᵗ/ₜ X} A <: {C ᵗ/ₜ X} B | n'.
 Proof.
@@ -742,15 +746,15 @@ Proof.
 Qed.
 
 Inductive d_ord : typ -> Prop :=
-| d_ord__tvar : forall X, d_ord (typ_var_f X)
-| d_ord__bot : d_ord typ_bot
-| d_ord__top : d_ord typ_top
-| d_ord__unit : d_ord typ_unit
-| d_ord__arr : forall A1 A2,
-    d_ord (typ_arrow A1 A2)
-| d_ord__all : forall A,
-    d_ord (typ_all A)
-.
+  | d_ord__tvar : forall X, d_ord (typ_var_f X)
+  | d_ord__bot : d_ord typ_bot
+  | d_ord__top : d_ord typ_top
+  | d_ord__unit : d_ord typ_unit
+  | d_ord__arr : forall A1 A2,
+      d_ord (typ_arrow A1 A2)
+  | d_ord__all : forall A,
+      d_ord (typ_all A)
+  .
 
 Inductive d_wft_ord : typ -> Prop :=
 | d_wftord__base : forall A, d_ord A -> d_wft_ord A
@@ -781,12 +785,12 @@ Proof.
 Qed.
 
 Theorem d_sub_open_mono_bot_false: forall n1 n2 Ψ A T L,
-    d_typ_order (A ᵗ^^ₜ T) < n1 ->
-    d_typ_size (A ᵗ^^ₜ T) < n2 ->
-    Ψ ⊢ A ᵗ^^ₜ T <: typ_bot ->
-    (forall X, X ∉ L -> s_in X (A ᵗ^ₜ X)) ->
-    Ψ ᵗ⊢ᵈₘ T ->
-    False.
+  d_typ_order (A ᵗ^^ₜ T) < n1 ->
+  d_typ_size (A ᵗ^^ₜ T) < n2 ->
+  Ψ ⊢ A ᵗ^^ₜ T <: typ_bot ->
+  (forall X, X ∉ L -> s_in X (A ᵗ^ₜ X)) ->
+  Ψ ᵗ⊢ᵈₘ T ->
+  False.
 Proof.
   intro n1. induction n1.
   - intros. inversion H.

@@ -17,8 +17,8 @@ Proof.
   intros; induction H; auto.
 Qed.
 
-Lemma d_mono_typ_d_wf_typ : forall Ψ A,
-  d_mono_typ Ψ A -> Ψ ᵗ⊢ᵈ A.
+Lemma d_mono_typ_d_wf_typ : forall Ψ T,
+  Ψ ᵗ⊢ᵈₘ T -> Ψ ᵗ⊢ᵈ T.
 Proof.
   intros. induction H; auto.
 Qed.

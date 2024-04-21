@@ -1205,6 +1205,29 @@ Proof with eauto; solve_false.
 Qed.
 
 
+Theorem a_wf_twl_red_rename_tvar : forall Γ X Y,
+  X <> Y ->
+  ⊢ᵃʷₜ Γ ->
+  Y `notin` dom (awl_to_aenv Γ) ->
+  Γ ⟶ᵃʷ⁎⋅ ->
+  {Y ᵃʷ/ₜᵥ X} Γ ⟶ᵃʷ⁎⋅.
+Proof.
+  intros. eapply a_wl_red_rename_tvar; eauto.
+  apply a_wf_twl_a_wf_wwl; auto.
+Qed.
+
+
+Theorem a_wf_wl_red_rename_tvar : forall Γ X Y,
+  X <> Y ->
+  ⊢ᵃʷₛ Γ ->
+  Y `notin` dom (awl_to_aenv Γ) ->
+  Γ ⟶ᵃʷ⁎⋅ ->
+  {Y ᵃʷ/ₜᵥ X} Γ ⟶ᵃʷ⁎⋅.
+Proof.
+  intros. eapply a_wl_red_rename_tvar; eauto.
+  apply a_wf_wl_a_wf_wwl; auto.
+Qed.
+
 
 Lemma rename_var_dom_upper : forall Γ x y,
   dom (⌊ {y ᵃʷ/ₑᵥ x} Γ ⌋ᵃ) [<=] dom (awl_to_aenv Γ) `union` singleton y.
@@ -1920,3 +1943,27 @@ Proof with eauto.
     auto_apply...
     eapply a_wf_wwl_apply_contd; eauto.
 Qed.
+
+
+Theorem a_wf_twl_red_rename_var : forall Γ x y,
+  ⊢ᵃʷₜ Γ ->
+  y <> x ->
+  y `notin` (dom (awl_to_aenv Γ)) ->
+  Γ ⟶ᵃʷ⁎⋅ ->
+  {y ᵃʷ/ₑᵥ x} Γ ⟶ᵃʷ⁎⋅.
+Proof.
+  intros. eapply a_wl_red_rename_var; eauto.
+  apply a_wf_twl_a_wf_wwl; auto.
+Qed.
+
+Theorem a_wf_wl_red_rename_var : forall Γ x y,
+  ⊢ᵃʷₛ Γ ->
+  y <> x ->
+  y `notin` (dom (awl_to_aenv Γ)) ->
+  Γ ⟶ᵃʷ⁎⋅ ->
+  {y ᵃʷ/ₑᵥ x} Γ ⟶ᵃʷ⁎⋅.
+Proof.
+  intros. eapply a_wl_red_rename_var; eauto.
+  apply a_wf_wl_a_wf_wwl; auto.
+Qed.
+
