@@ -37,15 +37,15 @@ Inductive wf_ss : subst_set -> Prop :=
   | wfss__nil : wf_ss nil
   | wfss__tvar : forall θ X,
       wf_ss θ -> 
-      X `notin` dom θ ->
+      X ∉ dom θ ->
       wf_ss ((X , dbind_tvar_empty) :: θ)
   | wf_ss__stvar : forall θ X,
     wf_ss θ ->
-    X `notin` dom θ ->
+    X ∉ dom θ ->
     wf_ss ((X, dbind_stvar_empty) :: θ)
   | wf_ss__etvar : forall θ X T, 
     wf_ss θ  -> 
-    X `notin` dom θ  ->
+    X ∉ dom θ  ->
     d_mono_typ (ss_to_denv θ) T -> 
     wf_ss ((X , dbind_typ T) :: θ)
 .
@@ -78,8 +78,8 @@ Inductive trans_typ : subst_set -> typ -> typ -> Prop :=
       trans_typ θ A2ᵃ A2ᵈ ->
       trans_typ θ (typ_arrow A1ᵃ A2ᵃ) (typ_arrow A1ᵈ A2ᵈ)
   | trans_typ__all : forall θ L A1ᵃ A1ᵈ,
-      (forall X, X `notin` L -> s_in X (open_typ_wrt_typ A1ᵃ (typ_var_f X))) ->
-      (forall X, X `notin` L -> 
+      (forall X, X ∉ L -> s_in X (open_typ_wrt_typ A1ᵃ (typ_var_f X))) ->
+      (forall X, X ∉ L -> 
         trans_typ ((X, dbind_tvar_empty) :: θ) (open_typ_wrt_typ A1ᵃ (typ_var_f X)) (open_typ_wrt_typ A1ᵈ (typ_var_f X))
       ) ->
       trans_typ θ (typ_all A1ᵃ) (typ_all A1ᵈ)
@@ -101,7 +101,7 @@ Inductive trans_exp : subst_set -> exp -> exp -> Prop :=
       wf_ss θ ->
       trans_exp θ (exp_var_f x) (exp_var_f x)
   | trans_exp__abs : forall L θ eᵃ eᵈ,
-      (forall x, x `notin` L -> 
+      (forall x, x ∉ L -> 
         trans_exp θ (open_exp_wrt_exp eᵃ (exp_var_f x))
                    (open_exp_wrt_exp eᵈ (exp_var_f x))
         ) ->
@@ -111,7 +111,7 @@ Inductive trans_exp : subst_set -> exp -> exp -> Prop :=
       trans_exp θ e2ᵃ e2ᵈ ->
       trans_exp θ (exp_app e1ᵃ e2ᵃ) (exp_app e1ᵈ e2ᵈ)
   | trans_exp__tabs : forall L θ bᵃ bᵈ,
-      (forall X, X `notin` L -> 
+      (forall X, X ∉ L -> 
         trans_body ((X, dbind_tvar_empty) :: θ) 
                   (open_body_wrt_typ bᵃ (typ_var_f X))
                   (open_body_wrt_typ bᵈ (typ_var_f X))
@@ -263,11 +263,11 @@ Inductive trans_worklist : subst_set -> aworklist -> dworklist -> subst_set -> P
       θ ⊩ aworklist_cons_work Γ wᵃ ⇝ dworklist_cons_work Ω wᵈ ⫣ θ'
   | trans_wl__cons_tvar : forall θ θ' Γ Ω X, 
       θ ⊩ Γ ⇝ Ω ⫣ θ' ->
-      X `notin` dom θ' -> 
+      X ∉ dom θ' -> 
       θ ⊩ aworklist_cons_var Γ X abind_tvar_empty ⇝ dworklist_cons_var Ω X dbind_tvar_empty ⫣ (X, dbind_tvar_empty) :: θ'
   | trans_wl__cons_stvar : forall θ θ' Γ Ω X, 
       θ ⊩ Γ ⇝ Ω ⫣ θ' ->
-      X `notin` dom θ' -> 
+      X ∉ dom θ' -> 
       θ ⊩ aworklist_cons_var Γ X abind_stvar_empty ⇝ dworklist_cons_var Ω X dbind_stvar_empty ⫣ (X, dbind_stvar_empty) :: θ'
   | trans_wl__cons_var : forall θ θ' Γ Ω A1ᵃ A1ᵈ x, 
       θ ⊩ Γ ⇝ Ω ⫣ θ' ->
@@ -275,7 +275,7 @@ Inductive trans_worklist : subst_set -> aworklist -> dworklist -> subst_set -> P
       θ ⊩ aworklist_cons_var Γ x (abind_var_typ A1ᵃ) ⇝ dworklist_cons_var Ω x (dbind_typ A1ᵈ) ⫣ θ'
   | trans_wl__cons_etvar : forall θ θ' Γ Ω T X, 
       θ ⊩ Γ ⇝ Ω ⫣ θ' -> 
-      X `notin` dom θ' -> 
+      X ∉ dom θ' -> 
       d_mono_typ (ss_to_denv θ' ) T ->
       θ ⊩ aworklist_cons_var Γ X abind_etvar_empty ⇝ Ω ⫣  (X, dbind_typ T) :: θ'
 where "θ ⊩ Γᵃ ⇝ Γᵈ ⫣ θ'" := (trans_worklist θ Γᵃ Γᵈ θ').
@@ -300,10 +300,10 @@ Proof.
 Qed.
 
 Lemma notin_dom_reorder : forall X X0 θ θ',
-  X `notin` dom θ ->
+  X ∉ dom θ ->
   X <> X0 ->
   (forall Y (b: dbind), X0 ≠ Y → binds Y b θ ↔ binds Y b θ') ->
-  X `notin` dom θ'.
+  X ∉ dom θ'.
 Proof.
   intros. unfold not. intros.
   apply binds_In_inv in H2. destruct H2 as [b Hbinds].
@@ -460,7 +460,7 @@ Qed.
 
 Lemma wf_ss_notin_remaining : forall θ1 θ2 X b,
   wf_ss (θ2 ++ (X , b) :: θ1) ->
-  X `notin` dom (θ2 ++ θ1).
+  X ∉ dom (θ2 ++ θ1).
 Proof.
   intros. induction θ2; simpl in *; auto.
   - dependent destruction H; auto.
@@ -513,7 +513,7 @@ Qed.
 
 Lemma wf_ss_weaken_tvar: forall θ1 θ2 X,
   wf_ss (θ2 ++ θ1) ->
-  X `notin` dom (θ2 ++ θ1) ->
+  X ∉ dom (θ2 ++ θ1) ->
   wf_ss (θ2 ++ (X, dbind_tvar_empty) :: θ1).
 Proof with auto.
   intros. induction θ2; simpl in *...
@@ -528,7 +528,7 @@ Qed.
 
 Lemma wf_ss_weaken_stvar: forall θ1 θ2 X,
   wf_ss (θ2 ++ θ1) ->
-  X `notin` dom (θ2 ++ θ1) ->
+  X ∉ dom (θ2 ++ θ1) ->
   wf_ss (θ2 ++ (X, ■) :: θ1).
 Proof with auto.
   intros. induction θ2; simpl in *...
@@ -544,7 +544,7 @@ Qed.
 Lemma wf_ss_weaken_etvar: forall θ θ' T X,
   wf_ss (θ' ++ θ) ->
   d_mono_typ (ss_to_denv θ) T ->
-  X `notin` dom (θ' ++ θ) ->
+  X ∉ dom (θ' ++ θ) ->
   wf_ss (θ' ++ (X, dbind_typ T) :: θ).
 Proof with auto.
   intros. induction θ'.
@@ -604,7 +604,7 @@ Lemma wf_ss_typ_no_etvar: forall θ X A T,
   wf_ss θ ->
   ss_to_denv θ ᵗ⊢ᵈ A ->
   X ~ T ∈ᵈ θ ->
-  X `notin` ftvar_in_typ A.
+  X ∉ ftvar_in_typ A.
 Proof with eauto.
   intros. dependent induction H0...
   + destruct (X == X0)...
@@ -624,7 +624,7 @@ Corollary etvar_bind_no_etvar: forall θ X1 X2 A1 A2,
   wf_ss θ ->
   X1 ~ A1 ∈ᵈ θ ->
   X2 ~ A2 ∈ᵈ θ ->
-  X1 `notin` ftvar_in_typ A2.
+  X1 ∉ ftvar_in_typ A2.
 Proof with eauto.
   intros; eapply wf_ss_typ_no_etvar...
   eapply wf_ss_binds_wf_typ...
@@ -1279,7 +1279,7 @@ Qed.
 
 Lemma trans_typ_rename_tvar : forall θ1 θ2 Aᵃ Aᵈ X X', 
   θ2 ++ (X, dbind_tvar_empty) :: θ1 ᵗ⊩ Aᵃ ⇝ Aᵈ ->
-  X' `notin` dom (θ2 ++ θ1) ->
+  X' ∉ dom (θ2 ++ θ1) ->
   map (subst_tvar_in_dbind (` X') X) θ2  ++ (X', dbind_tvar_empty) :: θ1 ᵗ⊩ {` X' ᵗ/ₜ X} Aᵃ ⇝ {` X' ᵗ/ₜ X} Aᵈ.
 Proof with eauto using wf_ss_rename_tvar.
   intros. dependent induction H; simpl; auto...
@@ -1306,7 +1306,7 @@ Qed.
 
 Corollary trans_typ_rename_tvar_cons : forall θ Aᵃ Aᵈ X X', 
   (X, dbind_tvar_empty) :: θ ᵗ⊩ Aᵃ ⇝ Aᵈ ->
-  X' `notin` dom θ ->
+  X' ∉ dom θ ->
   (X', dbind_tvar_empty) :: θ ᵗ⊩ {` X' ᵗ/ₜ X} Aᵃ ⇝ {` X' ᵗ/ₜ X} Aᵈ.
 Proof.
   intros. 
@@ -1334,7 +1334,7 @@ Qed.
 
 Lemma wf_ss_tvar_stvar : forall θ1 θ2 X,
   wf_ss (θ2 ++ (X, □) :: θ1) ->
-  (forall Y T, binds Y (dbind_typ T) (θ2 ++ θ1) -> X `notin` ftvar_in_typ T) ->
+  (forall Y T, binds Y (dbind_typ T) (θ2 ++ θ1) -> X ∉ ftvar_in_typ T) ->
   wf_ss (θ2 ++ (X, ■) :: θ1).
 Proof with eauto; autorewrite with core in *; simpl.
   intros. dependent induction θ2; eauto; simpl in *...
@@ -1374,7 +1374,7 @@ Qed.
 
 Lemma trans_typ_tvar_to_stvar_same : forall θ1 θ2 X Aᵃ Aᵈ,
   θ2 ++ (X, □) :: θ1 ᵗ⊩ Aᵃ ⇝ Aᵈ ->
-  (forall Y T, binds Y (dbind_typ T) (θ2 ++ θ1) -> X `notin` ftvar_in_typ T) ->
+  (forall Y T, binds Y (dbind_typ T) (θ2 ++ θ1) -> X ∉ ftvar_in_typ T) ->
   θ2 ++ (X, ■) :: θ1 ᵗ⊩ Aᵃ ⇝ Aᵈ.
 Proof with auto using wf_ss_tvar_stvar.
   intros. dependent induction H; auto...
@@ -1453,12 +1453,12 @@ Qed.
 
 Lemma trans_exp_rename_tvar : forall θ1 θ2 eᵃ eᵈ X X', 
   θ2 ++ (X, dbind_tvar_empty) :: θ1 ᵉ⊩ eᵃ ⇝ eᵈ ->
-  X' `notin` dom (θ2 ++ θ1) ->
+  X' ∉ dom (θ2 ++ θ1) ->
   map (subst_tvar_in_dbind (` X') X) θ2  ++ (X', dbind_tvar_empty) :: θ1 ᵉ⊩ 
       subst_tvar_in_exp `X' X eᵃ ⇝ subst_tvar_in_exp `X' X eᵈ
 with trans_body_rename_tvar :  forall θ1 θ2 bᵃ bᵈ X X', 
   θ2 ++ (X, dbind_tvar_empty) :: θ1 ᵇ⊩ bᵃ ⇝ bᵈ ->
-  X' `notin` dom (θ2 ++ θ1) ->
+  X' ∉ dom (θ2 ++ θ1) ->
   map (subst_tvar_in_dbind (` X') X) θ2  ++ (X', dbind_tvar_empty) :: θ1 ᵇ⊩ 
       subst_tvar_in_body `X' X bᵃ ⇝ subst_tvar_in_body `X' X bᵈ.
 Proof with auto.
@@ -1493,11 +1493,11 @@ Qed.
 
 Lemma trans_exp_rename_tvar_cons : forall θ eᵃ eᵈ X X', 
   (X, dbind_tvar_empty) :: θ ᵉ⊩ eᵃ ⇝ eᵈ ->
-  X' `notin` dom θ ->
+  X' ∉ dom θ ->
   (X', dbind_tvar_empty) :: θ ᵉ⊩ subst_tvar_in_exp `X' X eᵃ ⇝ subst_tvar_in_exp `X' X eᵈ
 with trans_body_rename_tvar_cons :  forall θ bᵃ bᵈ X X', 
   (X, dbind_tvar_empty) :: θ ᵇ⊩ bᵃ ⇝ bᵈ ->
-  X' `notin` dom θ ->
+  X' ∉ dom θ ->
   (X', dbind_tvar_empty) :: θ ᵇ⊩ subst_tvar_in_body `X' X bᵃ ⇝ subst_tvar_in_body `X' X bᵈ.
 Proof.
   intros. rewrite_env (map (subst_tvar_in_dbind (` X') X) nil ++ (X', □) :: θ). 
@@ -1530,7 +1530,7 @@ Ltac simpl_open_subst_typ' :=
   | H1 : context [ {?B ᵗ/ₜ ?X} ?A ], H2 : context [ftvar_in_typ ?A] |- _ =>
       let H := fresh "H" in
       try (
-        assert (H : X `notin` ftvar_in_typ A) by auto;
+        assert (H : X ∉ ftvar_in_typ A) by auto;
         rewrite subst_tvar_in_typ_fresh_eq in H1; auto; clear H)
 end.
 
@@ -1548,7 +1548,7 @@ Ltac simpl_open_subst_exp' :=
   | H1 : context [ {?f ᵉ/ₑ ?x} ?e ], H2 : context [fvar_in_exp ?e] |- _ =>
       let H := fresh "H" in
       try (
-        assert (H : x `notin` fvar_in_exp e) by auto;
+        assert (H : x ∉ fvar_in_exp e) by auto;
         rewrite subst_var_in_exp_fresh_eq in H1; auto; clear H)
 end.
 
@@ -2067,7 +2067,7 @@ Qed.
 
 Lemma trans_typ_strengthen_etvar : forall θ1 θ2 X T Aᵃ Aᵈ,
   (θ2 ++ (X, dbind_typ T) :: θ1) ᵗ⊩ Aᵃ ⇝ Aᵈ ->
-  X `notin` ftvar_in_typ Aᵃ ->
+  X ∉ ftvar_in_typ Aᵃ ->
   θ2 ++ θ1 ᵗ⊩ Aᵃ ⇝ Aᵈ.
 Proof with eauto using wf_ss_strengthen_etvar.
   intros.
@@ -2319,7 +2319,7 @@ Qed.
 
 Lemma trans_typ_strengthen_dtvar : forall θ1 θ2 X b Aᵃ Aᵈ,
   (θ2 ++ (X, b) :: θ1) ᵗ⊩ Aᵃ ⇝ Aᵈ ->
-  X `notin` ftvar_in_typ Aᵃ ->
+  X ∉ ftvar_in_typ Aᵃ ->
   wf_ss (θ2 ++ θ1) ->
   θ2 ++ θ1 ᵗ⊩ Aᵃ ⇝ Aᵈ.
 Proof with eauto.
@@ -2344,7 +2344,7 @@ Qed.
 
 Lemma trans_typ_strengthen_cons : forall θ X b Aᵃ Aᵈ,
   (X, b) :: θ ᵗ⊩ Aᵃ ⇝ Aᵈ ->
-  X `notin` ftvar_in_typ Aᵃ ->
+  X ∉ ftvar_in_typ Aᵃ ->
   θ ᵗ⊩ Aᵃ ⇝ Aᵈ.
 Proof.
   intros.
@@ -2356,11 +2356,11 @@ Qed.
 
 Lemma trans_exp_strengthen_etvar : forall θ1 θ2 X T eᵃ eᵈ,
   (θ2 ++ (X, dbind_typ T) :: θ1) ᵉ⊩ eᵃ ⇝ eᵈ ->
-  X `notin` ftvar_in_exp eᵃ ->
+  X ∉ ftvar_in_exp eᵃ ->
   θ2 ++ θ1 ᵉ⊩ eᵃ ⇝ eᵈ
 with trans_body_strengthen_etvar : forall θ1 θ2 X T bᵃ bᵈ,
   (θ2 ++ (X, dbind_typ T) :: θ1) ᵇ⊩ bᵃ ⇝ bᵈ ->
-  X `notin` ftvar_in_body bᵃ ->
+  X ∉ ftvar_in_body bᵃ ->
   θ2 ++ θ1 ᵇ⊩ bᵃ ⇝ bᵈ.
 Proof with eauto using wf_ss_strengthen_etvar, trans_typ_strengthen_etvar.
   - intros. clear trans_exp_strengthen_etvar. dependent induction H; simpl in *...
@@ -2378,11 +2378,11 @@ Qed.
 
 Lemma trans_conts_strengthen_etvar : forall θ1 θ2 X T csᵃ csᵈ,
   (θ2 ++ (X, dbind_typ T) :: θ1) ᶜˢ⊩ csᵃ ⇝ csᵈ ->
-  X `notin` ftvar_in_conts csᵃ ->
+  X ∉ ftvar_in_conts csᵃ ->
   θ2 ++ θ1 ᶜˢ⊩ csᵃ ⇝ csᵈ
 with trans_contd_strengthen_etvar : forall θ1 θ2 X T cdᵃ cdᵈ,
   (θ2 ++ (X, dbind_typ T) :: θ1) ᶜᵈ⊩ cdᵃ ⇝ cdᵈ ->
-  X `notin` ftvar_in_contd cdᵃ ->
+  X ∉ ftvar_in_contd cdᵃ ->
   θ2 ++ θ1 ᶜᵈ⊩ cdᵃ ⇝ cdᵈ.
 Proof with eauto using wf_ss_strengthen_etvar, trans_typ_strengthen_etvar, trans_exp_strengthen_etvar. 
   - intros. clear trans_conts_strengthen_etvar. 
@@ -2394,7 +2394,7 @@ Qed.
 
 Lemma trans_work_strengthen_etvar : forall θ1 θ2 X T wᵃ wᵈ,
   (θ2 ++ (X, dbind_typ T) :: θ1) ʷ⊩ wᵃ ⇝ wᵈ ->
-  X `notin` ftvar_in_work wᵃ ->
+  X ∉ ftvar_in_work wᵃ ->
   θ2 ++ θ1 ʷ⊩ wᵃ ⇝ wᵈ.
 Proof.
   intros. dependent destruction H; simpl in *; eauto 7 
@@ -2404,7 +2404,7 @@ Qed.
 
 
 Lemma trans_wl_strengthen_etvar : forall Γ Ω X T θ1 θ2 θ'1 θ'2,
-  X `notin` ftvar_in_aworklist' Γ ->
+  X ∉ ftvar_in_aworklist' Γ ->
   θ2 ++ (X, dbind_typ T) :: θ1 ⊩ Γ ⇝ Ω ⫣ (θ'2 ++ (X, dbind_typ T) :: θ'1) ->
   (θ2 ++ θ1) ⊩ Γ ⇝ Ω ⫣ (θ'2 ++ θ'1).
 Proof.
@@ -2539,7 +2539,7 @@ Qed.
 
 
 Lemma trans_wl_weaken_etvar : forall Γ Ω X T θ1 θ2 θ',
-  X `notin` ftvar_in_aworklist' Γ `union` dom θ' `union` dom θ1 `union` dom θ2 ->
+  X ∉ ftvar_in_aworklist' Γ `union` dom θ' `union` dom θ1 `union` dom θ2 ->
   (θ2 ++ θ1) ⊩ Γ ⇝ Ω ⫣ (θ' ++ θ2 ++ θ1) ->
   d_mono_typ (ss_to_denv θ1) T ->
   θ2 ++ (X, dbind_typ T) :: θ1 ⊩ Γ ⇝ Ω ⫣ (θ' ++ θ2 ++ (X, dbind_typ T) :: θ1).
@@ -2586,7 +2586,7 @@ Qed.
 
 
 (* Lemma trans_wl_weaken_etvar_cons : forall Γ Ω X T θ θ',
-  X `notin` ftvar_in_aworklist' Γ `union` dom θ->
+  X ∉ ftvar_in_aworklist' Γ `union` dom θ->
   θ ⊩ Γ ⇝ Ω ⫣ (θ' ++ θ) ->
   d_mono_typ (ss_to_denv θ) T ->
   (X, dbind_typ T) :: θ ⊩ Γ ⇝ Ω ⫣ (θ' ++ (X, dbind_typ T) :: θ).

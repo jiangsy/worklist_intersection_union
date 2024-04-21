@@ -144,7 +144,7 @@ Ltac trans_all_typ :=
 Lemma trans_typ_subst_tvar : forall θ1 θ2 Bᵃ Bᵈ X Aᵃ A'ᵈ,
   lc_typ Aᵃ -> 
   wf_ss (θ2 ++ θ1) ->
-  X `notin` dom (θ2 ++ θ1) ->
+  X ∉ dom (θ2 ++ θ1) ->
   θ1 ᵗ⊩ Bᵃ ⇝ Bᵈ ->
   θ2 ++ θ1 ᵗ⊩ {Bᵃ ᵗ/ₜ X} Aᵃ ⇝ A'ᵈ -> 
   exists Aᵈ, {Bᵈ ᵗ/ₜ X} Aᵈ = A'ᵈ /\ θ2 ++ (X, dbind_tvar_empty) :: θ1 ᵗ⊩ Aᵃ ⇝ Aᵈ.
@@ -207,7 +207,7 @@ Qed.
 
 Lemma trans_typ_subst_tvar_cons : forall θ Bᵃ Bᵈ X Aᵃ A'ᵈ,
   lc_typ Aᵃ -> 
-  X `notin` dom θ ->
+  X ∉ dom θ ->
   θ ᵗ⊩ Bᵃ ⇝ Bᵈ ->
   θ ᵗ⊩ {Bᵃ ᵗ/ₜ X} Aᵃ ⇝ A'ᵈ -> 
   exists Aᵈ, {Bᵈ ᵗ/ₜ X} Aᵈ = A'ᵈ /\ (X, dbind_tvar_empty) :: θ ᵗ⊩ Aᵃ ⇝ Aᵈ.
@@ -221,7 +221,7 @@ Qed.
 Lemma trans_typ_subst_etvar : forall θ1 θ2 Tᵃ Tᵈ X Aᵃ Aᵈ,
   lc_typ Aᵃ -> 
   wf_ss (θ2 ++ θ1) ->
-  X `notin` dom (θ2 ++ θ1) ->
+  X ∉ dom (θ2 ++ θ1) ->
   d_mono_typ (ss_to_denv θ1) Tᵈ ->
   θ2 ++ θ1 ᵗ⊩ Tᵃ ⇝ Tᵈ ->
   θ2 ++ θ1 ᵗ⊩ {Tᵃ ᵗ/ₜ X} Aᵃ ⇝ Aᵈ -> 
@@ -284,7 +284,7 @@ Qed.
 Lemma trans_typ_subst_etvar_same_ss : forall θ Tᵃ Tᵈ X Aᵃ Aᵈ,
   wf_ss θ ->
   binds X (dbind_typ Tᵈ) θ ->
-  X `notin` ftvar_in_typ Tᵃ ->
+  X ∉ ftvar_in_typ Tᵃ ->
   θ ᵗ⊩ Tᵃ ⇝ Tᵈ ->
   θ ᵗ⊩ {Tᵃ ᵗ/ₜ X} Aᵃ ⇝ Aᵈ -> 
   θ ᵗ⊩ Aᵃ ⇝ Aᵈ.
@@ -309,7 +309,7 @@ Lemma trans_exp_subst_etvar_same_ss' : forall θ Tᵃ Tᵈ X eᵃ eᵈ,
   lc_exp eᵃ ->
   wf_ss θ ->
   binds X (dbind_typ Tᵈ) θ ->
-  X `notin` ftvar_in_typ Tᵃ ->
+  X ∉ ftvar_in_typ Tᵃ ->
   θ ᵗ⊩ Tᵃ ⇝ Tᵈ ->
   θ ᵉ⊩ (subst_tvar_in_exp Tᵃ X eᵃ) ⇝ eᵈ -> 
   θ ᵉ⊩ eᵃ ⇝ eᵈ
@@ -317,7 +317,7 @@ with trans_body_subst_etvar_same_ss' : forall θ Tᵃ Tᵈ X bᵃ bᵈ,
   lc_body bᵃ ->
   wf_ss θ ->
   binds X (dbind_typ Tᵈ) θ ->
-  X `notin` ftvar_in_typ Tᵃ ->
+  X ∉ ftvar_in_typ Tᵃ ->
   θ ᵗ⊩ Tᵃ ⇝ Tᵈ ->
   θ ᵇ⊩ (subst_tvar_in_body Tᵃ X bᵃ) ⇝ bᵈ -> 
   θ ᵇ⊩ bᵃ ⇝ bᵈ.
@@ -360,14 +360,14 @@ Qed.
 Lemma trans_exp_subst_etvar_same_ss : forall θ Tᵃ Tᵈ X eᵃ eᵈ,
   wf_ss θ ->
   binds X (dbind_typ Tᵈ) θ ->
-  X `notin` ftvar_in_typ Tᵃ ->
+  X ∉ ftvar_in_typ Tᵃ ->
   θ ᵗ⊩ Tᵃ ⇝ Tᵈ ->
   θ ᵉ⊩ (subst_tvar_in_exp Tᵃ X eᵃ) ⇝ eᵈ -> 
   θ ᵉ⊩ eᵃ ⇝ eᵈ
 with trans_body_subst_etvar_same_ss : forall θ Tᵃ Tᵈ X bᵃ bᵈ,
   wf_ss θ ->
   binds X (dbind_typ Tᵈ) θ ->
-  X `notin` ftvar_in_typ Tᵃ ->
+  X ∉ ftvar_in_typ Tᵃ ->
   θ ᵗ⊩ Tᵃ ⇝ Tᵈ ->
   θ ᵇ⊩ (subst_tvar_in_body Tᵃ X bᵃ) ⇝ bᵈ -> 
   θ ᵇ⊩ bᵃ ⇝ bᵈ.
@@ -388,14 +388,14 @@ Qed.
 Lemma trans_conts_subst_etvar_same_ss : forall θ Tᵃ Tᵈ X csᵃ csᵈ,
   wf_ss θ ->
   binds X (dbind_typ Tᵈ) θ ->
-  X `notin` ftvar_in_typ Tᵃ ->
+  X ∉ ftvar_in_typ Tᵃ ->
   θ ᵗ⊩ Tᵃ ⇝ Tᵈ ->
   θ ᶜˢ⊩ (subst_tvar_in_conts Tᵃ X csᵃ) ⇝ csᵈ -> 
   θ ᶜˢ⊩ csᵃ ⇝ csᵈ
 with trans_contd_subst_etvar_same_ss : forall θ Tᵃ Tᵈ X cdᵃ cdᵈ,
   wf_ss θ ->
   binds X (dbind_typ Tᵈ) θ ->
-  X `notin` ftvar_in_typ Tᵃ ->
+  X ∉ ftvar_in_typ Tᵃ ->
   θ ᵗ⊩ Tᵃ ⇝ Tᵈ ->
   θ ᶜᵈ⊩ (subst_tvar_in_contd Tᵃ X cdᵃ) ⇝ cdᵈ -> 
   θ ᶜᵈ⊩ cdᵃ ⇝ cdᵈ.
@@ -419,7 +419,7 @@ Qed.
 Lemma trans_work_subst_etvar_same_ss : forall θ Tᵃ Tᵈ X wᵃ wᵈ,
   wf_ss θ ->
   binds X (dbind_typ Tᵈ) θ ->
-  X `notin` ftvar_in_typ Tᵃ ->
+  X ∉ ftvar_in_typ Tᵃ ->
   θ ᵗ⊩ Tᵃ ⇝ Tᵈ ->
   θ ʷ⊩ (subst_tvar_in_work Tᵃ X wᵃ) ⇝ wᵈ -> 
   θ ʷ⊩ wᵃ ⇝ wᵈ.
@@ -436,7 +436,7 @@ Qed.
 
 Lemma trans_typ_etvar_tvar_subst : forall θ1 θ2 T X Aᵃ A'ᵈ,
   lc_typ Aᵃ -> 
-  X `notin` dom (θ2 ++ θ1) ->
+  X ∉ dom (θ2 ++ θ1) ->
   d_mono_typ (ss_to_denv θ1) T ->
   θ2 ++ (X, dbind_typ T) :: θ1 ᵗ⊩ Aᵃ ⇝ A'ᵈ -> 
   exists Aᵈ, {T ᵗ/ₜ X} Aᵈ = A'ᵈ /\ θ2 ++ (X, dbind_tvar_empty) :: θ1 ᵗ⊩ Aᵃ ⇝ Aᵈ.
@@ -510,7 +510,7 @@ Qed.
 
 Lemma trans_typ_etvar_tvar_subst_cons : forall θ1 T X Aᵃ A'ᵈ,
   lc_typ Aᵃ -> 
-  X `notin` dom θ1 ->
+  X ∉ dom θ1 ->
   d_mono_typ (ss_to_denv θ1) T ->
   (X, dbind_typ T) :: θ1 ᵗ⊩ Aᵃ ⇝ A'ᵈ -> 
   exists Aᵈ, {T ᵗ/ₜ X} Aᵈ = A'ᵈ /\ (X, dbind_tvar_empty) :: θ1 ᵗ⊩ Aᵃ ⇝ Aᵈ.
@@ -532,7 +532,7 @@ Qed.
 Lemma tvar_notin_dom_neq_tvar_in_ss_wf_typ : forall θ T X Y,
   ss_to_denv θ ᵗ⊢ᵈₘ T ->
   X `in` ftvar_in_typ T ->
-  Y `notin` dom θ ->
+  Y ∉ dom θ ->
   X <> Y.
 Proof.
   intros. dependent induction H; simpl in *; try fsetdec. 
@@ -576,7 +576,7 @@ Lemma aworklist_subst_transfer_same_dworklist': forall Γ Ω θ X T Γ1 Γ2,
   ⊢ᵃʷ Γ ->
   a_mono_typ (awl_to_aenv Γ) T ->
   binds X abind_etvar_empty (awl_to_aenv Γ) ->
-  X `notin` ftvar_in_typ T ->
+  X ∉ ftvar_in_typ T ->
   aworklist_subst Γ X T Γ1 Γ2 ->
   trans_worklist nil (awl_app (subst_tvar_in_aworklist T X Γ2) Γ1)  Ω θ ->
   exists θ' Tᵈ, 
@@ -758,7 +758,7 @@ Lemma aworklist_subst_transfer_same_dworklist: forall Γ Ω θ X T Γ1 Γ2,
   ⊢ᵃʷₛ Γ ->
   a_mono_typ (awl_to_aenv Γ) T ->
   binds X abind_etvar_empty (awl_to_aenv Γ) ->
-  X `notin` ftvar_in_typ T ->
+  X ∉ ftvar_in_typ T ->
   aworklist_subst Γ X T Γ1 Γ2 ->
   trans_worklist nil (awl_app (subst_tvar_in_aworklist T X Γ2) Γ1)  Ω θ ->
   exists θ' Tᵈ, 
@@ -790,8 +790,8 @@ Ltac solve_notin_dom :=
 
 Lemma worklist_subst_fresh_etvar_total : forall Γ1 Γ2 X X1 X2,
   uniq (⌊ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1 ⌋ᵃ) ->
-  X1 `notin` dom (⌊ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1 ⌋ᵃ) ->
-  X2 `notin` add X1 (dom (⌊ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1 ⌋ᵃ)) ->
+  X1 ∉ dom (⌊ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1 ⌋ᵃ) ->
+  X2 ∉ add X1 (dom (⌊ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1 ⌋ᵃ)) ->
   aworklist_subst (X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) X
     (typ_arrow ` X1 ` X2) (X1 ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1) Γ2.
 Proof with auto.
@@ -869,8 +869,8 @@ Qed.
 Lemma worklist_subst_fresh_etvar_total' : forall Γ X X1 X2,
   uniq (⌊ Γ ⌋ᵃ) ->
   binds X abind_etvar_empty (awl_to_aenv Γ) ->
-  X1 `notin` dom (awl_to_aenv Γ) ->
-  X2 `notin` add X1 (dom (awl_to_aenv Γ)) ->
+  X1 ∉ dom (awl_to_aenv Γ) ->
+  X2 ∉ add X1 (dom (awl_to_aenv Γ)) ->
   exists Γ1 Γ2, aworklist_subst (X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ) X
       (typ_arrow ` X1 ` X2) Γ1 Γ2.
 Proof.

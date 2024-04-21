@@ -6,10 +6,6 @@ Require Export LibTactics.
 (* Require Import algo.notations. *)
 
 
-Notation "x ∉ L" := (x `notin` L)
-  (at level 65, no associativity).
-
-
 Ltac inst_cofinite_impl H x :=
   match type of H with
   | forall x, x `notin` ?L -> _ =>

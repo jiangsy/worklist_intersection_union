@@ -5,6 +5,8 @@ Require Export uni.def_extra.
 Require Export uni.decl.def_extra.
 Require Export uni.prop_ln.
 
+Notation "x ∉ L" := (x `notin` L)
+  (at level 70, no associativity).
 
 Notation "⊢ᵈ Ψ" :=
   (d_wf_env Ψ)

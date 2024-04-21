@@ -306,7 +306,7 @@ Theorem d_sub_open_mono_stvar_false: forall n1 n2 Ψ A T X L,
     d_typ_size (A ᵗ^^ₜ T) < n2 ->
     X ~ ■ ∈ᵈ Ψ ->
     Ψ ⊢ A ᵗ^^ₜ T <: typ_var_f X ->
-    (forall X, X `notin` L -> s_in X (A ᵗ^ₜ X)) ->
+    (forall X, X ∉ L -> s_in X (A ᵗ^ₜ X)) ->
     d_mono_typ Ψ T ->
     False.
 Proof.
@@ -370,7 +370,7 @@ Qed.
 Theorem d_mono_notin_stvar : forall Ψ2 Ψ1 T X,
   Ψ2 ++ X ~ ■ ++ Ψ1 ᵗ⊢ᵈₘ T ->
   uniq (Ψ2 ++ (X ~ dbind_stvar_empty) ++ Ψ1) ->
-  X `notin` ftvar_in_typ T.
+  X ∉ ftvar_in_typ T.
 Proof.
   intros. dependent induction H; simpl in *; auto.
   - case_eq (X0 == X); intros; subst*; try solve_notin.
@@ -613,8 +613,8 @@ Proof with (simpl in *; eauto using d_wf_env_subst_tvar_typ).
 Qed.
 
 Corollary d_sub_size_rename : forall n X Y Ψ1 Ψ2 A B,
-    X `notin`  (ftvar_in_typ A `union` ftvar_in_typ B) ->
-    Y `notin` ((dom Ψ1) `union` (dom Ψ2)) ->
+    X ∉  (ftvar_in_typ A `union` ftvar_in_typ B) ->
+    Y ∉ ((dom Ψ1) `union` (dom Ψ2)) ->
     Ψ2 ++ X ~ ■ ++ Ψ1 ⊢ A ᵗ^^ₜ typ_var_f X <: B ᵗ^^ₜ typ_var_f X | n ->
     map (subst_tvar_in_dbind (typ_var_f Y) X) Ψ2 ++ Y ~ ■ ++ Ψ1 ⊢ A ᵗ^^ₜ typ_var_f Y <: B ᵗ^^ₜ typ_var_f Y | n.
 Proof with eauto.
@@ -784,7 +784,7 @@ Theorem d_sub_open_mono_bot_false: forall n1 n2 Ψ A T L,
     d_typ_order (A ᵗ^^ₜ T) < n1 ->
     d_typ_size (A ᵗ^^ₜ T) < n2 ->
     Ψ ⊢ A ᵗ^^ₜ T <: typ_bot ->
-    (forall X, X `notin` L -> s_in X (A ᵗ^ₜ X)) ->
+    (forall X, X ∉ L -> s_in X (A ᵗ^ₜ X)) ->
     Ψ ᵗ⊢ᵈₘ T ->
     False.
 Proof.

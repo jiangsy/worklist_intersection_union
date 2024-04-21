@@ -233,7 +233,7 @@ Qed.
 
 Lemma a_wf_typ_strengthen: forall Σ1 Σ2 A X b,
   a_wf_typ (Σ2 ++ (X, b) :: Σ1) A ->
-  X `notin` ftvar_in_typ A ->
+  X ∉ ftvar_in_typ A ->
   a_wf_typ (Σ2 ++ Σ1) A.
 Proof.
   intros * Hwf Hnotin. dependent induction Hwf; simpl in *; eauto.
@@ -252,7 +252,7 @@ Qed.
 
 Corollary a_wf_typ_strengthen_cons: forall Σ X A b,
   a_wf_typ ((X, b) :: Σ) A ->
-  X `notin` ftvar_in_typ A ->
+  X ∉ ftvar_in_typ A ->
   a_wf_typ Σ A.
 Proof.
   intros. rewrite_env (nil ++ Σ).
@@ -287,7 +287,7 @@ Qed.
 Lemma a_mono_typ_strengthen_mtvar : forall Σ X b T,
   b = abind_tvar_empty \/ b = abind_etvar_empty ->
   a_mono_typ ((X, b) :: Σ) T ->
-  X `notin` ftvar_in_typ T ->
+  X ∉ ftvar_in_typ T ->
   a_mono_typ Σ T.
 Proof.
   intros. dependent induction H0; eauto.
@@ -716,7 +716,7 @@ Qed.
 
 
 Lemma worklist_split_etvar_det : forall Γ1 Γ2 Γ'1 Γ'2 X,
-  X `notin` dom (awl_to_aenv Γ'2) `union`  dom (awl_to_aenv Γ'1) ->
+  X ∉ dom (awl_to_aenv Γ'2) `union`  dom (awl_to_aenv Γ'1) ->
   (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) = (Γ'2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ'1) ->
   Γ2 = Γ'2 /\ Γ1 = Γ'1.
 Proof.
@@ -737,7 +737,7 @@ Qed.
 
 Lemma a_wf_env_notin_remaining : forall Σ1 Σ2 X b,
   ⊢ᵃ (Σ2 ++ (X , b) :: Σ1) ->
-  X `notin` dom Σ1 `union` dom Σ2.
+  X ∉ dom Σ1 `union` dom Σ2.
 Proof.
   intros. apply a_wf_env_uniq in H.
   apply uniq_notin_remaining in H...
@@ -746,7 +746,7 @@ Qed.
 
 Lemma a_wf_wwl_tvar_notin_remaining : forall Γ1 Γ2 X b,
   ⊢ᵃʷ (Γ2 ⧺ aworklist_cons_var Γ1 X b) ->
-  X `notin` dom (awl_to_aenv Γ1) `union` dom (awl_to_aenv Γ2).
+  X ∉ dom (awl_to_aenv Γ1) `union` dom (awl_to_aenv Γ2).
 Proof.
   intros. apply a_wf_wwl_uniq in H. rewrite awl_to_aenv_app in H. simpl in *.
   autorewrite with core in *. 
@@ -755,7 +755,7 @@ Qed.
 
 Lemma a_wf_twl_tvar_notin_remaining : forall Γ1 Γ2 X b,
   ⊢ᵃʷₜ (Γ2 ⧺ aworklist_cons_var Γ1 X b) ->
-  X `notin` dom (awl_to_aenv Γ1) `union` dom (awl_to_aenv Γ2).
+  X ∉ dom (awl_to_aenv Γ1) `union` dom (awl_to_aenv Γ2).
 Proof.
   intros. apply a_wf_twl_a_wf_env in H.
   apply a_wf_env_uniq in H. rewrite awl_to_aenv_app in H. simpl in *.
@@ -765,7 +765,7 @@ Qed.
 
 Lemma a_wf_wl_tvar_notin_remaining : forall Γ1 Γ2 X b,
   ⊢ᵃʷₛ (Γ2 ⧺ aworklist_cons_var Γ1 X b) ->
-  X `notin` dom (awl_to_aenv Γ1) `union` dom (awl_to_aenv Γ2).
+  X ∉ dom (awl_to_aenv Γ1) `union` dom (awl_to_aenv Γ2).
 Proof.
   intros. apply a_wf_wl_a_wf_env in H.
   apply a_wf_env_uniq in H. rewrite awl_to_aenv_app in H. simpl in *.
@@ -778,7 +778,7 @@ Qed.
 Lemma a_wf_env_weaken_atvar : forall Σ1 Σ2 X b,
   (~ exists A, b = abind_var_typ A) ->
   ⊢ᵃ (Σ2 ++ Σ1) ->
-  X `notin` (dom (Σ2 ++ Σ1)) ->
+  X ∉ (dom (Σ2 ++ Σ1)) ->
   ⊢ᵃ (Σ2 ++ (X , b) :: Σ1).
 Proof.
   intros. induction Σ2; simpl in *; eauto.
@@ -790,7 +790,7 @@ Qed.
 
 Lemma a_wf_wwl_weaken_etvar: forall Γ2 Γ1 X,
   ⊢ᵃʷ (Γ2 ⧺ Γ1) -> 
-  X `notin` union (dom (⌊ Γ2 ⌋ᵃ)) (dom (⌊ Γ1 ⌋ᵃ)) ->
+  X ∉ union (dom (⌊ Γ2 ⌋ᵃ)) (dom (⌊ Γ1 ⌋ᵃ)) ->
   ⊢ᵃʷ (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1).
 Proof with eauto; try autorewrite with core using solve_notin.
   introv H HN. induction Γ2; simpl in *...
@@ -813,7 +813,7 @@ Qed.
 
 Lemma a_wf_twl_weaken_etvar: forall Γ2 Γ1 X,
   ⊢ᵃʷₜ (Γ2 ⧺ Γ1) -> 
-  X `notin` union (dom (⌊ Γ2 ⌋ᵃ)) (dom (⌊ Γ1 ⌋ᵃ)) ->
+  X ∉ union (dom (⌊ Γ2 ⌋ᵃ)) (dom (⌊ Γ1 ⌋ᵃ)) ->
   ⊢ᵃʷₜ (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1).
 Proof with eauto; try autorewrite with core using solve_notin.
   introv H HN. induction Γ2; simpl in *...
@@ -835,7 +835,7 @@ Qed.
 
 Lemma a_wf_wl_weaken_etvar: forall Γ2 Γ1 X,
   ⊢ᵃʷₛ (Γ2 ⧺ Γ1) -> 
-  X `notin` union (dom (⌊ Γ2 ⌋ᵃ)) (dom (⌊ Γ1 ⌋ᵃ)) ->
+  X ∉ union (dom (⌊ Γ2 ⌋ᵃ)) (dom (⌊ Γ1 ⌋ᵃ)) ->
   ⊢ᵃʷₛ (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1).
 Proof with eauto; try autorewrite with core using solve_notin.
   introv H HN. induction Γ2; simpl in *.
@@ -863,7 +863,7 @@ Qed.
 
 Corollary a_wf_wl_weaken_etvar_cons: forall Γ X,
   ⊢ᵃʷₛ Γ ->
-  X `notin` (dom (awl_to_aenv Γ)) ->
+  X ∉ (dom (awl_to_aenv Γ)) ->
   ⊢ᵃʷₛ (X ~ᵃ ⬒ ;ᵃ Γ).
 Proof with  simpl; solve_notin.
   intros.
@@ -980,6 +980,22 @@ Proof with eauto.
   eauto 6.
 Qed.
 
+
+Lemma a_wf_wwl_apply_conts : forall Γ w A cs,
+  apply_conts cs A w ->
+  a_wf_wwl (work_applys cs A ⫤ᵃ Γ) ->
+  a_wf_wwl (w ⫤ᵃ Γ).
+Proof with eauto.
+  intros. induction H; destruct_a_wf_wl...
+Qed.
+
+Lemma a_wf_wwl_apply_contd : forall Γ w A B cd,
+  apply_contd cd A B w ->
+  a_wf_wwl (work_applyd cd A B ⫤ᵃ Γ) ->
+  a_wf_wwl (w ⫤ᵃ Γ).
+Proof with eauto.
+  intros. induction H; destruct_a_wf_wl...
+Qed.
 (* Lemma a_wf_env_wf_typ_no_var : forall Σ A,
   ⊢ᵃ Σ ->
   Σ ᵗ⊢ᵃ B ->
@@ -989,9 +1005,9 @@ Qed.
 (* 
 Lemma tvar_notin_awl_notin_bind_typ : forall X Γ x A,
   ⊢ᵃʷ Γ ->
-  X `notin` ftvar_in_aworklist' Γ ->
+  X ∉ ftvar_in_aworklist' Γ ->
   binds x (abind_var_typ A) (awl_to_aenv Γ) ->
-  X `notin` ftvar_in_typ A.
+  X ∉ ftvar_in_typ A.
 Proof.
   intros. induction Γ; simpl in *; auto.
   - inversion H1.
@@ -1013,7 +1029,7 @@ Lemma aworklist_subst_remove_target_tvar : forall Γ X A Γ1 Γ2,
   uniq (awl_to_aenv Γ) ->
   binds X abind_etvar_empty (awl_to_aenv Γ) ->
   aworklist_subst Γ X A Γ1 Γ2 ->
-  X `notin` dom (awl_to_aenv (subst_tvar_in_aworklist A X Γ2 ⧺ Γ1)).
+  X ∉ dom (awl_to_aenv (subst_tvar_in_aworklist A X Γ2 ⧺ Γ1)).
 Proof with eauto.
   intros * Huniq Hb Haws. induction Haws; simpl in *; auto.
   - dependent destruction Huniq...
@@ -1173,7 +1189,7 @@ Qed.
 
 Lemma aworklist_subst_wf_typ_subst : forall Γ X A B Γ1 Γ2,
   X ~ ⬒ ∈ᵃ (⌊ Γ ⌋ᵃ) ->
-  X `notin` ftvar_in_typ A ->
+  X ∉ ftvar_in_typ A ->
   ⌊ Γ ⌋ᵃ ᵗ⊢ᵃ A ->
   ⌊ Γ ⌋ᵃ ᵗ⊢ᵃ B ->
   ⊢ᵃ ⌊ Γ ⌋ᵃ ->
@@ -1209,7 +1225,7 @@ Ltac unify_binds :=
 
 Lemma aworklist_subst_wf_exp_subst : forall Γ X A e Γ1 Γ2,
   X ~ ⬒ ∈ᵃ (⌊ Γ ⌋ᵃ) ->
-  X `notin` ftvar_in_typ A ->
+  X ∉ ftvar_in_typ A ->
   ⌊ Γ ⌋ᵃ ᵗ⊢ᵃ A ->
   a_wf_exp (⌊ Γ ⌋ᵃ) e ->
   ⊢ᵃ ⌊ Γ ⌋ᵃ ->
@@ -1217,7 +1233,7 @@ Lemma aworklist_subst_wf_exp_subst : forall Γ X A e Γ1 Γ2,
   a_wf_exp (⌊ {A ᵃʷ/ₜ X} Γ2 ⧺ Γ1 ⌋ᵃ) (subst_tvar_in_exp A X e)
 with aworklist_subst_wf_body_subst : forall Γ X A b Γ1 Γ2,
   X ~ ⬒ ∈ᵃ (⌊ Γ ⌋ᵃ) ->
-  X `notin` ftvar_in_typ A ->
+  X ∉ ftvar_in_typ A ->
   ⌊ Γ ⌋ᵃ ᵗ⊢ᵃ A ->
   a_wf_body (⌊ Γ ⌋ᵃ) b ->
   ⊢ᵃ ⌊ Γ ⌋ᵃ ->
@@ -1252,7 +1268,7 @@ Qed.
 
 Lemma aworklist_subst_wf_contd_subst : forall Γ X A cd Γ1 Γ2,
   binds X abind_etvar_empty (awl_to_aenv Γ) ->
-  X `notin` ftvar_in_typ A ->
+  X ∉ ftvar_in_typ A ->
   ⌊ Γ ⌋ᵃ ᵗ⊢ᵃ A ->
   a_wf_contd (awl_to_aenv Γ) cd ->
   ⊢ᵃ ⌊ Γ ⌋ᵃ ->
@@ -1260,7 +1276,7 @@ Lemma aworklist_subst_wf_contd_subst : forall Γ X A cd Γ1 Γ2,
   a_wf_contd (⌊ {A ᵃʷ/ₜ X} Γ2 ⧺ Γ1 ⌋ᵃ) ({A ᶜᵈ/ₜ X} cd)
 with aworklist_subst_wf_conts_subst : forall Γ X A cs Γ1 Γ2,
   binds X abind_etvar_empty (awl_to_aenv Γ) ->
-  X `notin` ftvar_in_typ A ->
+  X ∉ ftvar_in_typ A ->
   ⌊ Γ ⌋ᵃ ᵗ⊢ᵃ A ->
   a_wf_conts (awl_to_aenv Γ) cs ->
   ⊢ᵃ ⌊ Γ ⌋ᵃ ->
@@ -1276,7 +1292,7 @@ Qed.
 
 Lemma aworklist_subst_wf_work_subst : forall Γ X A w Γ1 Γ2,
   binds X abind_etvar_empty (awl_to_aenv Γ) ->
-  X `notin` ftvar_in_typ A ->
+  X ∉ ftvar_in_typ A ->
   ⌊ Γ ⌋ᵃ ᵗ⊢ᵃ A ->
   a_wf_work (awl_to_aenv Γ) w ->
   ⊢ᵃ ⌊ Γ ⌋ᵃ ->
@@ -1294,7 +1310,7 @@ Qed.
 
 Lemma aworklist_subst_mono_typ : forall Γ X A T Γ1 Γ2,
   binds X abind_etvar_empty (awl_to_aenv Γ) ->
-  X `notin` ftvar_in_typ T ->
+  X ∉ ftvar_in_typ T ->
   a_mono_typ (awl_to_aenv Γ) T ->
   ⊢ᵃ ⌊ Γ ⌋ᵃ ->
   aworklist_subst Γ X A Γ1 Γ2 ->

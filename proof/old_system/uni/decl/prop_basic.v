@@ -298,7 +298,7 @@ Qed.
 Lemma d_new_tv_notin_wf_typ : forall X Ψ A,
   uniq ((X, □) :: Ψ) ->
   Ψ ᵗ⊢ᵈ A ->
-  X `notin` ftvar_in_typ A.
+  X ∉ ftvar_in_typ A.
 Proof.
   intros; induction H0; auto.
   - simpl. dependent destruction H. unfold not. intros.
@@ -460,7 +460,7 @@ Ltac unify_binds :=
 Lemma d_mono_typ_no_stvar : forall Ψ1 Ψ2 A X,
   Ψ2 ++ X ~ ■ ++ Ψ1 ᵗ⊢ᵈₘ A ->
   uniq (Ψ2 ++ X ~ ■ ++ Ψ1) ->
-  X `notin` ftvar_in_typ A.
+  X ∉ ftvar_in_typ A.
 Proof with eauto using d_mono_typ_weaken_app; try solve_by_invert; try solve [exfalso; jauto].
   intros. induction A; simpl in *...
   1: { simpl. destruct (X0 == X); subst; auto...
@@ -473,7 +473,7 @@ Qed.
 
 Lemma d_mono_typ_strengthen : forall Ψ1 Ψ2 X b T,
   Ψ2 ++ (X, b) :: Ψ1 ᵗ⊢ᵈₘ T ->
-  X `notin` ftvar_in_typ T ->
+  X ∉ ftvar_in_typ T ->
   Ψ2 ++ Ψ1 ᵗ⊢ᵈₘ T.
 Proof.
   intros. dependent induction H; eauto.
@@ -487,7 +487,7 @@ Qed.
 
 Lemma d_mono_typ_strengthen_cons : forall Ψ X b T,
   (X, b) :: Ψ ᵗ⊢ᵈₘ T ->
-  X `notin` ftvar_in_typ T ->
+  X ∉ ftvar_in_typ T ->
   Ψ ᵗ⊢ᵈₘ T.
 Proof.
   intros. rewrite_env (nil ++ Ψ).
@@ -662,7 +662,7 @@ Qed.
 Lemma d_wf_typ_strengthen : forall Ψ1 Ψ2 X A b,
   uniq (Ψ2 ++ X ~ b ++ Ψ1) ->
   Ψ2 ++ X ~ b ++ Ψ1 ᵗ⊢ᵈ A ->
-  X `notin` ftvar_in_typ A ->
+  X ∉ ftvar_in_typ A ->
   Ψ2 ++ Ψ1 ᵗ⊢ᵈ A.
 Proof with eauto.
   intros * Huniq H. intros.
@@ -698,7 +698,7 @@ Lemma d_wf_typ_var_notin : forall Ψ x A B,
   uniq Ψ ->
   Ψ ᵗ⊢ᵈ A ->
   x ~ B ∈ᵈ Ψ -> 
-  x `notin` ftvar_in_typ A.
+  x ∉ ftvar_in_typ A.
 Proof with auto using d_wf_env_uniq. 
   intros. induction H0; auto...
   - unfold not. intros. simpl in *. apply singleton_iff in H2. subst. 
@@ -983,7 +983,7 @@ Qed.
 
 Lemma d_wf_tenv_rename_tvar : forall Ψ1 Ψ2 X Y,
   ⊢ᵈₜ (Ψ2 ++ (X, □) :: Ψ1) ->
-  Y `notin` dom (Ψ2 ++ (X, □) :: Ψ1) ->
+  Y ∉ dom (Ψ2 ++ (X, □) :: Ψ1) ->
   ⊢ᵈₜ (map (subst_tvar_in_dbind `Y X) Ψ2 ++ (Y, □) :: Ψ1).
 Proof with eauto using d_wf_typ_rename_tvar.
   intros. induction Ψ2; simpl in *; auto. 
@@ -996,7 +996,7 @@ Qed.
 
 Lemma d_wf_tenv_rename_tvar_cons : forall Ψ X Y,
   ⊢ᵈₜ (X, □) :: Ψ ->
-  Y `notin` dom ((X, □) :: Ψ) ->
+  Y ∉ dom ((X, □) :: Ψ) ->
   ⊢ᵈₜ (Y, □) :: Ψ. 
 Proof with eauto using d_wf_typ_rename_tvar.
   intros. rewrite_env ((map (subst_tvar_in_dbind `Y X) nil ++ (Y, □) :: Ψ)).
@@ -1007,7 +1007,7 @@ Qed.
 Lemma d_wf_env_rename_dtvar : forall Ψ1 Ψ2 X Y b,
   b = □ \/ b = ■  ->
   ⊢ᵈ (Ψ2 ++ (X, b) :: Ψ1) ->
-  Y `notin` dom (Ψ2 ++ (X, b) :: Ψ1) ->
+  Y ∉ dom (Ψ2 ++ (X, b) :: Ψ1) ->
   ⊢ᵈ (map (subst_tvar_in_dbind `Y X) Ψ2 ++ (Y, b) :: Ψ1).
 Proof with eauto using d_wf_typ_rename_tvar.
   intros. induction Ψ2; simpl in *; auto. 
