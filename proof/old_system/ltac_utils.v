@@ -68,10 +68,12 @@ Ltac auto_apply :=
 
 Ltac gather_atoms ::=
   let A := gather_atoms_with (fun x : vars => x) in
+
   let B := gather_atoms_with (fun x : var => {{ x }}) in
+
   let C1 := gather_atoms_with (fun x : denv => dom x) in
   let C2 := gather_atoms_with (fun x : aenv => dom x) in
-  (* let C2 := gather_atoms_with (fun x : list (atom * dbind) => dom x) in *)
+  
   let D1 := gather_atoms_with (fun x => ftvar_in_typ x) in
   let D2 := gather_atoms_with (fun x => ftvar_in_exp x) in
   let D3 := gather_atoms_with (fun x => ftvar_in_conts x) in
@@ -80,24 +82,17 @@ Ltac gather_atoms ::=
   let D6 := gather_atoms_with (fun x => ftvar_in_aworklist' x) in
 
   let E1 := gather_atoms_with (fun x => fvar_in_exp x) in
-  let D6 := gather_atoms_with (fun x => fvar_in_aworklist' x) in
+  let E2 := gather_atoms_with (fun x => fvar_in_aworklist' x) in
 
   let F1 :=  gather_atoms_with (fun x => dom (awl_to_aenv x)) in
   let F2 :=  gather_atoms_with (fun x => dom (dwl_to_denv x)) in
-  (* let D3 := gather_atoms_with (fun x => fv_typ_in_binding x) in *)
-  (* let D4 := gather_atoms_with (fun x => fv_exp_in_exp x) in *)
-  constr:(A \u B \u C1 \u C2 \u D1 \u D2 \u D3 \u D4 \u D5 \u D6 \u E1 \u F1 \u F2).
+  constr:(A \u B \u C1 \u C2 \u D1 \u D2 \u D3 \u D4 \u D5 \u D6 \u E1 \u E2 \u F1 \u F2).
 
 Ltac solve_wf_twl_sub_false :=
   match goal with
   | H : (∃ A B : typ, work_sub ?A' ?B' = work_sub A B) → False |- _ => exfalso; eauto
   | _ : _ |- _ => idtac
   end.
-(* Ltac apply_fresh_base_fixed H gather_vars atom_name :=
-  let L := gather_vars in
-  let L := beautify_fset L in
-  let x := fresh atom_name in
-  pick fresh x excluding L and apply H. *) 
 
 Tactic Notation "inst_cofinites_for" constr(H) := 
   let L1 := gather_atoms in
@@ -139,9 +134,3 @@ Create HintDb FalseHd.
 Ltac solve_false := let HF := fresh "HF" in
                     try solve [ try intro HF; destruct_conj; try solve_by_invert;
                                 false; eauto 3 with FalseHd ].
-
-                              
-(* 
-
-Tactic Notation "pick" "fresh" ident(x) "and" "apply" constr(H) "for" "weaken" :=
-  apply_fresh_base_fixed H gather_for_weaken x. *)

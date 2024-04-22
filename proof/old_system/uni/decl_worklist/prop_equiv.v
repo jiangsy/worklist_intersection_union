@@ -263,7 +263,7 @@ Qed.
 
 #[local] Hint Immediate d_mono_typ_d_wf_typ : core.
 
-#[local] Hint Extern 1 (_ -> False) => try solve_false : core.
+#[local] Hint Extern 1 ((exists _, _) -> False) => try solve_false : core.
 
 Theorem d_wl_red_sound: forall Ω, 
     ⊢ᵈʷₛ Ω -> Ω ⟶ᵈʷ⁎⋅ -> Ω ⟶ᵈ⁎⋅.

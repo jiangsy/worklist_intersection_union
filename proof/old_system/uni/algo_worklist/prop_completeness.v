@@ -1087,10 +1087,10 @@ Qed.
 Ltac destruct_for_solve_mono := 
   destruct_mono_arrow;
   repeat
-  match goal with
-  | _ : _ |- d_mono_typ ?θ (typ_arrow ?A1 ?A2) =>
-    constructor
-  end.
+    match goal with
+      | _ : _ |- d_mono_typ ?θ (typ_arrow ?A1 ?A2) =>
+        constructor
+    end.
 
 Ltac solve_mono_typ :=
   destruct_for_solve_mono;
@@ -1162,8 +1162,7 @@ Qed.
 
 #[local] Hint Resolve trans_typ_weaken_cons2 : core.
 
-#[local] Hint Extern 1 (_ -> False) => try solve_false : core. 
-
+#[local] Hint Extern 1 ((exists _, _) -> False) => try solve_false : core.
 
 (* reduce Γ with multiple trailing exsitential vars to the base case *)
 Ltac solve_awl_trailing_etvar :=

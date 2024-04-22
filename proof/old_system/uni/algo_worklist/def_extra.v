@@ -248,6 +248,10 @@ Notation "Σ ᵗ⊢ᵃ A" :=
   (a_wf_typ Σ A)
     (at level 65, no associativity) : type_scope.
 
+Notation "Σ ᵗ⊢ᵃₘ A" :=
+  (a_mono_typ Σ A)
+    (at level 65, no associativity) : type_scope.
+
 Notation "⊢ᵃ Σ" :=
   (a_wf_env Σ)
     (at level 65, no associativity) : type_scope.
@@ -260,6 +264,22 @@ Notation "Σ ᵉ⊢ᵃ e" :=
   (a_wf_exp Σ e)
     (at level 65, no associativity) : type_scope.
 
+Notation "Σ ᵇ⊢ᵃ b" :=
+  (a_wf_body Σ b)
+    (at level 65, no associativity) : type_scope.
+
+Notation "Σ ᶜˢ⊢ᵃ cs" :=
+  (a_wf_conts Σ cs)
+    (at level 65, no associativity) : type_scope.
+
+Notation "Σ ᶜᵈ⊢ᵃ cd" :=
+  (a_wf_contd Σ cd)
+    (at level 65, no associativity) : type_scope.
+
+Notation "Σ ʷ⊢ᵃ cd" :=
+  (a_wf_work Σ cd)
+    (at level 65, no associativity) : type_scope.
+
 Notation "X ~ □ ∈ᵃ Σ" := (binds X (abind_tvar_empty) Σ)
   (at level 50, no associativity) : type_scope.
 
@@ -269,8 +289,8 @@ Notation "X ~ ■ ∈ᵃ Σ" := (binds X (abind_stvar_empty) Σ)
 Notation "X ~ ⬒ ∈ᵃ Σ" := (binds X (abind_etvar_empty) Σ)
   (at level 50, no associativity) : type_scope.
 
-Notation "x ~ T ∈ᵃ Σ" := (binds x (abind_var_typ T) Σ)
-  (at level 50, T at next level, no associativity) : type_scope.
+Notation "x ~ A ∈ᵃ Σ" := (binds x (abind_var_typ A) Σ)
+  (at level 50, A at next level, no associativity) : type_scope.
 
 (* Notation " x ~ᵃ A ;ᵃ Γ " :=
   (aworklist_cons_var Γ x (abind_var_typ A))

@@ -881,7 +881,7 @@ Proof.
 Qed.
 
 
-#[local] Hint Extern 1 (_ -> False) => try solve_false : core. 
+#[local] Hint Extern 1 ((exists _, _) -> False) => try solve_false : core.
 
 #[local] Hint Resolve trans_wl_wf_ss trans_typ_wf_ss wf_ss_uniq : core.
 #[local] Hint Resolve trans_typ_lc_atyp : core.

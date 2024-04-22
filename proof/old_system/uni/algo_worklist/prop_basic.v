@@ -631,8 +631,7 @@ Proof.
     rewrite <- Heq. auto.
 Qed.
 
-#[local] Hint Extern 1 (_ -> False) => try solve_false : core. 
-
+#[local] Hint Extern 1 ((exists _, _) -> False) => try solve_false : core.
 
 Lemma a_wf_wl_strengthen_work : forall Γ w,
   ⊢ᵃʷₜ Γ ->
@@ -960,8 +959,6 @@ Lemma ftvar_in_work_apply_cont_eq : forall w A cs,
 Proof.
   intros. induction H; simpl; fsetdec.
 Qed.
-
-#[local] Hint Extern 1 (_ -> False) => try solve_false : core. 
 
 Lemma a_wf_wl_apply_conts : forall Γ w A cs,
   apply_conts cs A w ->
@@ -1341,7 +1338,8 @@ Proof.
   - dependent destruction Hwfa. inst_cofinites_for a_wf_typ__all; intros; inst_cofinites_with X; eauto.
     eapply H0 with (Σ:=X ~ □ ++ Σ); eauto.
     intros. rewrite ftvar_in_typ_open_typ_wrt_typ_upper in H4. apply union_iff in H4. destruct H4.
-    + simpl in H4. apply singleton_iff in H4; subst. destruct_binds. auto.
+    + simpl in H4. apply singleton_iff in H4; subst. destruct_binds; auto... 
+      exfalso. eauto.
     + destruct_binds. apply binds_cons; eauto.
   - dependent destruction Hwfa; eauto.
     constructor; eauto 6.
