@@ -88,11 +88,11 @@ Proof.
 Qed.
 
 
-#[local] Hint Resolve d_sub_refl d_wf_typ_subst d_wf_typ_subst_stvar d_wf_env_subst_tvar_typ : core.
+#[local] Hint Resolve d_sub_refl d_wf_typ_subst_tvar d_wf_typ_subst_stvar d_wf_env_subst_tvar : core.
 (* Hint Resolve d_sub_refl : subtyping.
 Hint Resolve d_wf_typ_subst : subtyping.
 Hint Resolve d_wf_typ_subst_stvar : subtyping.
-Hint Resolve d_wf_env_subst_tvar_typ : subtyping. *)
+Hint Resolve d_wf_env_subst_tvar : subtyping. *)
 
 
 
@@ -270,7 +270,7 @@ Proof.
 Qed.
 
 
-#[local] Hint Resolve d_wf_typ_subst_stvar d_wf_env_subst_stvar_typ : core.
+#[local] Hint Resolve d_wf_typ_subst_stvar d_wf_env_subst_stvar : core.
 (* Hint Resolve d_subst_stv_lc_typ : lngen. *)
 
 Lemma dneq_all_intersection_union_subst_stv : forall T1 T2 X,
@@ -532,7 +532,7 @@ Lemma d_sub_size_rename_stvar : forall Ψ1 Ψ2 X Y A B n,
   Y ∉ (dom Ψ1 `union` dom Ψ2) ->
   (map (subst_tvar_in_dbind (typ_var_f Y) X) Ψ2) ++ Y ~ ■ ++ Ψ1 ⊢
         {typ_var_f Y ᵗ/ₜ X} A <: {typ_var_f Y ᵗ/ₜ X} B | n.
-Proof with (simpl in *; eauto using d_wf_env_subst_tvar_typ).
+Proof with (simpl in *; eauto using d_wf_env_subst_tvar).
   intros * HS HN.
   case_eq (Y == X); intros.
   1: { subst. rewrite* map_subst_tvar_in_dbind_refl_eq.
@@ -541,7 +541,7 @@ Proof with (simpl in *; eauto using d_wf_env_subst_tvar_typ).
   gen Y.
   inductions HS; intros...
   - constructor.
-    applys d_wf_env_subst_stvar_typ; auto.
+    applys d_wf_env_subst_stvar; auto.
     rewrite_env ((Ψ2 ++ (X, ■) :: nil ) ++ [(Y, ■)] ++ Ψ1).
     applys d_wf_env_weaken_stvar.
     rewrite_env (Ψ2 ++ X ~ ■ ++ Ψ1)...
@@ -549,7 +549,7 @@ Proof with (simpl in *; eauto using d_wf_env_subst_tvar_typ).
     solve_notin.
     applys d_wf_typ_rename_stvar...
   - constructor.
-    applys d_wf_env_subst_stvar_typ; auto.
+    applys d_wf_env_subst_stvar; auto.
     rewrite_env ((Ψ2 ++ (X, ■) :: nil ) ++ [(Y, ■)] ++ Ψ1).
     applys d_wf_env_weaken_stvar.
     rewrite_env (Ψ2 ++ X ~ ■ ++ Ψ1)...
@@ -557,14 +557,14 @@ Proof with (simpl in *; eauto using d_wf_env_subst_tvar_typ).
     solve_notin.
     applys d_wf_typ_rename_stvar...
   - constructor. 
-    applys d_wf_env_subst_stvar_typ; auto.
+    applys d_wf_env_subst_stvar; auto.
     rewrite_env ((Ψ2 ++ (X, ■) :: nil ) ++ [(Y, ■)] ++ Ψ1).
     applys d_wf_env_weaken_stvar.
     rewrite_env (Ψ2 ++ X ~ ■ ++ Ψ1)...
     eapply d_wf_env_all_stvar_after with (Ψ1:=Ψ1); eauto.
     solve_notin.
   (* - econstructor...
-    applys d_wf_env_subst_stvar_typ...
+    applys d_wf_env_subst_stvar...
     rewrite_env ((F ++ (X, ■) :: nil ) ++ [(Y, ■)] ++ Ψ).
     applys d_wf_env_weaken_stvar.
     rewrite_env (F ++ X ~ ■ ++ Ψ)...
@@ -998,7 +998,7 @@ Proof with auto.
            forwards HW: d_sub_dwft_sized_1 Hsub1.
            rewrite_env (nil ++ Ψ) in HW.
            rewrite_env (nil ++ Y ~ □ ++ Ψ).
-           applys* d_wf_typ_open_tvar_subst_mono.
+           applys* d_wf_typ_open_mono_inv.
         -- eapply d_sub__alll with (T:=T1); auto.
            eapply d_sub_size_sound; eauto.
       (* forall a. A < bot < C *)
@@ -1011,7 +1011,7 @@ Proof with auto.
            forwards HW: d_sub_dwft_sized_1 Hsub1.
            rewrite_env (nil ++ Ψ) in HW.
            rewrite_env (nil ++ Y ~ □ ++ Ψ).
-           applys* d_wf_typ_open_tvar_subst_mono.
+           applys* d_wf_typ_open_mono_inv.
       (* forall a. A < X < C *)
       * dependent destruction Hsub2; try solve ord_inv; auto...
         -- econstructor...
@@ -1019,7 +1019,7 @@ Proof with auto.
            forwards HW: d_sub_dwft_sized_1 Hsub1.
            rewrite_env (nil ++ Ψ) in HW.
            rewrite_env (nil ++ Y ~ □ ++ Ψ).
-           applys* d_wf_typ_open_tvar_subst_mono.
+           applys* d_wf_typ_open_mono_inv.
         -- eapply d_sub__alll with (T:=T1); eauto...
             apply d_sub_size_sound in Hsub1. auto.
       (* forall a. A < X < C *)
@@ -1032,7 +1032,7 @@ Proof with auto.
            forwards HW: d_sub_dwft_sized_1 Hsub1.
            rewrite_env (nil ++ Ψ) in HW.
            rewrite_env (nil ++ Y ~ □ ++ Ψ).
-           applys* d_wf_typ_open_tvar_subst_mono.
+           applys* d_wf_typ_open_mono_inv.
         -- assert (Ψ ᵗ⊢ᵈ B1) by applys* d_sub_dwft_sized_1. assert (Ψ ᵗ⊢ᵈ B2) by applys* d_sub_dwft_sized_2.
           eapply d_sub__alll with (T:=T1); eauto...
           eapply IHn_d_sub_size with (B:=typ_arrow A0 A2) (n2:=S(n1+n2)); eauto...

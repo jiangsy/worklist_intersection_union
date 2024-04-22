@@ -283,7 +283,7 @@ Proof.
   intros. apply d_subtenv_subenv in H0. eapply d_sub_subenv; eauto.
 Qed.
 
-#[local] Hint Resolve d_wf_typ_subst d_wf_env_subst_tvar_typ bind_typ_subst d_wf_typ_lc_typ : core.
+#[local] Hint Resolve d_wf_typ_subst_tvar d_wf_env_subst_tvar bind_typ_subst d_wf_typ_lc_typ : core.
 
 
 Definition dmode_size (mode : typing_mode) : nat :=
@@ -343,7 +343,7 @@ Proof with auto.
       inst_cofinites_with X.
       erewrite <- subst_tvar_in_typ_open_typ_wrt_typ_tvar2; eauto...
       rewrite_env ((map (subst_tvar_in_dbind B X) nil) ++ Ψ).
-      eapply d_wf_typ_subst; eauto...
+      eapply d_wf_typ_subst_tvar; eauto...
     + exists (A0 ᵗ^^ₜ B). split; auto...
       pick fresh X. inst_cofinites_with X.
       erewrite <- subst_tvar_in_typ_open_typ_wrt_typ_tvar2; eauto.
@@ -468,7 +468,7 @@ Proof with auto using d_mono_typ_d_wf_typ.
          ** forwards: H2 Y...
          ** forwards: d_sub_d_wf_typ1 H4.
             rewrite_env (nil++Ψ) in H8.
-            forwards*: d_wf_typ_open_tvar_subst_mono H8.
+            forwards*: d_wf_typ_open_mono_inv H8.
       * eauto.
     + specialize (IHd_sub _ _ H H0 H1 (eq_refl _)).
       destruct IHd_sub as [B2 [C2]].
@@ -508,7 +508,7 @@ Proof with auto using d_mono_typ_d_wf_typ.
       ** forwards: H3 Y...
       ** forwards: d_sub_d_wf_typ1 H7.
          rewrite_env (nil++Ψ) in H8.
-         forwards*: d_wf_typ_open_tvar_subst_mono Y H8 H.
+         forwards*: d_wf_typ_open_mono_inv Y H8 H.
       ** eauto...
     + inversion H5.
     + specialize (IHd_sub _ H H0 H1 H2 IHd_infabs (eq_refl _)).
