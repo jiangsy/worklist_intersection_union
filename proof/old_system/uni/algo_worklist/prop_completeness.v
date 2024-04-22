@@ -325,14 +325,14 @@ Lemma trans_exp_etvar_subst_same_ss : forall θ Tᵃ Tᵈ X eᵃ eᵈ,
   X ∉ ftvar_in_typ Tᵃ ->
   θ ᵗ⊩ Tᵃ ⇝ Tᵈ ->
   θ ᵉ⊩ eᵃ ⇝ eᵈ ->
-  θ ᵉ⊩ (subst_tvar_in_exp Tᵃ X eᵃ) ⇝ eᵈ
+  θ ᵉ⊩ {Tᵃ ᵉ/ₜ X} eᵃ ⇝ eᵈ
 with trans_body_etvar_subst_same_ss : forall θ Tᵃ Tᵈ X bᵃ bᵈ,
   wf_ss θ ->
   X ~ Tᵈ ∈ᵈ θ ->
   X ∉ ftvar_in_typ Tᵃ ->
   θ ᵗ⊩ Tᵃ ⇝ Tᵈ ->
   θ ᵇ⊩ bᵃ ⇝ bᵈ ->
-  θ ᵇ⊩ (subst_tvar_in_body Tᵃ X bᵃ) ⇝ bᵈ.
+  θ ᵇ⊩ {Tᵃ ᵇ/ₜ X} bᵃ ⇝ bᵈ.
 Proof.
   - intros. clear trans_exp_etvar_subst_same_ss. clear  trans_body_etvar_subst_same_ss.
     apply trans_exp_lc_aexp in H3 as Hlce.
@@ -396,7 +396,7 @@ Qed.
 
 Lemma trans_typ_etvar_binds : forall θ X Γ Ω T,
   nil ⊩ Γ ⇝ Ω ⫣ θ ->
-  binds X abind_etvar_empty (awl_to_aenv Γ) ->
+  X ~ ⬒ ∈ᵃ ⌊ Γ ⌋ᵃ ->
   θ ᵗ⊩ ` X ⇝ T ->
   X ~ T ∈ᵈ θ.
 Proof.
@@ -410,7 +410,7 @@ Qed.
 Lemma aworklist_subst_transfer_same_dworklist_rev_exist': forall Γ1 Γ2 Ω θ X T Tᵈ,
   ⊢ᵃʷ (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) ->
   X ∉ ftvar_in_typ T ->
-  nil ⊩ Γ2 ⧺ X ~ᵃ ⬒;ᵃ Γ1 ⇝ Ω ⫣ θ ->
+  nil ⊩ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1 ⇝ Ω ⫣ θ ->
   θ ᵗ⊩ T ⇝ Tᵈ ->
   θ ᵗ⊩ ` X ⇝ Tᵈ ->
   exists Γ'1 Γ'2 θ', 
@@ -429,7 +429,7 @@ Proof with eauto.
     + apply IHΓ2 in Htranswl as Hws; auto.
       destruct Hws as [Γ'1 [Γ'2 [θ'0 [Hws [Htrans [Hbinds Hwfss]]]]]].
       assert (X0 ∉ dom θ'0) by (eapply notin_dom_reorder; eauto).
-      exists Γ'1, (X0 ~ᵃ □%abind ;ᵃ Γ'2), ((X0, □) :: θ'0). 
+      exists Γ'1, (X0 ~ᵃ □ ;ᵃ Γ'2), ((X0, □) :: θ'0). 
         repeat split...
       * econstructor; auto.
         eapply a_wf_wwl_two_etvar_neq2; eauto.
@@ -444,7 +444,7 @@ Proof with eauto.
     + apply IHΓ2 in Htranswl as Hws; auto.
       destruct Hws as [Γ'1 [Γ'2 [θ'0 [Hws [Htrans [Hbinds Hwfss]]]]]].
       assert (X0 ∉ dom θ'0) by (eapply notin_dom_reorder; eauto).
-      exists Γ'1, (X0 ~ᵃ ■;ᵃ Γ'2)%abind, ((X0, ■) :: θ'0). 
+      exists Γ'1, (X0 ~ᵃ ■;ᵃ Γ'2), ((X0, ■) :: θ'0). 
       repeat split; auto...
       * econstructor; auto.
         eapply a_wf_wwl_two_etvar_neq2; eauto.
@@ -458,7 +458,7 @@ Proof with eauto.
       * dependent destruction Hwf... 
     + apply IHΓ2 in Htranswl as Hws; auto... 
       destruct Hws as [Γ'1 [Γ'2 [θ'0 [Hws [Htrans [Hbinds Hwfss]]]]]].
-      exists Γ'1, (X0 ~ᵃ abind_var_typ A1ᵃ ;ᵃ Γ'2), θ'0. repeat split...
+      exists Γ'1, (X0 ~ᵃ A1ᵃ ;ᵃ Γ'2), θ'0. repeat split...
       * econstructor; auto.
         apply trans_typ_reorder_ss with (θ:=θ')...
         -- intros. apply Hbinds...
@@ -575,16 +575,16 @@ Qed.
 
 Corollary aworklist_subst_transfer_same_dworklist_rev_exist: forall Γ Ω θ X T Tᵈ,
   ⊢ᵃʷₛ Γ ->
-  binds X abind_etvar_empty (awl_to_aenv Γ) ->
+  X ~ ⬒ ∈ᵃ ⌊ Γ ⌋ᵃ ->
   X ∉ ftvar_in_typ T ->
   nil ⊩ Γ ⇝ Ω ⫣ θ ->
   θ ᵗ⊩ T ⇝ Tᵈ ->
   θ ᵗ⊩ ` X ⇝ Tᵈ ->
   exists Γ1 Γ2 θ', 
-      aworklist_subst Γ X T Γ1 Γ2 /\
-      nil ⊩ {T ᵃʷ/ₜ X} Γ2 ⧺ Γ1 ⇝ Ω ⫣ θ' /\
-      (forall Y b, X <> Y -> binds Y b θ <-> binds Y b θ') /\ 
-      wf_ss θ'.
+    aworklist_subst Γ X T Γ1 Γ2 /\
+    nil ⊩ {T ᵃʷ/ₜ X} Γ2 ⧺ Γ1 ⇝ Ω ⫣ θ' /\
+    (forall Y b, X <> Y -> binds Y b θ <-> binds Y b θ') /\ 
+    wf_ss θ'.
 Proof.
   intros. apply a_wf_wl_a_wf_wwl in H.
   apply awl_split_etvar in H0; auto.
@@ -594,7 +594,6 @@ Qed.
 
 Corollary aworklist_subst_transfer_same_dworklist_rev: forall Γ Ω θ X T Tᵈ Γ1 Γ2,
   ⊢ᵃʷₛ Γ ->
-  X ~ ⬒ ∈ᵃ ⌊ Γ ⌋ᵃ ->
   ⌊ Γ ⌋ᵃ ᵗ⊢ᵃₘ T ->
   X ∉ ftvar_in_typ T ->
   aworklist_subst Γ X T Γ1 Γ2 ->
@@ -602,23 +601,24 @@ Corollary aworklist_subst_transfer_same_dworklist_rev: forall Γ Ω θ X T Tᵈ 
   θ ᵗ⊩ T ⇝ Tᵈ ->
   θ ᵗ⊩ ` X ⇝ Tᵈ ->
   exists θ', 
-      nil ⊩ {T ᵃʷ/ₜ X} Γ2 ⧺ Γ1 ⇝ Ω ⫣ θ' /\
-      (forall Y b, X <> Y -> binds Y b θ <-> binds Y b θ') /\ 
-      wf_ss θ'.
+    nil ⊩ {T ᵃʷ/ₜ X} Γ2 ⧺ Γ1 ⇝ Ω ⫣ θ' /\
+    (forall Y b, X <> Y -> binds Y b θ <-> binds Y b θ') /\ 
+    wf_ss θ'.
 Proof.
   intros.
   eapply aworklist_subst_transfer_same_dworklist_rev_exist in H as Hwsex; eauto.
   destruct Hwsex as [Γ'1 [Γ'2 [θ' [Hsubst [Htrans [Hbinds Hwfss]]]]]].
-  pose proof (aworklist_subst_det _ _ _ _ _ _ _ H H3 Hsubst). inversion H7. subst.
+  pose proof (aworklist_subst_det _ _ _ _ _ _ _ H H2 Hsubst). inversion H6. subst.
   exists θ'. repeat (split; auto).
+  eapply aworklist_subst_target_is_etvar; eauto.
 Qed.
 
 Inductive aworklist_ord : aworklist -> Prop :=
   | awl_t_o__empty : aworklist_ord aworklist_empty
   | awl_t_o__work : forall Γ w, aworklist_ord (w ⫤ᵃ Γ)
-  | awl_t_o__var : forall Γ x A, aworklist_ord (x ~ᵃ abind_var_typ A ;ᵃ Γ)
-  | awl_t_o__tvar : forall Γ X, aworklist_ord ( X ~ᵃ □ ;ᵃ Γ)%abind
-  | awl_t_o__stvar : forall Γ X, aworklist_ord (aworklist_cons_var Γ X abind_stvar_empty).
+  | awl_t_o__var : forall Γ x A, aworklist_ord (x ~ᵃ A ;ᵃ Γ)
+  | awl_t_o__tvar : forall Γ X, aworklist_ord (X ~ᵃ □ ;ᵃ Γ)
+  | awl_t_o__stvar : forall Γ X, aworklist_ord (X ~ᵃ ■ ;ᵃ Γ).
 
 Inductive aworklist_trailing_etvar : aworklist -> aworklist -> Prop :=
   | awl_t_e__base : forall Γ0, aworklist_ord Γ0 -> aworklist_trailing_etvar Γ0 Γ0
@@ -953,7 +953,7 @@ Qed.
 
 
 Lemma trans_typ_tvar_etvar_cons : forall θ Aᵃ Aᵈ Tᵃ Tᵈ X,
-  (X , dbind_tvar_empty) :: θ ᵗ⊩ Aᵃ ⇝ Aᵈ ->
+  (X , □) :: θ ᵗ⊩ Aᵃ ⇝ Aᵈ ->
   ss_to_denv θ ᵗ⊢ᵈₘ Tᵈ ->
   θ ᵗ⊩ Tᵃ ⇝ Tᵈ ->
   (X , dbind_typ Tᵈ) :: θ ᵗ⊩ Aᵃ ⇝ {Tᵈ ᵗ/ₜ X} Aᵈ.
@@ -1051,7 +1051,7 @@ Proof.
 Qed.
 
 Lemma trans_wl_a_wl_binds_var_binds_d_wl_trans_typ : forall θ Γ Ω x Aᵃ Aᵈ,
-  uniq (awl_to_aenv Γ) ->
+  uniq (⌊ Γ ⌋ᵃ) ->
   nil ⊩ Γ ⇝ Ω ⫣ θ ->
   x ~ Aᵃ ∈ᵃ ⌊ Γ ⌋ᵃ ->
   x ~ Aᵈ ∈ᵈ dwl_to_denv Ω ->
@@ -1570,7 +1570,7 @@ Proof with eauto.
     + destruct_a_wf_wl. inst_cofinites_for a_wl_red__chk_absetvar; intros.
       eapply trans_wl_ss_binds_etvar_a_wl; eauto.
       inst_cofinites_with x. inst_cofinites_with X1. inst_cofinites_with X2.
-      assert (nil ⊩ work_check (eᵃ ᵉ^ₑ exp_var_f x) ` X2 ⫤ᵃ x ~ᵃ abind_var_typ ` X1;ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ0 ⇝
+      assert (nil ⊩ work_check (eᵃ ᵉ^ₑ exp_var_f x) ` X2 ⫤ᵃ x ~ᵃ ` X1;ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ0 ⇝
                     work_check (e ᵉ^ₑ exp_var_f x) A2 ⫤ᵈ x ~ᵈ A1;ᵈ Ω ⫣ (X2, dbind_typ A2) :: (X1, dbind_typ A1) :: θ0).
       { apply wf_ss_binds_mono_typ in H3 as Hmono...
         dependent destruction Hmono.
@@ -1581,7 +1581,7 @@ Proof with eauto.
       eapply aworklist_subst_transfer_same_dworklist_rev in H12 as Htransws...
       destruct Htransws as [θ' [Htransws [Hbinds Hwfss]]]...
       * apply H0; eauto. eapply aworklist_subst_wf_wl with 
-        (Γ:=(work_check (eᵃ ᵉ^ₑ exp_var_f x) ` X2 ⫤ᵃ x ~ᵃ abind_var_typ ` X1;ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ0))... 
+        (Γ:=(work_check (eᵃ ᵉ^ₑ exp_var_f x) ` X2 ⫤ᵃ x ~ᵃ ` X1;ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ0))... 
         repeat (econstructor; simpl; auto).
         eapply a_wf_exp_weaken_etvar_twice...
         simpl. constructor...

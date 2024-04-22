@@ -272,4 +272,7 @@ Notation "⊢ᵈʷₜ Ω " :=
 Notation "⊢ᵈʷₛ Ω" :=
   (d_wf_wl Ω)
     (at level 58, no associativity) : type_scope.
-    
+
+Notation " ⌊ Ω ⌋ᵈ " :=
+  (dwl_to_denv Ω)
+    (at level 49, no associativity) : type_scope.

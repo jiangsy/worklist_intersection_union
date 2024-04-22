@@ -25,6 +25,10 @@ Fixpoint ss_to_denv (θ : subst_set) : denv :=
   | (X , dbind_typ T) :: θ' => ss_to_denv θ'
   end.
 
+Notation " ⌈ θ ⌉ᵈ " :=
+  (ss_to_denv θ)
+    (at level 49, no associativity) : type_scope.
+
 Fixpoint ss_to_aenv (θ : subst_set) : aenv := 
   match θ with 
   | nil => nil
@@ -33,6 +37,10 @@ Fixpoint ss_to_aenv (θ : subst_set) : aenv :=
   | (X , dbind_typ T) :: θ' => (X ~ abind_etvar_empty) ++ ss_to_aenv θ'
   end.
 
+Notation " ⌈ θ ⌉ᵃ " :=
+  (ss_to_aenv θ)
+    (at level 49, no associativity) : type_scope.
+  
 Inductive wf_ss : subst_set -> Prop :=
   | wfss__nil : wf_ss nil
   | wfss__tvar : forall θ X,
@@ -368,8 +376,7 @@ Qed.
 
 
 Lemma binds_tvar_ss_to_aenv_binds_ss : forall X (θ: subst_set),
-  binds X abind_tvar_empty (ss_to_aenv θ) ->
-  binds X dbind_tvar_empty θ.  
+  X ~ □ ∈ᵃ ⌈ θ ⌉ᵃ → X ~ □ ∈ᵈ θ.  
 Proof.
   intros. induction θ; auto.
   - destruct a; destruct d; simpl in *; try inversion H; auto;
@@ -378,8 +385,8 @@ Qed.
 
 Lemma binds_etvar_ss_to_aenv_binds_ss : forall X (θ: subst_set),
   wf_ss θ ->
-  binds X abind_etvar_empty (ss_to_aenv θ) ->
-  exists T, binds X (dbind_typ T) θ.  
+  X ~ ⬒ ∈ᵃ ⌈ θ ⌉ᵃ ->
+  exists T, X ~ T ∈ᵈ θ.
 Proof.
   intros. induction H; auto; simpl in *; destruct_binds.
   - inversion H0.
@@ -392,16 +399,16 @@ Qed.
 
 Lemma binds_ss_etvar_binds_ss_to_aenv : forall X T θ,
   wf_ss θ ->
-  binds X (dbind_typ T) θ -> 
-  binds X abind_etvar_empty (ss_to_aenv θ).
+  X ~ T ∈ᵈ θ ->
+  X ~ ⬒ ∈ᵃ ⌈ θ ⌉ᵃ.
 Proof.
   intros. induction H; auto; simpl in *; destruct_binds; eauto.
 Qed.
 
 
 Lemma binds_stvar_ss_to_aenv_binds_ss : forall X (θ: subst_set),
-  binds X abind_stvar_empty (ss_to_aenv θ) ->
-  binds X dbind_stvar_empty θ.  
+  X ~ ■ ∈ᵃ ⌈ θ ⌉ᵃ ->
+  X ~ ■ ∈ᵈ θ.  
 Proof.
   intros. induction θ; auto.
   - destruct a; destruct d; simpl in *; try inversion H; auto; 
@@ -410,9 +417,9 @@ Qed.
 
 
 Lemma binds_tvar_ss_binds_ss_to_denv : forall X b θ,
-  b = dbind_tvar_empty \/  b = dbind_stvar_empty ->
+  b = □ \/ b = ■ ->
   binds X b θ ->
-  binds X b (ss_to_denv θ).
+  binds X b (⌈ θ ⌉ᵈ).
 Proof.
   intros. induction θ; auto.
   - destruct a; destruct d; simpl in *; try inversion H0; destruct_binds; eauto.
@@ -421,8 +428,8 @@ Qed.
 
 
 Lemma binds_tvar_ss_binds_ss_to_aenv : forall X θ,
-  binds X dbind_tvar_empty θ ->
-  binds X abind_tvar_empty (ss_to_aenv θ).
+  X ~ □ ∈ᵈ θ ->
+  X ~ □ ∈ᵃ ⌈ θ ⌉ᵃ.
 Proof.
   intros. induction θ; auto.
   - destruct a; destruct d; simpl in *; try inversion H0; 
@@ -431,29 +438,12 @@ Qed.
 
 
 Lemma binds_stvar_ss_binds_ss_to_aenv : forall X θ,
-  binds X dbind_stvar_empty θ ->
-  binds X abind_stvar_empty (ss_to_aenv θ).
+  X ~ ■ ∈ᵈ θ -> 
+  X ~ ■ ∈ᵃ ⌈ θ ⌉ᵃ.
 Proof.
   intros. induction θ; auto.
   - destruct a; destruct d; simpl in *; try inversion H0; 
     auto; destruct_binds; eauto.
-Qed.
-
-
-Lemma wf_ss_binds_typ_lc : forall θ X T,
-  wf_ss θ ->
-  binds X (dbind_typ T) θ ->
-  lc_typ T.
-Proof with auto.
-  intros. induction H.
-  - inversion H0.
-  - inversion H0; subst...
-    inversion H2.
-  - inversion H0; subst...
-    inversion H2.
-  - inversion H0; subst...
-     dependent destruction H3.
-     eapply d_mono_typ_lc; eauto.
 Qed.
 
 #[global] Hint Resolve wf_ss_uniq : core.
@@ -477,7 +467,9 @@ Proof.
 Qed.
 
 Lemma wf_ss_binds_mono_typ : forall θ X T,
-  wf_ss θ -> binds X (dbind_typ T) θ -> d_mono_typ (ss_to_denv θ) T.
+  wf_ss θ ->
+  X ~ T ∈ᵈ θ ->
+  ⌈ θ ⌉ᵈ ᵗ⊢ᵈₘ T.
 Proof.
   intros. induction H; auto.
   - inversion H0.
@@ -494,9 +486,20 @@ Proof.
     + simpl. apply IHwf_ss; auto.
 Qed.
 
+Lemma wf_ss_binds_typ_lc : forall θ X T,
+  wf_ss θ ->
+  X ~ T ∈ᵈ θ ->
+  lc_typ T.
+Proof.
+  intros.
+  eapply d_mono_typ_lc; eapply wf_ss_binds_mono_typ; eauto.
+Qed.
+
 
 Lemma wf_ss_binds_wf_typ : forall θ X T,
-  wf_ss θ -> binds X (dbind_typ T) θ -> d_wf_typ (ss_to_denv θ) T.
+  wf_ss θ -> 
+  X ~ T ∈ᵈ θ ->
+  ⌈ θ ⌉ᵈ ᵗ⊢ᵈ T.
 Proof.
   intros. apply d_mono_typ_d_wf_typ. eapply wf_ss_binds_mono_typ; eauto.
 Qed.
@@ -558,7 +561,7 @@ Qed.
 
 
 Lemma in_ss_denv_in_ss : forall X b θ,
-  binds X b (ss_to_denv θ) ->
+  binds X b (⌈ θ ⌉ᵈ) ->
   binds X b θ.
 Proof with auto.
   intros. induction θ...
@@ -602,7 +605,7 @@ Qed.
 
 Lemma wf_ss_typ_no_etvar: forall θ X A T,
   wf_ss θ ->
-  ss_to_denv θ ᵗ⊢ᵈ A ->
+  ⌈ θ ⌉ᵈ ᵗ⊢ᵈ A ->
   X ~ T ∈ᵈ θ ->
   X ∉ ftvar_in_typ A.
 Proof with eauto.
@@ -634,18 +637,18 @@ Qed.
 #[local] Hint Resolve wf_ss_uniq : core.
 
 Lemma trans_wl_not_in_ss : forall θ Γ Ω X,
-  nil ⊩ Γ ⇝ Ω ⫣ θ -> X ∉ dom (awl_to_aenv Γ) -> X ∉ dom θ.
+  nil ⊩ Γ ⇝ Ω ⫣ θ -> 
+  X ∉ dom (awl_to_aenv Γ) ->
+  X ∉ dom θ.
 Proof with auto.
   intros. dependent induction H; simpl in *...
 Qed.
-
 
 Lemma trans_wl_wf_ss : forall θ θ' Γ Ω,  
   θ ⊩ Γ ⇝ Ω ⫣ θ' -> wf_ss θ'.
 Proof with eauto.
   intros. dependent induction H; auto.
 Qed.
-
 
 Lemma trans_typ_wf_ss : forall θ Aᵃ Aᵈ,
   θ ᵗ⊩ Aᵃ ⇝ Aᵈ ->
@@ -656,16 +659,12 @@ Proof with auto.
     dependent destruction H1...
 Qed.
 
-
-
 Lemma trans_typ_lc_atyp : forall θ Aᵃ Aᵈ,
   θ ᵗ⊩ Aᵃ ⇝ Aᵈ ->
   lc_typ Aᵃ.
 Proof with auto.
   intros. induction H...
 Qed.
-
-
 
 Lemma trans_typ_lc_dtyp : forall θ Aᵃ Aᵈ,
   θ ᵗ⊩ Aᵃ ⇝ Aᵈ ->
@@ -1017,8 +1016,8 @@ Qed.
 
 Lemma trans_wl_d_wl_binds_tvar_ss : forall Γ X Ω θ θ',
   θ ⊩ Γ ⇝ Ω ⫣ θ' ->
-  binds X dbind_tvar_empty (dwl_to_denv Ω) ->
-  binds X dbind_tvar_empty (ss_to_denv θ').
+  X ~ □ ∈ᵈ ⌊ Ω ⌋ᵈ ->
+  X ~ □ ∈ᵈ ⌈ θ' ⌉ᵈ.
 Proof with eauto.
   intros. dependent induction H; destruct_binds...
   - inversion H0.
@@ -1612,7 +1611,7 @@ Proof with eauto.
     destruct Htrans_typ1 as [A1ᵈ]. destruct Htrans_typ2 as [A2ᵈ].
     exists (typ_arrow A1ᵈ A2ᵈ). econstructor...  
   - inst_cofinites_by (L `union` dom (awl_to_aenv Γ)  `union` ftvar_in_typ A `union` dom θ) using_name X.
-    assert (nil ⊩ (X ~ᵃ □%abind ;ᵃ Γ) ⇝ (X ~ᵈ □ ;ᵈ Ω) ⫣ (X, □) :: θ) by auto.
+    assert (nil ⊩ (X ~ᵃ □ ;ᵃ Γ) ⇝ (X ~ᵈ □ ;ᵈ Ω) ⫣ (X, □) :: θ) by auto.
     apply H1 in H3...
     destruct H3 as [Axᵈ].
     exists (typ_all (close_typ_wrt_typ X Axᵈ)).
@@ -1645,7 +1644,7 @@ Proof with eauto using trans_typ_total.
     + pick fresh x. 
       eapply trans_typ_total in H...
       destruct H as [Tᵈ].
-      assert ((nil ⊩ (x ~ᵃ abind_var_typ T ;ᵃ Γ) ⇝ (x ~ᵈ Tᵈ ;ᵈ Ω) ⫣ θ)) by auto.
+      assert ((nil ⊩ (x ~ᵃ T ;ᵃ Γ) ⇝ (x ~ᵈ Tᵈ ;ᵈ Ω) ⫣ θ)) by auto.
       eapply H1 with (θ:=θ) in H3...
       destruct H3 as [eᵈ].
       exists (exp_abs (close_exp_wrt_exp x eᵈ)). 
@@ -1656,7 +1655,7 @@ Proof with eauto using trans_typ_total.
       }
       apply H2...
     + inst_cofinites_by (L `union` dom (awl_to_aenv Γ) `union` ftvar_in_body body5 `union` dom θ) using_name X.
-      assert (nil ⊩ (X ~ᵃ □%abind ;ᵃ Γ) ⇝ (X ~ᵈ □ ;ᵈ Ω) ⫣ (X, □) :: θ) by auto.
+      assert (nil ⊩ (X ~ᵃ □ ;ᵃ Γ) ⇝ (X ~ᵈ □ ;ᵈ Ω) ⫣ (X, □) :: θ) by auto.
       eapply trans_body_total with (Ω:=dworklist_cons_var Ω X dbind_tvar_empty) (θ:=(X, dbind_tvar_empty)::θ) in H2...
       destruct H2 as [bᵈ].
       exists (exp_tabs (close_body_wrt_typ X bᵈ)).
@@ -1681,11 +1680,11 @@ Proof with eauto using trans_typ_total.
 Qed.
 
 Lemma trans_conts_total : forall θ Γ Ω csᵃ,
-  a_wf_conts (awl_to_aenv Γ) csᵃ ->  
+  ⌊ Γ ⌋ᵃ ᶜˢ⊢ᵃ csᵃ ->  
   nil ⊩ Γ ⇝ Ω ⫣ θ -> 
   exists csᵈ, θ ᶜˢ⊩ csᵃ ⇝ csᵈ
 with trans_contd_total : forall θ Γ Ω cdᵃ,
-  a_wf_contd (awl_to_aenv Γ) cdᵃ ->  
+  ⌊ Γ ⌋ᵃ ᶜᵈ⊢ᵃ cdᵃ ->  
   nil ⊩ Γ ⇝ Ω ⫣ θ -> 
   exists cdᵈ, θ ᶜᵈ⊩ cdᵃ ⇝ cdᵈ.
 Proof with eauto using trans_typ_total, trans_exp_total.
@@ -1771,8 +1770,8 @@ Qed.
 Lemma trans_wl_a_mono_typ_d_mono_typ : forall Γ Ω θ Tᵃ Tᵈ,
   nil ⊩ Γ ⇝ Ω ⫣ θ ->
   θ ᵗ⊩ Tᵃ ⇝ Tᵈ ->
-  a_mono_typ (awl_to_aenv Γ) Tᵃ ->
-  d_mono_typ (ss_to_denv θ) Tᵈ.
+  ⌊ Γ ⌋ᵃ ᵗ⊢ᵃₘ Tᵃ ->
+  ss_to_denv θ ᵗ⊢ᵈₘ Tᵈ.
 Proof.
   intros * Htranswl Htransa Hmono. eapply trans_typ_a_mono_typ_d_mono_typ; eauto.
    generalize dependent Tᵈ. dependent induction Hmono; intros.
@@ -1788,7 +1787,7 @@ Qed.
 
 Lemma trans_typ_binds_etvar : forall θ X T,
   wf_ss θ ->
-  binds X (dbind_typ T) θ ->
+  X ~ T ∈ᵈ θ ->
   θ ᵗ⊩ ` X ⇝ T.
 Proof.
   intros.
@@ -1832,7 +1831,7 @@ Qed.
 
 Lemma trans_typ_tvar_stvar_in_atyp_in_dtyp : forall θ X Aᵃ Aᵈ,
   θ ᵗ⊩ Aᵃ ⇝ Aᵈ ->
-  binds X dbind_tvar_empty θ \/ binds X dbind_stvar_empty θ ->
+  X ~ □ ∈ᵈ θ \/ X ~ ■ ∈ᵈ θ ->
   X `in` ftvar_in_typ Aᵃ -> 
   X `in` ftvar_in_typ Aᵈ.
 Proof.
@@ -1844,7 +1843,7 @@ Qed.
 Lemma trans_typ_tvar_stvar_in_etvar_binds_in_atyp' : forall θ X T Aᵃ Aᵈ,
   lc_typ Aᵃ ->
   θ ᵗ⊩ Aᵃ ⇝ Aᵈ ->
-  binds X (dbind_typ T) θ ->
+  X ~ T ∈ᵈ θ ->
   X `in` ftvar_in_typ Aᵃ ->
   (forall Y, Y `in` ftvar_in_typ T -> Y `in` ftvar_in_typ Aᵈ). 
 Proof.
@@ -1874,7 +1873,7 @@ Qed.
 
 Lemma trans_typ_tvar_stvar_in_etvar_binds_in_atyp : forall θ X T Aᵃ Aᵈ,
   θ ᵗ⊩ Aᵃ ⇝ Aᵈ ->
-  binds X (dbind_typ T) θ ->
+  X ~ T ∈ᵈ θ ->
   X `in` ftvar_in_typ Aᵃ ->
   (forall Y, Y `in` ftvar_in_typ T -> Y `in` ftvar_in_typ Aᵈ). 
 Proof.
@@ -1889,7 +1888,7 @@ Lemma trans_wl_a_wf_typ_d_wf_typ' : forall Γ Ω θ Aᵃ Aᵈ,
   nil ⊩ Γ ⇝ Ω ⫣ θ ->
   θ ᵗ⊩ Aᵃ ⇝ Aᵈ ->
   ⌊ Γ ⌋ᵃ ᵗ⊢ᵃ Aᵃ ->
-  dwl_to_denv Ω ᵗ⊢ᵈ Aᵈ.
+  ⌊ Ω ⌋ᵈ ᵗ⊢ᵈ Aᵈ.
 Proof with eauto. 
   intros * Hlc. 
   generalize dependent Aᵈ.
@@ -1924,7 +1923,7 @@ Qed.
 Lemma trans_wl_ss_wf_typ_d_wf_typ : forall Γ Ω θ Aᵈ,
   nil ⊩ Γ ⇝ Ω ⫣ θ ->
   d_wf_typ (ss_to_denv θ) Aᵈ ->
-  d_wf_typ (dwl_to_denv Ω) Aᵈ.
+  ⌊ Ω ⌋ᵈ ᵗ⊢ᵈ Aᵈ.
 Proof with eauto. 
   intros. generalize dependent Γ; generalize dependent Ω; dependent induction H0; intros...
   - constructor. eapply trans_wl_a_wl_binds_tvar_d_wl; eauto. eapply trans_wl_ss_binds_tvar_a_wl; eauto.
@@ -1940,8 +1939,8 @@ Qed.
 Lemma trans_wl_a_wf_typ_d_wf_typ : forall Γ Ω θ Aᵃ Aᵈ,
   nil ⊩ Γ ⇝ Ω ⫣ θ ->
   θ ᵗ⊩ Aᵃ ⇝ Aᵈ ->
-  a_wf_typ (awl_to_aenv Γ) Aᵃ ->
-  d_wf_typ (dwl_to_denv Ω) Aᵈ.
+  ⌊ Γ ⌋ᵃ ᵗ⊢ᵃ Aᵃ ->
+  ⌊ Ω ⌋ᵈ ᵗ⊢ᵈ Aᵈ.
 Proof with eauto. 
   intros. apply trans_typ_lc_atyp in H0 as Hlc.
   eapply trans_wl_a_wf_typ_d_wf_typ'; eauto.
@@ -1952,8 +1951,8 @@ Lemma trans_wl_d_wf_typ_a_wf_typ' : forall Γ Ω θ Aᵃ Aᵈ,
   lc_typ Aᵈ ->
   nil ⊩ Γ ⇝ Ω ⫣ θ ->
   θ ᵗ⊩ Aᵃ ⇝ Aᵈ ->
-  d_wf_typ (dwl_to_denv Ω) Aᵈ ->
-  a_wf_typ (awl_to_aenv Γ) Aᵃ.
+  ⌊ Ω ⌋ᵈ ᵗ⊢ᵈ Aᵈ ->
+  ⌊ Γ ⌋ᵃ ᵗ⊢ᵃ Aᵃ.
 Proof with eauto.
   intros * Hlc. 
   generalize dependent Aᵃ.
@@ -1994,8 +1993,8 @@ Qed.
 Lemma trans_wl_d_wf_typ_a_wf_typ : forall Γ Ω θ Aᵃ Aᵈ,
   nil ⊩ Γ ⇝ Ω ⫣ θ ->
   θ ᵗ⊩ Aᵃ ⇝ Aᵈ ->
-  d_wf_typ (dwl_to_denv Ω) Aᵈ ->
-  a_wf_typ (awl_to_aenv Γ) Aᵃ.
+  ⌊ Ω ⌋ᵈ ᵗ⊢ᵈ Aᵈ -> 
+  ⌊ Γ ⌋ᵃ ᵗ⊢ᵃ Aᵃ.
 Proof with eauto. 
   intros. apply trans_typ_lc_atyp in H0 as Hlc.
   eapply trans_wl_d_wf_typ_a_wf_typ' with (Aᵈ:=Aᵈ); eauto.
@@ -2004,7 +2003,7 @@ Qed.
 
 Lemma trans_wl_d_wf_typ_ss_wf_typ : forall Γ Ω θ Aᵈ,
   nil ⊩ Γ ⇝ Ω ⫣ θ ->
-  d_wf_typ (dwl_to_denv Ω) Aᵈ ->
+  ⌊ Ω ⌋ᵈ ᵗ⊢ᵈ Aᵈ ->
   d_wf_typ (ss_to_denv θ) Aᵈ.
 Proof with eauto. 
   intros. generalize dependent Γ; generalize dependent θ; dependent induction H0; intros...
@@ -2018,7 +2017,7 @@ Qed.
 
 Lemma trans_wl_d_wl_dom_upper : forall θ Γ Ω,  
   nil ⊩ Γ ⇝ Ω ⫣ θ ->
-  dom (dwl_to_denv Ω) [<=] dom (awl_to_aenv Γ).
+  dom (⌊ Ω ⌋ᵈ) [<=] dom (⌊ Γ ⌋ᵃ).
 Proof with auto.
   intros. dependent induction H; simpl...
   - fsetdec.
@@ -2031,7 +2030,7 @@ Qed.
 
 Lemma trans_wl_ss_dom_upper : forall θ Γ Ω,  
   nil ⊩ Γ ⇝ Ω ⫣ θ ->
-  dom θ [<=] dom (awl_to_aenv Γ).
+  dom θ [<=] dom (⌊ Γ ⌋ᵃ).
 Proof with auto.
   intros. dependent induction H; simpl...
   - fsetdec.
@@ -2094,8 +2093,8 @@ Qed.
 
 Lemma trans_wl_a_wl_binds_var_binds_d_wl_and_trans : forall θ Γ Ω x Aᵃ,
   nil ⊩ Γ ⇝ Ω ⫣ θ ->
-  binds x (abind_var_typ Aᵃ) (awl_to_aenv Γ) ->
-  exists Aᵈ, binds x (dbind_typ Aᵈ) (dwl_to_denv Ω) /\ θ ᵗ⊩ Aᵃ ⇝ Aᵈ.
+  x ~ Aᵃ ∈ᵃ ⌊ Γ ⌋ᵃ ->
+  exists Aᵈ, x ~ Aᵈ ∈ᵈ ⌊ Ω ⌋ᵈ /\ θ ᵗ⊩ Aᵃ ⇝ Aᵈ.
 Proof with eauto.
   intros. induction H...
   - inversion H0.
@@ -2116,8 +2115,8 @@ Qed.
 
 Lemma trans_wl_a_wl_binds_var_binds_d_wl : forall θ Γ Ω x Aᵃ,
   nil ⊩ Γ ⇝ Ω ⫣ θ ->
-  binds x (abind_var_typ Aᵃ) (awl_to_aenv Γ) ->
-  exists Aᵈ, binds x (dbind_typ Aᵈ) (dwl_to_denv Ω).
+  x ~ Aᵃ ∈ᵃ ⌊ Γ ⌋ᵃ ->
+  exists Aᵈ, x ~ Aᵈ ∈ᵈ ⌊ Ω ⌋ᵈ.
 Proof with eauto.
   intros. eapply trans_wl_a_wl_binds_var_binds_d_wl_and_trans in H0; eauto.
   destruct H0 as [Aᵈ [Hbinds _]]. eauto.  
@@ -2128,13 +2127,13 @@ Lemma trans_wl_a_wf_exp_d_wf_exp' : forall Γ Ω θ eᵃ eᵈ,
   lc_exp eᵃ ->
   nil ⊩ Γ ⇝ Ω ⫣ θ ->
   θ ᵉ⊩ eᵃ ⇝ eᵈ ->
-  a_wf_exp (awl_to_aenv Γ) eᵃ ->
+  ⌊ Γ ⌋ᵃ ᵉ⊢ᵃ eᵃ ->
   d_wf_exp (dwl_to_denv Ω) eᵈ
 with trans_wl_a_wf_body_d_wf_body' : forall Γ Ω θ bᵃ bᵈ,
   lc_body bᵃ ->
   nil ⊩ Γ ⇝ Ω ⫣ θ ->
   θ ᵇ⊩ bᵃ ⇝ bᵈ ->
-  a_wf_body (awl_to_aenv Γ) bᵃ ->
+  ⌊ Γ ⌋ᵃ ᵇ⊢ᵃ bᵃ ->
   d_wf_body (dwl_to_denv Ω) bᵈ.
 Proof with auto.
   - clear trans_wl_a_wf_exp_d_wf_exp'. intros * Hlc Htranswl Htranse Hwfe.
@@ -2158,7 +2157,7 @@ Proof with auto.
       intros; inst_cofinites_with X...
       * eapply trans_body_dtvar_abody_s_in_dbody with (b:=dbind_tvar_empty); eauto.
       * rewrite_env (dwl_to_denv (X ~ᵈ □ ;ᵈ Ω)). 
-        eapply trans_wl_a_wf_body_d_wf_body' with (Γ:=X ~ᵃ □%abind ;ᵃ Γ); eauto.
+        eapply trans_wl_a_wf_body_d_wf_body' with (Γ:=X ~ᵃ □ ;ᵃ Γ); eauto.
         constructor...
     + dependent destruction Hwfe. constructor; eauto.
       eapply trans_wl_a_wf_typ_d_wf_typ; eauto.
@@ -2208,7 +2207,7 @@ Qed.
 Lemma trans_wl_a_wf_work_d_wf_work : forall Γ Ω θ wᵃ wᵈ,  
   nil ⊩ Γ ⇝ Ω ⫣ θ -> 
   θ ʷ⊩ wᵃ ⇝ wᵈ -> 
-  a_wf_work (⌊ Γ ⌋ᵃ) wᵃ -> 
+  ⌊ Γ ⌋ᵃ ʷ⊢ᵃ wᵃ -> 
   d_wf_work (dwl_to_denv Ω) wᵈ.
 Proof.
   intros * Hwfwl Htransw Hwfw. 
@@ -2260,7 +2259,7 @@ Qed.
 Lemma a_wf_twl_d_wf_tenv : forall θ Γ Ω,  
   ⊢ᵃʷₜ Γ -> 
   nil ⊩ Γ ⇝ Ω ⫣ θ -> 
-  ⊢ᵈₜ dwl_to_denv Ω.
+  ⊢ᵈₜ ⌊ Ω ⌋ᵈ.
 Proof with eauto.
   intros.
   apply d_wf_twl_wf_tenv.

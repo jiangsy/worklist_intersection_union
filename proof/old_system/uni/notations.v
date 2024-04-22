@@ -8,52 +8,6 @@ Require Export uni.prop_ln.
 Notation "x ∉ L" := (x `notin` L)
   (at level 70, no associativity).
 
-Notation "⊢ᵈ Ψ" :=
-  (d_wf_env Ψ)
-    (at level 65, no associativity) : type_scope.
-  
-Notation "⊢ᵈₜ Ψ" :=
-  (d_wf_tenv Ψ)
-    (at level 65, no associativity) : type_scope.
-
-Notation "Ψ ᵗ⊢ᵈ A" :=
-  (d_wf_typ Ψ A)
-    (at level 65, no associativity) : type_scope.
-    
-Notation "Ψ ᵗ⊢ᵈₘ T" :=
-  (d_mono_typ Ψ T)
-    (at level 65, no associativity) : type_scope.
-
-Notation "Ψ ⊢ A <: B" :=
-  (d_sub Ψ A B)
-    (at level 65, A at next level, no associativity) : type_scope.
-
-Notation "Ψ ⊢ e ⇐ A" :=
-    (d_chk_inf Ψ e typingmode__chk A) 
-      (at level 65, e at next level, no associativity) : type_scope.
-
-Notation "Ψ ⊢ e ⇒ A" := 
-    (d_chk_inf Ψ e typingmode__inf A) 
-      (at level 65, e at next level, no associativity) : type_scope.
-
-Notation "Ψ ⊢ A ○ B ⇒⇒ C" :=
-    (d_inftapp Ψ A B C) 
-      (at level 65, A at next level, B at next level, no associativity) : type_scope. 
-
-Notation "Ψ ⊢ A ▹ B → C" :=
-  (d_infabs Ψ A B C) 
-    (at level 65, A at next level, B at next level, no associativity) : type_scope. 
-
-
-Notation "X ~ □ ∈ᵈ E" := (binds X (dbind_tvar_empty) E)
-  (at level 50, no associativity) : type_scope.
-
-Notation "X ~ ■ ∈ᵈ E" := (binds X (dbind_stvar_empty) E)
-  (at level 50, no associativity) : type_scope.
-
-Notation "x ~ A ∈ᵈ E" := (binds x (dbind_typ A) E)
-  (at level 50, A at next level, no associativity) : type_scope.
-
 Notation "` X" := (typ_var_f X)
   (at level 0, X at level 0, no associativity) : type_scope.
 Notation "↑ n" := (typ_var_b n)
@@ -131,6 +85,96 @@ Notation "e1 ᵉ^ₑ e2" := (open_exp_wrt_exp e1 e2)
 Notation "e ᵉ^ₜ A" := (open_exp_wrt_typ e A)
   (at level 48, left associativity) : type_scope.
 
+Notation "⊢ᵈ Ψ" :=
+  (d_wf_env Ψ)
+    (at level 65, no associativity) : type_scope.
+  
+Notation "⊢ᵈₜ Ψ" :=
+  (d_wf_tenv Ψ)
+    (at level 65, no associativity) : type_scope.
+
+Notation "Ψ ᵗ⊢ᵈ A" :=
+  (d_wf_typ Ψ A)
+    (at level 65, no associativity) : type_scope.
+    
+Notation "Ψ ᵗ⊢ᵈₘ T" :=
+  (d_mono_typ Ψ T)
+    (at level 65, no associativity) : type_scope.
+
+Notation "X ~ □ ∈ᵈ Ψ" := (binds X (dbind_tvar_empty) Ψ)
+  (at level 50, no associativity) : type_scope.
+
+Notation "X ~ ■ ∈ᵈ Ψ" := (binds X (dbind_stvar_empty) Ψ)
+  (at level 50, no associativity) : type_scope.
+
+Notation "x ~ A ∈ᵈ Ψ" := (binds x (dbind_typ A) Ψ)
+  (at level 50, A at next level, no associativity) : type_scope.
+
+Notation "Ψ ⊢ A <: B" :=
+  (d_sub Ψ A B)
+    (at level 65, A at next level, no associativity) : type_scope.
+
+Notation "Ψ ⊢ e ⇐ A" :=
+    (d_chk_inf Ψ e typingmode__chk A) 
+      (at level 65, e at next level, no associativity) : type_scope.
+
+Notation "Ψ ⊢ e ⇒ A" := 
+    (d_chk_inf Ψ e typingmode__inf A) 
+      (at level 65, e at next level, no associativity) : type_scope.
+
+Notation "Ψ ⊢ A ○ B ⇒⇒ C" :=
+    (d_inftapp Ψ A B C) 
+      (at level 65, A at next level, B at next level, no associativity) : type_scope. 
+
+Notation "Ψ ⊢ A ▹ B → C" :=
+  (d_infabs Ψ A B C) 
+    (at level 65, A at next level, B at next level, no associativity) : type_scope. 
+
+
+Notation "Σ ᵗ⊢ᵃ A" :=
+  (a_wf_typ Σ A)
+    (at level 65, no associativity) : type_scope.
+
+Notation "Σ ᵗ⊢ᵃₘ A" :=
+  (a_mono_typ Σ A)
+    (at level 65, no associativity) : type_scope.
+
+Notation "⊢ᵃ Σ" :=
+  (a_wf_env Σ)
+    (at level 65, no associativity) : type_scope.
+  
+
+Notation "Σ ᵉ⊢ᵃ e" :=
+  (a_wf_exp Σ e)
+    (at level 65, no associativity) : type_scope.
+
+Notation "Σ ᵇ⊢ᵃ b" :=
+  (a_wf_body Σ b)
+    (at level 65, no associativity) : type_scope.
+
+Notation "Σ ᶜˢ⊢ᵃ cs" :=
+  (a_wf_conts Σ cs)
+    (at level 65, no associativity) : type_scope.
+
+Notation "Σ ᶜᵈ⊢ᵃ cd" :=
+  (a_wf_contd Σ cd)
+    (at level 65, no associativity) : type_scope.
+
+Notation "Σ ʷ⊢ᵃ cd" :=
+  (a_wf_work Σ cd)
+    (at level 65, no associativity) : type_scope.
+
+Notation "X ~ □ ∈ᵃ Σ" := (binds X (abind_tvar_empty) Σ)
+  (at level 50, no associativity) : type_scope.
+
+Notation "X ~ ■ ∈ᵃ Σ" := (binds X (abind_stvar_empty) Σ)
+  (at level 50, no associativity) : type_scope.
+
+Notation "X ~ ⬒ ∈ᵃ Σ" := (binds X (abind_etvar_empty) Σ)
+  (at level 50, no associativity) : type_scope.
+
+Notation "x ~ A ∈ᵃ Σ" := (binds x (abind_var_typ A) Σ)
+  (at level 50, A at next level, no associativity) : type_scope.
 
 Declare Scope dbind_scope.
 Delimit Scope dbind_scope with dbind.

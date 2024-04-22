@@ -868,7 +868,7 @@ Qed.
 
 Lemma worklist_subst_fresh_etvar_total' : forall Γ X X1 X2,
   uniq (⌊ Γ ⌋ᵃ) ->
-  binds X abind_etvar_empty (awl_to_aenv Γ) ->
+  X ~ ⬒ ∈ᵃ ⌊ Γ ⌋ᵃ ->
   X1 ∉ dom (awl_to_aenv Γ) ->
   X2 ∉ add X1 (dom (awl_to_aenv Γ)) ->
   exists Γ1 Γ2, aworklist_subst (X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ) X
@@ -1002,7 +1002,7 @@ Proof with eauto.
   - destruct_a_wf_wl.
     dependent destruction H. dependent destruction H1.
     pick fresh X. inst_cofinites_with X.
-    assert ( ⊢ᵃʷₛ (work_sub (B1 ᵗ^ₜ X) (A1 ᵗ^ₜ X) ⫤ᵃ X ~ᵃ ■%abind ;ᵃ Γ) ). {
+    assert ( ⊢ᵃʷₛ (work_sub (B1 ᵗ^ₜ X) (A1 ᵗ^ₜ X) ⫤ᵃ X ~ᵃ ■ ;ᵃ Γ) ). {
       apply a_wf_wl__conswork_sub...
       apply a_wf_typ_tvar_stvar_cons...
       apply a_wf_typ_tvar_stvar_cons...    }
@@ -1162,7 +1162,7 @@ Proof with eauto.
   - destruct_a_wf_wl.
     remember (fvar_in_exp e).
     pick fresh x. 
-    assert (⊢ᵃʷₛ (work_check (e ᵉ^ₑ exp_var_f x) A2 ⫤ᵃ x ~ᵃ abind_var_typ A1;ᵃ Γ)). {
+    assert (⊢ᵃʷₛ (work_check (e ᵉ^ₑ exp_var_f x) A2 ⫤ᵃ x ~ᵃ A1;ᵃ Γ)). {
       repeat (constructor; simpl; auto).
       eapply a_wf_exp_var_binds_another_cons...
       apply a_wf_typ_weaken_cons...
@@ -1190,11 +1190,11 @@ Proof with eauto.
     pick fresh x. pick fresh X1. pick fresh X2.
     inst_cofinites_with x. inst_cofinites_with X1. inst_cofinites_with X2.  
     assert (Hws: exists Γ1 Γ2, aworklist_subst 
-       (work_check (e ᵉ^ₑ exp_var_f x) ` X2  ⫤ᵃ x ~ᵃ abind_var_typ ` X1;ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ) X
+       (work_check (e ᵉ^ₑ exp_var_f x) ` X2  ⫤ᵃ x ~ᵃ ` X1;ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ) X
        (typ_arrow ` X1 ` X2) Γ1 Γ2). {
        eapply worklist_subst_fresh_etvar_total' with (X1:=X1) (X2:=X2) in H4 as Hws; auto.
        destruct Hws as [Γ1 [Γ2 Hws]].
-       exists Γ1, (work_check (e ᵉ^ₑ exp_var_f x) ` X2  ⫤ᵃ x ~ᵃ abind_var_typ ` X1 ;ᵃ Γ2)...
+       exists Γ1, (work_check (e ᵉ^ₑ exp_var_f x) ` X2  ⫤ᵃ x ~ᵃ ` X1 ;ᵃ Γ2)...
     }
     destruct Hws as [Γ1 [Γ2 Hsubst]].
     apply H6 in Hsubst as Hwsred.
@@ -1230,7 +1230,7 @@ Proof with eauto.
       * simpl. constructor... 
       * simpl...  
     + eapply aworklist_subst_wf_wl with 
-        (Γ:=(work_check (e ᵉ^ₑ exp_var_f x) ` X2  ⫤ᵃ x ~ᵃ abind_var_typ ` X1;ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ)); eauto. 
+        (Γ:=(work_check (e ᵉ^ₑ exp_var_f x) ` X2  ⫤ᵃ x ~ᵃ ` X1;ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ)); eauto. 
       * repeat (constructor; simpl; auto).
         apply a_wf_exp_var_binds_another_cons with (A1:=T)...
         rewrite_env ((x ~ abind_var_typ T) ++ ((X2, ⬒) :: (X1 ~ ⬒)) ++ ⌊ Γ ⌋ᵃ).
@@ -1238,7 +1238,7 @@ Proof with eauto.
       * simpl... constructor...
   (* \ x. e <= ⊤ *)
   - destruct_a_wf_wl. pick fresh x. inst_cofinites_with x. 
-    assert ( ⊢ᵃʷₛ (work_check (e ᵉ^ₑ exp_var_f x) typ_top ⫤ᵃ x ~ᵃ abind_var_typ typ_bot;ᵃ Γ)). 
+    assert ( ⊢ᵃʷₛ (work_check (e ᵉ^ₑ exp_var_f x) typ_top ⫤ᵃ x ~ᵃ typ_bot;ᵃ Γ)). 
     { repeat (constructor; simpl; auto). 
       eapply a_wf_exp_var_binds_another_cons; eauto.
     }
@@ -1283,7 +1283,7 @@ Proof with eauto.
   (* /\ a. e : A => _ *)
   - destruct_a_wf_wl. 
     pick fresh X. inst_cofinites_with X.
-    assert (Hwf: ⊢ᵃʷₛ (work_check (e ᵉ^ₜ ` X) (A ᵗ^ₜ X) ⫤ᵃ X ~ᵃ □%abind ;ᵃ work_applys cs (typ_all A) ⫤ᵃ Γ)). {
+    assert (Hwf: ⊢ᵃʷₛ (work_check (e ᵉ^ₜ ` X) (A ᵗ^ₜ X) ⫤ᵃ X ~ᵃ □ ;ᵃ work_applys cs (typ_all A) ⫤ᵃ Γ)). {
       rewrite open_body_wrt_typ_anno in *.
       dependent destruction H0...
       dependent destruction H...
@@ -1328,7 +1328,7 @@ Proof with eauto.
            eapply trans_typ_dtvar_atyp_s_in_dtyp with (b:=dbind_tvar_empty)... 
            apply d_wf_typ_rename_tvar_cons.
            rewrite_env (dwl_to_denv (X ~ᵈ □ ;ᵈ Ω)).
-           eapply trans_wl_a_wf_typ_d_wf_typ with (Γ:= X ~ᵃ □%abind ;ᵃ Γ)...
+           eapply trans_wl_a_wf_typ_d_wf_typ with (Γ:= X ~ᵃ □ ;ᵃ Γ)...
            constructor...
         -- intros. inst_cofinites_with X0. rewrite_close_open_subst.
            rewrite_close_open_subst.
@@ -1339,7 +1339,7 @@ Proof with eauto.
   - destruct_a_wf_wl.
     pick fresh x. pick fresh X1. pick fresh X2.
     inst_cofinites_with x. inst_cofinites_with X1. inst_cofinites_with X2.
-    assert (Hwf: ⊢ᵃʷₛ (work_check (e ᵉ^ₑ exp_var_f x) ` X2  ⫤ᵃ x ~ᵃ abind_var_typ ` X1;ᵃ work_applys cs (typ_arrow ` X1 ` X2)
+    assert (Hwf: ⊢ᵃʷₛ (work_check (e ᵉ^ₑ exp_var_f x) ` X2  ⫤ᵃ x ~ᵃ ` X1;ᵃ work_applys cs (typ_arrow ` X1 ` X2)
             ⫤ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ)). {
       repeat (constructor; simpl; auto).
       apply a_wf_exp_var_binds_another_cons with (A1:=T)...
@@ -1427,7 +1427,7 @@ Proof with eauto.
         apply s_in_rename. eapply trans_typ_dtvar_atyp_s_in_dtyp with (b:=dbind_tvar_empty)...
         apply d_wf_typ_rename_tvar_cons.
         rewrite_env (dwl_to_denv (X ~ᵈ □ ;ᵈ Ω)).
-        eapply trans_wl_a_wf_typ_d_wf_typ with (Γ:= X ~ᵃ □%abind ;ᵃ Γ)...
+        eapply trans_wl_a_wf_typ_d_wf_typ with (Γ:= X ~ᵃ □ ;ᵃ Γ)...
         constructor...
       * rewrite_close_open_subst. rewrite Hsubst...
   - exists (work_infabs (typ_intersection A1ᵈ A2ᵈ) cdᵈ ⫤ᵈ Ω)...

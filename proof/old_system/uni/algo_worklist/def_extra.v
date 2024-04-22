@@ -244,64 +244,16 @@ Delimit Scope aworklist_scope with aworklist.
 Bind Scope aworklist_scope with aworklist.
 
 
-Notation "Σ ᵗ⊢ᵃ A" :=
-  (a_wf_typ Σ A)
-    (at level 65, no associativity) : type_scope.
-
-Notation "Σ ᵗ⊢ᵃₘ A" :=
-  (a_mono_typ Σ A)
-    (at level 65, no associativity) : type_scope.
-
-Notation "⊢ᵃ Σ" :=
-  (a_wf_env Σ)
-    (at level 65, no associativity) : type_scope.
-
-(* Notation "⊢ᵃ Σ" :=
-  (a_wf_tenv Σ)
-    (at level 65, no associativity) : type_scope. *)
-
-Notation "Σ ᵉ⊢ᵃ e" :=
-  (a_wf_exp Σ e)
-    (at level 65, no associativity) : type_scope.
-
-Notation "Σ ᵇ⊢ᵃ b" :=
-  (a_wf_body Σ b)
-    (at level 65, no associativity) : type_scope.
-
-Notation "Σ ᶜˢ⊢ᵃ cs" :=
-  (a_wf_conts Σ cs)
-    (at level 65, no associativity) : type_scope.
-
-Notation "Σ ᶜᵈ⊢ᵃ cd" :=
-  (a_wf_contd Σ cd)
-    (at level 65, no associativity) : type_scope.
-
-Notation "Σ ʷ⊢ᵃ cd" :=
-  (a_wf_work Σ cd)
-    (at level 65, no associativity) : type_scope.
-
-Notation "X ~ □ ∈ᵃ Σ" := (binds X (abind_tvar_empty) Σ)
-  (at level 50, no associativity) : type_scope.
-
-Notation "X ~ ■ ∈ᵃ Σ" := (binds X (abind_stvar_empty) Σ)
-  (at level 50, no associativity) : type_scope.
-
-Notation "X ~ ⬒ ∈ᵃ Σ" := (binds X (abind_etvar_empty) Σ)
-  (at level 50, no associativity) : type_scope.
-
-Notation "x ~ A ∈ᵃ Σ" := (binds x (abind_var_typ A) Σ)
-  (at level 50, A at next level, no associativity) : type_scope.
-
 (* Notation " x ~ᵃ A ;ᵃ Γ " :=
   (aworklist_cons_var Γ x (abind_var_typ A))
       (at level 58, A at next level, right associativity) : aworklist_scope.
  *)
 
-Notation " X ~ᵃ b ;ᵃ Γ " :=
+Notation " X ~ᵃ b ; Γ " :=
     (aworklist_cons_var Γ X b)
     (at level 58, b at next level, right associativity) : aworklist_scope.
     
-(* Notation " X ~ᵃ □ ;ᵃ Γ " :=
+Notation " X ~ᵃ □ ;ᵃ Γ " :=
   (aworklist_cons_var Γ X abind_tvar_empty)
       (at level 58, right associativity) : aworklist_scope.
 
@@ -309,10 +261,13 @@ Notation " X ~ᵃ ■ ;ᵃ Γ " :=
   (aworklist_cons_var Γ X abind_stvar_empty)
       (at level 58, right associativity) : aworklist_scope.
 
-
 Notation " X ~ᵃ ⬒ ;ᵃ Γ " :=
   (aworklist_cons_var Γ X abind_etvar_empty)
-      (at level 58, right associativity) : aworklist_scope. *)
+      (at level 58, right associativity) : aworklist_scope.
+
+Notation " X ~ᵃ A ;ᵃ Γ " :=
+    (aworklist_cons_var Γ X (abind_var_typ A))
+        (at level 58, A at next level, right associativity) : aworklist_scope.
 
 Notation " w ⫤ᵃ Γ " :=
   (aworklist_cons_work Γ w)
