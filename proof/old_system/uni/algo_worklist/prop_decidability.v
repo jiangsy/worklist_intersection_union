@@ -15,7 +15,7 @@ Require Import uni.algo_worklist.prop_completeness.
 Require Import uni.algo_worklist.transfer.
 Require Import ln_utils.
 
-Fixpoint iu_size (A : typ) : nat :=
+(* Fixpoint iu_size (A : typ) : nat :=
   match A with
   | typ_unit => 0
   | typ_bot => 0
@@ -26,7 +26,7 @@ Fixpoint iu_size (A : typ) : nat :=
   | typ_all A => iu_size A
   | typ_union A1 A2 => 2 + iu_size A1 + iu_size A2
   | typ_intersection A1 A2 => 2 + iu_size A1 + iu_size A2
-  end.
+  end. *)
 
 Fixpoint exp_size (Γ : aworklist) (e : exp) : nat :=
   match e with
@@ -810,6 +810,7 @@ Lemma apply_contd_exp_size : forall Γ c A B w,
 Proof.
   intros Γ c A B w Happly.
   induction Happly; simpl; eauto; try lia.
+  assert (exp_size Γ e * S (iu_size A) <= exp_size Γ e * S n). 
   (* safe *)
 Admitted.
 
@@ -1112,7 +1113,7 @@ Lemma exp_size_wl_aworklist_subst : forall Γ X A Γ1 Γ2,
 Admitted.
 
 
-Inductive elim_polarity : Type :=
+(* Inductive elim_polarity : Type :=
   | neg 
   | pos.
 
@@ -1159,7 +1160,7 @@ Proof.
   intros. induction H; simpl; auto.
   - pick fresh Y. inst_cofinites_with Y.
     rewrite ftvar_in_typ_open_typ_wrt_typ_lower; eauto.
-Qed.
+Qed. *)
 
 Lemma lookup_tvar_bind_etvar : forall Γ2 Γ1 X X0,
   X ≠ X0 ->
@@ -1171,11 +1172,32 @@ Proof.
   - destruct (X0 == X); subst; auto.
 Qed.
 
+
 Lemma lookup_tvar_bind_binds : forall Γ X B,
   ⊢ᵃʷ Γ ->
   binds X B (⌊ Γ ⌋ᵃ) <->
   lookup_tvar_bind (⌊ Γ ⌋ᵃ) X = Some B.
-Admitted.
+Proof.
+  intros. induction H; simpl; destruct_eq_atom; split; intros; auto; destruct_binds; auto; try solve [inversion H].
+  - exfalso; eapply binds_dom_contradiction; eauto. 
+  - inversion H2; auto.
+  - apply IHa_wf_wl; auto.
+  - apply binds_cons; eauto. apply IHa_wf_wl; auto.
+  - exfalso; eapply binds_dom_contradiction; eauto.
+  - inversion H1. auto.
+  - apply IHa_wf_wl; auto.
+  - apply binds_cons; eauto. apply IHa_wf_wl; auto.
+  - exfalso; eapply binds_dom_contradiction; eauto.
+  - inversion H1. auto.
+  - apply IHa_wf_wl; auto.  
+  - apply binds_cons; eauto. apply IHa_wf_wl; auto.
+  - exfalso; eapply binds_dom_contradiction; eauto.
+  - inversion H1. auto.
+  - apply IHa_wf_wl; auto.
+  - apply binds_cons; eauto. apply IHa_wf_wl; auto.
+  - apply IHa_wf_wl; auto.
+  - apply IHa_wf_wl; auto.
+Qed.
 
 Lemma split_depth_rec_etvar : forall A Γ1 Γ2 X n,
   ⊢ᵃʷ (Γ2 ⧺ Γ1) ->
