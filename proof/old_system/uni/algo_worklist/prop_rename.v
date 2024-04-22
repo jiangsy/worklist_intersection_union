@@ -1836,10 +1836,7 @@ Proof with eauto.
               repeat (constructor; simpl; auto)... apply a_wf_exp_weaken_etvar_twice with (T:=T)...
            ++ rewrite aworklist_subst_dom_upper with (Γ:=(work_check (e ᵉ^ₑ exp_var_f x0) ` X2 ⫤ᵃ x0 ~ᵃ abind_var_typ ` X1;ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ))...
         -- solve_notin_rename_var.
-      * simpl.
-        rewrite fvar_in_exp_open_exp_wrt_exp_upper.
-        assert (x ∉ fvar_in_exp ({exp_var_f y ᵉ/ₑ x} e)) by (apply subst_var_in_exp_fresh_same; auto).
-        solve_notin_rename_var.
+      * simpl. solve_notin_rename_var.
   - destruct_a_wf_wl. simpl in *.
     inst_cofinites_for a_wl_red__chk_abstop. intros.
     inst_cofinites_with x0.

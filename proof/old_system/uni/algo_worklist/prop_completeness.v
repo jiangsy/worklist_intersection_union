@@ -269,19 +269,19 @@ Qed.
 Lemma trans_exp_etvar_subst_same_ss' : forall θ Tᵃ Tᵈ X eᵃ eᵈ,
   lc_exp eᵃ ->
   wf_ss θ ->
-  binds X (dbind_typ Tᵈ) θ ->
+  X ~ Tᵈ ∈ᵈ θ ->
   X ∉ ftvar_in_typ Tᵃ ->
   θ ᵗ⊩ Tᵃ ⇝ Tᵈ ->
   θ ᵉ⊩ eᵃ ⇝ eᵈ ->
-  θ ᵉ⊩ (subst_tvar_in_exp Tᵃ X eᵃ) ⇝ eᵈ
+  θ ᵉ⊩ {Tᵃ ᵉ/ₜ X} eᵃ ⇝ eᵈ
 with trans_body_etvar_subst_same_ss' : forall θ Tᵃ Tᵈ X bᵃ bᵈ,
   lc_body bᵃ ->
   wf_ss θ ->
-  binds X (dbind_typ Tᵈ) θ ->
+  X ~ Tᵈ ∈ᵈ θ ->
   X ∉ ftvar_in_typ Tᵃ ->
   θ ᵗ⊩ Tᵃ ⇝ Tᵈ ->
   θ ᵇ⊩ bᵃ ⇝ bᵈ ->
-  θ ᵇ⊩ (subst_tvar_in_body Tᵃ X bᵃ) ⇝ bᵈ.
+  θ ᵇ⊩ {Tᵃ ᵇ/ₜ X} bᵃ ⇝ bᵈ.
 Proof.
   - intros * Hlc.
     generalize dependent θ. generalize dependent eᵈ.
@@ -321,14 +321,14 @@ Qed.
 
 Lemma trans_exp_etvar_subst_same_ss : forall θ Tᵃ Tᵈ X eᵃ eᵈ,
   wf_ss θ ->
-  binds X (dbind_typ Tᵈ) θ ->
+  X ~ Tᵈ ∈ᵈ θ ->
   X ∉ ftvar_in_typ Tᵃ ->
   θ ᵗ⊩ Tᵃ ⇝ Tᵈ ->
   θ ᵉ⊩ eᵃ ⇝ eᵈ ->
   θ ᵉ⊩ (subst_tvar_in_exp Tᵃ X eᵃ) ⇝ eᵈ
 with trans_body_etvar_subst_same_ss : forall θ Tᵃ Tᵈ X bᵃ bᵈ,
   wf_ss θ ->
-  binds X (dbind_typ Tᵈ) θ ->
+  X ~ Tᵈ ∈ᵈ θ ->
   X ∉ ftvar_in_typ Tᵃ ->
   θ ᵗ⊩ Tᵃ ⇝ Tᵈ ->
   θ ᵇ⊩ bᵃ ⇝ bᵈ ->
@@ -347,18 +347,18 @@ Qed.
 
 Lemma trans_conts_etvar_subst_same_ss : forall θ Tᵃ Tᵈ X csᵃ csᵈ,
   wf_ss θ ->
-  binds X (dbind_typ Tᵈ) θ ->
+  X ~ Tᵈ ∈ᵈ θ ->
   X ∉ ftvar_in_typ Tᵃ ->
   θ ᵗ⊩ Tᵃ ⇝ Tᵈ ->
   θ ᶜˢ⊩ csᵃ ⇝ csᵈ ->
-  θ ᶜˢ⊩ (subst_tvar_in_conts Tᵃ X csᵃ) ⇝ csᵈ
+  θ ᶜˢ⊩ {Tᵃ ᶜˢ/ₜ X} csᵃ ⇝ csᵈ
 with trans_contd_etvar_subst_same_ss : forall θ Tᵃ Tᵈ X cdᵃ cdᵈ,
   wf_ss θ ->
-  binds X (dbind_typ Tᵈ) θ ->
+  X ~ Tᵈ ∈ᵈ θ ->
   X ∉ ftvar_in_typ Tᵃ ->
   θ ᵗ⊩ Tᵃ ⇝ Tᵈ ->
   θ ᶜᵈ⊩ cdᵃ ⇝ cdᵈ ->
-  θ ᶜᵈ⊩ (subst_tvar_in_contd Tᵃ X cdᵃ) ⇝ cdᵈ.
+  θ ᶜᵈ⊩ {Tᵃ ᶜᵈ/ₜ X} cdᵃ ⇝ cdᵈ.
 Proof.
   intros. generalize dependent θ. generalize dependent csᵈ.
   induction csᵃ; intros; simpl in *; dependent destruction H3;
@@ -378,11 +378,11 @@ Qed.
 
 Lemma trans_work_etvar_subst_same_ss : forall θ Tᵃ Tᵈ X wᵃ wᵈ,
   wf_ss θ ->
-  binds X (dbind_typ Tᵈ) θ ->
+  X ~ Tᵈ ∈ᵈ θ ->
   X ∉ ftvar_in_typ Tᵃ ->
   θ ᵗ⊩ Tᵃ ⇝ Tᵈ ->
   θ ʷ⊩ wᵃ ⇝ wᵈ ->
-  θ ʷ⊩ (subst_tvar_in_work Tᵃ X wᵃ) ⇝ wᵈ.
+  θ ʷ⊩ {Tᵃ ʷ/ₜ X} wᵃ ⇝ wᵈ.
 Proof.
   intros. destruct wᵃ; try simpl in *; dependent destruction H3;
     constructor; 
@@ -398,7 +398,7 @@ Lemma trans_typ_etvar_binds : forall θ X Γ Ω T,
   nil ⊩ Γ ⇝ Ω ⫣ θ ->
   binds X abind_etvar_empty (awl_to_aenv Γ) ->
   θ ᵗ⊩ ` X ⇝ T ->
-  binds X (dbind_typ T) θ.
+  X ~ T ∈ᵈ θ.
 Proof.
   intros. eapply trans_wl_a_wl_binds_etvar_ss in H0; eauto.
   destruct H0 as [T'].
@@ -410,12 +410,12 @@ Qed.
 Lemma aworklist_subst_transfer_same_dworklist_rev_exist': forall Γ1 Γ2 Ω θ X T Tᵈ,
   ⊢ᵃʷ (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) ->
   X ∉ ftvar_in_typ T ->
-  trans_worklist nil (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) Ω θ ->
+  nil ⊩ Γ2 ⧺ X ~ᵃ ⬒;ᵃ Γ1 ⇝ Ω ⫣ θ ->
   θ ᵗ⊩ T ⇝ Tᵈ ->
   θ ᵗ⊩ ` X ⇝ Tᵈ ->
   exists Γ'1 Γ'2 θ', 
       aworklist_subst (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) X T Γ'1 Γ'2 /\
-      trans_worklist nil (awl_app (subst_tvar_in_aworklist T X Γ'2) Γ'1) Ω θ' /\
+      nil ⊩ {T ᵃʷ/ₜ X} Γ'2 ⧺ Γ'1 ⇝ Ω ⫣ θ' /\
       (forall Y b, X <> Y -> binds Y b θ <-> binds Y b θ') /\ 
       wf_ss θ'.
 Proof with eauto.
@@ -577,12 +577,12 @@ Corollary aworklist_subst_transfer_same_dworklist_rev_exist: forall Γ Ω θ X T
   ⊢ᵃʷₛ Γ ->
   binds X abind_etvar_empty (awl_to_aenv Γ) ->
   X ∉ ftvar_in_typ T ->
-  trans_worklist nil Γ Ω θ ->
+  nil ⊩ Γ ⇝ Ω ⫣ θ ->
   θ ᵗ⊩ T ⇝ Tᵈ ->
   θ ᵗ⊩ ` X ⇝ Tᵈ ->
   exists Γ1 Γ2 θ', 
       aworklist_subst Γ X T Γ1 Γ2 /\
-      trans_worklist nil (awl_app (subst_tvar_in_aworklist T X Γ2) Γ1) Ω θ' /\
+      nil ⊩ {T ᵃʷ/ₜ X} Γ2 ⧺ Γ1 ⇝ Ω ⫣ θ' /\
       (forall Y b, X <> Y -> binds Y b θ <-> binds Y b θ') /\ 
       wf_ss θ'.
 Proof.
@@ -594,15 +594,15 @@ Qed.
 
 Corollary aworklist_subst_transfer_same_dworklist_rev: forall Γ Ω θ X T Tᵈ Γ1 Γ2,
   ⊢ᵃʷₛ Γ ->
-  binds X abind_etvar_empty (awl_to_aenv Γ) ->
-  a_mono_typ (awl_to_aenv Γ) T ->
+  X ~ ⬒ ∈ᵃ ⌊ Γ ⌋ᵃ ->
+  ⌊ Γ ⌋ᵃ ᵗ⊢ᵃₘ T ->
   X ∉ ftvar_in_typ T ->
   aworklist_subst Γ X T Γ1 Γ2 ->
-  trans_worklist nil Γ Ω θ ->
+  nil ⊩ Γ ⇝ Ω ⫣ θ ->
   θ ᵗ⊩ T ⇝ Tᵈ ->
   θ ᵗ⊩ ` X ⇝ Tᵈ ->
   exists θ', 
-      trans_worklist nil (awl_app (subst_tvar_in_aworklist T X Γ2) Γ1) Ω θ' /\
+      nil ⊩ {T ᵃʷ/ₜ X} Γ2 ⧺ Γ1 ⇝ Ω ⫣ θ' /\
       (forall Y b, X <> Y -> binds Y b θ <-> binds Y b θ') /\ 
       wf_ss θ'.
 Proof.
@@ -751,7 +751,7 @@ Proof.
 Qed.
 
 Lemma trans_typ_subst : forall θ1 θ2 Aᵃ Aᵈ Bᵃ Bᵈ X b,
-  b = dbind_tvar_empty \/ b = dbind_stvar_empty ->
+  b = □ \/ b = ■ ->
   θ2 ++ (X , b) :: θ1 ᵗ⊩ Aᵃ ⇝ Aᵈ ->
   (forall Y T, binds Y (dbind_typ T) (θ2 ++ θ1) -> X ∉ ftvar_in_typ T) ->
   wf_ss (θ2 ++ θ1) ->
@@ -800,7 +800,7 @@ Proof.
 Qed.
 
 Lemma d_more_num_arr_open_typ : forall A B,
-  num_arrow_in_typ (open_typ_wrt_typ A B) >= num_arrow_in_typ A.
+  num_arrow_in_typ (A ᵗ^^ₜ B) >= num_arrow_in_typ A.
 Proof.
   intros. unfold open_typ_wrt_typ. eapply d_more_num_arr_open_typ_rec.
 Qed.
@@ -819,7 +819,7 @@ Proof.
 Qed.
 
 Lemma d_same_num_arr_open_typ_tvar : forall A X,
-  num_arrow_in_typ (open_typ_wrt_typ A `X) = num_arrow_in_typ A.
+  num_arrow_in_typ (A ᵗ^ₜ X) = num_arrow_in_typ A.
 Proof.
   intros. unfold open_typ_wrt_typ. eapply d_same_num_arr_open_typ_rec_tvar.
 Qed.
@@ -827,8 +827,8 @@ Qed.
 
 Lemma d_sub_more_num_arrow_in_mono_typ : forall Ψ A B,
   Ψ ⊢ A <: B ->
-  (d_mono_typ Ψ A -> num_arrow_in_typ A >= num_arrow_in_typ B) /\
-  (d_mono_typ Ψ B -> num_arrow_in_typ B >= num_arrow_in_typ A).
+  (Ψ ᵗ⊢ᵈₘ A -> num_arrow_in_typ A >= num_arrow_in_typ B) /\
+  (Ψ ᵗ⊢ᵈₘ B -> num_arrow_in_typ B >= num_arrow_in_typ A).
 Proof.
   intros. induction H; split; simpl; intros Hmono; try lia; 
     try solve [dependent destruction Hmono];
@@ -841,10 +841,9 @@ Proof.
 Qed.  
 
 
-
 Lemma trans_typ_etvar_s_in_more_num_arrow' : forall θ Aᵃ Aᵈ X T,
   wf_ss θ ->
-  binds X (dbind_typ T) θ ->
+  X ~ T ∈ᵈ θ ->
   θ ᵗ⊩ Aᵃ ⇝ Aᵈ ->
   s_in X Aᵃ ->
   (num_arrow_in_typ Aᵈ) >= (num_arrow_in_typ T).
@@ -868,7 +867,7 @@ Qed.
 
 
 Lemma trans_typ_etvar_s_in_more_num_arrow : forall θ A1ᵃ A2ᵃ A1ᵈ A2ᵈ X T,
-  binds X (dbind_typ T) θ ->
+  X ~ T ∈ᵈ θ ->
   θ ᵗ⊩ (typ_arrow A1ᵃ A2ᵃ) ⇝ (typ_arrow A1ᵈ A2ᵈ) ->
   s_in X (typ_arrow A1ᵃ A2ᵃ) ->
   (num_arrow_in_typ (typ_arrow A1ᵈ A2ᵈ)) > (num_arrow_in_typ T).
@@ -882,7 +881,7 @@ Qed.
 
 Lemma wf_ss_tvar_etvar : forall θ1 θ2 X T,
   wf_ss (θ2 ++ (X , dbind_tvar_empty) :: θ1) ->
-  d_mono_typ (ss_to_denv θ1) T ->
+  ss_to_denv θ1 ᵗ⊢ᵈₘ T ->
   wf_ss (map (subst_tvar_in_dbind T X) θ2 ++ (X , dbind_typ T) :: θ1).
 Proof with eauto.
   intros. induction θ2; simpl; auto.
@@ -899,9 +898,9 @@ Qed.
 
 Lemma d_mono_typ_strengthen_to_wf_env : forall Ψ1 Ψ2 A,
   wf_ss (Ψ2 ++ Ψ1) ->
-  d_mono_typ (Ψ2 ++ Ψ1) A ->
-  d_wf_typ Ψ1 A ->
-  d_mono_typ Ψ1 A.
+  Ψ2 ++ Ψ1 ᵗ⊢ᵈₘ A  ->
+  Ψ1 ᵗ⊢ᵈ A ->
+  Ψ1 ᵗ⊢ᵈₘ A.
 Proof.
   intros * Hwfss Hmono Hwf. induction Hwf; try solve [dependent destruction Hmono]; auto.
   - dependent destruction Hmono.
@@ -913,8 +912,8 @@ Qed.
 
 
 Lemma trans_typ_tvar_etvar : forall θ1 θ2 Aᵃ Aᵈ Tᵃ Tᵈ X,
-  θ2 ++ (X , dbind_tvar_empty) :: θ1 ᵗ⊩ Aᵃ ⇝ Aᵈ ->
-  d_mono_typ (ss_to_denv θ1) Tᵈ ->
+  θ2 ++ (X , □) :: θ1 ᵗ⊩ Aᵃ ⇝ Aᵈ ->
+  ss_to_denv θ1 ᵗ⊢ᵈₘ Tᵈ ->
   θ1 ᵗ⊩ Tᵃ ⇝ Tᵈ ->
   map (subst_tvar_in_dbind Tᵈ X) θ2 ++ (X , dbind_typ Tᵈ) :: θ1 ᵗ⊩ Aᵃ ⇝ {Tᵈ ᵗ/ₜ X} Aᵈ.
 Proof with eauto using wf_ss_tvar_etvar, d_mono_typ_strengthen_to_wf_env.
@@ -955,7 +954,7 @@ Qed.
 
 Lemma trans_typ_tvar_etvar_cons : forall θ Aᵃ Aᵈ Tᵃ Tᵈ X,
   (X , dbind_tvar_empty) :: θ ᵗ⊩ Aᵃ ⇝ Aᵈ ->
-  d_mono_typ (ss_to_denv θ) Tᵈ ->
+  ss_to_denv θ ᵗ⊢ᵈₘ Tᵈ ->
   θ ᵗ⊩ Tᵃ ⇝ Tᵈ ->
   (X , dbind_typ Tᵈ) :: θ ᵗ⊩ Aᵃ ⇝ {Tᵈ ᵗ/ₜ X} Aᵈ.
 Proof.
@@ -974,8 +973,8 @@ Ltac solve_right :=
 
 Lemma a_mono_typ_dec : forall Γ A,
   ⊢ᵃʷ Γ ->
-  a_wf_typ (awl_to_aenv Γ) A ->
-  a_mono_typ (awl_to_aenv Γ) A \/ ~ a_mono_typ (awl_to_aenv Γ) A.
+  ⌊ Γ ⌋ᵃ ᵗ⊢ᵃ A ->
+  ⌊ Γ ⌋ᵃ ᵗ⊢ᵃₘ A \/ ~ ⌊ Γ ⌋ᵃ ᵗ⊢ᵃₘ A.
 Proof.
   intros. dependent induction H0; auto; try solve [solve_right].  
   - right. unfold not. intros.
@@ -992,12 +991,12 @@ Proof.
 Qed.
 
 Lemma trans_typ_subst_tvar_cons : forall θ Aᵃ Aᵈ Bᵃ Bᵈ X,
-  (X , dbind_tvar_empty) :: θ ᵗ⊩ Aᵃ ⇝ Aᵈ ->
+  (X , □) :: θ ᵗ⊩ Aᵃ ⇝ Aᵈ ->
   θ ᵗ⊩ Bᵃ ⇝ Bᵈ ->
   θ ᵗ⊩ {Bᵃ ᵗ/ₜ X} Aᵃ ⇝ {Bᵈ ᵗ/ₜ X} Aᵈ.
 Proof.
   intros. rewrite_env (nil ++ θ). 
-  eapply trans_typ_subst with (b:=dbind_tvar_empty); eauto.
+  eapply trans_typ_subst with (b:=□); eauto.
   intros.
   apply trans_typ_wf_ss in H.
   dependent destruction H.
@@ -1009,11 +1008,11 @@ Qed.
 
 #[local] Hint Constructors a_mono_typ : core.
 
-Lemma trans_wl_d_mono_typ_a_mono_typ_no_etvar : forall θ Γ Ω A,
+Lemma trans_wl_d_mono_typ_a_mono_typ_no_etvar : forall θ Γ Ω T,
   ⊢ᵃʷ Γ ->
   nil ⊩ Γ ⇝ Ω ⫣ θ ->
-  d_mono_typ (ss_to_denv θ) A ->
-  a_mono_typ (awl_to_aenv Γ) A /\ forall X, binds X abind_etvar_empty (awl_to_aenv Γ) → X ∉ ftvar_in_typ A.
+  ss_to_denv θ ᵗ⊢ᵈₘ T ->
+  ⌊ Γ ⌋ᵃ ᵗ⊢ᵃₘ T /\ forall X, X ~ ⬒ ∈ᵃ ⌊ Γ ⌋ᵃ → X ∉ ftvar_in_typ T.
 Proof with auto.
   intros. generalize dependent Γ. generalize dependent Ω.
   dependent induction H1; intros; simpl; try solve [intuition].
@@ -1038,8 +1037,8 @@ Qed.
 Lemma trans_wl_aworklist_trailing_sub_arrow : forall Γ Ω θ A1 A2 B1 B2,
   ⊢ᵃʷ Γ ->
   nil ⊩ Γ ⇝ Ω ⫣ θ ->
-  d_mono_typ (ss_to_denv θ) (typ_arrow A1 A2) ->
-  d_mono_typ (ss_to_denv θ) (typ_arrow B1 B2) ->
+  ss_to_denv θ ᵗ⊢ᵈₘ typ_arrow A1 A2 ->
+  ss_to_denv θ ᵗ⊢ᵈₘ typ_arrow B1 B2 ->
   aworklist_trailing_sub Γ (work_sub A2 B2 ⫤ᵃ work_sub B1 A1 ⫤ᵃ Γ).
 Proof.
   intros * Hwf Htrans Hmonoa Hmonob.
@@ -1054,8 +1053,8 @@ Qed.
 Lemma trans_wl_a_wl_binds_var_binds_d_wl_trans_typ : forall θ Γ Ω x Aᵃ Aᵈ,
   uniq (awl_to_aenv Γ) ->
   nil ⊩ Γ ⇝ Ω ⫣ θ ->
-  binds x (abind_var_typ Aᵃ) (awl_to_aenv Γ) ->
-  binds x (dbind_typ Aᵈ) (dwl_to_denv Ω) ->
+  x ~ Aᵃ ∈ᵃ ⌊ Γ ⌋ᵃ ->
+  x ~ Aᵈ ∈ᵈ dwl_to_denv Ω ->
   θ ᵗ⊩ Aᵃ ⇝ Aᵈ.
 Proof with eauto.
   intros.
