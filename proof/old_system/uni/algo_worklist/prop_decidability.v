@@ -10,6 +10,7 @@ Require Import uni.decl_worklist.prop_equiv.
 Require Import uni.algo_worklist.def_extra.
 Require Import uni.algo_worklist.prop_basic.
 Require Import uni.algo_worklist.prop_rename.
+Require Import uni.algo_worklist.prop_soundness.
 Require Import uni.algo_worklist.prop_completeness.
 Require Import uni.algo_worklist.transfer.
 Require Import ln_utils.
@@ -265,13 +266,51 @@ Fixpoint all_size_wl (Γ : aworklist) : nat :=
   | aworklist_conswork Γ' w => all_size_work w + all_size_wl Γ'
   end.
 
-Inductive measp : aworklist -> typ -> nat -> Prop :=
-  | measp_typ : forall Γ A m n,
-      split_size Γ A m -> 
-      n = 3 * m + all_size A ->
-      measp Γ A n.
+Fixpoint lookup_tvar_bind (Σ : aenv) (X : atom) : option abind :=
+  match Σ with
+  | nil => None
+  | (Y, b) :: Σ' => if X == Y then Some b else lookup_tvar_bind Σ' X
+  end.
 
-Theorem measp_total : forall Γ A,
+Fixpoint split_depth_rec (Σ : aenv) (A:typ) (n:nat) : nat :=
+  match A with
+  | typ_var_f X => match lookup_tvar_bind Σ X with
+                   | Some abind_stvar_empty => n
+                   | _ => 0
+                   end
+  | typ_var_b _ => n
+  | typ_top => n
+  | typ_bot => n
+  | typ_arrow A1 A2 => split_depth_rec Σ A1 (S n) + split_depth_rec Σ A2 (S n)
+  | typ_all A => n + split_depth_rec Σ A n
+  | typ_intersection A1 A2 => n + split_depth_rec Σ A1 n + split_depth_rec Σ A2 n
+  | typ_union A1 A2 => n + split_depth_rec Σ A1 n + split_depth_rec Σ A2 n
+  | _ => 0
+  end.
+
+Definition split_depth (Σ : aenv) (A : typ) : nat := split_depth_rec Σ A 1.
+
+Definition split_depth_work (Σ : aenv) (w : work) : nat :=
+  match w with
+  | work_sub A1 A2 => split_depth Σ A1 * (1 + iu_size A2) + split_depth Σ A2 * (1 + iu_size A1)
+  | _ => 0
+  end.
+
+Fixpoint split_depth_wl (Γ : aworklist) : nat :=
+  match Γ with
+  | aworklist_empty => 0 
+  | aworklist_constvar Γ' _ _ => split_depth_wl Γ'
+  | aworklist_consvar Γ' _ _ => split_depth_wl Γ'
+  | aworklist_conswork Γ' w => split_depth_work (awl_to_aenv Γ) w + split_depth_wl Γ'
+  end.
+
+(* Inductive measp : aworklist -> typ -> nat -> Prop :=
+  | measp_typ : forall Σ A m n,
+      split_size Γ A m -> 
+      n = 2 * split_depth () + all_size A ->
+      measp Γ A n. *)
+
+(* Theorem measp_total : forall Γ A,
   a_wf_typ (awl_to_aenv Γ) A -> exists n, measp Γ A n.
 Admitted.
 
@@ -333,21 +372,20 @@ Inductive measp_wl : aworklist -> nat -> Prop :=
       measp_work Γ w m ->
       measp_wl Γ n ->
       k = m + n ->
-      measp_wl (aworklist_conswork Γ w) k.
+      measp_wl (aworklist_conswork Γ w) k. *)
 
 #[local]Hint Constructors split_size split_size_work split_size_wl : core.
-#[local]Hint Constructors measp measp_work measp_wl : core.
 #[local]Hint Constructors a_wl_red a_wf_wl : core.
 
-Theorem measp_wl_total : forall Γ,
+(* Theorem measp_wl_total : forall Γ,
   a_wf_wl Γ -> exists n, measp_wl Γ n.
 Admitted.
 
 Theorem measp_wl_det : forall Γ n1 n2,
   measp_wl Γ n1 -> measp_wl Γ n2 -> n1 = n2.
-Admitted.
+Admitted. *)
 
-Lemma measp_mono' : forall Γ A n,
+(* Lemma measp_mono' : forall Γ A n,
   measp Γ A n -> a_mono_typ (awl_to_aenv Γ) A -> n = 0.
 Admitted.
 
@@ -374,6 +412,22 @@ Lemma measp_bot : forall Γ n,
 Proof.
   intros. dependent destruction H.
   dependent destruction H. simpl. lia.
+Qed. *)
+
+Lemma split_depth_rec_mono : forall Γ A n,
+  a_mono_typ (awl_to_aenv Γ) A -> split_depth_rec (awl_to_aenv Γ) A n = 0.
+Proof.
+  intros Γ A n Hmono. generalize dependent n.
+  induction A; simpl; eauto; intros; try solve [inversion Hmono].
+  admit.
+  dependent destruction Hmono.
+  specialize (IHA1 Hmono1 (S n)). specialize (IHA2 Hmono2 (S n)). lia.
+Admitted.
+
+Lemma split_depth_mono : forall Γ A,
+  a_mono_typ (awl_to_aenv Γ) A -> split_depth (awl_to_aenv Γ) A = 0.
+Proof.
+  intros. unfold split_depth. eapply split_depth_rec_mono; eauto.
 Qed.
 
 Fixpoint weight (A : typ) : nat :=
@@ -1107,8 +1161,178 @@ Proof.
     rewrite ftvar_in_typ_open_typ_wrt_typ_lower; eauto.
 Qed.
 
+Lemma lookup_tvar_bind_etvar : forall Γ2 Γ1 X X0,
+  X ≠ X0 ->
+  lookup_tvar_bind (⌊ Γ2 ⧺ Γ1 ⌋ᵃ) X = lookup_tvar_bind (⌊ Γ2 ⧺ X0 ~ᵃ ⬒ ;ᵃ Γ1 ⌋ᵃ) X.
+Proof.
+  intros Γ2. induction Γ2; simpl; intros; eauto.
+  - destruct (X == X0); subst; auto; try contradiction.
+  - destruct (X == x); subst; auto.
+  - destruct (X0 == X); subst; auto.
+Qed.
 
-Lemma decidablity_lemma : forall ne nj nt ntj na naj nm nw Γ m,
+Lemma lookup_tvar_bind_binds : forall Γ X B,
+  ⊢ᵃʷ Γ ->
+  binds X B (⌊ Γ ⌋ᵃ) <->
+  lookup_tvar_bind (⌊ Γ ⌋ᵃ) X = Some B.
+Admitted.
+
+Lemma split_depth_rec_etvar : forall A Γ1 Γ2 X n,
+  ⊢ᵃʷ (Γ2 ⧺ Γ1) ->
+  X ∉ ftvar_in_typ A ->
+  X ∉ dom (⌊ Γ2 ⧺ Γ1 ⌋ᵃ) ->
+  split_depth_rec (⌊ Γ2 ⧺ Γ1 ⌋ᵃ) A n = split_depth_rec (⌊ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1 ⌋ᵃ) A n.
+Proof.
+  intros A. induction A; intros Γ1 Γ2 X0 n0 Hwf Hnotin1 Hnotin2; eauto.
+  - destruct (X == X0); subst.
+    eapply notin_singleton_1 in Hnotin1. contradiction.
+    simpl. erewrite lookup_tvar_bind_etvar; eauto.
+  - simpl in *.
+    specialize (IHA1 Γ1 Γ2 X0 (S n0) Hwf).
+    specialize (IHA2 Γ1 Γ2 X0 (S n0) Hwf). auto.
+  - simpl in *.
+    specialize (IHA Γ1 Γ2 X0 n0 Hwf). auto.
+  - simpl in *.
+    specialize (IHA1 Γ1 Γ2 X0 n0 Hwf).
+    specialize (IHA2 Γ1 Γ2 X0 n0 Hwf). auto.
+  - simpl in *.
+    specialize (IHA1 Γ1 Γ2 X0 n0 Hwf).
+    specialize (IHA2 Γ1 Γ2 X0 n0 Hwf). auto.
+Qed.
+
+Lemma split_depth_etvar : forall A Γ1 Γ2 X,
+  ⊢ᵃʷ (Γ2 ⧺ Γ1) ->
+  X ∉ ftvar_in_typ A ->
+  X ∉ dom (⌊ Γ2 ⧺ Γ1 ⌋ᵃ) ->
+  split_depth (⌊ Γ2 ⧺ Γ1 ⌋ᵃ) A = split_depth (⌊ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1 ⌋ᵃ) A.
+Proof.
+  unfold split_depth. simpl. intros. erewrite split_depth_rec_etvar; eauto.
+Qed.
+
+Lemma split_depth_work_etvar : forall Γ1 Γ2 X w,
+  ⊢ᵃʷ (Γ2 ⧺ Γ1) ->
+  X ∉ ftvar_in_work w ->
+  X ∉ dom (⌊ Γ2 ⧺ Γ1 ⌋ᵃ) ->
+  split_depth_work (⌊ Γ2 ⧺ Γ1 ⌋ᵃ) w = split_depth_work (⌊ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1 ⌋ᵃ) w.
+Proof.
+  intros Γ1 Γ2 X w. dependent destruction w; simpl; auto.
+  intros Hwf Hnotin1 Hnotin2.
+  erewrite <- split_depth_etvar; eauto.
+  erewrite <- split_depth_etvar; eauto.
+Qed.
+
+Lemma split_depth_wl_etvar : forall Γ1 Γ2 X,
+  ⊢ᵃʷ (Γ2 ⧺ Γ1) ->
+  X ∉ dom (⌊ Γ2 ⧺ Γ1 ⌋ᵃ) ->
+  split_depth_wl (Γ2 ⧺ Γ1) = split_depth_wl (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1).
+Proof.
+  intros Γ1 Γ2.
+  generalize dependent Γ1.
+  induction Γ2; simpl; intros; try solve [dependent destruction H; auto].
+  dependent destruction H.
+  assert (X ∉ ftvar_in_work w) by admit.
+  erewrite <- split_depth_work_etvar; eauto. 
+Admitted.
+
+
+Lemma split_depth_wl_aworklist_subst : forall Γ2 Γ X A Γ1 Γ1' Γ2',
+  ⊢ᵃʷ (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) -> 
+  aworklist_subst (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) X A Γ1' Γ2' -> a_mono_typ (awl_to_aenv Γ) A ->
+  split_depth_wl (subst_tvar_in_aworklist A X Γ2' ⧺ Γ1') = split_depth_wl (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1).
+Proof.
+  intros Γ2. induction Γ2; intros;
+    dependent destruction H0; dependent destruction H; simpl in *; eauto;
+    try solve [exfalso; eauto].
+  - eapply worklist_split_etvar_det in x. destruct x. subst.
+    eapply IHΓ2 in H1; eauto.
+    replace (Γ2 ⧺ X0 ~ᵃ ⬒ ;ᵃ X ~ᵃ ⬒ ;ᵃ Γ1) with ((Γ2 ⧺ X0 ~ᵃ ⬒ ;ᵃ aworklist_empty) ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) in H1 by admit.
+    erewrite <- split_depth_wl_etvar with (X := X) (Γ1 := Γ1) (Γ2 := Γ2 ⧺ X0 ~ᵃ ⬒ ;ᵃ aworklist_empty) in H1; eauto.
+    replace ((Γ2 ⧺ X0 ~ᵃ ⬒ ;ᵃ aworklist_empty) ⧺ Γ1) with (Γ2 ⧺ X0 ~ᵃ ⬒ ;ᵃ Γ1) in H1 by admit. eauto.
+    admit. (* wf *)
+    admit. (* trivial *)
+    admit. (* wf *)
+    admit. (* trivial *)
+Admitted. 
+
+(* Lemma split_depth_rec_aworklist_subst : forall Γ2 Γ X A B Γ1 Γ1' Γ2',
+  ⊢ᵃʷ (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) -> 
+  X ∉ ftvar_in_typ B ->
+  aworklist_subst (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) X A Γ1' Γ2' -> a_mono_typ (awl_to_aenv Γ) A ->
+  split_depth (⌊ subst_tvar_in_aworklist A X Γ2' ⧺ Γ1' ⌋ᵃ) B = split_depth (⌊ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1 ⌋ᵃ) B.
+Proof.
+  intros Γ2. induction Γ2; intros Γ X0 A B Γ1 Γ1' Γ2' Hwf Hnotin Hsubst Hmono;
+    dependent destruction Hsubst; dependent destruction Hwf; simpl in *; eauto;
+    try solve [exfalso; eauto].
+  admit.
+    dependent destruction H0; dependent destruction H; simpl in *; eauto;
+    try solve [exfalso; eauto].
+
+Lemma split_depth_aworklist_subst : forall Γ2 Γ X A B Γ1 Γ1' Γ2',
+  ⊢ᵃʷ (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) -> 
+  aworklist_subst (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) X A Γ1' Γ2' -> a_mono_typ (awl_to_aenv Γ) A ->
+  split_depth (⌊ subst_tvar_in_aworklist A X Γ2' ⧺ Γ1' ⌋ᵃ) B = split_depth (⌊ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1 ⌋ᵃ) B.
+Proof.
+  intros Γ2 Γ X A B Γ1 Γ1' Γ2' Hwf Hsubst Ha.
+  generalize dependent Γ1. generalize dependent Γ2.
+  induction B; intros; simpl; eauto.
+  - destruct (X == X0); subst; eauto.
+    eapply lookup_tvar_bind_etvar; eauto.
+  - specialize (IHB1 Γ2 Γ1 X A Γ1' Γ2' Hwf Hsubst Ha).
+    specialize (IHB2 Γ2 Γ1 X A Γ1' Γ2' Hwf Hsubst Ha). eauto.
+  - specialize (IHB Γ2 Γ1 X A Γ1' Γ2' Hwf Hsubst Ha). eauto.
+  - specialize (IHB1 Γ2 Γ1 X A Γ1' Γ2' Hwf Hsubst Ha).
+    specialize (IHB2 Γ2 Γ1 X A Γ1' Γ2' Hwf Hsubst Ha). eauto.
+  - specialize (IHB1 Γ2 Γ1 X A Γ1' Γ2' Hwf Hsubst Ha).
+    specialize (IHB2 Γ2 Γ1 X A Γ1' Γ2' Hwf Hsubst Ha). eauto.
+
+Lemma split_depth_work_aworklist_subst : forall Γ2 Γ X A Γ1 Γ1' Γ2',
+  ⊢ᵃʷ (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) -> 
+  aworklist_subst (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) X A Γ1' Γ2' -> a_mono_typ (awl_to_aenv Γ) A ->
+  split_depth_work (subst_tvar_in_aworklist A X Γ2' ⧺ Γ1') = split_depth_wl (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1). *)
+
+(* Lemma split_depth_rec_non_mono_lt : forall A Γ1 Γ2 n m,
+  ⊢ᵃʷ Γ -> a_mono_typ (awl_to_aenv Γ) A ->
+  split_depth_rec (⌊ Γ ⌋ᵃ) A n < split_depth_rec (⌊ Γ ⌋ᵃ) A m. *)
+
+(* Lemma split_depth_rec_non_mono_lt : forall A Γ n m,
+  ⊢ᵃʷ Γ -> split_depth_rec (⌊ Γ ⌋ᵃ) A n > 0 -> n < m ->
+  split_depth_rec (⌊ Γ ⌋ᵃ) A n < split_depth_rec (⌊ Γ ⌋ᵃ) A m.
+Proof.
+  intros A. induction A; simpl; intros Γ n0 m Hwf Hgt Hlt; eauto.
+  - destruct (lookup_tvar_bind (⌊ Γ ⌋ᵃ) X) eqn:Heq.
+    destruct a; try solve [exfalso; eauto]; eauto. inversion Hgt.
+  - destruct (split_depth_rec (⌊ Γ ⌋ᵃ) A1 (S n0)).
+    destruct (split_depth_rec (⌊ Γ ⌋ᵃ) A2 (S n0)).
+    inversion Hgt.
+    destruct (split_depth_rec (⌊ Γ ⌋ᵃ) A2 n0); eauto.
+    specialize (IHA1 Γ n0 m Hwf ltac:(lia) Hlt).
+    specialize (IHA2 Γ n0 m Hwf ltac:(lia) Hlt). lia.
+  - admit.  *)
+
+(* Lemma split_depth_rec_non_mono_lt : forall A Γ n m,
+  ⊢ᵃʷ Γ ->
+   (a_mono_typ (awl_to_aenv Γ) A -> False) -> n < m ->
+  split_depth_rec (⌊ Γ ⌋ᵃ) A n < split_depth_rec (⌊ Γ ⌋ᵃ) A m.
+Proof.
+  intros A Γ n m Hwf Hmono Hlt.
+  generalize dependent n. generalize dependent m.
+  induction A; intros; simpl; eauto; try solve [ exfalso; apply Hmono; auto ].
+  - destruct (lookup_tvar_bind (⌊ Γ ⌋ᵃ) X) eqn:Heq.
+    + rewrite <- lookup_tvar_bind_binds in Heq; eauto.
+      destruct a; try solve [exfalso; eauto]; eauto. admit.
+    + admit.
+  - admit. 
+  
+  eauto.
+  - specialize (IHA1 Γ n m Hwf Hmono Hlt).
+    specialize (IHA2 Γ n m Hwf Hmono Hlt). lia.
+  - specialize (IHA Γ n m Hwf Hmono Hlt). lia.
+  - specialize (IHA1 Γ n m Hwf Hmono Hlt).
+    specialize (IHA2 Γ n m Hwf Hmono Hlt). lia.
+  - specialize (IHA1 Γ n m Hwf Hmono Hlt).
+    specialize (IHA2 Γ n m Hwf Hmono Hlt). lia. *)
+
+Lemma decidablity_lemma : forall ne nj nt ntj na naj nm nw Γ,
   ⊢ᵃʷ Γ ->
   exp_size_wl Γ < ne ->
   judge_size_wl Γ < nj ->
@@ -1116,7 +1340,7 @@ Lemma decidablity_lemma : forall ne nj nt ntj na naj nm nw Γ m,
   inftapp_judge_size_wl Γ < ntj ->
   infabs_depth_wl Γ < na ->
   infabs_judge_size_wl Γ < naj ->
-  measp_wl Γ m -> m < nm ->
+  split_depth_wl Γ < nm ->
   weight_wl Γ < nw ->
   Γ ⟶ᵃʷ⁎⋅ \/ ¬ Γ ⟶ᵃʷ⁎⋅.
 Proof.
@@ -1128,30 +1352,30 @@ Proof.
   intros naj; induction naj;
   intros nm; induction nm;
   intros nw; induction nw; try lia.
-  intros Γ m Hwf He Hj Ht Htj Ha Haj Hm Hlt Hw.
+  intros Γ Hwf He Hj Ht Htj Ha Haj Hm Hw.
   dependent destruction Hwf; auto.
-  - dependent destruction Hm. simpl in *.
+  - simpl in *.
     assert (Jg: a_wl_red Γ \/ ~ a_wl_red Γ).
     { eapply IHnw; eauto. lia. }
     destruct Jg as [Jg | Jg]; auto.
     right. intro Hcontra.
     dependent destruction Hcontra.
     apply Jg; auto.
-  - dependent destruction Hm. simpl in *.
+  - simpl in *.
     assert (Jg: a_wl_red Γ \/ ~ a_wl_red Γ).
     { eapply IHnw; eauto. lia. }
     destruct Jg as [Jg | Jg]; auto.
     right. intro Hcontra.
     dependent destruction Hcontra.
     apply Jg; auto.
-  - dependent destruction Hm. simpl in *.
+  - intros. unfold split_depth. simpl in *.
     assert (Jg: a_wl_red Γ \/ ~ a_wl_red Γ).
     { eapply IHnw; eauto. lia. }
     destruct Jg as [Jg | Jg]; auto.
     right. intro Hcontra.
     dependent destruction Hcontra.
     apply Jg; auto.
-  - dependent destruction Hm. simpl in *.
+  - simpl in *.
     assert (Jg: a_wl_red Γ \/ ~ a_wl_red Γ).
     { eapply IHnw; eauto; lia. }
     destruct Jg as [Jg | Jg]; auto.
@@ -1159,8 +1383,7 @@ Proof.
     dependent destruction Hcontra.
     apply Jg; auto.
   - dependent destruction H.
-    + dependent destruction Hm.
-      dependent destruction H; simpl in *.
+    + dependent destruction H; simpl in *.
       * assert (Jg: a_wl_red (work_applys cs typ_unit ⫤ᵃ Γ) \/
                   ~ a_wl_red (work_applys cs typ_unit ⫤ᵃ Γ)).
         { eapply IHne; eauto; simpl; try lia. }
@@ -1205,7 +1428,7 @@ Proof.
         right. intro Hcontra.
         dependent destruction Hcontra.
         apply Jg; auto.
-    + dependent destruction Hm. simpl in *.
+    + simpl in *.
       assert (He': exp_size Γ e >= 1) by apply exp_size_gt_0.
       assert (Jg:   (work_infer e (conts_sub A) ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/
                   ¬ (work_infer e (conts_sub A) ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
@@ -1323,7 +1546,7 @@ Proof.
         -- specialize (Jg' A1 A2). destruct Jg' as [Jg' | Jg']; eauto.
            right. intro Hcontra. dependent destruction Hcontra.
            apply Jg; auto. apply Jg'; auto.
-    + simpl in *. dependent destruction Hm. dependent destruction H1.
+    + simpl in *.
       dependent destruction H;
         try solve [right; intro Hcontra; dependent destruction Hcontra].
       * assert (Jg:   (work_infabs (typ_arrow typ_top typ_bot) cd ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ 
@@ -1345,9 +1568,7 @@ Proof.
                      eapply Happly; eauto].
         assert (Jg: a_wl_red (aworklist_conswork Γ w) \/ 
                     ~ a_wl_red (aworklist_conswork Γ w)).
-        { destruct (measp_wl_total (aworklist_conswork Γ w)) as [m Hm'].
-          admit. (* safe: wf *)
-          eapply IHnaj; eauto; simpl in *; try lia.
+        { eapply IHnaj; eauto; simpl in *; try lia.
           admit. (* safe: wf *)
           eapply apply_contd_exp_size with (Γ := Γ) in Happly; lia.
           eapply apply_contd_judge_size in Happly; lia.
@@ -1414,7 +1635,7 @@ Proof.
         right. intro Hcontra.
         dependent destruction Hcontra.
         apply Jg1; auto. apply Jg2; auto.
-    + simpl in *. dependent destruction Hm. dependent destruction H;
+    + simpl in *. dependent destruction H;
         try solve [right; intro Hcontra; dependent destruction Hcontra].
       assert (Jg:  (work_infabs A2 (contd_unioninfabs A1 B1 cd) ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/
                  ¬ (work_infabs A2 (contd_unioninfabs A1 B1 cd) ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
@@ -1425,11 +1646,11 @@ Proof.
     + dependent destruction H; try solve [right; intro Hcontra; dependent destruction Hcontra].
       assert (Jg:  (work_applys cs B ⫤ᵃ work_check e A ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/
                  ¬ (work_applys cs B ⫤ᵃ work_check e A ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
-      { eapply IHnj; eauto; simpl in *; try lia. admit. admit. }
+      { eapply IHnj; eauto; simpl in *; try lia. admit. }
       destruct Jg as [Jg | Jg]; eauto.
       right. intro Hcontra.
       dependent destruction Hcontra. eauto.
-    + simpl in *. dependent destruction Hm. dependent destruction H2.
+    + simpl in *.
       dependent destruction H;
         try solve [right; intro Hcontra; dependent destruction Hcontra].
       * destruct (apply_conts_dec cs typ_bot) as [[w Happly] | Happly];
@@ -1437,9 +1658,7 @@ Proof.
           eapply Happly; eauto].
         assert (Jg: a_wl_red (aworklist_conswork Γ w) \/
                   ~ a_wl_red (aworklist_conswork Γ w)).
-        { destruct (measp_wl_total (aworklist_conswork Γ w)) as [m Hm'].
-          admit. (* safe: wf *)
-          eapply IHntj; eauto; simpl in *; try lia.
+        { eapply IHntj; eauto; simpl in *; try lia.
           admit. (* safe: wf *)
           eapply apply_conts_exp_size with (Γ := Γ) in Happly; lia.
           eapply apply_conts_judge_size in Happly; lia.
@@ -1456,9 +1675,7 @@ Proof.
         try solve [right; intro Hcontra; dependent destruction Hcontra; dependent destruction Hcontra;
           eapply Happly; eauto].
         assert (Jg: (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ ¬ (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
-        { destruct (measp_wl_total (aworklist_conswork Γ w)) as [m Hm'].
-          admit. (* safe: wf *)
-          eapply IHntj; eauto; simpl in *; try lia.
+        { eapply IHntj; eauto; simpl in *; try lia.
           admit. (* safe: wf *)
           eapply apply_conts_exp_size with (Γ := Γ) in Happly; lia.
           eapply apply_conts_judge_size in Happly; lia.
@@ -1535,7 +1752,7 @@ Proof.
         right. intro Hcontra.
         dependent destruction Hcontra.
         apply Jg1; auto. apply Jg2; auto.
-    + simpl in *. dependent destruction Hm. dependent destruction H3.
+    + simpl in *.
       assert (Jg:  (work_inftapp A2 B (conts_unioninftapp A1 cs) ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ 
                  ¬ (work_inftapp A2 B (conts_unioninftapp A1 cs) ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
       { eapply IHntj; eauto; simpl; try lia.
@@ -1553,14 +1770,12 @@ Proof.
       right. intro Hcontra.
       dependent destruction Hcontra.
       apply Jg; auto.
-    + simpl in *. dependent destruction Hm. dependent destruction H2.
+    + simpl in *.
       destruct (apply_conts_dec cs (typ_union A1 A2)) as [[w Happly] | Happly];
       try solve [right; intro Hcontra; dependent destruction Hcontra; dependent destruction Hcontra;
         eapply Happly; eauto].
       assert (Jg: (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ ¬ (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
-      { destruct (measp_wl_total (aworklist_conswork Γ w)) as [m Hm'].
-        admit. (* safe: wf *)
-        eapply IHntj; eauto; simpl in *; try lia.
+      { eapply IHntj; eauto; simpl in *; try lia.
         admit. (* safe: wf *)
         eapply apply_conts_exp_size with (Γ := Γ) in Happly; lia.
         eapply apply_conts_judge_size in Happly; lia.
@@ -1577,8 +1792,7 @@ Proof.
       dependent destruction Hcontra.
       eapply apply_conts_det in Happly; eauto.
       subst. eauto.
-    + simpl in *. dependent destruction Hm. dependent destruction H2.
-      dependent destruction H;
+    + simpl in *. dependent destruction H;
         try solve [right; intro Hcontra; dependent destruction Hcontra];
       dependent destruction H1;
         try solve [right; intro Hcontra; dependent destruction Hcontra].
@@ -1586,9 +1800,7 @@ Proof.
       try solve [right; intro Hcontra; dependent destruction Hcontra; dependent destruction Hcontra;
         eapply Happly; eauto].
       assert (Jg: (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ ¬ (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
-      { destruct (measp_wl_total (w ⫤ᵃ Γ)) as [m Hm'].
-        admit. (* safe: wf *)
-        eapply IHnaj; eauto; simpl in *; try lia.
+      { eapply IHnaj; eauto; simpl in *; try lia.
         admit. (* safe: wf *)
         eapply apply_contd_exp_size with (Γ := Γ) in Happly; lia.
         eapply apply_contd_judge_size in Happly; lia.
@@ -1603,104 +1815,73 @@ Proof.
       dependent destruction Hcontra.
       eapply apply_contd_det in Happly; eauto.
       subst. eauto.
-    + simpl in *. dependent destruction Hm. dependent destruction H1.
-      dependent destruction H1. dependent destruction H3.
-      assert (Hw': weight A >= 1) by apply weight_gt_0.
-      assert (Hw'0: weight A0 >= 1) by apply weight_gt_0.
+    + simpl in *.
+      assert (HwA: weight A >= 1) by apply weight_gt_0.
+      assert (HwB: weight B >= 1) by apply weight_gt_0.
       assert (Jg: a_wl_red Γ \/ ~ a_wl_red Γ).
       { eapply IHnw; eauto; simpl; try lia. }
-      assert (JgInter1: forall A1 A2, A0 = typ_intersection A1 A2 ->
+      assert (JgInter1: forall A1 A2, B = typ_intersection A1 A2 ->
           (work_sub A A2 ⫤ᵃ work_sub A A1 ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ ¬ (work_sub A A2 ⫤ᵃ work_sub A A1 ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
-      { intros A1 A2 Heq. subst. dependent destruction H3.
-        eapply IHnw with (m := ((3 * m + all_size A) * (1 + iu_size A2) + (3 * n2 + all_size A2) * (1 + iu_size A)) + ((3 * m + all_size A) * (1 + iu_size A1) + (3 * n1 + all_size A1) * (1 + iu_size A)) + n); eauto; try lia.
-        admit. (* safe: wf *)
-        assert (HspA: split_size (aworklist_conswork Γ (work_sub A A1)) A m) by admit.
-        assert (HspA2: split_size (aworklist_conswork Γ (work_sub A A1)) A2 n2) by admit.
-        eapply measp_wl_conswork with
-          (m := ((3 * m + all_size A) * (1 + iu_size A2) + (3 * n2 + all_size A2) * (1 + iu_size A)))
-          (n := ((3 * m + all_size A) * (1 + iu_size A1) + (3 * n1 + all_size A1) * (1 + iu_size A)) + n); eauto; try lia.
-        assert (Hle:
-          (3 * m + all_size A) * (1 + iu_size A2) +
-          (3 * n2 + all_size A2) * (1 + iu_size A) +
-          ((3 * m + all_size A) * (1 + iu_size A1) +
-          (3 * n1 + all_size A1) * (1 + iu_size A)) + n <=
-          (3 * m + all_size A) * (1 + iu_size (typ_intersection A1 A2)) +
-          (3 * S (n1 + n2) + all_size (typ_intersection A1 A2)) * (1 + iu_size A) + n).
-        { simpl. lia. }
-        lia. simpl in *. lia. }
+      { intros A1 A2 Heq. subst.
+        eapply IHnw; eauto; simpl in *; unfold split_depth in *; simpl in *; try lia.
+        admit. (* safe: wf *) }
       assert (JgInter2: forall A1 A2, A = typ_intersection A1 A2 ->
-                a_wl_red (aworklist_conswork Γ (work_sub A1 A0)) \/
-              ~ a_wl_red (aworklist_conswork Γ (work_sub A1 A0))).
-      { intros A1 A2 Heq. subst. dependent destruction H1.
-        eapply IHnw; eauto; simpl in *; try lia.
+                a_wl_red (aworklist_conswork Γ (work_sub A1 B)) \/
+              ~ a_wl_red (aworklist_conswork Γ (work_sub A1 B))).
+      { intros A1 A2 Heq. subst.
+        eapply IHnw; eauto; simpl in *; unfold split_depth in *; simpl in *; try lia.
         admit. (* safe: wf *) }
       assert (JgInter3: forall A1 A2, A = typ_intersection A1 A2 ->
-                a_wl_red (aworklist_conswork Γ (work_sub A2 A0)) \/
-              ~ a_wl_red (aworklist_conswork Γ (work_sub A2 A0))).
-      { intros A1 A2 Heq. subst. dependent destruction H1.
-        eapply IHnw; eauto; simpl in *; try lia.
+                a_wl_red (aworklist_conswork Γ (work_sub A2 B)) \/
+              ~ a_wl_red (aworklist_conswork Γ (work_sub A2 B))).
+      { intros A1 A2 Heq. subst.
+        eapply IHnw; eauto; simpl in *; unfold split_depth in *; simpl in *; try lia.
         admit. (* safe: wf *) }
-      assert (JgUnion1: forall A1 A2, A0 = typ_union A1 A2 ->
+      assert (JgUnion1: forall A1 A2, B = typ_union A1 A2 ->
                 a_wl_red (aworklist_conswork Γ (work_sub A A1)) \/
               ~ a_wl_red (aworklist_conswork Γ (work_sub A A1))).
-      { intros A1 A2 Heq. subst. dependent destruction H3.
-        eapply IHnw; eauto; simpl in *; try lia.
+      { intros A1 A2 Heq. subst.
+        eapply IHnw; eauto; simpl in *; unfold split_depth in *; simpl in *; try lia.
         admit. (* safe: wf *) }
-      assert (JgUnion2: forall A1 A2, A0 = typ_union A1 A2 ->
+      assert (JgUnion2: forall A1 A2, B = typ_union A1 A2 ->
                 a_wl_red (aworklist_conswork Γ (work_sub A A2)) \/
               ~ a_wl_red (aworklist_conswork Γ (work_sub A A2))).
-      { intros A1 A2 Heq. subst. dependent destruction H3.
-        eapply IHnw; eauto; simpl in *; try lia.
+      { intros A1 A2 Heq. subst.
+        eapply IHnw; eauto; simpl in *; unfold split_depth in *; simpl in *; try lia.
         admit. (* safe: wf *) }
       assert (JgUnion3: forall A1 A2, A = typ_union A1 A2 ->
-                a_wl_red (aworklist_conswork (aworklist_conswork Γ (work_sub A1 A0)) (work_sub A2 A0)) \/
-              ~ a_wl_red (aworklist_conswork (aworklist_conswork Γ (work_sub A1 A0)) (work_sub A2 A0))).
-      { intros A1 A2 Heq. subst. dependent destruction H1.
-        eapply IHnw with (m := ((3 * n2 + all_size A2) * (1 + iu_size A0) + (3 * m0 + all_size A0) * (1 + iu_size A2)) +
-                                ((3 * n1 + all_size A1) * (1 + iu_size A0) + (3 * m0 + all_size A0) * (1 + iu_size A1)) + n); eauto; try lia.
-        admit. (* safe: wf *)
-        assert (HspA: split_size (aworklist_conswork Γ (work_sub A1 A0)) A0 m0) by admit.
-        assert (HspA2: split_size (aworklist_conswork Γ (work_sub A1 A0)) A2 n2) by admit.
-        eapply measp_wl_conswork with
-          (m := ((3 * n2 + all_size A2) * (1 + iu_size A0) + (3 * m0 + all_size A0) * (1 + iu_size A2)))
-          (n := ((3 * n1 + all_size A1) * (1 + iu_size A0) + (3 * m0 + all_size A0) * (1 + iu_size A1)) + n); eauto; try lia.
-        assert (Hle: (3 * n2 + all_size A2) * (1 + iu_size A0) +
-        (3 * m0 + all_size A0) * (1 + iu_size A2) +
-        ((3 * n1 + all_size A1) * (1 + iu_size A0) +
-        (3 * m0 + all_size A0) * (1 + iu_size A1)) + n <=
-        (3 * S (n1 + n2) + all_size (typ_union A1 A2)) * (1 + iu_size A0) +
-        (3 * m0 + all_size A0) * iu_size (typ_union A1 A2) + n).
-        { simpl. lia. }
-        lia. simpl in *. lia. }
+                a_wl_red (aworklist_conswork (aworklist_conswork Γ (work_sub A1 B)) (work_sub A2 B)) \/
+              ~ a_wl_red (aworklist_conswork (aworklist_conswork Γ (work_sub A1 B)) (work_sub A2 B))).
+      { intros A1 A2 Heq. subst.
+        eapply IHnw; eauto; simpl in *; unfold split_depth in *; simpl in *; try lia.
+        admit. (* safe: wf *) }
       assert (JgAlll: forall A1 X L, A = typ_all A1 ->
-                neq_all A0 ->
-                neq_intersection A0 ->
-                neq_union A0 ->
+                neq_all B ->
+                neq_intersection B ->
+                neq_union B ->
                 X \notin  L ->
-                a_wl_red (aworklist_conswork (aworklist_constvar Γ X abind_etvar_empty) (work_sub  ( open_typ_wrt_typ A1 (typ_var_f X) )  A0)) \/
-              ~ a_wl_red (aworklist_conswork (aworklist_constvar Γ X abind_etvar_empty) (work_sub  ( open_typ_wrt_typ A1 (typ_var_f X) )  A0))).
-      { intros A1 X L Heq HneqAll HneqInter HneqUnion Hnin. subst. dependent destruction H1.
-        assert (HspA: split_size (aworklist_constvar Γ X abind_etvar_empty) ( open_typ_wrt_typ A1 (typ_var_f X) ) n0) by admit.
-        assert (HspA0: split_size (aworklist_constvar Γ X abind_etvar_empty) A0 m0) by admit.
-        assert (Heq: iu_size (typ_all A1) = iu_size (A1 ^ᵗ X)) by admit. (* safe *)
-        eapply IHnw with (m := (3 * n0 + all_size (A1 ^ᵗ X)) * (1 + iu_size A0) +
-                                (3 * m0 + all_size A0) * (1 + iu_size (A1 ^ᵗ X)) + S n); eauto; try lia.
+                a_wl_red (aworklist_conswork (aworklist_constvar Γ X abind_etvar_empty) (work_sub  ( open_typ_wrt_typ A1 (typ_var_f X) )  B)) \/
+              ~ a_wl_red (aworklist_conswork (aworklist_constvar Γ X abind_etvar_empty) (work_sub  ( open_typ_wrt_typ A1 (typ_var_f X) )  B))).
+      { intros A1 X L Heq HneqAll HneqInter HneqUnion Hnin. subst.
+        eapply IHnm; eauto; simpl in *; try lia.
         admit. (* safe: wf *)
-        eapply measp_wl_conswork; eauto.
-        assert (Heq': all_size (typ_all A1) = all_size (A1 ^ᵗ X) + 1) by admit. (* safe *)
-        rewrite Heq in Hlt. rewrite Heq' in Hlt. lia.
-        assert (Heq': weight (A1 ^ᵗ X) = weight A1) by admit. (* safe *)
-        assert (Hgt: weight A0 >= 1) by apply weight_gt_0.
-        simpl in *. rewrite <- Heq. rewrite Heq'. lia. }
+        assert (HspA1: split_depth ((X, ⬒) :: ⌊ Γ ⌋ᵃ) (A1 ^ᵗ X) <= split_depth (⌊ Γ ⌋ᵃ) A1) by admit.
+        assert (HspB: split_depth ((X, ⬒) :: ⌊ Γ ⌋ᵃ) B <= split_depth (⌊ Γ ⌋ᵃ) B) by admit.
+        eapply mult_le_compat_r with (p := S (iu_size B)) in HspA1.
+        eapply mult_le_compat_r with (p := S (iu_size A1)) in HspB.
+        assert (Heq: iu_size A1 = iu_size (A1 ^ᵗ X)) by admit. (* safe *)
+        rewrite <- Heq.
+        simpl in *. unfold split_depth in *. simpl in *.
+        admit. (* oh my lia *) }
       assert (JgInst1: forall (Γ1 Γ2:aworklist) (X:typvar),
                 A = typ_var_f X ->
                 binds X abind_etvar_empty (awl_to_aenv Γ) ->
-                a_mono_typ (awl_to_aenv Γ) A0 ->
-                aworklist_subst Γ X A0 Γ1 Γ2 ->
-                (subst_tvar_in_aworklist A0 X Γ2 ⧺ Γ1) ⟶ᵃʷ⁎⋅ \/
-              ~ (subst_tvar_in_aworklist A0 X Γ2 ⧺ Γ1) ⟶ᵃʷ⁎⋅).
+                a_mono_typ (awl_to_aenv Γ) B ->
+                aworklist_subst Γ X B Γ1 Γ2 ->
+                (subst_tvar_in_aworklist B X Γ2 ⧺ Γ1) ⟶ᵃʷ⁎⋅ \/
+              ~ (subst_tvar_in_aworklist B X Γ2 ⧺ Γ1) ⟶ᵃʷ⁎⋅).
       { intros Γ1 Γ2 X Heq Hbin Hmono Hsub. subst.
-        eapply IHnm; eauto; simpl in *; try lia.
+        eapply IHnw; eauto; simpl in *; try lia.
         admit. (* safe: wf *)
         erewrite exp_size_wl_aworklist_subst; eauto.
         admit. (* TODO: should be fine *)
@@ -1708,10 +1889,13 @@ Proof.
         admit. (* TODO: should be fine *)
         admit. (* TODO: should be fine *)
         admit. (* TODO: should be fine *)
-        admit. admit. (* TODO: should be fine *)
+        eapply aworklist_binds_split in Hbin as Hbin'; eauto.
+        destruct Hbin' as [Γ1' [Γ2' Hbin']]. subst.
+        erewrite split_depth_wl_aworklist_subst; eauto. lia.
+        admit. (* TODO: should be fine *)
       } 
       assert (JgInst2: forall (Γ1 Γ2:aworklist) (X:typvar),
-                A0 = typ_var_f X ->
+                B = typ_var_f X ->
                 binds X abind_etvar_empty (awl_to_aenv Γ) ->
                 a_mono_typ (awl_to_aenv Γ) A ->
                 aworklist_subst Γ X A Γ1 Γ2 ->
@@ -1772,7 +1956,7 @@ Proof.
             eapply Jg; eauto];
           destruct Jg as [Jg | Jg]; eauto;
           try solve [right; intro Hcontra; dependent destruction Hcontra;
-            eapply Jg; eauto; dependent destruction H5].
+            eapply Jg; eauto; dependent destruction H1].
         -- edestruct JgUnion1 as [JgUnion1' | JgUnion1']; eauto.
            edestruct JgUnion2 as [JgUnion2' | JgUnion2']; eauto.
            right. intro Hcontra. dependent destruction Hcontra.
@@ -1787,7 +1971,7 @@ Proof.
             right; intro Hcontra; dependent destruction Hcontra;
             eapply Jg; eauto];
           try solve [right; intro Hcontra; dependent destruction Hcontra;
-            dependent destruction H5].
+            dependent destruction H1].
         -- edestruct JgUnion1 as [JgUnion1' | JgUnion1']; eauto.
            edestruct JgUnion2 as [JgUnion2' | JgUnion2']; eauto.
            right. intro Hcontra. dependent destruction Hcontra.
@@ -1827,7 +2011,7 @@ Proof.
               right; intro Hcontra; dependent destruction Hcontra; try unify_binds.
            ++ right. intro Hcontra. dependent destruction Hcontra; try unify_binds.
         -- right. intro Hcontra. dependent destruction Hcontra; try unify_binds.
-           dependent destruction H6; try unify_binds.
+           dependent destruction H2; try unify_binds.
         -- edestruct JgUnion1 as [JgUnion1' | JgUnion1']; eauto.
            edestruct JgUnion2 as [JgUnion2' | JgUnion2']; eauto.
            right. intro Hcontra. dependent destruction Hcontra; try unify_binds.
@@ -1843,10 +2027,10 @@ Proof.
               destruct Heq as [Heq1 Heq2]. subst. eauto.
            ++ right. intro Hcontra. dependent destruction Hcontra; try unify_binds.
         -- right; intro Hcontra; dependent destruction Hcontra; try unify_binds.
-           dependent destruction H5.
+           dependent destruction H1.
         -- destruct Jg as [Jg | Jg]; eauto.
            right; intro Hcontra; dependent destruction Hcontra; try unify_binds; eauto.
-           dependent destruction H5.
+           dependent destruction H1.
         -- destruct (eq_dec X X0) as [Heq | Hneq]; subst; try unify_binds. 
            destruct (a_wf_wl_aworklist_subst_dec Γ X (` X0)) as [[Γ1 [Γ2 Hsubst]] | Hsubst]; eauto.
            ++ edestruct JgInst1 as [JgInst1' | JgInst1']; eauto.
@@ -1856,7 +2040,7 @@ Proof.
               destruct Heq as [Heq1 Heq2]. subst. eauto.
            ++ right. intro Hcontra. dependent destruction Hcontra; try unify_binds.
         -- right. intro Hcontra. dependent destruction Hcontra; try unify_binds.
-           dependent destruction H6; try unify_binds.
+           dependent destruction H2; try unify_binds.
         -- destruct (eq_dec X X0) as [Heq | Hneq]; subst; try unify_binds.
            ++ destruct Jg as [Jg | Jg]; eauto.
               right; intro Hcontra; dependent destruction Hcontra;
@@ -1883,10 +2067,10 @@ Proof.
                      { eapply aworklist_subst_det; eauto. }
                      destruct Heq as [Heq1 Heq2]. subst. eauto.
                  --- right. intro Hcontra. dependent destruction Hcontra; try unify_binds.
-        -- assert (FV: X ∉ ftvar_in_typ (typ_arrow A1 A2) \/ not (X ∉ ftvar_in_typ (typ_arrow A1 A2))) by fsetdec.
-           destruct FV as [FV | FV]; eauto.
-           destruct (a_mono_typ_dec Γ (typ_arrow A1 A2)); eauto.
-           ++ destruct (a_wf_wl_aworklist_subst_dec Γ X (typ_arrow A1 A2)) as [[Γ1' [Γ2' Hsubst']] | Hsubst']; eauto.
+        -- destruct (a_mono_typ_dec Γ (typ_arrow A1 A2)); eauto.
+           ++ assert (FV: X ∉ ftvar_in_typ (typ_arrow A1 A2) \/ not (X ∉ ftvar_in_typ (typ_arrow A1 A2))) by fsetdec.
+              destruct FV as [FV | FV]; try solve [right; intro Hcontra; dependent destruction Hcontra; try unify_binds].
+              destruct (a_wf_wl_aworklist_subst_dec Γ X (typ_arrow A1 A2)) as [[Γ1' [Γ2' Hsubst']] | Hsubst']; eauto.
               ** edestruct JgInst1 as [JgInst1' | JgInst1']; eauto.
                  right. intro Hcontra. dependent destruction Hcontra; try unify_binds.
                  assert (Heq: Γ1' = Γ1 /\ Γ2' = Γ2).
@@ -1894,30 +2078,54 @@ Proof.
                  destruct Heq as [Heq1 Heq2]. subst. eauto.
               ** right. intro Hcontra. dependent destruction Hcontra; try unify_binds.
            ++ pick fresh X1. pick fresh X2.
-              destruct (a_wf_wl_aworklist_subst_dec (aworklist_conswork (aworklist_constvar (aworklist_constvar Γ X1 abind_etvar_empty) X2 abind_etvar_empty) (work_sub (typ_var_f X) (typ_arrow A1 A2))) X (typ_arrow (typ_var_f X1) (typ_var_f X2))) as [[Γ1 [Γ2 Hsubst]] | Hsubst]; eauto.
-              admit. (* wf *)
-              ** dependent destruction Hsubst. simpl in *.
-                 assert (JgArr1: (work_sub (typ_arrow ` X1 ` X2) (typ_arrow A1 A2) ⫤ᵃ subst_tvar_in_aworklist (typ_arrow ` X1 ` X2) X Γ2 ⧺ Γ1) ⟶ᵃʷ⁎⋅ \/
-                               ~ (work_sub (typ_arrow ` X1 ` X2) (typ_arrow A1 A2) ⫤ᵃ subst_tvar_in_aworklist (typ_arrow ` X1 ` X2) X Γ2 ⧺ Γ1) ⟶ᵃʷ⁎⋅).
-                 { admit. }          
-                 dependent destruction JgArr1; eauto.
-                 left. eapply a_wl_red__sub_arrow1; eauto.
-                 intro Hsin. eapply sin_in in Hsin. eauto.
-                 intros. dependent destruction H8. simpl.
-                 admit. admit. (* TODO *)
+              eapply aworklist_binds_split in H as Hbin; eauto.
+              destruct Hbin as [Γ1 [Γ2 Hbin]]. subst.
+              assert (Hsubst: aworklist_subst (work_sub ` X (typ_arrow A1 A2) ⫤ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) X
+                                              (typ_arrow ` X1 ` X2) (X1 ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1) (work_sub ` X (typ_arrow A1 A2) ⫤ᵃ Γ2)).
+              { eapply a_ws1__work_stay. eapply worklist_subst_fresh_etvar_total with (Γ1 := Γ1) (Γ2 := Γ2); eauto. }
+              assert (JgArr1: (work_sub ` X2 A2 ⫤ᵃ work_sub A1 ` X1 ⫤ᵃ subst_tvar_in_aworklist (typ_arrow ` X1 ` X2) X Γ2 ⧺ Γ1) ⟶ᵃʷ⁎⋅ \/
+                            ~ (work_sub ` X2 A2 ⫤ᵃ work_sub A1 ` X1 ⫤ᵃ subst_tvar_in_aworklist (typ_arrow ` X1 ` X2) X Γ2 ⧺ Γ1) ⟶ᵃʷ⁎⋅).
+              { eapply IHnm; simpl in *; eauto. admit. (* wf *)
+                admit. admit. admit. admit. admit. admit.
+                unfold split_depth in *. simpl in *.
+                
+                (* eapply aworklist_binds_split in H as Hbin.
+                destruct Hbin as [Γ1' [Γ2' Hbin]]. subst.
+                assert (Hsubst': aworklist_subst (X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ2' ⧺ X ~ᵃ ⬒ ;ᵃ Γ1') X
+                (typ_arrow ` X1 ` X2) (X1 ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1') Γ2').
+                { eapply (worklist_subst_fresh_etvar_total Γ1' Γ2' X X1 X2); eauto. }
+                assert (Heq: X1 ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1' = Γ1 /\ Γ2' = Γ2).
+                { eapply aworklist_subst_det with (Γ := X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ2' ⧺ X ~ᵃ ⬒ ;ᵃ Γ1'); eauto. }
+                destruct Heq. subst.
+                simpl in *.
+                eapply aworklist_subst_det in Hsubst' as Hsubst''; eauto.
+                
+                intros.
+                unfold split_depth. simpl.
+                assert (Hsp: split_depth (⌊ subst_tvar_in_aworklist (typ_arrow ` X1 ` X2) X Γ2 ⧺ Γ1 ⌋ᵃ) ` X2 = 0) by admit.
+                assert (Hsp': split_depth (⌊ subst_tvar_in_aworklist (typ_arrow ` X1 ` X2) X Γ2 ⧺ Γ1 ⌋ᵃ) ` X2 = 0) by admit.
+                admit. *)
+                }          
+              dependent destruction JgArr1; eauto.
+              left. eapply a_wl_red__sub_arrow1; eauto. admit.
+              intros. admit.
+
+              intro Hsin. eapply sin_in in Hsin. eauto.
+              intros. dependent destruction H8. simpl.
+                 admit. (* TODO *)
               ** admit. (* TODO *)
            ++ right. intro Hcontra. dependent destruction Hcontra; try unify_binds.
               admit. (* TODO *)
         -- right. intro Hcontra. dependent destruction Hcontra; try unify_binds.
-           dependent destruction H7; try unify_binds.
+           dependent destruction H3; try unify_binds.
         -- edestruct JgUnion1 as [JgUnion1' | JgUnion1']; eauto.
            edestruct JgUnion2 as [JgUnion2' | JgUnion2']; eauto.
            right. intro Hcontra. dependent destruction Hcontra; try unify_binds.
-           dependent destruction H5. 
+           dependent destruction H1. 
            eapply JgUnion1'; eauto. eapply JgUnion2'; eauto.
         -- edestruct JgInter1 as [JgInter1' | JgInter1']; eauto.
            right. intro Hcontra. dependent destruction Hcontra; try unify_binds.
-           dependent destruction H5. eauto.
+           dependent destruction H1. eauto.
       * dependent destruction H1;
           try solve [right; intro Hcontra;
             dependent destruction Hcontra];
@@ -1933,33 +2141,8 @@ Proof.
         -- admit. (* arrow case *)
         -- assert (JgArr: a_wl_red (aworklist_conswork (aworklist_conswork Γ (work_sub A0 A1)) (work_sub A2 A3)) \/
                         ~ a_wl_red (aworklist_conswork (aworklist_conswork Γ (work_sub A0 A1)) (work_sub A2 A3))).
-           { assert (Hle: forall ns1 ns2 ns0 ns3,
-                      split_size (aworklist_conswork Γ (work_sub A0 A1)) A2 ns2 ->
-                      split_size (aworklist_conswork Γ (work_sub A0 A1)) A3 ns3 ->
-                      split_size Γ A0 ns0 -> split_size Γ A1 ns1 ->
-                      ((3 * ns2 + all_size A2) * (1 + iu_size A3) +
-                      (3 * ns3 + all_size A3) * (1 + iu_size A2)) +
-                      ((3 * ns0 + all_size A0) * (1 + iu_size A1) +
-                      (3 * ns1 + all_size A1) * (1 + iu_size A0))
-                        <= n0 * (1 + iu_size (typ_arrow A0 A3)) + n1 * (1 + iu_size (typ_arrow A1 A2))).
-                    { intros ns1 ns2 ns0 ns3 Hns2 Hns3 Hns0 Hns1.
-                      rewrite H3. rewrite H5.
-                      assert (Hle': ns1 + ns2 <= m) by admit. (* CHECK THIS! *)
-                      assert (Hle'': ns0 + ns3 <= m0) by admit. (* CHECK THIS! *)
-                      eapply le_trans with (m := (3 * (ns1 + ns2) + all_size (typ_arrow A1 A2)) * (1 + iu_size (typ_arrow A0 A3))
-                                               + (3 * (ns0 + ns3) + all_size (typ_arrow A0 A3)) * (1 + iu_size (typ_arrow A1 A2))).
-                      simpl in *. lia. admit. (* safe: oh my lia. *) }
-            assert (Hs2: exists ns2, split_size (work_sub A0 A1 ⫤ᵃ Γ) A2 ns2) by admit.
-            assert (Hs3: exists ns3, split_size (work_sub A0 A1 ⫤ᵃ Γ) A3 ns3) by admit.
-            assert (Hs0: exists ns0, split_size Γ A0 ns0) by admit.
-            assert (Hs1: exists ns1, split_size Γ A1 ns1) by admit.
-            destruct Hs2 as [ns2 Hs2]. destruct Hs3 as [ns3 Hs3].
-            destruct Hs0 as [ns0 Hs0]. destruct Hs1 as [ns1 Hs1].
-            specialize (Hle ns1 ns2 ns0 ns3 Hs2 Hs3 Hs0 Hs1).
-            eapply IHnw with (m := ((3 * ns2 + all_size A2) * (1 + iu_size A3) +
-                                    (3 * ns3 + all_size A3) * (1 + iu_size A2)) +
-                                    ((3 * ns0 + all_size A0) * (1 + iu_size A1) +
-                                    (3 * ns1 + all_size A1) * (1 + iu_size A0)) + n); eauto.
+           { eapply IHnw; eauto.
+             simpl in *. unfold split_depth in *. simpl in *.
             eapply measp_wl_conswork with (n := ((3 * ns0 + all_size A0) * (1 + iu_size A1) +
                                                     (3 * ns1 + all_size A1) * (1 + iu_size A0)) + n); eauto; try lia.
             lia. simpl in *. lia. }
