@@ -1294,43 +1294,69 @@ Lemma split_depth_work_aworklist_subst : forall Γ2 Γ X A Γ1 Γ1' Γ2',
   ⊢ᵃʷ Γ -> a_mono_typ (awl_to_aenv Γ) A ->
   split_depth_rec (⌊ Γ ⌋ᵃ) A n < split_depth_rec (⌊ Γ ⌋ᵃ) A m. *)
 
-(* Lemma split_depth_rec_non_mono_lt : forall A Γ n m,
+Lemma split_depth_rec_non_mono_non_zero : forall A Γ n,
+  ⊢ᵃʷ Γ -> a_wf_typ (awl_to_aenv Γ) A ->
+  (a_mono_typ (awl_to_aenv Γ) A -> False) -> n > 0 ->
+  split_depth_rec (⌊ Γ ⌋ᵃ) A n > 0.
+Proof.
+  intros A Γ n Hwf Hwf1 Hmono.
+  generalize dependent n.
+  dependent induction Hwf1; simpl; intros n Hgt; eauto; try solve [exfalso; eauto]; try lia.
+  - erewrite lookup_tvar_bind_binds in H; eauto.
+    destruct (lookup_tvar_bind (⌊ Γ ⌋ᵃ) X); inversion H; eauto.
+  - destruct (a_mono_typ_dec Γ A1); destruct (a_mono_typ_dec Γ A2); eauto.
+    + exfalso. eauto.
+    + eapply IHHwf1_2 with (n := S n) in H0; eauto. lia.
+    + eapply IHHwf1_1 with (n := S n) in H; eauto. lia.
+    + eapply IHHwf1_1 with (n := S n) in H; eauto. lia.
+Qed.
+
+Lemma split_depth_rec_non_zero_non_mono : forall A Γ n,
+  ⊢ᵃʷ Γ -> split_depth_rec (⌊ Γ ⌋ᵃ) A n > 0 ->
+  a_mono_typ (awl_to_aenv Γ) A -> False.
+Proof.
+  intros A. induction A; simpl; intros Γ n0 Hwf Hgt Hmono;
+    try solve [inversion Hgt; inversion Hmono].
+  - destruct (lookup_tvar_bind (⌊ Γ ⌋ᵃ) X) eqn:Heq.
+    destruct a; try solve [inversion Hgt; exfalso; eauto]; eauto.
+    rewrite <- lookup_tvar_bind_binds in Heq; eauto.
+    dependent destruction Hmono; try unify_binds. inversion Hgt.
+  - specialize (IHA1 Γ (S n0) Hwf). specialize (IHA2 Γ (S n0) Hwf).
+    dependent destruction Hmono.
+    destruct (split_depth_rec (⌊ Γ ⌋ᵃ) A1 (S n0)) eqn:Heq1;
+    destruct (split_depth_rec (⌊ Γ ⌋ᵃ) A2 (S n0)) eqn:Heq2; eauto.
+    eapply IHA1; eauto. lia. eapply IHA2; eauto. lia.
+Qed.
+
+Lemma split_depth_rec_non_mono_lt_ : forall A Γ n m,
   ⊢ᵃʷ Γ -> split_depth_rec (⌊ Γ ⌋ᵃ) A n > 0 -> n < m ->
   split_depth_rec (⌊ Γ ⌋ᵃ) A n < split_depth_rec (⌊ Γ ⌋ᵃ) A m.
 Proof.
   intros A. induction A; simpl; intros Γ n0 m Hwf Hgt Hlt; eauto.
   - destruct (lookup_tvar_bind (⌊ Γ ⌋ᵃ) X) eqn:Heq.
     destruct a; try solve [exfalso; eauto]; eauto. inversion Hgt.
-  - destruct (split_depth_rec (⌊ Γ ⌋ᵃ) A1 (S n0)).
-    destruct (split_depth_rec (⌊ Γ ⌋ᵃ) A2 (S n0)).
-    inversion Hgt.
-    destruct (split_depth_rec (⌊ Γ ⌋ᵃ) A2 n0); eauto.
-    specialize (IHA1 Γ n0 m Hwf ltac:(lia) Hlt).
-    specialize (IHA2 Γ n0 m Hwf ltac:(lia) Hlt). lia.
-  - admit.  *)
+  - destruct (split_depth_rec (⌊ Γ ⌋ᵃ) A1 (S n0)) eqn:Heq1.
+    destruct (split_depth_rec (⌊ Γ ⌋ᵃ) A2 (S n0)) eqn:Heq2.
+    + inversion Hgt.
+    + specialize (IHA2 Γ (S n0) (S m) Hwf). lia.
+    + specialize (IHA1 Γ (S n0) (S m) Hwf).
+      specialize (IHA2 Γ (S n0) (S m) Hwf). lia.
+  - specialize (IHA Γ n0 m Hwf). lia.
+  - specialize (IHA1 Γ n0 m Hwf).
+    specialize (IHA2 Γ n0 m Hwf). lia.
+  - specialize (IHA1 Γ n0 m Hwf).
+    specialize (IHA2 Γ n0 m Hwf). lia.
+Qed.
 
-(* Lemma split_depth_rec_non_mono_lt : forall A Γ n m,
-  ⊢ᵃʷ Γ ->
-   (a_mono_typ (awl_to_aenv Γ) A -> False) -> n < m ->
+Lemma split_depth_rec_non_mono_lt : forall A Γ n m,
+  ⊢ᵃʷ Γ -> ⌊ Γ ⌋ᵃ ᵗ⊢ᵃ A -> (a_mono_typ (awl_to_aenv Γ) A -> False) ->
+  n > 0 -> n < m ->
   split_depth_rec (⌊ Γ ⌋ᵃ) A n < split_depth_rec (⌊ Γ ⌋ᵃ) A m.
 Proof.
-  intros A Γ n m Hwf Hmono Hlt.
-  generalize dependent n. generalize dependent m.
-  induction A; intros; simpl; eauto; try solve [ exfalso; apply Hmono; auto ].
-  - destruct (lookup_tvar_bind (⌊ Γ ⌋ᵃ) X) eqn:Heq.
-    + rewrite <- lookup_tvar_bind_binds in Heq; eauto.
-      destruct a; try solve [exfalso; eauto]; eauto. admit.
-    + admit.
-  - admit. 
-  
-  eauto.
-  - specialize (IHA1 Γ n m Hwf Hmono Hlt).
-    specialize (IHA2 Γ n m Hwf Hmono Hlt). lia.
-  - specialize (IHA Γ n m Hwf Hmono Hlt). lia.
-  - specialize (IHA1 Γ n m Hwf Hmono Hlt).
-    specialize (IHA2 Γ n m Hwf Hmono Hlt). lia.
-  - specialize (IHA1 Γ n m Hwf Hmono Hlt).
-    specialize (IHA2 Γ n m Hwf Hmono Hlt). lia. *)
+  intros.
+  eapply split_depth_rec_non_mono_lt_; eauto.
+  eapply split_depth_rec_non_mono_non_zero; eauto.
+Qed.
 
 Lemma decidablity_lemma : forall ne nj nt ntj na naj nm nw Γ,
   ⊢ᵃʷ Γ ->
