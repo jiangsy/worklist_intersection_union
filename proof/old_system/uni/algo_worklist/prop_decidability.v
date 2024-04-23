@@ -1129,13 +1129,14 @@ Qed.
 Lemma exp_size_wl_aworklist_subst' : forall Γ2 Γ X A Γ1 Γ1' Γ2',
   ⊢ᵃʷ (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) -> 
   aworklist_subst (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) X A Γ1' Γ2' -> a_mono_typ (awl_to_aenv Γ) A ->
+  (* ⌊ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1 ⌋ᵃ *)
   exp_size_wl (subst_tvar_in_aworklist A X Γ2' ⧺ Γ1') = exp_size_wl (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1).
 Proof.
   intros Γ2. induction Γ2; intros;
     dependent destruction H0; dependent destruction H; simpl in *; eauto;
     try solve [exfalso; eauto].
   - eapply worklist_split_etvar_det in x. destruct x. subst.
-    eapply IHΓ2 in H1; eauto.
+    eapply IHΓ2 in H1; eauto. admit. admit. admit.
 Admitted.
 
 Lemma exp_size_wl_aworklist_subst : forall Γ X A Γ1 Γ2,
@@ -1263,25 +1264,26 @@ Proof.
 Admitted.
 
 
-Lemma split_depth_wl_aworklist_subst : forall Γ2 Γ X A Γ1 Γ1' Γ2',
+Lemma split_depth_wl_aworklist_subst : forall Γ2 X A Γ1 Γ1' Γ2',
   ⊢ᵃʷ (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) -> 
-  aworklist_subst (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) X A Γ1' Γ2' -> a_mono_typ (awl_to_aenv Γ) A ->
+  aworklist_subst (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) X A Γ1' Γ2' -> a_mono_typ (⌊ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1 ⌋ᵃ) A ->
+  X ∉ ftvar_in_typ A ->
   split_depth_wl (subst_tvar_in_aworklist A X Γ2' ⧺ Γ1') = split_depth_wl (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1).
 Proof.
-  intros Γ2. induction Γ2; intros;
-    dependent destruction H0; dependent destruction H; simpl in *; eauto;
-    try solve [exfalso; eauto].
-  - eapply worklist_split_etvar_det in x. destruct x. subst.
-    eapply IHΓ2 in H1; eauto.
-    replace (Γ2 ⧺ X0 ~ᵃ ⬒ ;ᵃ X ~ᵃ ⬒ ;ᵃ Γ1) with ((Γ2 ⧺ X0 ~ᵃ ⬒ ;ᵃ aworklist_empty) ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) in H1 by admit.
-    erewrite <- split_depth_wl_etvar with (X := X) (Γ1 := Γ1) (Γ2 := Γ2 ⧺ X0 ~ᵃ ⬒ ;ᵃ aworklist_empty) in H1; eauto.
-    replace ((Γ2 ⧺ X0 ~ᵃ ⬒ ;ᵃ aworklist_empty) ⧺ Γ1) with (Γ2 ⧺ X0 ~ᵃ ⬒ ;ᵃ Γ1) in H1 by admit. eauto.
-    admit. (* wf *)
-    admit. (* trivial *)
-    admit. (* wf *)
-    admit. (* trivial *)
-  - simpl. erewrite IHΓ2; eauto. admit.
-Admitted. 
+  intros Γ2. induction Γ2; intros * Hwf Hsubst Hmono Hnotin; simpl in *.
+  - eapply a_mono_typ_strengthen_cons in Hmono; eauto.
+    dependent destruction Hsubst; simpl; eauto; try contradiction.
+  - erewrite IHΓ2; eauto. admit. admit. admit.
+  - dependent destruction Hsubst; simpl; destruct_a_wf_wl; eauto.
+    + eapply a_mono_typ_strengthen_cons in Hmono; eauto.
+    + eapply a_mono_typ_strengthen_cons in Hmono; eauto.
+    + eapply a_mono_typ_strengthen_cons in Hmono; eauto.
+    + assert (⊢ᵃʷ (Γ2 ⧺ X0 ~ᵃ ⬒ ;ᵃ X ~ᵃ ⬒ ;ᵃ Γ1)) by admit.
+      eapply worklist_split_etvar_det in x. destruct x. subst.
+      eapply IHΓ2 with (A := A) in H2; eauto. admit. admit. admit.
+  - dependent destruction Hsubst; simpl; destruct_a_wf_wl; eauto.
+    admit.
+Admitted.
 
 (* Lemma split_depth_rec_aworklist_subst : forall Γ2 Γ X A B Γ1 Γ1' Γ2',
   ⊢ᵃʷ (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) -> 
@@ -1295,24 +1297,6 @@ Proof.
   admit.
     dependent destruction H0; dependent destruction H; simpl in *; eauto;
     try solve [exfalso; eauto].
-
-Lemma split_depth_aworklist_subst : forall Γ2 Γ X A B Γ1 Γ1' Γ2',
-  ⊢ᵃʷ (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) -> 
-  aworklist_subst (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) X A Γ1' Γ2' -> a_mono_typ (awl_to_aenv Γ) A ->
-  split_depth (⌊ subst_tvar_in_aworklist A X Γ2' ⧺ Γ1' ⌋ᵃ) B = split_depth (⌊ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1 ⌋ᵃ) B.
-Proof.
-  intros Γ2 Γ X A B Γ1 Γ1' Γ2' Hwf Hsubst Ha.
-  generalize dependent Γ1. generalize dependent Γ2.
-  induction B; intros; simpl; eauto.
-  - destruct (X == X0); subst; eauto.
-    eapply lookup_tvar_bind_etvar; eauto.
-  - specialize (IHB1 Γ2 Γ1 X A Γ1' Γ2' Hwf Hsubst Ha).
-    specialize (IHB2 Γ2 Γ1 X A Γ1' Γ2' Hwf Hsubst Ha). eauto.
-  - specialize (IHB Γ2 Γ1 X A Γ1' Γ2' Hwf Hsubst Ha). eauto.
-  - specialize (IHB1 Γ2 Γ1 X A Γ1' Γ2' Hwf Hsubst Ha).
-    specialize (IHB2 Γ2 Γ1 X A Γ1' Γ2' Hwf Hsubst Ha). eauto.
-  - specialize (IHB1 Γ2 Γ1 X A Γ1' Γ2' Hwf Hsubst Ha).
-    specialize (IHB2 Γ2 Γ1 X A Γ1' Γ2' Hwf Hsubst Ha). eauto.
 
 Lemma split_depth_work_aworklist_subst : forall Γ2 Γ X A Γ1 Γ1' Γ2',
   ⊢ᵃʷ (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) -> 
@@ -1386,6 +1370,35 @@ Proof.
   eapply split_depth_rec_non_mono_lt_; eauto.
   eapply split_depth_rec_non_mono_non_zero; eauto.
 Qed.
+
+Lemma split_depth_rec_aworklist_subst_ : forall B Γ2 X A Γ1 Γ1' Γ2' n,
+  ⊢ᵃʷ (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) -> 
+  aworklist_subst (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) X A Γ1' Γ2' -> a_mono_typ (⌊ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1 ⌋ᵃ) A ->
+  X ∉ ftvar_in_typ B ->
+  split_depth_rec (⌊ subst_tvar_in_aworklist A X Γ2' ⧺ Γ1' ⌋ᵃ) B n = split_depth_rec (⌊ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1 ⌋ᵃ) B n.
+Proof.
+  intros B. induction B; intros * Hwf Hsubst Hmono Hnotin; unfold split_depth; simpl in *; eauto.
+  - admit.
+Admitted.
+
+Lemma split_depth_rec_subst : forall B Γ2 X A Γ1 n,
+  ⊢ᵃʷ (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) -> a_mono_typ (⌊ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1 ⌋ᵃ) A ->
+  split_depth_rec (⌊ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1 ⌋ᵃ) B n = split_depth_rec (⌊ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1 ⌋ᵃ) ({A /ᵗ X} B) n.
+Proof.
+  intros B. induction B; intros * Hwf Hmono; unfold split_depth; simpl in *; eauto.
+  - admit.
+Admitted.
+
+Lemma split_depth_rec_aworklist_subst : forall B Γ2 X A Γ1 Γ1' Γ2' n,
+  ⊢ᵃʷ (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) -> 
+  aworklist_subst (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) X A Γ1' Γ2' -> a_mono_typ (⌊ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1 ⌋ᵃ) A ->
+  X ∉ ftvar_in_typ A ->
+  split_depth_rec (⌊ subst_tvar_in_aworklist A X Γ2' ⧺ Γ1' ⌋ᵃ) ({A /ᵗ X} B) n = split_depth_rec (⌊ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1 ⌋ᵃ) B n.
+Proof.
+  intros.
+  erewrite split_depth_rec_subst; eauto. erewrite split_depth_rec_aworklist_subst_; eauto.
+  eapply subst_tvar_in_typ_fresh_same; eauto.
+Qed.  
 
 Lemma decidablity_lemma : forall ne nj nt ntj na naj nm nw Γ,
   ⊢ᵃʷ Γ ->
@@ -1946,7 +1959,7 @@ Proof.
         admit. (* TODO: should be fine *)
         eapply aworklist_binds_split in Hbin as Hbin'; eauto.
         destruct Hbin' as [Γ1' [Γ2' Hbin']]. subst.
-        erewrite split_depth_wl_aworklist_subst; eauto. lia.
+        erewrite split_depth_wl_aworklist_subst; eauto. lia. admit.
         admit. (* TODO: should be fine *)
       } 
       assert (JgInst2: forall (Γ1 Γ2:aworklist) (X:typvar),
@@ -2142,7 +2155,19 @@ Proof.
                             ~ (work_sub ` X2 (subst_tvar_in_typ (typ_arrow ` X1 ` X2) X A2) ⫤ᵃ work_sub (subst_tvar_in_typ (typ_arrow ` X1 ` X2) X A1) ` X1 ⫤ᵃ subst_tvar_in_aworklist (typ_arrow ` X1 ` X2) X Γ2 ⧺ X1 ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1) ⟶ᵃʷ⁎⋅).
               { eapply IHnm; simpl in *; eauto. admit. (* wf *)
                 admit. admit. admit. admit. admit. admit.
-                unfold split_depth in *. simpl in *.
+                unfold split_depth in *.
+                dependent destruction Hsubst.
+                rewrite split_depth_rec_aworklist_subst with (Γ2 := X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ2) (Γ1 := Γ1); simpl; try constructor; eauto.
+                rewrite split_depth_rec_aworklist_subst with (Γ2 := X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ2) (Γ1 := Γ1); simpl; try constructor; eauto.
+                assert (lookup_tvar_bind (⌊ subst_tvar_in_aworklist (typ_arrow ` X1 ` X2) X Γ2 ⧺ X1 ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1 ⌋ᵃ) X2 = Some ⬒) by admit.
+                assert (lookup_tvar_bind (⌊ subst_tvar_in_aworklist (typ_arrow ` X1 ` X2) X Γ2 ⧺ X1 ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1 ⌋ᵃ) X1 = Some ⬒) by admit.
+                assert (lookup_tvar_bind (⌊ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1 ⌋ᵃ) X = Some ⬒) by admit.
+                rewrite H1. rewrite H2. simpl.
+                assert (split_depth_rec ((X2, ⬒) :: (X1, ⬒) :: ⌊ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1 ⌋ᵃ) A1 1 <= split_depth_rec (⌊ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1 ⌋ᵃ) A1 2) by admit.
+                assert (split_depth_rec ((X2, ⬒) :: (X1, ⬒) :: ⌊ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1 ⌋ᵃ) A2 1 <= split_depth_rec (⌊ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1 ⌋ᵃ) A2 2) by admit.
+                simpl in Hm. rewrite H3 in Hm. simpl in Hm.
+                erewrite split_depth_wl_aworklist_subst with (Γ2 := X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ2) (Γ1 := Γ1); eauto.
+                admit. admit. admit.
                 
                 (* eapply aworklist_binds_split in H as Hbin.
                 destruct Hbin as [Γ1' [Γ2' Hbin]]. subst.
