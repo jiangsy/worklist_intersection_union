@@ -414,18 +414,50 @@ Proof.
   dependent destruction H. simpl. lia.
 Qed. *)
 
+
+Lemma lookup_tvar_bind_binds : forall Γ X B,
+  ⊢ᵃʷ Γ ->
+  binds X B (⌊ Γ ⌋ᵃ) <->
+  lookup_tvar_bind (⌊ Γ ⌋ᵃ) X = Some B.
+Proof.
+  intros. induction H; simpl; destruct_eq_atom; split; intros; auto; destruct_binds; auto; try solve [inversion H].
+  - exfalso; eapply binds_dom_contradiction; eauto. 
+  - inversion H2; auto.
+  - apply IHa_wf_wl; auto.
+  - apply binds_cons; eauto. apply IHa_wf_wl; auto.
+  - exfalso; eapply binds_dom_contradiction; eauto.
+  - inversion H1. auto.
+  - apply IHa_wf_wl; auto.
+  - apply binds_cons; eauto. apply IHa_wf_wl; auto.
+  - exfalso; eapply binds_dom_contradiction; eauto.
+  - inversion H1. auto.
+  - apply IHa_wf_wl; auto.  
+  - apply binds_cons; eauto. apply IHa_wf_wl; auto.
+  - exfalso; eapply binds_dom_contradiction; eauto.
+  - inversion H1. auto.
+  - apply IHa_wf_wl; auto.
+  - apply binds_cons; eauto. apply IHa_wf_wl; auto.
+  - apply IHa_wf_wl; auto.
+  - apply IHa_wf_wl; auto.
+Qed.
+
 Lemma split_depth_rec_mono : forall Γ A n,
+  ⊢ᵃʷ Γ ->
   a_mono_typ (awl_to_aenv Γ) A -> split_depth_rec (awl_to_aenv Γ) A n = 0.
 Proof.
-  intros Γ A n Hmono. generalize dependent n.
+  intros Γ A n Hwf Hmono. generalize dependent n.
   induction A; simpl; eauto; intros; try solve [inversion Hmono].
-  admit.
-  dependent destruction Hmono.
-  specialize (IHA1 Hmono1 (S n)). specialize (IHA2 Hmono2 (S n)). lia.
-Admitted.
+  - dependent destruction Hmono. 
+    + apply lookup_tvar_bind_binds in H; auto.
+      rewrite H; auto. 
+    + apply lookup_tvar_bind_binds in H; auto.
+      rewrite H; auto.
+  - dependent destruction Hmono.
+    specialize (IHA1 Hmono1 (S n)). specialize (IHA2 Hmono2 (S n)). lia.
+Qed.
 
 Lemma split_depth_mono : forall Γ A,
-  a_mono_typ (awl_to_aenv Γ) A -> split_depth (awl_to_aenv Γ) A = 0.
+  ⊢ᵃʷ Γ -> a_mono_typ (awl_to_aenv Γ) A -> split_depth (awl_to_aenv Γ) A = 0.
 Proof.
   intros. unfold split_depth. eapply split_depth_rec_mono; eauto.
 Qed.
@@ -1173,32 +1205,6 @@ Proof.
 Qed.
 
 
-Lemma lookup_tvar_bind_binds : forall Γ X B,
-  ⊢ᵃʷ Γ ->
-  binds X B (⌊ Γ ⌋ᵃ) <->
-  lookup_tvar_bind (⌊ Γ ⌋ᵃ) X = Some B.
-Proof.
-  intros. induction H; simpl; destruct_eq_atom; split; intros; auto; destruct_binds; auto; try solve [inversion H].
-  - exfalso; eapply binds_dom_contradiction; eauto. 
-  - inversion H2; auto.
-  - apply IHa_wf_wl; auto.
-  - apply binds_cons; eauto. apply IHa_wf_wl; auto.
-  - exfalso; eapply binds_dom_contradiction; eauto.
-  - inversion H1. auto.
-  - apply IHa_wf_wl; auto.
-  - apply binds_cons; eauto. apply IHa_wf_wl; auto.
-  - exfalso; eapply binds_dom_contradiction; eauto.
-  - inversion H1. auto.
-  - apply IHa_wf_wl; auto.  
-  - apply binds_cons; eauto. apply IHa_wf_wl; auto.
-  - exfalso; eapply binds_dom_contradiction; eauto.
-  - inversion H1. auto.
-  - apply IHa_wf_wl; auto.
-  - apply binds_cons; eauto. apply IHa_wf_wl; auto.
-  - apply IHa_wf_wl; auto.
-  - apply IHa_wf_wl; auto.
-Qed.
-
 Lemma split_depth_rec_etvar : forall A Γ1 Γ2 X n,
   ⊢ᵃʷ (Γ2 ⧺ Γ1) ->
   X ∉ ftvar_in_typ A ->
@@ -1274,6 +1280,7 @@ Proof.
     admit. (* trivial *)
     admit. (* wf *)
     admit. (* trivial *)
+  - simpl. erewrite IHΓ2; eauto. admit.
 Admitted. 
 
 (* Lemma split_depth_rec_aworklist_subst : forall Γ2 Γ X A B Γ1 Γ1' Γ2',
