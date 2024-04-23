@@ -102,21 +102,21 @@ Qed.
 
 
 Lemma a_wf_env_uniq : forall Σ,
-  a_wf_env Σ ->
+  ⊢ᵃ Σ  ->
   uniq Σ.
 Proof.
   intros. induction H; auto.
 Qed.
 
 Lemma a_wf_typ_lc : forall Σ A,
-  a_wf_typ Σ A ->
+  Σ ᵗ⊢ᵃ A ->
   lc_typ A.
 Proof.
   intros. induction H; auto.
 Qed.
 
 Lemma a_mono_typ_lc : forall Σ A,
-  a_mono_typ Σ A ->
+  Σ ᵗ⊢ᵃₘ A ->
   lc_typ A.
 Proof.
   intros. induction H; auto.
@@ -125,7 +125,7 @@ Qed.
 #[global] Hint Resolve a_wf_typ_lc a_mono_typ_lc : core.
 
 Lemma a_mono_typ_in_s_in : forall Σ A X,
-  a_mono_typ Σ A ->
+  Σ ᵗ⊢ᵃₘ A ->
   X `in` ftvar_in_typ A ->
   s_in X A.
 Proof.
@@ -140,15 +140,16 @@ Qed.
 
 
 Theorem a_mono_typ_wf : forall Σ A,
-  a_mono_typ Σ A -> a_wf_typ Σ A.
+  Σ ᵗ⊢ᵃₘ A ->
+  Σ ᵗ⊢ᵃ A.
 Proof.
   intros. induction H; auto.
 Qed.
 
 
 Lemma a_wf_typ_weaken: forall Σ1 Σ2 Σ3 A,
-  a_wf_typ (Σ3 ++ Σ1) A ->
-  a_wf_typ (Σ3 ++ Σ2 ++ Σ1) A.
+  Σ3 ++ Σ1 ᵗ⊢ᵃ A ->
+  Σ3 ++ Σ2 ++ Σ1 ᵗ⊢ᵃ A.
 Proof.
   introv H. dependent induction H; eauto.
   - pick fresh X0 and apply a_wf_typ__all.
@@ -158,16 +159,16 @@ Proof.
 Qed.
 
 Lemma a_wf_typ_weaken_app: forall Σ1 Σ2 A,
-  a_wf_typ Σ1 A ->
-  a_wf_typ (Σ2 ++ Σ1) A.
+  Σ1 ᵗ⊢ᵃ A ->
+  Σ2 ++ Σ1 ᵗ⊢ᵃ A.
 Proof.
   intros. rewrite_env (nil ++ Σ2 ++ Σ1).
   apply a_wf_typ_weaken; auto.
 Qed.
 
 Corollary a_wf_typ_weaken_cons: forall Σ X t A,
-  a_wf_typ Σ A ->
-  a_wf_typ ((X, t) :: Σ) A.
+  Σ ᵗ⊢ᵃ A ->
+  (X, t) :: Σ ᵗ⊢ᵃ A.
 Proof with simpl in *; try solve_notin.
   intros. simpl.
   rewrite_env (nil ++ (X ~ t) ++ Σ).
@@ -176,11 +177,11 @@ Qed.
 
 
 Lemma a_wf_exp_weaken: forall Σ1 Σ2 Σ3 e,
-  a_wf_exp (Σ3 ++ Σ1) e ->
-  a_wf_exp (Σ3 ++ Σ2 ++ Σ1) e
+  Σ3 ++ Σ1 ᵉ⊢ᵃ e ->
+  Σ3 ++ Σ2 ++ Σ1 ᵉ⊢ᵃ e
 with a_wf_body_weaken : forall Σ1 Σ2 Σ3 b,
-  a_wf_body (Σ3 ++ Σ1) b ->
-  a_wf_body (Σ3 ++ Σ2 ++ Σ1) b.
+  Σ3 ++ Σ1 ᵇ⊢ᵃ b ->
+  Σ3 ++ Σ2 ++ Σ1 ᵇ⊢ᵃ b.
 Proof with eauto using a_wf_typ_weaken.
   - intros. clear a_wf_exp_weaken. dependent induction H...
     + intros. apply a_wf_exp__abs with (T:=T)
@@ -195,19 +196,19 @@ Proof with eauto using a_wf_typ_weaken.
 Qed.
 
 Lemma a_wf_conts_weaken: forall Σ1 Σ2 Σ3 cs,
-  a_wf_conts (Σ3 ++ Σ1) cs ->
-  a_wf_conts (Σ3 ++ Σ2 ++ Σ1) cs
+  Σ3 ++ Σ1 ᶜˢ⊢ᵃ cs ->
+  Σ3 ++ Σ2 ++ Σ1 ᶜˢ⊢ᵃ cs
 with a_wf_contd_weaken : forall Σ1 Σ2 Σ3 cd,
-  a_wf_contd (Σ3 ++ Σ1) cd ->
-  a_wf_contd (Σ3 ++ Σ2 ++ Σ1) cd.
+  Σ3 ++ Σ1 ᶜᵈ⊢ᵃ cd ->
+  Σ3 ++ Σ2 ++ Σ1 ᶜᵈ⊢ᵃ cd.
 Proof with eauto using a_wf_typ_weaken, a_wf_exp_weaken.
   - intros. dependent induction H; constructor...
   - intros. dependent induction H; constructor...
 Qed.
 
 Lemma a_wf_conts_weaken_cons : forall Σ X b cs,
-  a_wf_conts Σ cs ->
-  a_wf_conts ((X, b) :: Σ) cs.
+  Σ ᶜˢ⊢ᵃ cs ->
+  (X, b) :: Σ ᶜˢ⊢ᵃ cs.
 Proof.
   intros.
   rewrite_env (nil ++ (X ~ b) ++ Σ).
@@ -215,8 +216,8 @@ Proof.
 Qed.
 
 Lemma a_wf_contd_weaken_cons : forall Σ X b cd,
-  a_wf_contd Σ cd ->
-  a_wf_contd ((X, b) :: Σ) cd.
+  Σ ᶜᵈ⊢ᵃ cd -> 
+  (X, b) :: Σ ᶜᵈ⊢ᵃ cd.
 Proof.
   intros.
   rewrite_env (nil ++ (X ~ b) ++ Σ).
@@ -224,17 +225,17 @@ Proof.
 Qed.
 
 Lemma a_wf_work_weaken: forall Σ1 Σ2 Σ3 w,
-  a_wf_work (Σ3 ++ Σ1) w ->
-  a_wf_work (Σ3 ++ Σ2 ++ Σ1) w.
+  Σ3 ++ Σ1 ʷ⊢ᵃ w ->
+  Σ3 ++ Σ2 ++ Σ1 ʷ⊢ᵃ w.
 Proof with eauto using a_wf_typ_weaken, a_wf_exp_weaken, a_wf_conts_weaken, a_wf_contd_weaken.
   intros. dependent destruction H...
   constructor...
 Qed.
 
 Lemma a_wf_typ_strengthen: forall Σ1 Σ2 A X b,
-  a_wf_typ (Σ2 ++ (X, b) :: Σ1) A ->
+  Σ2 ++ (X, b) :: Σ1 ᵗ⊢ᵃ A ->
   X ∉ ftvar_in_typ A ->
-  a_wf_typ (Σ2 ++ Σ1) A.
+  Σ2 ++ Σ1 ᵗ⊢ᵃ A.
 Proof.
   intros * Hwf Hnotin. dependent induction Hwf; simpl in *; eauto.
   - apply notin_singleton_1 in Hnotin.
@@ -251,17 +252,17 @@ Qed.
 
 
 Corollary a_wf_typ_strengthen_cons: forall Σ X A b,
-  a_wf_typ ((X, b) :: Σ) A ->
+  (X, b) :: Σ ᵗ⊢ᵃ A ->
   X ∉ ftvar_in_typ A ->
-  a_wf_typ Σ A.
+  Σ ᵗ⊢ᵃ A.
 Proof.
   intros. rewrite_env (nil ++ Σ).
   eapply a_wf_typ_strengthen; eauto.
 Qed.
 
 Lemma a_wf_typ_strengthen_var: forall Σ1 Σ2 A X B,
-  a_wf_typ (Σ2 ++ (X, abind_var_typ B) :: Σ1) A ->
-  a_wf_typ (Σ2 ++ Σ1) A.
+  Σ2 ++ (X, abind_var_typ B) :: Σ1 ᵗ⊢ᵃ A ->
+  Σ2 ++ Σ1 ᵗ⊢ᵃ A.
 Proof.
   intros * Hwf. dependent induction Hwf; simpl in *; eauto.
   - apply binds_remove_mid_diff_bind in H; eauto.
@@ -276,8 +277,8 @@ Proof.
 Qed.
 
 Corollary a_wf_typ_strengthen_var_cons: forall Σ X A B,
-  a_wf_typ ((X, abind_var_typ B) :: Σ) A ->
-  a_wf_typ Σ A.
+  (X, abind_var_typ B) :: Σ ᵗ⊢ᵃ A ->
+  Σ ᵗ⊢ᵃ A.
 Proof.
   intros. rewrite_env (nil ++ Σ).
   eapply a_wf_typ_strengthen_var; eauto.
@@ -994,9 +995,9 @@ Ltac destruct_wf_arrow :=
 
 Lemma aworklist_subst_remove_target_tvar : forall Γ X A Γ1 Γ2,
   uniq (⌊ Γ ⌋ᵃ) ->
-  binds X abind_etvar_empty (⌊ Γ ⌋ᵃ) ->
+  X ~ ⬒ ∈ᵃ ⌊ Γ ⌋ᵃ ->
   aworklist_subst Γ X A Γ1 Γ2 ->
-  X ∉ dom (awl_to_aenv (subst_tvar_in_aworklist A X Γ2 ⧺ Γ1)).
+  X `notin` dom (⌊ {A ᵃʷ/ₜ X} Γ2 ⧺ Γ1 ⌋ᵃ).
 Proof with eauto.
   intros * Huniq Hb Haws. induction Haws; simpl in *; auto.
   - dependent destruction Huniq...
@@ -1068,7 +1069,7 @@ Lemma aworklist_subst_binds_same_avar' : forall Γ1 Γ2 X b X1 A Γ'1 Γ'2,
   aworklist_subst (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) X A Γ'1 Γ'2 ->
   X <> X1 ->
   binds X1 b (⌊ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1 ⌋ᵃ) ->
-  binds X1 (subst_tvar_in_abind A X b) (⌊ subst_tvar_in_aworklist A X Γ'2 ⧺ Γ'1 ⌋ᵃ).
+  binds X1 (subst_tvar_in_abind A X b) (⌊ {A ᵃʷ/ₜ X} Γ'2 ⧺ Γ'1 ⌋ᵃ). 
 Proof.
   intros. generalize dependent Γ1. generalize dependent Γ'1. generalize dependent Γ'2. induction Γ2; intros.
   - simpl in *. dependent destruction H0; simpl; auto.

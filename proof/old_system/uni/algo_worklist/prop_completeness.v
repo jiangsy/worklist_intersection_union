@@ -83,7 +83,7 @@ Open Scope aworklist_scope.
 
 Lemma wf_ss_etvar_bind_another : forall θ1 θ2 X T1 T2,
   wf_ss (θ2 ++ (X, dbind_typ T1) :: θ1) ->
-  d_mono_typ (ss_to_denv θ1) T2 ->
+  ⌈ θ1 ⌉ᵈ ᵗ⊢ᵈₘ T2 ->
   wf_ss (θ2 ++ (X, dbind_typ T2) :: θ1).
 Proof.
   intros. induction θ2; auto.
@@ -120,7 +120,7 @@ Qed.
 
 
 Corollary a_wf_wwl_two_etvar_neq1 : forall X1 X2 b1 b2 Γ1 Γ2,
-  ⊢ᵃʷ aworklist_cons_var (Γ2 ⧺ (aworklist_cons_var Γ1 X1 b1)) X2 b2 ->
+  ⊢ᵃʷ (X2 ~ᵃ b2; Γ2 ⧺ X1 ~ᵃ b1; Γ1) ->
   X1 <> X2.
 Proof.
   intros.
@@ -131,7 +131,7 @@ Proof.
 Qed.
 
 Corollary a_wf_wwl_two_etvar_neq2 : forall X1 X2 b1 b2 Γ1 Γ2,
-  ⊢ᵃʷ aworklist_cons_var (Γ2 ⧺ (aworklist_cons_var Γ1 X1 b1)) X2 b2 ->
+  ⊢ᵃʷ (X2 ~ᵃ b2; Γ2 ⧺ X1 ~ᵃ b1; Γ1) ->
   X2 <> X1.
 Proof.
   intros. unfold not. intros.
@@ -142,9 +142,9 @@ Qed.
 
 Lemma d_mono_typ_strengthen : forall θ X b T,
   wf_ss ((X, b) :: θ) ->
-  d_mono_typ (ss_to_denv ((X, b) :: θ)) T ->
+  ⌈ (X, b) :: θ ⌉ᵈ ᵗ⊢ᵈₘ T ->
   X ∉ ftvar_in_typ T ->
-  d_mono_typ (ss_to_denv θ) T.
+  ⌈ θ ⌉ᵈ ᵗ⊢ᵈₘ T.
 Proof.
   intros. dependent induction H0; eauto.
   - destruct b; simpl in *. 
@@ -158,10 +158,10 @@ Qed.
 
 Lemma d_mono_typ_strengthen_app : forall θ1 θ2 X T1 T2,
   wf_ss (θ2 ++ (X, dbind_typ T1) :: θ1) ->
-  ss_to_denv (θ2 ++ (X, dbind_typ T1) :: θ1) ᵗ⊢ᵈₘ T2 ->
-  ss_to_denv θ1 ᵗ⊢ᵈₘ T1 ->
+  ⌈ θ2 ++ (X, dbind_typ T1) :: θ1 ⌉ᵈ ᵗ⊢ᵈₘ T2 ->
+  ⌈ θ1 ⌉ᵈ ᵗ⊢ᵈₘ T1 ->
   (∀ Y : atom, Y `in` ftvar_in_typ T2 → Y `in` ftvar_in_typ T1) ->
-  ss_to_denv θ1 ᵗ⊢ᵈₘ T2.
+  ⌈ θ1 ⌉ᵈ ᵗ⊢ᵈₘ T2.
 Proof.
   intros. induction θ2; simpl in *; auto.
   - destruct a as [X0 b]. destruct b.
@@ -188,7 +188,7 @@ Qed.
 
 
 Lemma trans_typ_tvar_stvar_notin : forall θ X1 X2 T Tᵈ Γ1 Γ2 Ω b,
-  b = dbind_tvar_empty \/ b = dbind_stvar_empty ->
+  b = □ \/ b = ■ ->
   (X2, b) :: θ ᵗ⊩ T ⇝ Tᵈ -> 
   (X2, b) :: θ ᵗ⊩ ` X1 ⇝ Tᵈ ->
   nil ⊩ Γ2 ⧺ X1 ~ᵃ ⬒ ;ᵃ Γ1 ⇝ Ω ⫣ θ ->
@@ -214,7 +214,7 @@ Lemma trans_typ_etvar_subst : forall θ1 θ2 Tᵃ Tᵈ X Aᵃ Aᵈ,
   lc_typ Aᵃ -> 
   wf_ss (θ2 ++ θ1) ->
   X ∉ dom (θ2 ++ θ1) ->
-  d_mono_typ (ss_to_denv θ1) Tᵈ ->
+  ⌈ θ1 ⌉ᵈ ᵗ⊢ᵈₘ Tᵈ ->
   θ2 ++ θ1 ᵗ⊩ Tᵃ ⇝ Tᵈ ->
   θ2 ++ X ~ dbind_typ Tᵈ ++ θ1 ᵗ⊩ Aᵃ ⇝ Aᵈ ->
   θ2 ++ θ1 ᵗ⊩ {Tᵃ ᵗ/ₜ X} Aᵃ ⇝ Aᵈ.
@@ -881,7 +881,7 @@ Qed.
 
 Lemma wf_ss_tvar_etvar : forall θ1 θ2 X T,
   wf_ss (θ2 ++ (X , dbind_tvar_empty) :: θ1) ->
-  ss_to_denv θ1 ᵗ⊢ᵈₘ T ->
+  ⌈ θ1 ⌉ᵈ ᵗ⊢ᵈₘ T ->
   wf_ss (map (subst_tvar_in_dbind T X) θ2 ++ (X , dbind_typ T) :: θ1).
 Proof with eauto.
   intros. induction θ2; simpl; auto.
@@ -913,7 +913,7 @@ Qed.
 
 Lemma trans_typ_tvar_etvar : forall θ1 θ2 Aᵃ Aᵈ Tᵃ Tᵈ X,
   θ2 ++ (X , □) :: θ1 ᵗ⊩ Aᵃ ⇝ Aᵈ ->
-  ss_to_denv θ1 ᵗ⊢ᵈₘ Tᵈ ->
+  ⌈ θ1 ⌉ᵈ ᵗ⊢ᵈₘ Tᵈ ->
   θ1 ᵗ⊩ Tᵃ ⇝ Tᵈ ->
   map (subst_tvar_in_dbind Tᵈ X) θ2 ++ (X , dbind_typ Tᵈ) :: θ1 ᵗ⊩ Aᵃ ⇝ {Tᵈ ᵗ/ₜ X} Aᵈ.
 Proof with eauto using wf_ss_tvar_etvar, d_mono_typ_strengthen_to_wf_env.
@@ -954,7 +954,7 @@ Qed.
 
 Lemma trans_typ_tvar_etvar_cons : forall θ Aᵃ Aᵈ Tᵃ Tᵈ X,
   (X , □) :: θ ᵗ⊩ Aᵃ ⇝ Aᵈ ->
-  ss_to_denv θ ᵗ⊢ᵈₘ Tᵈ ->
+  ⌈ θ ⌉ᵈ ᵗ⊢ᵈₘ Tᵈ ->
   θ ᵗ⊩ Tᵃ ⇝ Tᵈ ->
   (X , dbind_typ Tᵈ) :: θ ᵗ⊩ Aᵃ ⇝ {Tᵈ ᵗ/ₜ X} Aᵈ.
 Proof.
@@ -1008,11 +1008,12 @@ Qed.
 
 #[local] Hint Constructors a_mono_typ : core.
 
+
 Lemma trans_wl_d_mono_typ_a_mono_typ_no_etvar : forall θ Γ Ω T,
   ⊢ᵃʷ Γ ->
   nil ⊩ Γ ⇝ Ω ⫣ θ ->
-  ss_to_denv θ ᵗ⊢ᵈₘ T ->
-  ⌊ Γ ⌋ᵃ ᵗ⊢ᵃₘ T /\ forall X, X ~ ⬒ ∈ᵃ ⌊ Γ ⌋ᵃ → X ∉ ftvar_in_typ T.
+  ⌈ θ ⌉ᵈ ᵗ⊢ᵈₘ T ->
+  ⌊ Γ ⌋ᵃ ᵗ⊢ᵃₘ T /\ forall X, X ~ ⬒ ∈ᵃ ⌊ Γ ⌋ᵃ -> X ∉ ftvar_in_typ T.
 Proof with auto.
   intros. generalize dependent Γ. generalize dependent Ω.
   dependent induction H1; intros; simpl; try solve [intuition].
@@ -1037,8 +1038,8 @@ Qed.
 Lemma trans_wl_aworklist_trailing_sub_arrow : forall Γ Ω θ A1 A2 B1 B2,
   ⊢ᵃʷ Γ ->
   nil ⊩ Γ ⇝ Ω ⫣ θ ->
-  ss_to_denv θ ᵗ⊢ᵈₘ typ_arrow A1 A2 ->
-  ss_to_denv θ ᵗ⊢ᵈₘ typ_arrow B1 B2 ->
+  ⌈ θ ⌉ᵈ ᵗ⊢ᵈₘ typ_arrow A1 A2 ->
+  ⌈ θ ⌉ᵈ ᵗ⊢ᵈₘ typ_arrow B1 B2 ->
   aworklist_trailing_sub Γ (work_sub A2 B2 ⫤ᵃ work_sub B1 A1 ⫤ᵃ Γ).
 Proof.
   intros * Hwf Htrans Hmonoa Hmonob.
@@ -1054,7 +1055,7 @@ Lemma trans_wl_a_wl_binds_var_binds_d_wl_trans_typ : forall θ Γ Ω x Aᵃ Aᵈ
   uniq (⌊ Γ ⌋ᵃ) ->
   nil ⊩ Γ ⇝ Ω ⫣ θ ->
   x ~ Aᵃ ∈ᵃ ⌊ Γ ⌋ᵃ ->
-  x ~ Aᵈ ∈ᵈ dwl_to_denv Ω ->
+  x ~ Aᵈ ∈ᵈ ⌊ Ω ⌋ᵈ ->
   θ ᵗ⊩ Aᵃ ⇝ Aᵈ.
 Proof with eauto.
   intros.
@@ -1772,11 +1773,11 @@ Proof with eauto.
         constructor.
         apply IHd_wl_red...
         -- dependent destruction H5. destruct_a_wf_wl...
-           assert (binds X1 abind_etvar_empty (awl_to_aenv (subst_tvar_in_aworklist (typ_arrow ` X1 ` X2) X Γ2' ⧺ Γ2))). {
+           assert (X1 ~ ⬒ ∈ᵃ ⌊ {typ_arrow ` X1 ` X2 ᵃʷ/ₜ X} Γ2' ⧺ Γ2 ⌋ᵃ). {
               eapply aworklist_subst_binds_same_atvar with (Γ:=(X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ0)) (b:=abind_etvar_empty); simpl in *...
               constructor... constructor...
            }
-           assert (binds X2 abind_etvar_empty (awl_to_aenv (subst_tvar_in_aworklist (typ_arrow ` X1 ` X2) X Γ2' ⧺ Γ2))). {
+           assert (X2 ~ ⬒ ∈ᵃ ⌊ {typ_arrow ` X1 ` X2 ᵃʷ/ₜ X} Γ2' ⧺ Γ2 ⌋ᵃ). {
               eapply aworklist_subst_binds_same_atvar with (Γ:=(X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ0)) (b:=abind_etvar_empty); simpl in *...
               constructor... constructor...
            }
