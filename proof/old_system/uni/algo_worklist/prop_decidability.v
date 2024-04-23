@@ -2131,8 +2131,8 @@ Proof.
               assert (Hsubst: aworklist_subst (work_sub ` X (typ_arrow A1 A2) ⫤ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) X
                                               (typ_arrow ` X1 ` X2) (X1 ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1) (work_sub ` X (typ_arrow A1 A2) ⫤ᵃ Γ2)).
               { eapply a_ws1__work_stay. eapply worklist_subst_fresh_etvar_total with (Γ1 := Γ1) (Γ2 := Γ2); eauto. }
-              assert (JgArr1: (work_sub ` X2 A2 ⫤ᵃ work_sub A1 ` X1 ⫤ᵃ subst_tvar_in_aworklist (typ_arrow ` X1 ` X2) X Γ2 ⧺ Γ1) ⟶ᵃʷ⁎⋅ \/
-                            ~ (work_sub ` X2 A2 ⫤ᵃ work_sub A1 ` X1 ⫤ᵃ subst_tvar_in_aworklist (typ_arrow ` X1 ` X2) X Γ2 ⧺ Γ1) ⟶ᵃʷ⁎⋅).
+              assert (JgArr1: (work_sub ` X2 (subst_tvar_in_typ (typ_arrow ` X1 ` X2) X A2) ⫤ᵃ work_sub (subst_tvar_in_typ (typ_arrow ` X1 ` X2) X A1) ` X1 ⫤ᵃ subst_tvar_in_aworklist (typ_arrow ` X1 ` X2) X Γ2 ⧺ X1 ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1) ⟶ᵃʷ⁎⋅ \/
+                            ~ (work_sub ` X2 (subst_tvar_in_typ (typ_arrow ` X1 ` X2) X A2) ⫤ᵃ work_sub (subst_tvar_in_typ (typ_arrow ` X1 ` X2) X A1) ` X1 ⫤ᵃ subst_tvar_in_aworklist (typ_arrow ` X1 ` X2) X Γ2 ⧺ X1 ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1) ⟶ᵃʷ⁎⋅).
               { eapply IHnm; simpl in *; eauto. admit. (* wf *)
                 admit. admit. admit. admit. admit. admit.
                 unfold split_depth in *. simpl in *.
@@ -2154,16 +2154,7 @@ Proof.
                 assert (Hsp': split_depth (⌊ subst_tvar_in_aworklist (typ_arrow ` X1 ` X2) X Γ2 ⧺ Γ1 ⌋ᵃ) ` X2 = 0) by admit.
                 admit. *)
                 }          
-              dependent destruction JgArr1; eauto.
-              left. eapply a_wl_red__sub_arrow1; eauto. admit.
-              intros. admit.
-
-              intro Hsin. eapply sin_in in Hsin. eauto.
-              intros. dependent destruction H8. simpl.
-                 admit. (* TODO *)
-              ** admit. (* TODO *)
-           ++ right. intro Hcontra. dependent destruction Hcontra; try unify_binds.
-              admit. (* TODO *)
+              admit. (* TODO: renaming stuff *)
         -- right. intro Hcontra. dependent destruction Hcontra; try unify_binds.
            dependent destruction H3; try unify_binds.
         -- edestruct JgUnion1 as [JgUnion1' | JgUnion1']; eauto.
@@ -2191,9 +2182,16 @@ Proof.
                         ~ a_wl_red (aworklist_conswork (aworklist_conswork Γ (work_sub A0 A1)) (work_sub A2 A3))).
            { eapply IHnw; eauto.
              simpl in *. unfold split_depth in *. simpl in *.
-            eapply measp_wl_conswork with (n := ((3 * ns0 + all_size A0) * (1 + iu_size A1) +
-                                                    (3 * ns1 + all_size A1) * (1 + iu_size A0)) + n); eauto; try lia.
-            lia. simpl in *. lia. }
+             assert (split_depth_rec (⌊ Γ ⌋ᵃ) A2 1 * S (iu_size A3) +
+             split_depth_rec (⌊ Γ ⌋ᵃ) A3 1 * S (iu_size A2) +
+             (split_depth_rec (⌊ Γ ⌋ᵃ) A0 1 * S (iu_size A1) +
+              split_depth_rec (⌊ Γ ⌋ᵃ) A1 1 * S (iu_size A0) + 
+              split_depth_wl Γ) <= (split_depth_rec (⌊ Γ ⌋ᵃ) A1 1 + split_depth_rec (⌊ Γ ⌋ᵃ) A2 1) *
+              S (iu_size A0 + iu_size A3) +
+              (split_depth_rec (⌊ Γ ⌋ᵃ) A0 1 + split_depth_rec (⌊ Γ ⌋ᵃ) A3 1) *
+              S (iu_size A1 + iu_size A2) + split_depth_wl Γ). { lia.  }
+              admit.
+            simpl in *. lia. }
             destruct JgArr as [JgArr | JgArr]; eauto.
             right. intro Hcontra. dependent destruction Hcontra.
             apply JgArr; auto.
