@@ -1573,7 +1573,7 @@ Lemma rename_var_apply_contd : forall x y cd w A B,
   apply_contd cd A B w ->
   apply_contd ({exp_var_f y ᶜᵈ/ₑ x} cd) A B ({exp_var_f y ʷ/ₑ x} w).
 Proof.
-  intros. induction H; simpl; try constructor.
+  intros. induction H; simpl; try constructor; auto.
 Qed.
 
 Ltac solve_notin_rename_var' :=
@@ -1757,6 +1757,9 @@ Ltac create_fvar_in_awl_set :=
     assert (Hfv: x ∉ fvar_in_aworklist' Γ) by (rewrite fvar_in_aworklist_upper; auto)
   end.
 
+Lemma exp_split_size_rename_evar : forall e Γ x y,
+  exp_split_size (⌊ Γ ⌋ᵃ) e = exp_split_size (⌊ {y ᵃʷ/ₑᵥ x} Γ ⌋ᵃ) ({exp_var_f y ᵉ/ₑ x} e).
+Admitted.
 
 Theorem rename_var_in_a_wf_wwl_a_wl_red : forall Γ x y,
   ⊢ᵃʷ Γ ->
@@ -1910,6 +1913,9 @@ Proof with eauto.
     repeat (constructor; simpl; auto)...
     apply a_wf_exp_weaken_etvar_twice with (T:=T)...
     apply a_wf_conts_weaken_cons...  apply a_wf_conts_weaken_cons...
+  - simpl in *. destruct_a_wf_wl.
+    constructor. rewrite <- exp_split_size_rename_evar.
+    eapply IHa_wl_red; eauto.
   - destruct_a_wf_wl. dependent destruction H. simpl in *.
     inst_cofinites_for a_wl_red__infabs_all.
     intros. inst_cofinites_with X.
