@@ -879,6 +879,32 @@ Proof.
 Qed.
 
 
+Lemma rename_tvar_lookup_var_bind : forall Γ x X Y A,
+  Y `notin` dom (⌊ Γ ⌋ᵃ) `union` singleton x `union` singleton X->
+  lookup_bind (⌊ Γ ⌋ᵃ) x = Some (abind_var_typ A) ->
+  lookup_bind (⌊ {Y ᵃʷ/ₜᵥ X} Γ ⌋ᵃ ) x = Some (abind_var_typ ({`Y ᵗ/ₜ X} A)).
+Proof.
+  intros. induction Γ; simpl in *; auto.
+  - inversion H0. 
+  - destruct_eq_atom; destruct ab; subst; simpl;destruct_eq_atom; auto; try inversion H0.
+    + subst. auto.
+    + subst. auto.
+Qed.
+
+Lemma rename_tvar_lookup_tvar_bind : forall Γ X' X Y b,
+  b = □ \/ b = ■ \/ b = ⬒ ->
+  Y `notin` dom (⌊ Γ ⌋ᵃ) `union` singleton X' `union` singleton X->
+  lookup_bind (⌊ Γ ⌋ᵃ) X' = Some b ->
+  lookup_bind (⌊ {Y ᵃʷ/ₜᵥ X} Γ ⌋ᵃ ) (if X'== X then Y else X' ) = Some b.
+Proof.
+  intros. induction Γ; simpl in *; auto.
+  - destruct_eq_atom; destruct ab; subst; simpl;destruct_eq_atom; auto; try inversion H0.
+    + inversion H1. destruct H; subst. inversion H3. inversion H. inversion H2. inversion H2. 
+    + inversion H1. destruct H; subst. inversion H3. inversion H. inversion H2. inversion H2.
+Qed.
+
+
+
 Lemma exp_split_size_rename_tvar : forall n e Γ X Y,
   size_exp e < n ->
   exp_split_size (⌊ Γ ⌋ᵃ) e = exp_split_size (⌊ {Y ᵃʷ/ₜᵥ X} Γ ⌋ᵃ) ({` Y ᵉ/ₜ X} e).
@@ -886,7 +912,15 @@ Proof.
   intro n. induction n; simpl; intros.
   - inversion H.
   - destruct e; simpl in *; auto.
-    + admit.
+    + destruct (lookup_bind (⌊ Γ ⌋ᵃ) x) eqn:Heq.
+      * destruct a; auto.
+        -- admit.
+        -- admit.
+        -- admit.
+        -- erewrite rename_tvar_lookup_var_bind with (A:=A); eauto. 
+           rewrite <- iuv_size_rename_tvar; auto.
+           admit.
+      * admit.
     + rewrite <- IHn; auto; lia.
     + repeat rewrite <-IHn; auto; lia.
     + destruct body5. 
