@@ -76,25 +76,25 @@ Fixpoint iuv_size (A : typ) : nat :=
   | _ => 0
   end.
 
-Fixpoint lookup_bind (Γ : aenv) (X : atom) : option abind :=
-  match Γ with
+Fixpoint lookup_bind (Σ : aenv) (X : atom) : option abind :=
+  match Σ with
   | nil => None
-  | (Y, B) :: Γ' => if X == Y then Some B else lookup_bind Γ' X
+  | (Y, B) :: Σ' => if X == Y then Some B else lookup_bind Σ' X
   end.
 
-Fixpoint exp_split_size (Γ : aenv) (e : exp) : nat :=
+Fixpoint exp_split_size (Σ : aenv) (e : exp) : nat :=
   match e with
   | exp_unit => 0
   | exp_var_b _ => 0
-  | exp_var_f X => match lookup_bind Γ X with
+  | exp_var_f X => match lookup_bind Σ X with
                   | Some (abind_var_typ A) => iuv_size A
                   | _ => 0
                   end
-  | exp_abs e1 => exp_split_size Γ e1
-  | exp_app e1 e2 => 1 + 2 * exp_split_size Γ e1 + exp_split_size Γ e2
-  | exp_tabs (body_anno e1 A) => (1 + exp_split_size Γ e1) * (2 + iuv_size A)
-  | exp_tapp e1 A => (1 + exp_split_size Γ e1) * (2 + iuv_size A)
-  | exp_anno e1 A => (1 + exp_split_size Γ e1) * (2 + iuv_size A)
+  | exp_abs e1 => exp_split_size Σ e1
+  | exp_app e1 e2 => 1 + 2 * exp_split_size Σ e1 + exp_split_size Σ e2
+  | exp_tabs (body_anno e1 A) => (1 + exp_split_size Σ e1) * (2 + iuv_size A)
+  | exp_tapp e1 A => (1 + exp_split_size Σ e1) * (2 + iuv_size A)
+  | exp_anno e1 A => (1 + exp_split_size Σ e1) * (2 + iuv_size A)
   end.
 
 Definition dbind_to_abind (d : dbind) : abind :=

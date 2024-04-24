@@ -2,6 +2,7 @@ Require Import Coq.Program.Equality.
 Require Import Program.Tactics.
 Require Import Metalib.Metatheory.
 Require Import List.
+Require Import Lia.
 
 
 Require Import uni.notations.
@@ -877,19 +878,24 @@ Proof.
   destruct_eq_atom; auto.
 Qed.
 
-Lemma lookup_bind_rename_tvar : forall Γ X Y x,
-  exp_split_size (⌊ Γ ⌋ᵃ) (exp_var_f x) = exp_split_size (⌊ {Y ᵃʷ/ₜᵥ X} Γ ⌋ᵃ) ({` Y ᵉ/ₜ X} (exp_var_f x)).
-Proof.
-Admitted.
 
-Lemma exp_split_size_rename_tvar : forall e Γ X Y,
+Lemma exp_split_size_rename_tvar : forall n e Γ X Y,
+  size_exp e < n ->
   exp_split_size (⌊ Γ ⌋ᵃ) e = exp_split_size (⌊ {Y ᵃʷ/ₜᵥ X} Γ ⌋ᵃ) ({` Y ᵉ/ₜ X} e).
 Proof.
-  intros e. induction e; intros *; simpl; auto.
-  admit.
-  admit.
-  - rewrite <- IHe. rewrite <- iuv_size_rename_tvar. reflexivity.
-  - rewrite <- IHe. rewrite <- iuv_size_rename_tvar. reflexivity.
+  intro n. induction n; simpl; intros.
+  - inversion H.
+  - destruct e; simpl in *; auto.
+    + admit.
+    + rewrite <- IHn; auto; lia.
+    + repeat rewrite <-IHn; auto; lia.
+    + destruct body5. 
+      simpl in *. repeat rewrite <- IHn; auto. 
+      rewrite <-iuv_size_rename_tvar; auto. lia.
+    + rewrite <- IHn. rewrite <- iuv_size_rename_tvar. auto.
+      lia.
+    + rewrite <- IHn. rewrite <- iuv_size_rename_tvar. auto.
+      lia.
 Admitted.
 
 
