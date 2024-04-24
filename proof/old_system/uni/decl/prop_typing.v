@@ -624,12 +624,6 @@ Proof.
 Qed.
 
 
-(* #[local] Hint Resolve d_wf_typ_weaken_cons : core. *)
-
-(* #[export] Hint Immediate d_sub_d_wf_env d_sub_d_wf_typ1 d_sub_d_wf_typ2 : subtyping. *)
-
-(* #[local] Hint Resolve d_chk_inf_wf_env : core. *)
-
 Theorem d_chk_inf_subsumption : forall n1 n2 n3 Ψ Ψ' e A mode,
   exp_size e < n1 ->
   dmode_size mode < n2 ->
@@ -746,7 +740,7 @@ Proof with auto.
         -- dependent destruction H1.
            ++ inst_cofinites_for d_chk_inf__chk_abstop. intros.
               inst_cofinites_with x.
-              refine (IHn1 _ _ _ _ _ _ _ _ _ _ H0 _ _ _); eauto...
+              refine (IHn1 _ _ _ _ _ _ _ _ _ _ H0 _ _ _)...
               rewrite <- d_exp_size_open_var. lia.
               econstructor; eauto.
               eapply d_wf_tenv_d_wf_env. eapply d_chk_inf_wf_env; eauto.

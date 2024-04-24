@@ -121,6 +121,7 @@ formula :: formula_ ::=
   | formula \/ formula'       ::   :: judgement_or {{ coq  ([[formula]]) \/ ([[formula']]) }}
   | ( x db )  in dE    ::   :: binds1 {{ coq binds ([[x]])  ([[db]]) ([[dE]]) }}
   | ( X db )  in dE    ::   :: binds2 {{ coq binds ([[X]])  ([[db]]) ([[dE]]) }}
+  % | ( X db )  notin dE    ::   :: binds2 {{ coq (~ binds ([[X]])  ([[db]]) ([[dE]])) }}
   | ( x ab )  in aE    ::   :: binds3 {{ coq binds ([[x]])  ([[ab]]) ([[aE]]) }}
   | ( X ab )  in aE    ::   :: binds4 {{ coq binds ([[X]])  ([[ab]]) ([[aE]]) }}
   | x  `notin` dom dE ::   :: fresh1 {{ coq ([[x]]  `notin` dom ([[dE]])) }}
@@ -389,7 +390,7 @@ dE |- BOT
 dE |- TOP
 
 (X : ■) in dE
--------------- :: tvar
+-------------- :: tvar    
 dE |- X
 
 (X : ~■) in dE 
@@ -401,7 +402,6 @@ dE |- A2
 -------------- :: arrow
 dE |- A1 -> A2
 
-X ∈ₛ A
 dE, X : ■ |- A
 -------------------- :: all
 dE |- ∀ X . A
@@ -440,7 +440,6 @@ dE |- e2
 ----------------- :: app
 dE |- e1 e2
 
-X ∈ₛ body
 dE , X : ■ |- body
 ----------------- :: tabs 
 dE |- \ X . body
@@ -749,6 +748,43 @@ X `notin` dom ⌊ dW ⌋
 -------------------- :: conswork_sub
 |- dW , A <: B
 
+defns
+J_strong_neq_stvar :: '' ::=
+
+defn 
+dE |- A ~= ~■ :: :: s_neq_stvar :: 's_neq_stvar__' by
+
+------------------------ :: unit
+dE |- UNIT ~= ~■
+
+------------------------ :: top
+dE |- TOP ~= ~■
+
+------------------------ :: bot
+dE |- BOT ~= ~■
+
+( X : ■ ) in dE 
+------------------------ :: tvar
+dE |- X ~= ~■
+
+------------------------ :: arrow 
+dE |- A1 -> A2 ~= ~■
+
+------------------------ :: all
+dE |- ∀ X . A ~= ~■
+
+
+dE |- A1 ~= ~■
+dE |- A2 ~= ~■
+------------------------ :: union 
+dE |- A1 ⊔ A2 ~= ~■  
+
+
+dE |- A1 ~= ~■
+dE |- A2 ~= ~■
+------------------------ :: intersection  
+dE |- A1 ⊓ A2 ~= ~■
+
 
 defns
 J_d_sub :: '' ::=
@@ -781,8 +817,6 @@ dE ||- A2 <: B2
 -------------------------- :: arrow
 dE ||- A1 -> A2 <: B1 -> B2
 
-X ∈ₛ A
-X ∈ₛ B
 dE , X : ~■ ||- A <: B
 -------------------------------------------- :: all
 dE ||- ∀ X. A <: ∀ X. B
@@ -790,7 +824,7 @@ dE ||- ∀ X. A <: ∀ X. B
 B ¬= ∀ 
 B ¬= ⊓
 B ¬= ⊔
-X ∈ₛ A
+dE , X : ■ |- A ~= ~■
 dE |-m T
 dE ||- { T / X } A <: B
 ---------------------------- :: alll
