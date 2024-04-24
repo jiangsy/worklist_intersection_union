@@ -6,6 +6,7 @@ Require Import List.
 
 Require Import uni.notations.
 Require Import uni.prop_basic.
+Require Import uni.decl_worklist.prop_equiv.
 Require Import uni.algo_worklist.def_extra.
 Require Import uni.algo_worklist.prop_basic.
 Require Import ltac_utils.
@@ -787,12 +788,19 @@ Proof.
   intros. induction H; simpl; try solve [simpl; eauto].
 Qed.
 
+Lemma iu_size_rename_tvar : forall A X Y,
+  iu_size A = iu_size ({`Y ᵗ/ₜ X} A).
+Proof.
+  intros. induction A; simpl; auto.
+  destruct_eq_atom; auto.
+Qed.
 
 Lemma apply_contd_rename_tvar : forall cd A B w X Y,
   apply_contd cd A B w ->
   apply_contd ({`Y ᶜᵈ/ₜ X} cd) ({`Y ᵗ/ₜ X} A) ({`Y ᵗ/ₜ X} B) ({`Y ʷ/ₜ X} w).
 Proof.
   intros. induction H; simpl; try solve [simpl; eauto].
+  erewrite iu_size_rename_tvar in H; eauto.
 Qed.
 
 Lemma aworlist_subst_dom_upper1' : forall Γ X A Γ1 Γ2,
@@ -861,6 +869,28 @@ Ltac fold_subst :=
   | H : context [typ_arrow ({` ?X' ᵗ/ₜ ?X} ?A1) ({` ?X' ᵗ/ₜ ?X} ?A2)] |- _ => 
     replace (typ_arrow ({` X' ᵗ/ₜ X} A1) ({` X' ᵗ/ₜ X} A2)) with ({` X' ᵗ/ₜ X} (typ_arrow A1 A2)) in H by auto
   end.
+
+Lemma iuv_size_rename_tvar : forall A X Y,
+  iuv_size A = iuv_size ({`Y ᵗ/ₜ X} A).
+Proof.
+  intros. induction A; simpl; auto.
+  destruct_eq_atom; auto.
+Qed.
+
+Lemma lookup_bind_rename_tvar : forall Γ X Y x,
+  exp_split_size (⌊ Γ ⌋ᵃ) (exp_var_f x) = exp_split_size (⌊ {Y ᵃʷ/ₜᵥ X} Γ ⌋ᵃ) ({` Y ᵉ/ₜ X} (exp_var_f x)).
+Proof.
+Admitted.
+
+Lemma exp_split_size_rename_tvar : forall e Γ X Y,
+  exp_split_size (⌊ Γ ⌋ᵃ) e = exp_split_size (⌊ {Y ᵃʷ/ₜᵥ X} Γ ⌋ᵃ) ({` Y ᵉ/ₜ X} e).
+Proof.
+  intros e. induction e; intros *; simpl; auto.
+  admit.
+  admit.
+  - rewrite <- IHe. rewrite <- iuv_size_rename_tvar. reflexivity.
+  - rewrite <- IHe. rewrite <- iuv_size_rename_tvar. reflexivity.
+Admitted.
 
 
 Theorem rename_tvar_in_a_wf_wwl_a_wl_red : forall Γ X Y,
@@ -1114,6 +1144,9 @@ Proof with eauto.
     + repeat (constructor; simpl; auto). auto...
       rewrite_env (nil ++ ((X2, ⬒) :: (X1 ~ ⬒)) ++ ⌊ Γ ⌋ᵃ).
       apply a_wf_conts_weaken...
+  - simpl in *. destruct_a_wf_wl.
+    constructor. rewrite <- exp_split_size_rename_tvar.
+    eapply IHa_wl_red; eauto.
   - simpl in *. destruct_a_wf_wl. dependent destruction H0.
     inst_cofinites_for a_wl_red__infabs_all.
     intros. inst_cofinites_with X0.

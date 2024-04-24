@@ -8,6 +8,7 @@ Require Import uni.def_ott.
 Require Import uni.notations.
 Require Import uni.decl_worklist.def.
 Require Import ltac_utils.
+Require Import Lia.
 
 Open Scope dworklist.
 
@@ -449,6 +450,12 @@ Proof.
   eapply d_wl_red_weaken. eauto.
 Qed.
 
+Lemma dwl_to_aenv_work : forall Ω2 Ω1 w,
+  dwl_to_aenv (Ω2 ⧺ Ω1) = dwl_to_aenv (Ω2 ⧺ w ⫤ᵈ Ω1).
+Proof.
+  intros. induction Ω2; simpl; auto.
+  rewrite IHΩ2. auto.
+Qed.
 
 Lemma d_wl_red_strengthen_work : forall Ω1 Ω2 w,
   (w ⫤ᵈ Ω1) ⟶ᵈʷ⁎⋅ -> (Ω2 ⧺ Ω1) ⟶ᵈʷ⁎⋅ -> (Ω2 ⧺ w ⫤ᵈ Ω1) ⟶ᵈʷ⁎⋅ .
@@ -478,6 +485,8 @@ Proof.
     rewrite d_wl_app_cons_work_same_env. auto.
     intros. inst_cofinites_with x.
     rewrite_dwl_app. auto.
+  - econstructor. rewrite <- dwl_to_aenv_work.
+    eapply IHd_wl_red with (Ω2 := work_infer e1 (conts_infabs (contd_infapp (exp_split_size (dwl_to_aenv (Ω2 ⧺ Ω1)) e1) e2 cs)) ⫤ᵈ Ω2); eauto.
   - eapply d_wl_red__infabs_all with (T:=T).
     rewrite d_wl_app_cons_work_same_env. auto.
     rewrite_dwl_app. auto.
@@ -528,6 +537,221 @@ Proof with auto.
 Qed.
 
 
+Ltac destruct_binds_eq :=
+  repeat
+    lazymatch goal with
+    | H1 : (?X1, ?b1) = (?X2, ?b2) |- _ =>
+      dependent destruction H1
+    end.
+
+Ltac destruct_binds :=
+  simpl in *;
+  repeat
+  match goal with
+  | H1 : binds ?X ?b ((?X', ?b') :: ?θ) |- _ =>
+    let H_1 := fresh "H" in
+    let H_2 := fresh "H" in
+    inversion H1 as [H_1 | H_2];
+    clear H1;
+    try destruct_binds_eq;
+    try solve [solve_notin_eq X];
+    try solve [solve_notin_eq X']
+  end.
+
+
+Ltac destruct_in :=
+  simpl in *;
+  match goal with
+  | H1 : ((?X, ?b) = (?X', ?b')) \/  In ?b'' ?θ |- _ =>
+    let H1_1 := fresh "H" in
+    let H1_2 := fresh "H" in
+    inversion H1 as [H1_1 | H1_2];
+    clear H1;
+    try destruct_binds_eq;
+    try solve [solve_notin_eq X];
+    try solve [solve_notin_eq X']
+  end.
+
+
+Lemma binds_lookup_bind : forall Σ X B,
+  ⊢ᵃ Σ -> binds X B Σ <-> lookup_bind Σ X = Some B.
+Proof.
+  intros. induction H; simpl; destruct_eq_atom; split; intros; auto; destruct_binds; auto; try solve [inversion H].
+  - exfalso; eapply binds_dom_contradiction; eauto. 
+  - inversion H1; auto.
+  - apply IHa_wf_env; auto.
+  - apply binds_cons; eauto. apply IHa_wf_env; auto.
+  - exfalso; eapply binds_dom_contradiction; eauto.
+  - inversion H1. auto.
+  - apply IHa_wf_env; auto.
+  - apply binds_cons; eauto. apply IHa_wf_env; auto.
+  - exfalso; eapply binds_dom_contradiction; eauto.
+  - inversion H1. auto.
+  - apply IHa_wf_env; auto.  
+  - apply binds_cons; eauto. apply IHa_wf_env; auto.
+  - exfalso; eapply binds_dom_contradiction; eauto.
+  - inversion H2. auto.
+  - apply IHa_wf_env; auto.
+  - apply binds_cons; eauto. apply IHa_wf_env; auto.
+Qed.
+
+Lemma dbind_to_abind_inj : forall B1 B2,
+  dbind_to_abind B1 = dbind_to_abind B2 -> B1 = B2.
+Proof.
+  intros. destruct B1; destruct B2; simpl in *; inversion H; auto.
+Qed.
+
+Lemma binds_dwl_aenv : forall Ω X B,
+  binds X B (⌊ Ω ⌋ᵈ) <-> binds X (dbind_to_abind B) (dwl_to_aenv Ω).
+Proof.
+  intros Ω. induction Ω; intros *; simpl in *; split; intros; try solve [inversion H]; destruct_binds; auto;
+    try solve [apply IHΩ; auto; dependent destruction Hwf; try solve [dependent destruction H; auto]; auto].
+  - apply binds_cons. apply IHΩ; auto.
+  - eapply dbind_to_abind_inj in x. subst. auto.
+  - apply binds_cons. apply IHΩ; auto.
+Qed.
+
+Lemma dwl_to_aenv_wf_typ : forall Ω A,
+  ⌊ Ω ⌋ᵈ ᵗ⊢ᵈ A -> dwl_to_aenv Ω ᵗ⊢ᵃ A.
+Proof.
+  intros. dependent induction H; simpl; auto;
+    try solve [apply binds_dwl_aenv in H; auto].
+  econstructor; eauto. intros X Hnotin.
+  replace (X ~ □%abind ++ dwl_to_aenv Ω) with (dwl_to_aenv (dworklist_cons_var Ω X □%dbind)); eauto.
+Qed.
+
+Lemma dwl_to_aenv_dom : forall Ω,
+  dom (⌊ Ω ⌋ᵈ) = dom (dwl_to_aenv Ω).
+Proof.
+  intros Ω. induction Ω; simpl; auto.
+  rewrite IHΩ. auto.
+Qed.
+
+Lemma d_wf_twl_wf_aenv : forall Ω,
+   ⊢ᵈʷₜ Ω -> ⊢ᵃ (dwl_to_aenv Ω).
+Proof.
+  intros. induction H; simpl; try rewrite dwl_to_aenv_dom in H; auto;
+    constructor; auto.
+  apply dwl_to_aenv_wf_typ; auto.
+Qed.
+
+Lemma d_wf_wl_wf_aenv : forall Ω,
+  ⊢ᵈʷₛ Ω -> ⊢ᵃ (dwl_to_aenv Ω).
+Proof.
+  intros. induction H; simpl; auto.
+  - apply d_wf_twl_wf_aenv; auto.
+  - constructor; auto.
+    rewrite dwl_to_aenv_dom in H; auto.
+Qed.
+
+Lemma binds_lookup_bind_dwl : forall Ω X B,
+  ⊢ᵈʷₛ Ω -> binds X B (⌊ Ω ⌋ᵈ) <-> lookup_bind (dwl_to_aenv Ω) X = Some (dbind_to_abind B).
+Proof.
+  intros. split; intros.
+  - apply binds_lookup_bind; auto.
+    apply d_wf_wl_wf_aenv; auto.
+    apply binds_dwl_aenv; auto.
+  - apply binds_lookup_bind in H0; auto.
+    apply binds_dwl_aenv; auto.
+    apply d_wf_wl_wf_aenv; auto.
+Qed.
+
+Lemma iuv_size_d_mono : forall Γ A,
+  d_mono_typ Γ A -> iuv_size A = 0.
+Proof.
+  intros Γ A Hmono.
+  induction Hmono; simpl; eauto; try lia.
+Qed.
+
+Lemma iuv_size_open_d_mono_rec : forall Ψ A T n,
+  d_mono_typ Ψ T ->
+  iuv_size (open_typ_wrt_typ_rec n T A) <= iuv_size A.
+Proof.
+  intros Ψ A T n Hmono.
+  generalize dependent n.
+  induction A; intros; simpl; auto;
+    try specialize (IHA1 n); try specialize (IHA2 n); try lia.
+  destruct (lt_eq_lt_dec n n0); simpl; auto.
+  destruct s; simpl; auto; subst.
+  erewrite iuv_size_d_mono; eauto.
+Qed.
+
+Lemma iuv_size_open_d_mono : forall Ψ A T,
+  d_mono_typ Ψ T ->
+  iuv_size (open_typ_wrt_typ A T) <= iuv_size A.
+Proof.
+  intros Ψ A T Hmono.
+  eapply iuv_size_open_d_mono_rec; eauto.
+Qed.
+
+Lemma infabs_iuv_size_B : forall Ψ A B C,
+  Ψ ⊢ A ▹ B → C -> iuv_size B <= iuv_size A.
+Proof.
+  intros. induction H; simpl; auto; try lia.
+  assert (iuv_size (A ᵗ^^ₜ T) <= iuv_size A). { eapply iuv_size_open_d_mono; eauto. }
+  lia.
+Qed.
+
+Lemma infabs_iuv_size_C : forall Ψ A B C,
+  Ψ ⊢ A ▹ B → C -> iuv_size C <= iuv_size A.
+Proof.
+  intros. induction H; simpl; auto; try lia.
+  assert (iuv_size (A ᵗ^^ₜ T) <= iuv_size A). { eapply iuv_size_open_d_mono; eauto. }
+  lia.
+Qed.
+
+Lemma iuv_size_open_typ_wrt_typ_rec : forall A B n,
+  iuv_size (open_typ_wrt_typ_rec n B A) <= iuv_size A * (1 + iuv_size B).
+Proof.
+  intros A B.
+  induction A; intros; simpl; eauto; try lia.
+  - destruct (lt_eq_lt_dec n n0).
+    + destruct s; simpl; eauto; lia.
+    + simpl; eauto; lia.
+  - specialize (IHA1 n). specialize (IHA2 n). lia.
+  - specialize (IHA1 n). specialize (IHA2 n). lia.
+  - specialize (IHA1 n). specialize (IHA2 n). lia.
+Qed.
+
+Lemma iuv_size_open_typ_wrt_typ : forall A B,
+  iuv_size (open_typ_wrt_typ A B) <= (1 + iuv_size A) * (2 + iuv_size B).
+Proof.
+  intros. unfold open_typ_wrt_typ.
+  specialize (iuv_size_open_typ_wrt_typ_rec A B 0). lia.
+Qed.
+
+Lemma inftapp_iuv_size : forall Ψ A B C,
+  Ψ ⊢ A ○ B ⇒⇒ C ->
+  iuv_size C <= (1 + iuv_size A) * (2 + iuv_size B).
+Proof.
+  intros. induction H; simpl; auto; try lia.
+  eapply iuv_size_open_typ_wrt_typ.
+Qed.
+
+Lemma inf_iuv_size_exp_split_size : forall Ω A e,
+  ⊢ᵈʷₛ Ω ->
+  ⌊ Ω ⌋ᵈ ⊢ e ⇒ A ->
+  iuv_size A <= exp_split_size (dwl_to_aenv Ω) e.
+Proof.
+  intros Ω A e Hwf Hinf. dependent induction Hinf; simpl; auto; try lia.
+  - apply binds_lookup_bind_dwl in H0; auto. rewrite H0. simpl. auto.
+  - assert (Hle: iuv_size C <= iuv_size A). { eapply infabs_iuv_size_C; eauto. }
+    assert (Hle': iuv_size A ≤ exp_split_size (dwl_to_aenv Ω) e1) by auto. lia.
+  - dependent destruction H.
+    eapply iuv_size_d_mono in H. eapply iuv_size_d_mono in H0. subst. lia.
+  - assert (Hle: iuv_size C <= (1 + iuv_size A) * (2 + iuv_size B)). { eapply inftapp_iuv_size; eauto. }
+    assert (Hle': iuv_size A <= exp_split_size (dwl_to_aenv Ω) e1) by auto.
+    eapply le_trans with (m := (1 + iuv_size A) * (2 + iuv_size B)); try lia.
+    replace (S (S (iuv_size B + exp_split_size (dwl_to_aenv Ω) e1 * S (S (iuv_size B))))) with ((1 + exp_split_size (dwl_to_aenv Ω) e1) * (2 + iuv_size B)) by lia.
+    eapply mult_le_compat_r. lia.
+Qed.
+
+Lemma iu_size_le_iuv_size : forall A,
+  iu_size A <= iuv_size A.
+Proof.
+  induction A; simpl; auto; try lia.
+Qed.
+
 Lemma d_wl_red_chk_inf_complete: forall Ω e A mode,
   d_chk_inf (dwl_to_denv Ω) e mode A -> 
   match mode with 
@@ -543,11 +767,15 @@ Proof with auto.
   - econstructor.
     destruct_d_wf_wl.
     eapply IHd_chk_inf1; eauto 7...
-    apply d_wl_red__applys with (w:=work_infabs A (contd_infapp e2 c)); eauto.
+    apply d_wl_red__applys with (w:=work_infabs A (contd_infapp (exp_split_size (dwl_to_aenv Ω) e1) e2 c)); eauto.
     econstructor. simpl.
     apply d_infabs_d_wf in H0 as Hwft. intuition.
     eapply d_wl_red_infabs_complete; eauto.
-    econstructor... econstructor... econstructor.
+    econstructor... econstructor...
+    eapply inf_iuv_size_exp_split_size in H as Hle1; eauto.
+    eapply infabs_iuv_size_B in H0 as Hle2.
+    specialize (iu_size_le_iuv_size B) as Hle3. lia.
+    econstructor.
     assert ((work_check e2 B ⫤ᵈ Ω) ⟶ᵈʷ⁎⋅).
       apply IHd_chk_inf2; auto.
       apply d_wl_red_weaken_consw in H6; auto.
