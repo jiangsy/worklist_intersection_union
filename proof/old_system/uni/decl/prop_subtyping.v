@@ -3,6 +3,7 @@ Require Import Lia.
 
 Require Import uni.notations.
 Require Import uni.decl.prop_basic.
+Require Import uni.decl.prop_rename.
 Require Import ltac_utils.
 
 
@@ -238,6 +239,14 @@ Qed. *)
   end end. *)
 Hint Resolve d_wf_typ_weaken : weaken.
 
+Lemma d_sneq_stvar_weaken : forall Ψ1 Ψ2 Ψ3 A,
+  d_sneq_stvar (Ψ3 ++ Ψ1) A ->
+  uniq (Ψ3 ++ Ψ2 ++ Ψ1) ->
+  d_sneq_stvar (Ψ3 ++ Ψ2 ++ Ψ1) A.
+Proof.
+  intros. dependent induction H; eauto.
+Qed.
+
 Theorem d_sub_weaken: forall Ψ1 Ψ2 Ψ3 A B,
   Ψ3 ++ Ψ1 ⊢ A <: B ->
   ⊢ᵈ Ψ3 ++ Ψ2 ++ Ψ1 ->
@@ -251,13 +260,13 @@ Proof with auto with weaken.
     eapply H0 with (Ψ1 := Ψ1) (Ψ3 := (x, ■) :: Ψ3); simpl; auto.
     apply d_wf_env__stvar; auto.
   - apply d_sub__alll with (T := T) (L :=  L `union` dom (Ψ3 ++ Ψ2 ++ Ψ1)); auto...
-    intros. admit.
+    intros. inst_cofinites_with X. rewrite_env ((X ~ □ ++ Ψ3) ++ Ψ2 ++ Ψ1). apply d_sneq_stvar_weaken; simpl...
     eauto using d_mono_typ_weaken.
   - apply d_sub__intersection2; eauto...
   - apply d_sub__intersection3; auto...
   - apply d_sub__union1; auto...
   - apply d_sub__union2; auto...
-Admitted.
+Qed.
 
 
 Corollary d_sub_weaken_cons: forall Ψ x b A B,
@@ -272,7 +281,6 @@ Qed.
 
 
 #[local] Hint Resolve d_wf_typ_subst_stvar d_wf_env_subst_stvar : core.
-(* Hint Resolve d_subst_stv_lc_typ : lngen. *)
 
 Lemma dneq_all_intersection_union_subst_stv : forall T1 T2 X,
   lc_typ T1 -> lc_typ T2 ->
@@ -582,7 +590,8 @@ Proof with (simpl in *; eauto using d_wf_env_subst_tvar).
     rewrite subst_tvar_in_typ_open_typ_wrt_typ in H4; eauto using d_wf_typ_lc_typ.
     1-3: auto...
     + rewrite subst_tvar_in_typ_open_typ_wrt_typ_fresh2...
-      admit.
+      rewrite_env (map (subst_tvar_in_dbind ` Y X) (SZ ~  □ ++ Ψ2) ++ (Y, ■) :: Ψ1).
+      eapply d_sneq_stvar_rename_dtvar...
     + applys d_mono_typ_subst_stvar.
       * rewrite_env ((Ψ2 ++ X ~ ■) ++ Y ~ ■ ++ Ψ1).
         applys* d_mono_typ_weaken. rewrite_env (Ψ2 ++ (X, ■) :: Ψ1)...
@@ -599,7 +608,7 @@ Proof with (simpl in *; eauto using d_wf_env_subst_tvar).
     forwards: d_wf_typ_rename_stvar Y H...
   - applys d_subs__union2; forwards: IHHS...
     forwards: d_wf_typ_rename_stvar Y H...
-Admitted.
+Qed.
 
 Corollary d_sub_size_rename : forall n X Y Ψ1 Ψ2 A B,
     X ∉ ftvar_in_typ A `union` ftvar_in_typ B ->
