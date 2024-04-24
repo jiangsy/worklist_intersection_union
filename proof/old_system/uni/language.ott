@@ -121,7 +121,7 @@ formula :: formula_ ::=
   | formula \/ formula'       ::   :: judgement_or {{ coq  ([[formula]]) \/ ([[formula']]) }}
   | ( x db )  in dE    ::   :: binds1 {{ coq binds ([[x]])  ([[db]]) ([[dE]]) }}
   | ( X db )  in dE    ::   :: binds2 {{ coq binds ([[X]])  ([[db]]) ([[dE]]) }}
-  % | ( X db )  notin dE    ::   :: binds2 {{ coq (~ binds ([[X]])  ([[db]]) ([[dE]])) }}
+  | ( X db )  notin dE    ::   :: nbinds {{ coq (~ binds ([[X]])  ([[db]]) ([[dE]])) }}
   | ( x ab )  in aE    ::   :: binds3 {{ coq binds ([[x]])  ([[ab]]) ([[aE]]) }}
   | ( X ab )  in aE    ::   :: binds4 {{ coq binds ([[X]])  ([[ab]]) ([[aE]]) }}
   | x  `notin` dom dE ::   :: fresh1 {{ coq ([[x]]  `notin` dom ([[dE]])) }}
@@ -749,10 +749,10 @@ X `notin` dom ⌊ dW ⌋
 |- dW , A <: B
 
 defns
-J_strong_neq_stvar :: '' ::=
+J_d_strong_neq_stvar :: '' ::=
 
 defn 
-dE |- A ~= ~■ :: :: s_neq_stvar :: 's_neq_stvar__' by
+dE |- A ~= ~■ :: :: d_sneq_stvar :: 'd_sneq_stvar__' by
 
 ------------------------ :: unit
 dE |- UNIT ~= ~■
@@ -763,7 +763,7 @@ dE |- TOP ~= ~■
 ------------------------ :: bot
 dE |- BOT ~= ~■
 
-( X : ■ ) in dE 
+( X : ■ ) in dE
 ------------------------ :: tvar
 dE |- X ~= ~■
 

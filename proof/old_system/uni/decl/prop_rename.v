@@ -25,7 +25,7 @@ Proof with auto.
     solve_false.
   - inst_cofinites_for d_wf_typ__all; intros; inst_cofinites_with X; auto.
     rewrite_env ((X ~ □ ++ Ψ2) ++ (y, dbind_typ B) :: Ψ1).
-    eapply H1; simpl; eauto.
+    eapply H0; simpl; eauto.
 Qed.
 
 Lemma d_mono_typ_rename_var : forall Ψ1 Ψ2 x y T A,
@@ -88,6 +88,14 @@ Proof.
 Qed.
 
 
+(* Theorem s_neq_stvar_rename_var : forall Ψ1 Ψ2 x y A B,
+  s_neq_stvar (Ψ2 ++ (x, dbind_typ B) :: Ψ1) A ->
+  s_neq_stvar (Ψ2 ++ (y, dbind_typ B) :: Ψ1) A 
+Proof.
+  
+Qed. *)
+
+
 Theorem d_sub_rename_var : forall Ψ1 Ψ2 x y A B C,  
   Ψ2 ++ (x, dbind_typ C) :: Ψ1 ⊢ A <: B ->
   y ∉ (dom (Ψ2 ++ (x, dbind_typ B) :: Ψ1)) ->
@@ -97,8 +105,10 @@ Proof with eauto using d_wf_typ_rename_var, d_wf_env_rename_var, d_mono_typ_rena
   - inst_cofinites_for d_sub__all...
     intros. inst_cofinites_with X.
     rewrite_env ((X ~ ■ ++ Ψ2) ++ (y, dbind_typ C) :: Ψ1)...
-    eapply H2... eauto.
-Qed.
+    eapply H0... eauto.
+  - inst_cofinites_for d_sub__alll T:=T... 
+    intros. inst_cofinites_with X. admit.
+Admitted.
 
 Theorem d_infabs_rename_var : forall Ψ1 Ψ2 x y A B C D, 
   d_infabs (Ψ2 ++ (x , dbind_typ D) :: Ψ1) A B C ->
@@ -192,7 +202,6 @@ Proof with auto.
   - subst. inst_cofinites_for d_wf_typ__all;
     intros; inst_cofinites_with X0; 
     rewrite subst_tvar_in_typ_open_typ_wrt_typ_fresh2...
-    eapply s_in_subst_inv...
     rewrite_env (map (subst_tvar_in_dbind ` Y X) (X0 ~ □ ++ Ψ2) ++ (Y, b) :: Ψ1)...
 Qed.
 
@@ -232,16 +241,13 @@ Proof with eauto using d_wf_typ_rename_dtvar, d_mono_typ_rename_tvar, d_wf_env_r
         apply binds_map_2 with (f:=subst_tvar_in_dbind `Y X) in H3...
         constructor...
   - inst_cofinites_for d_sub__all; intros; repeat rewrite subst_tvar_in_typ_open_typ_wrt_typ_fresh2...
-    + eapply s_in_subst_inv...
-    + eapply s_in_subst_inv...
     + rewrite_env (map (subst_tvar_in_dbind ` Y X) ((X0 ~ ■) ++ Ψ2) ++ (Y, b) :: Ψ1 )...
   - inst_cofinites_for d_sub__alll T:=({`Y ᵗ/ₜ X} T)...
     + intros... rewrite subst_tvar_in_typ_open_typ_wrt_typ_fresh2...
-      eapply s_in_subst_inv...
+      admit.
     + apply d_mono_typ_rename_tvar... apply d_wf_env_uniq. eapply d_sub_d_wf_env...
     + rewrite <- subst_tvar_in_typ_open_typ_wrt_typ...
-Qed.
-
+Admitted.
 
 Lemma subst_tvar_in_exp_refl_eq : forall X e,
   subst_tvar_in_exp (`X) X e = e
