@@ -12,9 +12,11 @@ Lemma d_sub_refl : forall Ψ A,
 Proof.
   intros *Hwfenv Hwfa. apply d_wf_typ_lc_typ in Hwfa as Hlc.  
   generalize dependent Ψ. induction Hlc; intros; try dependent destruction Hwfa; auto.
-  - inst_cofinites_for d_sub__all; 
-    intros; inst_cofinites_with X; auto. 
+  - inst_cofinites_for d_sub__all_refl; 
+    intros; inst_cofinites_with X; auto.
+    eapply H0... constructor. 
     apply d_wf_typ_tvar_stvar_cons in H1; eauto.
+  
 Admitted.
 
 

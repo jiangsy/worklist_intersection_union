@@ -563,9 +563,11 @@ Proof with auto.
            ++ eapply d_mono_typ_lc; eauto.
   - split; try solve [intuition].
     + inst_cofinites_by L. inversion H0. eapply d_wf_env_strengthen_cons; exact H1.
-    + split. inst_cofinites_for d_wf_typ__all. intros. inst_cofinites_with X.
-      intuition.
-      inst_cofinites_for d_wf_typ__all. intros. inst_cofinites_with X. intuition.
+    + split. 
+      * inst_cofinites_for d_wf_typ__all. intros. inst_cofinites_with X.
+        intuition. apply d_wf_typ_stvar_tvar_cons; eauto.
+      * inst_cofinites_for d_wf_typ__all. intros. inst_cofinites_with X.
+        intuition. apply d_wf_typ_stvar_tvar_cons; eauto.
 Qed.
 
 Lemma d_sub_d_wf_env : forall Ψ A B,
