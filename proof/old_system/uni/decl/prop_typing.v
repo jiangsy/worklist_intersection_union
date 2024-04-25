@@ -623,7 +623,6 @@ Proof.
   apply d_exp_size_open_typ_rec.
 Qed.
 
-
 Theorem d_chk_inf_subsumption : forall n1 n2 n3 Ψ Ψ' e A mode,
   exp_size e < n1 ->
   dmode_size mode < n2 ->

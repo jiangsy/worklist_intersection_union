@@ -823,6 +823,8 @@ Proof with eauto using d_wf_typ_subst_tvar.
     + simpl. apply d_wf_env__stvar; auto.
 Qed.
 
+forall b. b
+forall a. forall b. a 
 
 Lemma d_wf_tenv_stvar_false : forall Ψ1 Ψ2 X,
   ⊢ᵈₜ Ψ2 ++ (X , ■) :: Ψ1 -> False.
