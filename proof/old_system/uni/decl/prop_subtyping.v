@@ -300,14 +300,112 @@ Proof with eauto with lngen.
 Qed.
 
 Theorem d_sub_mono_refl : forall Ψ A B,
-  d_mono_typ Ψ A ->
-  d_mono_typ Ψ B ->
+  Ψ ᵗ⊢ᵈₘ A ->
+  Ψ ᵗ⊢ᵈₘ B ->
   Ψ ⊢ A <: B ->
   A = B.
 Proof.
   intros * Hmonoa Hmonob Hsub. dependent induction Hsub;
    try dependent destruction Hmonoa; try dependent destruction Hmonob; auto.
   - erewrite IHHsub1; auto. erewrite IHHsub2; auto.  
+Qed.
+
+Inductive typ_sub_bot : typ -> Prop :=
+  | typ_sb__bot : typ_sub_bot typ_bot
+  | typ_sb__intersection1 : forall A B,
+      typ_sub_bot A ->
+      typ_sub_bot (typ_intersection A B)
+  | typ_sb__intersection2 : forall A B,
+      typ_sub_bot B ->
+      typ_sub_bot (typ_intersection A B)      
+  | typ_sb__union : forall A B,
+      typ_sub_bot A ->
+      typ_sub_bot B ->
+      typ_sub_bot (typ_union A B)
+  | typ_sb__all : forall A L,
+      (forall X, X `notin` L -> typ_sub_bot (open_typ_wrt_typ A (typ_var_f X))) ->
+      typ_sub_bot (typ_all A)
+  .
+
+Lemma typ_sub_bot_subst_inv : forall X Ψ A T,
+  lc_typ A ->
+  Ψ ᵗ⊢ᵈₘ T ->
+  typ_sub_bot ({T ᵗ/ₜ X} A) ->
+  typ_sub_bot A.
+Proof.
+  intros. dependent induction H; eauto.
+  - admit.
+  - simpl in H2. inversion H2.
+  - dependent destruction H2.
+    inst_cofinites_for typ_sb__all; intros.
+    inst_cofinites_with X. apply H0; auto. admit.
+Admitted.
+
+
+#[local] Hint Constructors typ_sub_bot : core.
+
+(* Lemma d_sub_sub_bot_subst_inv : forall Ψ A B X,
+  Ψ ⊢ A ᵗ^^ₜ T <: typ_bot ->
+  Ψ ᵗ⊢ᵈₘ T ->
+  Ψ ⊢ A <: typ_bot -> *)
+
+Theorem d_sub_open_mono_bot_false: forall n1 n2 Ψ A T,
+  d_typ_order (A ᵗ^^ₜ T) < n1 ->
+  d_typ_size (A ᵗ^^ₜ T) < n2 ->
+  Ψ ⊢ A ᵗ^^ₜ T <: typ_bot ->
+  Ψ ᵗ⊢ᵈₘ T ->
+  typ_sub_bot A.
+Proof with auto.
+  intro n1. induction n1.
+  - intros. inversion H.
+  - intros n2. induction n2.
+    + intros. inversion H0.
+    + intros. dependent destruction H1; rename x into Heq.
+      * destruct A; simpl in *; try solve [inversion Heq]...
+        -- destruct n.
+            ++ unfold open_typ_wrt_typ in Heq. simpl in *.
+                subst. inversion H3.
+            ++ unfold open_typ_wrt_typ in Heq. simpl in *.
+                inversion Heq.
+      * destruct A; simpl in *; try solve [ inversion Heq].
+        -- destruct n.
+            ++ unfold open_typ_wrt_typ in Heq. simpl in *.
+                subst. inversion H7.
+            ++ unfold open_typ_wrt_typ in Heq. simpl in *.
+                inversion Heq.
+        -- inversion Heq. subst. inst_cofinites_for typ_sb__all; intros.
+           eapply IHn1 with (Ψ:=(X, □) :: Ψ) (T:=T); eauto.
+           ++ admit. 
+           ++ unfold open_typ_wrt_typ. rewrite <- open_typ_wrt_typ_twice. simpl.
+           unfold open_typ_wrt_typ in H6.
+           replace (open_typ_wrt_typ_rec 0 T0 (open_typ_wrt_typ_rec 1 T A)) with (open_typ_wrt_typ_rec 0 T0 (open_typ_wrt_typ_rec (0+1) T A)) in H6.
+           erewrite open_typ_wrt_typ_twice in H6.
+        econs admit.
+      * destruct A; simpl in *; try solve [inversion Heq].
+        -- destruct n.
+           ++ unfold open_typ_wrt_typ in Heq. simpl in Heq.
+              subst. dependent destruction H3.
+           ++ inversion Heq.
+        -- inversion Heq. subst.
+           constructor. eapply IHn2; eauto.
+           ++ unfold open_typ_wrt_typ. simpl. lia.
+           ++ unfold open_typ_wrt_typ. simpl. lia.
+      * destruct A; simpl in *; try solve [inversion Heq].
+        -- destruct n.
+           ++ unfold open_typ_wrt_typ in Heq. simpl in Heq.
+              subst. dependent destruction H3.
+           ++ inversion Heq.
+        -- inversion Heq. subst. apply typ_sb__intersection2. eapply IHn2; eauto.
+           ++ unfold open_typ_wrt_typ. lia.
+           ++ unfold open_typ_wrt_typ. lia.
+      * destruct A; simpl in *; try solve [inversion Heq].
+        -- destruct n.
+           ++ unfold open_typ_wrt_typ in Heq. simpl in Heq.
+              subst. dependent destruction H2.
+           ++ inversion Heq.
+        -- inversion Heq. subst. constructor.
+           ++ eapply IHn2; unfold open_typ_wrt_typ; eauto. lia. lia. 
+           ++ eapply IHn2; unfold open_typ_wrt_typ; eauto. lia. lia. 
 Qed.
 
 (* Theorem d_sub_open_mono_stvar_false: forall n1 n2 Ψ A T X L,
@@ -965,7 +1063,7 @@ Proof with auto.
         eapply IHn_d_typ_order with (B:= B1 ᵗ^ₜ X); eauto...
         -- simpl in *. rewrite d_open_svar_same_order...
       * pick fresh Y and apply d_sub__alll. 5: applys H4. all: eauto.
-        ** admit.
+        ** admit. (* **, should be good, if A1 is stvar then from A1 <: B1 we now B1 must be stvar-like *)
         ** pick fresh X. inst_cofinites_with X.
           replace Ψ with (map (subst_tvar_in_dbind T1 X) nil ++ Ψ) by auto.
           rewrite_env  (nil ++ (X, ■) :: Ψ) in H.
