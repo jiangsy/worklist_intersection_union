@@ -14,10 +14,10 @@ Proof.
   generalize dependent Ψ. induction Hlc; intros; try dependent destruction Hwfa; auto.
   - inst_cofinites_for d_sub__all_refl; 
     intros; inst_cofinites_with X; auto.
-    eapply H0... constructor. 
+    eapply H0...
+    apply d_wf_env__stvar; auto.
     apply d_wf_typ_tvar_stvar_cons in H1; eauto.
-  
-Admitted.
+Qed.
 
 
 Lemma d_sub_union_inv : forall Ψ A1 A2 B,
@@ -258,8 +258,9 @@ Proof with auto with weaken.
   dependent induction Hsub;
     try solve [simpl in *];
     try solve [eapply d_wf_typ_weaken with (Ψ2 := Ψ2) in H0; auto]; auto.
-  - apply d_sub__all with (L :=  L `union` dom (Ψ3 ++ Ψ2 ++ Ψ1)); intros X Fr; inst_cofinites_with x; auto...
-    admit. admit.
+  - apply d_sub__all with (L :=  L `union` dom (Ψ3 ++ Ψ2 ++ Ψ1)); intros X Fr; inst_cofinites_with X; auto...
+    rewrite_env ((X ~ □ ++ Ψ3) ++ Ψ2 ++ Ψ1). apply d_sneq_stvar_weaken; simpl...
+    rewrite_env ((X ~ □ ++ Ψ3) ++ Ψ2 ++ Ψ1). apply d_sneq_stvar_weaken; simpl...
     eapply H2 with (Ψ1 := Ψ1) (Ψ3 := (X, ■) :: Ψ3); simpl; auto.
     apply d_wf_env__stvar; auto.
   - apply d_sub__alll with (T := T) (L :=  L `union` dom (Ψ3 ++ Ψ2 ++ Ψ1)); auto...
@@ -269,7 +270,10 @@ Proof with auto with weaken.
   - apply d_sub__intersection3; auto...
   - apply d_sub__union1; auto...
   - apply d_sub__union2; auto...
-Admitted.
+  - inst_cofinites_for d_sub__all_refl. intros. inst_cofinites_with X.
+    rewrite_env ((X ~ ■ ++ Ψ3) ++ Ψ2 ++ Ψ1)...
+    eapply H0... simpl... apply d_wf_env__stvar...
+Qed.
 
 
 Corollary d_sub_weaken_cons: forall Ψ x b A B,
@@ -330,18 +334,35 @@ Inductive typ_sub_bot : typ -> Prop :=
       typ_sub_bot (typ_all A)
   .
 
+Lemma d_mono_typ_sub_bot_false : forall Ψ T,
+  d_mono_typ Ψ T ->
+  typ_sub_bot T ->
+  False.
+Proof.
+  intros. dependent induction H; eauto.
+  - dependent destruction H0.
+  - dependent destruction H0.
+  - dependent destruction H1.
+Qed.
+
+#[local] Hint Constructors typ_sub_bot : core.
+
 Lemma typ_sub_bot_subst_inv : forall X Ψ A T,
   lc_typ A ->
   Ψ ᵗ⊢ᵈₘ T ->
   typ_sub_bot ({T ᵗ/ₜ X} A) ->
   typ_sub_bot A.
-Proof.
+Proof with eauto.
   intros. dependent induction H; eauto.
-  - admit.
+  - simpl in H1. destruct_eq_atom.
+    + exfalso. eapply d_mono_typ_sub_bot_false; eauto. 
+    + dependent destruction H1.
   - simpl in H2. inversion H2.
   - dependent destruction H2.
     inst_cofinites_for typ_sb__all; intros.
     inst_cofinites_with X. apply H0; auto. admit.
+  - simpl in H2. dependent destruction H2... 
+  - simpl in H2. dependent destruction H2...
 Admitted.
 
 
@@ -580,7 +601,10 @@ Inductive d_sub_size : denv -> typ -> typ -> nat -> Prop :=    (* defn d_sub *)
  | d_subs__union3 : forall (Ψ:denv) (A1 A2 B1:typ) (n1 n2:nat),
      d_sub_size Ψ A1 B1 n1 ->
      d_sub_size Ψ A2 B1 n2 ->
-     d_sub_size Ψ (typ_union A1 A2) B1 (S (n1 + n2)).
+     d_sub_size Ψ (typ_union A1 A2) B1 (S (n1 + n2))
+ | d_subs__all_refl : forall (L:vars) (Ψ:denv) (A1:typ) (n:nat),
+     ( forall X , X \notin  L  -> d_sub_size  ( X ~ dbind_stvar_empty  ++  Ψ )   ( open_typ_wrt_typ A1 (typ_var_f X) )   ( open_typ_wrt_typ A1 (typ_var_f X) ) n )  ->
+     d_sub_size Ψ (typ_all A1) (typ_all A1) (S n).
      
 Notation "Ψ ⊢ A <: B | n" :=
   (d_sub_size Ψ A B n)
@@ -714,6 +738,7 @@ Proof with (simpl in *; eauto using d_wf_env_subst_tvar).
     forwards: d_wf_typ_rename_stvar Y H...
   - applys d_subs__union2; forwards: IHHS...
     forwards: d_wf_typ_rename_stvar Y H...
+  - admit.
 Admitted.
 
 Corollary d_sub_size_rename : forall n X Y Ψ1 Ψ2 A B,
@@ -750,6 +775,12 @@ Proof with eauto.
   - destruct IHd_sub as [n]. eauto...
   - destruct IHd_sub1 as [n1]. destruct IHd_sub2 as [n2].
     eauto...
+  - pick fresh X. destruct (H0 X) as [n]...
+    exists (S n).
+    inst_cofinites_for d_subs__all_refl. intros.
+    inst_cofinites_with X0. 
+    + rewrite_env (nil ++ X0 ~ ■ ++ Ψ). rewrite_env (nil ++ X ~ ■ ++ Ψ) in H1.
+      applys d_sub_size_rename H1; solve_notin.
   Unshelve. all: econstructor.
 Qed.
 
