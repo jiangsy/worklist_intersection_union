@@ -192,16 +192,21 @@ Proof.
 Qed.
 
 
-Lemma open_typ_wrt_typ_twice : forall n X Y A,
-    lc_typ Y ->
-    open_typ_wrt_typ_rec n ` X (open_typ_wrt_typ_rec (n+1) Y A)
-    = open_typ_wrt_typ_rec n Y (open_typ_wrt_typ_rec n ` X A).
+
+
+Lemma open_typ_wrt_typ_twice : forall n A B1 B2,
+    lc_typ B1 ->
+    lc_typ B2 ->
+    open_typ_wrt_typ_rec n B1 (open_typ_wrt_typ_rec (n+1) B2 A)
+    = open_typ_wrt_typ_rec n B2 (open_typ_wrt_typ_rec n B1 A).
 Proof with subst; simpl in *; eauto; try lia.
-  introv HL. gen n. induction A; intros...
+  introv HL HL2. gen n. induction A; intros...
   all: try congruence.
   - destruct (lt_eq_lt_dec n (n0 + 1)); repeat case_if...
     + remember (lt_eq_lt_dec n n0) as m.
       destruct m... case_if; simpl; try rewrite <- Heqm...
+      rewrite open_typ_wrt_typ_rec_degree_typ_wrt_typ...
+      applys degree_typ_wrt_typ_O. applys degree_typ_wrt_typ_of_lc_typ_mutual...
     + remember (lt_eq_lt_dec (n0 + 1) n0) as m; destruct m; repeat case_if...
       remember (lt_eq_lt_dec (n0 + 1 - 1) n0) as m; destruct m; repeat case_if...
       rewrite open_typ_wrt_typ_rec_degree_typ_wrt_typ...
@@ -215,6 +220,14 @@ Proof with subst; simpl in *; eauto; try lia.
     rewrite H. congruence. lia.
 Qed.
 
+Lemma open_typ_wrt_typ_twice_tvar : forall n X B A,
+    lc_typ B ->
+    open_typ_wrt_typ_rec n ` X (open_typ_wrt_typ_rec (n+1) B A)
+    = open_typ_wrt_typ_rec n B (open_typ_wrt_typ_rec n ` X A).
+Proof with subst; simpl in *; eauto; try lia.
+  intros.
+  rewrite open_typ_wrt_typ_twice; auto.
+Qed.
 
 
 Lemma typ_open_r_close_l : forall T1 T2 X

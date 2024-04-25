@@ -1093,8 +1093,8 @@ Proof with try solve_notin; try solve_by_invert; simpl in *; eauto.
   all: eauto...
   all: eapply lc_typ_all; intro Y;
       forwards: H Y; unfold open_typ_wrt_typ;
-      rewrite open_typ_wrt_typ_twice; rewrite open_typ_wrt_typ_twice in H1;
-    try applys H0; try rewrite open_typ_wrt_typ_twice...
+      rewrite open_typ_wrt_typ_twice_tvar; rewrite open_typ_wrt_typ_twice_tvar in H1;
+    try applys H0; try rewrite open_typ_wrt_typ_twice_tvar...
 Qed.
 
 
@@ -1114,9 +1114,9 @@ Proof with try solve_notin; try solve_by_invert; simpl in *; eauto using lc_typ_
                   try solve [forwards*: IHHD (typ_var_b 0) T2]].
   all: try solve [
            pick fresh Z and apply s_in__all; inst_cofinites_with Z;
-           rewrite open_typ_wrt_typ_twice in H0;
+           rewrite open_typ_wrt_typ_twice_tvar in H0;
            [ forwards*: H0 | ];
-           unfold open_typ_wrt_typ; try rewrite open_typ_wrt_typ_twice;
+           unfold open_typ_wrt_typ; try rewrite open_typ_wrt_typ_twice_tvar;
            eauto using lc_typ_open_stvar_subst_mono ].
   all: try solve [
            inverts H0; inverts HM;
@@ -1158,13 +1158,13 @@ Proof with try solve_notin; simpl in *; eauto.
       end.
   all: try solve [
     pick fresh Y and apply d_wf_typ__all;
-      unfold open_typ_wrt_typ in *; rewrite open_typ_wrt_typ_twice in *;
+      unfold open_typ_wrt_typ in *; rewrite open_typ_wrt_typ_twice_tvar in *;
       inverts* x;
       (match goal with
         HD: d_mono_typ _ ?T |- _ => assert (HE:
                open_typ_wrt_typ_rec 0 ` Y (open_typ_wrt_typ_rec 1 T A)
                = open_typ_wrt_typ_rec 0 T (open_typ_wrt_typ_rec 0 ` Y A) )
-          by rewrite* open_typ_wrt_typ_twice;
+          by rewrite* open_typ_wrt_typ_twice_tvar;
                                     forwards*: H0 Y ((Y, □) :: Ψ1) Ψ2 HE;
                                     rewrite_env ( Y ~ □ ++ (Ψ1 ++ Ψ2));
                                     eauto using d_mono_typ_weaken_app
