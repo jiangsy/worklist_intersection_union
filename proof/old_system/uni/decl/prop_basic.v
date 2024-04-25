@@ -544,7 +544,7 @@ Lemma d_sub_d_wf : forall Ψ A B,
   ⊢ᵈ Ψ /\ Ψ ᵗ⊢ᵈ A /\ Ψ ᵗ⊢ᵈ B.
 Proof with auto.
   intros.
-  induction H; try solve [intuition].
+  dependent induction H; try solve [intuition].
   - split.
     inst_cofinites_by L. intuition... eapply d_wf_env_strengthen_app; eauto. 
     split; eapply d_wf_typ__all with (L:=L `union` ftvar_in_typ A `union` ftvar_in_typ B); intros; inst_cofinites_with X; auto...
@@ -561,7 +561,11 @@ Proof with auto.
            apply d_wf_typ_weaken. simpl. rewrite  subst_tvar_in_typ_open_typ_wrt_typ.
            ++ simpl. destruct_eq_atom. rewrite subst_tvar_in_typ_fresh_eq; intuition.
            ++ eapply d_mono_typ_lc; eauto.
-           (* ++ auto. *)
+  - split; try solve [intuition].
+    + inst_cofinites_by L. inversion H0. eapply d_wf_env_strengthen_cons; exact H1.
+    + split. inst_cofinites_for d_wf_typ__all. intros. inst_cofinites_with X.
+      intuition.
+      inst_cofinites_for d_wf_typ__all. intros. inst_cofinites_with X. intuition.
 Qed.
 
 Lemma d_sub_d_wf_env : forall Ψ A B,
@@ -822,9 +826,6 @@ Proof with eauto using d_wf_typ_subst_tvar.
       constructor; eapply d_wf_tenv_subst_tvar_typ; auto.
     + simpl. apply d_wf_env__stvar; auto.
 Qed.
-
-forall b. b
-forall a. forall b. a 
 
 Lemma d_wf_tenv_stvar_false : forall Ψ1 Ψ2 X,
   ⊢ᵈₜ Ψ2 ++ (X , ■) :: Ψ1 -> False.
