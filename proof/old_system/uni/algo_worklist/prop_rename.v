@@ -879,58 +879,57 @@ Proof.
 Qed.
 
 
-Lemma rename_tvar_lookup_var_bind : forall Γ x X Y A,
-  Y `notin` dom (⌊ Γ ⌋ᵃ) `union` singleton x `union` singleton X->
-  lookup_bind (⌊ Γ ⌋ᵃ) x = Some (abind_var_typ A) ->
-  lookup_bind (⌊ {Y ᵃʷ/ₜᵥ X} Γ ⌋ᵃ ) x = Some (abind_var_typ ({`Y ᵗ/ₜ X} A)).
+Lemma rename_tvar_lookup_var_bind_some : forall Γ x X Y A,
+  Y `notin` dom (⌊ Γ ⌋ᵃ) ->
+  lookup_var_bind (⌊ Γ ⌋ᵃ) x = Some A ->
+  lookup_var_bind (⌊ {Y ᵃʷ/ₜᵥ X} Γ ⌋ᵃ ) x = Some ({`Y ᵗ/ₜ X} A).
 Proof.
   intros. induction Γ; simpl in *; auto.
   - inversion H0. 
-  - destruct_eq_atom; destruct ab; subst; simpl;destruct_eq_atom; auto; try inversion H0.
+  - destruct_eq_atom; destruct ab; subst; simpl; destruct_eq_atom; auto; try inversion H0.
     + subst. auto.
     + subst. auto.
+Qed.
+
+Lemma rename_tvar_lookup_var_bind_none : forall Γ x X Y,
+  Y `notin` dom (⌊ Γ ⌋ᵃ) ->
+  lookup_var_bind (⌊ Γ ⌋ᵃ) x = None ->
+  lookup_var_bind (⌊ {Y ᵃʷ/ₜᵥ X} Γ ⌋ᵃ ) x = None.
+Proof.
+  intros. induction Γ; simpl in *; auto.
+  destruct_eq_atom; destruct ab; subst; simpl; destruct_eq_atom; auto; try inversion H0.
 Qed.
 
 Lemma rename_tvar_lookup_tvar_bind : forall Γ X' X Y b,
   b = □ \/ b = ■ \/ b = ⬒ ->
-  Y `notin` dom (⌊ Γ ⌋ᵃ) `union` singleton X' `union` singleton X->
-  lookup_bind (⌊ Γ ⌋ᵃ) X' = Some b ->
-  lookup_bind (⌊ {Y ᵃʷ/ₜᵥ X} Γ ⌋ᵃ ) (if X'== X then Y else X' ) = Some b.
+  Y `notin` dom (⌊ Γ ⌋ᵃ) `union` singleton X' ->
+  lookup_tvar_bind (⌊ Γ ⌋ᵃ) X' = Some b ->
+  lookup_tvar_bind (⌊ {Y ᵃʷ/ₜᵥ X} Γ ⌋ᵃ ) (if X' == X then Y else X' ) = Some b.
 Proof.
   intros. induction Γ; simpl in *; auto.
-  - destruct_eq_atom; destruct ab; subst; simpl;destruct_eq_atom; auto; try inversion H0.
-    + inversion H1. destruct H; subst. inversion H3. inversion H. inversion H2. inversion H2. 
-    + inversion H1. destruct H; subst. inversion H3. inversion H. inversion H2. inversion H2.
+  destruct_eq_atom; destruct ab; subst; simpl; destruct_eq_atom; auto. inversion H1.
 Qed.
 
-
-
 Lemma exp_split_size_rename_tvar : forall n e Γ X Y,
-  size_exp e < n ->
+  size_exp e < n -> Y `notin` dom (⌊ Γ ⌋ᵃ) ->
   exp_split_size (⌊ Γ ⌋ᵃ) e = exp_split_size (⌊ {Y ᵃʷ/ₜᵥ X} Γ ⌋ᵃ) ({` Y ᵉ/ₜ X} e).
 Proof.
-  intro n. induction n; simpl; intros.
-  - inversion H.
-  - destruct e; simpl in *; auto.
-    + destruct (lookup_bind (⌊ Γ ⌋ᵃ) x) eqn:Heq.
-      * destruct a; auto.
-        -- admit.
-        -- admit.
-        -- admit.
-        -- erewrite rename_tvar_lookup_var_bind with (A:=A); eauto. 
-           rewrite <- iuv_size_rename_tvar; auto.
-           admit.
-      * admit.
-    + rewrite <- IHn; auto; lia.
-    + repeat rewrite <-IHn; auto; lia.
-    + destruct body5. 
-      simpl in *. repeat rewrite <- IHn; auto. 
-      rewrite <-iuv_size_rename_tvar; auto. lia.
-    + rewrite <- IHn. rewrite <- iuv_size_rename_tvar. auto.
-      lia.
-    + rewrite <- IHn. rewrite <- iuv_size_rename_tvar. auto.
-      lia.
-Admitted.
+  intro n. induction n; simpl; intros * Hlt Hnotin; try lia.
+  destruct e; simpl in *; auto.
+  - destruct (lookup_var_bind (⌊ Γ ⌋ᵃ) x) eqn:Heq.
+    + erewrite rename_tvar_lookup_var_bind_some; eauto.
+      rewrite <- iuv_size_rename_tvar; auto.
+    + erewrite rename_tvar_lookup_var_bind_none; eauto.
+  - rewrite <- IHn; auto; lia.
+  - repeat rewrite <-IHn; auto; lia.
+  - destruct body5. 
+    simpl in *. repeat rewrite <- IHn; auto. 
+    rewrite <-iuv_size_rename_tvar; auto. lia.
+  - rewrite <- IHn. rewrite <- iuv_size_rename_tvar. auto.
+    lia. auto.
+  - rewrite <- IHn. rewrite <- iuv_size_rename_tvar. auto.
+    lia. auto.
+Qed.
 
 
 Theorem rename_tvar_in_a_wf_wwl_a_wl_red : forall Γ X Y,
@@ -1185,7 +1184,7 @@ Proof with eauto.
       rewrite_env (nil ++ ((X2, ⬒) :: (X1 ~ ⬒)) ++ ⌊ Γ ⌋ᵃ).
       apply a_wf_conts_weaken...
   - simpl in *. destruct_a_wf_wl.
-    constructor. rewrite <- exp_split_size_rename_tvar.
+    constructor. erewrite <- exp_split_size_rename_tvar; eauto.
     eapply IHa_wl_red; eauto.
   - simpl in *. destruct_a_wf_wl. dependent destruction H0.
     inst_cofinites_for a_wl_red__infabs_all.
@@ -1797,9 +1796,31 @@ Ltac create_fvar_in_awl_set :=
     assert (Hfv: x ∉ fvar_in_aworklist' Γ) by (rewrite fvar_in_aworklist_upper; auto)
   end.
 
-Lemma exp_split_size_rename_evar : forall e Γ x y,
+Lemma rename_var_lookup_var_bind : forall Γ x' x y,
+  y `notin` dom (⌊ Γ ⌋ᵃ) `union` singleton x' ->
+  lookup_var_bind (⌊ Γ ⌋ᵃ) x' = lookup_var_bind (⌊ {y ᵃʷ/ₑᵥ x} Γ ⌋ᵃ ) (if x' == x then y else x').
+Proof.
+  intros. induction Γ; simpl in *; auto; destruct ab; subst; simpl; auto; destruct_eq_atom; auto.
+Qed.
+
+Lemma exp_split_size_rename_var : forall n e Γ x y,
+  size_exp e < n -> y `notin` dom (⌊ Γ ⌋ᵃ) `union` fvar_in_exp e ->
   exp_split_size (⌊ Γ ⌋ᵃ) e = exp_split_size (⌊ {y ᵃʷ/ₑᵥ x} Γ ⌋ᵃ) ({exp_var_f y ᵉ/ₑ x} e).
-Admitted.
+Proof.
+  intro n. induction n; simpl; intros * Hlt Hnotin; try lia.
+  destruct e; simpl in *; auto.
+  - destruct_eq_atom; simpl.
+    + replace (lookup_var_bind (⌊ {y ᵃʷ/ₑᵥ x} Γ ⌋ᵃ) y) with (lookup_var_bind (⌊ {y ᵃʷ/ₑᵥ x} Γ ⌋ᵃ) (if x == x then y else x)).
+      erewrite <- rename_var_lookup_var_bind; eauto. destruct_eq_atom; eauto.
+    + replace (lookup_var_bind (⌊ {y ᵃʷ/ₑᵥ x} Γ ⌋ᵃ) x0) with (lookup_var_bind (⌊ {y ᵃʷ/ₑᵥ x} Γ ⌋ᵃ) (if x0 == x then y else x0)).
+      erewrite <- rename_var_lookup_var_bind; eauto. destruct_eq_atom; eauto.
+  - rewrite <- IHn; auto; lia.
+  - repeat rewrite <-IHn; auto; lia.
+  - destruct body5. 
+    simpl in *. repeat rewrite <- IHn; auto. lia.
+  - rewrite <- IHn; auto. lia.
+  - rewrite <- IHn; auto. lia.
+Qed.
 
 Theorem rename_var_in_a_wf_wwl_a_wl_red : forall Γ x y,
   ⊢ᵃʷ Γ ->
@@ -1954,7 +1975,7 @@ Proof with eauto.
     apply a_wf_exp_weaken_etvar_twice with (T:=T)...
     apply a_wf_conts_weaken_cons...  apply a_wf_conts_weaken_cons...
   - simpl in *. destruct_a_wf_wl.
-    constructor. rewrite <- exp_split_size_rename_evar.
+    constructor. erewrite <- exp_split_size_rename_var; eauto.
     eapply IHa_wl_red; eauto.
   - destruct_a_wf_wl. dependent destruction H. simpl in *.
     inst_cofinites_for a_wl_red__infabs_all.

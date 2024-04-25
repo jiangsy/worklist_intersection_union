@@ -76,18 +76,32 @@ Fixpoint iuv_size (A : typ) : nat :=
   | _ => 0
   end.
 
-Fixpoint lookup_bind (Σ : aenv) (X : atom) : option abind :=
+Fixpoint lookup_var_bind (Σ : aenv) (X : atom) : option typ :=
   match Σ with
   | nil => None
-  | (Y, B) :: Σ' => if X == Y then Some B else lookup_bind Σ' X
+  | (Y, abind_var_typ A) :: Σ' => if X == Y then Some A else lookup_var_bind Σ' X
+  | _ :: Σ' => lookup_var_bind Σ' X
+  end.
+
+Fixpoint lookup_tvar_bind (Σ : aenv) (X : atom) : option abind :=
+  match Σ with
+  | nil => None
+  | (Y, B) :: Σ' => if X == Y then
+                      match B with
+                      | abind_tvar_empty => Some abind_tvar_empty
+                      | abind_stvar_empty => Some abind_stvar_empty
+                      | abind_etvar_empty => Some abind_etvar_empty
+                      | _ => None
+                      end
+                    else lookup_tvar_bind Σ' X
   end.
 
 Fixpoint exp_split_size (Σ : aenv) (e : exp) : nat :=
   match e with
   | exp_unit => 0
   | exp_var_b _ => 0
-  | exp_var_f X => match lookup_bind Σ X with
-                  | Some (abind_var_typ A) => iuv_size A
+  | exp_var_f X => match lookup_var_bind Σ X with
+                  | Some A => iuv_size A
                   | _ => 0
                   end
   | exp_abs e1 => exp_split_size Σ e1

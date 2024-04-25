@@ -573,26 +573,63 @@ Ltac destruct_in :=
   end.
 
 
-Lemma binds_lookup_bind : forall Σ X B,
-  ⊢ᵃ Σ -> binds X B Σ <-> lookup_bind Σ X = Some B.
+Lemma binds_lookup_tvar_bind : forall Σ X B,
+  ⊢ᵃ Σ -> B = abind_tvar_empty \/ B = abind_stvar_empty \/ B = abind_etvar_empty ->
+  binds X B Σ <-> lookup_tvar_bind Σ X = Some B.
 Proof.
-  intros. induction H; simpl; destruct_eq_atom; split; intros; auto; destruct_binds; auto; try solve [inversion H].
-  - exfalso; eapply binds_dom_contradiction; eauto. 
-  - inversion H1; auto.
-  - apply IHa_wf_env; auto.
-  - apply binds_cons; eauto. apply IHa_wf_env; auto.
-  - exfalso; eapply binds_dom_contradiction; eauto.
-  - inversion H1. auto.
-  - apply IHa_wf_env; auto.
-  - apply binds_cons; eauto. apply IHa_wf_env; auto.
-  - exfalso; eapply binds_dom_contradiction; eauto.
-  - inversion H1. auto.
-  - apply IHa_wf_env; auto.  
-  - apply binds_cons; eauto. apply IHa_wf_env; auto.
-  - exfalso; eapply binds_dom_contradiction; eauto.
-  - inversion H2. auto.
-  - apply IHa_wf_env; auto.
-  - apply binds_cons; eauto. apply IHa_wf_env; auto.
+  intros. induction H; simpl.
+  - split; intros; inversion H.
+  - destruct_eq_atom.
+    + split; intros.
+      * destruct_binds; auto.
+        exfalso; eapply binds_dom_contradiction; eauto. 
+      * inversion H2; auto.
+    + split; intros.
+      * destruct_binds; auto.
+        apply IHa_wf_env; auto.
+      * eapply binds_cons; eauto. apply IHa_wf_env; auto.
+  - destruct_eq_atom.
+    + split; intros.
+      * destruct_binds; auto.
+        exfalso; eapply binds_dom_contradiction; eauto. 
+      * inversion H2; auto.
+    + split; intros.
+      * destruct_binds; auto.
+        apply IHa_wf_env; auto.
+      * eapply binds_cons; eauto. apply IHa_wf_env; auto.
+  - destruct_eq_atom.
+    + split; intros.
+      * destruct_binds; auto.
+        exfalso; eapply binds_dom_contradiction; eauto. 
+      * inversion H2; auto.
+    + split; intros.
+      * destruct_binds; auto.
+        apply IHa_wf_env; auto.
+      * eapply binds_cons; eauto. apply IHa_wf_env; auto.
+  - destruct_eq_atom.
+    + split; intros.
+      * destruct_binds; auto.
+        destruct H0 as [Hcontra | [Hcontra | Hcontra]]; inversion Hcontra.
+        exfalso; eapply binds_dom_contradiction; eauto. 
+      * inversion H3.
+    + split; intros.
+      * destruct_binds; auto.
+        apply IHa_wf_env; auto.
+      * eapply binds_cons; eauto. apply IHa_wf_env; auto.
+Qed.
+
+Lemma binds_lookup_var_bind : forall Σ X A,
+  ⊢ᵃ Σ -> binds X (abind_var_typ A) Σ <-> lookup_var_bind Σ X = Some A.
+Proof.
+  intros. induction H; simpl; split; intros; try solve [inversion H];
+    try solve [destruct_binds; eapply IHa_wf_env; eauto];
+    try solve [eapply binds_cons; eapply IHa_wf_env; eauto].
+  - destruct_eq_atom; destruct_binds; eauto.
+    + exfalso; eapply binds_dom_contradiction; eauto.
+    + eapply IHa_wf_env; eauto.
+  - destruct_eq_atom.
+    + inversion H2; eauto.
+    + eapply binds_cons; eauto. eapply IHa_wf_env; eauto.
 Qed.
 
 Lemma dbind_to_abind_inj : forall B1 B2,
@@ -644,14 +681,29 @@ Proof.
     rewrite dwl_to_aenv_dom in H; auto.
 Qed.
 
-Lemma binds_lookup_bind_dwl : forall Ω X B,
-  ⊢ᵈʷₛ Ω -> binds X B (⌊ Ω ⌋ᵈ) <-> lookup_bind (dwl_to_aenv Ω) X = Some (dbind_to_abind B).
+Lemma binds_lookup_tvar_bind_dwl : forall Ω X B,
+  ⊢ᵈʷₛ Ω -> B = dbind_tvar_empty \/ B = dbind_stvar_empty ->
+  binds X B (⌊ Ω ⌋ᵈ) <-> lookup_tvar_bind (dwl_to_aenv Ω) X = Some (dbind_to_abind B).
 Proof.
   intros. split; intros.
-  - apply binds_lookup_bind; auto.
+  - apply binds_lookup_tvar_bind; auto.
     apply d_wf_wl_wf_aenv; auto.
+    destruct H0; subst; auto.
     apply binds_dwl_aenv; auto.
-  - apply binds_lookup_bind in H0; auto.
+  - apply binds_lookup_tvar_bind in H1; auto.
+    apply binds_dwl_aenv; auto.
+    apply d_wf_wl_wf_aenv; auto.
+    destruct H0; subst; auto.
+Qed.
+
+Lemma binds_lookup_var_bind_dwl : forall Ω X A,
+  ⊢ᵈʷₛ Ω -> binds X (dbind_typ A) (⌊ Ω ⌋ᵈ) <-> lookup_var_bind (dwl_to_aenv Ω) X = Some A.
+Proof.
+  intros. split; intros.
+  - apply binds_lookup_var_bind; auto.
+    apply d_wf_wl_wf_aenv; auto.
+    apply binds_dwl_aenv with (B := dbind_typ A); auto.
+  - apply binds_lookup_var_bind in H0; auto.
     apply binds_dwl_aenv; auto.
     apply d_wf_wl_wf_aenv; auto.
 Qed.
@@ -734,7 +786,7 @@ Lemma inf_iuv_size_exp_split_size : forall Ω A e,
   iuv_size A <= exp_split_size (dwl_to_aenv Ω) e.
 Proof.
   intros Ω A e Hwf Hinf. dependent induction Hinf; simpl; auto; try lia.
-  - apply binds_lookup_bind_dwl in H0; auto. rewrite H0. simpl. auto.
+  - apply binds_lookup_var_bind_dwl in H0; auto. rewrite H0. simpl. auto.
   - assert (Hle: iuv_size C <= iuv_size A). { eapply infabs_iuv_size_C; eauto. }
     assert (Hle': iuv_size A ≤ exp_split_size (dwl_to_aenv Ω) e1) by auto. lia.
   - dependent destruction H.
