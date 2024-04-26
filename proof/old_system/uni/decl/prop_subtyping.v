@@ -976,6 +976,20 @@ Ltac ord_inv :=
     | H : d_ord (typ_union _ _)|- _ => inversion H
    end.
 
+(* 
+Lemma d_sub_bot_sub : forall Ψ A B,
+  ⊢ᵈ Ψ ->
+  Ψ ᵗ⊢ᵈ B ->
+  Ψ ᵗ⊢ᵈ A ->
+  typ_sub_bot A -> 
+  Ψ ⊢ A <: B.
+Proof.
+  intros. induction H2; auto.
+  - dependent destruction H1; auto.
+  - dependent destruction H1; auto.
+  - dependent destruction H1; auto.
+  - dependent induction B.
+    + *)
 
 Lemma d_sub_size_transitivity : forall n_d_typ_order n_d_sub_size Ψ A B C n1 n2 ,
   d_typ_order B < n_d_typ_order ->

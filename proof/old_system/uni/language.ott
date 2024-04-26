@@ -119,6 +119,8 @@ aworklist, aW  :: 'aworklist_' ::=
 formula :: formula_ ::=
   | judgement             ::   :: judgement
   | formula \/ formula'       ::   :: judgement_or {{ coq  ([[formula]]) \/ ([[formula']]) }}
+  | formula /\ formula'       ::   :: judgement_and {{ coq  ([[formula]]) /\ ([[formula']]) }}
+  | ( formula )   ::   :: paren {{ coq  ([[formula]]) }}
   | ( x db )  in dE    ::   :: binds1 {{ coq binds ([[x]])  ([[db]]) ([[dE]]) }}
   | ( X db )  in dE    ::   :: binds2 {{ coq binds ([[X]])  ([[db]]) ([[dE]]) }}
   | ( X db )  notin dE    ::   :: nbinds {{ coq (~ binds ([[X]])  ([[db]]) ([[dE]])) }}
@@ -701,6 +703,37 @@ dE |- cd $ A $ B
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 defns 
+typ_bot_like :: '' ::=
+
+
+defn 
+A ~= ⊥ :: :: typ_bot_like :: 'typ_bl__' by
+
+
+------------------------ :: bot
+BOT ~= ⊥
+
+
+A ~= ⊥
+------------------------ :: intersection1
+A ⊓ B ~= ⊥
+
+B ~= ⊥
+------------------------ :: intersection2
+A ⊓ B ~= ⊥
+
+
+A ~= ⊥
+B ~= ⊥
+------------------------ :: intersection1
+A ⊔ B ~= ⊥
+
+A ~= ⊥
+------------------------ :: all
+∀ X . A ~= ⊥
+
+
+defns 
 Jd_wf_twl :: '' ::= 
 
 defn 
@@ -752,38 +785,38 @@ defns
 J_d_strong_neq_stvar :: '' ::=
 
 defn 
-dE |- A ~= ~■ :: :: d_sneq_stvar :: 'd_sneq_stvar__' by
+dE |- A <> ~■ :: :: d_sneq_stvar :: 'd_sneq_stvar__' by
 
 ------------------------ :: unit
-dE |- UNIT ~= ~■
+dE |- UNIT <> ~■
 
 ------------------------ :: top
-dE |- TOP ~= ~■
+dE |- TOP <> ~■
 
 ------------------------ :: bot
-dE |- BOT ~= ~■
+dE |- BOT <> ~■
 
 ( X : ■ ) in dE
 ------------------------ :: tvar
-dE |- X ~= ~■
+dE |- X <> ~■
 
 ------------------------ :: arrow 
-dE |- A1 -> A2 ~= ~■
+dE |- A1 -> A2 <> ~■
 
 ------------------------ :: all
-dE |- ∀ X . A ~= ~■
+dE |- ∀ X . A <> ~■
 
 
-dE |- A1 ~= ~■
-dE |- A2 ~= ~■
+dE |- A1 <> ~■
+dE |- A2 <> ~■
 ------------------------ :: union 
-dE |- A1 ⊔ A2 ~= ~■  
+dE |- A1 ⊔ A2 <> ~■  
 
 
-dE |- A1 ~= ~■
-dE |- A2 ~= ~■
+dE |- A1 <> ~■
+dE |- A2 <> ~■
 ------------------------ :: intersection  
-dE |- A1 ⊓ A2 ~= ~■
+dE |- A1 ⊓ A2 <> ~■
 
 
 defns
@@ -817,8 +850,7 @@ dE ||- A2 <: B2
 -------------------------- :: arrow
 dE ||- A1 -> A2 <: B1 -> B2
 
-dE , X : ■ |- A ~= ~■
-dE , X : ■ |- B ~= ~■
+( dE , X : ■ |- A <> ~■  /\  dE , X : ■ |- B <> ~■ ) \/  ∀ X . A ~= ⊥
 dE , X : ~■ ||- A <: B
 -------------------------------------------- :: all
 dE ||- ∀ X. A <: ∀ X. B
@@ -826,7 +858,7 @@ dE ||- ∀ X. A <: ∀ X. B
 B ¬= ∀ 
 B ¬= ⊓
 B ¬= ⊔
-dE , X : ■ |- A ~= ~■
+dE , X : ■ |- A <> ~■  \/ ∀ X . A ~= ⊥
 dE |-m T
 dE ||- { T / X } A <: B
 ---------------------------- :: alll
