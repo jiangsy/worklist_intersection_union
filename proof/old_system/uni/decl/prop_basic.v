@@ -546,7 +546,7 @@ Proof with auto.
   intros.
   dependent induction H; try solve [intuition].
   - split.
-    inst_cofinites_by L. intuition... eapply d_wf_env_strengthen_app; eauto. 
+    inst_cofinites_by L. intuition... eapply d_wf_env_strengthen_app; eauto. eapply d_wf_env_strengthen_app; eauto.  
     split; eapply d_wf_typ__all with (L:=L `union` ftvar_in_typ A `union` ftvar_in_typ B); intros; inst_cofinites_with X; auto...
     eapply d_wf_typ_stvar_tvar_cons; intuition.
     eapply d_wf_typ_stvar_tvar_cons; intuition.

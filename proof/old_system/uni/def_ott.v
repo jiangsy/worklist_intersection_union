@@ -1346,7 +1346,7 @@ Inductive typ_bot_like : typ -> Prop :=    (* defn typ_bot_like *)
      lc_typ A ->
      typ_bot_like B ->
      typ_bot_like (typ_intersection A B)
- | typ_bl__intersection1 : forall (A B:typ),
+ | typ_bl__union : forall (A B:typ),
      typ_bot_like A ->
      typ_bot_like B ->
      typ_bot_like (typ_union A B)
