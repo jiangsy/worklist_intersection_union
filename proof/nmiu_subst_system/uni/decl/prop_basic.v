@@ -1126,7 +1126,7 @@ Qed.
 
 Lemma d_wf_typ_open_mono_inv : forall Ψ1 Ψ2 A T X,
   Ψ1 ++ Ψ2 ᵗ⊢ᵈ A ᵗ^^ₜ T -> 
-  d_mono_typ (Ψ1 ++ Ψ2) T -> 
+  Ψ1 ++ Ψ2 ᵗ⊢ᵈₘ T -> 
   X ∉ (dom Ψ2) -> 
   Ψ1 ++ X ~ □ ++ Ψ2 ᵗ⊢ᵈ A ᵗ^ₜ X.
 Proof with try solve_notin; simpl in *; eauto.
@@ -1171,6 +1171,16 @@ Proof with try solve_notin; simpl in *; eauto.
       end) ].
 Qed.
 
+
+Lemma d_wf_typ_all_inv : forall Ψ A T,
+  Ψ ᵗ⊢ᵈ A ᵗ^^ₜ T -> 
+  Ψ ᵗ⊢ᵈₘ T -> 
+  Ψ ᵗ⊢ᵈ typ_all A.
+Proof.
+  intros. inst_cofinites_for d_wf_typ__all.
+  intros. rewrite_env (nil ++ X ~ □ ++ Ψ).
+  eapply d_wf_typ_open_mono_inv; eauto.
+Qed.
 
 Lemma d_wf_typ_var_binds_another : forall Ψ1 x Ψ2 A1 B1 B2,
   Ψ2 ++ x ~ dbind_typ B1 ++ Ψ1 ᵗ⊢ᵈ A1 ->
