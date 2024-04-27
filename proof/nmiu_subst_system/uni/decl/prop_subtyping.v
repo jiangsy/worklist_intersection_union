@@ -292,7 +292,7 @@ Qed.
 
 #[local] Hint Resolve d_wf_typ_subst_stvar d_wf_env_subst_stvar : core.
 
-Lemma dneq_all_intersection_union_subst_stv : forall T1 T2 X,
+Lemma neq_all_intersection_union_subst_stv : forall T1 T2 X,
   lc_typ T1 -> lc_typ T2 ->
   neq_all T1 -> neq_intersection T1 -> neq_union T1 ->
   (neq_all ({T2 ᵗ/ₜ X} T1) /\
@@ -352,13 +352,28 @@ Proof with eauto.
   - simpl in H2. dependent destruction H2...
 Qed.
 
-
+Lemma typ_bot_like_subst : forall X Ψ A T,
+  lc_typ A ->
+  Ψ ᵗ⊢ᵈₘ T ->
+  typ_bot_like A ->
+  typ_bot_like ({T ᵗ/ₜ X} A).
+Proof with eauto.
+  intros. dependent induction H; eauto.
+  - dependent destruction H1. 
+  - dependent destruction H2. 
+  - dependent destruction H2. simpl. inst_cofinites_for typ_bl__all; intros.
+    rewrite subst_tvar_in_typ_open_typ_wrt_typ_fresh2; eauto.
+  - dependent destruction H2. simpl. eauto.
+  - dependent destruction H2; simpl; eauto using lc_typ_subst.
+Qed.
 
 Lemma typ_bot_like_lc_typ : forall A,
   typ_bot_like A -> lc_typ A.
 Proof.
   intros. induction  H; auto.
 Qed.
+
+#[local] Hint Resolve typ_bot_like_lc_typ : core.
 
 Lemma typ_bot_like_all_inv : forall Ψ A T,
   Ψ ᵗ⊢ᵈₘ T ->
@@ -372,11 +387,70 @@ Proof.
   - rewrite subst_tvar_in_typ_open_typ_wrt_typ_tvar2; eauto.
 Qed.
 
+Lemma d_sub_bot_like_bot_like : forall Ψ A B,
+  Ψ ⊢ A <: B ->
+  typ_bot_like B ->
+  typ_bot_like A.
+Proof.
+  intros. induction H; eauto; try solve [dependent destruction H0; eauto].
+  - dependent destruction H0. inst_cofinites_for typ_bl__all. intros. inst_cofinites_with X.
+    auto.
+  - eapply typ_bot_like_all_inv; eauto.
+Qed.
 
-(* Lemma d_sub_sub_bot_subst_inv : forall Ψ A B X,
-  Ψ ⊢ A ᵗ^^ₜ T <: typ_bot ->
-  Ψ ᵗ⊢ᵈₘ T ->
-  Ψ ⊢ A <: typ_bot -> *)
+Lemma d_sneq_stvar_subst_stvar : forall Ψ1 Ψ2 A B X,
+  ⊢ᵈ (Ψ2 ++ X ~ ■ ++ Ψ1) ->
+  d_sneq_stvar (Ψ2 ++ X ~ ■ ++ Ψ1) A ->
+  Ψ1 ᵗ⊢ᵈ B ->
+  d_sneq_stvar (map (subst_tvar_in_dbind B X) Ψ2 ++ Ψ1) ({B ᵗ/ₜ X} A).
+Proof.
+  intros. dependent induction H0; eauto.
+  - simpl. destruct_eq_atom.
+    + assert (X ~ ■ ∈ᵈ (Ψ2 ++ X ~ ■ ++ Ψ1)) by eauto. unify_binds.
+    + apply binds_remove_mid_diff_bind in H0.
+      constructor.
+      apply binds_app_iff in H0.
+      destruct H0. apply binds_app_2. apply binds_map_2 with (f:=(subst_tvar_in_dbind B X)) in H0. simpl in H0. auto.
+      apply binds_app_3. auto.
+      solve_false.
+  - simpl. constructor; eauto using lc_typ_subst.
+  - simpl. constructor; eauto using lc_typ_subst.
+    replace (typ_all ({B ᵗ/ₜ X} A)) with ({B ᵗ/ₜ X} (typ_all A)) by auto.
+    apply lc_typ_subst; eauto.
+  - simpl. constructor; eauto using lc_typ_subst.
+  - simpl. constructor; eauto using lc_typ_subst.
+Qed.
+    
+Lemma d_mono_typ_sneq_stvar : forall Ψ T,
+  d_mono_typ Ψ T ->
+  d_sneq_stvar Ψ T.
+Proof.
+  intros. induction H; eauto.
+Qed.
+
+
+Lemma d_sneq_stvar_subst_tvar : forall Ψ1 Ψ2 A T X,
+  uniq (Ψ2 ++ X ~ □ ++ Ψ1) ->
+  d_sneq_stvar (Ψ2 ++ X ~ □ ++ Ψ1) A ->
+  Ψ1 ᵗ⊢ᵈₘ T ->
+  d_sneq_stvar (map (subst_tvar_in_dbind T X) Ψ2 ++ Ψ1) ({T ᵗ/ₜ X} A).
+Proof.
+  intros. dependent induction H0; eauto.
+  - simpl. destruct_eq_atom.
+    + eapply d_mono_typ_sneq_stvar. apply d_mono_typ_weaken_app. auto. 
+    + apply binds_remove_mid in H0.
+      constructor.
+      apply binds_app_iff in H0.
+      destruct H0. apply binds_app_2. apply binds_map_2 with (f:=(subst_tvar_in_dbind T X)) in H0. simpl in H0. auto.
+      apply binds_app_3. auto.
+      solve_false.
+  - simpl. constructor; eauto using lc_typ_subst.
+  - simpl. constructor; eauto using lc_typ_subst.
+    replace (typ_all ({T ᵗ/ₜ X} A)) with ({T ᵗ/ₜ X} (typ_all A)) by auto.
+    apply lc_typ_subst; eauto.
+  - simpl. constructor; eauto using lc_typ_subst.
+  - simpl. constructor; eauto using lc_typ_subst.
+Qed.
 
 Theorem d_sub_open_mono_bot_sub_bot: forall n1 n2 Ψ A T,
   d_typ_order (A ᵗ^^ₜ T) < n1 ->
@@ -480,10 +554,20 @@ Proof with auto.
            ++ apply d_sub_d_wf_typ1 in H7. apply d_wf_typ_lc_typ in H7.
               eapply lc_typ_subst_inv with (X:=X0) (T:=T0); eauto.
               rewrite subst_tvar_in_typ_open_typ_wrt_typ_tvar2; eauto. rewrite ftvar_in_typ_open_typ_wrt_typ_rec_upper...
-           ++ rewrite subst_tvar_in_typ_open_typ_wrt_typ_tvar2; auto. 
-              simpl. eapply IHn1 with (Ψ:=Ψ) (T:=T0); eauto.
-              erewrite d_open_mono_same_order; eauto. lia. admit. eauto.
-              rewrite ftvar_in_typ_open_typ_wrt_typ_rec_upper...
+           ++ rewrite subst_tvar_in_typ_open_typ_wrt_typ_tvar2; eauto. 
+              simpl. inst_cofinites_with X0.
+              destruct H5. 
+              ** eapply IHn1 with (Ψ:=Ψ) (T:=T0); eauto.
+                 erewrite d_open_mono_same_order; eauto. lia. 
+                 erewrite <- subst_tvar_in_typ_open_typ_wrt_typ_tvar2 with (X:=X0); eauto.
+                 --- rewrite_env (map (subst_tvar_in_dbind T0 X0) nil ++ Ψ).  eapply d_sneq_stvar_subst_tvar; eauto.
+                     constructor... apply d_sub_d_wf_env in H7...
+                 --- rewrite ftvar_in_typ_open_typ_wrt_typ_rec_upper...
+              ** dependent destruction H5. pick fresh X1. inst_cofinites_with X1.
+                 erewrite <- subst_tvar_in_typ_open_typ_wrt_typ_tvar2 with (X:=X1); eauto. 
+                 eapply typ_bot_like_subst; eauto. 
+                 rewrite ftvar_in_typ_open_typ_wrt_typ_rec_upper...
+              ** rewrite ftvar_in_typ_open_typ_wrt_typ_rec_upper...
       * destruct A; simpl in *; try solve [inversion Heq].
         -- destruct n.
            ++ unfold open_typ_wrt_typ in Heq. simpl in Heq.
@@ -513,10 +597,8 @@ Proof with auto.
               dependent destruction H4. auto. 
            ++ eapply IHn2; unfold open_typ_wrt_typ; eauto. lia. lia. 
               dependent destruction H4. auto.
-Admitted.        
+Qed.     
       
-
-
 Theorem d_mono_notin_stvar : forall Ψ2 Ψ1 T X,
   Ψ2 ++ X ~ ■ ++ Ψ1 ᵗ⊢ᵈₘ T ->
   uniq (Ψ2 ++ (X ~ ■) ++ Ψ1) ->
@@ -530,28 +612,73 @@ Proof.
 Qed.
 
 
-Theorem typ_bot_like_sub_all : forall Ψ A B,
+(* *** *)
+Theorem typ_bot_like_sub_all : forall n1 n2 Ψ A B,
+  d_typ_order A < n1 ->
+  d_typ_size A < n2 ->
   typ_bot_like A ->
   ⊢ᵈ Ψ ->
   Ψ ᵗ⊢ᵈ A -> 
   Ψ ᵗ⊢ᵈ B -> 
   Ψ ⊢ A <: B.
 Proof.
-  intros. generalize dependent Ψ. induction H; intros; eauto.
-  - dependent destruction H2; eauto.
-  - dependent destruction H2; eauto.
-  - dependent destruction H2; eauto.
-  - dependent induction H3; auto.
-    + admit.
-    + admit.
-    + admit.
-    + admit.
-    + admit.
-    + admit.
-    + admit.
-    + admit.
-Admitted.
-(* bookmark *)
+  intro n1. induction n1; intro n2; induction n2; intros.
+  - inversion H.
+  - inversion H.
+  - inversion H0.
+  - dependent destruction H1; auto.
+    + simpl in *. dependent destruction H4. constructor; eauto.
+      apply IHn2; eauto. lia. lia.
+    + simpl in *. dependent destruction H4. apply d_sub__intersection3; eauto.
+      apply IHn2; eauto. lia. lia.
+    + simpl in *. dependent destruction H3. constructor; auto.
+      apply IHn2; eauto. lia. lia.
+      apply IHn2; eauto. lia. lia.
+    + dependent induction H4; auto. 
+      * inst_cofinites_for d_sub__alll T:=typ_unit; eauto.
+        eapply IHn1; eauto.
+        -- simpl in *. erewrite d_open_mono_same_order; eauto. lia.
+        -- pick fresh X. erewrite <- subst_tvar_in_typ_open_typ_wrt_typ_tvar2; eauto.
+          inst_cofinites_with X. eapply typ_bot_like_subst; eauto. 
+        -- eapply d_wf_typ_all_open; eauto.
+      * inst_cofinites_for d_sub__alll T:=typ_unit; eauto.
+        eapply IHn1; eauto.
+        -- simpl in *. erewrite d_open_mono_same_order; eauto. lia.
+        -- pick fresh X. erewrite <- subst_tvar_in_typ_open_typ_wrt_typ_tvar2; eauto.
+           inst_cofinites_with X. eapply typ_bot_like_subst; eauto.
+        -- eapply d_wf_typ_all_open; eauto.
+      * inst_cofinites_for d_sub__alll T:=typ_unit; eauto.
+        eapply IHn1; eauto.
+        -- simpl in *. erewrite d_open_mono_same_order; eauto. lia.
+        -- pick fresh X0. erewrite <- subst_tvar_in_typ_open_typ_wrt_typ_tvar2; eauto.
+           inst_cofinites_with X. eapply typ_bot_like_subst; eauto. 
+        -- eapply d_wf_typ_all_open; eauto.
+      * inst_cofinites_for d_sub__alll T:=typ_unit; eauto.
+        eapply IHn1; eauto.
+        -- simpl in *. erewrite d_open_mono_same_order; eauto. lia.
+        -- pick fresh X0. erewrite <- subst_tvar_in_typ_open_typ_wrt_typ_tvar2; eauto.
+           inst_cofinites_with X. eapply typ_bot_like_subst; eauto. 
+        -- eapply d_wf_typ_all_open; eauto.
+      * inst_cofinites_for d_sub__alll T:=typ_unit; eauto.
+        eapply IHn1; eauto.
+        -- simpl in *. erewrite d_open_mono_same_order; eauto. lia.
+        -- pick fresh X. erewrite <- subst_tvar_in_typ_open_typ_wrt_typ_tvar2; eauto.
+           inst_cofinites_with X. eapply typ_bot_like_subst; eauto.
+        -- eapply d_wf_typ_all_open; eauto. 
+      * inst_cofinites_for d_sub__all; intros; inst_cofinites_with X.
+        -- right. inst_cofinites_for typ_bl__all. intros. 
+           erewrite <- subst_tvar_in_typ_open_typ_wrt_typ_tvar2 with (X:=X); eauto.
+           eapply typ_bot_like_rename. eauto. 
+        -- eapply IHn1; eauto.
+           ++ simpl in *. rewrite d_open_svar_same_order. lia.
+           ++ dependent destruction H3. pick fresh X0. inst_cofinites_with X0.
+              erewrite <- subst_tvar_in_typ_open_typ_wrt_typ_tvar2 with (X:=X0); eauto.
+              apply d_wf_typ_rename_stvar_cons.
+              apply d_wf_typ_tvar_stvar_cons; eauto.
+           ++ apply d_wf_typ_tvar_stvar_cons; eauto.
+    Unshelve. all : auto.
+Qed.
+
 
 Theorem d_sub_subst_stvar : forall Ψ1 X Ψ2 A B C,
   Ψ2 ++ (X ~ ■) ++ Ψ1 ⊢ A <: B ->
@@ -568,12 +695,18 @@ Proof with subst; eauto using d_wf_typ_weaken_app.
     + repeat rewrite subst_tvar_in_typ_open_typ_wrt_typ_fresh2; eauto...
       rewrite_env (map (subst_tvar_in_dbind C X) (X1 ~ ■ ++ Ψ2) ++ Ψ1).
       eapply H1; auto...
-  - simpl. destruct (dneq_all_intersection_union_subst_stv B C X) as [[? [? ?]] | ?]; eauto...
+  - simpl. destruct (neq_all_intersection_union_subst_stv B C X) as [[? [? ?]] | ?]; eauto...
     + eapply d_sub__alll with (L:=L `union` singleton X) (T:={C ᵗ/ₜ X} T); auto...
       * intros. rewrite subst_tvar_in_typ_open_typ_wrt_typ_fresh2... admit.
       * applys* d_mono_typ_subst_stvar... eauto using d_sub_d_wf_env.
       * rewrite <- subst_tvar_in_typ_open_typ_wrt_typ; eauto using d_wf_typ_lc_typ.
-    + simpl. destruct_eq_atom. admit. (* *** *)
+    + simpl. destruct_eq_atom. pick fresh X0. inst_cofinites_with X0.
+      destruct H2.
+      * eapply d_sub_open_mono_stvar_sub_bot in H4 as Hbl; eauto.
+        eapply typ_bot_like_all_inv in Hbl; eauto.
+        eapply typ_bot_like_sub_all; eauto.
+        admit. admit. (* *** *)
+      * admit. (* *** *)
   - simpl. apply d_sub__intersection2. eauto.
     apply d_wf_typ_subst_stvar; auto...
     destruct (d_sub_d_wf _ _ _ H) as [? [? ?]]. auto.
@@ -1157,11 +1290,18 @@ Proof with auto.
     + simpl in *. dependent destruction Hsub2...
       * econstructor...
         pick fresh Y and apply d_wf_typ__all.
-        ** admit.
+        ** inst_cofinites_with Y. apply d_sub_size_sound in H0.
+           apply d_sub_d_wf_typ1 in H0. apply d_wf_typ_stvar_tvar_cons. auto.
       * eapply d_sub__all with (L:=L `union` L0 `union` dom Ψ); auto;
-        intros; inst_cofinites_with X. auto. admit.
-        eapply IHn_d_typ_order with (B:= B1 ᵗ^ₜ X); eauto...
-        -- simpl in *. rewrite d_open_svar_same_order...
+        intros; inst_cofinites_with X.
+        -- destruct H; destruct H1.
+           ++ left. intuition.
+           ++ right. apply d_sub_size_sound in H0.
+              apply d_sub_bot_like_bot_like in H0; eauto. admit. admit.
+           ++ right. auto.
+           ++ right. auto.
+        -- simpl. eapply IHn_d_typ_order with (B:= B1 ᵗ^ₜ X); eauto...
+           rewrite d_open_svar_same_order...
       * pick fresh Y and apply d_sub__alll. 5: applys H5. all: eauto.
         ** inst_cofinites_with Y. destruct H; intuition. 
         ** pick fresh X. inst_cofinites_with X.
@@ -1202,8 +1342,14 @@ Proof with auto.
         -- eapply d_sub__alll with (T:=T1) (L:=L); auto.
            eapply d_sub_size_sound; eauto.
       (* forall a. A < bot < C *)
-      * admit.
-      (* forall a. A < top < C *)
+      * apply d_sub_size_sound in Hsub1.
+        eapply d_sub_open_mono_bot_sub_bot in Hsub1 as Hbl; eauto.
+        eapply typ_bot_like_all_inv in Hbl; eauto.
+        eapply typ_bot_like_sub_all; auto.
+        -- apply d_sub_d_wf_env in Hsub1; auto.
+        -- apply d_sub_d_wf_typ1 in Hsub1. inst_cofinites_for d_wf_typ__all. intros. rewrite_env (nil ++ X ~ □ ++ Ψ).  
+           eapply d_wf_typ_open_mono_inv; eauto.
+        -- apply d_sub_size_sound in Hsub2. apply d_sub_d_wf_typ2 in Hsub2. auto.
       * dependent destruction Hsub2; try solve ord_inv; auto...
         -- econstructor...
            pick fresh Y and apply d_wf_typ__all.
