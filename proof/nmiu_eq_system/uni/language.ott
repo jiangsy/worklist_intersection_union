@@ -36,11 +36,10 @@ dbind, db :: dbind_ ::=
   | : A  ::   :: typ
 
 abind, ab :: abind_ ::=
-  | : ▪        ::   :: tvar_empty
-  | : ~▪       ::   :: stvar_empty
-  | : A        ::   :: var_typ
-  | := ^▪      ::   :: etvar_empty
-  | := A       ::   :: etvar_bound
+  | : ▪       ::   :: tvar_empty
+  | : ~▪      ::   :: stvar_empty
+  | : A       ::   :: typ
+  | : A1 < B1 ::   :: bound
 
 substitutions
   single A X  :: subst_tvar_in
@@ -528,15 +527,15 @@ dE |-m A2
 --------------- :: arrow
 dE |-m A1 -> A2
 
-% dE |-m A1 
-% dE |-m A2 
-% --------------- :: intersection
-% dE |-m A1 ⊓ A2
+dE |-m A1 
+dE |-m A2 
+--------------- :: intersection
+dE |-m A1 ⊓ A2
 
-% dE |-m A1 
-% dE |-m A2 
-% --------------- :: union
-% dE |-m A1 ⊔ A2
+dE |-m A1 
+dE |-m A2 
+--------------- :: union
+dE |-m A1 ⊔ A2
 
 
 
@@ -766,14 +765,14 @@ dE ||- A2 <: B
 dE ||- A1 ⊔ A2 <: B
 
 
-% defns 
-% J_a_strong_mono_typ :: '' ::= 
+defns 
+J_a_strong_mono_typ :: '' ::= 
 
-% defn 
-% smono aE A :: :: a_smono_typ :: 'a_s_monotyp__' by 
+defn 
+smono aE A :: :: a_smono_typ :: 'a_s_monotyp__' by 
 
-% ---------------- :: unit
-% smono aE UNIT
+---------------- :: unit
+smono aE UNIT
 
 defns
 J_a_etvars_in_worklist :: '' ::=
@@ -781,21 +780,9 @@ J_a_etvars_in_worklist :: '' ::=
 defn 
 aW [ X1 ] [ X2 ] :: :: a_evs_in_wl :: 'a_etvars_in_wl__' by 
 
-( X1 := A1 ) in ⌊ aW ⌋ 
--------------------------------- :: in1
-aW , X2 := A2 [ X1 ] [ X2 ] 
-
-( X1 := A ) in ⌊ aW ⌋ 
--------------------------------- :: in2
-aW , X2 := ^▪ [ X1 ] [ X2 ] 
-
-( X1 := ^▪ ) in ⌊ aW ⌋ 
--------------------------------- :: in3
-aW , X2 := A [ X1 ] [ X2 ] 
-
-( X1 := ^▪ ) in ⌊ aW ⌋ 
--------------------------------- :: in4
-aW , X2 := ^▪ [ X1 ] [ X2 ] 
+( X1 : B1 < A1 ) in ⌊ aW ⌋ 
+-------------------------------- :: in
+aW , X2 : B2 < A2 [ X1 ] [ X2 ] 
 
 aW [ X1 ] [ X2 ] 
 -------------------------------- :: var
@@ -829,7 +816,7 @@ aE |- X
 -------------- :: stvar 
 aE |- X
 
-(X := A) in aE 
+(X : A < B) in aE 
 -------------------- :: etvar 
 aE |- X
 
@@ -868,14 +855,8 @@ aE |-m X
 
 aE |- A
 aE |- B
-(X := A ) in aE
+(X : A < B) in aE
 ----------------- :: etvar
-aE |-m X
-
-aE |- A
-aE |- B
-(X := ^▪ ) in aE
------------------ :: etvar_empty
 aE |-m X
 
 aE |-m A1
@@ -883,15 +864,15 @@ aE |-m A2
 --------------- :: arrow
 aE |-m A1 -> A2
 
-% aE |-m A1 
-% aE |-m A2 
-% --------------- :: intersection
-% aE |-m A1 ⊓ A2
+aE |-m A1 
+aE |-m A2 
+--------------- :: intersection
+aE |-m A1 ⊓ A2
 
-% aE |-m A1 
-% aE |-m A2 
-% --------------- :: union
-% aE |-m A1 ⊔ A2
+aE |-m A1 
+aE |-m A2 
+--------------- :: union
+aE |-m A1 ⊔ A2
 
 
 defns
@@ -1083,15 +1064,11 @@ X `notin` dom ⌊ aW ⌋
 |- aW , X : ~▪
 
 X `notin` dom ⌊ aW ⌋
-⌊ aW ⌋ |-m A
+⌊ aW ⌋ |-m A \/ A = BOT
+⌊ aW ⌋ |-m B \/ B = TOP
 |- aW
 -------------------- :: consetvar
-|- aW , X := A
-
-X `notin` dom ⌊ aW ⌋
-|- aW
--------------------- :: consetvar_empty
-|- aW , X := ^▪
+|- aW , X : A < B
 
 ⌊ aW ⌋ |- w
 |- aW

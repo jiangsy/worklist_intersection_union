@@ -72,9 +72,8 @@ Fixpoint size_abind (ab1 : abind) {struct ab1} : nat :=
   match ab1 with
     | abind_tvar_empty => 1
     | abind_stvar_empty => 1
-    | abind_var_typ A1 => 1 + (size_typ A1)
-    | abind_etvar_empty => 1
-    | abind_etvar_typ A1 => 1 + (size_typ A1)
+    | abind_typ A1 => 1 + (size_typ A1)
+    | abind_bound A1 B1 => 1 + (size_typ A1) + (size_typ B1)
   end.
 
 Fixpoint size_body (body1 : body) {struct body1} : nat :=
@@ -146,14 +145,13 @@ Inductive degree_abind_wrt_typ : nat -> abind -> Prop :=
     degree_abind_wrt_typ n1 (abind_tvar_empty)
   | degree_wrt_typ_abind_stvar_empty : forall n1,
     degree_abind_wrt_typ n1 (abind_stvar_empty)
-  | degree_wrt_typ_abind_var_typ : forall n1 A1,
+  | degree_wrt_typ_abind_typ : forall n1 A1,
     degree_typ_wrt_typ n1 A1 ->
-    degree_abind_wrt_typ n1 (abind_var_typ A1)
-  | degree_wrt_typ_abind_etvar_empty : forall n1,
-    degree_abind_wrt_typ n1 (abind_etvar_empty)
-  | degree_wrt_typ_abind_etvar_typ : forall n1 A1,
+    degree_abind_wrt_typ n1 (abind_typ A1)
+  | degree_wrt_typ_abind_bound : forall n1 A1 B1,
     degree_typ_wrt_typ n1 A1 ->
-    degree_abind_wrt_typ n1 (abind_etvar_typ A1).
+    degree_typ_wrt_typ n1 B1 ->
+    degree_abind_wrt_typ n1 (abind_bound A1 B1).
 
 Scheme degree_abind_wrt_typ_ind' := Induction for degree_abind_wrt_typ Sort Prop.
 
@@ -306,14 +304,13 @@ Inductive lc_set_abind : abind -> Set :=
     lc_set_abind (abind_tvar_empty)
   | lc_set_abind_stvar_empty :
     lc_set_abind (abind_stvar_empty)
-  | lc_set_abind_var_typ : forall A1,
+  | lc_set_abind_typ : forall A1,
     lc_set_typ A1 ->
-    lc_set_abind (abind_var_typ A1)
-  | lc_set_abind_etvar_empty :
-    lc_set_abind (abind_etvar_empty)
-  | lc_set_abind_etvar_typ : forall A1,
+    lc_set_abind (abind_typ A1)
+  | lc_set_abind_bound : forall A1 B1,
     lc_set_typ A1 ->
-    lc_set_abind (abind_etvar_typ A1).
+    lc_set_typ B1 ->
+    lc_set_abind (abind_bound A1 B1).
 
 Scheme lc_abind_ind' := Induction for lc_abind Sort Prop.
 

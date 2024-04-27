@@ -165,6 +165,7 @@ Ltac trans_all_typ :=
 
 (* define a extended relation of a_update_bound extended with Ω and θ ? *)
 
+
 Lemma a_update_bound_transfer_same_dworklist: forall Γ Ω θ X A E m Γ1 Γ2 LB UB,
   a_update_bound Γ X A m E Γ1 Γ2 LB UB ->
   trans_worklist nil (awl_rev_app Γ2 (aworklist_constvar (awl_rev_app (aenv_to_awl E) Γ1) X (abind_bound LB UB)) )  Ω θ ->
@@ -192,7 +193,7 @@ Hint Constructors trans_cont : Hdb_a_wl_red_soundness.
 Hint Constructors trans_work : Hdb_a_wl_red_soundness.
 Hint Constructors trans_worklist : Hdb_a_wl_red_soundness.
 
-Hint Resolve trans_typ_lc_atyp : Hdb_a_wl_red_soundness.
+Hint Resolve trans_typ_lc_typ : Hdb_a_wl_red_soundness.
 
 
 
@@ -430,11 +431,8 @@ Proof with eauto with Hdb_a_wl_red_soundness.
     destruct_trans.
     inst_cofinites_by (dom (awl_to_aenv Γ) `union` dom θ) using_name X.
     replace (A ^^ᵈ B) with ({B /ᵗ X} A ^ᵈ X) in H7 by admit.
-    eapply trans_typ_rev_subs_cons in H7...
-    admit.
-    admit.
-    admit.
-    (* destruct H7 as [Axᵈ]. intuition.
+    apply inst_typ_rev_subs_cons in H7...
+    destruct H7 as [Axᵈ [Bᵈ]]. intuition.
     exists (work_inftapp (typ_all (close_typ_wrt_typ X Axᵈ )) Bᵈ cᵈ ⫤ Ω)%dworklist.
     split.
     exists θ.
@@ -442,7 +440,7 @@ Proof with eauto with Hdb_a_wl_red_soundness.
       econstructor...
       admit.
     + eapply d_wl_del_red__inftapp with (T3:=A1ᵈ)...
-      admit. *)
+      admit.
   - exists (work_inftapp typ_bot Bᵈ cᵈ ⫤ Ω)%dworklist.
     split...
     econstructor... econstructor...
