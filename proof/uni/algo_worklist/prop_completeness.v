@@ -740,50 +740,6 @@ Proof.
   intros. induction H1; try dependent destruction H; eauto.
 Qed.
 
-Lemma iu_size_mono : forall Σ A,
-  a_mono_typ Σ A -> iu_size A = 0.
-Proof.
-  intros Σ A Hmono.
-  induction Hmono; simpl; eauto; try lia.
-Qed.
-
-Lemma iu_size_subst_mono : forall Σ A X A0,
-  a_mono_typ Σ A ->
-  iu_size (subst_tvar_in_typ A X A0) = iu_size A0.
-Proof.
-  intros Σ A X A0 Hmono.
-  induction A0; simpl; auto.
-  destruct (eq_dec X0 X); subst; simpl; eauto.
-  eapply iu_size_mono; eauto.
-Qed.
-
-Lemma iu_size_open_typ_wrt_typ_rec : forall Σ A T n,
-  a_mono_typ Σ T -> 
-  iu_size (open_typ_wrt_typ_rec n T A) = iu_size A.
-Proof.
-  intros. generalize dependent n. induction A; simpl; intros; eauto.
-  destruct (lt_eq_lt_dec n n0).
-  - destruct s; simpl; eauto. eapply iu_size_mono; eauto.
-  - simpl; eauto; lia.
-Qed.
-
-Lemma iu_size_open_typ_wrt_typ : forall A X,
-  iu_size (A ᵗ^ₜ X) = iu_size A.
-Proof.
-  intros. unfold open_typ_wrt_typ.
-  eapply iu_size_open_typ_wrt_typ_rec with (Σ := (X ~ abind_tvar_empty ++ nil)); eauto.
-Qed.
-
-Lemma trans_typ_iu_size : forall θ Aᵃ Aᵈ,
-  θ ᵗ⊩ Aᵃ ⇝ Aᵈ ->
-  iu_size Aᵃ <= iu_size Aᵈ.
-Proof.
-  intros. induction H; simpl; eauto; try lia.
-  pick fresh X. inst_cofinites_with X.
-  rewrite iu_size_open_typ_wrt_typ in H1.
-  rewrite iu_size_open_typ_wrt_typ in H1. auto.
-Qed.
-
 Lemma trans_apply_contd : forall θ cdᵃ cdᵈ Aᵃ Aᵈ Bᵃ Bᵈ wᵈ,
   θ ᶜᵈ⊩ cdᵃ ⇝ cdᵈ ->
   θ ᵗ⊩ Aᵃ ⇝ Aᵈ ->
@@ -792,8 +748,7 @@ Lemma trans_apply_contd : forall θ cdᵃ cdᵈ Aᵃ Aᵈ Bᵃ Bᵈ wᵈ,
   exists wᵃ, apply_contd cdᵃ Aᵃ Bᵃ wᵃ /\ θ ʷ⊩ wᵃ ⇝ wᵈ.
 Proof.
   intros. induction H2; try dependent destruction H; eauto 6.
-  assert (iu_size Aᵃ <= iu_size A). { eapply trans_typ_iu_size; eauto. }
-  assert (iu_size Aᵃ <= n) by lia. eauto.
+  erewrite <- trans_typ_iu_size in H3; eauto.
 Qed.
 
 Lemma trans_typ_subst : forall θ1 θ2 Aᵃ Aᵈ Bᵃ Bᵈ X b,
