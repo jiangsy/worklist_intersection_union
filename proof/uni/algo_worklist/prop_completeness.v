@@ -1233,6 +1233,62 @@ Ltac solve_awl_trailing_etvar :=
     end
   end.
 
+  Lemma iuv_size_d_mono : forall Ψ A,
+  d_mono_typ Ψ A -> iuv_size A = 0.
+Proof.
+  intros Ψ A Hmono.
+  induction Hmono; simpl; eauto; try lia.
+Qed.
+
+Lemma iuv_size_a_mono : forall Σ A,
+  a_mono_typ Σ A -> iuv_size A = 0.
+Proof.
+  intros Σ A Hmono.
+  induction Hmono; simpl; eauto; try lia.
+Qed.
+
+(* TODO @cu1ch3n: refactor iuv_size & exp_split_size using relations *)
+
+Lemma trans_typ_iuv_size : forall n θ Aᵃ Aᵈ,
+  size_typ Aᵃ < n ->
+  θ ᵗ⊩ Aᵃ ⇝ Aᵈ ->
+  iuv_size Aᵃ = iuv_size Aᵈ.
+Proof.
+  intro n. induction n; try lia.
+  intros * Hwf Htrans2.
+  destruct Aᵃ; simpl in *; dependent destruction Htrans2; simpl; auto.
+  - apply wf_ss_binds_mono_typ in H0; auto.
+    erewrite iuv_size_d_mono; eauto.
+  - erewrite IHn with (Aᵃ := Aᵃ1); eauto; try lia.
+    erewrite IHn with (Aᵃ := Aᵃ2); eauto; try lia.
+  - admit.
+  - erewrite IHn with (Aᵃ := Aᵃ1); eauto; try lia.
+    erewrite IHn with (Aᵃ := Aᵃ2); eauto; try lia.
+  - erewrite IHn with (Aᵃ := Aᵃ1); eauto; try lia.
+    erewrite IHn with (Aᵃ := Aᵃ2); eauto; try lia.
+Admitted.
+
+Lemma trans_exp_exp_split_size : forall n Γ Ω θ eᵃ eᵈ,
+  size_exp eᵃ < n ->
+  ⊢ᵃʷₛ Γ ->
+  nil ⊩ Γ ⇝ Ω ⫣ θ ->
+  θ ᵉ⊩ eᵃ ⇝ eᵈ ->
+  exp_split_size (⌊ Γ ⌋ᵃ) eᵃ = exp_split_size (dwl_to_aenv Ω) eᵈ.
+Proof.
+  intro n. induction n; try lia.
+  intros * Hlt Hwf Htrans1 Htrans2.
+  destruct eᵃ; simpl in *; dependent destruction Htrans2; simpl; auto.
+  - admit.
+  - admit.
+  - erewrite IHn; eauto; try lia.
+    erewrite IHn; eauto; try lia.
+  - admit.
+  - erewrite IHn; eauto; try lia.
+    erewrite trans_typ_iuv_size; eauto.
+  - erewrite IHn; eauto; try lia.
+    erewrite trans_typ_iuv_size; eauto.
+Admitted.
+
 Theorem a_wl_red_completeness: forall Ω Γ,
    Ω ⟶ᵈʷ⁎⋅ -> ⊢ᵃʷₛ Γ -> transfer Γ Ω  -> Γ ⟶ᵃʷ⁎⋅.
 Proof with eauto.
@@ -1746,6 +1802,7 @@ Proof with eauto.
     constructor...
     apply IHd_wl_red... constructor...
     exists θ0...
+    erewrite trans_exp_exp_split_size; eauto.
   - solve_awl_trailing_etvar.
     destruct_trans.
     destruct_a_wf_wl.
