@@ -2,6 +2,7 @@ Require Import Coq.Program.Equality.
 Require Import Program.Tactics.
 Require Import Metalib.Metatheory.
 Require Import List.
+Require Import Lia.
 
 Require Import uni.notations.
 Require Import uni.decl.prop_basic.
@@ -11,12 +12,11 @@ Require Import uni.algo_worklist.def_extra.
 Require Import uni.algo_worklist.prop_basic.
 Require Import ltac_utils.
 
-Require Import Lia.
 
+(* reuse denv as ss, but the x : T is re-interpreted as ^X : T *)
 Definition subst_set := denv.
 
 Open Scope dbind.
-
 
 Fixpoint ss_to_denv (θ : subst_set) : denv := 
   match θ with 
