@@ -60,6 +60,8 @@ Ltac destruct_eq_atom :=
         try contradiction; try solve_notin_eq X0; try solve_notin_eq X
     end.
 
+
+
 Ltac auto_apply :=
   match goal with
   | H : context [ ?P -> ?Q ] |- ?Q => apply H

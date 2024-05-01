@@ -713,6 +713,17 @@ Proof.
   apply d_exp_size_open_typ_rec.
 Qed.
 
+
+Lemma d_wf_tenv_wf_typ_sneq_stvar : forall Ψ A,
+  ⊢ᵈₜ Ψ ->
+  Ψ ᵗ⊢ᵈ A ->
+  d_sneq_stvar Ψ A.
+Proof.
+  intros. induction H0; eauto.
+  - exfalso. eapply d_wf_tenv_binds_stvar_false; eauto.
+Qed.
+
+
 Theorem d_chk_inf_subsumption : forall n1 n2 n3 Ψ Ψ' e A mode,
   exp_size e < n1 ->
   dmode_size mode < n2 ->
@@ -783,21 +794,21 @@ Proof with auto.
           apply d_chk_inf_wf_env in H0. dependent destruction H0...
           apply d_mono_typ_d_wf_typ in H. dependent destruction H...
       (* /\ a. e : A => forall a. A *)
-      * admit.
-        (* exists (typ_all A); split.
-        -- eapply d_sub_refl; auto.
-           inst_cofinites_by L. apply d_chk_inf_wf_env in H0...
-           dependent destruction H0...
-        -- dependent destruction H.
-           pick fresh X and apply d_chk_inf__inf_tabs.
-           ++ econstructor. now applys H.
-              intros. eapply d_subtenv_wf_typ. now applys H0.
-              auto...
-           ++ intros. inst_cofinites_with X.
-              refine (IHn1 _ _ _ _ _ _ _ _ _ _ H1 _ _ _); eauto...
-              simpl. rewrite <- d_exp_size_open_typ; lia.
-              apply d_sub_refl... eauto. 
-              apply d_chk_inf_wf_env in H1; eauto. *)
+      * pick fresh X. inst_cofinites_with X.
+        eapply IHn1 with (Ψ':=(X ~ □ ++ Ψ')) in H as Hty; eauto.
+        -- destruct Hty as [A'].
+           exists (typ_all (close_typ_wrt_typ X A')). split.
+           ++ inst_cofinites_for d_sub__all; intros.
+              ** rewrite_close_open_subst. left. split.
+                 --- eapply d_sneq_stvar_rename_dtvar_cons; eauto. intuition. admit. intuition. apply d_chk_inf_wf in H3.
+                     admit.
+                 --- erewrite <- subst_tvar_in_typ_open_typ_wrt_typ_tvar2 with (X:=X)... 
+                     eapply d_sneq_stvar_rename_dtvar_cons; eauto. admit.
+                     eapply d_wf_tenv_wf_typ_sneq_stvar; apply d_chk_inf_wf in H; intuition.
+              ** rewrite_close_open_subst.  erewrite <- subst_tvar_in_typ_open_typ_wrt_typ_tvar2 with (X:=X)... 
+                 eapply d_sub_rename_dtvar_cons; eauto.
+           ++ inst_cofinites_for d_chk_inf__inf_tabs. intros. admit. 
+        -- erewrite <- d_exp_size_open_typ; eauto.
       (* e @T *)
       * eapply IHn1 in Hty; eauto...
         destruct Hty as [A1 [Hsuba1 Hinfa1]].

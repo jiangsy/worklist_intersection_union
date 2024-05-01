@@ -212,6 +212,19 @@ Proof with eauto using lc_typ_subst.
 Qed.
 
 
+Theorem d_sneq_stvar_rename_dtvar_cons : forall Ψ X Y b A,
+  b = □ \/ b = ■ ->
+  uniq ((X, b) :: Ψ) ->
+  d_sneq_stvar ((X, b) :: Ψ) A ->
+  d_sneq_stvar ((Y, b) :: Ψ) ({`Y ᵗ/ₜ X} A).
+Proof.
+  intros.
+  rewrite_env (map (subst_tvar_in_dbind `Y X) nil ++ (Y, b) :: Ψ).
+  eapply d_sneq_stvar_rename_dtvar; eauto.
+Qed.
+
+
+
 Lemma d_wf_typ_rename_dtvar : forall Ψ1 Ψ2 X Y b A,
   b = □ \/ b = ■ ->
   uniq (Ψ2 ++ (X, b) :: Ψ1) ->

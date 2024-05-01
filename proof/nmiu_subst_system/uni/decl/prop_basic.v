@@ -833,6 +833,15 @@ Proof.
   - simpl in *. apply d_wf_tenv_strengthen_cons in H; auto.
 Qed.
 
+Lemma d_wf_tenv_binds_stvar_false : forall Ψ X,
+  ⊢ᵈₜ Ψ ->
+  X ~ ■ ∈ᵈ Ψ -> 
+  False.
+Proof.
+  intros. apply ls_binds_split in H0. destruct H0 as [Ψ1 [Ψ2]].
+  subst. eapply d_wf_tenv_stvar_false; eauto.
+Qed.
+
 Lemma d_wf_env_subst_stvar : forall Ψ1 X Ψ2 A,
   ⊢ᵈ Ψ2 ++ X ~ ■ ++ Ψ1 ->
   Ψ1 ᵗ⊢ᵈ A ->

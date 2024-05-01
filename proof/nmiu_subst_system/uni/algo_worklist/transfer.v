@@ -1506,20 +1506,6 @@ Proof.
 Qed.
 
 
-Ltac rewrite_close_open_subst :=
-  match goal with
-  | H : _ |- context [open_typ_wrt_typ (close_typ_wrt_typ ?X ?A) ?B] =>
-      erewrite (subst_tvar_in_typ_intro X (close_typ_wrt_typ X A)) by apply close_typ_wrt_typ_notin;
-      rewrite open_typ_wrt_typ_close_typ_wrt_typ
-  | H : _ |- context [open_exp_wrt_typ (close_exp_wrt_typ ?X ?e) ?B] =>
-      erewrite (subst_tvar_in_exp_intro X (close_exp_wrt_typ X e)) by apply close_exp_wrt_typ_notin;
-      rewrite open_exp_wrt_typ_close_exp_wrt_typ
-  | H : _ |- context [open_exp_wrt_exp (close_exp_wrt_exp ?x ?e) ?e'] =>
-      erewrite (subst_var_in_exp_intro x (close_exp_wrt_exp x e)) by apply close_exp_wrt_exp_notin;
-      rewrite open_exp_wrt_exp_close_exp_wrt_exp
-  | H : _ |- _ => idtac
-  end.
-
 Ltac simpl_open_subst_typ' :=
   match goal with
   | H : context [ {?B ᵗ/ₜ ?X} (?A ᵗ^ₜ (?X')) ] |- _ =>

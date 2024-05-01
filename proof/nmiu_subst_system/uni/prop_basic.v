@@ -176,10 +176,10 @@ Qed.
 
 
 Lemma open_typ_wrt_typ_twice : forall n A B1 B2,
-    lc_typ B1 ->
-    lc_typ B2 ->
-    open_typ_wrt_typ_rec n B1 (open_typ_wrt_typ_rec (n+1) B2 A)
-    = open_typ_wrt_typ_rec n B2 (open_typ_wrt_typ_rec n B1 A).
+  lc_typ B1 ->
+  lc_typ B2 ->
+  open_typ_wrt_typ_rec n B1 (open_typ_wrt_typ_rec (n+1) B2 A) = 
+    open_typ_wrt_typ_rec n B2 (open_typ_wrt_typ_rec n B1 A).
 Proof with subst; simpl in *; eauto; try lia.
   introv HL HL2. gen n. induction A; intros...
   all: try congruence.
@@ -202,9 +202,9 @@ Proof with subst; simpl in *; eauto; try lia.
 Qed.
 
 Lemma open_typ_wrt_typ_twice_tvar : forall n X B A,
-    lc_typ B ->
-    open_typ_wrt_typ_rec n ` X (open_typ_wrt_typ_rec (n+1) B A)
-    = open_typ_wrt_typ_rec n B (open_typ_wrt_typ_rec n ` X A).
+  lc_typ B ->
+  open_typ_wrt_typ_rec n ` X (open_typ_wrt_typ_rec (n+1) B A) = 
+    open_typ_wrt_typ_rec n B (open_typ_wrt_typ_rec n ` X A).
 Proof with subst; simpl in *; eauto; try lia.
   intros.
   rewrite open_typ_wrt_typ_twice; auto.
@@ -270,6 +270,20 @@ Proof.
   intros until e. unfold close_exp_wrt_typ.
     apply close_exp_wrt_typ_notin_rec.
 Qed.
+
+Ltac rewrite_close_open_subst :=
+  match goal with
+  | H : _ |- context [open_typ_wrt_typ (close_typ_wrt_typ ?X ?A) ?B] =>
+      erewrite (subst_tvar_in_typ_intro X (close_typ_wrt_typ X A)) by apply close_typ_wrt_typ_notin;
+      rewrite open_typ_wrt_typ_close_typ_wrt_typ
+  | H : _ |- context [open_exp_wrt_typ (close_exp_wrt_typ ?X ?e) ?B] =>
+      erewrite (subst_tvar_in_exp_intro X (close_exp_wrt_typ X e)) by apply close_exp_wrt_typ_notin;
+      rewrite open_exp_wrt_typ_close_exp_wrt_typ
+  | H : _ |- context [open_exp_wrt_exp (close_exp_wrt_exp ?x ?e) ?e'] =>
+      erewrite (subst_var_in_exp_intro x (close_exp_wrt_exp x e)) by apply close_exp_wrt_exp_notin;
+      rewrite open_exp_wrt_exp_close_exp_wrt_exp
+  | H : _ |- _ => idtac
+  end.
 
 
 Lemma sin_in : forall X T,
