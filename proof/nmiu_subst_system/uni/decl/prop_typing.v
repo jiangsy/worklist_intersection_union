@@ -258,14 +258,31 @@ Proof.
     erewrite <- d_subenv_same_dom; eauto.
 Qed.
 
+Lemma d_subenv_sneq_stvar : forall Ψ Ψ' A,
+  d_subenv Ψ' Ψ -> d_sneq_stvar Ψ A -> d_sneq_stvar Ψ' A.
+Proof.
+  intros. induction H0; auto.
+  econstructor. eapply binds_subenv; eauto.
+Qed.
+
 Lemma d_sub_subenv: forall Ψ A B,
   Ψ ⊢ A <: B -> forall Ψ', d_subenv Ψ' Ψ -> Ψ' ⊢ A <: B.
 Proof with eauto using d_mono_typ_subenv, d_wf_env_subenv, d_subenv_wf_typ.
   intros Ψ A B Hsub.
   induction Hsub; intros; auto; try solve [constructor; eauto using d_mono_typ_subtenv, d_wf_env_subenv, d_subenv_wf_typ].
-  - inst_cofinites_for d_sub__all; intros; inst_cofinites_with X... admit.
+  - inst_cofinites_for d_sub__all; intros; inst_cofinites_with X...
+    destruct H.
+    + left. intuition.
+      * eapply d_subenv_sneq_stvar; eauto. constructor; auto.
+      * eapply d_subenv_sneq_stvar; eauto. constructor; auto.
+    + right; auto.
   - inst_cofinites_for d_sub__alll T:=T...
-Admitted.
+    intros. inst_cofinites_with X.
+    destruct H2.
+    + left. eapply d_subenv_sneq_stvar; eauto. constructor; auto.
+    + right; auto.
+  - inst_cofinites_for d_sub__all_refl; eauto.
+Qed.
 
 Lemma d_subtenv_subenv: forall Ψ Ψ',
   d_subtenv Ψ' Ψ -> d_subenv Ψ' Ψ.
@@ -308,6 +325,42 @@ Fixpoint typ_size (T:typ) : nat :=
   | _ => 0
   end.
 
+Theorem d_typ_bot_like_inftapp_sub_bot : forall n1 n2 Ψ A B ,
+  typ_order A < n1 ->
+  typ_size A < n2 ->
+  typ_bot_like A ->
+  ⊢ᵈₜ Ψ ->
+  Ψ ᵗ⊢ᵈ A ->
+  Ψ ᵗ⊢ᵈ B ->
+  exists C, Ψ ⊢ A ○ B ⇒⇒ C /\ Ψ ⊢ C <: typ_bot.
+Proof.
+  intro n1; induction n1; intro n2; induction n2; intros.
+  - inversion H.
+  - inversion H.
+  - inversion H0.
+  - dependent destruction H1.
+    + exists typ_bot; intuition.
+    + simpl in *. dependent destruction H4. 
+      eapply IHn2 in H2; eauto; try lia.
+      destruct H2 as [C]. exists C; intuition.
+    + simpl in *. dependent destruction H4. 
+      eapply IHn2 in H2; eauto; try lia.
+      destruct H2 as [C]. exists C; intuition.
+    + simpl in *. dependent destruction H3. 
+      eapply IHn2 in H1_; eauto; try lia.
+      destruct H1_ as [C1]. 
+      eapply IHn2 in H1_0; eauto; try lia.
+      destruct H1_0 as [C2]. 
+      exists (typ_union C1 C2); intuition.
+    + exists (A ᵗ^^ₜ B). split. intuition.
+      pick fresh X. inst_cofinites_with X.
+      eapply typ_bot_like_subst with (B:=B) (X:=X) in H1; eauto.
+      * rewrite subst_tvar_in_typ_open_typ_wrt_typ_tvar2 in H1; eauto.
+        eapply typ_bot_like_sub_all; eauto.
+        apply d_wf_typ_all_open; eauto.
+      * apply typ_bot_like_lc_typ; eauto.
+Qed.
+
 
 Theorem d_inftapp_subsumption_same_env : forall Ψ A B C A',
   Ψ ⊢ A ○ B ⇒⇒ C ->
@@ -317,7 +370,12 @@ Proof with auto.
   intros. generalize dependent A'. dependent induction H.
   - intros. dependent induction H1.
     + exists typ_bot. split; auto... 
-    + admit.
+    + eapply d_sub_open_mono_bot_sub_bot in H6 as Hbl; eauto.
+      eapply typ_bot_like_all_inv in Hbl; eauto.
+      eapply d_typ_bot_like_inftapp_sub_bot in Hbl; eauto.
+      destruct Hbl as [C]. exists C; intuition.  
+      eapply d_wf_typ_all_inv; eauto.
+      apply d_sub_d_wf_typ1 in H6...
     + specialize (IHd_sub H H0 (eq_refl _)). destruct IHd_sub as [C1 Hc1].
       exists C1; intuition...
     + specialize (IHd_sub H H0 (eq_refl _)). destruct IHd_sub as [C1 Hc1].
@@ -357,7 +415,8 @@ Proof with auto.
       destruct IHd_sub1 as [C1].
       destruct IHd_sub2 as [C2].
       exists (typ_union C1 C2); intuition.
-    + admit.
+    + exists (A ᵗ^^ₜ B). intuition.
+      apply d_sub_refl; eauto. apply d_wf_typ_all_open; eauto.
   - intros. apply d_sub_intersection_inv in H1.
     intuition.
   - intros. apply d_sub_intersection_inv in H1.
@@ -389,7 +448,7 @@ Proof with auto.
       destruct IHd_sub1 as [C1'].
       destruct IHd_sub2 as [C2'].
       exists (typ_union C1' C2'). intuition...
-Admitted.
+Qed.
 
 
 #[export] Hint Immediate d_inftapp_d_wf_env d_inftapp_d_wf_typ1 d_inftapp_d_wf_typ2 d_inftapp_d_wf_typ3 : core.
@@ -419,6 +478,48 @@ Qed.
 
 #[export] Hint Immediate d_infabs_d_wf_env d_infabs_d_wf_typ1 d_infabs_d_wf_typ2 d_infabs_d_wf_typ3 : core.
 
+
+Theorem d_typ_bot_like_infabs_sub_bot : forall n1 n2 Ψ A B ,
+  typ_order A < n1 ->
+  typ_size A < n2 ->
+  typ_bot_like A ->
+  ⊢ᵈₜ Ψ ->
+  Ψ ᵗ⊢ᵈ A ->
+  Ψ ᵗ⊢ᵈ B ->
+  exists B C, Ψ ⊢ A ▹ B → C /\ Ψ ⊢ typ_arrow B C <: typ_arrow typ_top typ_bot.
+Proof.
+  intro n1; induction n1; intro n2; induction n2; intros.
+  - inversion H.
+  - inversion H.
+  - inversion H0.
+  - dependent destruction H1.
+    + exists typ_top typ_bot; intuition.
+    + simpl in *. dependent destruction H4. 
+      eapply IHn2 in H2; eauto; try lia.
+      destruct H2 as [B' [C']]. exists B', C'; intuition.
+    + simpl in *. dependent destruction H4. 
+      eapply IHn2 in H2; eauto; try lia.
+      destruct H2 as [B' [C']]. exists B', C'; intuition.
+    + simpl in *. dependent destruction H3. 
+      eapply IHn2 in H1_; eauto; try lia.
+      destruct H1_ as [B'1 [C'1]]. 
+      eapply IHn2 in H1_0; eauto; try lia.
+      destruct H1_0 as [B'2 [C'2]]. 
+      exists (typ_intersection B'1 B'2) (typ_union C'1 C'2); intuition.
+      dependent destruction H6. dependent destruction H7. eauto.
+    + pick fresh X. inst_cofinites_with X.
+      eapply typ_bot_like_subst with (X:=X) (B:=typ_unit) in H1; eauto; eauto.
+      rewrite subst_tvar_in_typ_open_typ_wrt_typ_tvar2 in H1; eauto.
+      eapply IHn1 in H1; eauto; try lia.
+      destruct H1 as [B' [C']]. exists B', C'; intuition. 
+      eapply d_infabs__all with (T:=typ_unit); eauto.
+      * simpl in *; erewrite d_open_mono_same_order; eauto. lia. 
+      * eapply d_wf_typ_all_open; eauto.
+      * eapply typ_bot_like_lc_typ; eauto.
+  Unshelve. all: eauto.
+Qed.
+
+
 Theorem d_infabs_subsumption_same_env : forall Ψ A A' B C,
   Ψ ⊢ A ▹ B → C ->
   Ψ ⊢ A' <: A ->
@@ -427,7 +528,12 @@ Proof with auto using d_mono_typ_d_wf_typ.
   intros. generalize dependent A'. induction H; intros.
   - dependent induction H0...
     + exists typ_top typ_bot. auto...
-    + admit.
+    + eapply d_sub_open_mono_bot_sub_bot in H5 as Hbl; eauto.
+      eapply typ_bot_like_all_inv in Hbl; eauto.
+      eapply d_typ_bot_like_infabs_sub_bot in Hbl; eauto.
+      destruct Hbl as [B [C]]. exists B, C; intuition.  
+      eapply d_wf_typ_all_inv; eauto.
+      apply d_sub_d_wf_typ1 in H5...
     + specialize (IHd_sub H (eq_refl _)).
       destruct IHd_sub as [B2 [C2]].
       exists B2 C2; intuition...
@@ -513,7 +619,8 @@ Proof with auto using d_mono_typ_d_wf_typ.
       intuition...
       dependent destruction H5. dependent destruction H3.
       eauto...
-    + admit.
+    + exists B, C; intuition. apply d_sub_refl; eauto.
+      eapply d_infabs__all with (T:=T); eauto.
   - apply d_sub_intersection_inv in H1.
     intuition.
   - apply d_sub_intersection_inv in H1.
@@ -545,7 +652,7 @@ Proof with auto using d_mono_typ_d_wf_typ.
       intuition...
       dependent destruction H1. dependent destruction H3.
       intuition...
-Admitted.
+Qed.
 
 
 Lemma d_infabs_subenv : forall Ψ Ψ' A B C,

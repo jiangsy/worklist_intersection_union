@@ -99,25 +99,25 @@ Hint Resolve d_wf_env_subst_tvar : subtyping. *)
 
 
 
-Fixpoint d_typ_order (A : typ) : nat :=
+Fixpoint typ_order (A : typ) : nat :=
   match A with
-  | typ_all A1 => S ( d_typ_order A1 )
-  | typ_arrow A1 A2 => d_typ_order A1 + d_typ_order A2
-  | typ_intersection A1 A2 => d_typ_order A1 + d_typ_order A2
-  | typ_union A1 A2 => d_typ_order A1 + d_typ_order A2
+  | typ_all A1 => S ( typ_order A1 )
+  | typ_arrow A1 A2 => typ_order A1 + typ_order A2
+  | typ_intersection A1 A2 => typ_order A1 + typ_order A2
+  | typ_union A1 A2 => typ_order A1 + typ_order A2
   | _ => 0
   end.
 
-Fixpoint d_typ_size (A : typ) :=
+Fixpoint typ_size (A : typ) :=
   match A with
-  | typ_intersection A1 A2 => 1 + d_typ_size A1 + d_typ_size A2
-  | typ_union A1 A2 => 1 + d_typ_size A1 + d_typ_size A2
+  | typ_intersection A1 A2 => 1 + typ_size A1 + typ_size A2
+  | typ_union A1 A2 => 1 + typ_size A1 + typ_size A2
   | _ => 0
   end.
 
 
 Lemma d_mono_type_order_0 : forall Ψ A,
-  d_mono_typ Ψ A -> d_typ_order A = 0.
+  d_mono_typ Ψ A -> typ_order A = 0.
 Proof.
   intros; induction H; simpl; auto.
   - rewrite IHd_mono_typ1. rewrite IHd_mono_typ2. auto.
@@ -125,7 +125,7 @@ Qed.
 
 Lemma d_open_rec_mono_same_order : forall Ψ A T n,
   d_mono_typ Ψ T ->
-  d_typ_order (open_typ_wrt_typ_rec n T A) = d_typ_order A.
+  typ_order (open_typ_wrt_typ_rec n T A) = typ_order A.
 Proof.
   induction A; simpl; intros; auto.
   - destruct (lt_eq_lt_dec n n0).
@@ -134,7 +134,7 @@ Proof.
 Qed.
 
 Lemma d_open_rec_tvar_same_order : forall A X n,
-  d_typ_order (open_typ_wrt_typ_rec n (typ_var_f X) A) = d_typ_order A.
+  typ_order (open_typ_wrt_typ_rec n (typ_var_f X) A) = typ_order A.
 Proof.
   induction A; simpl; intros; auto.
   - destruct (lt_eq_lt_dec n n0).
@@ -144,14 +144,14 @@ Qed.
 
 Lemma d_open_mono_same_order : forall Ψ A T,
   d_mono_typ Ψ T ->
-  d_typ_order (A ᵗ^^ₜ T) = d_typ_order A.
+  typ_order (A ᵗ^^ₜ T) = typ_order A.
 Proof.
   intros. unfold open_typ_wrt_typ. eapply d_open_rec_mono_same_order; eauto.
 Qed.
 
 
 Lemma d_open_svar_same_order : forall A X,
-  d_typ_order (A ᵗ^ₜ X) = d_typ_order A.
+  typ_order (A ᵗ^ₜ X) = typ_order A.
 Proof.
   intros. unfold open_typ_wrt_typ. apply d_open_rec_tvar_same_order; auto.
 Qed.
@@ -453,8 +453,8 @@ Proof.
 Qed.
 
 Theorem d_sub_open_mono_bot_sub_bot: forall n1 n2 Ψ A T,
-  d_typ_order (A ᵗ^^ₜ T) < n1 ->
-  d_typ_size (A ᵗ^^ₜ T) < n2 ->
+  typ_order (A ᵗ^^ₜ T) < n1 ->
+  typ_size (A ᵗ^^ₜ T) < n2 ->
   Ψ ⊢ A ᵗ^^ₜ T <: typ_bot ->
   Ψ ᵗ⊢ᵈₘ T ->
   typ_bot_like (A ᵗ^^ₜ T).
@@ -515,8 +515,8 @@ Qed.
 
 
 Theorem d_sub_open_mono_stvar_sub_bot: forall n1 n2 Ψ A T X,
-  d_typ_order (A ᵗ^^ₜ T) < n1 ->
-  d_typ_size (A ᵗ^^ₜ T) < n2 ->
+  typ_order (A ᵗ^^ₜ T) < n1 ->
+  typ_size (A ᵗ^^ₜ T) < n2 ->
   X ~ ■ ∈ᵈ Ψ ->
   Ψ ⊢ A ᵗ^^ₜ T <: typ_var_f X ->
   Ψ ᵗ⊢ᵈₘ T ->
@@ -614,8 +614,8 @@ Qed.
 
 (* *** *)
 Theorem typ_bot_like_sub_all : forall n1 n2 Ψ A B,
-  d_typ_order A < n1 ->
-  d_typ_size A < n2 ->
+  typ_order A < n1 ->
+  typ_size A < n2 ->
   typ_bot_like A ->
   ⊢ᵈ Ψ ->
   Ψ ᵗ⊢ᵈ A -> 
@@ -1150,8 +1150,8 @@ Proof.
 Qed.
 
 (* Theorem d_sub_open_mono_bot_false: forall n1 n2 Ψ A T L,
-  d_typ_order (A ᵗ^^ₜ T) < n1 ->
-  d_typ_size (A ᵗ^^ₜ T) < n2 ->
+  typ_order (A ᵗ^^ₜ T) < n1 ->
+  typ_size (A ᵗ^^ₜ T) < n2 ->
   Ψ ⊢ A ᵗ^^ₜ T <: typ_bot ->
   (forall X, X ∉ L -> s_in X (A ᵗ^ₜ X)) ->
   Ψ ᵗ⊢ᵈₘ T ->
@@ -1273,12 +1273,12 @@ Proof.
   - dependent induction B.
     + *)
 
-Lemma d_sub_size_transitivity : forall n_d_typ_order n_d_sub_size Ψ A B C n1 n2 ,
-  d_typ_order B < n_d_typ_order ->
+Lemma d_sub_size_transitivity : forall n_typ_order n_d_sub_size Ψ A B C n1 n2 ,
+  typ_order B < n_typ_order ->
   n1 + n2 < n_d_sub_size ->
   Ψ ⊢ A <: B | n1 -> Ψ ⊢ B <: C | n2 -> Ψ ⊢ A <: C.
 Proof with auto.
-  induction n_d_typ_order; induction n_d_sub_size; intros * Horder Hsize Hsub1 Hsub2.
+  induction n_typ_order; induction n_d_sub_size; intros * Horder Hsize Hsub1 Hsub2.
   - inversion Horder.
   - inversion Horder.
   - inversion Hsize.
@@ -1349,7 +1349,7 @@ Proof with auto.
                  erewrite <- subst_tvar_in_typ_open_typ_wrt_typ_tvar2 with (X:=X0); eauto. apply typ_bot_like_rename; auto.
            ++ right. auto.
            ++ right. auto.
-        -- simpl. eapply IHn_d_typ_order with (B:= B1 ᵗ^ₜ X); eauto...
+        -- simpl. eapply IHn_typ_order with (B:= B1 ᵗ^ₜ X); eauto...
            rewrite d_open_svar_same_order...
       * pick fresh Y and apply d_sub__alll. 5: applys H5. all: eauto.
         ** inst_cofinites_with Y. destruct H; intuition. 
@@ -1358,7 +1358,7 @@ Proof with auto.
           rewrite_env  (nil ++ (X, ■) :: Ψ) in H0.
           eapply d_sub_size_subst_stvar with (C:=T1) in H0; simpl; eauto.
           destruct H0 as [n' Hsub].
-          eapply IHn_d_typ_order with (B:=B1 ᵗ^^ₜ T1) (n1:=n'); eauto...
+          eapply IHn_typ_order with (B:=B1 ᵗ^^ₜ T1) (n1:=n'); eauto...
           erewrite d_open_mono_same_order; eauto. 
           rewrite 2 subst_tvar_in_typ_open_typ_wrt_typ in Hsub... simpl in Hsub.
           unfold eq_dec in Hsub. destruct (EqDec_eq_of_X X X) in Hsub.
@@ -1376,7 +1376,7 @@ Proof with auto.
         -- eapply IHn_d_sub_size with (B:=typ_all B1) (n1:=S n) (n2:=n0); eauto...
         -- auto.
       * inst_cofinites_for d_sub__all; intros; inst_cofinites_with X; auto.
-        -- eapply IHn_d_typ_order with (B:=B1 ᵗ^ₜ X); eauto...
+        -- eapply IHn_typ_order with (B:=B1 ᵗ^ₜ X); eauto...
            simpl in *. rewrite d_open_svar_same_order; lia.
     + simpl in *. assert (Ψ ᵗ⊢ᵈ B1) as Hwft1 by applys* d_sub_dwft_sized_1.
       dependent destruction Hwft1; solve_trans_forall_B_C.
