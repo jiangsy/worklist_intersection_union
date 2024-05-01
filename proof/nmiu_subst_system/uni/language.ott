@@ -15,15 +15,12 @@ typ, A, B, C, T    :: typ_ ::=
   | ( A )          :: S :: paren {{ coq ([[A]]) }}
   | { A2 / X } A1  :: M :: subst {{ coq (open_typ_wrt_typ [[X A1]] [[A2]]) }}
 
-body :: body_ ::= 
-  | e : A ::  :: anno
-
 exp, e, f, g :: exp_ ::=
   | unit                                ::   :: unit 
   | x                                   ::   :: var
   | \ x . e                             ::   :: abs  (+ bind x in e +)
   | e1 e2                               ::   :: app
-  | \ X . body                          ::   :: tabs (+ bind X in body +) 
+  | \ X . e                             ::   :: tabs (+ bind X in e +) 
   | e @ A                               ::   :: tapp
   | e : A                               ::   :: anno
   | ( e )                               :: S :: paren  {{ coq ([[e]]) }}
@@ -193,17 +190,6 @@ X ∈ₛ A2
 ------------------------ :: intersection
 X ∈ₛ A1 ⊓ A2
 
-defns
-J_strong_in_body :: '' ::=
-
-defn
-X ∈ₛ body :: :: s_in_b :: 's_in_b__' by
-
-X ∈ₛ A
------------------------- :: anno
-X ∈ₛ e : A 
-
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 defns
@@ -222,7 +208,7 @@ x ¬= λ
 e1 e2  ¬= λ
 
 ---------------------- :: tabs
-\ X . e : A ¬= λ
+\ X . e ¬= λ
 
 ---------------------- :: tapp
 e @ A ¬= λ
@@ -442,9 +428,9 @@ dE |- e2
 ----------------- :: app
 dE |- e1 e2
 
-dE , X : ■ |- body
+dE , X : ■ |- e
 ----------------- :: tabs 
-dE |- \ X . body
+dE |- \ X . e
 
 dE |- A
 dE |- e
@@ -456,13 +442,6 @@ dE |- e
 ----------------- :: anno 
 dE |- e : A
 
-defn
-dE |- body :: :: d_wf_body :: 'd_wf_body__' by
-
-dE |- A
-dE |- e
------------ :: anno
-dE |- e : A
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -1030,10 +1009,9 @@ aE |- e2
 ----------------- :: app
 aE |- e1 e2
 
-X ∈ₛ body
-aE , X : ■ |- body
+aE , X : ■ |- e
 ----------------- :: tabs 
-aE |- \ X . body
+aE |- \ X . e
 
 aE |- A
 aE |- e
@@ -1043,14 +1021,6 @@ aE |- e @ A
 aE |- A
 aE |- e
 ----------------- :: anno 
-aE |- e : A
-
-defn
-aE |- body :: :: a_wf_body :: 'a_wf_body__' by
-
-aE |- A
-aE |- e
------------ :: anno
 aE |- e : A
 
 

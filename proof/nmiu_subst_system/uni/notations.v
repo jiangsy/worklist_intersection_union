@@ -28,15 +28,6 @@ Notation "{ A ᵉ/ₜ X } e" :=
     ( at level 49, A at level 50, X at level 0
     , right associativity) : type_scope.
 
-Notation "{ e ᵇ/ₑ x } b" :=
-  (subst_var_in_body e x b)
-    ( at level 49, e at level 50, x at level 0
-    , right associativity) : type_scope.
-
-Notation "{ A ᵇ/ₜ X } b" :=
-  (subst_tvar_in_body A X b)
-    ( at level 49, A at level 50, X at level 0
-    , right associativity) : type_scope.
 
 Notation "{ A ᶜˢ/ₜ X } cs" :=
   (subst_tvar_in_conts A X cs)
@@ -146,10 +137,6 @@ Notation "⊢ᵃ Σ" :=
 
 Notation "Σ ᵉ⊢ᵃ e" :=
   (a_wf_exp Σ e)
-    (at level 65, no associativity) : type_scope.
-
-Notation "Σ ᵇ⊢ᵃ b" :=
-  (a_wf_body Σ b)
     (at level 65, no associativity) : type_scope.
 
 Notation "Σ ᶜˢ⊢ᵃ cs" :=
