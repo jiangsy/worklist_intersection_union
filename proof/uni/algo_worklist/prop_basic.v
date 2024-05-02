@@ -1429,3 +1429,118 @@ Proof with eauto using a_wf_typ_strengthen_cons, a_wf_typ_strengthen_var_cons.
         rewrite_env (((Y, ⬒) :: ⌊ Γ2 ⌋ᵃ) ++ (X, ⬒) :: ⌊ Γ1 ⌋ᵃ) in H7.
         apply binds_app_iff in H7; destruct H7; destruct_binds; eauto.
 Qed.
+
+
+Open Scope aworklist_scope.
+
+#[local] Hint Rewrite awl_to_aenv_cons awl_to_aenv_app: core.
+#[local] Hint Rewrite dom_app dom_cons : core.
+
+
+#[local] Hint Extern 1 ((exists _, _) -> False) => try solve_false : core.
+
+Lemma ftvar_in_aworklist'_awl_app : forall Γ1 Γ2,
+  ftvar_in_aworklist' (Γ2 ⧺ Γ1) [=] ftvar_in_aworklist' Γ2 `union` ftvar_in_aworklist' Γ1.
+Proof.
+  induction Γ2; simpl; try fsetdec.
+    destruct ab; auto; fsetdec.
+Qed.
+
+Ltac rewrite_ftvar_in_aworklist' :=
+  match goal with
+  | H : context [ftvar_in_aworklist' (awl_app _ _)] |- _ =>
+    rewrite ftvar_in_aworklist'_awl_app in H; simpl in H; repeat (case_if in H; [ ])
+  | |- context [ftvar_in_aworklist' (awl_app _ _)] =>
+    rewrite ftvar_in_aworklist'_awl_app; simpl; repeat (case_if; [ ])
+  end; auto.
+
+Ltac rewrite_ftvar_in_aworklist := repeat rewrite_ftvar_in_aworklist'.
+
+#[local] Hint Rewrite dom_app dom_cons : core.
+
+Lemma ftvar_in_wf_exp_upper : forall Γ e,
+  ⌊ Γ ⌋ᵃ ᵉ⊢ᵃ e ->
+  ftvar_in_exp e [<=] dom (⌊ Γ ⌋ᵃ)
+with ftvar_in_wf_body_upper : forall Γ b,
+  ⌊ Γ ⌋ᵃ ᵇ⊢ᵃ b ->
+  ftvar_in_body b [<=] dom (⌊ Γ ⌋ᵃ).
+Proof.
+  - intros. dependent induction H; try solve [simpl; fsetdec].
+    + inst_cofinites_by (L `union` dom (⌊ Γ ⌋ᵃ) `union` ftvar_in_exp e).
+      assert (ftvar_in_exp e [<=] ftvar_in_exp (e ᵉ^ₑ exp_var_f x)) by apply ftvar_in_exp_open_exp_wrt_exp_lower.
+      assert (x ~ abind_var_typ T ++ awl_to_aenv Γ = awl_to_aenv (x ~ᵃ T ;ᵃ Γ)) by (simpl; auto).
+      eapply H1 in H3.
+      simpl in *.
+      fsetdec.
+    + simpl.
+      rewrite IHa_wf_exp1; eauto.
+      rewrite IHa_wf_exp2; eauto.
+      fsetdec.
+    + inst_cofinites_by (L `union` dom (⌊ Γ ⌋ᵃ) `union` ftvar_in_body body5) using_name X.
+      replace (X ~ abind_tvar_empty ++ awl_to_aenv Γ) with (awl_to_aenv (X ~ᵃ □ ;ᵃ Γ)) in H0 by auto.
+      assert (ftvar_in_body body5 [<=] ftvar_in_body (open_body_wrt_typ body5 ` X)) by apply
+        ftvar_in_body_open_body_wrt_typ_lower.
+      apply ftvar_in_wf_body_upper in H0.
+      simpl in *.
+      fsetdec.
+    + simpl. rewrite IHa_wf_exp; eauto.
+      rewrite ftvar_in_a_wf_typ_upper; eauto.
+      fsetdec.
+    + simpl. rewrite IHa_wf_exp; eauto.
+      rewrite ftvar_in_a_wf_typ_upper; eauto.
+      fsetdec.
+  - intros. destruct b; simpl.
+    + dependent destruction H.
+      rewrite ftvar_in_wf_exp_upper; eauto.
+      rewrite ftvar_in_a_wf_typ_upper; eauto.
+      fsetdec.
+Qed.
+
+
+Lemma ftvar_in_wf_conts_upper : forall Γ cs,
+  ⌊ Γ ⌋ᵃ ᶜˢ⊢ᵃ cs ->
+  ftvar_in_conts cs [<=] dom (⌊ Γ ⌋ᵃ)
+with ftvar_in_wf_contd_upper : forall Γ cd,
+  ⌊ Γ ⌋ᵃ ᶜᵈ⊢ᵃ cd ->
+  ftvar_in_contd cd [<=] dom (⌊ Γ ⌋ᵃ).
+Proof.
+  - intros. intros; dependent induction H;
+    simpl in *;
+    try repeat erewrite ftvar_in_a_wf_typ_upper; eauto;
+    try erewrite ftvar_in_wf_exp_upper; eauto;
+    try rewrite IHa_wf_conts; eauto; 
+    try rewrite ftvar_in_wf_contd_upper; eauto;
+    try fsetdec.
+  - intros. intros; dependent induction H;
+    simpl in *;
+    try solve [
+    try destruct_wf_arrow;
+    try repeat erewrite ftvar_in_a_wf_typ_upper; eauto;
+    try erewrite ftvar_in_wf_exp_upper; eauto;
+    try rewrite ftvar_in_wf_conts_upper; eauto;
+    try rewrite IHa_wf_contd; eauto; 
+    try fsetdec].
+Qed.
+
+Lemma ftvar_in_wf_work_upper : forall Γ w,
+  ⌊ Γ ⌋ᵃ ʷ⊢ᵃ w ->
+  ftvar_in_work w [<=] dom (⌊ Γ ⌋ᵃ).
+Proof.
+  intros. intros; dependent destruction H;
+    simpl in *;
+    try solve [
+    try repeat destruct_wf_arrow;
+    try repeat erewrite ftvar_in_a_wf_typ_upper; eauto;
+    try erewrite ftvar_in_wf_exp_upper; eauto;
+    try rewrite ftvar_in_wf_conts_upper; eauto; 
+    try rewrite ftvar_in_wf_contd_upper; eauto; try fsetdec].
+Qed.
+
+Lemma ftvar_in_a_wf_wwl_upper : forall Γ ,
+  ⊢ᵃʷ Γ ->
+  ftvar_in_aworklist' Γ [<=] dom (⌊ Γ ⌋ᵃ).
+Proof.
+  intros; induction H; auto; try solve [simpl; fsetdec].
+  - simpl. rewrite ftvar_in_a_wf_typ_upper; eauto. fsetdec.
+  - simpl. rewrite ftvar_in_wf_work_upper; eauto. fsetdec.
+Qed.

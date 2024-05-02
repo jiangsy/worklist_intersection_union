@@ -7,7 +7,9 @@ Require Import uni.ltac_utils.
 
 
 Lemma d_sub_refl : forall Ψ A,
-  ⊢ᵈ Ψ -> Ψ ᵗ⊢ᵈ A -> Ψ ⊢ A <: A.
+  ⊢ᵈ Ψ -> 
+  Ψ ᵗ⊢ᵈ A -> 
+  Ψ ⊢ A <: A.
 Proof.
   intros *Hwfenv Hwfa. apply d_wf_typ_lc_typ in Hwfa as Hlc.  
   generalize dependent Ψ. induction Hlc; intros; try dependent destruction Hwfa; auto.
@@ -489,25 +491,25 @@ Qed.
 #[local] Hint Constructors d_sub_size : core.
 
 Lemma d_sub_dwft_sized : forall Ψ A B n,
-    Ψ ⊢ A <: B | n -> ⊢ᵈ Ψ /\ Ψ ᵗ⊢ᵈ A /\ Ψ ᵗ⊢ᵈ B.
+  Ψ ⊢ A <: B | n -> ⊢ᵈ Ψ /\ Ψ ᵗ⊢ᵈ A /\ Ψ ᵗ⊢ᵈ B.
 Proof.
   intros. applys d_sub_d_wf. applys* d_sub_size_sound.
 Qed.
 
 Corollary d_sub_dwft_sized_0 : forall Ψ A B n,
-    Ψ ⊢ A <: B | n -> ⊢ᵈ Ψ.
+  Ψ ⊢ A <: B | n -> ⊢ᵈ Ψ.
 Proof.
   intros. forwards*: d_sub_dwft_sized H.
 Qed.
 
 Corollary d_sub_dwft_sized_1 : forall Ψ A B n,
-    Ψ ⊢ A <: B | n -> Ψ ᵗ⊢ᵈ A.
+  Ψ ⊢ A <: B | n -> Ψ ᵗ⊢ᵈ A.
 Proof.
   intros. forwards*: d_sub_dwft_sized H.
 Qed.
 
 Corollary d_sub_dwft_sized_2 : forall Ψ A B n,
-    Ψ ⊢ A <: B | n -> Ψ ᵗ⊢ᵈ B.
+  Ψ ⊢ A <: B | n -> Ψ ᵗ⊢ᵈ B.
 Proof.
   intros. forwards*: d_sub_dwft_sized H.
 Qed.
@@ -516,7 +518,7 @@ Qed.
 
 
 Lemma d_wf_env_all_stvar_after : forall Ψ1 Ψ2 X,
-  d_wf_env (Ψ2 ++ X ~ ■ ++ Ψ1) ->
+  ⊢ᵈ (Ψ2 ++ X ~ ■ ++ Ψ1) ->
   all_stvar (Ψ2 ++ X ~ ■).
 Proof.
   intros. dependent induction H; auto.
@@ -897,7 +899,9 @@ Ltac ord_inv :=
 Lemma d_sub_size_transitivity : forall n_d_typ_order n_d_sub_size Ψ A B C n1 n2 ,
   d_typ_order B < n_d_typ_order ->
   n1 + n2 < n_d_sub_size ->
-  Ψ ⊢ A <: B | n1 -> Ψ ⊢ B <: C | n2 -> Ψ ⊢ A <: C.
+  Ψ ⊢ A <: B | n1 -> 
+  Ψ ⊢ B <: C | n2 -> 
+  Ψ ⊢ A <: C.
 Proof with auto.
   induction n_d_typ_order; induction n_d_sub_size; intros * Horder Hsize Hsub1 Hsub2.
   - inversion Horder.

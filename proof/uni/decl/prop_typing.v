@@ -16,33 +16,33 @@ Hint Constructors d_wf_env: core.
 
 
 Inductive d_subtenv : denv -> denv -> Prop :=
-| d_subtenv__empty: d_subtenv nil nil
-| d_subtenv__tvar : forall Ψ Ψ' X,
-    d_subtenv Ψ' Ψ ->
-    d_subtenv (X ~ dbind_tvar_empty  ++  Ψ')
-        (X ~ dbind_tvar_empty  ++  Ψ)
-| d_subtenv__var : forall Ψ Ψ' x A A',
-    d_subtenv Ψ' Ψ ->
-    d_sub Ψ A A' ->
-    d_subtenv (x ~ dbind_typ A ++ Ψ')
-        (x ~ dbind_typ A' ++ Ψ)
+  | d_subtenv__empty: d_subtenv nil nil
+  | d_subtenv__tvar : forall Ψ Ψ' X,
+      d_subtenv Ψ' Ψ ->
+      d_subtenv (X ~ dbind_tvar_empty  ++  Ψ')
+          (X ~ dbind_tvar_empty  ++  Ψ)
+  | d_subtenv__var : forall Ψ Ψ' x A A',
+      d_subtenv Ψ' Ψ ->
+      d_sub Ψ A A' ->
+      d_subtenv (x ~ dbind_typ A ++ Ψ')
+          (x ~ dbind_typ A' ++ Ψ)
 .
 
 Inductive d_subenv : denv -> denv -> Prop :=
-| d_subenv__empty: d_subenv nil nil
-| d_subenv__tvar : forall Ψ Ψ' X,
+  | d_subenv__empty: d_subenv nil nil
+  | d_subenv__tvar : forall Ψ Ψ' X,
+      d_subenv Ψ' Ψ ->
+      d_subenv (X ~ dbind_tvar_empty  ++  Ψ')
+          (X ~ dbind_tvar_empty  ++  Ψ)
+  | d_subenv__stvar : forall Ψ Ψ' X,
     d_subenv Ψ' Ψ ->
-    d_subenv (X ~ dbind_tvar_empty  ++  Ψ')
-        (X ~ dbind_tvar_empty  ++  Ψ)
-| d_subenv__stvar : forall Ψ Ψ' X,
-  d_subenv Ψ' Ψ ->
-  d_subenv (X ~ dbind_stvar_empty  ++  Ψ')
-      (X ~ dbind_stvar_empty  ++  Ψ)
-| d_subenv__var : forall Ψ Ψ' x A A',
-    d_subenv Ψ' Ψ ->
-    d_sub Ψ A A' ->
-    d_subenv (x ~ dbind_typ A ++ Ψ')
-        (x ~ dbind_typ A' ++ Ψ)
+    d_subenv (X ~ dbind_stvar_empty  ++  Ψ')
+        (X ~ dbind_stvar_empty  ++  Ψ)
+  | d_subenv__var : forall Ψ Ψ' x A A',
+      d_subenv Ψ' Ψ ->
+      d_sub Ψ A A' ->
+      d_subenv (x ~ dbind_typ A ++ Ψ')
+          (x ~ dbind_typ A' ++ Ψ)
 .
 
 #[local] Hint Constructors d_subtenv d_subenv: core.
@@ -77,8 +77,8 @@ Qed.
 
 Lemma d_subtenv_same_tvar : forall Ψ Ψ' X,
   d_subtenv Ψ' Ψ ->
-  binds X dbind_tvar_empty Ψ ->
-  binds X dbind_tvar_empty Ψ'.
+  X ~ □ ∈ᵈ Ψ ->
+  X ~ □ ∈ᵈ Ψ'.
 Proof.
   intros. induction H; simpl; intros; auto.
   - inversion H0; auto.
@@ -131,7 +131,8 @@ Qed.
 
 Lemma d_subtenv_stvar_false : forall Ψ Ψ' X,
   d_subtenv Ψ' Ψ ->
-  X ~ ■ ∈ᵈ Ψ -> False.
+  X ~ ■ ∈ᵈ Ψ -> 
+  False.
 Proof.
   intros. induction H; simpl; intros; auto.
   - inversion H0; auto.
@@ -142,7 +143,9 @@ Qed.
 
 
 Lemma d_subtenv_wf_typ : forall Ψ Ψ' A,
-  Ψ ᵗ⊢ᵈ A -> d_subtenv Ψ' Ψ -> Ψ' ᵗ⊢ᵈ A.
+  Ψ ᵗ⊢ᵈ A -> 
+  d_subtenv Ψ' Ψ -> 
+  Ψ' ᵗ⊢ᵈ A.
 Proof.
   intros * H. generalize dependent Ψ'. induction H; intros; auto.
   - econstructor.
@@ -155,7 +158,9 @@ Proof.
 Qed.
 
 Lemma d_subenv_wf_typ : forall Ψ Ψ' A,
-  Ψ ᵗ⊢ᵈ A -> d_subenv Ψ' Ψ -> Ψ' ᵗ⊢ᵈ A.
+  Ψ ᵗ⊢ᵈ A -> 
+  d_subenv Ψ' Ψ -> 
+  Ψ' ᵗ⊢ᵈ A.
 Proof.
   intros * H. generalize dependent Ψ'. induction H; intros; auto.
   - econstructor.
@@ -234,7 +239,9 @@ Proof with eauto using binds_subtenv.
 Qed.
 
 Lemma d_mono_typ_subenv: forall Ψ A Ψ',
-  d_mono_typ Ψ A -> d_subenv Ψ' Ψ -> d_mono_typ Ψ' A.
+  Ψ ᵗ⊢ᵈₘ A -> 
+  d_subenv Ψ' Ψ -> 
+  Ψ' ᵗ⊢ᵈₘ A.
 Proof with eauto using binds_subenv.
   intros* HD HS. gen HS.
   induction HD; intros... 
@@ -244,7 +251,9 @@ Qed.
 #[local] Hint Immediate d_wf_tenv_d_wf_env  : core.
 
 Lemma d_wf_tenv_subenv : forall Ψ Ψ',
-  ⊢ᵈₜ Ψ -> d_subenv Ψ' Ψ -> ⊢ᵈₜ Ψ'.
+  ⊢ᵈₜ Ψ -> 
+  d_subenv Ψ' Ψ -> 
+  ⊢ᵈₜ Ψ'.
 Proof.
   intros * Hwf Hsube. generalize dependent Ψ'. 
   induction Hwf; intros; auto; try dependent destruction Hsube; auto.
@@ -254,7 +263,9 @@ Proof.
 Qed.
 
 Lemma d_wf_env_subenv : forall Ψ Ψ',
-  ⊢ᵈ Ψ -> d_subenv Ψ' Ψ -> ⊢ᵈ Ψ'.
+  ⊢ᵈ Ψ -> 
+  d_subenv Ψ' Ψ -> 
+  ⊢ᵈ Ψ'.
 Proof.
   intros * Hwf. generalize dependent Ψ'. induction Hwf; intros.
   - apply d_wf_tenv_d_wf_env. eapply d_wf_tenv_subenv; eauto.
@@ -263,7 +274,10 @@ Proof.
 Qed.
 
 Lemma d_sub_subenv: forall Ψ A B,
-  Ψ ⊢ A <: B -> forall Ψ', d_subenv Ψ' Ψ -> Ψ' ⊢ A <: B.
+  Ψ ⊢ A <: B -> 
+  forall Ψ', 
+    d_subenv Ψ' Ψ -> 
+    Ψ' ⊢ A <: B.
 Proof with eauto using d_mono_typ_subenv, d_wf_env_subenv, d_subenv_wf_typ.
   intros Ψ A B Hsub.
   induction Hsub; intros; auto; try solve [constructor; eauto using d_mono_typ_subtenv, d_wf_env_subenv, d_subenv_wf_typ].
@@ -272,7 +286,8 @@ Proof with eauto using d_mono_typ_subenv, d_wf_env_subenv, d_subenv_wf_typ.
 Qed.
 
 Lemma d_subtenv_subenv: forall Ψ Ψ',
-  d_subtenv Ψ' Ψ -> d_subenv Ψ' Ψ.
+  d_subtenv Ψ' Ψ -> 
+  d_subenv Ψ' Ψ.
 Proof.
   intros. dependent induction H; auto.
 Qed.
@@ -292,8 +307,7 @@ Definition dmode_size (mode : typing_mode) : nat :=
   | typingmode__chk => 1
   end.
 
-Fixpoint
-  exp_size (e:exp) : nat :=
+Fixpoint exp_size (e:exp) : nat :=
     match e with
     | exp_unit => 1
     | exp_var_f _ => 1
@@ -311,10 +325,10 @@ Fixpoint
   .
 
 
-Fixpoint typ_size (T:typ) : nat :=
-  match T with
-  | typ_intersection T1 T2 => typ_size T1 + typ_size T2 + 1
-  | typ_union T1 T2 => typ_size T1 + typ_size T2 + 1
+Fixpoint typ_size (A:typ) : nat :=
+  match A with
+  | typ_intersection A1 A2 => typ_size A1 + typ_size A2 + 1
+  | typ_union A1 A2 => typ_size A1 + typ_size A2 + 1
   | _ => 0
   end.
 
@@ -585,7 +599,7 @@ Qed.
 (* #[local] Hint Extern 1 (_ ᵗ⊢ᵈ _) => eapply d_subenv_wf_typ; eauto : core. *)
 
 
-Lemma d_exp_size_open_var_rec : forall e x n,
+Lemma exp_size_open_var_rec : forall e x n,
   exp_size e = exp_size (open_exp_wrt_exp_rec n (exp_var_f x) e)
 with d_body_size_open_var_rec: forall b x n,
   body_size b = body_size (open_body_wrt_exp_rec n (exp_var_f x) b).
@@ -602,11 +616,11 @@ Lemma d_exp_size_open_var: forall e x,
   exp_size e = exp_size (open_exp_wrt_exp e (exp_var_f x)).
 Proof.
   intros. unfold open_exp_wrt_exp.
-  apply d_exp_size_open_var_rec.
+  apply exp_size_open_var_rec.
 Qed.
 
 
-Lemma d_exp_size_open_typ_rec : forall e A n,
+Lemma exp_size_open_typ_rec : forall e A n,
   exp_size e = exp_size (open_exp_wrt_typ_rec n A e)
 with d_body_size_open_typ_rec: forall b A n,
   body_size b = body_size (open_body_wrt_typ_rec n A b).
@@ -620,7 +634,7 @@ Lemma d_exp_size_open_typ: forall e A,
   exp_size e = exp_size (open_exp_wrt_typ e A).
 Proof.
   intros. unfold open_exp_wrt_exp.
-  apply d_exp_size_open_typ_rec.
+  apply exp_size_open_typ_rec.
 Qed.
 
 

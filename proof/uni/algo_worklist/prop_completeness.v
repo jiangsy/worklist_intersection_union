@@ -13,7 +13,6 @@ Require Import uni.decl_worklist.prop_equiv.
 Require Import uni.algo_worklist.def_extra.
 Require Import uni.algo_worklist.prop_basic.
 Require Import uni.algo_worklist.transfer.
-Require Import uni.algo_worklist.prop_rename.
 Require Import uni.ltac_utils.
 
 Ltac destruct_trans_wl :=

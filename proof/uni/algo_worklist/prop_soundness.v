@@ -12,9 +12,8 @@ Require Import uni.decl.prop_rename.
 Require Import uni.decl_worklist.prop_equiv.
 Require Import uni.algo_worklist.def_extra.
 Require Import uni.algo_worklist.prop_basic.
-Require Import uni.algo_worklist.prop_rename.
 Require Import uni.algo_worklist.transfer.
-Require Import uni.ltac_utils.
+Require Import uni.ltac_utils.  
 
 
 Hint Constructors a_wf_wl : core.
@@ -381,7 +380,7 @@ Proof.
     apply trans_body_lc_abody in H3 as Hlcb.
     apply trans_typ_lc_atyp in H2 as Hlct.
     apply lc_body_subst_tvar_in_body_inv in Hlcb; auto.
-    eapply trans_body_subst_etvar_same_ss'; eauto. 
+    eapply trans_body_subst_etvar_same_ss'; eauto.
 Qed.
 
 

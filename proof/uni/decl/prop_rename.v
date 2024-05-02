@@ -121,7 +121,7 @@ Qed.
 Theorem d_chk_inf_rename_var' : forall Ψ1 Ψ2 x y e A B mode, 
   d_chk_inf (Ψ2 ++ (x , dbind_typ B) :: Ψ1) e mode A ->
   y ∉ (dom (Ψ2 ++ (x, dbind_typ B) :: Ψ1)) ->
-  d_chk_inf (Ψ2 ++ (y, dbind_typ B) :: Ψ1) (subst_var_in_exp (exp_var_f y) x e) mode A.
+  d_chk_inf (Ψ2 ++ (y, dbind_typ B) :: Ψ1) ({exp_var_f y ᵉ/ₑ x} e) mode A.
 Proof with eauto using d_wf_typ_rename_var, d_wf_tenv_rename_var, d_sub_rename_var, d_infabs_rename_var, d_inftapp_rename_var.
   intros. dependent induction H; simpl...
   - simpl. destruct_eq_atom.
@@ -156,7 +156,7 @@ Qed.
 Theorem d_chk_inf_rename_var : forall Ψ1 Ψ2 x y e A B mode, 
   d_chk_inf (Ψ2 ++ (x ,dbind_typ B) :: Ψ1) e mode A ->
   y ∉ (dom (Ψ2 ++ Ψ1)) ->
-  d_chk_inf (Ψ2 ++ (y, dbind_typ B):: Ψ1) (subst_var_in_exp (exp_var_f y) x e) mode A.
+  d_chk_inf (Ψ2 ++ (y, dbind_typ B):: Ψ1) ({exp_var_f y ᵉ/ₑ x} e) mode A.
 Proof with eauto.
   intros. destruct (x == y); subst.
   - rewrite subst_var_in_exp_refl...
@@ -167,7 +167,7 @@ Qed.
 Theorem d_chk_inf_rename_var_cons : forall Ψ x y e A B mode, 
   d_chk_inf ((x ,dbind_typ B) :: Ψ) e mode A ->
   y ∉ (dom Ψ) ->
-  d_chk_inf ((y, dbind_typ B):: Ψ) (subst_var_in_exp (exp_var_f y) x e) mode A.
+  d_chk_inf ((y, dbind_typ B):: Ψ) ({exp_var_f y ᵉ/ₑ x} e) mode A.
 Proof.
   intros. rewrite_env (nil ++ y ~ (dbind_typ B) ++ Ψ).
   eapply  d_chk_inf_rename_var; eauto.

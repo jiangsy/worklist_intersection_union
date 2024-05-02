@@ -585,7 +585,7 @@ Qed.
 (* #[local] Hint Extern 1 (_ ᵗ⊢ᵈ _) => eapply d_subenv_wf_typ; eauto : core. *)
 
 
-Lemma d_exp_size_open_var_rec : forall e x n,
+Lemma exp_size_open_var_rec : forall e x n,
   exp_size e = exp_size (open_exp_wrt_exp_rec n (exp_var_f x) e)
 with d_body_size_open_var_rec: forall b x n,
   body_size b = body_size (open_body_wrt_exp_rec n (exp_var_f x) b).
@@ -602,11 +602,11 @@ Lemma d_exp_size_open_var: forall e x,
   exp_size e = exp_size (open_exp_wrt_exp e (exp_var_f x)).
 Proof.
   intros. unfold open_exp_wrt_exp.
-  apply d_exp_size_open_var_rec.
+  apply exp_size_open_var_rec.
 Qed.
 
 
-Lemma d_exp_size_open_typ_rec : forall e A n,
+Lemma exp_size_open_typ_rec : forall e A n,
   exp_size e = exp_size (open_exp_wrt_typ_rec n A e)
 with d_body_size_open_typ_rec: forall b A n,
   body_size b = body_size (open_body_wrt_typ_rec n A b).
@@ -620,7 +620,7 @@ Lemma d_exp_size_open_typ: forall e A,
   exp_size e = exp_size (open_exp_wrt_typ e A).
 Proof.
   intros. unfold open_exp_wrt_exp.
-  apply d_exp_size_open_typ_rec.
+  apply exp_size_open_typ_rec.
 Qed.
 
 
