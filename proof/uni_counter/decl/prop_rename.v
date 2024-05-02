@@ -5,9 +5,9 @@ Require Import Metalib.Metatheory.
 Require Import LibTactics.
 
 
-Require Import uni.notations.
-Require Import uni.decl.prop_basic.
-Require Import uni.ltac_utils.
+Require Import uni_counter.notations.
+Require Import uni_counter.decl.prop_basic.
+Require Import uni_counter.ltac_utils.
 
 Lemma d_wf_typ_rename_var : forall Ψ1 Ψ2 x y A B,
   (Ψ2 ++ (x , dbind_typ B) :: Ψ1) ᵗ⊢ᵈ A ->

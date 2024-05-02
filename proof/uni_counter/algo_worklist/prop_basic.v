@@ -4,10 +4,11 @@ Require Import Metalib.Metatheory.
 Require Import List.
 
 
-Require Import uni.notations.
-Require Import uni.prop_basic.
-Require Import uni.algo_worklist.def_extra.
-Require Import uni.ltac_utils.
+Require Import uni_counter.notations.
+Require Import uni_counter.prop_basic.
+Require Import uni_counter.algo_worklist.def_extra.
+Require Import uni_counter.decl_worklist.prop_equiv.
+Require Import uni_counter.ltac_utils.
 
 
 Open Scope aworklist_scope.
@@ -376,42 +377,6 @@ Proof.
   rewrite_env (nil ++ x ~ abind_var_typ A2 ++ Σ1).
   eapply a_wf_exp_var_binds_another; eauto.
 Qed.
-
-
-Ltac destruct_binds_eq :=
-  repeat
-    lazymatch goal with
-    | H1 : (?X1, ?b1) = (?X2, ?b2) |- _ =>
-      dependent destruction H1
-    end.
-
-Ltac destruct_binds :=
-  simpl in *;
-  repeat
-  match goal with
-  | H1 : binds ?X ?b ((?X', ?b') :: ?θ) |- _ =>
-    let H_1 := fresh "H" in
-    let H_2 := fresh "H" in
-    inversion H1 as [H_1 | H_2];
-    clear H1;
-    try destruct_binds_eq;
-    try solve [solve_notin_eq X];
-    try solve [solve_notin_eq X']
-  end.
-
-
-Ltac destruct_in :=
-  simpl in *;
-  match goal with
-  | H1 : ((?X, ?b) = (?X', ?b')) \/  In ?b'' ?θ |- _ =>
-    let H1_1 := fresh "H" in
-    let H1_2 := fresh "H" in
-    inversion H1 as [H1_1 | H1_2];
-    clear H1;
-    try destruct_binds_eq;
-    try solve [solve_notin_eq X];
-    try solve [solve_notin_eq X']
-  end.
 
 
 Corollary a_wf_typ_tvar_stvar : forall Σ1 Σ2 X A,
