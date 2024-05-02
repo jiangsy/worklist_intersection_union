@@ -1,10 +1,8 @@
-
+Require Import Coq.Program.Equality.
 Require Export Metalib.Metatheory.
 
 Require Import uni.notations.
 Require Export LibTactics.
-(* Require Import algo.notations. *)
-
 
 Ltac inst_cofinite_impl H x :=
   match type of H with
@@ -134,3 +132,40 @@ Create HintDb FalseHd.
 Ltac solve_false := let HF := fresh "HF" in
                     try solve [ try intro HF; destruct_conj; try solve_by_invert;
                                 false; eauto 3 with FalseHd ].
+
+
+Ltac destruct_binds_eq :=
+  repeat
+    lazymatch goal with
+    | H1 : (?X1, ?b1) = (?X2, ?b2) |- _ =>
+      dependent destruction H1
+    end.
+
+Ltac destruct_binds :=
+  simpl in *;
+  repeat
+  match goal with
+  | H1 : binds ?X ?b ((?X', ?b') :: ?θ) |- _ =>
+    let H_1 := fresh "H" in
+    let H_2 := fresh "H" in
+    inversion H1 as [H_1 | H_2];
+    clear H1;
+    try destruct_binds_eq;
+    try solve [solve_notin_eq X];
+    try solve [solve_notin_eq X']
+  end.
+
+
+Ltac destruct_in :=
+  simpl in *;
+  match goal with
+  | H1 : ((?X, ?b) = (?X', ?b')) \/  In ?b'' ?θ |- _ =>
+    let H1_1 := fresh "H" in
+    let H1_2 := fresh "H" in
+    inversion H1 as [H1_1 | H1_2];
+    clear H1;
+    try destruct_binds_eq;
+    try solve [solve_notin_eq X];
+    try solve [solve_notin_eq X']
+  end.
+                                

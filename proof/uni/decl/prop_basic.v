@@ -433,20 +433,6 @@ Proof.
 Qed.
 
 
-Lemma d_mono_typ_in_s_in : forall Ψ T X,
-  Ψ ᵗ⊢ᵈₘ T ->
-  X `in` ftvar_in_typ T ->
-  s_in X T.
-Proof.
-  intros. induction H; simpl in *; auto.
-  - fsetdec. 
-  - apply singleton_iff in H0. subst. constructor.
-  - apply union_iff in H0. destruct H0.
-    + apply s_in__arrow1; auto. eapply d_mono_typ_lc; eauto.
-    + apply s_in__arrow2; auto. eapply d_mono_typ_lc; eauto.
-Qed.
-
-
 Lemma d_mono_typ_subst_mono_mono : forall Ψ1 Ψ2 T1 T2 X,
   Ψ2 ++ X ~ □ ++ Ψ1 ᵗ⊢ᵈₘ T1 ->
   Ψ1 ᵗ⊢ᵈₘ T2 ->
@@ -1034,7 +1020,7 @@ Proof with eauto using d_wf_typ_rename_tvar.
         apply d_wf_tenv_stvar_false in H0. contradiction.
     + dependent destruction H0.
       * inversion H0.
-      * apply d_wf_env__stvar; auto. 
+      * apply d_wf_env__stvar. auto. auto.
     + dependent destruction H0. destruct H; subst.
       * constructor. rewrite_env (map (subst_tvar_in_dbind ` Y X) ((a, dbind_typ A) :: Ψ2) ++ (Y, □) :: Ψ1).
         apply d_wf_tenv_rename_tvar; eauto.
