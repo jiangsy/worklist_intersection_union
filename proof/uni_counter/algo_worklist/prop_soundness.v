@@ -4,17 +4,17 @@ Require Import Metalib.Metatheory.
 Require Import List.
 
 
-Require Import uni.notations.
-Require Import uni.decl.prop_basic.
-Require Import uni.decl.prop_subtyping.
-Require Import uni.decl.prop_typing.
-Require Import uni.decl.prop_rename.
-Require Import uni.decl_worklist.prop_equiv.
-Require Import uni.algo_worklist.def_extra.
-Require Import uni.algo_worklist.prop_basic.
-Require Import uni.algo_worklist.prop_rename.
-Require Import uni.algo_worklist.transfer.
-Require Import uni.ltac_utils.
+Require Import uni_counter.notations.
+Require Import uni_counter.decl.prop_basic.
+Require Import uni_counter.decl.prop_subtyping.
+Require Import uni_counter.decl.prop_typing.
+Require Import uni_counter.decl.prop_rename.
+Require Import uni_counter.decl_worklist.prop_equiv.
+Require Import uni_counter.algo_worklist.def_extra.
+Require Import uni_counter.algo_worklist.prop_basic.
+Require Import uni_counter.algo_worklist.prop_rename.
+Require Import uni_counter.algo_worklist.transfer.
+Require Import uni_counter.ltac_utils.
 
 
 Hint Constructors a_wf_wl : core.
@@ -911,6 +911,7 @@ Proof.
   intros. dependent destruction H3; destruct_trans;
     try unify_trans_contd; try unify_trans_conts; 
     try repeat unify_trans_typ; try unify_trans_exp; try constructor.
+  erewrite <- trans_typ_iu_size; eauto.
 Qed.
 
 

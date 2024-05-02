@@ -1,8 +1,8 @@
 Require Import Program.Equality.
 
-Require Export uni.def_ott.
-Require Export uni.def_extra.
-Require Export uni.decl.def_extra.
+Require Export uni_counter.def_ott.
+Require Export uni_counter.def_extra.
+Require Export uni_counter.decl.def_extra.
 
 
 Fixpoint dwl_app (Ω1 Ω2 : dworklist) :=
@@ -65,6 +65,65 @@ Inductive d_wl_del_red : dworklist -> Prop :=
       d_wl_del_red (dworklist_cons_work Ω w) ->
       d_wl_del_red (dworklist_cons_work Ω (work_applyd cd A B))
   .
+
+Fixpoint iuv_size (A : typ) : nat :=
+  match A with
+  | typ_var_b _ => 1
+  | typ_arrow A1 A2 => iuv_size A1 + iuv_size A2
+  | typ_all A => iuv_size A
+  | typ_union A1 A2 => 2 + iuv_size A1 + iuv_size A2
+  | typ_intersection A1 A2 => 2 + iuv_size A1 + iuv_size A2
+  | _ => 0
+  end.
+
+Fixpoint lookup_var_bind (Σ : aenv) (X : atom) : option typ :=
+  match Σ with
+  | nil => None
+  | (Y, abind_var_typ A) :: Σ' => if X == Y then Some A else lookup_var_bind Σ' X
+  | _ :: Σ' => lookup_var_bind Σ' X
+  end.
+
+Fixpoint lookup_tvar_bind (Σ : aenv) (X : atom) : option abind :=
+  match Σ with
+  | nil => None
+  | (Y, B) :: Σ' => if X == Y then
+                      match B with
+                      | abind_tvar_empty => Some abind_tvar_empty
+                      | abind_stvar_empty => Some abind_stvar_empty
+                      | abind_etvar_empty => Some abind_etvar_empty
+                      | _ => None
+                      end
+                    else lookup_tvar_bind Σ' X
+  end.
+
+Fixpoint exp_split_size (Σ : aenv) (e : exp) : nat :=
+  match e with
+  | exp_unit => 0
+  | exp_var_b _ => 0
+  | exp_var_f X => match lookup_var_bind Σ X with
+                  | Some A => iuv_size A
+                  | _ => 0
+                  end
+  | exp_abs e1 => exp_split_size Σ e1
+  | exp_app e1 e2 => 1 + 2 * exp_split_size Σ e1 + exp_split_size Σ e2
+  | exp_tabs (body_anno e1 A) => (1 + exp_split_size Σ e1) * (2 + iuv_size A)
+  | exp_tapp e1 A => (1 + exp_split_size Σ e1) * (2 + iuv_size A)
+  | exp_anno e1 A => (1 + exp_split_size Σ e1) * (2 + iuv_size A)
+  end.
+
+Definition dbind_to_abind (d : dbind) : abind :=
+  match d with
+  | dbind_typ A => abind_var_typ A
+  | dbind_stvar_empty => abind_stvar_empty
+  | dbind_tvar_empty => abind_tvar_empty
+  end.
+
+Fixpoint dwl_to_aenv (dW : dworklist) : aenv :=
+  match dW with 
+  | dworklist_empty => nil
+  | dworklist_cons_work dW' _ => dwl_to_aenv dW'
+  | dworklist_cons_var dW' X b => X ~ (dbind_to_abind b) ++ dwl_to_aenv dW'
+  end.
 
 (* defns Jdworklist_reduction *)
 Inductive d_wl_red : dworklist -> Prop :=    (* defn d_wl_red *)
@@ -166,7 +225,7 @@ Inductive d_wl_red : dworklist -> Prop :=    (* defn d_wl_red *)
         d_wl_red (dworklist_cons_work (dworklist_cons_var (dworklist_cons_work Ω (work_applys cs (typ_arrow T1 T2))) x (dbind_typ T1)) (work_check (open_exp_wrt_exp e (exp_var_f x)) T2))) ->
      d_wl_red (dworklist_cons_work Ω (work_infer (exp_abs e) cs))
  | d_wl_red__inf_app : forall (Ω:dworklist) (e1 e2:exp) (cs:conts),
-     d_wl_red (dworklist_cons_work Ω (work_infer e1 (conts_infabs (contd_infapp e2 cs)))) ->
+     d_wl_red (dworklist_cons_work Ω (work_infer e1 (conts_infabs (contd_infapp (exp_split_size (dwl_to_aenv Ω) e1) e2 cs)))) ->
      d_wl_red (dworklist_cons_work Ω (work_infer  ( (exp_app e1 e2) )  cs))
  | d_wl_red__inf_tapp : forall (Ω:dworklist) (e:exp) (B:typ) (cs:conts),
      d_wl_red (dworklist_cons_work Ω (work_infer e (conts_inftapp B cs))) ->

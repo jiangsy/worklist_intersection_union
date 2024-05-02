@@ -1,9 +1,9 @@
 Require Import Coq.Program.Equality.
 Require Import Lia.
 
-Require Import uni.notations.
-Require Import uni.decl.prop_basic.
-Require Import uni.ltac_utils.
+Require Import uni_counter.notations.
+Require Import uni_counter.decl.prop_basic.
+Require Import uni_counter.ltac_utils.
 
 
 Lemma d_sub_refl : forall Ψ A,

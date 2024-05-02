@@ -4,12 +4,12 @@ Require Import Metalib.Metatheory.
 Require Import List.
 Require Import Coq.micromega.Lia.
 
-Require Import uni.notations.
-Require Import uni.prop_basic.
-Require Import uni.algo_worklist.def_extra.
-Require Import uni.algo_worklist.prop_basic.
-Require Import uni.algo_worklist.prop_rename.
-Require Import ltac_utils.
+Require Import uni_counter.notations.
+Require Import uni_counter.prop_basic.
+Require Import uni_counter.algo_worklist.def_extra.
+Require Import uni_counter.algo_worklist.prop_basic.
+Require Import uni_counter.algo_worklist.prop_rename.
+Require Import uni_counter.ltac_utils.
 
 Fixpoint iu_size (A : typ) : nat :=
   match A with

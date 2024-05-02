@@ -4,11 +4,11 @@ Require Import Lia.
 Require Import Metalib.Metatheory.
 
 
-Require Import uni.notations.
-Require Import uni.decl.prop_basic.
-Require Import uni.decl.prop_rename.
-Require Import uni.decl.prop_subtyping.
-Require Import uni.ltac_utils.
+Require Import uni_counter.notations.
+Require Import uni_counter.decl.prop_basic.
+Require Import uni_counter.decl.prop_rename.
+Require Import uni_counter.decl.prop_subtyping.
+Require Import uni_counter.ltac_utils.
 
 
 Hint Constructors d_wf_typ: core.
