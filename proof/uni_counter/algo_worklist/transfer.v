@@ -260,8 +260,8 @@ Notation "θ ʷ⊩ wᵃ ⇝ wᵈ" := (trans_work θ wᵃ wᵈ)
   (at level 65, wᵃ at next level, no associativity).
 
 
-Reserved Notation "θ ⊩ Ω ⇝ Γ ⫣ θ'"
-  (at level 65, Ω at next level, Γ at next level, no associativity).
+Reserved Notation "θ ⊩ Γ ⇝ Ω ⫣ θ'"
+  (at level 65, Γ at next level, Ω at next level, no associativity).
 Inductive trans_worklist : subst_set -> aworklist -> dworklist -> subst_set -> Prop := 
   | trans_wl__empty : forall θ, 
       wf_ss θ -> 
@@ -287,7 +287,7 @@ Inductive trans_worklist : subst_set -> aworklist -> dworklist -> subst_set -> P
       X ∉ dom θ' -> 
       d_mono_typ (ss_to_denv θ' ) T ->
       θ ⊩ aworklist_cons_var Γ X abind_etvar_empty ⇝ Ω ⫣  (X, dbind_typ T) :: θ'
-where "θ ⊩ Γᵃ ⇝ Γᵈ ⫣ θ'" := (trans_worklist θ Γᵃ Γᵈ θ').
+where "θ ⊩ Γ ⇝ Ω ⫣ θ'" := (trans_worklist θ Γ Ω θ').
 
 
 Definition transfer (Γ : aworklist) (Ω : dworklist)  : Prop :=
