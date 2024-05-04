@@ -1,0 +1,12 @@
+- finish def
+    - [x] add exp constructor
+    - [ ] add typ constructor
+    - [ ] update wf_exp
+    - [ ] update wf_typ
+    - [ ] add typing rules  
+- finish meta theory
+    - [ ] finish */prop_basic 
+    - [ ] finish decl_typing
+    - [ ] finish prop_equiv
+    - [ ] finish prop_soundness
+    - [ ] finish prop_completeness   
