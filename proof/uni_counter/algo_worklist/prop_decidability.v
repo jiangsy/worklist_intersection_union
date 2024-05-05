@@ -4,15 +4,15 @@ Require Import Metalib.Metatheory.
 Require Import List.
 Require Import Coq.micromega.Lia.
 
-Require Import uni.notations.
-Require Import uni.prop_basic.
-Require Import uni.decl_worklist.prop_equiv.
-Require Import uni.algo_worklist.def_extra.
-Require Import uni.algo_worklist.prop_basic.
-Require Import uni.algo_worklist.prop_rename.
-Require Import uni.algo_worklist.prop_soundness.
-Require Import uni.algo_worklist.prop_completeness.
-Require Import uni.algo_worklist.transfer.
+Require Import uni_counter.notations.
+Require Import uni_counter.prop_basic.
+Require Import uni_counter.decl_worklist.prop_equiv.
+Require Import uni_counter.algo_worklist.def_extra.
+Require Import uni_counter.algo_worklist.prop_basic.
+Require Import uni_counter.algo_worklist.prop_rename.
+Require Import uni_counter.algo_worklist.prop_soundness.
+Require Import uni_counter.algo_worklist.prop_completeness.
+Require Import uni_counter.algo_worklist.transfer.
 Require Import ltac_utils.
 
 Fixpoint exp_size (Γ : aworklist) (e : exp) : nat :=

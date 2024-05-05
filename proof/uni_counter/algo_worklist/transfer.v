@@ -2,20 +2,21 @@ Require Import Coq.Program.Equality.
 Require Import Program.Tactics.
 Require Import Metalib.Metatheory.
 Require Import List.
+Require Import Lia.
 
-Require Import uni.notations.
-Require Import uni.decl.prop_basic.
-Require Import uni.decl_worklist.prop_equiv.
-Require Import uni.decl.prop_subtyping.
-Require Import uni.algo_worklist.def_extra.
-Require Import uni.algo_worklist.prop_basic.
-Require Import uni.ltac_utils.
+Require Import uni_counter.notations.
+Require Import uni_counter.decl.prop_basic.
+Require Import uni_counter.decl_worklist.prop_equiv.
+Require Import uni_counter.decl.prop_subtyping.
+Require Import uni_counter.algo_worklist.def_extra.
+Require Import uni_counter.algo_worklist.prop_basic.
+Require Import uni_counter.ltac_utils.
 
 
+(* reuse denv as ss, but the x : T is re-interpreted as ^X : T *)
 Definition subst_set := denv.
 
 Open Scope dbind.
-
 
 Fixpoint ss_to_denv (θ : subst_set) : denv := 
   match θ with 
@@ -161,10 +162,10 @@ Inductive trans_conts : subst_set -> conts -> conts -> Prop :=
     trans_typ θ Aᵃ Aᵈ ->
     trans_conts θ (conts_sub Aᵃ) (conts_sub Aᵈ)
 with trans_contd : subst_set -> contd -> contd -> Prop :=
-  | trans_contd__infapp : forall θ eᵃ eᵈ csᵃ csᵈ,
+  | trans_contd__infapp : forall θ n eᵃ eᵈ csᵃ csᵈ,
     trans_exp θ eᵃ eᵈ ->
     trans_conts θ csᵃ csᵈ ->
-    trans_contd θ (contd_infapp eᵃ csᵃ) (contd_infapp eᵈ csᵈ)
+    trans_contd θ (contd_infapp n eᵃ csᵃ) (contd_infapp n eᵈ csᵈ)
   | trans_contd__infabs_union : forall θ Aᵃ Aᵈ cdᵃ cdᵈ,
     trans_typ θ Aᵃ Aᵈ ->
     trans_contd θ cdᵃ cdᵈ ->
@@ -1725,7 +1726,7 @@ Proof with eauto using trans_typ_total, trans_exp_total.
       }
       apply Hex...
     + assert (Hex: (exists eᵈ, θ ᵉ⊩ e ⇝ eᵈ) -> (exists csᵈ, θ ᶜˢ⊩ cs ⇝ csᵈ) ->
-        exists cdᵈ, θ ᶜᵈ⊩ contd_infapp e cs ⇝ cdᵈ). {
+        exists cdᵈ, θ ᶜᵈ⊩ contd_infapp n e cs ⇝ cdᵈ). {
         intros. destruct_conj...
       }
       apply Hex...
@@ -2784,4 +2785,67 @@ Proof with eauto.
     try eapply trans_contd_reorder with (θ:=θ); eauto.
     intros. apply H1; auto.
     intros. apply H1; eauto.
+Qed.
+
+Lemma iu_size_mono : forall Σ A,
+  a_mono_typ Σ A -> iu_size A = 0.
+Proof.
+  intros Σ A Hmono.
+  induction Hmono; simpl; eauto; try lia.
+Qed.
+
+Lemma iu_size_subst_mono : forall Σ A X A0,
+  a_mono_typ Σ A ->
+  iu_size (subst_tvar_in_typ A X A0) = iu_size A0.
+Proof.
+  intros Σ A X A0 Hmono.
+  induction A0; simpl; auto.
+  destruct (eq_dec X0 X); subst; simpl; eauto.
+  eapply iu_size_mono; eauto.
+Qed.
+
+Lemma iu_size_open_typ_wrt_typ_rec : forall Σ A T n,
+  a_mono_typ Σ T -> 
+  iu_size (open_typ_wrt_typ_rec n T A) = iu_size A.
+Proof.
+  intros. generalize dependent n. induction A; simpl; intros; eauto.
+  destruct (lt_eq_lt_dec n n0).
+  - destruct s; simpl; eauto. eapply iu_size_mono; eauto.
+  - simpl; eauto; lia.
+Qed.
+
+Lemma iu_size_open_typ_wrt_typ : forall A X,
+  iu_size (A ᵗ^ₜ X) = iu_size A.
+Proof.
+  intros. unfold open_typ_wrt_typ.
+  eapply iu_size_open_typ_wrt_typ_rec with (Σ := (X ~ abind_tvar_empty ++ nil)); eauto.
+Qed.
+
+Lemma ss_denv_aenv_in : forall θ X,
+  X ~ □ ∈ᵈ ⌈ θ ⌉ᵈ -> X ~ □ ∈ᵃ ⌈ θ ⌉ᵃ.
+Proof.
+  intros. induction θ; auto.
+  destruct a as [Y [| |]]; simpl in *; eauto;
+  eapply binds_cons_1 in H; eauto;
+  destruct H as [[H1 H2] | H3]; subst; simpl; eauto; try inversion H2.
+Qed.
+
+Lemma ss_d_mono_typ_a_mono_typ : forall θ A,
+  ⌈ θ ⌉ᵈ ᵗ⊢ᵈₘ A -> ⌈ θ ⌉ᵃ ᵗ⊢ᵃₘ A.
+Proof.
+  intros. dependent induction H; eauto.
+  eapply ss_denv_aenv_in in H. eauto.
+Qed.
+
+Lemma trans_typ_iu_size : forall θ Aᵃ Aᵈ,
+  θ ᵗ⊩ Aᵃ ⇝ Aᵈ ->
+  iu_size Aᵃ = iu_size Aᵈ.
+Proof.
+  intros. induction H; simpl; eauto; try lia.
+  apply wf_ss_binds_mono_typ in H0; auto.
+  erewrite iu_size_mono; eauto.
+  eapply ss_d_mono_typ_a_mono_typ; eauto.
+  pick fresh X. inst_cofinites_with X.
+  rewrite iu_size_open_typ_wrt_typ in H1.
+  rewrite iu_size_open_typ_wrt_typ in H1. auto.
 Qed.

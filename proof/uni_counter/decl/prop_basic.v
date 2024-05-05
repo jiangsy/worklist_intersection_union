@@ -3,9 +3,9 @@ Require Import Program.Tactics.
 Require Import Lia.
 Require Import Metalib.Metatheory.
 
-Require Import uni.notations.
-Require Export uni.prop_basic.
-Require Import uni.ltac_utils.
+Require Import uni_counter.notations.
+Require Export uni_counter.prop_basic.
+Require Import uni_counter.ltac_utils.
 
 
 Open Scope dbind_scope.
@@ -262,7 +262,7 @@ Proof with simpl in *; try solve_by_invert; eauto using uniq_app_1, uniq_app_2.
       replace ((X0, dbind_tvar_empty) :: map (subst_tvar_in_dbind B X) Ψ2 ++ Ψ1)
       with (map (subst_tvar_in_dbind B X) ((X0, dbind_tvar_empty) :: Ψ2) ++ Ψ1) by auto.
       apply H1; auto...
-  Unshelve. all: auto.
+  Unshelve. all: eauto.
 Qed.
 
 Lemma d_wf_typ_all_open : forall Ψ A B,
