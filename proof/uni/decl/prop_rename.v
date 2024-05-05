@@ -72,19 +72,17 @@ Qed.
 
 
 Lemma subst_var_in_exp_refl : forall x e,
-  {exp_var_f x ᵉ/ₑ x} e = e
-with subst_var_in_body_refl : forall x b,
-  {exp_var_f x ᵇ/ₑ x} b = b.
+  {exp_var_f x ᵉ/ₑ x} e = e.
 Proof.
-  - intros. dependent induction e; simpl; auto.
-    + destruct_eq_atom; eauto.
-    + rewrite IHe; auto.
-    + rewrite IHe1. rewrite IHe2. auto.
-    + rewrite subst_var_in_body_refl. auto.
-    + rewrite IHe. auto.
-    + rewrite IHe. auto.
-  - destruct b. simpl. rewrite subst_var_in_exp_refl.
-    auto.
+  intros. dependent induction e; simpl; auto.
+  - destruct_eq_atom; eauto.
+  - rewrite IHe; auto.
+  - rewrite IHe1. rewrite IHe2. auto.
+  - rewrite IHe. auto.
+  - rewrite IHe. auto.
+  - rewrite IHe. auto.
+  - rewrite IHe1.  rewrite IHe2. auto.
+  - rewrite IHe. auto.
 Qed.
 
 
@@ -244,19 +242,16 @@ Qed.
 
 
 Lemma subst_tvar_in_exp_refl_eq : forall X e,
-  subst_tvar_in_exp (`X) X e = e
-with subst_tvar_in_body_ref_eq : forall X b,
-  subst_tvar_in_body (`X) X b = b .
+  subst_tvar_in_exp (`X) X e = e.
 Proof with auto.
-  - intros. clear subst_tvar_in_exp_refl_eq. 
-    dependent induction e; simpl; auto.
-    + rewrite IHe...
-    + rewrite IHe1... rewrite IHe2...
-    + rewrite subst_tvar_in_body_ref_eq... 
-    + rewrite subst_tvar_in_typ_refl_eq. rewrite IHe. auto.
-    + rewrite subst_tvar_in_typ_refl_eq. rewrite IHe. auto.
-  - intros. destruct b. simpl.
-    rewrite subst_tvar_in_typ_refl_eq... rewrite subst_tvar_in_exp_refl_eq...
+  intros. dependent induction e; simpl; auto.
+  - rewrite IHe...
+  - rewrite IHe1... rewrite IHe2...
+  - rewrite IHe...
+  - rewrite IHe... rewrite subst_tvar_in_typ_refl_eq...
+  - rewrite IHe... rewrite subst_tvar_in_typ_refl_eq...
+  - rewrite IHe1... rewrite IHe2...
+  - rewrite IHe... 
 Qed.
 
 Theorem d_sub_rename_dtvar_cons : forall Ψ X Y A B b,
