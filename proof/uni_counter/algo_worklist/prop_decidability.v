@@ -13,7 +13,7 @@ Require Import uni_counter.algo_worklist.prop_rename.
 Require Import uni_counter.algo_worklist.prop_soundness.
 Require Import uni_counter.algo_worklist.prop_completeness.
 Require Import uni_counter.algo_worklist.transfer.
-Require Import ltac_utils.
+Require Import uni_counter.ltac_utils.
 
 Fixpoint exp_size (Γ : aworklist) (e : exp) : nat :=
   match e with
@@ -1661,7 +1661,8 @@ Proof.
             ~ (subst_tvar_in_aworklist B X Γ2 ⧺ Γ1) ⟶ᵃʷ⁎⋅).
     { intros Γ1 Γ2 X Heq Hbin Hmono Hsub. subst.
       eapply IHnw; eauto; simpl in *; try lia.
-      admit.
+      admit. admit. admit. admit. admit. admit.
+      admit. admit. admit.
       (* admit. (* safe: wf *)
       admit. (* erewrite exp_size_wl_aworklist_subst; eauto. *)
       admit. (* TODO: should be fine *)
