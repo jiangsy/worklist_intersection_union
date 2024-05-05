@@ -45,8 +45,17 @@ Proof.
   rewrite (subst_tvar_in_typ_fresh_eq B); auto.
 Qed.
 
+Lemma subst_tvar_in_exp_open_exp_wrt_typ_fresh2: forall X e A B,
+  lc_typ A ->
+  X `notin` ftvar_in_typ B ->
+  (subst_tvar_in_exp A X e) ᵉ^ₜ B = subst_tvar_in_exp A X (e ᵉ^ₜ B).
+Proof.
+  intros. 
+  rewrite subst_tvar_in_exp_open_exp_wrt_typ; auto.
+  rewrite (subst_tvar_in_typ_fresh_eq B); auto.
+Qed.
 
-Lemma subst_tvar_in_exp_open_exp_wrt_typ_fresh2: forall X e1 e2 A,
+Lemma subst_tvar_in_exp_open_exp_wrt_exp_fresh2: forall X e1 e2 A,
   lc_typ A ->
   X `notin` ftvar_in_exp e2 ->
   (subst_tvar_in_exp A X e1) ᵉ^ₑ e2 = subst_tvar_in_exp A X (e1 ᵉ^ₑ e2).
@@ -55,17 +64,6 @@ Proof.
   rewrite subst_tvar_in_exp_open_exp_wrt_exp; auto.
   rewrite (subst_tvar_in_exp_fresh_eq e2); auto.
 Qed.
-
-Lemma subst_tvar_in_body_open_body_wrt_typ_fresh2 : forall X b A B,
-  lc_typ B ->
-  X `notin` ftvar_in_typ A ->
-  open_body_wrt_typ (subst_tvar_in_body B X b) A = subst_tvar_in_body B X (open_body_wrt_typ b A).
-Proof.
-  intros.
-  rewrite subst_tvar_in_body_open_body_wrt_typ; auto.
-  rewrite (subst_tvar_in_typ_fresh_eq A); auto.
-Qed.
-
 
 Lemma ls_binds_split {A : Type} : forall (ls : list (atom * A)) X b,
   binds X b ls ->
@@ -185,17 +183,10 @@ Proof.
 Qed.
 
 
-Lemma open_body_wrt_typ_anno : forall A B e,
-  open_body_wrt_typ (body_anno e A) B = body_anno (open_exp_wrt_typ e B) (open_typ_wrt_typ A B).
-Proof.
-  intros. unfold open_body_wrt_typ. simpl. auto.
-Qed.
-
-
 Lemma open_typ_wrt_typ_twice : forall n X Y A,
-    lc_typ Y ->
-    open_typ_wrt_typ_rec n ` X (open_typ_wrt_typ_rec (n+1) Y A)
-    = open_typ_wrt_typ_rec n Y (open_typ_wrt_typ_rec n ` X A).
+  lc_typ Y ->
+  open_typ_wrt_typ_rec n ` X (open_typ_wrt_typ_rec (n+1) Y A) = 
+    open_typ_wrt_typ_rec n Y (open_typ_wrt_typ_rec n ` X A).
 Proof with subst; simpl in *; eauto; try lia.
   introv HL. gen n. induction A; intros...
   all: try congruence.
@@ -217,9 +208,10 @@ Qed.
 
 
 
-Lemma typ_open_r_close_l : forall T1 T2 X
-  , X `notin` ftvar_in_typ T2
-  -> T1 = open_typ_wrt_typ T2 ` X -> close_typ_wrt_typ X T1 = T2.
+Lemma typ_open_r_close_l : forall T1 T2 X,
+  X `notin` ftvar_in_typ T2 -> 
+  T1 = open_typ_wrt_typ T2 ` X -> 
+  close_typ_wrt_typ X T1 = T2.
 Proof.
   intros * Fr H.
   assert (close_typ_wrt_typ X T1 = close_typ_wrt_typ X (open_typ_wrt_typ T2 ` X)) by now rewrite H.
@@ -238,59 +230,43 @@ Qed.
 
 
 Lemma close_typ_wrt_typ_notin : forall X A,
-    X `notin` ftvar_in_typ (close_typ_wrt_typ X A).
+  X `notin` ftvar_in_typ (close_typ_wrt_typ X A).
 Proof.
   intros. apply close_typ_wrt_typ_notin_rec.
 Qed.
 
 
 Lemma close_exp_wrt_exp_notin_rec : forall x e n,
-    x `notin` fvar_in_exp (close_exp_wrt_exp_rec n x e)
-with close_body_wrt_exp_notin_rec : forall x b n,
-    x `notin` fvar_in_body (close_body_wrt_exp_rec n x b).
+  x `notin` fvar_in_exp (close_exp_wrt_exp_rec n x e).
 Proof.
-  - intros until e. induction e; simpl; intros; auto.
-    + destruct (lt_dec n n0); auto.
-    + unfold eq_dec. destruct EqDec_eq_of_X; auto.
-  - intros until b. induction b; simpl; intros; auto.
+  intros until e. induction e; simpl; intros; auto.
+  - destruct (lt_dec n n0); auto.
+  - unfold eq_dec. destruct EqDec_eq_of_X; auto.
 Qed.
 
 Lemma close_exp_wrt_exp_notin : forall x e,
-    x `notin` fvar_in_exp (close_exp_wrt_exp x e)
-with close_body_wrt_exp_notin : forall x b,
-    x `notin` fvar_in_body (close_body_wrt_exp x b).
+    x `notin` fvar_in_exp (close_exp_wrt_exp x e).
 Proof.
-  - intros until e. unfold close_exp_wrt_exp.
-    apply close_exp_wrt_exp_notin_rec.
-  - intros until b. unfold close_body_wrt_exp.
-    apply close_body_wrt_exp_notin_rec.
+  intros until e. unfold close_exp_wrt_exp.
+  apply close_exp_wrt_exp_notin_rec.
 Qed.
 
 
 Lemma close_exp_wrt_typ_notin_rec : forall X e n,
-    X `notin` ftvar_in_exp (close_exp_wrt_typ_rec n X e)
-with close_body_wrt_typ_notin_rec : forall X b n,
-    X `notin` ftvar_in_body (close_body_wrt_typ_rec n X b).
+  X `notin` ftvar_in_exp (close_exp_wrt_typ_rec n X e).
 Proof.
-  - intros until e. induction e; simpl; intros; auto.
-    + apply notin_union; auto.
-      apply close_typ_wrt_typ_notin_rec.
-    + apply notin_union; auto.
-      apply close_typ_wrt_typ_notin_rec.
-  - intros until b. induction b; simpl; intros; auto.
-    + apply notin_union; auto.
-      apply close_typ_wrt_typ_notin_rec.
+  intros until e. induction e; simpl; intros; auto.
+  - apply notin_union; auto.
+    apply close_typ_wrt_typ_notin_rec.
+  - apply notin_union; auto.
+    apply close_typ_wrt_typ_notin_rec.
 Qed.
 
 Lemma close_exp_wrt_typ_notin : forall X e,
-    X `notin` ftvar_in_exp (close_exp_wrt_typ X e)
-with close_body_wrt_typ_notin : forall X b,
-    X `notin` ftvar_in_body (close_body_wrt_typ X b).
+  X `notin` ftvar_in_exp (close_exp_wrt_typ X e).
 Proof.
-  - intros until e. unfold close_exp_wrt_typ.
+  intros until e. unfold close_exp_wrt_typ.
     apply close_exp_wrt_typ_notin_rec.
-  - intros until b. unfold close_body_wrt_typ.
-    apply close_body_wrt_typ_notin_rec.
 Qed.
 
 
@@ -329,6 +305,7 @@ Proof.
     inversion x; eauto.
   - destruct A; try solve [inversion x]; auto.
     inversion x; eauto.
+  - destruct A; try solve [inversion x]; auto.
 Qed.
 
 
@@ -348,80 +325,66 @@ Qed.
 Lemma lc_exp_subst_tvar_in_exp : forall e A X,
   lc_exp e ->
   lc_typ A ->
-  lc_exp (subst_tvar_in_exp A X e)
-with lc_body_subst_tvar_in_body : forall b A X,
-  lc_body b ->
-  lc_typ A ->
-  lc_body (subst_tvar_in_body A X b).
+  lc_exp (subst_tvar_in_exp A X e).
 Proof with eauto using lc_typ_subst.
-  - intros. clear lc_exp_subst_tvar_in_exp. induction H; simpl...
-    + pick fresh x0. apply lc_exp_abs_exists with (x1:=x0). 
-      rewrite subst_tvar_in_exp_open_exp_wrt_typ_fresh2...
-    + pick fresh X0. apply lc_exp_tabs_exists with (X1:=X0).
-      rewrite subst_tvar_in_body_open_body_wrt_typ_fresh2...
-  - intros. clear lc_body_subst_tvar_in_body. destruct b. 
-      dependent destruction H; simpl...
+  intros. induction H; simpl...
+  - pick fresh x0. apply lc_exp_abs_exists with (x1:=x0). 
+    rewrite subst_tvar_in_exp_open_exp_wrt_exp_fresh2...
+  - pick fresh X0. apply lc_exp_tabs_exists with (X1:=X0).
+    rewrite subst_tvar_in_exp_open_exp_wrt_typ_fresh2...
 Qed.
 
 
 Lemma lc_exp_subst_var_in_exp : forall e1 e2 x,
   lc_exp e1 ->
   lc_exp e2 ->
-  lc_exp ({e2 ᵉ/ₑ x} e1)
-with lc_body_subst_var_in_body : forall b e x,
-  lc_body b ->
-  lc_exp e ->
-  lc_body ({e ᵇ/ₑ x} b).
+  lc_exp ({e2 ᵉ/ₑ x} e1).
 Proof with eauto using lc_typ_subst.
-  - intros. clear lc_exp_subst_var_in_exp. induction H; simpl...
-    + destruct_eq_atom; auto.
-    + pick fresh x0. apply lc_exp_abs_exists with (x1:=x0). 
-      replace (({e2 ᵉ/ₑ x} e) ᵉ^ₑ exp_var_f x0) with ({e2 ᵉ/ₑ x} (e ᵉ^ₑ exp_var_f x0))...
-      rewrite subst_var_in_exp_open_exp_wrt_exp... simpl; destruct_eq_atom...
-    + pick fresh X0. apply lc_exp_tabs_exists with (X1:=X0).
-      replace (open_body_wrt_typ ({e2 ᵇ/ₑ x} body5) ` X0) with ({e2 ᵇ/ₑ x} (open_body_wrt_typ body5 ` X0))...
-      rewrite subst_var_in_body_open_body_wrt_typ...
-  - intros. clear lc_body_subst_var_in_body. destruct b. 
-      dependent destruction H; simpl...
+  intros. induction H; simpl...
+  - destruct_eq_atom; auto.
+  - pick fresh x0. apply lc_exp_abs_exists with (x1:=x0). 
+    replace (({e2 ᵉ/ₑ x} e) ᵉ^ₑ exp_var_f x0) with ({e2 ᵉ/ₑ x} (e ᵉ^ₑ exp_var_f x0))...
+    rewrite subst_var_in_exp_open_exp_wrt_exp... simpl; destruct_eq_atom...
+  - pick fresh X0. apply lc_exp_tabs_exists with (X1:=X0).
+    replace (open_exp_wrt_typ ({e2 ᵉ/ₑ x} e) ` X0) with ({e2 ᵉ/ₑ x} e ᵉ^ₜ ` X0)...
+    rewrite subst_var_in_exp_open_exp_wrt_typ...
 Qed.
 
 Lemma lc_exp_subst_tvar_in_exp_inv : forall e A X,
   lc_exp ({A ᵉ/ₜ X} e) ->
   lc_typ A ->
-  lc_exp e
-with lc_body_subst_tvar_in_body_inv : forall b A X,
-  lc_body ({A ᵇ/ₜ X} b) ->
-  lc_typ A ->
-  lc_body b.  
+  lc_exp e.
 Proof.
-  - intros. dependent induction H; auto; try solve [destruct e; try solve [inversion x]; auto].
-    + destruct e; try solve [inversion x]; auto.
-      inversion x. subst.
-      inst_cofinites_by (singleton X) using_name x.
-      apply lc_exp_abs_exists with (x1:=x0).
-      eapply H0 with (x:=x0) (X:=X); eauto.
-      rewrite subst_tvar_in_exp_open_exp_wrt_exp; simpl; auto.
-    + destruct e; try solve [inversion x]; auto.
-      inversion x. subst.
-      constructor; eauto.
-    + destruct e; try solve [inversion x]; auto.
-      inversion x. subst.
-      inst_cofinites_by (singleton X) using_name X.
-      apply lc_exp_tabs_exists with (X1:=X0).
-      eapply lc_body_subst_tvar_in_body_inv with (X:=X); eauto.
-      rewrite subst_tvar_in_body_open_body_wrt_typ; simpl; auto.
-      destruct_eq_atom. auto.
-    + destruct e; try solve [inversion x]; auto.
-      inversion x. subst.
-      constructor; eauto. 
-      eapply lc_typ_subst_inv; eauto.
-    + destruct e; try solve [inversion x]; auto.
-      inversion x. subst.
-      constructor; eauto.
-      eapply lc_typ_subst_inv; eauto.
-  - intros. destruct b. dependent destruction H.
-    + constructor; eauto.
-      eapply lc_typ_subst_inv; eauto.
+  intros. dependent induction H; auto; try solve [destruct e; try solve [inversion x]; auto].
+  - destruct e; try solve [inversion x]; auto.
+    inversion x. subst.
+    inst_cofinites_by (singleton X) using_name x.
+    apply lc_exp_abs_exists with (x1:=x0).
+    eapply H0 with (x:=x0) (X:=X); eauto.
+    rewrite subst_tvar_in_exp_open_exp_wrt_exp; simpl; auto.
+  - destruct e; try solve [inversion x]; auto.
+    inversion x. subst.
+    constructor; eauto.
+  - destruct e; try solve [inversion x]; auto.
+    inversion x. subst.
+    inst_cofinites_by (singleton X) using_name X.
+    apply lc_exp_tabs_exists with (X1:=X0). 
+    eapply H0 with (X:=X0); eauto. erewrite subst_tvar_in_exp_open_exp_wrt_typ; eauto. 
+    rewrite subst_tvar_in_typ_fresh_eq; eauto. 
+  - destruct e; try solve [inversion x]; auto.
+    inversion x. subst.
+    constructor; eauto. 
+    eapply lc_typ_subst_inv; eauto.
+  - destruct e; try solve [inversion x]; auto.
+    inversion x. subst.
+    constructor; eauto.
+    eapply lc_typ_subst_inv; eauto.
+  - destruct e; try solve [inversion x]; auto.
+    inversion x. subst.
+    constructor; eauto.
+  - destruct e; try solve [inversion x]; auto.
+    inversion x. subst.
+    constructor; eauto.
 Qed.
 
 
@@ -505,18 +468,6 @@ Proof.
   - simpl. eapply s_in__all with (L:=L `union` singleton Y).
     intros. inst_cofinites_with Y0.
     rewrite subst_tvar_in_typ_open_typ_wrt_typ_fresh2; auto.
-Qed.
-
-Lemma s_in_b_subst_inv : forall X Y b A,
-  lc_typ A ->
-  X <> Y ->
-  s_in_b X b ->
-  s_in_b X (subst_tvar_in_body A Y b).
-Proof.
-  intros. destruct b. dependent destruction H1.
-  simpl. constructor.
-  - apply lc_exp_subst_tvar_in_exp; auto. 
-  - apply s_in_subst_inv; auto.
 Qed.
 
 
