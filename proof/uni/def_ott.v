@@ -1071,7 +1071,9 @@ Inductive neq_all : typ -> Prop :=    (* defn neq_all *)
  | neq_all__intersection : forall (A1 A2:typ),
      lc_typ A1 ->
      lc_typ A2 ->
-     neq_all (typ_intersection A1 A2).
+     neq_all (typ_intersection A1 A2)
+ | neq_all__label : forall (l:label),
+     neq_all (typ_label l).
 
 (* defns J_neq_intersection *)
 Inductive neq_intersection : typ -> Prop :=    (* defn neq_intersection *)
@@ -1093,7 +1095,9 @@ Inductive neq_intersection : typ -> Prop :=    (* defn neq_intersection *)
  | neq_intersection__union : forall (A1 A2:typ),
      lc_typ A1 ->
      lc_typ A2 ->
-     neq_intersection (typ_union A1 A2).
+     neq_intersection (typ_union A1 A2)
+ | neq_intersection__label : forall (l:label),
+     neq_intersection (typ_label l).
 
 (* defns J_neq_union *)
 Inductive neq_union : typ -> Prop :=    (* defn neq_union *)
@@ -1115,7 +1119,9 @@ Inductive neq_union : typ -> Prop :=    (* defn neq_union *)
  | neq_union__intersection : forall (A1 A2:typ),
      lc_typ A1 ->
      lc_typ A2 ->
-     neq_union (typ_intersection A1 A2).
+     neq_union (typ_intersection A1 A2)
+ | neq_union__label : forall (l:label),
+     neq_union (typ_label l).
 
 (* defns J_d_wf_typ *)
 Inductive d_wf_typ : denv -> typ -> Prop :=    (* defn d_wf_typ *)
