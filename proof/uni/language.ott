@@ -795,7 +795,7 @@ aE |- A2
 aE |- A1 ⊓ A2
 
 ------------- :: label
-dE |- LABEL l
+aE |- LABEL l
 
 defns 
 J_a_mono_typ :: '' ::= 

@@ -1146,7 +1146,9 @@ Inductive d_wf_typ : denv -> typ -> Prop :=    (* defn d_wf_typ *)
  | d_wf_typ__intersection : forall (Ψ:denv) (A1 A2:typ),
      d_wf_typ Ψ A1 ->
      d_wf_typ Ψ A2 ->
-     d_wf_typ Ψ (typ_intersection A1 A2).
+     d_wf_typ Ψ (typ_intersection A1 A2)
+ | d_wf_typ__label : forall (Ψ:denv) (l:label),
+     d_wf_typ Ψ (typ_label l).
 
 (* defns J_d_wf_exp *)
 Inductive d_wf_exp : denv -> exp -> Prop :=    (* defn d_wf_exp *)
@@ -1221,7 +1223,9 @@ Inductive d_mono_typ : denv -> typ -> Prop :=    (* defn d_mono_typ *)
  | d_mono_typ__arrow : forall (Ψ:denv) (A1 A2:typ),
      d_mono_typ Ψ A1 ->
      d_mono_typ Ψ A2 ->
-     d_mono_typ Ψ (typ_arrow A1 A2).
+     d_mono_typ Ψ (typ_arrow A1 A2)
+ | d_mono_typ__label : forall (Ψ:denv) (l:label),
+     d_mono_typ Ψ (typ_label l).
 
 (* defns J_d_wf_cont *)
 Inductive d_wf_conts : denv -> conts -> Prop :=    (* defn d_wf_conts *)
@@ -1442,7 +1446,9 @@ Inductive a_wf_typ : aenv -> typ -> Prop :=    (* defn a_wf_typ *)
  | a_wf_typ__intersection : forall (Σ:aenv) (A1 A2:typ),
      a_wf_typ Σ A1 ->
      a_wf_typ Σ A2 ->
-     a_wf_typ Σ (typ_intersection A1 A2).
+     a_wf_typ Σ (typ_intersection A1 A2)
+ | a_wf_typ__label : forall (Σ:aenv) (l:label),
+     a_wf_typ Σ (typ_label l).
 
 (* defns J_a_mono_typ *)
 Inductive a_mono_typ : aenv -> typ -> Prop :=    (* defn a_mono_typ *)
@@ -1457,7 +1463,9 @@ Inductive a_mono_typ : aenv -> typ -> Prop :=    (* defn a_mono_typ *)
  | a_mono_typ__arrow : forall (Σ:aenv) (A1 A2:typ),
      a_mono_typ Σ A1 ->
      a_mono_typ Σ A2 ->
-     a_mono_typ Σ (typ_arrow A1 A2).
+     a_mono_typ Σ (typ_arrow A1 A2)
+ | a_mono_typ__label : forall (Σ:aenv) (l:label),
+     a_mono_typ Σ (typ_label l).
 
 (* defns J_a_wf_exp *)
 Inductive a_wf_exp : aenv -> exp -> Prop :=    (* defn a_wf_exp *)
