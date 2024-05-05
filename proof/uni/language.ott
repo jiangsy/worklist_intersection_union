@@ -1,6 +1,6 @@
 metavar typvar, X, Y, Z     ::= {{ repr-locally-nameless }}
 metavar expvar, x, y, z     ::= {{ repr-locally-nameless }}
-metavar label, l            ::= {{ coq nat }}
+metavar label, l            ::= {{ coq var }}
 
 grammar
 
@@ -13,18 +13,18 @@ typ, A, B, C, T    :: typ_ ::=
   | ∀ X . A        ::   :: all  (+ bind X in A +)
   | A1 ⊔ A2        ::   :: union
   | A1 ⊓ A2        ::   :: intersection
+  | LABEL l        ::   :: label
+  % | Rec A          ::   :: rec
   | ( A )          :: S :: paren {{ coq ([[A]]) }}
   | { A2 / X } A1  :: M :: subst {{ coq (open_typ_wrt_typ [[X A1]] [[A2]]) }}
 
-body :: body_ ::= 
-  | e : A ::  :: anno
 
 exp, e, f, g :: exp_ ::=
   | unit                                ::   :: unit 
   | x                                   ::   :: var
   | \ x . e                             ::   :: abs  (+ bind x in e +)
   | e1 e2                               ::   :: app
-  | \ X . body                          ::   :: tabs (+ bind X in body +) 
+  | \ X . e                             ::   :: tabs (+ bind X in e +) 
   | e @ A                               ::   :: tapp
   | e : A                               ::   :: anno
   | ⟨ ⟩                                 ::   :: rcd_nil
@@ -84,14 +84,15 @@ substitutions
 freevars
   A X  :: ftvar_in
   e x  :: fvar_in
+
  
 grammar
 
 denv, dE, dF, dG:: '' ::= {{ coq list (atom*dbind) }}
-  | empty    ::   :: dempty {{ coq nil }}
+  | empty      ::   :: dempty {{ coq nil }}
   | dE , x db  ::   :: dcons1 {{ coq ([[x]]~[[db]] ++ [[dE]])  }}
   | dE , X db  ::   :: dcons2 {{ coq ([[X]]~[[db]] ++ [[dE]])  }}
-  | ⌊ dW ⌋   :: M :: dwlenv {{ coq ( dwl_to_denv [[dW]] )}}
+  | ⌊ dW ⌋     :: M :: dwlenv {{ coq ( dwl_to_denv [[dW]] )}}
 
 aenv, aE, aF, aG :: '' ::= {{ coq list (atom*abind) }}
   | empty    ::   :: aempty {{ coq nil }}
@@ -151,6 +152,20 @@ Fixpoint awl_to_aenv (aW : aworklist) : aenv :=
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+defns 
+J_is_exp_rcd :: '' ::=
+
+defn 
+e = ⟨ . ⟩  :: :: is_exp_rcd :: 'is_exp_rcd__' by
+
+---------------------- :: nil
+⟨ ⟩ = ⟨ . ⟩
+
+
+-------------------------- :: cons
+⟨ l : e1 , e2 ⟩ = ⟨ . ⟩
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 defns
 J_strong_in :: '' ::=
@@ -183,15 +198,15 @@ X ∈ₛ A2
 ------------------------ :: intersection
 X ∈ₛ A1 ⊓ A2
 
-defns
-J_strong_in_body :: '' ::=
+% defns
+% J_strong_in_body :: '' ::=
 
-defn
-X ∈ₛ body :: :: s_in_b :: 's_in_b__' by
+% defn
+% X ∈ₛ body :: :: s_in_b :: 's_in_b__' by
 
-X ∈ₛ A
------------------------- :: anno
-X ∈ₛ e : A 
+% X ∈ₛ A
+% ------------------------ :: anno
+% X ∈ₛ e : A 
 
 
 
@@ -212,7 +227,7 @@ x ¬= λ
 e1 e2  ¬= λ
 
 ---------------------- :: tabs
-\ X . e : A ¬= λ
+\ X . e ¬= λ
 
 ---------------------- :: tapp
 e @ A ¬= λ
@@ -311,36 +326,6 @@ A1 ⊓ A2 ¬= ⊔
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-defns
-J_neq_bot :: '' ::=
-
-defn
-A ¬= ⊥ :: :: neq_bot :: 'neq_bot__' by
-
------------------------- :: unit
-UNIT ¬= ⊥
-
------------------------- :: top
-TOP ¬= ⊥
-
------------------------- :: var
-X ¬= ⊥
-
------------------------- :: arrow
-A1 -> A2 ¬= ⊥
-
------------------------- :: union
-A1 ⊔ A2 ¬= ⊥
-
------------------------- :: intersection
-A1 ⊓ A2 ¬= ⊥
-
------------------------- :: all
-∀ X . A ¬= ⊥
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 
 defns
 J_d_wf_typ :: '' ::=
@@ -385,6 +370,9 @@ dE |- A2
 ------------- :: intersection
 dE |- A1 ⊓ A2
 
+------------- :: label
+dE |- LABEL l
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
@@ -411,10 +399,11 @@ dE |- e2
 ----------------- :: app
 dE |- e1 e2
 
-X ∈ₛ body
-dE , X : □ |- body
+X ∈ₛ A
+dE , X : □ |- A
+dE , X : □ |- e
 ----------------- :: tabs 
-dE |- \ X . body
+dE |- \ X . (e : A)
 
 dE |- A
 dE |- e
@@ -426,13 +415,19 @@ dE |- e
 ----------------- :: anno 
 dE |- e : A
 
-defn
-dE |- body :: :: d_wf_body :: 'd_wf_body__' by
+----------------- :: rcd_nil
+dE |- ⟨ ⟩
 
-dE |- A
+dE |- e1
+dE |- e2
+e2 = ⟨ . ⟩
+----------------- :: rcd_cons
+dE |- ⟨ l : e1 , e2 ⟩
+
 dE |- e
------------ :: anno
-dE |- e : A
+----------------- :: rcd_projs
+dE |- e . l
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -494,6 +489,9 @@ dE |-m A1
 dE |-m A2
 --------------- :: arrow
 dE |-m A1 -> A2
+
+------------- :: label
+dE |-m LABEL l
 
 defns 
 J_d_wf_cont :: '' ::= 
@@ -796,6 +794,9 @@ aE |- A2
 ------------- :: intersection
 aE |- A1 ⊓ A2
 
+------------- :: label
+dE |- LABEL l
+
 defns 
 J_a_mono_typ :: '' ::= 
 
@@ -818,6 +819,8 @@ aE |-m A2
 --------------- :: arrow
 aE |-m A1 -> A2
 
+------------- :: label
+aE |-m LABEL l
 
 defns
 J_a_wf_exp :: '' ::=
@@ -842,10 +845,11 @@ aE |- e2
 ----------------- :: app
 aE |- e1 e2
 
-X ∈ₛ body
-aE , X : □ |- body
+X ∈ₛ A
+aE , X : □ |- A
+aE , X : □ |- e
 ----------------- :: tabs 
-aE |- \ X . body
+aE |- \ X . (e : A)
 
 aE |- A
 aE |- e
@@ -857,13 +861,19 @@ aE |- e
 ----------------- :: anno 
 aE |- e : A
 
-defn
-aE |- body :: :: a_wf_body :: 'a_wf_body__' by
 
-aE |- A
+----------------- :: rcd_nil
+aE |- ⟨ ⟩
+
+aE |- e1
+aE |- e2
+e2 = ⟨ . ⟩
+----------------- :: rcd_cons
+aE |- ⟨ l : e1 , e2 ⟩
+
 aE |- e
------------ :: anno
-aE |- e : A
+----------------- :: rcd_projs
+aE |- e . l
 
 
 defns 

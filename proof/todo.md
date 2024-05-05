@@ -1,8 +1,8 @@
 - finish def
     - [x] add exp constructor
-    - [ ] add typ constructor
-    - [ ] update wf_exp
-    - [ ] update wf_typ
+    - [x] add typ constructor
+    - [x] update wf_exp
+    - [x] ~~update wf_typ~~
     - [ ] add typing rules  
 - finish meta theory
     - [ ] finish */prop_basic 
