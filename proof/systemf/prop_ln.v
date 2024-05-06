@@ -251,7 +251,6 @@ Inductive lc_set_ftyp : ftyp -> Set :=
     lc_set_ftyp T1 ->
     lc_set_ftyp T2 ->
     lc_set_ftyp (ftyp_prod T1 T2).
-
 Scheme lc_ftyp_ind' := Induction for lc_ftyp Sort Prop.
 
 Combined Scheme lc_ftyp_mutind from lc_ftyp_ind'.
@@ -309,7 +308,6 @@ Inductive lc_set_fexp : fexp -> Set :=
     lc_set_fexp e1 ->
     lc_set_fexp e2 ->
     lc_set_fexp (fexp_pair e1 e2).
-
 Scheme lc_fexp_ind' := Induction for lc_fexp Sort Prop.
 
 Combined Scheme lc_fexp_mutind from lc_fexp_ind'.
@@ -332,7 +330,6 @@ Inductive lc_set_fbind : fbind -> Set :=
   | lc_set_fbind_typ : forall T1,
     lc_set_ftyp T1 ->
     lc_set_fbind (fbind_typ T1).
-
 Scheme lc_fbind_ind' := Induction for lc_fbind Sort Prop.
 
 Combined Scheme lc_fbind_mutind from lc_fbind_ind'.
@@ -375,7 +372,7 @@ Definition body_fbind_wrt_ftyp fb1 := forall X1, lc_fbind (open_fbind_wrt_ftyp f
 
 (** Additional hint declarations. *)
 
-#[export] Hint Resolve plus_le_compat : lngen.
+#[export] Hint Resolve Nat.add_le_mono : lngen.
 
 (** Redefine some tactics. *)
 
@@ -2708,7 +2705,6 @@ match goal with
   | |- _ = _ => reflexivity
   | _ => idtac
 end;
-instantiate;
 (* everything should be easy now *)
 default_simp.
 Qed.
@@ -2748,7 +2744,6 @@ match goal with
   | |- _ = _ => reflexivity
   | _ => idtac
 end;
-instantiate;
 (* everything should be easy now *)
 default_simp.
 Qed.
@@ -2788,7 +2783,6 @@ match goal with
   | |- _ = _ => reflexivity
   | _ => idtac
 end;
-instantiate;
 (* everything should be easy now *)
 default_simp.
 Qed.
@@ -3147,7 +3141,6 @@ match goal with
   | |- _ = _ => reflexivity
   | _ => idtac
 end;
-instantiate;
 (* everything should be easy now *)
 default_simp.
 Qed.
@@ -3190,7 +3183,6 @@ match goal with
   | |- _ = _ => reflexivity
   | _ => idtac
 end;
-instantiate;
 (* everything should be easy now *)
 default_simp.
 Qed.
@@ -3233,7 +3225,6 @@ match goal with
   | |- _ = _ => reflexivity
   | _ => idtac
 end;
-instantiate;
 (* everything should be easy now *)
 default_simp.
 Qed.

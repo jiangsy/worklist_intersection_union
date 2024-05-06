@@ -525,7 +525,6 @@ Inductive lc_set_typ : typ -> Set :=
     lc_set_typ A1 ->
     lc_set_typ A2 ->
     lc_set_typ (typ_intersection A1 A2).
-
 Scheme lc_typ_ind' := Induction for lc_typ Sort Prop.
 
 Combined Scheme lc_typ_mutind from lc_typ_ind'.
@@ -552,7 +551,6 @@ Inductive lc_set_abind : abind -> Set :=
   | lc_set_abind_var_typ : forall A1,
     lc_set_typ A1 ->
     lc_set_abind (abind_var_typ A1).
-
 Scheme lc_abind_ind' := Induction for lc_abind Sort Prop.
 
 Combined Scheme lc_abind_mutind from lc_abind_ind'.
@@ -598,7 +596,6 @@ with lc_set_exp : exp -> Set :=
     lc_set_exp e1 ->
     lc_set_typ A1 ->
     lc_set_exp (exp_anno e1 A1).
-
 Scheme lc_body_ind' := Induction for lc_body Sort Prop
   with lc_exp_ind' := Induction for lc_exp Sort Prop.
 
@@ -657,7 +654,6 @@ with lc_set_conts : conts -> Set :=
   | lc_set_conts_sub : forall A1,
     lc_set_typ A1 ->
     lc_set_conts (conts_sub A1).
-
 Scheme lc_contd_ind' := Induction for lc_contd Sort Prop
   with lc_conts_ind' := Induction for lc_conts Sort Prop.
 
@@ -689,7 +685,6 @@ Inductive lc_set_dbind : dbind -> Set :=
   | lc_set_dbind_typ : forall A1,
     lc_set_typ A1 ->
     lc_set_dbind (dbind_typ A1).
-
 Scheme lc_dbind_ind' := Induction for lc_dbind Sort Prop.
 
 Combined Scheme lc_dbind_mutind from lc_dbind_ind'.
@@ -767,7 +762,6 @@ Inductive lc_set_work : work -> Set :=
     lc_set_typ A1 ->
     lc_set_typ B1 ->
     lc_set_work (work_applyd cd1 A1 B1).
-
 Scheme lc_work_ind' := Induction for lc_work Sort Prop.
 
 Combined Scheme lc_work_mutind from lc_work_ind'.
@@ -846,7 +840,7 @@ Definition body_work_wrt_exp w1 := forall x1, lc_work (open_work_wrt_exp w1 (exp
 
 (** Additional hint declarations. *)
 
-#[export] Hint Resolve plus_le_compat : lngen.
+#[export] Hint Resolve Nat.add_le_mono : lngen.
 
 (** Redefine some tactics. *)
 
@@ -8041,7 +8035,6 @@ match goal with
   | |- _ = _ => reflexivity
   | _ => idtac
 end;
-instantiate;
 (* everything should be easy now *)
 default_simp.
 Qed.
@@ -8080,7 +8073,6 @@ match goal with
   | |- _ = _ => reflexivity
   | _ => idtac
 end;
-instantiate;
 (* everything should be easy now *)
 default_simp.
 Qed.
@@ -8125,7 +8117,6 @@ match goal with
   | |- _ = _ => reflexivity
   | _ => idtac
 end;
-instantiate;
 (* everything should be easy now *)
 default_simp.
 Qed.
@@ -8184,7 +8175,6 @@ match goal with
   | |- _ = _ => reflexivity
   | _ => idtac
 end;
-instantiate;
 (* everything should be easy now *)
 default_simp.
 Qed.
@@ -8237,7 +8227,6 @@ match goal with
   | |- _ = _ => reflexivity
   | _ => idtac
 end;
-instantiate;
 (* everything should be easy now *)
 default_simp.
 Qed.
@@ -8277,7 +8266,6 @@ match goal with
   | |- _ = _ => reflexivity
   | _ => idtac
 end;
-instantiate;
 (* everything should be easy now *)
 default_simp.
 Qed.
@@ -8937,7 +8925,6 @@ match goal with
   | |- _ = _ => reflexivity
   | _ => idtac
 end;
-instantiate;
 (* everything should be easy now *)
 default_simp.
 Qed.
@@ -8980,7 +8967,6 @@ match goal with
   | |- _ = _ => reflexivity
   | _ => idtac
 end;
-instantiate;
 (* everything should be easy now *)
 default_simp.
 Qed.
@@ -9031,7 +9017,6 @@ match goal with
   | |- _ = _ => reflexivity
   | _ => idtac
 end;
-instantiate;
 (* everything should be easy now *)
 default_simp.
 Qed.
@@ -9098,7 +9083,6 @@ match goal with
   | |- _ = _ => reflexivity
   | _ => idtac
 end;
-instantiate;
 (* everything should be easy now *)
 default_simp.
 Qed.
@@ -9153,7 +9137,6 @@ match goal with
   | |- _ = _ => reflexivity
   | _ => idtac
 end;
-instantiate;
 (* everything should be easy now *)
 default_simp.
 Qed.
@@ -9200,7 +9183,6 @@ match goal with
   | |- _ = _ => reflexivity
   | _ => idtac
 end;
-instantiate;
 (* everything should be easy now *)
 default_simp.
 Qed.
