@@ -1378,6 +1378,9 @@ Inductive d_sub : denv -> typ -> typ -> Prop :=    (* defn d_sub *)
      d_wf_env Ψ ->
      d_wf_typ Ψ (typ_var_f X) ->
      d_sub Ψ (typ_var_f X) (typ_var_f X)
+ | d_sub__label : forall (Ψ:denv) (l:label),
+     d_wf_env Ψ ->
+     d_sub Ψ (typ_label l) (typ_label l)
  | d_sub__arrow : forall (Ψ:denv) (A1 A2 B1 B2:typ),
      d_sub Ψ B1 A1 ->
      d_sub Ψ A2 B2 ->

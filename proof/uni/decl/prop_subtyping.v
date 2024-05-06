@@ -194,34 +194,6 @@ Proof.
   econstructor; eapply d_mono_typ_lc; eauto.
 Qed.
 
-Inductive d_mono_ordiu : denv -> typ -> Prop :=
-| d_monoord__base : forall Ψ T1,
-    d_ord_mono Ψ T1 ->
-    d_mono_ordiu Ψ T1
-| d_monoord__union : forall Ψ T1 T2,
-    d_mono_ordiu Ψ T1 ->
-    d_mono_ordiu Ψ T2 ->
-    d_mono_ordiu Ψ (typ_union T1 T2)
-| d_monoord__inter : forall Ψ T1 T2,
-    d_mono_ordiu Ψ T1 ->
-    d_mono_ordiu Ψ T2 ->
-    d_mono_ordiu Ψ (typ_intersection T1 T2).
-
-
-Lemma d_mono_ordiu_complete : forall Ψ T1,
-  d_mono_typ Ψ T1 -> d_mono_ordiu Ψ T1.
-Proof.
-  intros. induction H; try solve [constructor; constructor].
-  - econstructor. econstructor. eapply d_mono_typ__tvar; auto.
-  - apply d_monoord__base. apply d_ordmono__arr; auto.
-Qed.
-
-
-Lemma d_ord_mono_sound: forall Ψ A1,
-  d_ord_mono Ψ A1 -> d_mono_typ Ψ A1.
-Proof.
-  intros. induction H; auto.
-Qed.
 
 (* Lemma d_mono_ordiu_sound : forall Ψ A1,
   d_mono_ordiu Ψ A1 -> d_mono_typ Ψ A1.
@@ -436,6 +408,9 @@ Inductive d_sub_size : denv -> typ -> typ -> nat -> Prop :=    (* defn d_sub *)
      d_wf_env Ψ ->
      d_wf_typ Ψ (typ_var_f X) ->
      d_sub_size Ψ (typ_var_f X) (typ_var_f X) n
+ | d_subs__label : forall (Ψ:denv) (l:label) (n:nat),
+     d_wf_env Ψ ->
+     d_sub_size Ψ (typ_label l) (typ_label l) n
  | d_subs__arrow : forall (Ψ:denv) (A1 A2 B1 B2:typ) (n1 n2:nat),
      d_sub_size Ψ B1 A1 n1 ->
      d_sub_size Ψ A2 B2 n2 ->
@@ -582,6 +557,7 @@ Proof with (simpl in *; eauto using d_wf_env_subst_tvar).
       applys* d_wf_env_rename_stvar...
       forwards: d_wf_typ_rename_stvar Y H0...
       case_if in H1...
+  - constructor. apply d_wf_env_rename_dtvar; auto.
   - pick fresh SZ and apply d_subs__all. inst_cofinites_with SZ.
     + rewrite subst_tvar_in_typ_open_typ_wrt_typ_fresh2...
       applys~ s_in_subst_inv.
@@ -615,10 +591,10 @@ Proof with (simpl in *; eauto using d_wf_env_subst_tvar).
 Qed.
 
 Corollary d_sub_size_rename : forall n X Y Ψ1 Ψ2 A B,
-    X ∉ ftvar_in_typ A `union` ftvar_in_typ B ->
-    Y ∉ (dom Ψ1) `union` (dom Ψ2) ->
-    Ψ2 ++ X ~ ■ ++ Ψ1 ⊢ A ᵗ^^ₜ ` X <: B ᵗ^^ₜ ` X | n ->
-    map (subst_tvar_in_dbind (` Y) X) Ψ2 ++ Y ~ ■ ++ Ψ1 ⊢ A ᵗ^^ₜ ` Y <: B ᵗ^^ₜ ` Y | n.
+  X ∉ ftvar_in_typ A `union` ftvar_in_typ B ->
+  Y ∉ (dom Ψ1) `union` (dom Ψ2) ->
+  Ψ2 ++ X ~ ■ ++ Ψ1 ⊢ A ᵗ^^ₜ ` X <: B ᵗ^^ₜ ` X | n ->
+  map (subst_tvar_in_dbind (` Y) X) Ψ2 ++ Y ~ ■ ++ Ψ1 ⊢ A ᵗ^^ₜ ` Y <: B ᵗ^^ₜ ` Y | n.
 Proof with eauto.
   intros.
   forwards: d_sub_size_rename_stvar Y H1. solve_notin.
@@ -752,6 +728,7 @@ Inductive d_ord : typ -> Prop :=
   | d_ord__bot : d_ord typ_bot
   | d_ord__top : d_ord typ_top
   | d_ord__unit : d_ord typ_unit
+  | d_ord__label : forall l, d_ord (typ_label l)
   | d_ord__arr : forall A1 A2,
       d_ord (typ_arrow A1 A2)
   | d_ord__all : forall A,
@@ -941,6 +918,16 @@ Proof with auto.
       * simpl in H. eapply d_sub__union2.
         eapply IHn_d_sub_size with (B:=` X) (n1:=n); eauto...
         auto.
+    + dependent destruction Hsub2...
+      * econstructor.
+        eapply IHn_d_sub_size with (B:=typ_label l) (n1:=n2); eauto...
+        eapply IHn_d_sub_size with (B:=typ_label l) (n1:=n1); eauto...
+      * simpl in H. eapply d_sub__union1.
+        eapply IHn_d_sub_size with (B:=typ_label l) (n1:=n); eauto...
+        auto.
+      * simpl in H. eapply d_sub__union2.
+        eapply IHn_d_sub_size with (B:=typ_label l) (n1:=n); eauto...
+        auto.
     + simpl in *. dependent destruction Hsub2...
       * econstructor... apply d_sub_size_sound in Hsub1_1. apply d_sub_size_sound in Hsub1_2.
         apply d_sub_d_wf in Hsub1_1. apply d_sub_d_wf in Hsub1_2. econstructor; intuition.
@@ -1043,6 +1030,15 @@ Proof with auto.
       * inversion H.
       * inversion H1.
       * inversion H0.
+      * dependent destruction Hsub2; try solve ord_inv; auto...
+        -- econstructor...
+          pick fresh Y and apply d_wf_typ__all. applys* H2.
+          forwards HW: d_sub_dwft_sized_1 Hsub1.
+          rewrite_env (nil ++ Ψ) in HW.
+          rewrite_env (nil ++ Y ~ □ ++ Ψ).
+          applys* d_wf_typ_open_mono_inv.
+        -- eapply d_sub__alll with (T:=T1); auto.
+          eapply d_sub_size_sound; eauto.
     + simpl in *. dependent destruction Hsub2...
       * econstructor... apply d_sub_size_sound in Hsub1_1. apply d_sub_d_wf in Hsub1_1.
         intuition.
