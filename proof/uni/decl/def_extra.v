@@ -76,6 +76,19 @@ Inductive d_chk_inf : denv -> exp -> typing_mode -> typ -> Prop :=
 | d_chk_inf__inf_unit : forall (Ψ:denv),
     d_wf_tenv Ψ ->
     d_chk_inf Ψ exp_unit typingmode__inf typ_unit
+| d_chk_inf__inf_rcd_empty : forall (Ψ:denv),
+    d_wf_tenv Ψ ->
+    d_chk_inf Ψ exp_rcd_nil typingmode__inf typ_unit
+| d_chk_inf__inf_rcd_cons : forall (Ψ:denv) (e1 e2:exp) (l1:label) (A1 A2:typ),
+    d_wf_tenv Ψ ->
+    d_chk_inf Ψ e1 typingmode__inf A1 ->
+    d_chk_inf Ψ e2 typingmode__inf A2 ->
+    d_chk_inf Ψ (exp_rcd_cons l1 e1 e2) typingmode__inf (typ_intersection (typ_arrow (typ_label l1) A1) A2)
+| d_chk_inf__inf_rcd_proj : forall (Ψ:denv) (e:exp) (l:label) (A B C:typ),
+    d_chk_inf Ψ e typingmode__inf A ->
+    d_infabs Ψ A B C ->
+    d_sub Ψ (typ_label l) B ->
+    d_chk_inf Ψ (exp_rcd_proj e l) typingmode__inf C
 | d_chk_inf__inf_app : forall (Ψ:denv) (e1 e2:exp) (A B C:typ),
     d_chk_inf Ψ e1 typingmode__inf A ->
     d_infabs Ψ A B C ->
