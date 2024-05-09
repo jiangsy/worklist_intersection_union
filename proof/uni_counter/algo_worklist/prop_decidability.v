@@ -1098,6 +1098,11 @@ Qed.
 
 #[local] Hint Extern 1 ((exists _, _) -> False) => try solve_false : core.
 
+Corollary rename_var_a_wf_exp_cons : forall Γ x y e A,
+  x ~ (abind_var_typ A) ++ ⌊ Γ ⌋ᵃ ᵉ⊢ᵃ e  ->
+  y ~ (abind_var_typ A) ++ ⌊ Γ ⌋ᵃ ᵉ⊢ᵃ {exp_var_f y ᵉ/ₑ x} e.
+Admitted.
+
 Lemma decidablity_lemma : forall ne nj nt ntj na naj nm nw Γ,
   ⊢ᵃʷₛ Γ ->
   exp_size_wl Γ < ne ->
@@ -1248,17 +1253,34 @@ Proof.
                 assert (Hexp: exp_size (x ~ᵃ typ_bot;ᵃ Γ) (e ᵉ^ₑ exp_var_f x) = exp_size Γ e) by admit. (* should be fine *)
                 lia. }
               destruct Jgt as [Jgt | Jgt].
-              ** left. eapply a_wl_red__chk_abstop with (L := L `union` (ftvar_in_typ T) `union` (ftvar_in_aworklist Γ)).
-                  intros x' Hnin. admit. (* TODO: rename var *)
-              ** right. intro Hcontra. dependent destruction Hcontra.
-                  --- apply Jg; auto.
-                  --- admit. (* TODO: rename var  *) 
+              ** left. inst_cofinites_for a_wl_red__chk_abstop; eauto.
+                 intros x' Hnin.
+                 apply rename_var_in_a_wf_wwl_a_wl_red with (x:=x) (y:=x') in Jgt; auto.
+                 --- simpl in Jgt. destruct_eq_atom.
+                     rewrite rename_var_in_aworklist_fresh_eq in Jgt; auto.
+                     rewrite subst_var_in_exp_open_exp_wrt_exp in Jgt; auto.
+                     simpl in Jgt. destruct_eq_atom.
+                     rewrite subst_var_in_exp_fresh_eq in Jgt; auto.
+                 --- apply a_wf_wl_a_wf_wwl.
+                     constructor; auto. constructor; auto. constructor; auto.
+                     simpl. apply a_wf_exp_var_binds_another with (Σ2 := nil) (A1 := T); simpl; auto.
+              ** right. intro Hcontra. dependent destruction Hcontra. apply Jg; auto.
+                 pick fresh x1. inst_cofinites_with x1.
+                 apply rename_var_in_a_wf_wwl_a_wl_red with (x:=x1) (y:=x) in H1; auto.
+                 --- simpl in H1. destruct_eq_atom.
+                     rewrite rename_var_in_aworklist_fresh_eq in H1; auto.
+                     rewrite subst_var_in_exp_open_exp_wrt_exp in H1; auto.
+                     simpl in H1. destruct_eq_atom.
+                     rewrite subst_var_in_exp_fresh_eq in H1; auto.
+                 --- apply a_wf_wl_a_wf_wwl.
+                     constructor; auto. constructor; auto. constructor; auto.
+                     simpl. apply a_wf_exp_var_binds_another with (Σ2 := nil) (A1 := T); simpl; auto.
            ++ right. intro Hcontra. dependent destruction Hcontra.
               eapply Jg; eauto. unify_binds.
            ++ right. intro Hcontra. dependent destruction Hcontra.
               eapply Jg; eauto. unify_binds.
            ++ admit.
-           ++ pick fresh x.
+           ++ pick fresh x. inst_cofinites_with x.
               assert (JgArr: (work_check (e ᵉ^ₑ exp_var_f x) A2 ⫤ᵃ x ~ᵃ A1;ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ 
                            ¬ (work_check (e ᵉ^ₑ exp_var_f x) A2 ⫤ᵃ x ~ᵃ A1;ᵃ Γ) ⟶ᵃʷ⁎⋅).
               { eapply IHne; eauto; simpl; try lia.
@@ -1267,12 +1289,31 @@ Proof.
                 assert (Hexp: exp_size (x ~ᵃ A1;ᵃ Γ) (e ᵉ^ₑ exp_var_f x) = exp_size Γ e) by admit. (* should be fine *)
                 rewrite Hexp. lia. } 
               destruct JgArr as [JgArr | JgArr]; auto.
-              ** left. eapply a_wl_red__chk_absarrow with (L := union L (union (ftvar_in_typ T) (union (ftvar_in_typ A1) (ftvar_in_typ A2)))); eauto.
-                  intros x' Hnin.              
-                  admit. (* TODO: rename var *)
-              ** right. intro Hcontra. dependent destruction Hcontra.
-                  --- apply Jg; auto.
-                  --- admit. (* TODO: rename var *) 
+              ** left. inst_cofinites_for a_wl_red__chk_absarrow; eauto.
+                 intros x' Hnin.
+                 apply rename_var_in_a_wf_wwl_a_wl_red with (x:=x) (y:=x') in JgArr; auto.
+                 --- simpl in JgArr. destruct_eq_atom.
+                     rewrite rename_var_in_aworklist_fresh_eq in JgArr; auto.
+                     rewrite subst_var_in_exp_open_exp_wrt_exp in JgArr; auto.
+                     simpl in JgArr. destruct_eq_atom.
+                     rewrite subst_var_in_exp_fresh_eq in JgArr; auto.
+                 --- apply a_wf_wl_a_wf_wwl.
+                     constructor; auto. constructor; auto. constructor; auto.
+                     simpl. apply a_wf_exp_var_binds_another with (Σ2 := nil) (A1 := T); simpl; auto.
+                     apply a_wf_typ_weaken_cons; auto.
+              ** right. intro Hcontra. dependent destruction Hcontra. apply Jg; auto.
+                 pick fresh x1. inst_cofinites_with x1.
+                 apply rename_var_in_a_wf_wwl_a_wl_red with (x:=x1) (y:=x) in H1; auto.
+                 --- simpl in H1. destruct_eq_atom.
+                     rewrite rename_var_in_aworklist_fresh_eq in H1; auto.
+                     rewrite subst_var_in_exp_open_exp_wrt_exp in H1; auto.
+                     simpl in H1. destruct_eq_atom.
+                     rewrite subst_var_in_exp_fresh_eq in H1; auto.
+                 --- apply a_wf_wl_a_wf_wwl.
+                     constructor; auto. constructor; auto. constructor; auto.
+                     simpl. apply a_wf_exp_var_binds_another with (Σ2 := nil) (A1 := T); simpl; auto.
+                     admit.
+                     apply a_wf_typ_weaken_cons; auto.
         ++ specialize (Jg1 A1 A2). destruct Jg1 as [Jg1 | Jg1]; eauto.
            specialize (Jg2 A1 A2). destruct Jg2 as [Jg2 | Jg2]; eauto.
            right. intro Hcontra. dependent destruction Hcontra.
