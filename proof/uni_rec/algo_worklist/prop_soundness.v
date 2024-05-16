@@ -1271,6 +1271,7 @@ Proof with eauto.
   - destruct_a_wf_wl. 
     pick fresh X. inst_cofinites_with X.
     assert (Hwf: ⊢ᵃʷₛ (work_check (e ᵉ^ₜ ` X) (A ᵗ^ₜ X) ⫤ᵃ X ~ᵃ □ ;ᵃ work_applys cs (typ_all A) ⫤ᵃ Γ)). {
+      dependent destruction H0.
       repeat (constructor; simpl; auto).
       inst_cofinites_for a_wf_typ__all; intros.
       solve_s_in.
@@ -1280,17 +1281,17 @@ Proof with eauto.
     _apply_IH_a_wl_red.
     destruct_trans.
     rename_typ.
-    dependent destruction H7.
+    dependent destruction H6.
     exists (work_infer (exp_tabs (exp_anno (close_exp_wrt_typ X eᵈ) (close_typ_wrt_typ X Axᵈ))) csᵈ ⫤ᵈ Ω). split.
     + exists θ...
       econstructor...
       econstructor...
       inst_cofinites_for trans_exp__tabs; intros; simpl.
       -- rewrite_close_open_subst.
-         apply trans_exp_rename_tvar_cons with (X':=X0) in H11; eauto. 
-         rewrite subst_tvar_in_exp_open_exp_wrt_typ in H11...
+         apply trans_exp_rename_tvar_cons with (X':=X0) in H10; eauto. 
+         rewrite subst_tvar_in_exp_open_exp_wrt_typ in H10...
          simpl in *. destruct_eq_atom.
-         rewrite subst_tvar_in_exp_fresh_eq in H11; eauto.
+         rewrite subst_tvar_in_exp_fresh_eq in H10; eauto.
       -- solve_trans_typ_open_close.
     + assert (θ ᵗ⊩ typ_all A ⇝ typ_all A1ᵈ). {
         inst_cofinites_for trans_typ__all; intros;
@@ -1300,20 +1301,16 @@ Proof with eauto.
         inst_cofinites_for trans_typ__all; intros; auto;
         solve_trans_typ_open_close.
       }
-      unify_trans_typ. inversion H14. subst.
+      unify_trans_typ. inversion H13. subst.
       apply d_wl_del_red__inf with (A:=typ_all (close_typ_wrt_typ X Axᵈ)).
       * inst_cofinites_for d_chk_inf__inf_tabs. 
-        -- inst_cofinites_for d_wf_typ__all; intros; inst_cofinites_with X0; 
+        -- intros. 
            rewrite_close_open_subst. apply s_in_rename. 
-           eapply trans_typ_dtvar_atyp_s_in_dtyp with (b:=dbind_tvar_empty)... 
-           apply d_wf_typ_rename_tvar_cons.
-           rewrite_env (dwl_to_denv (X ~ᵈ □ ;ᵈ Ω)).
-           eapply trans_wl_a_wf_typ_d_wf_typ with (Γ:= X ~ᵃ □ ;ᵃ Γ)...
-           constructor...
+           eapply trans_typ_dtvar_atyp_s_in_dtyp with (b:=dbind_tvar_empty)...
         -- intros. inst_cofinites_with X0. rewrite_close_open_subst.
            rewrite_close_open_subst.
            destruct_d_wl_del_red. simpl in *.
-           eapply d_chk_inf_rename_tvar_cons in H12...
+           eapply d_chk_inf_rename_tvar_cons in H11...
       * destruct_d_wl_del_red... 
   (* ⟨ ⟩ => _  *)
   - exists (work_infer exp_rcd_nil csᵈ ⫤ᵈ Ω)...

@@ -338,7 +338,7 @@ Qed.
 Lemma notin_dom_reorder : forall X X0 θ θ',
   X ∉ dom θ ->
   X <> X0 ->
-  (forall Y (b: dbind), X0 ≠ Y → binds Y b θ ↔ binds Y b θ') ->
+  (forall Y (b: dbind), X0 <> Y -> binds Y b θ <-> binds Y b θ') ->
   X ∉ dom θ'.
 Proof.
   intros. unfold not. intros.
@@ -404,7 +404,8 @@ Qed.
 
 
 Lemma binds_tvar_ss_to_aenv_binds_ss : forall X (θ: subst_set),
-  X ~ □ ∈ᵃ ⌈ θ ⌉ᵃ → X ~ □ ∈ᵈ θ.  
+  X ~ □ ∈ᵃ ⌈ θ ⌉ᵃ ->
+  X ~ □ ∈ᵈ θ.  
 Proof.
   intros. induction θ; auto.
   - destruct a; destruct d; simpl in *; try inversion H; auto;
@@ -903,10 +904,10 @@ Qed.
 
 Lemma trans_wl_split : forall Γ1 Γ2 Ω θ θ',
   θ ⊩ (Γ2 ⧺ Γ1) ⇝ Ω ⫣ θ' ->
-  exists Ω1 Ω2 θ''
-    , Ω = dwl_app Ω2 Ω1 
-    ∧ θ  ⊩ Γ1 ⇝ Ω1 ⫣ θ''
-    ∧ θ'' ⊩ Γ2 ⇝ Ω2 ⫣ θ'.
+  exists Ω1 Ω2 θ'', 
+    Ω = dwl_app Ω2 Ω1 /\
+    θ  ⊩ Γ1 ⇝ Ω1 ⫣ θ'' /\ 
+    θ'' ⊩ Γ2 ⇝ Ω2 ⫣ θ'.
 Proof.
   induction Γ2; simpl; intros.
   - exists Ω. exists dworklist_empty. exists θ'.
@@ -1637,17 +1638,17 @@ Proof with eauto using trans_typ_total.
   - pick fresh X; inst_cofinites_with X.
     assert (nil ⊩ (X ~ᵃ □ ;ᵃ Γ) ⇝ (X ~ᵈ □ ;ᵈ Ω) ⫣ (X, □) :: θ) by auto.
     replace (X ~ □ ++ ⌊ Γ ⌋ᵃ )%abind with (⌊ X ~ᵃ □ ;ᵃ Γ ⌋ᵃ) in * by auto.
-    eapply trans_typ_total in H0...
-    eapply H2 in H4...
-    destruct H4 as [eᵈ]. destruct H0 as [Aᵈ].
-    exists (exp_tabs (exp_anno (close_exp_wrt_typ X eᵈ) (close_typ_wrt_typ X Aᵈ))).
+    (* eapply trans_typ_total in H0... *)
+    eapply H1 in H3...
+    destruct H3 as [eᵈ]. dependent destruction H3... 
+    exists (exp_tabs (exp_anno (close_exp_wrt_typ X eᵈ) (close_typ_wrt_typ X A1ᵈ))).
     inst_cofinites_for trans_exp__tabs; intros.
-    + rewrite_close_open_subst. apply trans_exp_rename_tvar_cons with (X':=X0) in H4; eauto.
-      rewrite subst_tvar_in_exp_open_exp_wrt_typ in H4... simpl in H4. destruct_eq_atom...
-      rewrite subst_tvar_in_exp_fresh_eq in H4...
-    + rewrite_close_open_subst. apply trans_typ_rename_tvar_cons with (X':=X0) in H0; eauto.
-      rewrite subst_tvar_in_typ_open_typ_wrt_typ in H0... simpl in H0. destruct_eq_atom...
-      rewrite subst_tvar_in_typ_fresh_eq in H0...
+    + rewrite_close_open_subst. apply trans_exp_rename_tvar_cons with (X':=X0) in H3; eauto.
+      rewrite subst_tvar_in_exp_open_exp_wrt_typ in H3... simpl in H3. destruct_eq_atom...
+      rewrite subst_tvar_in_exp_fresh_eq in H3...
+    + rewrite_close_open_subst. apply trans_typ_rename_tvar_cons with (X':=X0) in H4; eauto.
+      rewrite subst_tvar_in_typ_open_typ_wrt_typ in H4... simpl in H4. destruct_eq_atom...
+      rewrite subst_tvar_in_typ_fresh_eq in H4...
   - assert (Hex: (exists eᵈ, θ ᵉ⊩ e ⇝ eᵈ) -> (exists Aᵈ, θ ᵗ⊩ A ⇝ Aᵈ) -> exists eᵈ, θ ᵉ⊩ exp_tapp e A ⇝ eᵈ). {
       intros. destruct_conj...
     } 
@@ -2150,18 +2151,12 @@ Proof with auto.
     rewrite_env (nil ++ (x, abind_var_typ typ_unit) :: ⌊ Γ ⌋ᵃ). 
     eapply a_wf_exp_var_binds_another with (A1:=T); eauto.
   - dependent destruction Hwfe; constructor; eauto.
-  - dependent destruction Hwfe. 
-    inst_cofinites_for d_wf_exp__tabs;
-    intros; inst_cofinites_with X; auto.
-    + eapply trans_typ_dtvar_atyp_s_in_dtyp with (b:=□); eauto.
-    + assert ((X, □) :: θ ᵉ⊩ exp_anno eᵃ Aᵃ ᵉ^ₜ ` X ⇝ exp_anno eᵈ Aᵈ ᵉ^ₜ ` X).
-      constructor; auto.
-      eapply H0 with (Γ:=X ~ᵃ □;ᵃ Γ) in H7; eauto...
-      dependent destruction H7... constructor...
-    + assert ((X, □) :: θ ᵉ⊩ exp_anno eᵃ Aᵃ ᵉ^ₜ ` X ⇝ exp_anno eᵈ Aᵈ ᵉ^ₜ ` X).
-      constructor; auto.
-      eapply H0 with (Γ:=X ~ᵃ □;ᵃ Γ) in H7; eauto...
-      dependent destruction H7... constructor...
+  - dependent destruction Hwfe. inst_cofinites_for d_wf_exp__tabs;
+    intros; inst_cofinites_with X...
+    + eapply trans_typ_dtvar_atyp_s_in_dtyp with (b:=dbind_tvar_empty); eauto.
+    + rewrite_env (⌊ X ~ᵈ □ ;ᵈ Ω ⌋ᵈ). 
+      eapply H0 with (Γ:=X ~ᵃ □ ;ᵃ Γ); eauto.
+      constructor; eauto. econstructor...
   - dependent destruction Hwfe; constructor; eauto.
     eapply trans_wl_a_wf_typ_d_wf_typ; eauto.
   - dependent destruction Hwfe; constructor; eauto.
@@ -2169,6 +2164,7 @@ Proof with auto.
   - dependent destruction Hwfe; constructor; eauto.
   - dependent destruction Hwfe; constructor; eauto.
 Qed.
+
 
 Lemma trans_wl_a_wf_exp_d_wf_exp : forall Γ Ω θ eᵃ eᵈ,
   nil ⊩ Γ ⇝ Ω ⫣ θ ->

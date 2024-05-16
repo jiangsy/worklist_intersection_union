@@ -1255,8 +1255,7 @@ Inductive d_wf_exp : denv -> exp -> Prop :=    (* defn d_wf_exp *)
      d_wf_exp Ψ (exp_app e1 e2)
  | d_wf_exp__tabs : forall (L:vars) (Ψ:denv) (e:exp) (A:typ),
       ( forall X , X \notin  L  -> s_in X  ( open_typ_wrt_typ A (typ_var_f X) )  )  ->
-      ( forall X , X \notin  L  -> d_wf_typ  ( X ~ dbind_tvar_empty  ++  Ψ )   ( open_typ_wrt_typ A (typ_var_f X) )  )  ->
-      ( forall X , X \notin  L  -> d_wf_exp  ( X ~ dbind_tvar_empty  ++  Ψ )   ( open_exp_wrt_typ e (typ_var_f X) )  )  ->
+      ( forall X , X \notin  L  -> d_wf_exp  ( X ~ dbind_tvar_empty  ++  Ψ )  (exp_anno  ( open_exp_wrt_typ e (typ_var_f X) )   ( open_typ_wrt_typ A (typ_var_f X) ) ) )  ->
      d_wf_exp Ψ (exp_tabs  ( (exp_anno e A) ) )
  | d_wf_exp__tapp : forall (Ψ:denv) (e:exp) (A:typ),
      d_wf_typ Ψ A ->
@@ -1601,8 +1600,7 @@ Inductive a_wf_exp : aenv -> exp -> Prop :=    (* defn a_wf_exp *)
      a_wf_exp Σ (exp_app e1 e2)
  | a_wf_exp__tabs : forall (L:vars) (Σ:aenv) (e:exp) (A:typ),
       ( forall X , X \notin  L  -> s_in X  ( open_typ_wrt_typ A (typ_var_f X) )  )  ->
-      ( forall X , X \notin  L  -> a_wf_typ  ( X ~ abind_tvar_empty  ++  Σ )   ( open_typ_wrt_typ A (typ_var_f X) )  )  ->
-      ( forall X , X \notin  L  -> a_wf_exp  ( X ~ abind_tvar_empty  ++  Σ )   ( open_exp_wrt_typ e (typ_var_f X) )  )  ->
+      ( forall X , X \notin  L  -> a_wf_exp  ( X ~ abind_tvar_empty  ++  Σ )  (exp_anno  ( open_exp_wrt_typ e (typ_var_f X) )   ( open_typ_wrt_typ A (typ_var_f X) ) ) )  ->
      a_wf_exp Σ (exp_tabs  ( (exp_anno e A) ) )
  | a_wf_exp__tapp : forall (Σ:aenv) (e:exp) (A:typ),
      a_wf_typ Σ A ->

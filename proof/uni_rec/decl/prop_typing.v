@@ -732,16 +732,16 @@ Proof with auto.
         -- eapply d_sub_refl; auto.
            inst_cofinites_by L. apply d_chk_inf_wf_env in H0...
            dependent destruction H0...
-        -- dependent destruction H.
-           pick fresh X and apply d_chk_inf__inf_tabs.
-           ++ econstructor. now applys H.
-              intros. eapply d_subtenv_wf_typ. now applys H0.
-              auto...
+           inst_cofinites_for d_wf_typ__all; intros; inst_cofinites_with X; auto.
+           apply d_chk_inf_wf_typ in H0...
+        -- pick fresh X and apply d_chk_inf__inf_tabs; inst_cofinites_with X.
+           ++ auto.
            ++ intros. inst_cofinites_with X.
-              refine (IHn1 _ _ _ _ _ _ _ _ _ _ H1 _ _ _); eauto...
+              refine (IHn1 _ _ _ _ _ _ _ _ _ _ H0 _ _ _); eauto...
               simpl. rewrite <- d_exp_size_open_typ; lia.
               apply d_sub_refl... eauto. 
-              apply d_chk_inf_wf_env in H1; eauto.
+              apply d_chk_inf_wf_env in H0; eauto.
+              apply d_chk_inf_wf_typ in H0; eauto.
       (* e @T *)
       * eapply IHn1 in Hty; eauto...
         destruct Hty as [A1 [Hsuba1 Hinfa1]].

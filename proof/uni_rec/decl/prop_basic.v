@@ -330,29 +330,31 @@ Proof.
 Qed.
 
 Lemma d_wf_exp_lc_exp : forall Ψ e,
-  d_wf_exp Ψ e -> lc_exp e.
+  d_wf_exp Ψ e -> 
+  lc_exp e.
 Proof with eauto using d_wf_typ_lc_typ.
-  - intros. dependent induction H...
-    inst_cofinites_by L using_name X.
-    eapply lc_exp_tabs_exists with (X1:=X). unfold open_exp_wrt_typ. simpl; eauto.
+  intros. dependent induction H...
 Qed.
 
 #[export] Hint Resolve d_wf_exp_lc_exp d_mono_typ_lc : core.
 
 Lemma d_mono_typ_neq_all : forall Ψ T,
-  Ψ ᵗ⊢ᵈₘ T -> neq_all T.
+  Ψ ᵗ⊢ᵈₘ T -> 
+  neq_all T.
 Proof.
   intros; induction H; eauto...
 Qed.
 
 Lemma d_mono_typ_neq_union : forall Ψ T,
-  Ψ ᵗ⊢ᵈₘ T -> neq_union T.
+  Ψ ᵗ⊢ᵈₘ T -> 
+  neq_union T.
 Proof.
   intros; induction H; eauto...
 Qed.
 
 Lemma d_mono_typ_neq_intersection : forall Ψ T,
-  Ψ ᵗ⊢ᵈₘ T -> neq_intersection T.
+  Ψ ᵗ⊢ᵈₘ T -> 
+  neq_intersection T.
 Proof.
   intros; induction H; eauto...
 Qed.
@@ -745,11 +747,10 @@ Proof with eauto.
       * intros. inst_cofinites_with x. intuition. 
   - repeat split.
     + inst_cofinites_by L. intuition. dependent destruction H2... 
-    + auto. 
-    + dependent destruction H. inst_cofinites_for d_wf_exp__tabs.
+    + inst_cofinites_for d_wf_typ__all; intros; inst_cofinites_with X; intuition.
+    + inst_cofinites_for d_wf_exp__tabs.
       * intros. inst_cofinites_with X. auto. 
-      * intros. inst_cofinites_with X. auto.
-      * intros. inst_cofinites_with X. intuition.    
+      * intros. inst_cofinites_with X. intuition.
   - intuition. eapply d_inftapp_d_wf_typ3...
   - repeat split. 
     + inst_cofinites_by L. intuition. dependent destruction H1...
@@ -1227,16 +1228,15 @@ Proof with eauto using d_wf_typ_var_binds_another.
   - eauto.
   - pick fresh Y and apply d_wf_exp__tabs; eauto; 
     inst_cofinites_with Y; rewrite_env ( (Y ~ □ ++ Ψ2) ++ x ~ dbind_typ A2 ++ Ψ1).
-    rewrite_env ( (Y ~ □ ++ Ψ2) ++ x ~ dbind_typ A1 ++ Ψ1) in H0. eapply d_wf_typ_var_binds_another; eauto.
-    eapply H2; eauto. simpl...
+    eapply H1 with (A1:=A1)...
   - econstructor. eapply d_wf_typ_var_binds_another; eauto.
     eauto.
   - econstructor. eapply d_wf_typ_var_binds_another; eauto.
     eauto.
   - econstructor; eauto.
   - econstructor; eauto.
-
 Qed.
+
 
 Lemma d_wf_exp_var_binds_another_cons : forall Ψ1 x e A1 A2,
   d_wf_exp (x ~ dbind_typ A1 ++ Ψ1) e ->

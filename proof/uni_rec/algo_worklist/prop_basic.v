@@ -188,9 +188,7 @@ Proof with eauto using a_wf_typ_weaken.
     apply H1...
   - inst_cofinites_for a_wf_exp__tabs...
     + intros. inst_cofinites_with X. rewrite_env ((X ~ abind_tvar_empty ++ Σ3) ++ Σ2 ++ Σ1).
-      apply a_wf_typ_weaken; eauto.
-    + intros. inst_cofinites_with X. rewrite_env ((X ~ abind_tvar_empty ++ Σ3) ++ Σ2 ++ Σ1).
-      eapply H2; eauto.
+      eapply H1...
 Qed.
 
 Lemma a_wf_conts_weaken: forall Σ1 Σ2 Σ3 cs,
@@ -355,8 +353,8 @@ Proof with eauto 5 using a_wf_typ_var_binds_another.
     rewrite_env ((x0 ~ abind_var_typ T ++ Σ2) ++ x ~ abind_var_typ A2 ++ Σ1); eauto.
     eapply H1 with (A1:=A1)...
   - inst_cofinites_for a_wf_exp__tabs; intros; inst_cofinites_with X; auto...
-    rewrite_env ((X ~ □ ++ Σ2) ++ x ~ abind_var_typ A2 ++ Σ1). eapply a_wf_typ_var_binds_another with (B1:=A1); eauto.
-    rewrite_env ((X ~ □ ++ Σ2) ++ x ~ abind_var_typ A2 ++ Σ1). eapply H2 with (A1:=A1); eauto.
+    rewrite_env ((X ~ □ ++ Σ2) ++ x ~ abind_var_typ A2 ++ Σ1).
+    eapply H1 with (A1:=A1); eauto.
 Qed.
 
 Lemma a_wf_exp_var_binds_another_cons : forall Σ1 x e A1 A2,
@@ -1178,13 +1176,9 @@ Proof with eauto using aworklist_subst_wf_typ_subst.
       apply s_in_subst_inv...
     + replace (X0 ~ □ ++ ⌊ {A ᵃʷ/ₜ X} Γ2 ⧺ Γ1 ⌋ᵃ) with (⌊ {A ᵃʷ/ₜ X} (X0 ~ᵃ □ ;ᵃ Γ2) ⧺ Γ1 ⌋ᵃ) by (simpl; auto).
       rewrite subst_tvar_in_typ_open_typ_wrt_typ_fresh2...
-      assert (aworklist_subst (X0 ~ᵃ □ ;ᵃ Γ) X A Γ1 (X0 ~ᵃ □ ;ᵃ Γ2))...
-      eapply aworklist_subst_wf_typ_subst with (Γ:=X0 ~ᵃ □ ;ᵃ Γ); simpl; eauto.
-      * apply a_wf_typ_weaken_cons...
-      * constructor; eauto.
-    + replace (X0 ~ □ ++ ⌊ {A ᵃʷ/ₜ X} Γ2 ⧺ Γ1 ⌋ᵃ) with (⌊ {A ᵃʷ/ₜ X} (X0 ~ᵃ □ ;ᵃ Γ2) ⧺ Γ1 ⌋ᵃ) by (simpl; auto).
       rewrite subst_tvar_in_exp_open_exp_wrt_typ_fresh2...
-      eapply H2 with (Γ:=X0 ~ᵃ □ ;ᵃ Γ); simpl; eauto.
+      assert (aworklist_subst (X0 ~ᵃ □ ;ᵃ Γ) X A Γ1 (X0 ~ᵃ □ ;ᵃ Γ2))...
+      eapply H1 with (Γ:=X0 ~ᵃ □ ;ᵃ Γ); simpl; eauto.
       * apply a_wf_typ_weaken_cons...
       * constructor; eauto.
 Qed.
@@ -1468,9 +1462,8 @@ Proof.
       apply ftvar_in_exp_open_exp_wrt_typ_lower.
     assert (ftvar_in_typ A [<=] ftvar_in_typ (open_typ_wrt_typ A ` X)) by 
       apply ftvar_in_typ_open_typ_wrt_typ_lower.
-    specialize (H2 (X ~ᵃ □ ;ᵃ Γ) (eq_refl _)).
-    apply ftvar_in_a_wf_typ_upper in H0. simpl in *.
-    fsetdec.
+    specialize (H1 (X ~ᵃ □ ;ᵃ Γ) (eq_refl _)).
+    simpl in *. fsetdec.
   - simpl. rewrite IHa_wf_exp; eauto.
     rewrite ftvar_in_a_wf_typ_upper; eauto.
     fsetdec.
