@@ -106,7 +106,7 @@ Ltac gather_atoms ::=
 
 Ltac solve_wf_twl_sub_false :=
   match goal with
-  | H : (∃ A B : typ, work_sub ?A' ?B' = work_sub A B) → False |- _ => exfalso; eauto
+  | H : (exists A B : typ, work_sub ?A' ?B' = work_sub A B) -> False |- _ => exfalso; eauto
   | _ : _ |- _ => idtac
   end.
 

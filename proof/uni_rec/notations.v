@@ -1,5 +1,3 @@
-Require Export Coq.Unicode.Utf8.
-
 Require Export uni_rec.def_ott.
 Require Export uni_rec.def_extra.
 Require Export uni_rec.decl.def_extra.

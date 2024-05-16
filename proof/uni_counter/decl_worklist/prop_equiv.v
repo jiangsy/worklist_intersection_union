@@ -1,5 +1,4 @@
 Require Import Coq.Program.Equality.
-Require Import Coq.Unicode.Utf8.
 Require Import Lia.
 
 Require Import uni_counter.decl.def_extra.

@@ -1,5 +1,4 @@
 Require Import Coq.Program.Equality.
-Require Import Coq.Unicode.Utf8.
 
 Require Import uni.decl.def_extra.
 Require Import uni.decl.prop_basic.
