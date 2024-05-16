@@ -37,12 +37,12 @@ exp, e, f, g :: exp_ ::=
 
 dbind, db :: dbind_ ::=
   | : □  ::   :: tvar_empty
-  | : ■ ::   :: stvar_empty
+  | : ■  ::   :: stvar_empty
   | : A  ::   :: typ
 
 abind, ab :: abind_ ::=
   | : □        ::   :: tvar_empty
-  | : ■       ::   :: stvar_empty
+  | : ■        ::   :: stvar_empty
   | : ⬒        ::   :: etvar_empty
   | : A        ::   :: var_typ
 
@@ -413,8 +413,7 @@ dE |- e2
 dE |- e1 e2
 
 X ∈ₛ A
-dE , X : □ |- A
-dE , X : □ |- e
+dE , X : □ |- e : A
 ----------------- :: tabs 
 dE |- \ X . (e : A)
 
@@ -896,8 +895,7 @@ aE |- e2
 aE |- e1 e2
 
 X ∈ₛ A
-aE , X : □ |- A
-aE , X : □ |- e
+aE , X : □ |- e : A
 ----------------- :: tabs 
 aE |- \ X . (e : A)
 

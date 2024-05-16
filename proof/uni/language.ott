@@ -15,15 +15,12 @@ typ, A, B, C, T    :: typ_ ::=
   | ( A )          :: S :: paren {{ coq ([[A]]) }}
   | { A2 / X } A1  :: M :: subst {{ coq (open_typ_wrt_typ [[X A1]] [[A2]]) }}
 
-body :: body_ ::= 
-  | e : A ::  :: anno
-
 exp, e, f, g :: exp_ ::=
   | unit                                ::   :: unit 
   | x                                   ::   :: var
   | \ x . e                             ::   :: abs  (+ bind x in e +)
   | e1 e2                               ::   :: app
-  | \ X . body                          ::   :: tabs (+ bind X in body +) 
+  | \ X . e                             ::   :: tabs (+ bind X in e +) 
   | e @ A                               ::   :: tapp
   | e : A                               ::   :: anno
   | ( e )                               :: S :: paren  {{ coq ([[e]]) }}
@@ -32,14 +29,14 @@ exp, e, f, g :: exp_ ::=
 
 
 dbind, db :: dbind_ ::=
-  | : ■  ::   :: tvar_empty
-  | : ~■ ::   :: stvar_empty
+  | : □  ::   :: tvar_empty
+  | : ■ ::   :: stvar_empty
   | : A  ::   :: typ
 
 abind, ab :: abind_ ::=
-  | : ■        ::   :: tvar_empty
-  | : ~■       ::   :: stvar_empty
-  | : ^■       ::   :: etvar_empty
+  | : □        ::   :: tvar_empty
+  | : ■       ::   :: stvar_empty
+  | : ⬒       ::   :: etvar_empty
   | : A        ::   :: var_typ
 
 
@@ -190,17 +187,6 @@ X ∈ₛ A2
 ------------------------ :: intersection
 X ∈ₛ A1 ⊓ A2
 
-defns
-J_strong_in_body :: '' ::=
-
-defn
-X ∈ₛ body :: :: s_in_b :: 's_in_b__' by
-
-X ∈ₛ A
------------------------- :: anno
-X ∈ₛ e : A 
-
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 defns
@@ -219,7 +205,7 @@ x ¬= λ
 e1 e2  ¬= λ
 
 ---------------------- :: tabs
-\ X . e : A ¬= λ
+\ X . e  ¬= λ
 
 ---------------------- :: tapp
 e @ A ¬= λ
@@ -359,12 +345,12 @@ A1 ⊓ A2 ¬= ⊥
 % |-dom dE
 % X `notin` dom dE
 % ---------------- :: tvar
-% |-dom dE , X : ■
+% |-dom dE , X : □
 
 % |-dom dE
 % SX `notin` dom dE 
 % ---------------- :: stvar
-% |-dom dE , SX : ~■
+% |-dom dE , SX : ■
 
 % |-dom dE
 % x `notin` dom dE
@@ -388,11 +374,11 @@ dE |- BOT
 --------- :: top
 dE |- TOP
 
-(X : ■) in dE
+(X : □) in dE
 -------------- :: tvar
 dE |- X
 
-(X : ~■) in dE 
+(X : ■) in dE 
 -------------- :: stvar 
 dE |- X
 
@@ -402,7 +388,7 @@ dE |- A2
 dE |- A1 -> A2
 
 X ∈ₛ A
-dE, X : ■ |- A
+dE, X : □ |- A
 -------------------- :: all
 dE |- ∀ X . A
 
@@ -440,10 +426,10 @@ dE |- e2
 ----------------- :: app
 dE |- e1 e2
 
-X ∈ₛ body
-dE , X : ■ |- body
+X ∈ₛ A
+dE , X : □ |- e : A
 ----------------- :: tabs 
-dE |- \ X . body
+dE |- \ X . ( e : A )
 
 dE |- A
 dE |- e
@@ -455,13 +441,6 @@ dE |- e
 ----------------- :: anno 
 dE |- e : A
 
-defn
-dE |- body :: :: d_wf_body :: 'd_wf_body__' by
-
-dE |- A
-dE |- e
------------ :: anno
-dE |- e : A
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -479,7 +458,7 @@ defn
 |-t dE
 X `notin` dom dE
 ---------------- :: tvar
-|-t dE , X : ■
+|-t dE , X : □
 
 |-t dE
 dE |- A
@@ -501,7 +480,7 @@ defn
 |- dE
 X `notin` dom dE 
 ---------------- :: stvar
-|- dE , X : ~■
+|- dE , X : ■
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -515,7 +494,7 @@ dE |-m A :: :: d_mono_typ :: 'd_mono_typ__' by
 --------------- :: unit
 dE |-m UNIT
 
-(X : ■) in dE
+(X : □) in dE
 --------------- :: tvar
 dE |-m X
 
@@ -719,7 +698,7 @@ x `notin`  dom ⌊ dW ⌋
 X `notin`  dom ⌊ dW ⌋
 |-t dW
 -------------------- :: constvar
-|-t dW , X : ■
+|-t dW , X : □
 
 ⌊ dW ⌋ |- w
 w != * <: * 
@@ -741,7 +720,7 @@ defn
 X `notin` dom ⌊ dW ⌋
 |- dW
 -------------------- :: consstvar
-|- dW , X : ~■
+|- dW , X : ■
 
 ⌊ dW ⌋ |- A
 ⌊ dW ⌋ |- B
@@ -783,7 +762,7 @@ dE ||- A1 -> A2 <: B1 -> B2
 
 X ∈ₛ A
 X ∈ₛ B
-dE , X : ~■ ||- A <: B
+dE , X : ■ ||- A <: B
 -------------------------------------------- :: all
 dE ||- ∀ X. A <: ∀ X. B
 
@@ -842,9 +821,9 @@ dE ||- A1 ⊔ A2 <: B
 % defn 
 % aW [ X1 ] [ X2 ] :: :: a_evs_in_wl :: 'a_etvars_in_wl__' by 
 
-% ( X1 : ^■ ) in ⌊ aW ⌋ 
+% ( X1 : ⬒ ) in ⌊ aW ⌋ 
 % -------------------------------- :: in
-% aW , X2 : ^■ [ X1 ] [ X2 ] 
+% aW , X2 : ⬒ [ X1 ] [ X2 ] 
 
 % aW [ X1 ] [ X2 ] 
 % -------------------------------- :: var
@@ -870,15 +849,15 @@ aE |- BOT
 --------- :: top
 aE |- TOP
 
-(X : ■) in aE
+(X : □) in aE
 -------------- :: tvar
 aE |- X
 
-(X : ~■) in aE 
+(X : ■) in aE 
 -------------- :: stvar 
 aE |- X
 
-(X : ^■ ) in aE 
+(X : ⬒ ) in aE 
 -------------------- :: etvar 
 aE |- X
 
@@ -888,7 +867,7 @@ aE |- A2
 aE |- A1 -> A2
 
 X ∈ₛ A
-aE, X : ■ |- A
+aE, X : □ |- A
 -------------------- :: all
 aE |- ∀ X . A
 
@@ -911,11 +890,11 @@ aE |-m A :: :: a_mono_typ :: 'a_mono_typ__' by
 --------------- :: unit
 aE |-m UNIT
 
-(X : ■) in aE
+(X : □) in aE
 --------------- :: tvar
 aE |-m X
 
-(X : ^■ ) in aE
+(X : ⬒ ) in aE
 ----------------- :: etvar
 aE |-m X
 
@@ -958,10 +937,10 @@ aE |- e2
 ----------------- :: app
 aE |- e1 e2
 
-X ∈ₛ body
-aE , X : ■ |- body
+X ∈ₛ A
+aE , X : □ |- e : A
 ----------------- :: tabs 
-aE |- \ X . body
+aE |- \ X . (e : A)
 
 aE |- A
 aE |- e
@@ -971,14 +950,6 @@ aE |- e @ A
 aE |- A
 aE |- e
 ----------------- :: anno 
-aE |- e : A
-
-defn
-aE |- body :: :: a_wf_body :: 'a_wf_body__' by
-
-aE |- A
-aE |- e
------------ :: anno
 aE |- e : A
 
 
@@ -1127,17 +1098,17 @@ x `notin`  dom ⌊ aW ⌋
 X `notin`  dom ⌊ aW ⌋
 |-w aW
 -------------------- :: constvar
-|-w aW , X : ■
+|-w aW , X : □
 
 X `notin` dom ⌊ aW ⌋
 |-w aW
 -------------------- :: consstvar
-|-w aW , X : ~■
+|-w aW , X : ■
 
 X `notin` dom ⌊ aW ⌋
 |-w aW
 -------------------- :: consetvar
-|-w aW , X : ^■
+|-w aW , X : ⬒
 
 ⌊ aW ⌋ |- w
 |-w aW
@@ -1163,13 +1134,13 @@ x `notin`  dom ⌊ aW ⌋
 X `notin`  dom ⌊ aW ⌋
 |-t aW
 -------------------- :: constvar
-|-t aW , X : ■
+|-t aW , X : □
 
 
 X `notin` dom ⌊ aW ⌋
 |-t aW
 -------------------- :: consetvar
-|-t aW , X : ^■
+|-t aW , X : ⬒
 
 ⌊ aW ⌋ |- w
 w != * <: *
@@ -1191,12 +1162,12 @@ defn
 X `notin` dom ⌊ aW ⌋
 |- aW
 -------------------- :: consstvar
-|- aW , X : ~■
+|- aW , X : ■
 
 X `notin` dom ⌊ aW ⌋
 |- aW
 -------------------- :: consetvar
-|- aW , X : ^■
+|- aW , X : ⬒
 
 ⌊ aW ⌋ |- A
 ⌊ aW ⌋ |- B
@@ -1218,18 +1189,18 @@ defn
 |- aE
 X `notin` dom aE
 ---------------- :: tvar
-|- aE , X : ■
+|- aE , X : □
 
 |- aE
 X `notin` dom aE 
 ---------------- :: stvar
-|- aE , X : ~■
+|- aE , X : ■
 
 
 |- aE
 X `notin` dom aE 
 ---------------- :: etvar
-|- aE , X : ^■
+|- aE , X : ⬒
 
 |- aE
 aE |- A
@@ -1251,9 +1222,9 @@ x `notin` dom aE
 % |- aE
 % X `notin` dom aE 
 % ---------------- :: stvar
-% |- aE , X : ~■
+% |- aE , X : ■
 
 % |- aE
 % X `notin` dom aE 
 % ---------------- :: etvar
-% |- aE , X : ^■
+% |- aE , X : ⬒
