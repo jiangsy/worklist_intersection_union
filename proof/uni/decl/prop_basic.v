@@ -330,12 +330,9 @@ Proof.
 Qed.
 
 Lemma d_wf_exp_lc_exp : forall Ψ e,
-  d_wf_exp Ψ e -> lc_exp e
-with d_wf_body_lc_body : forall Ψ b,
-  d_wf_body Ψ b -> lc_body b.
+  d_wf_exp Ψ e -> lc_exp e.
 Proof with eauto using d_wf_typ_lc_typ.
-  - intros. clear d_wf_exp_lc_exp. dependent induction H...
-  - clear d_wf_body_lc_body. intros. dependent induction H...
+  intros. dependent induction H...
 Qed.
 
 #[export] Hint Resolve d_wf_exp_lc_exp d_mono_typ_lc : core.
@@ -748,12 +745,10 @@ Proof with eauto.
       * intros. inst_cofinites_with x. intuition. 
   - repeat split.
     + inst_cofinites_by L. intuition. dependent destruction H2... 
-    + auto. 
-    + dependent destruction H. inst_cofinites_for d_wf_exp__tabs.
-      * intros. inst_cofinites_with X. rewrite open_body_wrt_typ_anno...
-        constructor... intuition... 
-      * intros. inst_cofinites_with X. rewrite open_body_wrt_typ_anno...
-        constructor... intuition.
+    + inst_cofinites_for d_wf_typ__all; intros; inst_cofinites_with X; auto. intuition. 
+    + inst_cofinites_for d_wf_exp__tabs.
+      * intros. inst_cofinites_with X. auto.
+      * intros. inst_cofinites_with X. econstructor; intuition.
   - intuition. eapply d_inftapp_d_wf_typ3...
   - repeat split. 
     + inst_cofinites_by L. intuition. dependent destruction H1...
@@ -1217,14 +1212,9 @@ Qed.
 Lemma d_wf_exp_var_binds_another : forall Ψ1 x Ψ2 e A1 A2,
   d_wf_exp (Ψ2 ++ x ~ dbind_typ A1 ++ Ψ1) e ->
   Ψ1 ᵗ⊢ᵈ A2 ->
-  d_wf_exp (Ψ2 ++ x ~ dbind_typ A2 ++ Ψ1) e
-with d_wf_body_bound_typ : forall Ψ1 x Ψ2 e A1 A2,
-  d_wf_body (Ψ2 ++ x ~ dbind_typ A1 ++ Ψ1) e ->
-  Ψ1 ᵗ⊢ᵈ A2 ->
-  d_wf_body (Ψ2 ++ x ~ dbind_typ A2 ++ Ψ1) e.
+  d_wf_exp (Ψ2 ++ x ~ dbind_typ A2 ++ Ψ1) e.
 Proof with eauto using d_wf_typ_var_binds_another.
-  clear d_wf_exp_var_binds_another. intros.
-  dependent induction H; auto.
+  intros. dependent induction H; auto.
   - induction Ψ2; simpl. auto.
     + simpl in H. inversion H. dependent destruction H1.
       now eauto.
@@ -1240,15 +1230,11 @@ Proof with eauto using d_wf_typ_var_binds_another.
   - pick fresh Y and apply d_wf_exp__tabs...
     inst_cofinites_with Y...
     rewrite_env ( (Y ~ □ ++ Ψ2) ++ x ~ dbind_typ A1 ++ Ψ1) in H0.
-    rewrite_env ( (Y ~ □ ++ Ψ2) ++ x ~ dbind_typ A2 ++ Ψ1).
-    applys* d_wf_body_bound_typ H0.
+    rewrite_env ( (Y ~ □ ++ Ψ2) ++ x ~ dbind_typ A2 ++ Ψ1). eapply H1 with (A1:=A1); eauto.
   - econstructor. eapply d_wf_typ_var_binds_another; eauto.
     eauto.
   - econstructor. eapply d_wf_typ_var_binds_another; eauto.
     eauto.
-
-  - clear d_wf_body_bound_typ. intros.
-    inverts H...
 Qed.
 
 Lemma d_wf_exp_var_binds_another_cons : forall Ψ1 x e A1 A2,

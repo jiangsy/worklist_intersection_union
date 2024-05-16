@@ -126,10 +126,6 @@ Inductive d_wl_red : dworklist -> Prop :=    (* defn d_wl_red *)
  | d_wl_red__chk_sub : forall (Ω:dworklist) (e:exp) (A:typ),
      d_wl_red (dworklist_cons_work Ω (work_infer e (conts_sub A))) ->
      d_wl_red (dworklist_cons_work Ω (work_check e A))
- (* | d_wl_red__chkall : forall (L:vars) (Ω:dworklist) (e:exp) (T1:typ),
-      ( forall X , X \notin  L  -> ds_in X  ( open_typ_wrt_typ T1 (typ_var_f X) )  )  ->
-      ( forall X , X \notin  L  -> d_wl_red (dworklist_cons_work (dworklist_cons_var Ω X dbind_tvar_empty) (work_check e  ( open_typ_wrt_typ T1 (typ_var_f X) ) )) )  ->
-     d_wl_red (dworklist_cons_work Ω (work_check e (typ_all T1))) *)
  | d_wl_red__chk_absarrow : forall (L:vars) (Ω:dworklist) (e:exp) (A1 A2:typ),
       ( forall x , x \notin  L  -> d_wl_red (dworklist_cons_work (dworklist_cons_var Ω x (dbind_typ A1)) (work_check  ( open_exp_wrt_exp e (exp_var_f x) )  A2)) )  ->
      d_wl_red (dworklist_cons_work Ω (work_check (exp_abs e) (typ_arrow A1 A2)))
@@ -153,10 +149,9 @@ Inductive d_wl_red : dworklist -> Prop :=    (* defn d_wl_red *)
      d_wl_red (dworklist_cons_work (dworklist_cons_work Ω (work_applys cs  A)) (work_check e A)) ->
      d_wl_red (dworklist_cons_work Ω (work_infer  ( (exp_anno e A) )  cs))
  | d_wl_red__inf_tabs : forall (L:vars) (Ω:dworklist) (e:exp) (A:typ) (cs:conts),
-      (* ( forall X , X \notin  L  -> ds_in X  ( open_typ_wrt_typ A1 (typ_var_f X) )  )  -> *)
       ( forall X , X \notin  L  -> 
         d_wl_red (dworklist_cons_work (dworklist_cons_var (dworklist_cons_work Ω (work_applys cs  (typ_all A) )) X dbind_tvar_empty) (work_check ( open_exp_wrt_typ e (typ_var_f X) ) ( open_typ_wrt_typ A (typ_var_f X) ) )) )  ->
-     d_wl_red (dworklist_cons_work Ω (work_infer (exp_tabs (body_anno e A)) cs))
+     d_wl_red (dworklist_cons_work Ω (work_infer (exp_tabs (exp_anno e A)) cs))
  | d_wl_red__inf_unit : forall (Ω:dworklist) (cs:conts),
      d_wl_red (dworklist_cons_work Ω (work_applys cs typ_unit)) ->
      d_wl_red (dworklist_cons_work Ω (work_infer exp_unit cs))

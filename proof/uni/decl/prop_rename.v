@@ -72,19 +72,15 @@ Qed.
 
 
 Lemma subst_var_in_exp_refl : forall x e,
-  {exp_var_f x ᵉ/ₑ x} e = e
-with subst_var_in_body_refl : forall x b,
-  {exp_var_f x ᵇ/ₑ x} b = b.
+  {exp_var_f x ᵉ/ₑ x} e = e.
 Proof.
   - intros. dependent induction e; simpl; auto.
     + destruct_eq_atom; eauto.
     + rewrite IHe; auto.
     + rewrite IHe1. rewrite IHe2. auto.
-    + rewrite subst_var_in_body_refl. auto.
+    + rewrite IHe; auto. 
     + rewrite IHe. auto.
     + rewrite IHe. auto.
-  - destruct b. simpl. rewrite subst_var_in_exp_refl.
-    auto.
 Qed.
 
 
@@ -244,19 +240,15 @@ Qed.
 
 
 Lemma subst_tvar_in_exp_refl_eq : forall X e,
-  subst_tvar_in_exp (`X) X e = e
-with subst_tvar_in_body_ref_eq : forall X b,
-  subst_tvar_in_body (`X) X b = b .
+  subst_tvar_in_exp (`X) X e = e.
 Proof with auto.
-  - intros. clear subst_tvar_in_exp_refl_eq. 
+  - intros. 
     dependent induction e; simpl; auto.
     + rewrite IHe...
     + rewrite IHe1... rewrite IHe2...
-    + rewrite subst_tvar_in_body_ref_eq... 
+    + rewrite IHe... 
     + rewrite subst_tvar_in_typ_refl_eq. rewrite IHe. auto.
     + rewrite subst_tvar_in_typ_refl_eq. rewrite IHe. auto.
-  - intros. destruct b. simpl.
-    rewrite subst_tvar_in_typ_refl_eq... rewrite subst_tvar_in_exp_refl_eq...
 Qed.
 
 Theorem d_sub_rename_dtvar_cons : forall Ψ X Y A B b,
@@ -347,7 +339,8 @@ Proof with eauto 6 using d_wf_typ_rename_dtvar, d_mono_typ_rename_dtvar, d_wf_te
       rewrite <- subst_tvar_in_exp_open_exp_wrt_exp...
       (* rewrite <- subst_tvar_in_exp_open_exp_wrt_exp. *) 
   - inst_cofinites_for d_chk_inf__inf_tabs...
-    + replace (typ_all ({` Y ᵗ/ₜ X} A)) with ({` Y ᵗ/ₜ X} (typ_all A)) by auto...
+    + intros. inst_cofinites_with X0.
+      rewrite subst_tvar_in_typ_open_typ_wrt_typ_fresh2; eauto. apply s_in_subst_inv...
     + intros. replace (`X0) with (subst_tvar_in_typ `Y X (`X0)). 
       rewrite <- subst_tvar_in_exp_open_exp_wrt_typ...
       rewrite <- subst_tvar_in_typ_open_typ_wrt_typ...

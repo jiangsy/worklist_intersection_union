@@ -308,7 +308,7 @@ Definition dmode_size (mode : typing_mode) : nat :=
   end.
 
 Fixpoint exp_size (e:exp) : nat :=
-    match e with
+  match e with
     | exp_unit => 1
     | exp_var_f _ => 1
     | exp_var_b _ => 1
@@ -316,14 +316,8 @@ Fixpoint exp_size (e:exp) : nat :=
     | exp_app e1 e2 => 1 + exp_size e1 + exp_size e2
     | exp_anno e1 _ => 1 + exp_size e1
     | exp_tapp e1 _ => 1 + exp_size e1
-    | exp_tabs b => 1 + body_size b
-    end with
-  body_size (b:body) :=
-    match b with
-    | body_anno e T => 1 + exp_size e
-    end
-  .
-
+    | exp_tabs e => 1 + exp_size e
+  end.
 
 Fixpoint typ_size (A:typ) : nat :=
   match A with
@@ -600,15 +594,12 @@ Qed.
 
 
 Lemma exp_size_open_var_rec : forall e x n,
-  exp_size e = exp_size (open_exp_wrt_exp_rec n (exp_var_f x) e)
-with d_body_size_open_var_rec: forall b x n,
-  body_size b = body_size (open_body_wrt_exp_rec n (exp_var_f x) b).
+  exp_size e = exp_size (open_exp_wrt_exp_rec n (exp_var_f x) e).
 Proof.
-  - intros. generalize dependent n. induction e; simpl; auto.
-    + intros. destruct (lt_eq_lt_dec n n0).
-      * destruct s; auto.
-      * auto.
-  - intros. generalize dependent n. induction b; simpl; auto.
+  intros. generalize dependent n. induction e; simpl; auto.
+  - intros. destruct (lt_eq_lt_dec n n0).
+    + destruct s; auto.
+    + auto.
 Qed.
 
 
@@ -621,12 +612,9 @@ Qed.
 
 
 Lemma exp_size_open_typ_rec : forall e A n,
-  exp_size e = exp_size (open_exp_wrt_typ_rec n A e)
-with d_body_size_open_typ_rec: forall b A n,
-  body_size b = body_size (open_body_wrt_typ_rec n A b).
+  exp_size e = exp_size (open_exp_wrt_typ_rec n A e).
 Proof.
-  - intros. generalize dependent n. induction e; simpl; auto.
-  - intros. generalize dependent n. induction b; simpl; auto.
+  intros. generalize dependent n. induction e; simpl; auto.
 Qed.
 
 
@@ -717,17 +705,14 @@ Proof with auto.
       * exists (typ_all A); split.
         -- eapply d_sub_refl; auto.
            inst_cofinites_by L. apply d_chk_inf_wf_env in H0...
-           dependent destruction H0...
-        -- dependent destruction H.
-           pick fresh X and apply d_chk_inf__inf_tabs.
-           ++ econstructor. now applys H.
-              intros. eapply d_subtenv_wf_typ. now applys H0.
-              auto...
-           ++ intros. inst_cofinites_with X.
-              refine (IHn1 _ _ _ _ _ _ _ _ _ _ H1 _ _ _); eauto...
+           dependent destruction H0... inst_cofinites_for d_wf_typ__all; intros; inst_cofinites_with X; auto.
+           apply d_chk_inf_wf_typ in H0...
+        -- pick fresh X and apply d_chk_inf__inf_tabs; inst_cofinites_with X...
+           ++ refine (IHn1 _ _ _ _ _ _ _ _ _ _ H0 _ _ _); eauto...
               simpl. rewrite <- d_exp_size_open_typ; lia.
-              apply d_sub_refl... eauto. 
-              apply d_chk_inf_wf_env in H1; eauto.
+              apply d_sub_refl...  eauto. 
+              apply d_chk_inf_wf_env in H0; eauto.
+              eapply d_chk_inf_wf_typ in H0; auto.
       (* e @T *)
       * eapply IHn1 in Hty; eauto...
         destruct Hty as [A1 [Hsuba1 Hinfa1]].
