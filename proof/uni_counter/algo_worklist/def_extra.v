@@ -44,6 +44,73 @@ Inductive aworklist_subst : aworklist -> typvar -> typ -> aworklist -> aworklist
     Y `in` ftvar_in_typ A -> 
     aworklist_subst (aworklist_cons_var (awl_app Γ2 (aworklist_cons_var Γ1 X abind_etvar_empty)) Y (abind_etvar_empty)) X A Γ'1 Γ'2
 .
+
+Inductive a_iuv_size : aenv -> typ -> nat -> Prop :=
+  | a_iuv_size__unit : forall Σ,
+      a_iuv_size Σ typ_unit 0
+  | a_iuv_size__bot : forall Σ,
+      a_iuv_size Σ typ_bot 0
+  | a_iuv_size__top : forall Σ,
+      a_iuv_size Σ typ_top 0
+  | a_iuv_size__tvar : forall Σ X,
+      binds X abind_tvar_empty Σ ->
+      a_iuv_size Σ (typ_var_f X) 0
+  | a_iuv_size__stvar : forall Σ X,
+      binds X abind_stvar_empty Σ ->
+      a_iuv_size Σ (typ_var_f X) 0
+  | a_iuv_size__etvar : forall Σ X,
+      binds X abind_etvar_empty Σ ->
+      a_iuv_size Σ (typ_var_f X) 0
+  | a_iuv_size__arrow : forall Σ A1 A2 n1 n2,
+      a_iuv_size Σ A1 n1 ->
+      a_iuv_size Σ A2 n2 ->
+      a_iuv_size Σ (typ_arrow A1 A2) (n1 + n2)
+  | a_iuv_size__all : forall L Σ A n m,
+      (forall X,
+        X \notin L ->
+        a_iuv_size (X ~ abind_tvar_empty ++ Σ) (open_typ_wrt_typ A (typ_var_f X)) n /\
+          num_occurs_in_typ X (open_typ_wrt_typ A (typ_var_f X)) m) ->
+      a_iuv_size Σ (typ_all A) (n + m)
+  | a_iuv_size__union : forall Σ A1 A2 n1 n2,
+      a_iuv_size Σ A1 n1 ->
+      a_iuv_size Σ A2 n2 ->
+      a_iuv_size Σ (typ_union A1 A2) (2 + n1 + n2)
+  | a_iuv_size__intersection : forall Σ A1 A2 n1 n2,
+      a_iuv_size Σ A1 n1 ->
+      a_iuv_size Σ A2 n2 ->
+      a_iuv_size Σ (typ_intersection A1 A2) (2 + n1 + n2)
+  .
+
+Inductive a_exp_split_size : aenv -> exp -> nat -> Prop :=
+  | a_exp_split_size__unit : forall Σ,
+      a_exp_split_size Σ exp_unit 0
+  | a_exp_split_size__var_f : forall Σ x A n,
+      binds x (abind_var_typ A) Σ ->
+      a_iuv_size Σ A n ->
+      a_exp_split_size Σ (exp_var_f x) n
+  | a_exp_split_size__abs : forall L Σ e n,
+      (forall x, x \notin  L ->
+        a_exp_split_size (x ~ (abind_var_typ typ_bot) ++ Σ)
+                       (open_exp_wrt_exp e (exp_var_f x)) n) ->
+      a_exp_split_size Σ (exp_abs e) n
+  | a_exp_split_size__app : forall Σ e1 e2 n1 n2,
+      a_exp_split_size Σ e1 n1 ->
+      a_exp_split_size Σ e2 n2 ->
+      a_exp_split_size Σ (exp_app e1 e2) (1 + 2 * n1 + n2)
+  | a_exp_split_size__tabs : forall L Σ e A n m,
+      (forall X, X \notin  L ->
+        a_exp_split_size (X ~ abind_tvar_empty ++ Σ) (open_exp_wrt_typ e (typ_var_f X)) n) ->
+      a_iuv_size Σ A m ->
+      a_exp_split_size Σ (exp_tabs (body_anno e A)) ((1 + n) * (2 + m))
+  | a_exp_split_size__tapp : forall Σ e A n m,
+      a_exp_split_size Σ e n ->
+      a_iuv_size Σ A m ->
+      a_exp_split_size Σ (exp_tapp e A) ((1 + n) * (2 + m))
+  | a_exp_split_size__anno : forall Σ e A n m,
+      a_exp_split_size Σ e n ->
+      a_iuv_size Σ A m ->
+      a_exp_split_size Σ (exp_anno e A) ((1 + n) * (2 + m))
+  .
     
 
 (* defns Jaworklist_reduction *)
@@ -167,8 +234,9 @@ Inductive a_wl_red : aworklist -> Prop :=    (* defn a_wl_red *)
  | a_wl_red__inf_unit : forall (Γ:aworklist) (cs:conts),
      a_wl_red (aworklist_cons_work Γ (work_applys cs typ_unit)) ->
      a_wl_red (aworklist_cons_work Γ (work_infer exp_unit cs))
- | a_wl_red__inf_app : forall (Γ:aworklist) (e1 e2:exp) (cs:conts),
-     a_wl_red (aworklist_cons_work Γ (work_infer e1  (  (conts_infabs  (  (contd_infapp (exp_split_size (awl_to_aenv Γ) e1) e2 cs)  ) )  ) )) ->
+ | a_wl_red__inf_app : forall (Γ:aworklist) (e1 e2:exp) (cs:conts) n,
+     a_exp_split_size (awl_to_aenv Γ) e1 n ->
+     a_wl_red (aworklist_cons_work Γ (work_infer e1  (  (conts_infabs  (  (contd_infapp n e2 cs)  ) )  ) )) ->
      a_wl_red (aworklist_cons_work Γ (work_infer  ( (exp_app e1 e2) )  cs))
  | a_wl_red__infapp : forall (Γ:aworklist) (A B:typ) (e:exp) (cs:conts),
      a_wl_red (aworklist_cons_work (aworklist_cons_work Γ (work_check e A)) (work_applys cs B)) ->

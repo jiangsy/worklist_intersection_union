@@ -66,64 +66,101 @@ Inductive d_wl_del_red : dworklist -> Prop :=
       d_wl_del_red (dworklist_cons_work Ω (work_applyd cd A B))
   .
 
-Fixpoint iuv_size (A : typ) : nat :=
-  match A with
-  | typ_var_b _ => 1
-  | typ_arrow A1 A2 => iuv_size A1 + iuv_size A2
-  | typ_all A => iuv_size A
-  | typ_union A1 A2 => 2 + iuv_size A1 + iuv_size A2
-  | typ_intersection A1 A2 => 2 + iuv_size A1 + iuv_size A2
-  | _ => 0
-  end.
+Inductive num_occurs_in_typ : atom -> typ -> nat -> Prop :=
+  | num_occurs_in_typ__unit : forall X,
+      num_occurs_in_typ X typ_unit 0
+  | num_occurs_in_typ__bot : forall X,
+      num_occurs_in_typ X typ_bot 0
+  | num_occurs_in_typ__top : forall X,
+      num_occurs_in_typ X typ_top 0
+  | num_occurs_in_typ__tvar_same : forall X,
+      num_occurs_in_typ X (typ_var_f X) 1
+  | num_occurs_in_typ__tvar_diff : forall X Y,
+      X <> Y ->
+      num_occurs_in_typ X (typ_var_f Y) 0
+  | num_occurs_in_typ__arrow : forall X A1 A2 n1 n2,
+      num_occurs_in_typ X A1 n1 ->
+      num_occurs_in_typ X A2 n2 ->
+      num_occurs_in_typ X (typ_arrow A1 A2) (n1 + n2)
+  | num_occurs_in_typ__all : forall L X A n,
+      (forall Y,
+        Y \notin L ->
+        num_occurs_in_typ X (open_typ_wrt_typ A (typ_var_f Y)) n) ->
+      num_occurs_in_typ X (typ_all A) n
+  | num_occurs_in_typ__union : forall X A1 A2 n1 n2,
+      num_occurs_in_typ X A1 n1 ->
+      num_occurs_in_typ X A2 n2 ->
+      num_occurs_in_typ X (typ_union A1 A2) (2 + n1 + n2)
+  | num_occurs_in_typ__intersection : forall X A1 A2 n1 n2,
+      num_occurs_in_typ X A1 n1 ->
+      num_occurs_in_typ X A2 n2 ->
+      num_occurs_in_typ X (typ_intersection A1 A2) (2 + n1 + n2)
+  .
 
-Fixpoint lookup_var_bind (Σ : aenv) (X : atom) : option typ :=
-  match Σ with
-  | nil => None
-  | (Y, abind_var_typ A) :: Σ' => if X == Y then Some A else lookup_var_bind Σ' X
-  | _ :: Σ' => lookup_var_bind Σ' X
-  end.
 
-Fixpoint lookup_tvar_bind (Σ : aenv) (X : atom) : option abind :=
-  match Σ with
-  | nil => None
-  | (Y, B) :: Σ' => if X == Y then
-                      match B with
-                      | abind_tvar_empty => Some abind_tvar_empty
-                      | abind_stvar_empty => Some abind_stvar_empty
-                      | abind_etvar_empty => Some abind_etvar_empty
-                      | _ => None
-                      end
-                    else lookup_tvar_bind Σ' X
-  end.
+Inductive d_iuv_size : denv -> typ -> nat -> Prop :=
+  | d_iuv_size__unit : forall Ψ,
+      d_iuv_size Ψ typ_unit 0
+  | d_iuv_size__bot : forall Ψ,
+      d_iuv_size Ψ typ_bot 0
+  | d_iuv_size__top : forall Ψ,
+      d_iuv_size Ψ typ_top 0
+  | d_iuv_size__tvar : forall Ψ X,
+      binds X dbind_tvar_empty Ψ ->
+      d_iuv_size Ψ (typ_var_f X) 0
+  | d_iuv_size__stvar : forall Ψ X,
+      binds X dbind_stvar_empty Ψ ->
+      d_iuv_size Ψ (typ_var_f X) 0
+  | d_iuv_size__arrow : forall Ψ A1 A2 n1 n2,
+      d_iuv_size Ψ A1 n1 ->
+      d_iuv_size Ψ A2 n2 ->
+      d_iuv_size Ψ (typ_arrow A1 A2) (n1 + n2)
+  | d_iuv_size__all : forall L Ψ A n m,
+      (forall X,
+        X \notin L ->
+        d_iuv_size (X ~ dbind_tvar_empty ++ Ψ) (open_typ_wrt_typ A (typ_var_f X)) n /\
+          num_occurs_in_typ X (open_typ_wrt_typ A (typ_var_f X)) m) ->
+      d_iuv_size Ψ (typ_all A) (n + m)
+  | d_iuv_size__union : forall Ψ A1 A2 n1 n2,
+      d_iuv_size Ψ A1 n1 ->
+      d_iuv_size Ψ A2 n2 ->
+      d_iuv_size Ψ (typ_union A1 A2) (2 + n1 + n2)
+  | d_iuv_size__intersection : forall Ψ A1 A2 n1 n2,
+      d_iuv_size Ψ A1 n1 ->
+      d_iuv_size Ψ A2 n2 ->
+      d_iuv_size Ψ (typ_intersection A1 A2) (2 + n1 + n2)
+    .
 
-Fixpoint exp_split_size (Σ : aenv) (e : exp) : nat :=
-  match e with
-  | exp_unit => 0
-  | exp_var_b _ => 0
-  | exp_var_f X => match lookup_var_bind Σ X with
-                  | Some A => iuv_size A
-                  | _ => 0
-                  end
-  | exp_abs e1 => exp_split_size Σ e1
-  | exp_app e1 e2 => 1 + 2 * exp_split_size Σ e1 + exp_split_size Σ e2
-  | exp_tabs (body_anno e1 A) => (1 + exp_split_size Σ e1) * (2 + iuv_size A)
-  | exp_tapp e1 A => (1 + exp_split_size Σ e1) * (2 + iuv_size A)
-  | exp_anno e1 A => (1 + exp_split_size Σ e1) * (2 + iuv_size A)
-  end.
-
-Definition dbind_to_abind (d : dbind) : abind :=
-  match d with
-  | dbind_typ A => abind_var_typ A
-  | dbind_stvar_empty => abind_stvar_empty
-  | dbind_tvar_empty => abind_tvar_empty
-  end.
-
-Fixpoint dwl_to_aenv (dW : dworklist) : aenv :=
-  match dW with 
-  | dworklist_empty => nil
-  | dworklist_cons_work dW' _ => dwl_to_aenv dW'
-  | dworklist_cons_var dW' X b => X ~ (dbind_to_abind b) ++ dwl_to_aenv dW'
-  end.
+Inductive d_exp_split_size : denv -> exp -> nat -> Prop :=
+  | d_exp_split_size__unit : forall Ψ,
+      d_exp_split_size Ψ exp_unit 0
+  | d_exp_split_size__var_f : forall Ψ x A n,
+      binds x (dbind_typ A) Ψ ->
+      d_iuv_size Ψ A n ->
+      d_exp_split_size Ψ (exp_var_f x) n
+  | d_exp_split_size__abs : forall L Ψ e n,
+      (forall x, x \notin  L ->
+        d_exp_split_size (x ~ (dbind_typ typ_bot) ++ Ψ)
+                         (open_exp_wrt_exp e (exp_var_f x)) n) ->
+      d_exp_split_size Ψ (exp_abs e) n
+  | d_exp_split_size__app : forall Ψ e1 e2 n1 n2,
+      d_exp_split_size Ψ e1 n1 ->
+      d_exp_split_size Ψ e2 n2 ->
+      d_exp_split_size Ψ (exp_app e1 e2) (1 + 2 * n1 + n2)
+  | d_exp_split_size__tabs : forall L Ψ e A n m,
+      (forall X, X \notin  L ->
+        d_exp_split_size (X ~ dbind_tvar_empty ++ Ψ) (open_exp_wrt_typ e (typ_var_f X)) n) ->
+      d_iuv_size Ψ A m ->
+      d_exp_split_size Ψ (exp_tabs (body_anno e A)) ((1 + n) * (2 + m))
+  | d_exp_split_size__tapp : forall Ψ e A n m,
+      d_exp_split_size Ψ e n ->
+      d_iuv_size Ψ A m ->
+      d_exp_split_size Ψ (exp_tapp e A) ((1 + n) * (2 + m))
+  | d_exp_split_size__anno : forall Ψ e A n m,
+      d_exp_split_size Ψ e n ->
+      d_iuv_size Ψ A m ->
+      d_exp_split_size Ψ (exp_anno e A) ((1 + n) * (2 + m))
+  .
 
 (* defns Jdworklist_reduction *)
 Inductive d_wl_red : dworklist -> Prop :=    (* defn d_wl_red *)
@@ -224,8 +261,9 @@ Inductive d_wl_red : dworklist -> Prop :=    (* defn d_wl_red *)
      (forall x, x `notin` L ->
         d_wl_red (dworklist_cons_work (dworklist_cons_var (dworklist_cons_work Ω (work_applys cs (typ_arrow T1 T2))) x (dbind_typ T1)) (work_check (open_exp_wrt_exp e (exp_var_f x)) T2))) ->
      d_wl_red (dworklist_cons_work Ω (work_infer (exp_abs e) cs))
- | d_wl_red__inf_app : forall (Ω:dworklist) (e1 e2:exp) (cs:conts),
-     d_wl_red (dworklist_cons_work Ω (work_infer e1 (conts_infabs (contd_infapp (exp_split_size (dwl_to_aenv Ω) e1) e2 cs)))) ->
+ | d_wl_red__inf_app : forall (Ω:dworklist) (e1 e2:exp) (cs:conts) n,
+     d_exp_split_size (dwl_to_denv Ω) e1 n ->
+     d_wl_red (dworklist_cons_work Ω (work_infer e1 (conts_infabs (contd_infapp n e2 cs)))) ->
      d_wl_red (dworklist_cons_work Ω (work_infer  ( (exp_app e1 e2) )  cs))
  | d_wl_red__inf_tapp : forall (Ω:dworklist) (e:exp) (B:typ) (cs:conts),
      d_wl_red (dworklist_cons_work Ω (work_infer e (conts_inftapp B cs))) ->
