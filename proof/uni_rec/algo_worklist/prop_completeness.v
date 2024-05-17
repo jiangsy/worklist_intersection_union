@@ -5,15 +5,15 @@ Require Import Lia.
 Require Import List.
 
 
-Require Import uni.notations.
-Require Import uni.prop_basic.
-Require Import uni.decl.prop_basic.
-Require Import uni.decl.prop_subtyping.
-Require Import uni.decl_worklist.prop_equiv.
-Require Import uni.algo_worklist.def_extra.
-Require Import uni.algo_worklist.prop_basic.
-Require Import uni.algo_worklist.transfer.
-Require Import uni.ltac_utils.
+Require Import uni_rec.notations.
+Require Import uni_rec.prop_basic.
+Require Import uni_rec.decl.prop_basic.
+Require Import uni_rec.decl.prop_subtyping.
+Require Import uni_rec.decl_worklist.prop_equiv.
+Require Import uni_rec.algo_worklist.def_extra.
+Require Import uni_rec.algo_worklist.prop_basic.
+Require Import uni_rec.algo_worklist.transfer.
+Require Import uni_rec.ltac_utils.
 
 Ltac destruct_trans_wl :=
   match goal with 
@@ -31,6 +31,7 @@ Ltac destruct_trans' :=
   | H : trans_contd ?θ ?wᵃ (?C_CD _ _ _) |- _ => dependent destruction H
   | H : trans_exp ?θ ?eᵃ (open_exp_wrt_exp _ _) |- _ => fail
   | H : trans_exp ?θ ?eᵃ exp_unit |- _ => dependent destruction H
+  | H : trans_exp ?θ ?eᵃ exp_rcd_nil |- _ => dependent destruction H
   | H : trans_exp ?θ ?eᵃ (?C_E _) |- _ => dependent destruction H
   | H : trans_exp ?θ ?eᵃ (?C_E _ _) |- _ => dependent destruction H
   | H : trans_typ ?θ (` ?X) ?Aᵈ |- _ => fail
@@ -301,6 +302,12 @@ Proof.
       apply H0 in Htrans; eauto.
       simpl in Htrans. dependent destruction Htrans. rewrite subst_tvar_in_typ_open_typ_wrt_typ_fresh2; eauto.
       apply trans_typ_weaken_cons; eauto.
+    (* eapply trans_body_etvar_subst_same_ss' in H4; eauto.
+    + rewrite subst_tvar_in_body_open_body_wrt_typ in H4; simpl in *.
+      destruct_eq_atom; auto.
+      eapply trans_typ_lc_atyp; eauto.
+    + rewrite_env (nil ++ (X0 ~ □) ++ θ)%dbind. apply trans_typ_weaken; eauto.
+      constructor; auto. *)
   - dependent destruction H4.
     constructor.
     + apply IHHlc; eauto.
@@ -309,6 +316,9 @@ Proof.
     constructor.
     + apply IHHlc; eauto.
     + eapply trans_typ_etvar_subst_same_ss; eauto.
+  - dependent destruction H3. auto.
+  - dependent destruction H3. auto.
+  - dependent destruction H3. auto.
 Qed.
 
 
@@ -712,7 +722,6 @@ Qed.
   
 
 
-
 Lemma trans_apply_conts : forall θ csᵃ csᵈ Aᵃ Aᵈ wᵈ,
   θ ᶜˢ⊩ csᵃ ⇝ csᵈ ->
   θ ᵗ⊩ Aᵃ ⇝ Aᵈ ->
@@ -1013,6 +1022,7 @@ Proof with auto.
     specialize (IHd_mono_typ2 _ (eq_refl _) _ _ H H0);
     simpl; intuition.
     apply union_iff in H6. inversion H6; eauto.
+  - split... 
 Qed.
 
 
@@ -1250,6 +1260,23 @@ Proof with eauto.
         apply a_wl_red__sub_etvarmono1 with (Γ1:=Γ1) (Γ2:=Γ2); eauto.
         -- apply IHd_wl_red; eauto. destruct_a_wf_wl. eapply aworklist_subst_wf_wl; eauto.
         -- destruct_a_wf_wl...
+  - solve_awl_trailing_etvar.
+    destruct_trans; destruct_a_wf_wl.
+    + destruct (X0 == X).
+      * subst...
+      * eapply aworklist_subst_transfer_same_dworklist_rev_exist with (X:=X) (T:=`X0) (Tᵈ:=typ_label l) in Htrans_et as Htransws... 
+        destruct Htransws as [Γ1 [Γ2 [θ' [Hsubst [Htransws [Hbinds Hwfss]]]]]].
+        eapply a_wl_red__sub_etvarmono1 with (Γ1:=Γ1) (Γ2:=Γ2)...
+        apply IHd_wl_red; eauto. eapply aworklist_subst_wf_wl... 
+    + eapply aworklist_subst_transfer_same_dworklist_rev_exist with (X:=X) (T:=typ_label l) (Tᵈ:=typ_label l) in Htrans_et as Htransws... 
+      destruct Htransws as [Γ1 [Γ2 [θ' [Hsubst [Htransws [Hbinds Hwfss]]]]]].
+      eapply a_wl_red__sub_etvarmono1 with (Γ1:=Γ1) (Γ2:=Γ2)...
+      apply IHd_wl_red; eauto. eapply aworklist_subst_wf_wl... 
+    + eapply aworklist_subst_transfer_same_dworklist_rev_exist with (X:=X) (T:=typ_label l) (Tᵈ:=typ_label l) in Htrans_et as Htransws... 
+      destruct Htransws as [Γ1 [Γ2 [θ' [Hsubst [Htransws [Hbinds Hwfss]]]]]].
+      eapply a_wl_red__sub_etvarmono2 with (Γ1:=Γ1) (Γ2:=Γ2)...
+      apply IHd_wl_red; eauto. eapply aworklist_subst_wf_wl... 
+    + destruct_a_wf_wl... 
   - solve_awl_trailing_etvar. 
     destruct_trans.
     (* ^X < ^Y *)
@@ -1621,6 +1648,7 @@ Proof with eauto.
     + exists θ0...
       repeat constructor... 
       eapply trans_wl_a_wl_binds_var_binds_d_wl_trans_typ...
+  (* e : A => _ *)
   - solve_awl_trailing_etvar.
     destruct_trans.
     constructor.
@@ -1644,6 +1672,14 @@ Proof with eauto.
     destruct_a_wf_wl.
     constructor...
     apply IHd_wl_red...
+  - solve_awl_trailing_etvar.
+    destruct_trans...
+    destruct_a_wf_wl...
+    econstructor... eapply IHd_wl_red...
+  - solve_awl_trailing_etvar.
+    destruct_trans...
+    destruct_a_wf_wl...
+    econstructor... eapply IHd_wl_red...
   (* λ x. e => _ *)
   - solve_awl_trailing_etvar.
     destruct_trans. destruct_a_wf_wl.
@@ -1673,8 +1709,15 @@ Proof with eauto.
     destruct_a_wf_wl.
     constructor...
     apply IHd_wl_red...
+    constructor...
+    exists θ0... constructor... constructor...
+  - solve_awl_trailing_etvar.
+    destruct_trans.
+    destruct_a_wf_wl.
+    constructor...
+    apply IHd_wl_red...
 
-  (* inftapp *)
+  (* A ∘ B =>=> _ *)
   - solve_awl_trailing_etvar.
     destruct_trans.
     + solve_binds_nonmono_contradiction.
@@ -1831,6 +1874,25 @@ Proof with eauto.
     destruct_a_wf_wl...
     constructor...
     apply IHd_wl_red... constructor...
+    exists θ0...
+    constructor... constructor...
+  - solve_awl_trailing_etvar.
+    destruct_trans.
+    destruct_a_wf_wl...
+    constructor...
+    apply IHd_wl_red...
+  - solve_awl_trailing_etvar.
+    destruct_trans.
+    destruct_a_wf_wl...
+    constructor...
+    apply IHd_wl_red...
+    constructor...
+    exists θ0...
+  - solve_awl_trailing_etvar.
+    destruct_trans.
+    destruct_a_wf_wl...
+    constructor...
+    apply IHd_wl_red...
     exists θ0...
 
   (* apply *)

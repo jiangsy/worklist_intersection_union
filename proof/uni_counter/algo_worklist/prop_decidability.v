@@ -688,7 +688,7 @@ Proof with eauto.
     + destruct H1 as [Γ'1 [Γ'2 Hsubst]]. left. exists Γ'1, (w ⫤ᵃ Γ'2). simpl...
     + right. unfold not. intros Hcontra. destruct Hcontra as [Γ'1 [Γ'2 Hsubst]].
       dependent destruction Hsubst. 
-      assert ((∃ Γ'1 Γ'2 : aworklist, aworklist_subst (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) X A Γ'1 Γ'2)) by eauto.
+      assert ((exists Γ'1 Γ'2 : aworklist, aworklist_subst (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) X A Γ'1 Γ'2)) by eauto.
       contradiction.
 Qed.
 
@@ -736,7 +736,7 @@ Proof with eauto.
     + destruct H1 as [Γ'1 [Γ'2 Hsubst]]. left. exists Γ'1, (work_sub A0 B ⫤ᵃ Γ'2). simpl...
     + right. unfold not. intros Hcontra. destruct Hcontra as [Γ'1 [Γ'2 Hsubst]].
       dependent destruction Hsubst. 
-      assert ((∃ Γ'1 Γ'2 : aworklist, aworklist_subst (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) X A Γ'1 Γ'2)) by eauto.
+      assert ((exists Γ'1 Γ'2 : aworklist, aworklist_subst (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) X A Γ'1 Γ'2)) by eauto.
       contradiction.
 Qed.
 
@@ -750,8 +750,9 @@ Qed.
 
 Lemma a_wf_twl_aworklist_subst_no_etvar_false : forall Γ Γ1 Γ2 X A,
   ⊢ᵃʷₜ Γ ->
-  (X ~ ⬒ ∈ᵃ ⌊ Γ ⌋ᵃ → False) ->
-  aworklist_subst Γ X A Γ1 Γ2 -> False.
+  (X ~ ⬒ ∈ᵃ ⌊ Γ ⌋ᵃ -> False) ->
+  aworklist_subst Γ X A Γ1 Γ2 -> 
+  False.
 Proof with eauto.
   intros. dependent induction H1.
   - assert (binds X abind_etvar_empty (awl_to_aenv (X ~ᵃ ⬒ ;ᵃ Γ))).
@@ -779,7 +780,7 @@ Qed.
 
 Lemma a_wf_wl_aworklist_subst_no_etvar_false : forall Γ Γ1 Γ2 X A,
   ⊢ᵃʷₛ Γ ->
-  (X ~ ⬒ ∈ᵃ ⌊ Γ ⌋ᵃ → False) ->
+  (X ~ ⬒ ∈ᵃ ⌊ Γ ⌋ᵃ -> False) ->
   aworklist_subst Γ X A Γ1 Γ2 -> False.
 Proof with eauto.
   intros. dependent induction H1.
@@ -1113,7 +1114,7 @@ Lemma decidablity_lemma : forall ne nj nt ntj na naj nm nw Γ,
   infabs_judge_size_wl Γ < naj ->
   split_depth_wl Γ < nm ->
   weight_wl Γ < nw ->
-  Γ ⟶ᵃʷ⁎⋅ \/ ¬ Γ ⟶ᵃʷ⁎⋅.
+  Γ ⟶ᵃʷ⁎⋅ \/ ~ Γ ⟶ᵃʷ⁎⋅.
 Proof.
   intros ne; induction ne;
   intros nj; induction nj;
@@ -1127,21 +1128,21 @@ Proof.
   dependent destruction Hwf; auto.
   - rename H into Hwf. dependent destruction Hwf; auto.
     + simpl in *.
-      assert (Jg: Γ ⟶ᵃʷ⁎⋅ \/ ¬ Γ ⟶ᵃʷ⁎⋅).
+      assert (Jg: Γ ⟶ᵃʷ⁎⋅ \/ ~ Γ ⟶ᵃʷ⁎⋅).
       { eapply IHnw; eauto. lia. }
       destruct Jg as [Jg | Jg]; auto.
       right. intro Hcontra.
       dependent destruction Hcontra.
       apply Jg; auto.
     + simpl in *.
-      assert (Jg: Γ ⟶ᵃʷ⁎⋅ \/ ¬ Γ ⟶ᵃʷ⁎⋅).
+      assert (Jg: Γ ⟶ᵃʷ⁎⋅ \/ ~ Γ ⟶ᵃʷ⁎⋅).
       { eapply IHnw; eauto. lia. }
       destruct Jg as [Jg | Jg]; auto.
       right. intro Hcontra.
       dependent destruction Hcontra.
       apply Jg; auto.
     + simpl in *.
-      assert (Jg: Γ ⟶ᵃʷ⁎⋅ \/ ¬ Γ ⟶ᵃʷ⁎⋅).
+      assert (Jg: Γ ⟶ᵃʷ⁎⋅ \/ ~ Γ ⟶ᵃʷ⁎⋅).
       { eapply IHnw; eauto. lia. }
       destruct Jg as [Jg | Jg]; auto.
       right. intro Hcontra.
@@ -1177,7 +1178,7 @@ Proof.
              admit. }
            admit.
         -- assert (Jg: (work_infer e1 (conts_infabs (contd_infapp (exp_split_size (⌊ Γ ⌋ᵃ) e1) e2 cs)) ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/
-                     ¬ (work_infer e1 (conts_infabs (contd_infapp (exp_split_size (⌊ Γ ⌋ᵃ) e1) e2 cs)) ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
+                     ~ (work_infer e1 (conts_infabs (contd_infapp (exp_split_size (⌊ Γ ⌋ᵃ) e1) e2 cs)) ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
            { eapply IHne; eauto; simpl; try lia. constructor; auto. }
            destruct Jg as [Jg | Jg]; eauto.
            right. intro Hcontra.
@@ -1189,14 +1190,14 @@ Proof.
            { eapply IHne; eauto; simpl; try lia. admit. admit. }
            admit.
         -- assert (Jg: (work_infer e (conts_inftapp A cs) ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/
-                     ¬ (work_infer e (conts_inftapp A cs) ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
+                     ~ (work_infer e (conts_inftapp A cs) ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
            { eapply IHne; eauto; simpl; try lia. }
            destruct Jg as [Jg | Jg]; eauto.
            right. intro Hcontra.
            dependent destruction Hcontra.
            apply Jg; auto.
         -- assert (Jg: (work_check e A ⫤ᵃ work_applys cs A ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/
-                     ¬ (work_check e A ⫤ᵃ work_applys cs A ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
+                     ~ (work_check e A ⫤ᵃ work_applys cs A ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
            { assert (exp_size (work_applys cs A ⫤ᵃ Γ) e = exp_size Γ e) by (eapply exp_size_weaken_work; eauto).
              eapply IHne; eauto; simpl; try lia. constructor; auto. }
            destruct Jg as [Jg | Jg]; eauto.
@@ -1206,19 +1207,19 @@ Proof.
       * simpl in *.
         assert (He': exp_size Γ e > 0) by apply exp_size_gt_0.
         assert (Jg: (work_infer e (conts_sub A) ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/
-                  ¬ (work_infer e (conts_sub A) ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
+                  ~ (work_infer e (conts_sub A) ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
         { eapply IHnj; eauto; simpl; try lia. }
         assert (Jg1: forall A1 A2, A = typ_union A1 A2 ->
-                       (work_check e A1 ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ ¬ (work_check e A1 ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
+                       (work_check e A1 ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ ~ (work_check e A1 ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
         { intros A1 A2 Heq. subst. dependent destruction H0. simpl in *.
           eapply IHne; eauto; simpl; try lia. }
         assert (Jg2: forall A1 A2, A = typ_union A1 A2 ->
-                       (work_check e A2 ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ ¬ (work_check e A2 ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
+                       (work_check e A2 ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ ~ (work_check e A2 ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
         { intros A1 A2 Heq. subst. dependent destruction H0. simpl in *.
           eapply IHne; eauto; simpl; try lia. }
         assert (Jg': forall A1 A2, A = typ_intersection A1 A2 ->
                        (work_check e A2 ⫤ᵃ work_check e A1 ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/
-                     ¬ (work_check e A2 ⫤ᵃ work_check e A1 ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ ).
+                     ~ (work_check e A2 ⫤ᵃ work_check e A1 ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ ).
         { intros A1 A2 Heq. subst. dependent destruction H0. simpl in *.
           assert (exp_size (work_check e A1 ⫤ᵃ Γ) e = exp_size Γ e) by (eapply exp_size_weaken_work; eauto).
           eapply IHne; eauto; simpl; try lia. constructor; auto. }
@@ -1246,7 +1247,7 @@ Proof.
              try solve [right; intro Hcontra; dependent destruction Hcontra; eapply Jg; eauto].
            ++ pick fresh x.
               assert (Jgt: (work_check (e ᵉ^ₑ exp_var_f x) typ_top ⫤ᵃ x ~ᵃ typ_bot;ᵃ Γ) ⟶ᵃʷ⁎⋅ \/
-                         ¬ (work_check (e ᵉ^ₑ exp_var_f x) typ_top ⫤ᵃ x ~ᵃ typ_bot;ᵃ Γ) ⟶ᵃʷ⁎⋅).
+                         ~ (work_check (e ᵉ^ₑ exp_var_f x) typ_top ⫤ᵃ x ~ᵃ typ_bot;ᵃ Γ) ⟶ᵃʷ⁎⋅).
               { eapply IHne; eauto; simpl; try lia.
                 constructor; auto. constructor; auto. constructor; auto.
                 admit.
@@ -1282,7 +1283,7 @@ Proof.
            ++ admit.
            ++ pick fresh x. inst_cofinites_with x.
               assert (JgArr: (work_check (e ᵉ^ₑ exp_var_f x) A2 ⫤ᵃ x ~ᵃ A1;ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ 
-                           ¬ (work_check (e ᵉ^ₑ exp_var_f x) A2 ⫤ᵃ x ~ᵃ A1;ᵃ Γ) ⟶ᵃʷ⁎⋅).
+                           ~ (work_check (e ᵉ^ₑ exp_var_f x) A2 ⫤ᵃ x ~ᵃ A1;ᵃ Γ) ⟶ᵃʷ⁎⋅).
               { eapply IHne; eauto; simpl; try lia.
                 constructor; auto. constructor; auto. constructor; auto.
                 admit. admit.
@@ -1361,7 +1362,7 @@ Proof.
       * simpl in *. dependent destruction H;
           try solve [right; intro Hcontra; dependent destruction Hcontra].
         -- assert (Jg:   (work_infabs (typ_arrow typ_top typ_bot) cd ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ 
-                       ¬ (work_infabs (typ_arrow typ_top typ_bot) cd ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
+                       ~ (work_infabs (typ_arrow typ_top typ_bot) cd ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
           { eapply IHna; eauto; simpl in *; try lia. }
           destruct Jg as [Jg | Jg]; eauto.
           right. intro Hcontra.
@@ -1375,7 +1376,7 @@ Proof.
       -- destruct (apply_contd_dec cd A1 A2) as [[w Happly] | Happly];
           try solve [right; intro Hcontra; dependent destruction Hcontra; dependent destruction Hcontra;
                      eapply Happly; eauto].
-         assert (Jg: (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ ¬ (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
+         assert (Jg: (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ ~ (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
          { eapply IHnaj; eauto; simpl in *; try lia.
            eapply a_wf_wl_apply_contd; eauto.
            eapply apply_contd_exp_size with (Γ := Γ) in Happly; lia.
@@ -1392,7 +1393,7 @@ Proof.
          subst. eauto.
       -- pick fresh X. inst_cofinites_with X.
          assert (Jg: (work_infabs (A ᵗ^ₜ X) cd ⫤ᵃ X ~ᵃ ⬒ ;ᵃ Γ) ⟶ᵃʷ⁎⋅ \/
-                   ¬ (work_infabs (A ᵗ^ₜ X) cd ⫤ᵃ X ~ᵃ ⬒ ;ᵃ Γ) ⟶ᵃʷ⁎⋅).
+                   ~ (work_infabs (A ᵗ^ₜ X) cd ⫤ᵃ X ~ᵃ ⬒ ;ᵃ Γ) ⟶ᵃʷ⁎⋅).
          { assert (Heq: infabs_depth (open_typ_wrt_typ A (typ_var_f X)) = infabs_depth A) by admit. (* should be fine *)
            eapply IHna; eauto; simpl in *; try lia.
            constructor; simpl; auto. constructor; simpl; auto. constructor; simpl; auto.
@@ -1424,17 +1425,17 @@ Proof.
             ** eapply a_wf_wl_a_wf_wwl.
                constructor; simpl; auto. constructor; auto. admit.
       -- assert (Jg: (work_infabs A1 (contd_infabsunion A2 cd) ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/
-                   ¬ (work_infabs A1 (contd_infabsunion A2 cd) ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
+                   ~ (work_infabs A1 (contd_infabsunion A2 cd) ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
          { eapply IHna; eauto; simpl in *; try lia. }
          destruct Jg as [Jg | Jg]; eauto.
          right. intro Hcontra.
          dependent destruction Hcontra.
          apply Jg; auto.
       -- assert (Jg1: (work_infabs A1 cd ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/
-                    ¬ (work_infabs A1 cd ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
+                    ~ (work_infabs A1 cd ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
          { eapply IHna; eauto; simpl in *; try lia. }
          assert (Jg2: (work_infabs A2 cd ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/
-                    ¬ (work_infabs A2 cd ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
+                    ~ (work_infabs A2 cd ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
          { eapply IHna; eauto; simpl in *; try lia. }
          destruct Jg1 as [Jg1 | Jg1]; eauto.
          destruct Jg2 as [Jg2 | Jg2]; eauto.
@@ -1444,14 +1445,14 @@ Proof.
     * simpl in *. dependent destruction H;
       try solve [right; intro Hcontra; dependent destruction Hcontra].
       assert (Jg:  (work_infabs A2 (contd_unioninfabs A1 B1 cd) ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/
-                 ¬ (work_infabs A2 (contd_unioninfabs A1 B1 cd) ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
+                 ~ (work_infabs A2 (contd_unioninfabs A1 B1 cd) ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
       { eapply IHnaj; eauto; simpl in *; try lia. constructor; auto. }
       destruct Jg as [Jg | Jg]; eauto.
       right. intro Hcontra. 
       dependent destruction Hcontra. eauto.
     * dependent destruction H; try solve [right; intro Hcontra; dependent destruction Hcontra].
       assert (Jg:  (work_applys cs B ⫤ᵃ work_check e A ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/
-                 ¬ (work_applys cs B ⫤ᵃ work_check e A ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
+                 ~ (work_applys cs B ⫤ᵃ work_check e A ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
       { eapply IHnj; eauto; simpl in *; try lia. constructor; auto. admit. }
       destruct Jg as [Jg | Jg]; eauto.
       right. intro Hcontra.
@@ -1478,7 +1479,7 @@ Proof.
       -- destruct (apply_conts_dec cs (open_typ_wrt_typ A A2)) as [[w Happly] | Happly];
          try solve [right; intro Hcontra; dependent destruction Hcontra; dependent destruction Hcontra;
            eapply Happly; eauto].
-         assert (Jg: (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ ¬ (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
+         assert (Jg: (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ ~ (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
          { eapply IHntj; eauto; simpl in *; try lia.
            eapply a_wf_wl_apply_conts; eauto.
            constructor; auto. constructor; auto.
@@ -1501,7 +1502,7 @@ Proof.
          eapply apply_conts_det in Happly; eauto.
          subst. eauto.
       -- assert (Jg: (work_inftapp A1 A2 (conts_inftappunion A0 A2 cs) ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/
-                   ¬ (work_inftapp A1 A2 (conts_inftappunion A0 A2 cs) ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
+                   ~ (work_inftapp A1 A2 (conts_inftappunion A0 A2 cs) ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
          { eapply IHnt; eauto; simpl in *; try lia.
            assert (inftapp_depth_conts_tail_rec cs
                     (inftapp_depth A0 * S (S (inftapp_depth A2)) + 1 +
@@ -1516,7 +1517,7 @@ Proof.
          right. intro Hcontra.
          dependent destruction Hcontra.
          apply Jg; auto.
-      -- assert (Jg1: (work_inftapp A1 A2 cs ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ ¬ (work_inftapp A1 A2 cs ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
+      -- assert (Jg1: (work_inftapp A1 A2 cs ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ ~ (work_inftapp A1 A2 cs ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
          { eapply IHnt; eauto; simpl in *; try lia.
            assert (inftapp_depth_conts_tail_rec cs
                     (inftapp_depth A1 +
@@ -1527,7 +1528,7 @@ Proof.
                            inftapp_depth A2 * S (inftapp_depth A1 + inftapp_depth A0))))).
            { eapply inftapp_depth_conts_tail_rec_lt; eauto; try lia. }
            lia. }
-         assert (Jg2: (work_inftapp A0 A2 cs ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ ¬ (work_inftapp A0 A2 cs ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
+         assert (Jg2: (work_inftapp A0 A2 cs ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ ~ (work_inftapp A0 A2 cs ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
          { eapply IHnt; eauto; simpl in *; try lia.
            assert (inftapp_depth_conts_tail_rec cs
                     (inftapp_depth A0 +
@@ -1545,7 +1546,7 @@ Proof.
          apply Jg1; auto. apply Jg2; auto.
     * simpl in *.
       assert (Jg:  (work_inftapp A2 B (conts_unioninftapp A1 cs) ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ 
-                 ¬ (work_inftapp A2 B (conts_unioninftapp A1 cs) ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
+                 ~ (work_inftapp A2 B (conts_unioninftapp A1 cs) ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
       { eapply IHntj; eauto; simpl; try lia.
         assert (inftapp_depth_conts_tail_rec cs
                  (S (inftapp_depth A1 + (inftapp_depth A2 + (inftapp_depth A2 + inftapp_depth B * inftapp_depth A2))))
@@ -1561,7 +1562,7 @@ Proof.
       destruct (apply_conts_dec cs (typ_union A1 A2)) as [[w Happly] | Happly];
       try solve [right; intro Hcontra; dependent destruction Hcontra; dependent destruction Hcontra;
         eapply Happly; eauto].
-      assert (Jg: (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ ¬ (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
+      assert (Jg: (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ ~ (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
       { eapply IHntj; eauto; simpl in *; try lia.
         eapply a_wf_wl_apply_conts; eauto.
         eapply apply_conts_exp_size with (Γ := Γ) in Happly; lia.
@@ -1585,7 +1586,7 @@ Proof.
       destruct (apply_contd_dec cd ( (typ_intersection A1 A2) )   ( (typ_union B1 B2) ) ) as [[w Happly] | Happly];
       try solve [right; intro Hcontra; dependent destruction Hcontra; dependent destruction Hcontra;
         eapply Happly; eauto].
-      assert (Jg: (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ ¬ (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
+      assert (Jg: (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ ~ (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
       { eapply IHnaj; eauto; simpl in *; try lia.
         eapply a_wf_wl_apply_contd; eauto. constructor; auto.
         eapply apply_contd_exp_size with (Γ := Γ) in Happly; lia.
@@ -1604,7 +1605,7 @@ Proof.
     * simpl in *. edestruct (apply_conts_dec cs A) as [[w Happly] | Happly].
       -- eapply apply_conts_exp_size with (Γ := Γ) in Happly as Hes.
          eapply apply_conts_judge_size in Happly as Hjs.
-         assert (JgApply: (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ ¬ (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
+         assert (JgApply: (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ ~ (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
          { eapply IHnj; simpl; eauto; try lia.
            eapply a_wf_wl_apply_conts; eauto. }
          destruct JgApply as [JgApply | JgApply]; eauto.
@@ -1615,7 +1616,7 @@ Proof.
     * simpl in *. edestruct (apply_contd_dec cd A B) as [[w Happly] | Happly].
       -- eapply apply_contd_exp_size with (Γ := Γ) in Happly as Hes.
          eapply apply_contd_judge_size in Happly as Hjs.
-         assert (JgApply: (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ ¬ (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
+         assert (JgApply: (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ ~ (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
          { eapply IHnj; simpl; eauto; try lia.
            eapply a_wf_wl_apply_contd; eauto. }
          destruct JgApply as [JgApply | JgApply]; eauto.
@@ -1640,35 +1641,35 @@ Proof.
   - simpl in *.
     assert (HwA: weight A >= 1) by apply weight_gt_0.
     assert (HwB: weight B >= 1) by apply weight_gt_0.
-    assert (Jg: Γ ⟶ᵃʷ⁎⋅ \/ ¬ Γ ⟶ᵃʷ⁎⋅).
+    assert (Jg: Γ ⟶ᵃʷ⁎⋅ \/ ~ Γ ⟶ᵃʷ⁎⋅).
     { eapply IHnw; eauto; simpl; try lia. }
     assert (JgInter1: forall A1 A2, B = typ_intersection A1 A2 ->
-        (work_sub A A2 ⫤ᵃ work_sub A A1 ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ ¬ (work_sub A A2 ⫤ᵃ work_sub A A1 ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
+        (work_sub A A2 ⫤ᵃ work_sub A A1 ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ ~ (work_sub A A2 ⫤ᵃ work_sub A A1 ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
     { intros A1 A2 Heq. subst.
       eapply IHnw; eauto; simpl in *; unfold split_depth in *; simpl in *; try lia.
       dependent destruction H0. apply a_wf_wl__conswork_sub; auto. }
     assert (JgInter2: forall A1 A2, A = typ_intersection A1 A2 ->
-        (work_sub A1 B ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ ¬ (work_sub A1 B ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
+        (work_sub A1 B ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ ~ (work_sub A1 B ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
     { intros A1 A2 Heq. subst.
       eapply IHnw; eauto; simpl in *; unfold split_depth in *; simpl in *; try lia.
       dependent destruction H. apply a_wf_wl__conswork_sub; auto. }
     assert (JgInter3: forall A1 A2, A = typ_intersection A1 A2 ->
-        (work_sub A2 B ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ ¬ (work_sub A2 B ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
+        (work_sub A2 B ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ ~ (work_sub A2 B ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
     { intros A1 A2 Heq. subst.
       eapply IHnw; eauto; simpl in *; unfold split_depth in *; simpl in *; try lia.
       dependent destruction H. apply a_wf_wl__conswork_sub; auto. }
     assert (JgUnion1: forall A1 A2, B = typ_union A1 A2 ->
-        (work_sub A A1 ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ ¬ (work_sub A A1 ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
+        (work_sub A A1 ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ ~ (work_sub A A1 ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
     { intros A1 A2 Heq. subst.
       eapply IHnw; eauto; simpl in *; unfold split_depth in *; simpl in *; try lia.
       dependent destruction H0. apply a_wf_wl__conswork_sub; auto. }
     assert (JgUnion2: forall A1 A2, B = typ_union A1 A2 ->
-        (work_sub A A2 ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ ¬ (work_sub A A2 ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
+        (work_sub A A2 ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ ~ (work_sub A A2 ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
     { intros A1 A2 Heq. subst.
       eapply IHnw; eauto; simpl in *; unfold split_depth in *; simpl in *; try lia.
       dependent destruction H0. apply a_wf_wl__conswork_sub; auto. }
     assert (JgUnion3: forall A1 A2, A = typ_union A1 A2 ->
-        (work_sub A2 B ⫤ᵃ work_sub A1 B ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ ¬ (work_sub A2 B ⫤ᵃ work_sub A1 B ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
+        (work_sub A2 B ⫤ᵃ work_sub A1 B ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ ~ (work_sub A2 B ⫤ᵃ work_sub A1 B ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
     { intros A1 A2 Heq. subst.
       eapply IHnw; eauto; simpl in *; unfold split_depth in *; simpl in *; try lia.
       dependent destruction H. apply a_wf_wl__conswork_sub; auto. }
@@ -1678,7 +1679,7 @@ Proof.
               neq_union B ->
               X \notin  L `union` (dom (⌊ Γ ⌋ᵃ)) ->
               (work_sub (A1 ᵗ^ₜ X) B ⫤ᵃ X ~ᵃ ⬒ ;ᵃ Γ) ⟶ᵃʷ⁎⋅ \/
-            ¬ (work_sub (A1 ᵗ^ₜ X) B ⫤ᵃ X ~ᵃ ⬒ ;ᵃ Γ) ⟶ᵃʷ⁎⋅).
+            ~ (work_sub (A1 ᵗ^ₜ X) B ⫤ᵃ X ~ᵃ ⬒ ;ᵃ Γ) ⟶ᵃʷ⁎⋅).
     { intros A1 X L Heq HneqAll HneqInter HneqUnion Hnin. subst.
       eapply IHnm; eauto; simpl in *; try lia.
       apply a_wf_wl__conswork_sub; auto.
@@ -1929,7 +1930,7 @@ Proof.
       -- right. intro Hcontra. dependent destruction Hcontra; unify_binds.
       -- admit. (* arrow case *)
       -- assert (JgArr: (work_sub A2 A3 ⫤ᵃ work_sub A0 A1 ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/
-                      ¬ (work_sub A2 A3 ⫤ᵃ work_sub A0 A1 ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
+                      ~ (work_sub A2 A3 ⫤ᵃ work_sub A0 A1 ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
          { eapply IHnw; eauto.
            simpl in *. unfold split_depth in *. simpl in *.
            assert (split_depth_rec (⌊ Γ ⌋ᵃ) A2 1 * S (iu_size A3) +
@@ -2122,7 +2123,7 @@ Proof.
                apply a_wf_typ_weaken_cons; auto.
       --  pick fresh X. inst_cofinites_with X.
           assert (JgAll: (work_sub (A ᵗ^ₜ X) (A0 ᵗ^ₜ X) ⫤ᵃ X ~ᵃ ■ ;ᵃ Γ) ⟶ᵃʷ⁎⋅ \/
-                       ¬ (work_sub (A ᵗ^ₜ X) (A0 ᵗ^ₜ X) ⫤ᵃ X ~ᵃ ■ ;ᵃ Γ) ⟶ᵃʷ⁎⋅).
+                       ~ (work_sub (A ᵗ^ₜ X) (A0 ᵗ^ₜ X) ⫤ᵃ X ~ᵃ ■ ;ᵃ Γ) ⟶ᵃʷ⁎⋅).
           { eapply IHnw; eauto; simpl in *; try lia.
             admit. (* safe: wf *) 
             admit. admit. }

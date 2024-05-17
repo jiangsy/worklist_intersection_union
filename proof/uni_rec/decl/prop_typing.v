@@ -4,11 +4,11 @@ Require Import Lia.
 Require Import Metalib.Metatheory.
 
 
-Require Import uni.notations.
-Require Import uni.decl.prop_basic.
-Require Import uni.decl.prop_rename.
-Require Import uni.decl.prop_subtyping.
-Require Import uni.ltac_utils.
+Require Import uni_rec.notations.
+Require Import uni_rec.decl.prop_basic.
+Require Import uni_rec.decl.prop_rename.
+Require Import uni_rec.decl.prop_subtyping.
+Require Import uni_rec.ltac_utils.
 
 
 Hint Constructors d_wf_typ: core.
@@ -213,7 +213,7 @@ Ltac solve_wf_subenv := match goal with
 end.
 
 Lemma binds_subtenv: forall Ψ X Ψ',
-    X ~ □ ∈ᵈ Ψ -> d_subtenv Ψ' Ψ -> X ~ □ ∈ᵈ Ψ'.
+  X ~ □ ∈ᵈ Ψ -> d_subtenv Ψ' Ψ -> X ~ □ ∈ᵈ Ψ'.
 Proof with try solve_by_invert.
   intros* HD HS. induction* HS.
   - forwards* [?|?]: binds_app_1 HD.
@@ -317,14 +317,21 @@ Fixpoint exp_size (e:exp) : nat :=
     | exp_anno e1 _ => 1 + exp_size e1
     | exp_tapp e1 _ => 1 + exp_size e1
     | exp_tabs e => 1 + exp_size e
-  end.
+    | exp_rcd_nil => 1
+    | exp_rcd_cons _ e1 e2 => 1 + exp_size e1 + exp_size e2
+    | exp_rcd_proj e _ => 1 + exp_size e
+  end
+.
+
+
 
 Fixpoint typ_size (A:typ) : nat :=
   match A with
   | typ_intersection A1 A2 => typ_size A1 + typ_size A2 + 1
   | typ_union A1 A2 => typ_size A1 + typ_size A2 + 1
   | _ => 0
-  end.
+  end
+.
 
 
 Theorem d_inftapp_subsumption_same_env : forall Ψ A B C A',
@@ -670,6 +677,25 @@ Proof with auto.
       * exists typ_unit. split; auto.
         econstructor. eapply d_subtenv_wf_env; eauto.
       (* e1 e2 => A *)
+      * exists typ_unit. split; auto.
+        econstructor. eapply d_subtenv_wf_env; eauto.
+      (* e1 => A => e2 => A *)
+      * eapply IHn1 in Hty1; eauto.
+        eapply IHn1 in Hty2; eauto.
+        destruct Hty1 as [A1' [Hsub1 Hinf1]].
+        destruct Hty2 as [A2' [Hsub2 Hinf2]].
+        exists (typ_intersection (typ_arrow (typ_label l1) A1') A2'). split.
+        -- apply d_sub_d_wf in Hsub1 as d_wf1.  apply d_sub_d_wf in Hsub2 as d_wf2.
+           intuition.
+        -- eauto. econstructor; eauto. eapply d_subtenv_wf_env; eauto.
+      * eapply IHn1 in Hty; eauto. destruct Hty as [A' [Hsub Hinf]].
+        eapply d_infabs_subsumption in Hsub; eauto. destruct Hsub as [B' [C']].
+        exists C'; intuition.
+        -- dependent destruction H2...
+        -- dependent destruction H2... econstructor; eauto.
+           eapply d_sub_transitivity with (B:=B); eauto. 
+            eapply d_sub_subenv; eauto. eapply d_subtenv_subenv; eauto.
+            eapply d_sub_subenv; eauto. eapply d_subtenv_subenv; eauto.
       * eapply IHn1 in Hty1; eauto...
         destruct Hty1 as [A2]. inversion H0.
         eapply d_infabs_subsumption in H; eauto.
@@ -698,21 +724,24 @@ Proof with auto.
                  simpl. case_if; auto...
         -- rewrite <- d_exp_size_open_var. lia.
         -- econstructor...
-          apply d_sub_refl.
-          apply d_chk_inf_wf_env in H0. dependent destruction H0...
-          apply d_mono_typ_d_wf_typ in H. dependent destruction H...
+           apply d_sub_refl.
+           apply d_chk_inf_wf_env in H0. dependent destruction H0...
+           apply d_mono_typ_d_wf_typ in H. dependent destruction H...
       (* /\ a. e : A => forall a. A *)
       * exists (typ_all A); split.
         -- eapply d_sub_refl; auto.
            inst_cofinites_by L. apply d_chk_inf_wf_env in H0...
-           dependent destruction H0... inst_cofinites_for d_wf_typ__all; intros; inst_cofinites_with X; auto.
+           dependent destruction H0...
+           inst_cofinites_for d_wf_typ__all; intros; inst_cofinites_with X; auto.
            apply d_chk_inf_wf_typ in H0...
-        -- pick fresh X and apply d_chk_inf__inf_tabs; inst_cofinites_with X...
-           ++ refine (IHn1 _ _ _ _ _ _ _ _ _ _ H0 _ _ _); eauto...
+        -- pick fresh X and apply d_chk_inf__inf_tabs; inst_cofinites_with X.
+           ++ auto.
+           ++ intros. inst_cofinites_with X.
+              refine (IHn1 _ _ _ _ _ _ _ _ _ _ H0 _ _ _); eauto...
               simpl. rewrite <- d_exp_size_open_typ; lia.
-              apply d_sub_refl...  eauto. 
+              apply d_sub_refl... eauto. 
               apply d_chk_inf_wf_env in H0; eauto.
-              eapply d_chk_inf_wf_typ in H0; auto.
+              apply d_chk_inf_wf_typ in H0; eauto.
       (* e @T *)
       * eapply IHn1 in Hty; eauto...
         destruct Hty as [A1 [Hsuba1 Hinfa1]].
@@ -769,9 +798,9 @@ Proof with auto.
         eapply IHn2 in Hty; eauto.
         destruct Hty as [A'' [Hsub Hinf]].
         apply d_chk_inf__chk_sub with (B := A''); auto.
-        apply sub_transitivity with (B := B); auto...
+        apply d_sub_transitivity with (B := B); auto...
         eapply d_sub_subenv; eauto. apply d_subtenv_subenv... 
-        apply sub_transitivity with (B := A); auto...
+        apply d_sub_transitivity with (B := A); auto...
         eapply d_sub_subenv; eauto. apply d_subtenv_subenv... 
         eapply d_sub_subenv; eauto. apply d_subtenv_subenv... 
         simpl. lia.

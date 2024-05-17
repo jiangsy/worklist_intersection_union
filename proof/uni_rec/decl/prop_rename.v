@@ -5,9 +5,9 @@ Require Import Metalib.Metatheory.
 Require Import LibTactics.
 
 
-Require Import uni.notations.
-Require Import uni.decl.prop_basic.
-Require Import uni.ltac_utils.
+Require Import uni_rec.notations.
+Require Import uni_rec.decl.prop_basic.
+Require Import uni_rec.ltac_utils.
 
 Lemma d_wf_typ_rename_var : forall Ψ1 Ψ2 x y A B,
   (Ψ2 ++ (x , dbind_typ B) :: Ψ1) ᵗ⊢ᵈ A ->
@@ -74,13 +74,15 @@ Qed.
 Lemma subst_var_in_exp_refl : forall x e,
   {exp_var_f x ᵉ/ₑ x} e = e.
 Proof.
-  - intros. dependent induction e; simpl; auto.
-    + destruct_eq_atom; eauto.
-    + rewrite IHe; auto.
-    + rewrite IHe1. rewrite IHe2. auto.
-    + rewrite IHe; auto. 
-    + rewrite IHe. auto.
-    + rewrite IHe. auto.
+  intros. dependent induction e; simpl; auto.
+  - destruct_eq_atom; eauto.
+  - rewrite IHe; auto.
+  - rewrite IHe1. rewrite IHe2. auto.
+  - rewrite IHe. auto.
+  - rewrite IHe. auto.
+  - rewrite IHe. auto.
+  - rewrite IHe1.  rewrite IHe2. auto.
+  - rewrite IHe. auto.
 Qed.
 
 
@@ -242,13 +244,14 @@ Qed.
 Lemma subst_tvar_in_exp_refl_eq : forall X e,
   subst_tvar_in_exp (`X) X e = e.
 Proof with auto.
-  - intros. 
-    dependent induction e; simpl; auto.
-    + rewrite IHe...
-    + rewrite IHe1... rewrite IHe2...
-    + rewrite IHe... 
-    + rewrite subst_tvar_in_typ_refl_eq. rewrite IHe. auto.
-    + rewrite subst_tvar_in_typ_refl_eq. rewrite IHe. auto.
+  intros. dependent induction e; simpl; auto.
+  - rewrite IHe...
+  - rewrite IHe1... rewrite IHe2...
+  - rewrite IHe...
+  - rewrite IHe... rewrite subst_tvar_in_typ_refl_eq...
+  - rewrite IHe... rewrite subst_tvar_in_typ_refl_eq...
+  - rewrite IHe1... rewrite IHe2...
+  - rewrite IHe... 
 Qed.
 
 Theorem d_sub_rename_dtvar_cons : forall Ψ X Y A B b,
@@ -329,6 +332,8 @@ Proof with eauto 6 using d_wf_typ_rename_dtvar, d_mono_typ_rename_dtvar, d_wf_te
   intros. dependent induction H; simpl in *; eauto...
   - constructor...
     apply d_binds_var_typ_rename_tvar...
+  - eapply d_chk_inf__inf_rcd_proj with (A:={` Y ᵗ/ₜ X} A) (B:={` Y ᵗ/ₜ X} B)...
+    replace (typ_label l) with ({` Y ᵗ/ₜ X} (typ_label l)) by auto...
   - inst_cofinites_for d_chk_inf__inf_abs_mono.
     + inst_cofinites_by L.
       apply d_chk_inf_wf_env in H0. dependent destruction H0... dependent destruction H...
@@ -339,8 +344,8 @@ Proof with eauto 6 using d_wf_typ_rename_dtvar, d_mono_typ_rename_dtvar, d_wf_te
       rewrite <- subst_tvar_in_exp_open_exp_wrt_exp...
       (* rewrite <- subst_tvar_in_exp_open_exp_wrt_exp. *) 
   - inst_cofinites_for d_chk_inf__inf_tabs...
-    + intros. inst_cofinites_with X0.
-      rewrite subst_tvar_in_typ_open_typ_wrt_typ_fresh2; eauto. apply s_in_subst_inv...
+    + intros. rewrite subst_tvar_in_typ_open_typ_wrt_typ_fresh2...
+      eapply s_in_subst_inv...    
     + intros. replace (`X0) with (subst_tvar_in_typ `Y X (`X0)). 
       rewrite <- subst_tvar_in_exp_open_exp_wrt_typ...
       rewrite <- subst_tvar_in_typ_open_typ_wrt_typ...

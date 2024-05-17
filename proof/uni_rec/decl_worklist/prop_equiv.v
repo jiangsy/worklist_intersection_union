@@ -1,14 +1,12 @@
 Require Import Coq.Program.Equality.
-Require Import Lia.
 
-Require Import uni_counter.decl.def_extra.
-Require Import uni_counter.decl.prop_basic.
-Require Import uni_counter.decl.prop_rename.
-Require Import uni_counter.decl.prop_typing.
-Require Import uni_counter.def_ott.
-Require Import uni_counter.notations.
-Require Import uni_counter.decl_worklist.def.
-Require Import uni_counter.ltac_utils.
+Require Import uni_rec.decl.def_extra.
+Require Import uni_rec.decl.prop_basic.
+Require Import uni_rec.decl.prop_typing.
+Require Import uni_rec.def_ott.
+Require Import uni_rec.notations.
+Require Import uni_rec.decl_worklist.def.
+Require Import uni_rec.ltac_utils.
 
 Open Scope dworklist.
 
@@ -139,6 +137,8 @@ Proof with auto.
     eapply IHHred; simpl; eauto...
   - econstructor; rewrite_dwl_app;
     eapply IHHred; simpl; eauto...
+  - econstructor; eauto.
+    rewrite_dwl_app. eapply IHHred; eauto...
   - rewrite dwl_app_cons_work in H. rewrite d_wl_app_all_work_same_env in H...
     econstructor; eauto.
     rewrite_dwl_app. eapply IHHred; eauto...
@@ -147,6 +147,11 @@ Proof with auto.
     rewrite_dwl_app. eapply IHHred; eauto...
   - econstructor; rewrite_dwl_app;
     eapply IHHred; simpl; eauto...
+  - rewrite dwl_app_cons_work in H. rewrite d_wl_app_all_work_same_env in H...
+    econstructor; eauto.
+    rewrite_dwl_app. eapply IHHred; eauto...
+  - econstructor; eauto.
+    rewrite_dwl_app. eapply IHHred; eauto...
   - rewrite dwl_app_cons_work in H. rewrite d_wl_app_all_work_same_env in H...
     econstructor; eauto.
     rewrite_dwl_app. eapply IHHred; eauto...
@@ -183,6 +188,8 @@ Proof.
   - constructor; auto. constructor; auto. solve_false.
   - constructor; auto. constructor; auto. solve_false.
   - constructor; auto. constructor; auto. solve_false.
+  - constructor; auto. constructor; auto. solve_false.
+  - constructor; auto. constructor; auto. solve_false.
 Qed.
 
 Theorem d_wf_work_apply_contd : forall Ω cd A B w,
@@ -195,6 +202,7 @@ Theorem d_wf_work_apply_contd : forall Ω cd A B w,
 Proof.
   intros. induction H3; simpl; auto;
   dependent destruction H0; auto.
+  - constructor; auto. solve_false.
   - constructor; auto. solve_false.
   - constructor; auto. solve_false.
   - constructor; auto. solve_false.
@@ -327,32 +335,20 @@ Proof with eauto.
   - destruct_d_wf_wl.
     apply d_wl_del_red__inf with (A:=typ_all A).
     + inst_cofinites_for d_chk_inf__inf_tabs...
-      * inst_cofinites_for d_wf_typ__all...
-        intros. inst_cofinites_with X. dependent destruction H...
-        intros. inst_cofinites_with X.
-        dependent destruction H0...
-      * destruct_d_wf_wl. intros. inst_cofinites_with X.
-        rewrite open_body_wrt_typ_anno in *.
-        dependent destruction H0.  dependent destruction H... 
+      * destruct_d_wf_wl. intros. inst_cofinites_with_keep X. 
         assert (Hwf: ⊢ᵈʷₛ (work_check (e ᵉ^ₜ ` X) (A ᵗ^ₜ X) ⫤ᵈ X ~ᵈ □ ;ᵈ work_applys cs (typ_all A) ⫤ᵈ Ω)). {
+          dependent destruction H4.
           repeat (constructor; simpl; auto)... 
-          inst_cofinites_for d_wf_typ__all...
-          - intros. eapply s_in_rename with (Y:=X0) in H0... 
-            rewrite subst_tvar_in_typ_open_typ_wrt_typ_tvar2 in H0...
-          - intros. apply d_wf_typ_rename_tvar_cons with (Y:=X0) in H1. 
-            rewrite subst_tvar_in_typ_open_typ_wrt_typ_tvar2 in H1...
+          inst_cofinites_for d_wf_typ__all; intros; inst_cofinites_with X0...
+          dependent destruction H9...
         }
         _apply_IH_d_wl_red. destruct_d_wl_del_red...
-    + pick fresh X. inst_cofinites_with X.
-      rewrite open_body_wrt_typ_anno in *.
-      dependent destruction H0.  dependent destruction H... 
+    + pick fresh X. inst_cofinites_with_keep X.
       assert (Hwf: ⊢ᵈʷₛ (work_check (e ᵉ^ₜ ` X) (A ᵗ^ₜ X) ⫤ᵈ X ~ᵈ □ ;ᵈ work_applys cs (typ_all A) ⫤ᵈ Ω)). {
-        repeat (constructor; simpl; auto)... solve_false.
-        inst_cofinites_for d_wf_typ__all...
-        - intros. eapply s_in_rename with (Y:=X0) in H0... 
-          rewrite subst_tvar_in_typ_open_typ_wrt_typ_tvar2 in H0...
-        - intros. apply d_wf_typ_rename_tvar_cons with (Y:=X0) in H1. 
-          rewrite subst_tvar_in_typ_open_typ_wrt_typ_tvar2 in H1...
+        dependent destruction H4...
+        repeat (constructor; simpl; auto)...
+        inst_cofinites_for d_wf_typ__all; intros; inst_cofinites_with X0...
+        dependent destruction H8...
       }
       _apply_IH_d_wl_red. destruct_d_wl_del_red...
   - destruct_d_wf_wl. 
@@ -374,11 +370,6 @@ Proof with eauto.
         - apply d_wf_typ_weaken_cons...
       }
       _apply_IH_d_wl_red. destruct_d_wl_del_red...
-  - destruct_d_wf_wl. _apply_IH_d_wl_red.
-    destruct_d_wl_del_red.
-    eapply d_wl_del_red__inf with (A:=B).
-    + econstructor; eauto. apply d_wl_red_weaken_work1 in H9. inversion H9... 
-    + eapply d_wl_red_weaken_work2; eauto.
   - destruct_d_wf_wl. 
     assert (⊢ᵈʷₛ (work_applys cs (A ᵗ^^ₜ B) ⫤ᵈ Ω)).
     { repeat constructor... apply d_wf_typ_all_open... }
@@ -450,12 +441,6 @@ Proof.
   eapply d_wl_red_weaken. eauto.
 Qed.
 
-Lemma dwl_to_denv_work : forall Ω2 Ω1 w,
-  dwl_to_denv (Ω2 ⧺ Ω1) = dwl_to_denv (Ω2 ⧺ w ⫤ᵈ Ω1).
-Proof.
-  intros. induction Ω2; simpl; auto.
-  rewrite IHΩ2. auto.
-Qed.
 
 Lemma d_wl_red_strengthen_work : forall Ω1 Ω2 w,
   (w ⫤ᵈ Ω1) ⟶ᵈʷ⁎⋅ -> (Ω2 ⧺ Ω1) ⟶ᵈʷ⁎⋅ -> (Ω2 ⧺ w ⫤ᵈ Ω1) ⟶ᵈʷ⁎⋅ .
@@ -485,8 +470,6 @@ Proof.
     rewrite d_wl_app_cons_work_same_env. auto.
     intros. inst_cofinites_with x.
     rewrite_dwl_app. auto.
-  - econstructor. rewrite <- dwl_to_denv_work. eauto.
-    eapply IHd_wl_red with (Ω2 := work_infer e1 (conts_infabs (contd_infapp n e2 cs)) ⫤ᵈ Ω2); eauto.
   - eapply d_wl_red__infabs_all with (T:=T).
     rewrite d_wl_app_cons_work_same_env. auto.
     rewrite_dwl_app. auto.
@@ -537,251 +520,6 @@ Proof with auto.
 Qed.
 
 
-Ltac destruct_binds_eq :=
-  repeat
-    lazymatch goal with
-    | H1 : (?X1, ?b1) = (?X2, ?b2) |- _ =>
-      dependent destruction H1
-    end.
-
-Ltac destruct_binds :=
-  simpl in *;
-  repeat
-  match goal with
-  | H1 : binds ?X ?b ((?X', ?b') :: ?θ) |- _ =>
-    let H_1 := fresh "H" in
-    let H_2 := fresh "H" in
-    inversion H1 as [H_1 | H_2];
-    clear H1;
-    try destruct_binds_eq;
-    try solve [solve_notin_eq X];
-    try solve [solve_notin_eq X']
-  end.
-
-
-Ltac destruct_in :=
-  simpl in *;
-  match goal with
-  | H1 : ((?X, ?b) = (?X', ?b')) \/  In ?b'' ?θ |- _ =>
-    let H1_1 := fresh "H" in
-    let H1_2 := fresh "H" in
-    inversion H1 as [H1_1 | H1_2];
-    clear H1;
-    try destruct_binds_eq;
-    try solve [solve_notin_eq X];
-    try solve [solve_notin_eq X']
-  end.
-
-(* Lemma iuv_size_d_mono : forall Γ A,
-  d_mono_typ Γ A -> iuv_size A = 0.
-Proof.
-  intros Γ A Hmono.
-  induction Hmono; simpl; eauto; try lia.
-Qed.
-
-Lemma iuv_size_open_d_mono_rec : forall Ψ A T n,
-  d_mono_typ Ψ T ->
-  iuv_size (open_typ_wrt_typ_rec n T A) <= iuv_size A.
-Proof.
-  intros Ψ A T n Hmono.
-  generalize dependent n.
-  induction A; intros; simpl; auto;
-    try specialize (IHA1 n); try specialize (IHA2 n); try lia.
-  destruct (lt_eq_lt_dec n n0); simpl; auto.
-  destruct s; simpl; auto; subst.
-  erewrite iuv_size_d_mono; eauto.
-Qed.
-
-Lemma iuv_size_open_d_mono : forall Ψ A T,
-  d_mono_typ Ψ T ->
-  iuv_size (open_typ_wrt_typ A T) <= iuv_size A.
-Proof.
-  intros Ψ A T Hmono.
-  eapply iuv_size_open_d_mono_rec; eauto.
-Qed.
-
-Lemma infabs_iuv_size_B : forall Ψ A B C,
-  Ψ ⊢ A ▹ B → C -> iuv_size B <= iuv_size A.
-Proof.
-  intros. induction H; simpl; auto; try lia.
-  assert (iuv_size (A ᵗ^^ₜ T) <= iuv_size A). { eapply iuv_size_open_d_mono; eauto. }
-  lia.
-Qed.
-
-Lemma infabs_iuv_size_C : forall Ψ A B C,
-  Ψ ⊢ A ▹ B → C -> iuv_size C <= iuv_size A.
-Proof.
-  intros. induction H; simpl; auto; try lia.
-  assert (iuv_size (A ᵗ^^ₜ T) <= iuv_size A). { eapply iuv_size_open_d_mono; eauto. }
-  lia.
-Qed.
-
-Lemma iuv_size_open_typ_wrt_typ_rec : forall A B n,
-  iuv_size (open_typ_wrt_typ_rec n B A) <= iuv_size A * (1 + iuv_size B).
-Proof.
-  intros A B.
-  induction A; intros; simpl; eauto; try lia.
-  - destruct (lt_eq_lt_dec n n0).
-    + destruct s; simpl; eauto; lia.
-    + simpl; eauto; lia.
-  - specialize (IHA1 n). specialize (IHA2 n). lia.
-  - specialize (IHA1 n). specialize (IHA2 n). lia.
-  - specialize (IHA1 n). specialize (IHA2 n). lia.
-Qed.
-
-Lemma iuv_size_open_typ_wrt_typ : forall A B,
-  iuv_size (open_typ_wrt_typ A B) <= (1 + iuv_size A) * (2 + iuv_size B).
-Proof.
-  intros. unfold open_typ_wrt_typ.
-  specialize (iuv_size_open_typ_wrt_typ_rec A B 0). lia.
-Qed.
-
-Lemma inftapp_iuv_size : forall Ψ A B C,
-  Ψ ⊢ A ○ B ⇒⇒ C ->
-  iuv_size C <= (1 + iuv_size A) * (2 + iuv_size B).
-Proof.
-  intros. induction H; simpl; auto; try lia.
-  eapply iuv_size_open_typ_wrt_typ.
-Qed. *)
-
-Lemma d_exp_split_size_det : forall Ψ e n1 n2,
-  ⊢ᵈₜ Ψ -> d_exp_split_size Ψ e n1 -> d_exp_split_size Ψ e n2 -> n1 = n2.
-Proof.
-  intros * Hwf H1. generalize dependent n2.
-  dependent induction H1; intros * H2; dependent destruction H2; auto;
-  try solve [pick fresh X; inst_cofinites_with X; eapply H0 in H1; try rewrite H1; try lia; auto; auto].
-  eapply binds_unique in H; eauto. dependent destruction H. auto.
-Qed.
-
-Lemma d_exp_split_size_rename_var : forall m e Ψ1 Ψ2 A x y n1 n2,
-  size_exp e < m ->
-  d_wf_tenv (Ψ2 ++ (x, dbind_typ A) :: Ψ1) ->
-  d_wf_exp (Ψ2 ++ (x, dbind_typ A) :: Ψ1) e ->
-  y `notin` dom (Ψ2 ++ (x, dbind_typ A) :: Ψ1) `union` fvar_in_exp e ->
-  d_exp_split_size (Ψ2 ++ (x, dbind_typ A) :: Ψ1) e n1 ->
-  d_exp_split_size (Ψ2 ++ (y, dbind_typ A) :: Ψ1) ({exp_var_f y ᵉ/ₑ x} e) n2 ->
-  n1 = n2.
-Proof.
-  intro m. induction m; try lia.
-  intros * Hlt Hwf_env Hwf_exp Hnotin Hes1 Hes2.
-  eapply d_wf_tenv_rename_var in Hwf_env as Hwf_env'; eauto.
-  dependent destruction Hwf_exp; simpl in *.
-  - dependent destruction Hes1. dependent destruction Hes2. auto.
-  - dependent destruction Hes1. destruct_eq_atom; dependent destruction Hes2.
-    + apply binds_mid_eq in H0; auto.
-      apply binds_mid_eq in H2; auto.
-      dependent destruction H0. dependent destruction H2.
-      admit. (* d_iuv_det *)
-    + eapply binds_remove_mid in H0; eauto.
-      eapply binds_remove_mid in H2; eauto.
-      eapply binds_unique in H0; eauto.
-      dependent destruction H0.
-      admit. (* d_iuv_det *)
-      eapply uniq_remove_mid with (F := (y, dbind_typ A) :: nil). auto.
-  - dependent destruction Hes1. dependent destruction Hes2.
-    pick fresh x'. inst_cofinites_with x'.
-    rewrite subst_var_in_exp_open_exp_wrt_exp_var in H2; auto.
-    eapply IHm with (Ψ1 := Ψ1) (Ψ2 := x' ~ dbind_typ typ_bot ++ Ψ2) (y := y) (n2 := n0) in H1; auto.
-    + rewrite size_exp_open_exp_wrt_exp_var. lia.
-    + constructor; auto.
-    + eapply d_wf_exp_var_binds_another_cons with (A1 := T); eauto.
-    + simpl in *. admit. (* notin *)
-  - dependent destruction Hes1. dependent destruction Hes2.
-    eapply IHm in Hes1_1; eauto; try lia.
-    eapply IHm in Hes1_2; eauto; try lia.
-  - destruct body5.
-    dependent destruction Hes1. dependent destruction Hes2.
-    pick fresh X. inst_cofinites_with X.
-    rewrite <- subst_var_in_exp_open_exp_wrt_typ in H3; auto.
-    assert (m0 = m1) by admit. subst. (* d_iuv_det *)
-    eapply IHm with (Ψ1 := Ψ1) (Ψ2 := X ~ □ ++ Ψ2) (y := y) (n2 := n0) in H1; auto.
-    + simpl in Hlt. rewrite size_exp_open_exp_wrt_typ_var. lia.
-    + constructor; auto.
-    + dependent destruction H0. simpl in *. auto.
-    + admit. (* notin *)
-  - dependent destruction Hes1. dependent destruction Hes2.
-    eapply IHm in Hes1; eauto; try lia.
-    admit. (* d_iuv_det *)
-  - dependent destruction Hes1. dependent destruction Hes2.
-    eapply IHm in Hes1; eauto; try lia.
-Admitted.
-
-Lemma d_exp_split_size_rename_var_cons : forall e Ψ A x y n1 n2,
-  d_wf_tenv ((x, dbind_typ A) :: Ψ) ->
-  d_wf_exp ((x, dbind_typ A) :: Ψ) e ->
-  y `notin` dom ((x, dbind_typ A) :: Ψ) `union` fvar_in_exp e ->
-  d_exp_split_size ((x, dbind_typ A) :: Ψ) e n1 ->
-  d_exp_split_size ((y, dbind_typ A) :: Ψ) ({exp_var_f y ᵉ/ₑ x} e) n2 ->
-  n1 = n2.
-Proof.
-  intros. eapply d_exp_split_size_rename_var with (y := y) (e := e) (Ψ2 := nil); eauto.
-Qed.
-
-Lemma d_exp_split_size_total_ : forall m Ψ e,
-  size_exp e < m ->
-  d_wf_exp Ψ e ->
-  exists n, d_exp_split_size Ψ e n.
-Proof.
-  intro m. induction m; try lia.
-  intros * Hlt Hwf.
-  dependent destruction Hwf; eauto using d_exp_split_size.
-  (* - pick fresh x. inst_cofinites_with x.
-    apply d_wf_exp_var_binds_another_cons with (A2 := typ_bot) in H0; auto.
-    eapply IHm in H0 as [n Hn]; eauto.
-    exists n. eapply d_exp_split_size__abs; eauto.
-    intros.
-    admit. admit. (* TODO: renaming *)
-  - simpl in Hlt.
-    eapply IHm in Hwf1 as [n1 H1]; try lia.
-    eapply IHm in Hwf2 as [n2 H2]; try lia.
-    eauto using d_exp_split_size.
-  - destruct body5.
-    pick fresh X. inst_cofinites_with X.
-    dependent destruction H0.
-    eapply IHm in H1 as [n Hn]; eauto.
-    exists ((1 + n) * (2 + iuv_size A)).
-    eapply d_exp_split_size__tabs; eauto.
-    intros.
-    admit. admit. TODO: renaming *)
-Admitted.
-
-Lemma d_exp_split_size_total : forall Ψ e,
-  d_wf_exp Ψ e ->
-  exists n, d_exp_split_size Ψ e n.
-Proof.
-  intros. eapply d_exp_split_size_total_; eauto.
-Qed.
-
-(* Lemma d_iuv_size *)
-
-Lemma inf_iuv_size_d_exp_split_size : forall Ω A e n m,
-  ⊢ᵈʷₛ Ω ->
-  ⌊ Ω ⌋ᵈ ⊢ e ⇒ A ->
-  d_exp_split_size (dwl_to_denv Ω) e n ->
-  d_iuv_size (dwl_to_denv Ω) A m ->
-  m <= n.
-Proof.
-  intros * Hwf Hinf. generalize dependent n. generalize dependent m.
-  dependent induction Hinf; intros * Hes Hiuv; dependent destruction Hes; simpl; auto; try lia.
-  - eapply binds_unique in H0; eauto.
-    dependent destruction H0. admit. (* d_iuv_det *)
-  (* - assert (Hle: iuv_size C <= iuv_size A). { eapply infabs_iuv_size_C; eauto. }
-    assert (Hle': iuv_size A ≤ n1). { eapply IHHinf1; eauto. } lia.
-  - dependent destruction H.
-    eapply iuv_size_d_mono in H. eapply iuv_size_d_mono in H0. subst. lia.
-  - assert (Hle: iuv_size C <= (1 + iuv_size A) * (2 + iuv_size B)). { eapply inftapp_iuv_size; eauto. }
-    assert (Hle': iuv_size A <= n). { eapply IHHinf; eauto. }
-    eapply le_trans with (m := (1 + iuv_size A) * (2 + iuv_size B)); try lia.
-    replace (S (S (iuv_size B + n * S (S (iuv_size B))))) with ((1 + n) * (2 + iuv_size B)) by lia.
-    eapply mult_le_compat_r. lia. *)
-Admitted.
-
-(* Lemma iu_size_le_iuv_size : forall A,
-  iu_size A <= iuv_size A.
-Proof.
-  induction A; simpl; auto; try lia.
-Qed. *)
-
 Lemma d_wl_red_chk_inf_complete: forall Ω e A mode,
   d_chk_inf (dwl_to_denv Ω) e mode A -> 
   match mode with 
@@ -790,26 +528,46 @@ Lemma d_wl_red_chk_inf_complete: forall Ω e A mode,
   end.
 Proof with auto.
   intros. dependent induction H; intros; eauto...
+  (* - econstructor; eauto. *)
   - econstructor. 
     eapply IHd_chk_inf; eauto.
     destruct_d_wf_wl...
-  - destruct (d_exp_split_size_total (⌊ Ω ⌋ᵈ) e1) as [n Hn]. eapply d_chk_inf_wf; eauto.
-    econstructor; eauto.
+  - econstructor. 
+    eapply IHd_chk_inf1; eauto.
+    destruct_d_wf_wl...
+    apply d_wl_red__applys with (w:=work_infrcdconsintersection l1 A1 e2 c); eauto...
+    econstructor...
+    econstructor...
+    eapply IHd_chk_inf2; eauto...
+    destruct_d_wf_wl...
+    apply d_chk_inf_wf_typ in H0...
+    econstructor...
+    apply d_wl_red__applys with (w:=work_intersectioninfrcdcons (typ_arrow (typ_label l1) A1) A2 c); eauto...
+    econstructor.
+  - econstructor. 
+    eapply IHd_chk_inf; eauto.
+    destruct_d_wf_wl... eauto 7...
+    apply d_wl_red__applys with (w:=work_infabs A (contd_infproj (typ_label l) c)); eauto...
+    econstructor...
+    eapply d_wl_red_infabs_complete; eauto.
+    destruct_d_wf_wl... apply d_chk_inf_wf_typ in H...
+    eapply d_wl_red__applyd with (w:=work_infproj B C (typ_label l) c); eauto...
+    econstructor...
+    econstructor...
+    eapply d_wl_red_sub_complete... destruct_d_wf_wl... 
+    apply d_infabs_d_wf in H0. intuition.
+  - econstructor.
     destruct_d_wf_wl.
     eapply IHd_chk_inf1; eauto 7...
-    apply d_wl_red__applys with (w:=work_infabs A (contd_infapp n e2 c)); eauto.
+    apply d_wl_red__applys with (w:=work_infabs A (contd_infapp e2 c)); eauto.
     econstructor. simpl.
     apply d_infabs_d_wf in H0 as Hwft. intuition.
     eapply d_wl_red_infabs_complete; eauto.
-    econstructor... econstructor...
-    eapply inf_iuv_size_d_exp_split_size in H as Hle1; eauto.
-    eapply infabs_iuv_size_B in H0 as Hle2.
-    specialize (iu_size_le_iuv_size B) as Hle3. lia.
-    econstructor.
+    econstructor... econstructor... econstructor.
     assert ((work_check e2 B ⫤ᵈ Ω) ⟶ᵈʷ⁎⋅).
       apply IHd_chk_inf2; auto.
       apply d_wl_red_weaken_consw in H6; auto.
-    replace (work_applys c C ⫤ᵈ work_check e2 B ⫤ᵈ Ω) with ((work_applys c C ⫤ᵈ dworklist_empty) ⧺ work_check e2 B ⫤ᵈ Ω) by auto.
+    replace (work_check e2 B ⫤ᵈ work_applys c C ⫤ᵈ Ω) with ((work_check e2 B ⫤ᵈ dworklist_empty) ⧺ work_applys c C ⫤ᵈ Ω) by auto.
     apply d_wl_red_strengthen_work; eauto.
   - destruct_d_wf_wl.
     eapply d_wl_red__inf_abs_mono with (L:=L `union` L0 `union` dom (dwl_to_denv Ω)); eauto.
@@ -821,8 +579,12 @@ Proof with auto.
     apply d_wf_typ_weaken_cons...
   - destruct_d_wf_wl. 
     eapply d_wl_red__inf_tabs with (L:=L `union` L0 `union` dom (dwl_to_denv Ω)); eauto. 
-    intros. inst_cofinites_with X. dependent destruction H3.
-    apply H1; auto 7.
+    intros. inst_cofinites_with_keep X.
+    dependent destruction H9.
+    eapply H12...
+    repeat (constructor; simpl; auto).
+    inst_cofinites_for d_wf_typ__all; intros; inst_cofinites_with X0... 
+    dependent destruction H14...
   - destruct_d_wf_wl.
     apply d_chk_inf_wf_typ in H0.
     econstructor.
@@ -883,6 +645,14 @@ Proof with auto.
     econstructor. simpl.
     apply d_inftapp_d_wf in H5.
     econstructor. intuition. eauto 6.
+  - econstructor; eauto.
+    refine (d_wl_red_chk_inf_complete _ _ _ _ H0 _ _ _); auto...
+    destruct_d_wf_wl... econstructor...
+    eapply d_wl_red__applys with (w:=work_intersectioninfrcdcons (typ_arrow (typ_label l1) A1) A2 cs)...
+    constructor...
+    econstructor... eapply IHd_wl_del_red...
+    destruct_d_wf_wl... apply d_chk_inf_wf_typ in H4...
+    econstructor...
   - destruct_d_wf_wl. 
     apply d_wl_red_sub_complete; eauto.
   - destruct_d_wf_wl. econstructor; eauto.

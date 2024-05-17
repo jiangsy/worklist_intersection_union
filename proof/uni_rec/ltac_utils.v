@@ -1,10 +1,8 @@
-
+Require Import Coq.Program.Equality.
 Require Export Metalib.Metatheory.
 
-Require Import uni_counter.notations.
+Require Import uni_rec.notations.
 Require Export LibTactics.
-(* Require Import algo.notations. *)
-
 
 Ltac inst_cofinite_impl H x :=
   match type of H with
@@ -12,14 +10,33 @@ Ltac inst_cofinite_impl H x :=
       let Fr := fresh "Fr" in
       assert (x `notin` L) as Fr by auto;
       specialize (H x Fr); clear Fr
-  end.
+  end
+.
 
 Ltac inst_cofinites_with x :=
   repeat
     match goal with
     | H : forall x0, x0 `notin` ?L -> _ |- _ =>
       inst_cofinite_impl H x
-    end.
+    end
+.
+
+Ltac inst_cofinite_impl_keep H x :=
+  match type of H with
+    | forall x, x `notin` ?L -> _ =>
+      let H_1 := fresh "H" in
+        let Fr := fresh "Fr" in
+          assert (x `notin` L) as Fr by auto;
+          specialize (H x Fr) as H_1; generalize dependent H
+  end.
+
+Ltac inst_cofinites_with_keep x :=
+  repeat
+    match goal with
+      | H : forall x0, x0 `notin` ?L -> _ |- _ =>
+          inst_cofinite_impl_keep H x
+    end;
+  intros.
 
 Ltac inst_cofinites :=
   match goal with
@@ -132,3 +149,41 @@ Create HintDb FalseHd.
 Ltac solve_false := let HF := fresh "HF" in
                     try solve [ try intro HF; destruct_conj; try solve_by_invert;
                                 false; eauto 3 with FalseHd ].
+
+
+Ltac destruct_binds_eq :=
+  repeat
+    lazymatch goal with
+    | H1 : (?X1, ?b1) = (?X2, ?b2) |- _ =>
+      dependent destruction H1
+    end.
+
+Ltac destruct_binds :=
+  simpl in *;
+  repeat
+  match goal with
+  | H1 : binds ?X ?b ((?X', ?b') :: ?θ) |- _ =>
+    let H_1 := fresh "H" in
+    let H_2 := fresh "H" in
+    inversion H1 as [H_1 | H_2];
+    clear H1;
+    try destruct_binds_eq;
+    try solve [solve_notin_eq X];
+    try solve [solve_notin_eq X']
+  end.
+
+
+Ltac destruct_in :=
+  simpl in *;
+  match goal with
+  | H1 : ((?X, ?b) = (?X', ?b')) \/  In ?b'' ?θ |- _ =>
+    let H1_1 := fresh "H" in
+    let H1_2 := fresh "H" in
+    inversion H1 as [H1_1 | H1_2];
+    clear H1;
+    try destruct_binds_eq;
+    try solve [solve_notin_eq X];
+    try solve [solve_notin_eq X']
+  end.
+  
+                                

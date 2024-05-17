@@ -49,14 +49,14 @@ Inductive wf_ss : subst_set -> Prop :=
       X ∉ dom θ ->
       wf_ss ((X , dbind_tvar_empty) :: θ)
   | wf_ss__stvar : forall θ X,
-    wf_ss θ ->
-    X ∉ dom θ ->
-    wf_ss ((X, dbind_stvar_empty) :: θ)
+      wf_ss θ ->
+      X ∉ dom θ ->
+      wf_ss ((X, dbind_stvar_empty) :: θ)
   | wf_ss__etvar : forall θ X T, 
-    wf_ss θ  -> 
-    X ∉ dom θ  ->
-    d_mono_typ (ss_to_denv θ) T -> 
-    wf_ss ((X , dbind_typ T) :: θ)
+      wf_ss θ  -> 
+      X ∉ dom θ  ->
+      d_mono_typ (ss_to_denv θ) T -> 
+      wf_ss ((X , dbind_typ T) :: θ)
 .
 
 
@@ -143,38 +143,38 @@ with trans_body : subst_set -> body -> body -> Prop :=
 
 Inductive trans_conts : subst_set -> conts -> conts -> Prop :=
   | trans_conts__infabs : forall θ cdᵃ cdᵈ,
-    trans_contd θ cdᵃ cdᵈ ->
-    trans_conts θ (conts_infabs cdᵃ) (conts_infabs cdᵈ)
+      trans_contd θ cdᵃ cdᵈ ->
+      trans_conts θ (conts_infabs cdᵃ) (conts_infabs cdᵈ)
   | trans_cont__inftapp : forall θ Aᵃ Aᵈ cᵃ cᵈ,
-    trans_typ θ Aᵃ Aᵈ ->
-    trans_conts θ cᵃ cᵈ ->
-    trans_conts θ (conts_inftapp Aᵃ cᵃ) (conts_inftapp Aᵈ cᵈ)
+      trans_typ θ Aᵃ Aᵈ ->
+      trans_conts θ cᵃ cᵈ ->
+      trans_conts θ (conts_inftapp Aᵃ cᵃ) (conts_inftapp Aᵈ cᵈ)
   | trans_cont__inftappunion : forall θ A1ᵃ A1ᵈ A2ᵃ A2ᵈ cᵃ cᵈ,
-    trans_typ θ A1ᵃ A1ᵈ ->
-    trans_typ θ A2ᵃ A2ᵈ ->
-    trans_conts θ cᵃ cᵈ ->
-    trans_conts θ (conts_inftappunion A1ᵃ A2ᵃ cᵃ) (conts_inftappunion A1ᵈ A2ᵈ cᵈ)
+      trans_typ θ A1ᵃ A1ᵈ ->
+      trans_typ θ A2ᵃ A2ᵈ ->
+      trans_conts θ cᵃ cᵈ ->
+      trans_conts θ (conts_inftappunion A1ᵃ A2ᵃ cᵃ) (conts_inftappunion A1ᵈ A2ᵈ cᵈ)
   | trans_cont__unioninftapp : forall θ Aᵃ Aᵈ cᵃ cᵈ,
-    trans_typ θ Aᵃ Aᵈ ->
-    trans_conts θ cᵃ cᵈ ->
-    trans_conts θ (conts_unioninftapp Aᵃ cᵃ) (conts_unioninftapp Aᵈ cᵈ)
+      trans_typ θ Aᵃ Aᵈ ->
+      trans_conts θ cᵃ cᵈ ->
+      trans_conts θ (conts_unioninftapp Aᵃ cᵃ) (conts_unioninftapp Aᵈ cᵈ)
   | trans_cont__sub : forall θ Aᵃ Aᵈ,
-    trans_typ θ Aᵃ Aᵈ ->
-    trans_conts θ (conts_sub Aᵃ) (conts_sub Aᵈ)
+      trans_typ θ Aᵃ Aᵈ ->
+      trans_conts θ (conts_sub Aᵃ) (conts_sub Aᵈ)
 with trans_contd : subst_set -> contd -> contd -> Prop :=
   | trans_contd__infapp : forall θ n eᵃ eᵈ csᵃ csᵈ,
-    trans_exp θ eᵃ eᵈ ->
-    trans_conts θ csᵃ csᵈ ->
-    trans_contd θ (contd_infapp n eᵃ csᵃ) (contd_infapp n eᵈ csᵈ)
+      trans_exp θ eᵃ eᵈ ->
+      trans_conts θ csᵃ csᵈ ->
+      trans_contd θ (contd_infapp n eᵃ csᵃ) (contd_infapp n eᵈ csᵈ)
   | trans_contd__infabs_union : forall θ Aᵃ Aᵈ cdᵃ cdᵈ,
-    trans_typ θ Aᵃ Aᵈ ->
-    trans_contd θ cdᵃ cdᵈ ->
-    trans_contd θ (contd_infabsunion Aᵃ cdᵃ) (contd_infabsunion Aᵈ cdᵈ)
+      trans_typ θ Aᵃ Aᵈ ->
+      trans_contd θ cdᵃ cdᵈ ->
+      trans_contd θ (contd_infabsunion Aᵃ cdᵃ) (contd_infabsunion Aᵈ cdᵈ)
   | trans_contd__unioninfabs : forall θ Aᵃ Aᵈ Bᵃ Bᵈ cdᵃ cdᵈ,
-    trans_typ θ Aᵃ Aᵈ ->
-    trans_typ θ Bᵃ Bᵈ ->
-    trans_contd θ cdᵃ cdᵈ ->
-    trans_contd θ (contd_unioninfabs Aᵃ Bᵃ cdᵃ) (contd_unioninfabs Aᵈ Bᵈ cdᵈ)    
+      trans_typ θ Aᵃ Aᵈ ->
+      trans_typ θ Bᵃ Bᵈ ->
+      trans_contd θ cdᵃ cdᵈ ->
+      trans_contd θ (contd_unioninfabs Aᵃ Bᵃ cdᵃ) (contd_unioninfabs Aᵈ Bᵈ cdᵈ)    
 .
 
 
@@ -311,7 +311,7 @@ Qed.
 Lemma notin_dom_reorder : forall X X0 θ θ',
   X ∉ dom θ ->
   X <> X0 ->
-  (forall Y (b: dbind), X0 ≠ Y → binds Y b θ ↔ binds Y b θ') ->
+  (forall Y (b: dbind), X0 <> Y -> binds Y b θ <-> binds Y b θ') ->
   X ∉ dom θ'.
 Proof.
   intros. unfold not. intros.
@@ -320,6 +320,7 @@ Proof.
   eapply binds_dom_contradiction in Hbinds; auto.
   unfold not. intros. subst. contradiction.
 Qed.
+
 
 Lemma wf_ss_uniq : forall θ,
   wf_ss θ -> uniq θ.
@@ -377,7 +378,8 @@ Qed.
 
 
 Lemma binds_tvar_ss_to_aenv_binds_ss : forall X (θ: subst_set),
-  X ~ □ ∈ᵃ ⌈ θ ⌉ᵃ → X ~ □ ∈ᵈ θ.  
+  X ~ □ ∈ᵃ ⌈ θ ⌉ᵃ ->
+  X ~ □ ∈ᵈ θ.  
 Proof.
   intros. induction θ; auto.
   - destruct a; destruct d; simpl in *; try inversion H; auto;
@@ -886,10 +888,10 @@ Qed.
 
 Lemma trans_wl_split : forall Γ1 Γ2 Ω θ θ',
   θ ⊩ (Γ2 ⧺ Γ1) ⇝ Ω ⫣ θ' ->
-  exists Ω1 Ω2 θ''
-    , Ω = dwl_app Ω2 Ω1 
-    ∧ θ  ⊩ Γ1 ⇝ Ω1 ⫣ θ''
-    ∧ θ'' ⊩ Γ2 ⇝ Ω2 ⫣ θ'.
+  exists Ω1 Ω2 θ'', 
+    Ω = dwl_app Ω2 Ω1 /\
+    θ  ⊩ Γ1 ⇝ Ω1 ⫣ θ'' /\ 
+    θ'' ⊩ Γ2 ⇝ Ω2 ⫣ θ'.
 Proof.
   induction Γ2; simpl; intros.
   - exists Ω. exists dworklist_empty. exists θ'.
@@ -1097,13 +1099,13 @@ Ltac destruct_mono_arrow :=
 Ltac solve_binds_mono :=
   repeat
   match goal with
-  | H1 : binds ?X (dbind_typ ?T) ?θ , H2 : wf_ss ?θ |- _ =>
-    match goal with
-    | H1 : d_mono_typ (ss_to_denv θ) T |- _ => fail 1
-    | _ =>
-      let Hmono := fresh "Hmono" in
-      apply wf_ss_binds_mono_typ in H1 as Hmono; auto
-    end
+    | H1 : binds ?X (dbind_typ ?T) ?θ , H2 : wf_ss ?θ |- _ =>
+      match goal with
+        | H1 : d_mono_typ (ss_to_denv θ) T |- _ => fail 1
+        | _ =>
+          let Hmono := fresh "Hmono" in
+          apply wf_ss_binds_mono_typ in H1 as Hmono; auto
+      end
   end;
   destruct_mono_arrow.
 
@@ -1111,12 +1113,12 @@ Ltac solve_binds_mono :=
 Ltac solve_binds_nonmono_contradiction :=
   solve_binds_mono; 
   match goal with
-  | H1 : d_mono_typ ?θ typ_bot |- _ => inversion H1
-  | H1 : d_mono_typ ?θ typ_top |- _ => inversion H1
-  | H1 : d_mono_typ ?θ (typ_all ?A) |- _ => inversion H1
-  | H1 : d_mono_typ ?θ (typ_intersection ?A1 ?A2) |- _ => inversion H1
-  | H1 : d_mono_typ ?θ (typ_union ?A1 ?A2) |- _ => inversion H1
-end.
+    | H1 : d_mono_typ ?θ typ_bot |- _ => inversion H1
+    | H1 : d_mono_typ ?θ typ_top |- _ => inversion H1
+    | H1 : d_mono_typ ?θ (typ_all ?A) |- _ => inversion H1
+    | H1 : d_mono_typ ?θ (typ_intersection ?A1 ?A2) |- _ => inversion H1
+    | H1 : d_mono_typ ?θ (typ_union ?A1 ?A2) |- _ => inversion H1
+  end.
 
 Lemma trans_typ_dtvar_atyp_s_in_dtyp : forall θ X Aᵃ Aᵈ b,
   b = dbind_tvar_empty \/ b = dbind_stvar_empty ->

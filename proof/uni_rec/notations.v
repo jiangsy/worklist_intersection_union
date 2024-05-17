@@ -1,7 +1,7 @@
-Require Export uni_counter.def_ott.
-Require Export uni_counter.def_extra.
-Require Export uni_counter.decl.def_extra.
-Require Export uni_counter.prop_ln.
+Require Export uni_rec.def_ott.
+Require Export uni_rec.def_extra.
+Require Export uni_rec.decl.def_extra.
+Require Export uni_rec.prop_ln.
 
 Notation "x ∉ L" := (x `notin` L)
   (at level 70, no associativity).
@@ -23,16 +23,6 @@ Notation "{ e' ᵉ/ₑ x } e" :=
 
 Notation "{ A ᵉ/ₜ X } e" :=
   (subst_tvar_in_exp A X e)
-    ( at level 49, A at level 50, X at level 0
-    , right associativity) : type_scope.
-
-Notation "{ e ᵇ/ₑ x } b" :=
-  (subst_var_in_body e x b)
-    ( at level 49, e at level 50, x at level 0
-    , right associativity) : type_scope.
-
-Notation "{ A ᵇ/ₜ X } b" :=
-  (subst_tvar_in_body A X b)
     ( at level 49, A at level 50, X at level 0
     , right associativity) : type_scope.
 
@@ -144,10 +134,6 @@ Notation "⊢ᵃ Σ" :=
 
 Notation "Σ ᵉ⊢ᵃ e" :=
   (a_wf_exp Σ e)
-    (at level 65, no associativity) : type_scope.
-
-Notation "Σ ᵇ⊢ᵃ b" :=
-  (a_wf_body Σ b)
     (at level 65, no associativity) : type_scope.
 
 Notation "Σ ᶜˢ⊢ᵃ cs" :=

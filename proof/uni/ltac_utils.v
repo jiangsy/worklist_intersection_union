@@ -6,20 +6,37 @@ Require Export LibTactics.
 
 Ltac inst_cofinite_impl H x :=
   match type of H with
-  | forall x, x `notin` ?L -> _ =>
-      let Fr := fresh "Fr" in
-      assert (x `notin` L) as Fr by auto;
-      specialize (H x Fr); clear Fr
-  end
-.
+    | forall x, x `notin` ?L -> _ =>
+        let Fr := fresh "Fr" in
+          assert (x `notin` L) as Fr by auto;
+        specialize (H x Fr); clear Fr
+  end.
 
 Ltac inst_cofinites_with x :=
   repeat
     match goal with
-    | H : forall x0, x0 `notin` ?L -> _ |- _ =>
-      inst_cofinite_impl H x
-    end
+      | H : forall x0, x0 `notin` ?L -> _ |- _ =>
+          inst_cofinite_impl H x
+    end.
+
+Ltac inst_cofinite_impl_keep H x :=
+  match type of H with
+    | forall x, x `notin` ?L -> _ =>
+      let H_1 := fresh "H" in
+        let Fr := fresh "Fr" in
+          assert (x `notin` L) as Fr by auto;
+          specialize (H x Fr) as H_1; generalize dependent H
+  end.
+
+Ltac inst_cofinites_with_keep x :=
+  repeat
+    match goal with
+      | H : forall x0, x0 `notin` ?L -> _ |- _ =>
+          inst_cofinite_impl_keep H x
+    end;
+  intros
 .
+
 
 Ltac inst_cofinites :=
   match goal with
@@ -88,7 +105,7 @@ Ltac gather_atoms ::=
 
 Ltac solve_wf_twl_sub_false :=
   match goal with
-  | H : (∃ A B : typ, work_sub ?A' ?B' = work_sub A B) → False |- _ => exfalso; eauto
+  | H : (exists A B : typ, work_sub ?A' ?B' = work_sub A B) -> False |- _ => exfalso; eauto
   | _ : _ |- _ => idtac
   end.
 

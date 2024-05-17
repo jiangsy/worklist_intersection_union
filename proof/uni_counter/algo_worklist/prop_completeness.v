@@ -160,7 +160,7 @@ Lemma d_mono_typ_strengthen_app : forall θ1 θ2 X T1 T2,
   wf_ss (θ2 ++ (X, dbind_typ T1) :: θ1) ->
   ⌈ θ2 ++ (X, dbind_typ T1) :: θ1 ⌉ᵈ ᵗ⊢ᵈₘ T2 ->
   ⌈ θ1 ⌉ᵈ ᵗ⊢ᵈₘ T1 ->
-  (∀ Y : atom, Y `in` ftvar_in_typ T2 → Y `in` ftvar_in_typ T1) ->
+  (forall Y : atom, Y `in` ftvar_in_typ T2 -> Y `in` ftvar_in_typ T1) ->
   ⌈ θ1 ⌉ᵈ ᵗ⊢ᵈₘ T2.
 Proof.
   intros. induction θ2; simpl in *; auto.

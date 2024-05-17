@@ -4,10 +4,10 @@ Require Import Metalib.Metatheory.
 Require Import List.
 
 
-Require Import uni.notations.
-Require Import uni.prop_basic.
-Require Import uni.algo_worklist.def_extra.
-Require Import uni.ltac_utils.
+Require Import uni_rec.notations.
+Require Import uni_rec.prop_basic.
+Require Import uni_rec.algo_worklist.def_extra.
+Require Import uni_rec.ltac_utils.
 
 
 Open Scope aworklist_scope.
@@ -136,6 +136,7 @@ Proof.
   - apply union_iff in H0. destruct H0.
     + apply s_in__arrow1; auto. eapply a_mono_typ_lc; eauto.
     + apply s_in__arrow2; auto. eapply a_mono_typ_lc; eauto.
+  - fsetdec. 
 Qed.
 
 
@@ -182,13 +183,12 @@ Lemma a_wf_exp_weaken: forall Σ1 Σ2 Σ3 e,
 Proof with eauto using a_wf_typ_weaken.
   intros. dependent induction H...
   - intros. apply a_wf_exp__abs with (T:=T)
-    (L:=union L (union (dom Σ2) (union (dom Σ1) (union (dom Σ3) (ftvar_in_typ T)))))...
+      (L:=union L (union (dom Σ2) (union (dom Σ1) (union (dom Σ3) (ftvar_in_typ T)))))...
     intros. rewrite_env ((x ~ abind_var_typ T ++ Σ3) ++ Σ2 ++ Σ1).
     apply H1...
-  - intros. inst_cofinites_for a_wf_exp__tabs... intros.
-    inst_cofinites_with X.
-    rewrite_env ((X ~ abind_tvar_empty ++ Σ3) ++ Σ2 ++ Σ1).
-    eapply H1...
+  - inst_cofinites_for a_wf_exp__tabs...
+    + intros. inst_cofinites_with X. rewrite_env ((X ~ abind_tvar_empty ++ Σ3) ++ Σ2 ++ Σ1).
+      eapply H1...
 Qed.
 
 Lemma a_wf_conts_weaken: forall Σ1 Σ2 Σ3 cs,
@@ -353,8 +353,8 @@ Proof with eauto 5 using a_wf_typ_var_binds_another.
     rewrite_env ((x0 ~ abind_var_typ T ++ Σ2) ++ x ~ abind_var_typ A2 ++ Σ1); eauto.
     eapply H1 with (A1:=A1)...
   - inst_cofinites_for a_wf_exp__tabs; intros; inst_cofinites_with X; auto...
-    rewrite_env ((X ~ □ ++ Σ2) ++ x ~ abind_var_typ A2 ++ Σ1); eauto.
-    eapply H1 with (A1:=A1)...
+    rewrite_env ((X ~ □ ++ Σ2) ++ x ~ abind_var_typ A2 ++ Σ1).
+    eapply H1 with (A1:=A1); eauto.
 Qed.
 
 Lemma a_wf_exp_var_binds_another_cons : forall Σ1 x e A1 A2,
@@ -366,6 +366,7 @@ Proof.
   rewrite_env (nil ++ x ~ abind_var_typ A2 ++ Σ1).
   eapply a_wf_exp_var_binds_another; eauto.
 Qed.
+
 
 Corollary a_wf_typ_tvar_stvar : forall Σ1 Σ2 X A,
   Σ2 ++ (X , □) :: Σ1 ᵗ⊢ᵃ A ->
@@ -1220,6 +1221,7 @@ Proof with eauto 8 using aworklist_subst_wf_typ_subst, aworklist_subst_wf_exp_su
   - destruct_wf_arrow...
     destruct_wf_arrow...
     constructor...
+  - destruct_wf_arrow...
 Qed.
 
 Lemma aworklist_subst_mono_typ : forall Γ X A T Γ1 Γ2,
@@ -1468,8 +1470,12 @@ Proof.
   - simpl. rewrite IHa_wf_exp; eauto.
     rewrite ftvar_in_a_wf_typ_upper; eauto.
     fsetdec.
+  - simpl. rewrite IHa_wf_exp1; eauto.
+    simpl. rewrite IHa_wf_exp2; eauto.
+    fsetdec.
+  - simpl. rewrite IHa_wf_exp; eauto.
+    fsetdec.
 Qed.
-
 
 Lemma ftvar_in_wf_conts_upper : forall Γ cs,
   ⌊ Γ ⌋ᵃ ᶜˢ⊢ᵃ cs ->
