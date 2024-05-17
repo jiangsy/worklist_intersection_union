@@ -787,7 +787,7 @@ Proof.
   intros Ω A e Hwf Hinf. dependent induction Hinf; simpl; auto; try lia.
   - apply binds_lookup_var_bind_dwl in H0; auto. rewrite H0. simpl. auto.
   - assert (Hle: iuv_size C <= iuv_size A). { eapply infabs_iuv_size_C; eauto. }
-    assert (Hle': iuv_size A ≤ exp_split_size (dwl_to_aenv Ω) e1) by auto. lia.
+    assert (Hle': iuv_size A <= exp_split_size (dwl_to_aenv Ω) e1) by auto. lia.
   - dependent destruction H.
     eapply iuv_size_d_mono in H. eapply iuv_size_d_mono in H0. subst. lia.
   - assert (Hle: iuv_size C <= (1 + iuv_size A) * (2 + iuv_size B)). { eapply inftapp_iuv_size; eauto. }

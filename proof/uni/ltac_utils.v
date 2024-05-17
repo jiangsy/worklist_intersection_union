@@ -17,8 +17,7 @@ Ltac inst_cofinites_with x :=
     match goal with
       | H : forall x0, x0 `notin` ?L -> _ |- _ =>
           inst_cofinite_impl H x
-    end
-.
+    end.
 
 Ltac inst_cofinite_impl_keep H x :=
   match type of H with
