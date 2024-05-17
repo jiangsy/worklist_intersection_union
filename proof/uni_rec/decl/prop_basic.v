@@ -1202,7 +1202,7 @@ Proof with auto using d_wf_typ_weaken_cons.
     eapply H1; simpl; eauto.
 Qed.
 
-Lemma d_wf_exp_weaken_cons : forall (Ψ : denv) (X : atom) (b : dbind) (x : expvar),
+Lemma d_wf_expvar_weaken_cons : forall (Ψ : denv) (X : atom) (b : dbind) (x : expvar),
     d_wf_exp Ψ (exp_var_f x) -> d_wf_exp (X ~ b ++ Ψ) (exp_var_f x).
 Proof.
   intros * H. inverts* H.
@@ -1220,7 +1220,7 @@ Proof with eauto using d_wf_typ_var_binds_another.
       forwards[(?&Heq)|?]: binds_cons_1 H; try inverts Heq; subst; eauto.
     + rewrite_env (a::(Ψ2 ++ x ~ dbind_typ A1 ++ Ψ1)) in H. destruct a.
       forwards[(?&Heq)|?]: binds_cons_1 H; try inverts Heq; subst; eauto.
-      forwards*: IHΨ2. applys* d_wf_exp_weaken_cons.
+      forwards*: IHΨ2. applys* d_wf_expvar_weaken_cons.
   - pick fresh Y and apply d_wf_exp__abs. applys* d_wf_typ_var_binds_another.
     inst_cofinites_with Y.
     forwards: H1. rewrite_env ( (Y ~ dbind_typ T ++ Ψ2) ++ x ~ dbind_typ A1 ++ Ψ1)...

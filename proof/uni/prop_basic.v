@@ -351,6 +351,7 @@ Proof with eauto using lc_typ_subst.
     rewrite <- subst_var_in_exp_open_exp_wrt_typ...
 Qed.
 
+
 Lemma lc_exp_subst_tvar_in_exp_inv : forall e A X,
   lc_exp ({A ᵉ/ₜ X} e) ->
   lc_typ A ->

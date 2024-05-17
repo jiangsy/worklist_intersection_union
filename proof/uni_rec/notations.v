@@ -89,6 +89,10 @@ Notation "Ψ ᵗ⊢ᵈₘ T" :=
   (d_mono_typ Ψ T)
     (at level 65, no associativity) : type_scope.
 
+Notation "Ψ ᵉ⊢ᵈ e" :=
+  (d_wf_exp Ψ e)
+    (at level 65, no associativity) : type_scope.
+
 Notation "X ~ □ ∈ᵈ Ψ" := (binds X (dbind_tvar_empty) Ψ)
   (at level 50, no associativity) : type_scope.
 
@@ -118,7 +122,6 @@ Notation "Ψ ⊢ A ▹ B → C" :=
   (d_infabs Ψ A B C) 
     (at level 65, A at next level, B at next level, no associativity) : type_scope. 
 
-
 Notation "Σ ᵗ⊢ᵃ A" :=
   (a_wf_typ Σ A)
     (at level 65, no associativity) : type_scope.
@@ -130,7 +133,6 @@ Notation "Σ ᵗ⊢ᵃₘ A" :=
 Notation "⊢ᵃ Σ" :=
   (a_wf_env Σ)
     (at level 65, no associativity) : type_scope.
-  
 
 Notation "Σ ᵉ⊢ᵃ e" :=
   (a_wf_exp Σ e)

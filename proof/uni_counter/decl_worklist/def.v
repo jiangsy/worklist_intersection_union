@@ -59,7 +59,7 @@ Inductive d_wl_del_red : dworklist -> Prop :=
   | d_wl_del_red__applys : forall Ω cs A w,
       apply_conts cs A w ->
       d_wl_del_red (dworklist_cons_work Ω w) ->
-      d_wl_del_red (dworklist_cons_work Ω (work_applys cs A))
+      d_wl_del_red (dworklist_cons_work Ω (work_applys cs A)).
   | d_wl_del_red__applyd : forall Ω cd A B w,
       apply_contd cd A B w ->
       d_wl_del_red (dworklist_cons_work Ω w) ->
@@ -151,7 +151,7 @@ Inductive d_exp_split_size : denv -> exp -> nat -> Prop :=
       (forall X, X \notin  L ->
         d_exp_split_size (X ~ dbind_tvar_empty ++ Ψ) (open_exp_wrt_typ e (typ_var_f X)) n) ->
       d_iuv_size Ψ A m ->
-      d_exp_split_size Ψ (exp_tabs (body_anno e A)) ((1 + n) * (2 + m))
+      d_exp_split_size Ψ (exp_tabs (exp_anno e A)) ((1 + n) * (2 + m))
   | d_exp_split_size__tapp : forall Ψ e A n m,
       d_exp_split_size Ψ e n ->
       d_iuv_size Ψ A m ->
@@ -252,7 +252,7 @@ Inductive d_wl_red : dworklist -> Prop :=    (* defn d_wl_red *)
       (* ( forall X , X \notin  L  -> ds_in X  ( open_typ_wrt_typ A1 (typ_var_f X) )  )  -> *)
       ( forall X , X \notin  L  -> 
         d_wl_red (dworklist_cons_work (dworklist_cons_var (dworklist_cons_work Ω (work_applys cs  (typ_all A) )) X dbind_tvar_empty) (work_check ( open_exp_wrt_typ e (typ_var_f X) ) ( open_typ_wrt_typ A (typ_var_f X) ) )) )  ->
-     d_wl_red (dworklist_cons_work Ω (work_infer (exp_tabs (body_anno e A)) cs))
+     d_wl_red (dworklist_cons_work Ω (work_infer (exp_tabs (exp_anno e A)) cs))
  | d_wl_red__inf_unit : forall (Ω:dworklist) (cs:conts),
      d_wl_red (dworklist_cons_work Ω (work_applys cs typ_unit)) ->
      d_wl_red (dworklist_cons_work Ω (work_infer exp_unit cs))
