@@ -1149,6 +1149,7 @@ Ltac unify_binds :=
     apply binds_unique with (a:=b2) in H_1 as H_3; eauto; dependent destruction H_3; subst
   end.
 
+  
 Lemma aworklist_subst_wf_exp_subst : forall Γ X A e Γ1 Γ2,
   X ∉ ftvar_in_typ A ->
   ⌊ Γ ⌋ᵃ ᵗ⊢ᵃ A ->

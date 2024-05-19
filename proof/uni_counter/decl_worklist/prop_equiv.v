@@ -736,11 +736,18 @@ Proof.
     admit. admit. TODO: renaming *)
 Admitted.
 
+#[local] Hint Constructors d_exp_split_size : core.
+
 Lemma d_exp_split_size_total : forall Ψ e,
   d_wf_exp Ψ e ->
   exists n, d_exp_split_size Ψ e n.
 Proof.
-  intros. eapply d_exp_split_size_total_; eauto.
+  intros. induction H; eauto.
+  -  admit.
+  - admit.
+  - destruct_conj; eauto.
+  - admit.
+  - admit.
 Qed.
 
 (* Lemma d_iuv_size *)

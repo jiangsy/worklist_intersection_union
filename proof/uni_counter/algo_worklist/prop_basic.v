@@ -7,7 +7,7 @@ Require Import List.
 Require Import uni_counter.notations.
 Require Import uni_counter.prop_basic.
 Require Import uni_counter.algo_worklist.def_extra.
-Require Import uni_counter.decl_worklist.prop_equiv.
+(* Require Import uni_counter.decl_worklist.prop_equiv. *)
 Require Import uni_counter.ltac_utils.
 
 
@@ -179,22 +179,19 @@ Qed.
 
 Lemma a_wf_exp_weaken: forall Σ1 Σ2 Σ3 e,
   Σ3 ++ Σ1 ᵉ⊢ᵃ e ->
-  Σ3 ++ Σ2 ++ Σ1 ᵉ⊢ᵃ e
-with a_wf_body_weaken : forall Σ1 Σ2 Σ3 b,
-  Σ3 ++ Σ1 ᵇ⊢ᵃ b ->
-  Σ3 ++ Σ2 ++ Σ1 ᵇ⊢ᵃ b.
+  Σ3 ++ Σ2 ++ Σ1 ᵉ⊢ᵃ e.
 Proof with eauto using a_wf_typ_weaken.
-  - intros. clear a_wf_exp_weaken. dependent induction H...
-    + intros. apply a_wf_exp__abs with (T:=T)
-      (L:=union L (union (dom Σ2) (union (dom Σ1) (union (dom Σ3) (ftvar_in_typ T)))))...
-      intros. rewrite_env ((x ~ abind_var_typ T ++ Σ3) ++ Σ2 ++ Σ1).
-      apply H1...
-    + intros. inst_cofinites_for a_wf_exp__tabs... intros.
-      inst_cofinites_with X.
-      rewrite_env ((X ~ abind_tvar_empty ++ Σ3) ++ Σ2 ++ Σ1).
-      apply a_wf_body_weaken...
-  - intros. dependent destruction H; constructor...
+  intros. dependent induction H...
+  - intros. apply a_wf_exp__abs with (T:=T)
+    (L:=union L (union (dom Σ2) (union (dom Σ1) (union (dom Σ3) (ftvar_in_typ T)))))...
+    intros. rewrite_env ((x ~ abind_var_typ T ++ Σ3) ++ Σ2 ++ Σ1).
+    apply H1...
+  - intros. inst_cofinites_for a_wf_exp__tabs... intros.
+    inst_cofinites_with X.
+    rewrite_env ((X ~ abind_tvar_empty ++ Σ3) ++ Σ2 ++ Σ1).
+    eapply H1...
 Qed.
+
 
 Lemma a_wf_conts_weaken: forall Σ1 Σ2 Σ3 cs,
   Σ3 ++ Σ1 ᶜˢ⊢ᵃ cs ->
@@ -344,28 +341,23 @@ Proof with eauto 5.
     eapply H1 with (B1:=B1)...
 Qed.
 
+
 Lemma a_wf_exp_var_binds_another : forall Σ1 x Σ2 e A1 A2,
   Σ2 ++ x ~ abind_var_typ A1 ++ Σ1 ᵉ⊢ᵃ e ->
   Σ1 ᵗ⊢ᵃ A2 ->
-  Σ2 ++ x ~ abind_var_typ A2 ++ Σ1 ᵉ⊢ᵃ e
-with a_wf_body_var_binds_another : forall Σ1 x Σ2 b A1 A2,
-  Σ2 ++ x ~ abind_var_typ A1 ++ Σ1 ᵇ⊢ᵃ b ->
-  Σ1 ᵗ⊢ᵃ A2 ->
-  Σ2 ++ x ~ abind_var_typ A2 ++ Σ1 ᵇ⊢ᵃ b.
+  Σ2 ++ x ~ abind_var_typ A2 ++ Σ1 ᵉ⊢ᵃ e.
 Proof with eauto 5 using a_wf_typ_var_binds_another.
-  - intros. clear a_wf_exp_var_binds_another. dependent induction H... (* slow *)
-    + destruct (x==x0).
-      * subst. econstructor...
-      * apply binds_remove_mid in H; auto.
-        econstructor...
-    + inst_cofinites_for a_wf_exp__abs T:=T; intros; inst_cofinites_with x0; auto...
-      rewrite_env ((x0 ~ abind_var_typ T ++ Σ2) ++ x ~ abind_var_typ A2 ++ Σ1); eauto.
-      eapply H1 with (A1:=A1)...
-    + inst_cofinites_for a_wf_exp__tabs; intros; inst_cofinites_with X; auto...
-      rewrite_env ((X ~ □ ++ Σ2) ++ x ~ abind_var_typ A2 ++ Σ1); eauto.
-      eapply a_wf_body_var_binds_another with (A1:=A1)...
-  - intros. clear a_wf_body_var_binds_another.
-    dependent destruction H...
+  intros. dependent induction H... (* slow *)
+  - destruct (x==x0).
+    + subst. econstructor...
+    + apply binds_remove_mid in H; auto.
+      econstructor...
+  - inst_cofinites_for a_wf_exp__abs T:=T; intros; inst_cofinites_with x0; auto...
+    rewrite_env ((x0 ~ abind_var_typ T ++ Σ2) ++ x ~ abind_var_typ A2 ++ Σ1); eauto.
+    eapply H1 with (A1:=A1)...
+  - inst_cofinites_for a_wf_exp__tabs; intros; inst_cofinites_with X; auto...
+    rewrite_env ((X ~ □ ++ Σ2) ++ x ~ abind_var_typ A2 ++ Σ1); eauto.
+    eapply H1 with (A1:=A1)...
 Qed.
 
 Lemma a_wf_exp_var_binds_another_cons : forall Σ1 x e A1 A2,
@@ -1161,45 +1153,38 @@ Ltac unify_binds :=
     apply binds_unique with (a:=b2) in H_1 as H_3; eauto; dependent destruction H_3; subst
   end.
 
+
 Lemma aworklist_subst_wf_exp_subst : forall Γ X A e Γ1 Γ2,
   X ∉ ftvar_in_typ A ->
   ⌊ Γ ⌋ᵃ ᵗ⊢ᵃ A ->
   ⌊ Γ ⌋ᵃ ᵉ⊢ᵃ e ->
   ⊢ᵃ ⌊ Γ ⌋ᵃ ->
   aworklist_subst Γ X A Γ1 Γ2 ->
-  ⌊ {A ᵃʷ/ₜ X} Γ2 ⧺ Γ1 ⌋ᵃ ᵉ⊢ᵃ {A ᵉ/ₜ X} e
-with aworklist_subst_wf_body_subst : forall Γ X A b Γ1 Γ2,
-  X ∉ ftvar_in_typ A ->
-  ⌊ Γ ⌋ᵃ ᵗ⊢ᵃ A ->
-  ⌊ Γ ⌋ᵃ ᵇ⊢ᵃ b ->
-  ⊢ᵃ ⌊ Γ ⌋ᵃ ->
-  aworklist_subst Γ X A Γ1 Γ2 ->
-  ⌊ {A ᵃʷ/ₜ X} Γ2 ⧺ Γ1 ⌋ᵃ ᵇ⊢ᵃ {A ᵇ/ₜ X} b.
+  ⌊ {A ᵃʷ/ₜ X} Γ2 ⧺ Γ1 ⌋ᵃ ᵉ⊢ᵃ {A ᵉ/ₜ X} e.
 Proof with eauto using aworklist_subst_wf_typ_subst.
-  - intros * Hnotin Hwfa Hwfe Hwfaw Haws. clear aworklist_subst_wf_exp_subst.
-    generalize dependent Γ1. generalize dependent Γ2. dependent induction Hwfe; simpl in *; intros...  (* slow *)
-    + simpl in *. eapply aworklist_subst_binds_same_var in H... unfold not. intros. subst.
-      apply aworklist_subst_target_is_etvar in Haws. unify_binds.
-    + simpl in *. inst_cofinites_for a_wf_exp__abs T:=({A ᵗ/ₜ X} T)...
-      intros. inst_cofinites_with x.
-      replace ( x ~ abind_var_typ ({A ᵗ/ₜ X} T) ++ ⌊ {A ᵃʷ/ₜ X} Γ2 ⧺ Γ1 ⌋ᵃ) with
-                (⌊ {A ᵃʷ/ₜ X} (x ~ᵃ T ;ᵃ Γ2) ⧺ Γ1 ⌋ᵃ) by (simpl; auto).
+  intros * Hnotin Hwfa Hwfe Hwfaw Haws. 
+  generalize dependent Γ1. generalize dependent Γ2. dependent induction Hwfe; simpl in *; intros...  (* slow *)
+  - simpl in *. eapply aworklist_subst_binds_same_var in H... unfold not. intros. subst.
+    apply aworklist_subst_target_is_etvar in Haws. unify_binds.
+  - simpl in *. inst_cofinites_for a_wf_exp__abs T:=({A ᵗ/ₜ X} T)...
+    intros. inst_cofinites_with x.
+    replace ( x ~ abind_var_typ ({A ᵗ/ₜ X} T) ++ ⌊ {A ᵃʷ/ₜ X} Γ2 ⧺ Γ1 ⌋ᵃ) with
+              (⌊ {A ᵃʷ/ₜ X} (x ~ᵃ T ;ᵃ Γ2) ⧺ Γ1 ⌋ᵃ) by (simpl; auto).
+    rewrite subst_tvar_in_exp_open_exp_wrt_exp_fresh2...
+    assert (aworklist_subst (x ~ᵃ T ;ᵃ Γ) X A Γ1 (x ~ᵃ T ;ᵃ Γ2))...
+    eapply H1 with (Γ:=(x ~ᵃ T ;ᵃ Γ)); simpl...
+    + apply a_wf_typ_weaken_cons...
+    + constructor; eauto.
+  - simpl in *. inst_cofinites_for a_wf_exp__tabs; intros; inst_cofinites_with X0.
+    + rewrite subst_tvar_in_typ_open_typ_wrt_typ_fresh2...
+      apply s_in_subst_inv...
+    + replace (X0 ~ □ ++ ⌊ {A ᵃʷ/ₜ X} Γ2 ⧺ Γ1 ⌋ᵃ) with (⌊ {A ᵃʷ/ₜ X} (X0 ~ᵃ □ ;ᵃ Γ2) ⧺ Γ1 ⌋ᵃ) by (simpl; auto).
+      rewrite subst_tvar_in_typ_open_typ_wrt_typ_fresh2...
       rewrite subst_tvar_in_exp_open_exp_wrt_typ_fresh2...
-      assert (aworklist_subst (x ~ᵃ T ;ᵃ Γ) X A Γ1 (x ~ᵃ T ;ᵃ Γ2))...
-      eapply H1 with (Γ:=(x ~ᵃ T ;ᵃ Γ)); simpl...
-      -- apply a_wf_typ_weaken_cons...
-      -- constructor; eauto.
-    + simpl in *. inst_cofinites_for a_wf_exp__tabs; intros; inst_cofinites_with X0.
-      * rewrite subst_tvar_in_body_open_body_wrt_typ_fresh2...
-        apply s_in_b_subst_inv...
-      * replace (X0 ~ □ ++ ⌊ {A ᵃʷ/ₜ X} Γ2 ⧺ Γ1 ⌋ᵃ) with (⌊ {A ᵃʷ/ₜ X} (X0 ~ᵃ □ ;ᵃ Γ2) ⧺ Γ1 ⌋ᵃ) by (simpl; auto).
-        rewrite subst_tvar_in_body_open_body_wrt_typ_fresh2...
-        assert (aworklist_subst (X0 ~ᵃ □ ;ᵃ Γ) X A Γ1 (X0 ~ᵃ □ ;ᵃ Γ2))...
-        eapply aworklist_subst_wf_body_subst with (Γ:=X0 ~ᵃ □ ;ᵃ Γ); simpl; eauto.
-        -- apply a_wf_typ_weaken_cons...
-        -- constructor; eauto.
-  - intros * Hnotin Hwfa Hwfb Hwfaw Haws. clear aworklist_subst_wf_body_subst.
-    dependent destruction Hwfb; simpl in *...
+      assert (aworklist_subst (X0 ~ᵃ □ ;ᵃ Γ) X A Γ1 (X0 ~ᵃ □ ;ᵃ Γ2))...
+      eapply H1 with (Γ:=X0 ~ᵃ □ ;ᵃ Γ); simpl; eauto.
+      * apply a_wf_typ_weaken_cons...
+      * constructor; eauto.
 Qed.
 
 

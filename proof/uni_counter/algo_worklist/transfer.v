@@ -6,8 +6,8 @@ Require Import Lia.
 
 Require Import uni_counter.notations.
 Require Import uni_counter.decl.prop_basic.
-Require Import uni_counter.decl_worklist.prop_equiv.
-Require Import uni_counter.decl.prop_subtyping.
+(* Require Import uni_counter.decl_wozrklist.prop_equiv. *)
+(* Require Import uni_counter.decl.prop_subtyping. *)
 Require Import uni_counter.algo_worklist.def_extra.
 Require Import uni_counter.algo_worklist.prop_basic.
 Require Import uni_counter.ltac_utils.
@@ -119,13 +119,12 @@ Inductive trans_exp : subst_set -> exp -> exp -> Prop :=
       trans_exp θ e1ᵃ e1ᵈ ->
       trans_exp θ e2ᵃ e2ᵈ ->
       trans_exp θ (exp_app e1ᵃ e2ᵃ) (exp_app e1ᵈ e2ᵈ)
-  | trans_exp__tabs : forall L θ bᵃ bᵈ,
-      (forall X, X ∉ L -> 
-        trans_body ((X, dbind_tvar_empty) :: θ) 
-                  (open_body_wrt_typ bᵃ (typ_var_f X))
-                  (open_body_wrt_typ bᵈ (typ_var_f X))
-      ) ->
-      trans_exp θ (exp_tabs bᵃ) (exp_tabs bᵈ)
+  | trans_exp__tabs : forall L θ eᵃ eᵈ Aᵃ Aᵈ,
+      ( forall X, X ∉ L -> 
+          trans_exp ((X, dbind_tvar_empty) :: θ) (open_exp_wrt_typ eᵃ (typ_var_f X)) (open_exp_wrt_typ eᵈ (typ_var_f X))) ->
+      ( forall X, X ∉ L -> 
+          trans_typ ((X, dbind_tvar_empty) :: θ) (open_typ_wrt_typ Aᵃ (typ_var_f X)) (open_typ_wrt_typ Aᵈ (typ_var_f X))) ->
+      trans_exp θ (exp_tabs (exp_anno eᵃ Aᵃ)) (exp_tabs (exp_anno eᵈ Aᵈ))
   | trans_exp__tapp : forall θ eᵃ eᵈ A1ᵃ A1ᵈ,
       trans_exp θ eᵃ eᵈ ->
       trans_typ θ A1ᵃ A1ᵈ ->
@@ -133,49 +132,43 @@ Inductive trans_exp : subst_set -> exp -> exp -> Prop :=
   | trans_exp__anno : forall θ eᵃ eᵈ A1ᵃ A1ᵈ, 
       trans_exp θ eᵃ eᵈ ->
       trans_typ θ A1ᵃ A1ᵈ ->
-      trans_exp θ (exp_anno eᵃ A1ᵃ) (exp_anno eᵈ A1ᵈ) 
-with trans_body : subst_set -> body -> body -> Prop :=
-  | trans_body__anno : forall θ eᵃ eᵈ A1ᵃ A1ᵈ,
-      trans_exp θ eᵃ eᵈ ->
-      trans_typ θ A1ᵃ A1ᵈ ->
-      trans_body θ (body_anno eᵃ A1ᵃ) (body_anno eᵈ A1ᵈ)
-.
+      trans_exp θ (exp_anno eᵃ A1ᵃ) (exp_anno eᵈ A1ᵈ).
+
 
 Inductive trans_conts : subst_set -> conts -> conts -> Prop :=
   | trans_conts__infabs : forall θ cdᵃ cdᵈ,
-      trans_contd θ cdᵃ cdᵈ ->
-      trans_conts θ (conts_infabs cdᵃ) (conts_infabs cdᵈ)
+    trans_contd θ cdᵃ cdᵈ ->
+    trans_conts θ (conts_infabs cdᵃ) (conts_infabs cdᵈ)
   | trans_cont__inftapp : forall θ Aᵃ Aᵈ cᵃ cᵈ,
-      trans_typ θ Aᵃ Aᵈ ->
-      trans_conts θ cᵃ cᵈ ->
-      trans_conts θ (conts_inftapp Aᵃ cᵃ) (conts_inftapp Aᵈ cᵈ)
+    trans_typ θ Aᵃ Aᵈ ->
+    trans_conts θ cᵃ cᵈ ->
+    trans_conts θ (conts_inftapp Aᵃ cᵃ) (conts_inftapp Aᵈ cᵈ)
   | trans_cont__inftappunion : forall θ A1ᵃ A1ᵈ A2ᵃ A2ᵈ cᵃ cᵈ,
-      trans_typ θ A1ᵃ A1ᵈ ->
-      trans_typ θ A2ᵃ A2ᵈ ->
-      trans_conts θ cᵃ cᵈ ->
-      trans_conts θ (conts_inftappunion A1ᵃ A2ᵃ cᵃ) (conts_inftappunion A1ᵈ A2ᵈ cᵈ)
+    trans_typ θ A1ᵃ A1ᵈ ->
+    trans_typ θ A2ᵃ A2ᵈ ->
+    trans_conts θ cᵃ cᵈ ->
+    trans_conts θ (conts_inftappunion A1ᵃ A2ᵃ cᵃ) (conts_inftappunion A1ᵈ A2ᵈ cᵈ)
   | trans_cont__unioninftapp : forall θ Aᵃ Aᵈ cᵃ cᵈ,
-      trans_typ θ Aᵃ Aᵈ ->
-      trans_conts θ cᵃ cᵈ ->
-      trans_conts θ (conts_unioninftapp Aᵃ cᵃ) (conts_unioninftapp Aᵈ cᵈ)
+    trans_typ θ Aᵃ Aᵈ ->
+    trans_conts θ cᵃ cᵈ ->
+    trans_conts θ (conts_unioninftapp Aᵃ cᵃ) (conts_unioninftapp Aᵈ cᵈ)
   | trans_cont__sub : forall θ Aᵃ Aᵈ,
-      trans_typ θ Aᵃ Aᵈ ->
-      trans_conts θ (conts_sub Aᵃ) (conts_sub Aᵈ)
+    trans_typ θ Aᵃ Aᵈ ->
+    trans_conts θ (conts_sub Aᵃ) (conts_sub Aᵈ)
 with trans_contd : subst_set -> contd -> contd -> Prop :=
-  | trans_contd__infapp : forall θ n eᵃ eᵈ csᵃ csᵈ,
-      trans_exp θ eᵃ eᵈ ->
-      trans_conts θ csᵃ csᵈ ->
-      trans_contd θ (contd_infapp n eᵃ csᵃ) (contd_infapp n eᵈ csᵈ)
+  | trans_contd__infapp : forall θ eᵃ eᵈ csᵃ csᵈ,
+    trans_exp θ eᵃ eᵈ ->
+    trans_conts θ csᵃ csᵈ ->
+    trans_contd θ (contd_infapp eᵃ csᵃ) (contd_infapp eᵈ csᵈ)
   | trans_contd__infabs_union : forall θ Aᵃ Aᵈ cdᵃ cdᵈ,
-      trans_typ θ Aᵃ Aᵈ ->
-      trans_contd θ cdᵃ cdᵈ ->
-      trans_contd θ (contd_infabsunion Aᵃ cdᵃ) (contd_infabsunion Aᵈ cdᵈ)
+    trans_typ θ Aᵃ Aᵈ ->
+    trans_contd θ cdᵃ cdᵈ ->
+    trans_contd θ (contd_infabsunion Aᵃ cdᵃ) (contd_infabsunion Aᵈ cdᵈ)
   | trans_contd__unioninfabs : forall θ Aᵃ Aᵈ Bᵃ Bᵈ cdᵃ cdᵈ,
-      trans_typ θ Aᵃ Aᵈ ->
-      trans_typ θ Bᵃ Bᵈ ->
-      trans_contd θ cdᵃ cdᵈ ->
-      trans_contd θ (contd_unioninfabs Aᵃ Bᵃ cdᵃ) (contd_unioninfabs Aᵈ Bᵈ cdᵈ)    
-.
+    trans_typ θ Aᵃ Aᵈ ->
+    trans_typ θ Bᵃ Bᵈ ->
+    trans_contd θ cdᵃ cdᵈ ->
+    trans_contd θ (contd_unioninfabs Aᵃ Bᵃ cdᵃ) (contd_unioninfabs Aᵈ Bᵈ cdᵈ).
 
 
 Inductive trans_work : subst_set -> work -> work -> Prop :=
@@ -238,8 +231,7 @@ Inductive trans_work : subst_set -> work -> work -> Prop :=
       trans_typ θ Aᵃ Aᵈ ->
       trans_typ θ Bᵃ Bᵈ ->
       trans_contd θ cdᵃ cdᵈ ->
-      trans_work θ (work_applyd cdᵃ Aᵃ Bᵃ) (work_applyd cdᵈ Aᵈ Bᵈ)
-.
+      trans_work θ (work_applyd cdᵃ Aᵃ Bᵃ) (work_applyd cdᵈ Aᵈ Bᵈ).
 
 Notation "θ ᵗ⊩ Aᵃ ⇝ Aᵈ" := (trans_typ θ Aᵃ Aᵈ)
   (at level 65, Aᵃ at next level, no associativity).

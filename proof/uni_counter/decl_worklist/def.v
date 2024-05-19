@@ -59,12 +59,12 @@ Inductive d_wl_del_red : dworklist -> Prop :=
   | d_wl_del_red__applys : forall Ω cs A w,
       apply_conts cs A w ->
       d_wl_del_red (dworklist_cons_work Ω w) ->
-      d_wl_del_red (dworklist_cons_work Ω (work_applys cs A)).
+      d_wl_del_red (dworklist_cons_work Ω (work_applys cs A))
   | d_wl_del_red__applyd : forall Ω cd A B w,
       apply_contd cd A B w ->
       d_wl_del_red (dworklist_cons_work Ω w) ->
-      d_wl_del_red (dworklist_cons_work Ω (work_applyd cd A B))
-  .
+      d_wl_del_red (dworklist_cons_work Ω (work_applyd cd A B)).
+
 
 Inductive num_occurs_in_typ : atom -> typ -> nat -> Prop :=
   | num_occurs_in_typ__unit : forall X,
@@ -94,8 +94,7 @@ Inductive num_occurs_in_typ : atom -> typ -> nat -> Prop :=
   | num_occurs_in_typ__intersection : forall X A1 A2 n1 n2,
       num_occurs_in_typ X A1 n1 ->
       num_occurs_in_typ X A2 n2 ->
-      num_occurs_in_typ X (typ_intersection A1 A2) (2 + n1 + n2)
-  .
+      num_occurs_in_typ X (typ_intersection A1 A2) (2 + n1 + n2).
 
 
 Inductive d_iuv_size : denv -> typ -> nat -> Prop :=
@@ -128,8 +127,8 @@ Inductive d_iuv_size : denv -> typ -> nat -> Prop :=
   | d_iuv_size__intersection : forall Ψ A1 A2 n1 n2,
       d_iuv_size Ψ A1 n1 ->
       d_iuv_size Ψ A2 n2 ->
-      d_iuv_size Ψ (typ_intersection A1 A2) (2 + n1 + n2)
-    .
+      d_iuv_size Ψ (typ_intersection A1 A2) (2 + n1 + n2).
+
 
 Inductive d_exp_split_size : denv -> exp -> nat -> Prop :=
   | d_exp_split_size__unit : forall Ψ,
@@ -159,8 +158,7 @@ Inductive d_exp_split_size : denv -> exp -> nat -> Prop :=
   | d_exp_split_size__anno : forall Ψ e A n m,
       d_exp_split_size Ψ e n ->
       d_iuv_size Ψ A m ->
-      d_exp_split_size Ψ (exp_anno e A) ((1 + n) * (2 + m))
-  .
+      d_exp_split_size Ψ (exp_anno e A) ((1 + n) * (2 + m)).
 
 (* defns Jdworklist_reduction *)
 Inductive d_wl_red : dworklist -> Prop :=    (* defn d_wl_red *)
@@ -324,8 +322,7 @@ Inductive d_wl_red : dworklist -> Prop :=    (* defn d_wl_red *)
  | d_wl_red__applyd : forall (Ω:dworklist) (w:work) (A B:typ) (cd:contd),
      apply_contd cd A B w ->
      d_wl_red (dworklist_cons_work Ω w) ->
-     d_wl_red (dworklist_cons_work Ω (work_applyd cd A B))   
-.
+     d_wl_red (dworklist_cons_work Ω (work_applyd cd A B)).
 
 
 #[export] Hint Constructors d_wl_red d_wf_wl d_wl_del_red : core.

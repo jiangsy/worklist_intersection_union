@@ -55,8 +55,7 @@ Inductive wf_ss : subst_set -> Prop :=
     wf_ss θ  -> 
     X ∉ dom θ  ->
     d_mono_typ (ss_to_denv θ) T -> 
-    wf_ss ((X , dbind_typ T) :: θ)
-.
+    wf_ss ((X , dbind_typ T) :: θ).
 
 
 Inductive trans_typ : subst_set -> typ -> typ -> Prop := 
