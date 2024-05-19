@@ -7,7 +7,6 @@ Require Import List.
 Require Import uni_counter.notations.
 Require Import uni_counter.prop_basic.
 Require Import uni_counter.algo_worklist.def_extra.
-(* Require Import uni_counter.decl_worklist.prop_equiv. *)
 Require Import uni_counter.ltac_utils.
 
 
@@ -17,7 +16,7 @@ Open Scope abind_scope.
 
 Lemma a_wf_twl_a_wf_env : forall Γ,
   ⊢ᵃʷₜ Γ ->
-  ⊢ᵃ ⌊ Γ ⌋ᵃ.
+  ⊢ᵃ ⌊ Γ ⌋ᵃ. 
 Proof.
   introv HW. induction* HW.
   all: cbn; econstructor; eauto.
