@@ -560,51 +560,104 @@ Ltac destruct_in :=
     try solve [solve_notin_eq X']
   end.
 
-(* Lemma iuv_size_d_mono : forall Γ A,
-  d_mono_typ Γ A -> iuv_size A = 0.
+Lemma num_occurs_in_typ_det : forall X A n1 n2,
+  num_occurs_in_typ X A n1 -> num_occurs_in_typ X A n2 -> n1 = n2.
+Proof.
+  intros * Hocc1. generalize dependent n2.
+  dependent induction Hocc1; intros * Hocc2; dependent destruction Hocc2; auto;
+    try solve [exfalso; apply H; auto].
+  pick fresh Y. inst_cofinites_with Y. eapply H0. eauto.
+Qed.
+
+Lemma num_occurs_in_typ_open_typ_wrt_typ_rename : forall X Y Z A n,
+  (* Some additional conditions -> *)
+  num_occurs_in_typ X (open_typ_wrt_typ A (typ_var_f Y)) n ->
+  num_occurs_in_typ X (open_typ_wrt_typ A (typ_var_f Z)) n.
+Admitted.
+
+Lemma num_occurs_in_typ_total : forall Ψ X A,
+  a_wf_typ Ψ A -> exists n, num_occurs_in_typ X A n.
+Proof.
+  intros * Hwf. induction Hwf; eauto using num_occurs_in_typ;
+    try solve [destruct (X == X0); subst; eauto using num_occurs_in_typ].
+  - destruct IHHwf1 as [n1 IHHwf1]. destruct IHHwf2 as [n2 IHHwf2].
+    eauto using num_occurs_in_typ.
+  - pick fresh Y. inst_cofinites_with Y.
+    destruct H1 as [n H1]. exists n.
+    eapply num_occurs_in_typ__all with (L := L). intros * Hnin.
+    eapply num_occurs_in_typ_open_typ_wrt_typ_rename with (Z := Y0) in H1. auto.
+  - destruct IHHwf1 as [n1 IHHwf1]. destruct IHHwf2 as [n2 IHHwf2].
+    eauto using num_occurs_in_typ.
+  - destruct IHHwf1 as [n1 IHHwf1]. destruct IHHwf2 as [n2 IHHwf2]. 
+    eauto using num_occurs_in_typ.
+Qed.
+
+Lemma d_iuv_size_det : forall Ψ A n1 n2,
+  d_iuv_size Ψ A n1 -> d_iuv_size Ψ A n2 -> n1 = n2.
+Proof.
+  intros * Hiuv1. generalize dependent n2.
+  dependent induction Hiuv1; intros * Hiuv2; dependent destruction Hiuv2; auto.
+  pick fresh X. inst_cofinites_with X.
+  erewrite H0; eauto. erewrite num_occurs_in_typ_det with (n1 := m); eauto.
+Qed.
+
+Lemma d_iuv_size_d_mono : forall Γ A,
+  d_mono_typ Γ A -> d_iuv_size Γ A 0.
 Proof.
   intros Γ A Hmono.
-  induction Hmono; simpl; eauto; try lia.
+  induction Hmono; simpl; eauto using d_iuv_size; try lia.
+  replace 0 with (0 + 0) by auto. eauto using d_iuv_size.
 Qed.
 
-Lemma iuv_size_open_d_mono_rec : forall Ψ A T n,
-  d_mono_typ Ψ T ->
-  iuv_size (open_typ_wrt_typ_rec n T A) <= iuv_size A.
+Lemma d_iuv_size_subst_mono_cons : forall Ψ A X B n,
+  d_mono_typ Ψ B ->
+  d_iuv_size (X ~ □ ++ Ψ) (A ᵗ^ₜ X) n ->
+  d_iuv_size Ψ (A ᵗ^^ₜ B) n.
+Admitted.
+
+Lemma infabs_d_iuv_size_B : forall Ψ A B C n m,
+  Ψ ⊢ A ▹ B → C -> d_iuv_size Ψ A n -> d_iuv_size Ψ B m -> m <= n.
 Proof.
-  intros Ψ A T n Hmono.
-  generalize dependent n.
-  induction A; intros; simpl; auto;
-    try specialize (IHA1 n); try specialize (IHA2 n); try lia.
-  destruct (lt_eq_lt_dec n n0); simpl; auto.
-  destruct s; simpl; auto; subst.
-  erewrite iuv_size_d_mono; eauto.
-Qed.
+  intros * Hinf. generalize dependent m. generalize dependent n.
+  dependent induction Hinf; intros * HiuvA HiuvB.
+  - dependent destruction HiuvA. dependent destruction HiuvB. auto.
+  - dependent destruction HiuvA.
+    erewrite d_iuv_size_det with (n1 := n1); eauto. lia.
+  - dependent destruction HiuvA.
+    pick fresh X. inst_cofinites_with X.
+    eapply d_iuv_size_subst_mono_cons with (B := T) in H2; eauto.
+    eapply IHHinf in H2; eauto. lia.
+  - dependent destruction HiuvA.
+    eapply IHHinf in HiuvA1; eauto. lia.
+  - dependent destruction HiuvA.
+    eapply IHHinf in HiuvA2; eauto. lia.
+  - dependent destruction HiuvA. dependent destruction HiuvB.
+    eapply IHHinf1 in HiuvA1; eauto.
+    eapply IHHinf2 in HiuvA2; eauto. lia.
+Qed. 
 
-Lemma iuv_size_open_d_mono : forall Ψ A T,
-  d_mono_typ Ψ T ->
-  iuv_size (open_typ_wrt_typ A T) <= iuv_size A.
+Lemma infabs_d_iuv_size_C : forall Ψ A B C n m,
+  Ψ ⊢ A ▹ B → C -> d_iuv_size Ψ A n -> d_iuv_size Ψ C m -> m <= n.
 Proof.
-  intros Ψ A T Hmono.
-  eapply iuv_size_open_d_mono_rec; eauto.
+  intros * Hinf. generalize dependent m. generalize dependent n.
+  dependent induction Hinf; intros * HiuvA HiuvC.
+  - dependent destruction HiuvA. dependent destruction HiuvC. auto.
+  - dependent destruction HiuvA.
+    erewrite d_iuv_size_det with (n1 := n2); eauto. lia.
+  - dependent destruction HiuvA.
+    pick fresh X. inst_cofinites_with X.
+    eapply d_iuv_size_subst_mono_cons with (B := T) in H2; eauto.
+    eapply IHHinf in H2; eauto. lia.
+  - dependent destruction HiuvA.
+    eapply IHHinf in HiuvA1; eauto. lia.
+  - dependent destruction HiuvA.
+    eapply IHHinf in HiuvA2; eauto. lia.
+  - dependent destruction HiuvA. dependent destruction HiuvC.
+    eapply IHHinf1 in HiuvA1; eauto.
+    eapply IHHinf2 in HiuvA2; eauto. lia.
 Qed.
 
-Lemma infabs_iuv_size_B : forall Ψ A B C,
-  Ψ ⊢ A ▹ B → C -> iuv_size B <= iuv_size A.
-Proof.
-  intros. induction H; simpl; auto; try lia.
-  assert (iuv_size (A ᵗ^^ₜ T) <= iuv_size A). { eapply iuv_size_open_d_mono; eauto. }
-  lia.
-Qed.
-
-Lemma infabs_iuv_size_C : forall Ψ A B C,
-  Ψ ⊢ A ▹ B → C -> iuv_size C <= iuv_size A.
-Proof.
-  intros. induction H; simpl; auto; try lia.
-  assert (iuv_size (A ᵗ^^ₜ T) <= iuv_size A). { eapply iuv_size_open_d_mono; eauto. }
-  lia.
-Qed.
-
-Lemma iuv_size_open_typ_wrt_typ_rec : forall A B n,
+(* Lemma iuv_size_open_typ_wrt_typ_rec : forall A B n,
   iuv_size (open_typ_wrt_typ_rec n B A) <= iuv_size A * (1 + iuv_size B).
 Proof.
   intros A B.
@@ -630,7 +683,7 @@ Lemma inftapp_iuv_size : forall Ψ A B C,
 Proof.
   intros. induction H; simpl; auto; try lia.
   eapply iuv_size_open_typ_wrt_typ.
-Qed. *)
+Qed.  *)
 
 Lemma d_exp_split_size_det : forall Ψ e n1 n2,
   ⊢ᵈₜ Ψ -> d_exp_split_size Ψ e n1 -> d_exp_split_size Ψ e n2 -> n1 = n2.
@@ -748,7 +801,7 @@ Proof.
   - destruct_conj; eauto.
   - admit.
   - admit.
-Qed.
+Admitted.
 
 (* Lemma d_iuv_size *)
 
