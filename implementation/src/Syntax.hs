@@ -17,16 +17,11 @@ data Typ
 
 type TypPrec = Int
 
-type AssocPrec = Int
-
 baseTypPrec, arrTypPrec, intersectionTypPrec, unionTypPrec :: TypPrec
 baseTypPrec = 0
 arrTypPrec = 1
 intersectionTypPrec = 2
 unionTypPrec = 3
-
-baseAssocPrec :: AssocPrec
-baseAssocPrec = 0
 
 addParen :: String -> String
 addParen s = "(" ++ s ++ ")"
@@ -76,9 +71,9 @@ data Exp
   | Fix Exp
   | Let String Exp Exp
   | LetA String Typ Exp Exp
-  | RecNil
-  | RecCons String Exp Exp
-  | RecProj Exp String
+  | RcdNil
+  | RcdCons String Exp Exp
+  | RcdProj Exp String
   deriving (Eq)
 
 instance Show Exp where
@@ -96,9 +91,9 @@ instance Show Exp where
   show (Fix e) = "fix " ++ show e
   show (Let x e1 e2) = "let " ++ x ++ " = " ++ show e1 ++ " in " ++ show e2
   show (LetA x t e1 e2) = "let " ++ x ++ " :: " ++ show t ++ " = " ++ show e1 ++ " in " ++ show e2
-  show RecNil = "⟨⟩"
-  show (RecCons l e1 e2) = l ++ " ↦ " ++ show e1 ++ ", " ++ show e2
-  show (RecProj e l) = show e ++ "." ++ show l
+  show RcdNil = "⟨⟩"
+  show (RcdCons l e1 e2) = l ++ " ↦ " ++ show e1 ++ ", " ++ show e2
+  show (RcdProj e l) = show e ++ "." ++ show l
 
 showExp :: Exp -> String
 showExp e = case e of
@@ -110,7 +105,7 @@ showExp e = case e of
   Fix {} -> showParens $ show e
   Let {} -> showParens $ show e
   LetA {} -> showParens $ show e
-  RecCons {} -> showParens $ show e
+  RcdCons {} -> showParens $ show e
   _ -> show e
 
 showParens :: String -> String
