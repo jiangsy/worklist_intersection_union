@@ -61,9 +61,7 @@ data Work
 
 instance {-# OVERLAPPING #-} Show [Work] where
   show [] = "⋅"
-  show (WTVar x TVarBind : w) = show w ++ ", " ++ x
-  show (WTVar x STVarBind : w) = show w ++ ", ~" ++ x
-  show (WTVar x ETVarBind : w) = show w ++ ", ^" ++ x
+  show (WTVar x b : w) = show w ++ ", " ++ x ++ " : " ++ show b
   show (WVar x t : w) = show w ++ ", " ++ x ++ " : " ++ show t
   show (WJug c : w) = show w ++ " ⊩ " ++ show c
 
@@ -309,7 +307,7 @@ notUnion (TUnion _ _) = False
 notUnion _ = True
 
 curInfo :: [Work] -> String -> String
-curInfo ws s1 = "   " ++ show (reverse ws) ++ "\n-->{ Rule: " ++ s1 ++ replicate (20 - length s1) ' ' ++ " }\n"
+curInfo ws s1 = "   " ++ show (ws) ++ "\n-->{ Rule: " ++ s1 ++ replicate (20 - length s1) ' ' ++ " }\n"
 
 bigStep :: String -> [Work] -> (Bool, String)
 bigStep info [] = (True, info)
@@ -337,7 +335,7 @@ bigStep info (WJug (Sub (TAll a t1) (TAll b t2)) : ws) = bigStep (info ++ curInf
     c = pickNewTVar ws [t1, t2]
     t1' = ttsubst a (TVar c) t1
     t2' = ttsubst b (TVar c) t2
-    ws' = WJug (Sub t1' t2') : WTVar b STVarBind : ws
+    ws' = WJug (Sub t1' t2') : WTVar c STVarBind : ws
 bigStep info (WJug (Sub (TAll a t1) t2) : ws)
   | notUnion t2 && notIntersection t2 = bigStep (info ++ curInfo ws' "≤∀L") ws'
   where
@@ -536,3 +534,4 @@ bigStep info _ = (False, info)
 --   case parseExp code of
 --     Left err -> putStrLn err
 --     Right e -> runStep [WJug (Inf e (const End))]
+ws1 = WJug (Sub (TAll "a" (TArr (TVar "a") (TVar "a"))) (TAll "a" (TArr (TVar "a") (TVar "a")))) : []
