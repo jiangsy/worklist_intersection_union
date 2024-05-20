@@ -1,13 +1,12 @@
 module Parser where
 
+import Control.Monad (void)
+import Control.Monad.Combinators.Expr
 import Data.Void
+import Syntax
 import Text.Megaparsec
 import Text.Megaparsec.Char
 import qualified Text.Megaparsec.Char.Lexer as L
-import Control.Monad.Combinators.Expr
-
-import Syntax
-import Control.Monad (void)
 
 type Parser = Parsec Void String
 
@@ -29,7 +28,7 @@ expr :: Parser Exp
 expr = makeExprParser term pOperators
 
 term :: Parser Exp
-term = postfixChain factor (try tapp <|> fapp)
+term = postfixChain factor (try tapp <|> fapp <|> pRcdProj)
 
 fapp :: Parser (Exp -> Exp)
 fapp = do
@@ -41,6 +40,12 @@ tapp = do
   symbol "@"
   t <- atype
   return (`TApp` t)
+
+pRcdProj :: Parser (Exp -> Exp)
+pRcdProj = do
+  symbol "."
+  l <- identifier
+  return (`RcdProj` l)
 
 factor :: Parser Exp
 factor = postfixChain atom annOperator
@@ -54,32 +59,19 @@ annOperator = do
 atom :: Parser Exp
 atom =
   choice
-    [ pLambda
-    , pTAbs
-    , pCase
-    , pFix
-    , try pLet
-    , pLetAnn
-    , Var <$> identifier
-    , ILit <$> signedInt
-    , BLit <$> bool
-    , Nil <$ symbol "[]"
-    , parens expr
+    [ pLambda,
+      pTAbs,
+      pCase,
+      pFix,
+      try pLet,
+      pLetAnn,
+      Var <$> identifier,
+      ILit <$> signedInt,
+      BLit <$> bool,
+      Nil <$ symbol "[]",
+      RcdNil <$ symbol "⟨⟩",
+      parens expr
     ]
-
-idBound :: Parser (String, Typ)
-idBound = try explicit <|> implicit
-  where
-    implicit = do
-      x <- identifier
-      return (x, TTop)
-    explicit = do
-      symbol "("
-      x <- identifier
-      symbol "<:"
-      t <- pType
-      symbol ")"
-      return (x, t)
 
 pLambda :: Parser Exp
 pLambda = do
@@ -96,9 +88,9 @@ pFix = do
 pTAbs :: Parser Exp
 pTAbs = do
   symbol "/\\"
-  (x, t) <- idBound
+  x <- identifier
   symbol "."
-  TAbs x t <$> expr
+  TAbs x <$> expr
 
 pCase :: Parser Exp
 pCase = do
@@ -148,7 +140,7 @@ pType :: Parser Typ
 pType = makeExprParser atype tOperators
 
 tOperators :: [[Operator Parser Typ]]
-tOperators = [[InfixR (TArr <$ symbol "->")]]
+tOperators = [[InfixR (TArr <$ symbol "->"), InfixR (TIntersection <$ symbol "/\\"), InfixR (TUnion <$ symbol "\\/")]]
 
 atype :: Parser Typ
 atype =
@@ -158,17 +150,18 @@ atype =
 pForall :: Parser Typ
 pForall = do
   rword "forall"
-  (x, t) <- idBound
+  x <- identifier
   symbol "."
-  Forall x t <$> pType
+  TAll x <$> pType
 
 tconst :: Parser Typ
 tconst =
   choice
-    [ TInt  <$ rword "Int"
-    , TBool <$ rword "Bool"
-    , TTop  <$ rword "Top"
-    , TBot  <$ rword "Bot"]
+    [ TInt <$ rword "Int",
+      TBool <$ rword "Bool",
+      TTop <$ rword "Top",
+      TBot <$ rword "Bot"
+    ]
 
 listType :: Parser Typ
 listType = do
@@ -205,8 +198,9 @@ signedInt = L.signed sc int
 bool :: Parser Bool
 bool =
   choice
-    [ True  <$ rword "True"
-    , False <$ rword "False"]
+    [ True <$ rword "True",
+      False <$ rword "False"
+    ]
 
 rword :: String -> Parser ()
 rword w = string w *> notFollowedBy alphaNumChar *> sc
@@ -217,9 +211,11 @@ postfixChain p op = do
   rest x
   where
     rest x =
-      (do f <- op
-          rest $ f x) <|>
-      return x
+      ( do
+          f <- op
+          rest $ f x
+      )
+        <|> return x
 
 rws :: [String] -- list of reserved words
 rws = ["forall", "case", "of", "fix", "let", "in", "True", "False"]
