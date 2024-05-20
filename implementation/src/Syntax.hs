@@ -134,3 +134,7 @@ t6 = TArr (TArr TInt (TArr TInt TInt)) TInt
 e1 = App (Lam "x" (Var "x")) (ILit 1)
 
 e2 = Lam "x" (App (Var "x") (ILit 1))
+
+e3 = Lam "x" (App (Var "x") (App (Var "x") (Var "x")))
+
+e4 = Lam "x" (App (App (Var "x") (Var "x")) (Var "x"))
