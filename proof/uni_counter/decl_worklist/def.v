@@ -117,8 +117,10 @@ Inductive d_iuv_size : denv -> typ -> nat -> Prop :=
   | d_iuv_size__all : forall L Ψ A n m,
       (forall X,
         X \notin L ->
-        d_iuv_size (X ~ dbind_tvar_empty ++ Ψ) (open_typ_wrt_typ A (typ_var_f X)) n /\
-          num_occurs_in_typ X (open_typ_wrt_typ A (typ_var_f X)) m) ->
+        d_iuv_size (X ~ dbind_tvar_empty ++ Ψ) (open_typ_wrt_typ A (typ_var_f X)) n) ->
+      (forall X,
+        X \notin L ->
+        num_occurs_in_typ X (open_typ_wrt_typ A (typ_var_f X)) m) ->
       d_iuv_size Ψ (typ_all A) (n + m)
   | d_iuv_size__union : forall Ψ A1 A2 n1 n2,
       d_iuv_size Ψ A1 n1 ->
