@@ -92,6 +92,7 @@ eesubst s e (RcdCons l1 e1 e2) = RcdCons l1 (eesubst s e e1) (eesubst s e e2)
 eesubst s e (RcdProj e1 l1) = RcdProj (eesubst s e e1) l1
 
 ttsubst :: String -> Typ -> Typ -> Typ
+ttsubst _ _ TUnit = TUnit
 ttsubst _ _ TInt = TInt
 ttsubst _ _ TBool = TBool
 ttsubst _ _ TTop = TTop
@@ -139,6 +140,7 @@ ctsubst sa st (ConsInf t1 e f) = ConsInf (ttsubst sa st t1) (etsubst sa st e) (c
 ctsubst _ _ End = End
 
 ftvarInTyp :: Typ -> [String]
+ftvarInTyp TUnit = []
 ftvarInTyp TInt = []
 ftvarInTyp TBool = []
 ftvarInTyp TTop = []
@@ -263,6 +265,7 @@ findTVar :: [Work] -> String -> TBind
 findTVar w a = head [t | WTVar a' t <- w, a == a']
 
 mono :: [Work] -> Typ -> Bool
+mono _ TUnit = True
 mono _ TInt = True
 mono _ TBool = True
 mono _ TTop = False
@@ -273,6 +276,7 @@ mono _ (TUnion _ _) = False
 mono _ (TAll {}) = False
 mono w (TArr a b) = mono w a && mono w b
 mono w (TList t) = mono w t
+mono _ (TLabel _) = True
 
 insertETVar :: String -> String -> Worklist -> Worklist
 insertETVar a b (WTVar c ETVarBind : w)
@@ -318,6 +322,7 @@ bigStep info (WVar x _ : ws) = bigStep (info ++ curInfo ws "GCVar") ws
 --
 bigStep info (WJug (Sub _ TTop) : ws) = bigStep (info ++ curInfo ws "≤⊤") ws
 bigStep info (WJug (Sub TBot _) : ws) = bigStep (info ++ curInfo ws "≤⊥") ws
+bigStep info (WJug (Sub TUnit TUnit) : ws) = bigStep (info ++ curInfo ws "≤Unit") ws
 bigStep info (WJug (Sub TInt TInt) : ws) = bigStep (info ++ curInfo ws "≤Int") ws
 bigStep info (WJug (Sub TBool TBool) : ws) = bigStep (info ++ curInfo ws "≤Bool") ws
 bigStep info (WJug (Sub (TLabel l1) (TLabel l2)) : ws)

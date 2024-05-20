@@ -2,7 +2,8 @@ module Syntax where
 
 -- Algorithmic Types
 data Typ
-  = TInt
+  = TUnit
+  | TInt
   | TBool
   | TTop
   | TBot
@@ -55,6 +56,7 @@ showTyp :: Typ -> String
 showTyp t = showTypHelper t baseTypPrec True
   where
     showTypHelper :: Typ -> TypPrec -> Bool -> String
+    showTypHelper TUnit _ _ = "Unit"
     showTypHelper TInt _ _ = "Int"
     showTypHelper TBool _ _ = "Bool"
     showTypHelper TTop _ _ = "⊤"
