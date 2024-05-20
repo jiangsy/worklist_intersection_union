@@ -17,14 +17,33 @@ data Typ
 
 type TypPrec = Int
 
+type ExpPrec = Int
+
 baseTypPrec, arrTypPrec, intersectionTypPrec, unionTypPrec :: TypPrec
 baseTypPrec = 0
 arrTypPrec = 1
 intersectionTypPrec = 2
 unionTypPrec = 3
 
+baseExpPrec, absExpPrec, appExpPrec :: ExpPrec
+baseExpPrec = 0
+absExpPrec = 1
+appExpPrec = 2
+
 addParen :: String -> String
 addParen s = "(" ++ s ++ ")"
+
+genTVarName :: Int -> String
+genTVarName n = cycle ["a", "b", "c"] !! (n `mod` 3) ++ ("" : map show [0 ..]) !! (n `div` 3)
+
+genVarName :: Int -> String
+genVarName n = cycle ["x", "y"] !! (n `mod` 2) ++ ("" : map show [0 ..]) !! (n `div` 2)
+
+genFreshTVar :: [String] -> String
+genFreshTVar xs = head $ filter (`notElem` xs) $ map genTVarName [0 ..]
+
+genFreshVar :: [String] -> String
+genFreshVar xs = head $ filter (`notElem` xs) $ map genVarName [0 ..]
 
 addParentP :: (TypPrec, TypPrec) -> Bool -> String -> String
 addParentP (tp1, tp2) apFlag s
@@ -76,49 +95,42 @@ data Exp
   | RcdProj Exp String
   deriving (Eq)
 
+showExp :: Int -> Int -> Exp -> String
+showExp ne nt e = showExpHelper e baseExpPrec True
+  where
+    showExpHelper :: Exp -> ExpPrec -> Bool -> String
+    showExpHelper (Var x) _ _ = x
+    showExpHelper (ILit n) _ _ = show n
+    showExpHelper (BLit n) _ _ = show n
+    showExpHelper (Lam x e) p ap = addParentP (p, absExpPrec) ap ("λ" ++ x ++ ". " ++ showExpHelper e absExpPrec True)
+    showExpHelper (App e1 e2) p ap = addParentP (p, appExpPrec) ap (showExpHelper e1 appExpPrec False ++ " " ++ showExpHelper e2 appExpPrec True)
+    showExpHelper (Ann e t) p ap = addParentP (p, baseExpPrec) ap (showExpHelper e baseExpPrec True ++ " :: " ++ show t)
+    showExpHelper (TApp e t) p ap = addParentP (p, baseExpPrec) ap (showExpHelper e baseExpPrec True ++ " @" ++ show t)
+    showExpHelper Nil _ _ = "[]"
+    showExpHelper (Cons e1 e2) p ap = addParentP (p, baseExpPrec) ap (showExpHelper e1 baseExpPrec True ++ " : " ++ showExpHelper e2 baseExpPrec False)
+    showExpHelper (Case e e1 e2) p ap = addParentP (p, baseExpPrec) ap ("case " ++ showExpHelper e baseExpPrec True ++ " of [] -> " ++ showExpHelper e1 baseExpPrec True ++ "; " ++ showExpHelper e2 baseExpPrec True)
+    showExpHelper (Fix e) p ap = addParentP (p, baseExpPrec) ap ("fix " ++ showExpHelper e baseExpPrec True)
+    showExpHelper (Let x e1 e2) p ap = addParentP (p, baseExpPrec) ap ("let " ++ x ++ " = " ++ showExpHelper e1 baseExpPrec True ++ " in " ++ showExpHelper e2 baseExpPrec True)
+    showExpHelper (LetA x t e1 e2) p ap = addParentP (p, baseExpPrec) ap ("let " ++ x ++ " :: " ++ show t ++ " = " ++ showExpHelper e1 baseExpPrec True ++ " in " ++ showExpHelper e2 baseExpPrec True)
+    showExpHelper RcdNil _ _ = "⟨⟩"
+    showExpHelper (RcdCons l e1 e2) p ap = addParentP (p, baseExpPrec) ap (l ++ " ↦ " ++ showExpHelper e1 baseExpPrec True ++ ", " ++ showExpHelper e2 baseExpPrec False)
+    showExpHelper (RcdProj e l) p ap = addParentP (p, baseExpPrec) ap (showExpHelper e baseExpPrec True ++ "." ++ l)
+
 instance Show Exp where
-  show (Var x) = x
-  show (ILit n) = show n
-  show (BLit n) = show n
-  show (Lam x e) = "λ" ++ x ++ ". " ++ show e
-  show (App e1 e2) = showExp e1 ++ " " ++ showExp e2
-  show (Ann e t) = showExp e ++ " :: " ++ show t
-  show (TApp e t) = showExp e ++ " @" ++ show t
-  show (TAbs x e) = "Λ" ++ x ++ ". " ++ show e
-  show Nil = "[]"
-  show (Cons e1 e2) = show e1 ++ " : " ++ show e2
-  show (Case e e1 e2) = "case " ++ show e ++ " of [] -> " ++ show e1 ++ "; " ++ show e2
-  show (Fix e) = "fix " ++ show e
-  show (Let x e1 e2) = "let " ++ x ++ " = " ++ show e1 ++ " in " ++ show e2
-  show (LetA x t e1 e2) = "let " ++ x ++ " :: " ++ show t ++ " = " ++ show e1 ++ " in " ++ show e2
-  show RcdNil = "⟨⟩"
-  show (RcdCons l e1 e2) = l ++ " ↦ " ++ show e1 ++ ", " ++ show e2
-  show (RcdProj e l) = show e ++ "." ++ show l
-
-showExp :: Exp -> String
-showExp e = case e of
-  Lam {} -> showParens $ show e
-  Ann {} -> showParens $ show e
-  TAbs {} -> showParens $ show e
-  Cons {} -> showParens $ show e
-  Case {} -> showParens $ show e
-  Fix {} -> showParens $ show e
-  Let {} -> showParens $ show e
-  LetA {} -> showParens $ show e
-  RcdCons {} -> showParens $ show e
-  _ -> show e
-
-showParens :: String -> String
-showParens s = "(" ++ s ++ ")"
+  show = showExp 0 0
 
 t1 = TArr TInt (TIntersection TInt TBool)
 
 t2 = TIntersection (TArr TInt TInt) TBool
 
-t3 = TIntersection (TAll "X" (TArr (TVar "X") (TVar "X"))) TInt
+t3 = TIntersection (TAll "a" (TArr (TVar "a") (TVar "a"))) TInt
 
-t4 = TAll "X" (TIntersection (TArr (TVar "X") (TVar "X")) TInt)
+t4 = TAll "a" (TIntersection (TArr (TVar "a") (TVar "a")) TInt)
 
 t5 = TArr (TArr TInt TInt) (TArr TInt TInt)
 
 t6 = TArr (TArr TInt (TArr TInt TInt)) TInt
+
+e1 = App (Lam "x" (Var "x")) (ILit 1)
+
+e2 = Lam "x" (App (Var "x") (ILit 1))
