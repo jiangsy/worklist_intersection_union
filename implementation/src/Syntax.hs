@@ -31,41 +31,34 @@ baseAssocPrec = 0
 addParen :: String -> String
 addParen s = "(" ++ s ++ ")"
 
-addParentP :: (TypPrec, TypPrec) -> (AssocPrec, AssocPrec) -> String -> String
-addParentP (p1, p2) _ s
-  | p1 <= p2 = s
+addParentP :: (TypPrec, TypPrec) -> Bool -> String -> String
+addParentP (tp1, tp2) apFlag s
+  | tp1 < tp2 = s
+  | tp1 == tp2 && apFlag = s
   | otherwise = addParen s
 
 showTyp :: Typ -> String
-showTyp t = showTypHelper t baseTypPrec baseAssocPrec
+showTyp t = showTypHelper t baseTypPrec True
   where
-    showTypHelper :: Typ -> TypPrec -> AssocPrec -> String
+    showTypHelper :: Typ -> TypPrec -> Bool -> String
     showTypHelper TInt _ _ = "Int"
     showTypHelper TBool _ _ = "Bool"
     showTypHelper TTop _ _ = "⊤"
     showTypHelper TBot _ _ = "⊥"
     showTypHelper (TVar x) _ _ = x
     showTypHelper (TAll x t) p _ =
-      addParentP (p, baseTypPrec) (0, 0) ("∀" ++ x ++ ". " ++ showTypHelper t baseTypPrec 0)
-    showTypHelper (TArr t1 t2) p _ =
-      addParentP (p, arrTypPrec) (0, 0) (showTypHelper t1 arrTypPrec 0 ++ " → " ++ showTypHelper t2 arrTypPrec 0)
-    showTypHelper (TIntersection t1 t2) p _ =
-      addParentP (p, intersectionTypPrec) (0, 0) (showTypHelper t1 intersectionTypPrec 0 ++ " ∩ " ++ showTypHelper t2 intersectionTypPrec 0)
-    showTypHelper (TUnion t1 t2) p _ =
-      addParentP (p, unionTypPrec) (0, 0) (showTypHelper t1 unionTypPrec 0 ++ " ∪ " ++ showTypHelper t2 unionTypPrec 0)
-    showTypHelper (TList t) _ _ = "[" ++ showTypHelper t baseTypPrec 0 ++ "]"
+      addParentP (p, baseTypPrec) True ("∀" ++ x ++ ". " ++ showTypHelper t baseTypPrec True)
+    showTypHelper (TArr t1 t2) tp ap =
+      addParentP (tp, arrTypPrec) ap (showTypHelper t1 arrTypPrec False ++ " → " ++ showTypHelper t2 arrTypPrec True)
+    showTypHelper (TIntersection t1 t2) p ap =
+      addParentP (p, intersectionTypPrec) ap (showTypHelper t1 intersectionTypPrec True ++ " ∩ " ++ showTypHelper t2 intersectionTypPrec False)
+    showTypHelper (TUnion t1 t2) p ap =
+      addParentP (p, unionTypPrec) ap (showTypHelper t1 unionTypPrec True ++ " ∪ " ++ showTypHelper t2 unionTypPrec False)
+    showTypHelper (TList t) _ _ = "[" ++ showTypHelper t baseTypPrec True ++ "]"
     showTypHelper (TLabel x) _ _ = "(LABEL " ++ x ++ ")"
 
 instance Show Typ where
   show = showTyp
-
-t1 = TArr TInt (TIntersection TInt TBool)
-
-t2 = TIntersection (TArr TInt TInt) TBool
-
-t3 = TIntersection (TAll "X" (TArr (TVar "X") (TVar "X"))) TInt
-
-t4 = TAll "X" (TIntersection (TArr (TVar "X") (TVar "X")) TInt)
 
 -- Expressions
 data Exp
@@ -92,11 +85,11 @@ instance Show Exp where
   show (Var x) = x
   show (ILit n) = show n
   show (BLit n) = show n
-  show (Lam x e) = "\\" ++ x ++ " -> " ++ show e
+  show (Lam x e) = "λ" ++ x ++ ". " ++ show e
   show (App e1 e2) = showExp e1 ++ " " ++ showExp e2
   show (Ann e t) = showExp e ++ " :: " ++ show t
   show (TApp e t) = showExp e ++ " @" ++ show t
-  show (TAbs x e) = "/\\" ++ x ++ ". " ++ show e
+  show (TAbs x e) = "Λ" ++ x ++ ". " ++ show e
   show Nil = "[]"
   show (Cons e1 e2) = show e1 ++ " : " ++ show e2
   show (Case e e1 e2) = "case " ++ show e ++ " of [] -> " ++ show e1 ++ "; " ++ show e2
@@ -122,3 +115,15 @@ showExp e = case e of
 
 showParens :: String -> String
 showParens s = "(" ++ s ++ ")"
+
+t1 = TArr TInt (TIntersection TInt TBool)
+
+t2 = TIntersection (TArr TInt TInt) TBool
+
+t3 = TIntersection (TAll "X" (TArr (TVar "X") (TVar "X"))) TInt
+
+t4 = TAll "X" (TIntersection (TArr (TVar "X") (TVar "X")) TInt)
+
+t5 = TArr (TArr TInt TInt) (TArr TInt TInt)
+
+t6 = TArr (TArr TInt (TArr TInt TInt)) TInt
