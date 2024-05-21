@@ -1,11 +1,9 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE LambdaCase #-}
-{-# LANGUAGE TypeApplications #-}
 
 module Alg where
 
-import Data.List (delete, find, union)
-import Data.Maybe (fromJust)
+import Data.List (delete, union)
 -- import Parser (parseExp)
 import Syntax
 
@@ -26,21 +24,21 @@ instance Show Judgment where
   show c1 = show' c1 0
     where
       show' :: Judgment -> Int -> String
-      show' (Sub a b) _ = show a ++ " <: " ++ show b
-      show' (Chk e t) _ = show e ++ " <== " ++ show t
+      show' (Sub a b) _ = show a ++ " ≤ " ++ show b
+      show' (Chk e t) _ = show e ++ " ⇐ " ++ show t
       show' (Inf e c) n =
-        show e ++ " ==>" ++ show n ++ " " ++ show' (c (TVar $ show n)) (n + 1)
+        show e ++ " ⇒" ++ show n ++ " " ++ show' (c (TVar $ show n)) (n + 1)
       show' (InfAbs a c) n =
         show a ++ " ▹" ++ show n ++ "," ++ show (n + 1) ++ " " ++ show' (c (TVar $ show n) (TVar $ show (n + 1))) (n + 2)
       show' (InfApp a b e c) n =
-        show a ++ " -> " ++ show b ++ " * " ++ show e ++ " =>>" ++ show n ++ " " ++ show' (c (TVar $ show n)) (n + 1)
+        show a ++ " → " ++ show b ++ " * " ++ show e ++ " =>>" ++ show n ++ " " ++ show' (c (TVar $ show n)) (n + 1)
       show' (InfTApp a b c) n =
         show a ++ " o " ++ show b ++ " =>>" ++ show n ++ " " ++ show' (c (TVar $ show n)) (n + 1)
-      show' (CaseChk e a b) _ = show e ++ " <=={" ++ show a ++ " :: List} " ++ show b
+      show' (CaseChk e a b) _ = show e ++ " ⇐{" ++ show a ++ " :: List} " ++ show b
       show' (CaseInf a e e1 c) n =
         show a ++ " # " ++ show e ++ " # " ++ show e1 ++ " =>>[]" ++ show n ++ " " ++ show' (c (TVar $ show n)) (n + 1)
       show' (ConsInf a e c) n =
-        show e ++ " <== [" ++ show a ++ "] ==>" ++ show n ++ " " ++ show' (c (TVar $ show n)) (n + 1)
+        show e ++ " ⇐ [" ++ show a ++ "] ⇒" ++ show n ++ " " ++ show' (c (TVar $ show n)) (n + 1)
       show' End _ = "End"
 
 -- Worklist
@@ -66,28 +64,31 @@ instance {-# OVERLAPPING #-} Show [Work] where
   show (WJug c : w) = show w ++ " ⊩ " ++ show c
 
 eesubst :: String -> Exp -> Exp -> Exp
-eesubst s e (Lam x b)
-  | s == x = Lam x b
-  | otherwise = Lam x (eesubst s e b)
-eesubst s e (App e1 e2) = App (eesubst s e e1) (eesubst s e e2)
-eesubst s e (Ann e1 t) = Ann (eesubst s e e1) t
-eesubst s e (TApp e1 t) = TApp (eesubst s e e1) t
-eesubst s e (TAbs x e1) = TAbs x (eesubst s e e1)
-eesubst s e (Var x)
-  | s == x = e
+eesubst _ _ (ILit n) = ILit n
+eesubst _ _ (BLit n) = BLit n
+eesubst sx se (Lam x b)
+  | sx == x = Lam x b
+  | otherwise = Lam x (eesubst sx se b)
+eesubst sx se (App e1 e2) = App (eesubst sx se e1) (eesubst sx se e2)
+eesubst sx se (Ann e1 t) = Ann (eesubst sx se e1) t
+eesubst sx se (TApp e1 t) = TApp (eesubst sx se e1) t
+eesubst sx se (TAbs x e1) = TAbs x (eesubst sx se e1)
+eesubst sx se (Var x)
+  | sx == x = se
   | otherwise = Var x
-eesubst s e (Cons e1 e2) = Cons (eesubst s e e1) (eesubst s e e2)
-eesubst s e (Case e1 e2 e3) = Case (eesubst s e e1) (eesubst s e e2) (eesubst s e e3)
-eesubst s e (Fix e1) = Fix (eesubst s e e1)
-eesubst s e (Let x e1 e2)
-  | s == x = Let x e1 e2
-  | otherwise = Let x (eesubst s e e1) (eesubst s e e2)
-eesubst s e (LetA x t e1 e2)
-  | s == x = LetA x t e1 e2
-  | otherwise = LetA x t (eesubst s e e1) (eesubst s e e2)
-eesubst s e RcdNil = RcdNil
-eesubst s e (RcdCons l1 e1 e2) = RcdCons l1 (eesubst s e e1) (eesubst s e e2)
-eesubst s e (RcdProj e1 l1) = RcdProj (eesubst s e e1) l1
+eesubst _ _ Nil = Nil
+eesubst sx se (Cons e1 e2) = Cons (eesubst sx se e1) (eesubst sx se e2)
+eesubst sx se (Case e1 e2 e3) = Case (eesubst sx se e1) (eesubst sx se e2) (eesubst sx se e3)
+eesubst sx se (Fix e1) = Fix (eesubst sx se e1)
+eesubst sx se (Let x e1 e2)
+  | sx == x = Let x e1 e2
+  | otherwise = Let x (eesubst sx se e1) (eesubst sx se e2)
+eesubst sx se (LetA x t e1 e2)
+  | sx == x = LetA x t e1 e2
+  | otherwise = LetA x t (eesubst sx se e1) (eesubst sx se e2)
+eesubst _ _ RcdNil = RcdNil
+eesubst sx se (RcdCons l1 e1 e2) = RcdCons l1 (eesubst sx se e1) (eesubst sx se e2)
+eesubst sx se (RcdProj e1 l1) = RcdProj (eesubst sx se e1) l1
 
 ttsubst :: String -> Typ -> Typ -> Typ
 ttsubst _ _ TUnit = TUnit
@@ -111,17 +112,21 @@ ttsubst sa st (TUnion t1 t2) =
 ttsubst _ _ (TLabel l) = TLabel l
 
 etsubst :: String -> Typ -> Exp -> Exp
+etsubst _ _ (ILit n) = ILit n
+etsubst _ _ (BLit n) = BLit n
+etsubst _ _ (Var x) = Var x
 etsubst sa st (Lam x b) = Lam x (etsubst sa st b)
 etsubst sa st (App e1 e2) = App (etsubst sa st e1) (etsubst sa st e2)
 etsubst sa st (Ann e1 t) = Ann (etsubst sa st e1) (ttsubst sa st t)
 etsubst sa st (TApp e1 t) = TApp (etsubst sa st e1) (ttsubst sa st t)
 etsubst sa st (TAbs x e1) = TAbs x (etsubst sa st e1)
+etsubst _ _ Nil = Nil
 etsubst sa st (Cons e1 e2) = Cons (etsubst sa st e1) (etsubst sa st e2)
 etsubst sa st (Case e1 e2 e3) = Case (etsubst sa st e1) (etsubst sa st e2) (etsubst sa st e3)
 etsubst sa st (Fix e1) = Fix (etsubst sa st e1)
 etsubst sa st (Let x e1 e2) = Let x (etsubst sa st e1) (etsubst sa st e2)
 etsubst sa st (LetA x t e1 e2) = LetA x (ttsubst sa st t) (etsubst sa st e1) (etsubst sa st e2)
-etsubst sa st RcdNil = RcdNil
+etsubst _ _ RcdNil = RcdNil
 etsubst sa st (RcdCons l1 e1 e2) = RcdCons l1 (etsubst sa st e1) (etsubst sa st e2)
 etsubst sa st (RcdProj e1 l1) = RcdProj (etsubst sa st e1) l1
 
@@ -149,8 +154,10 @@ ftvarInTyp (TArr t1 t2) = ftvarInTyp t1 `union` ftvarInTyp t2
 ftvarInTyp (TList t1) = ftvarInTyp t1
 ftvarInTyp (TIntersection t1 t2) = ftvarInTyp t1 `union` ftvarInTyp t2
 ftvarInTyp (TUnion t1 t2) = ftvarInTyp t1 `union` ftvarInTyp t2
+ftvarInTyp (TLabel _) = []
 
 tvarInTyp :: Typ -> [String]
+tvarInTyp TUnit = []
 tvarInTyp TInt = []
 tvarInTyp TBool = []
 tvarInTyp TTop = []
@@ -161,6 +168,7 @@ tvarInTyp (TArr t1 t2) = tvarInTyp t1 `union` tvarInTyp t2
 tvarInTyp (TList t1) = tvarInTyp t1
 tvarInTyp (TIntersection t1 t2) = tvarInTyp t1 `union` tvarInTyp t2
 tvarInTyp (TUnion t1 t2) = tvarInTyp t1 `union` tvarInTyp t2
+tvarInTyp (TLabel _) = []
 
 tvarInExp :: Exp -> [String]
 tvarInExp (Var _) = []
@@ -200,6 +208,7 @@ findVar x (WVar y a : w)
 findVar x (_ : w) = findVar x w
 findVar _ [] = Nothing
 
+tvarInTyps :: [Typ] -> [String]
 tvarInTyps = foldl union [] . map tvarInTyp
 
 pickNewTVar :: [Work] -> [Typ] -> [Char]
@@ -209,7 +218,7 @@ pickNewTVar ws ts = genFreshTVar (wtvars `union` tvarInTyps ts)
       concatMap
         ( \case
             WTVar a _ -> [a]
-            WVar x t -> tvarInTyp t
+            WVar _ t -> tvarInTyp t
             WJug c -> tvarInJug c
         )
         ws
@@ -234,17 +243,18 @@ varInExp (RcdCons _ e1 e2) = varInExp e1 ++ varInExp e2
 varInExp (RcdProj e _) = varInExp e
 
 varInJug :: Judgment -> [String]
-varInJug (Sub t1 t2) = []
-varInJug (Chk e t) = varInExp e
+varInJug (Sub _ _) = []
+varInJug (Chk e _) = varInExp e
 varInJug (Inf e f) = varInExp e `union` varInJug (f TTop)
-varInJug (InfAbs t f) = varInJug (f TTop TTop)
-varInJug (InfApp t1 t2 e f) = varInExp e `union` varInJug (f TTop)
-varInJug (InfTApp t1 t2 f) = varInJug (f TTop)
-varInJug (CaseChk e t1 t2) = varInExp e
-varInJug (CaseInf t e1 e2 f) = varInExp e1 `union` varInExp e2 `union` varInJug (f TTop)
-varInJug (ConsInf t e f) = varInExp e `union` varInJug (f TTop)
+varInJug (InfAbs _ f) = varInJug (f TTop TTop)
+varInJug (InfApp _ _ e f) = varInExp e `union` varInJug (f TTop)
+varInJug (InfTApp _ _ f) = varInJug (f TTop)
+varInJug (CaseChk e _ _) = varInExp e
+varInJug (CaseInf _ e1 e2 f) = varInExp e1 `union` varInExp e2 `union` varInJug (f TTop)
+varInJug (ConsInf _ e f) = varInExp e `union` varInJug (f TTop)
 varInJug End = []
 
+varInExps :: [Exp] -> [String]
 varInExps = foldl union [] . map varInExp
 
 pickNewVar :: [Work] -> [Exp] -> String
@@ -307,12 +317,12 @@ notUnion (TUnion _ _) = False
 notUnion _ = True
 
 curInfo :: [Work] -> String -> String
-curInfo ws s1 = "   " ++ show (ws) ++ "\n-->{ Rule: " ++ s1 ++ replicate (20 - length s1) ' ' ++ " }\n"
+curInfo ws s1 = "   " ++ show ws ++ "\n-->{ Rule: " ++ s1 ++ replicate (20 - length s1) ' ' ++ " }\n"
 
 bigStep :: String -> [Work] -> (Bool, String)
 bigStep info [] = (True, info)
-bigStep info (WTVar x _ : ws) = bigStep (info ++ curInfo ws "GCTVar") ws
-bigStep info (WVar x _ : ws) = bigStep (info ++ curInfo ws "GCVar") ws
+bigStep info (WTVar _ _ : ws) = bigStep (info ++ curInfo ws "GCTVar") ws
+bigStep info (WVar _ _ : ws) = bigStep (info ++ curInfo ws "GCVar") ws
 --
 --
 -- Subtyping
@@ -366,14 +376,14 @@ bigStep info (WJug (Sub t1 (TIntersection t2 t3)) : w) = bigStep (info ++ curInf
   where
     ws' = WJug (Sub t1 t3) : WJug (Sub t1 t2) : w
 bigStep info (WJug (Sub (TIntersection t11 t12) t2) : ws) = case bigStep info (WJug (Sub t11 t2) : ws) of
-  (True, info) -> (True, info ++ curInfo (WJug (Sub t11 t2) : ws) "≤∩L1")
-  (False, info) -> bigStep (info ++ curInfo (WJug (Sub t12 t2) : ws) "≤∩L2") (WJug (Sub t12 t2) : ws)
+  (True, info') -> (True, info' ++ curInfo (WJug (Sub t11 t2) : ws) "≤∩L1")
+  (False, _) -> bigStep (info ++ curInfo (WJug (Sub t12 t2) : ws) "≤∩L2") (WJug (Sub t12 t2) : ws)
 bigStep info (WJug (Sub (TUnion t11 t12) t2) : ws) = bigStep (info ++ curInfo ws' "≤∪L") ws'
   where
     ws' = WJug (Sub t11 t2) : WJug (Sub t12 t2) : ws
 bigStep info (WJug (Sub t1 (TUnion t21 t22)) : ws) = case bigStep (info ++ curInfo (WJug (Sub t1 t21) : ws) "≤∪R1") (WJug (Sub t1 t21) : ws) of
-  (True, info) -> (True, info)
-  (False, s) -> bigStep (info ++ curInfo (WJug (Sub t1 t22) : ws) "≤∪R2") (WJug (Sub t1 t22) : ws)
+  (True, info') -> (True, info')
+  (False, _) -> bigStep (info ++ curInfo (WJug (Sub t1 t22) : ws) "≤∪R2") (WJug (Sub t1 t22) : ws)
 --
 -- New Subtyping
 --
@@ -415,8 +425,8 @@ bigStep info (WJug (Chk e (TIntersection t1 t2)) : w) = bigStep (info ++ curInfo
   where
     ws' = WJug (Chk e t2) : WJug (Chk e t1) : w
 bigStep info (WJug (Chk e (TUnion t1 t2)) : ws) = case bigStep (info ++ curInfo (WJug (Chk e t1) : ws) "⇐∪1") (WJug (Chk e t1) : ws) of
-  (True, info) -> (True, info)
-  (False, s) -> bigStep (info ++ curInfo (WJug (Chk e t2) : ws) "⇐∪2") (WJug (Chk e t2) : ws)
+  (True, info') -> (True, info')
+  (False, _) -> bigStep (info ++ curInfo (WJug (Chk e t2) : ws) "⇐∪2") (WJug (Chk e t2) : ws)
 -- assumes non-overlapping with ⇔∩, ⇔∪
 bigStep info (WJug (Chk e t) : w) = bigStep (info ++ curInfo ws' "⇐Sub") ws'
   where
@@ -483,8 +493,8 @@ bigStep info (WJug (InfAbs (TAll a t) c) : w) = bigStep (info ++ curInfo ws' "�
     t' = ttsubst a (TVar b) t
     ws' = WJug (InfAbs t' c) : WTVar b ETVarBind : w
 bigStep info (WJug (InfAbs (TIntersection t1 t2) c) : ws) = case bigStep (info ++ curInfo (WJug (InfAbs t1 c) : ws) "▹∩1") (WJug (InfAbs t1 c) : ws) of
-  (True, info) -> (True, info)
-  (False, s) -> bigStep (info ++ curInfo (WJug (InfAbs t2 c) : ws) "▹∩2") (WJug (InfAbs t2 c) : ws)
+  (True, info') -> (True, info')
+  (False, _) -> bigStep (info ++ curInfo (WJug (InfAbs t2 c) : ws) "▹∩2") (WJug (InfAbs t2 c) : ws)
 bigStep info (WJug (InfAbs (TUnion t1 t2) c) : ws) = bigStep (info ++ curInfo ws' "▹∪") ws'
   where
     ws' = WJug (InfAbs t1 (\t3 t4 -> InfAbs t2 (\t5 t6 -> c (TIntersection t3 t5) (TUnion t4 t6)))) : ws
@@ -510,8 +520,8 @@ bigStep info (WJug (InfTApp TBot _ c) : w) = bigStep (info ++ curInfo ws' "∘�
   where
     ws' = WJug (c TBot) : w
 bigStep info (WJug (InfTApp (TIntersection t1 t2) t3 c) : ws) = case bigStep (info ++ curInfo (WJug (InfTApp t1 t3 c) : ws) "∘∩1") (WJug (InfTApp t1 t3 c) : ws) of
-  (True, info) -> (True, info)
-  (False, s) -> bigStep (info ++ curInfo (WJug (InfTApp t2 t3 c) : ws) "∘∩1") (WJug (InfTApp t2 t3 c) : ws)
+  (True, info') -> (True, info')
+  (False, _) -> bigStep (info ++ curInfo (WJug (InfTApp t2 t3 c) : ws) "∘∩1") (WJug (InfTApp t2 t3 c) : ws)
 bigStep info (WJug (InfTApp (TUnion t1 t2) t3 c) : ws) = bigStep (info ++ curInfo ws' "∘∪") ws'
   where
     ws' = WJug (InfTApp t1 t3 (\t4 -> InfTApp t2 t3 (c . TUnion t4))) : ws
@@ -672,4 +682,5 @@ bigStep info _ = (False, info)
 --   case parseExp code of
 --     Left err -> putStrLn err
 --     Right e -> runStep [WJug (Inf e (const End))]
-ws1 = WJug (Sub (TAll "a" (TArr (TVar "a") (TVar "a"))) (TAll "a" (TArr (TVar "a") (TVar "a")))) : []
+ex_ws1 :: [Work]
+ex_ws1 = [WJug (Sub (TAll "a" (TArr (TVar "a") (TVar "a"))) (TAll "a" (TArr (TVar "a") (TVar "a"))))]

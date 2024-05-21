@@ -97,8 +97,8 @@ data Exp
   | RcdProj Exp String
   deriving (Eq)
 
-showExp :: Int -> Int -> Exp -> String
-showExp ne nt e = showExpHelper e baseExpPrec True
+showExp :: Exp -> String
+showExp e = showExpHelper e baseExpPrec True
   where
     showExpHelper :: Exp -> ExpPrec -> Bool -> String
     showExpHelper (Var x) _ _ = x
@@ -108,6 +108,7 @@ showExp ne nt e = showExpHelper e baseExpPrec True
     showExpHelper (App e1 e2) p ap = addParentP (p, appExpPrec) ap (showExpHelper e1 appExpPrec False ++ " " ++ showExpHelper e2 appExpPrec True)
     showExpHelper (Ann e t) p ap = addParentP (p, baseExpPrec) ap (showExpHelper e baseExpPrec True ++ " :: " ++ show t)
     showExpHelper (TApp e t) p ap = addParentP (p, baseExpPrec) ap (showExpHelper e baseExpPrec True ++ " @" ++ show t)
+    showExpHelper (TAbs x e) p ap = addParentP (p, absExpPrec) ap ("Λ" ++ x ++ ". " ++ showExpHelper e absExpPrec True)
     showExpHelper Nil _ _ = "[]"
     showExpHelper (Cons e1 e2) p ap = addParentP (p, baseExpPrec) ap (showExpHelper e1 baseExpPrec True ++ " : " ++ showExpHelper e2 baseExpPrec False)
     showExpHelper (Case e e1 e2) p ap = addParentP (p, baseExpPrec) ap ("case " ++ showExpHelper e baseExpPrec True ++ " of [] -> " ++ showExpHelper e1 baseExpPrec True ++ "; " ++ showExpHelper e2 baseExpPrec True)
@@ -119,24 +120,34 @@ showExp ne nt e = showExpHelper e baseExpPrec True
     showExpHelper (RcdProj e l) p ap = addParentP (p, baseExpPrec) ap (showExpHelper e baseExpPrec True ++ "." ++ l)
 
 instance Show Exp where
-  show = showExp 0 0
+  show = showExp
 
-t1 = TArr TInt (TIntersection TInt TBool)
+ex_t1 :: Typ
+ex_t1 = TArr TInt (TIntersection TInt TBool)
 
-t2 = TIntersection (TArr TInt TInt) TBool
+ex_t2 :: Typ
+ex_t2 = TIntersection (TArr TInt TInt) TBool
 
-t3 = TIntersection (TAll "a" (TArr (TVar "a") (TVar "a"))) TInt
+ex_t3 :: Typ
+ex_t3 = TIntersection (TAll "a" (TArr (TVar "a") (TVar "a"))) TInt
 
-t4 = TAll "a" (TIntersection (TArr (TVar "a") (TVar "a")) TInt)
+ex_t4 :: Typ
+ex_t4 = TAll "a" (TIntersection (TArr (TVar "a") (TVar "a")) TInt)
 
-t5 = TArr (TArr TInt TInt) (TArr TInt TInt)
+ex_t5 :: Typ
+ex_t5 = TArr (TArr TInt TInt) (TArr TInt TInt)
 
-t6 = TArr (TArr TInt (TArr TInt TInt)) TInt
+ex_t6 :: Typ
+ex_t6 = TArr (TArr TInt (TArr TInt TInt)) TInt
 
-e1 = App (Lam "x" (Var "x")) (ILit 1)
+ex_e1 :: Exp
+ex_e1 = App (Lam "x" (Var "x")) (ILit 1)
 
-e2 = Lam "x" (App (Var "x") (ILit 1))
+ex_e2 :: Exp
+ex_e2 = Lam "x" (App (Var "x") (ILit 1))
 
-e3 = Lam "x" (App (Var "x") (App (Var "x") (Var "x")))
+ex_e3 :: Exp
+ex_e3 = Lam "x" (App (Var "x") (App (Var "x") (Var "x")))
 
-e4 = Lam "x" (App (App (Var "x") (Var "x")) (Var "x"))
+ex_e4 :: Exp
+ex_e4 = Lam "x" (App (App (Var "x") (Var "x")) (Var "x"))
