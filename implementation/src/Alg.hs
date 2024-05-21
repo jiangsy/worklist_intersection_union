@@ -8,6 +8,7 @@ import Data.List (delete, find, union)
 import Data.Maybe (fromJust)
 -- import Parser (parseExp)
 import Syntax
+import Test.QuickCheck.Monadic (pick)
 
 -- Algorithmic Judgment
 data Judgment
@@ -376,6 +377,100 @@ bigStep info (WJug (Sub t1 (TUnion t21 t22)) : ws) = case bigStep (info ++ curIn
   (False, s) -> bigStep (info ++ curInfo (WJug (Sub t1 t22) : ws) "≤∪R2") (WJug (Sub t1 t22) : ws)
 --
 -- New Subtyping
+--
+bigStep info (WJug (Sub (TList a) (TList b)) : w) = bigStep (info ++ curInfo ws' "≤[]") ws'
+  where
+    ws' = WJug (Sub a b) : w
+-- step (WJug (Sub (TVar a) (TList b)) : w)
+--   | findTVar w a == ETVarBind = WJug (Sub (TVar x) b) : substWL a (TList (TVar x)) (WTVar x ETVarBind : w)
+--   where
+--     x = pickNewTVar w
+-- step (WJug (Sub (TList b) (TVar a)) : w)
+--   | findTVar w a == ETVarBind = WJug (Sub (TVar x) b) : substWL a (TList (TVar x)) (WTVar x ETVarBind : w)
+--   where
+--     x = pickNewTVar w
+--
+--
+-- Checking
+--
+--
+bigStep info (WJug (Chk (Lam x e) (TArr t1 t2)) : ws) = bigStep (info ++ curInfo ws' "⇐λ") ws'
+  where
+    y = pickNewVar ws [Lam x e]
+    e' = eesubst x (Var y) e
+    ws' = WJug (Chk e' t2) : WVar y t1 : ws
+bigStep info (WJug (Chk (Lam x e) TTop) : ws) = bigStep (info ++ curInfo ws' "⇐λ⊤") ws'
+  where
+    y = pickNewVar ws [Lam x e]
+    e' = eesubst x (Var y) e
+    ws' = WJug (Chk e' TTop) : WVar y TBot : ws
+bigStep info (WJug (Chk (Lam x e) (TVar a)) : w)
+  | findTVar w a == ETVarBind = bigStep (info ++ curInfo ws' "⇐λα") ws'
+  where
+    a1 = pickNewTVar w []
+    a2 = pickNewTVar w [TVar a1]
+    y = pickNewVar w [Lam x e]
+    e' = eesubst x (Var y) e'
+    ws' = WJug (Chk e' (TVar a2)) : WVar y (TVar a1) : substWL a (TArr (TVar a1) (TVar a2)) (WTVar a2 ETVarBind : WTVar a1 ETVarBind : w)
+bigStep info (WJug (Chk e (TIntersection t1 t2)) : w) = bigStep (info ++ curInfo ws' "⇐∩") ws'
+  where
+    ws' = WJug (Chk e t2) : WJug (Chk e t1) : w
+bigStep info (WJug (Chk e (TUnion t1 t2)) : ws) = case bigStep (info ++ curInfo (WJug (Chk e t1) : ws) "⇐∪1") (WJug (Chk e t1) : ws) of
+  (True, info) -> (True, info)
+  (False, s) -> bigStep (info ++ curInfo (WJug (Chk e t2) : ws) "⇐∪2") (WJug (Chk e t2) : ws)
+-- assumes non-overlapping with ⇔∩, ⇔∪
+bigStep info (WJug (Chk e t) : w) = bigStep (info ++ curInfo ws' "⇐Sub") ws'
+  where
+    ws' = WJug (Inf e (`Sub` t)) : w
+--
+--
+-- Inference
+--
+--
+bigStep info (WJug (Inf (Var x) c) : ws) =
+  case findVar x ws of
+    Just t -> bigStep (info ++ curInfo ws' "⇒Var") ws'
+      where
+        ws' = WJug (c t) : ws
+bigStep info (WJug (Inf (ILit _) c) : w) = bigStep (info ++ curInfo ws' "⇒Int") ws'
+  where
+    ws' = WJug (c TInt) : w
+bigStep info (WJug (Inf (BLit _) c) : w) = bigStep (info ++ curInfo ws' "⇒Bool") ws'
+  where
+    ws' = WJug (c TBool) : w
+bigStep info (WJug (Inf (Ann e a) c) : ws) = bigStep (info ++ curInfo ws' "⇒Anno") ws'
+  where
+    ws' = WJug (Chk e a) : WJug (c a) : ws
+bigStep info (WJug (Inf (TAbs a (Ann e t)) c) : w) = bigStep (info ++ curInfo ws' "⇒ΛAnno") ws'
+  where
+    b = pickNewTVar w [TAll a t]
+    e' = etsubst a (TVar b) e
+    t' = ttsubst a (TVar b) t
+    ws' = WJug (Chk e' t') : WTVar b TVarBind : WJug (c (TAll b t')) : w
+-- \*** new rules
+bigStep info (WJug (Inf (TAbs a e) c) : w) = bigStep (info ++ curInfo ws' "⇒Λ") ws'
+  where
+    -- \*** also tvars in e
+    b = pickNewTVar w []
+    e' = etsubst a (TVar b) e
+    ws' = WJug (Inf e' (c . TAll b)) : WTVar b TVarBind : w
+bigStep info (WJug (Inf (App e1 e2) c) : w) = bigStep (info ++ curInfo ws' "⇒App") ws'
+  where
+    ws' = WJug (Inf e1 (\t1 -> InfAbs t1 (\t2 t3 -> InfApp t2 t3 e2 c))) : w
+bigStep info (WJug (Inf (TApp e t1) c) : w) = bigStep (info ++ curInfo ws' "⇒TApp") ws'
+  where
+    ws' = WJug (Inf e (\t2 -> InfTApp t2 t1 c)) : w
+bigStep info (WJug (Inf (Lam x e) c) : ws) = bigStep (info ++ curInfo ws' "⇒→Mono") ws'
+  where
+    a = pickNewTVar ws []
+    b = pickNewTVar (WTVar a ETVarBind : ws) []
+    y = pickNewVar ws [Lam x e]
+    e' = eesubst x (Var y) e
+    ws' = WJug (Chk e' (TVar b)) : WVar y (TVar a) : WJug (c (TArr (TVar a) (TVar b))) : WTVar b ETVarBind : WTVar a ETVarBind : ws
+--
+--
+-- Inference Abstraction
+--
 --
 bigStep info _ = (False, info)
 
