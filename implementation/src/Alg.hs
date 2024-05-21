@@ -8,7 +8,6 @@ import Data.List (delete, find, union)
 import Data.Maybe (fromJust)
 -- import Parser (parseExp)
 import Syntax
-import Test.QuickCheck.Monadic (pick)
 
 -- Algorithmic Judgment
 data Judgment
@@ -469,9 +468,53 @@ bigStep info (WJug (Inf (Lam x e) c) : ws) = bigStep (info ++ curInfo ws' "⇒�
     ws' = WJug (Chk e' (TVar b)) : WVar y (TVar a) : WJug (c (TArr (TVar a) (TVar b))) : WTVar b ETVarBind : WTVar a ETVarBind : ws
 --
 --
--- Inference Abstraction
+-- Matching and Application Inference
 --
 --
+bigStep info (WJug (InfAbs (TArr t1 t2) c) : w) = bigStep (info ++ curInfo ws' "▹→") ws'
+  where
+    ws' = WJug (c t1 t2) : w
+bigStep info (WJug (InfAbs TBot c) : w) = bigStep (info ++ curInfo ws' "▹⊥") ws'
+  where
+    ws' = WJug (c TTop TBot) : w
+bigStep info (WJug (InfAbs (TAll a t) c) : w) = bigStep (info ++ curInfo ws' "▹∀") ws'
+  where
+    b = pickNewTVar w [TAll a t]
+    t' = ttsubst a (TVar b) t
+    ws' = WJug (InfAbs t' c) : WTVar b ETVarBind : w
+bigStep info (WJug (InfAbs (TIntersection t1 t2) c) : ws) = case bigStep (info ++ curInfo (WJug (InfAbs t1 c) : ws) "▹∩1") (WJug (InfAbs t1 c) : ws) of
+  (True, info) -> (True, info)
+  (False, s) -> bigStep (info ++ curInfo (WJug (InfAbs t2 c) : ws) "▹∩2") (WJug (InfAbs t2 c) : ws)
+bigStep info (WJug (InfAbs (TUnion t1 t2) c) : ws) = bigStep (info ++ curInfo ws' "▹∪") ws'
+  where
+    ws' = WJug (InfAbs t1 (\t3 t4 -> InfAbs t2 (\t5 t6 -> c (TIntersection t3 t5) (TUnion t4 t6)))) : ws
+bigStep info (WJug (InfAbs (TVar a) c) : w)
+  | findTVar w a == ETVarBind = bigStep (info ++ curInfo ws' "▹α") ws'
+  where
+    a1 = pickNewTVar w []
+    a2 = pickNewTVar w [TVar a1]
+    ws' = substWL a (TArr (TVar a1) (TVar a2)) (WJug (InfAbs (TArr (TVar a1) (TVar a2)) c) : WTVar a2 ETVarBind : WTVar a1 ETVarBind : w)
+bigStep info (WJug (InfApp t1 t2 e c) : w) = bigStep (info ++ curInfo ws' "∙>>=") ws'
+  where
+    ws' = WJug (Chk e t1) : WJug (c t2) : w
+
+--
+--
+-- Typa Application Inference
+--
+--
+bigStep info (WJug (InfTApp (TAll a t1) t2 c) : w) = bigStep (info ++ curInfo ws' "∘∀") ws'
+  where
+    ws' = WJug (c (ttsubst a t2 t1)) : w
+bigStep info (WJug (InfTApp TBot _ c) : w) = bigStep (info ++ curInfo ws' "∘⊥") ws'
+  where
+    ws' = WJug (c TBot) : w
+bigStep info (WJug (InfTApp (TIntersection t1 t2) t3 c) : ws) = case bigStep (info ++ curInfo (WJug (InfTApp t1 t3 c) : ws) "∘∩1") (WJug (InfTApp t1 t3 c) : ws) of
+  (True, info) -> (True, info)
+  (False, s) -> bigStep (info ++ curInfo (WJug (InfTApp t2 t3 c) : ws) "∘∩1") (WJug (InfTApp t2 t3 c) : ws)
+bigStep info (WJug (InfTApp (TUnion t1 t2) t3 c) : ws) = bigStep (info ++ curInfo ws' "∘∪") ws'
+  where
+    ws' = WJug (InfTApp t1 t3 (\t4 -> InfTApp t2 t3 (c . TUnion t4))) : ws
 bigStep info _ = (False, info)
 
 -- step :: Worklist -> Worklist
