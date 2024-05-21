@@ -47,6 +47,14 @@ pRcdProj = do
   l <- identifier
   return (`RcdProj` l)
 
+pRcdCons :: Parser Exp
+pRcdCons = do
+  l <- identifier
+  symbol "|->"
+  e1 <- expr
+  symbol ","
+  RcdCons l e1 <$> expr
+
 factor :: Parser Exp
 factor = postfixChain atom annOperator
 
@@ -65,11 +73,12 @@ atom =
       pFix,
       try pLet,
       pLetAnn,
+      pRcdCons,
       Var <$> identifier,
       ILit <$> signedInt,
       BLit <$> bool,
       Nil <$ symbol "[]",
-      RcdNil <$ symbol "⟨⟩",
+      RcdNil <$ symbol "<>",
       parens expr
     ]
 
