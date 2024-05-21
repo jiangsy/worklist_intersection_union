@@ -14,6 +14,7 @@ data Judgment
   | Inf Exp (Typ -> Judgment)
   | InfAbs Typ (Typ -> Typ -> Judgment)
   | InfApp Typ Typ Exp (Typ -> Judgment)
+  | InfProj Typ Typ Typ (Typ -> Judgment)
   | InfTApp Typ Typ (Typ -> Judgment)
   | CaseChk Exp Typ Typ
   | CaseInf Typ Exp Exp (Typ -> Judgment)
@@ -32,6 +33,8 @@ instance Show Judgment where
         show a ++ " ▹" ++ show n ++ "," ++ show (n + 1) ++ " " ++ show' (c (TVar $ show n) (TVar $ show (n + 1))) (n + 2)
       show' (InfApp a b e c) n =
         show a ++ " → " ++ show b ++ " * " ++ show e ++ " =>>" ++ show n ++ " " ++ show' (c (TVar $ show n)) (n + 1)
+      show' (InfProj t1 t2 t3 c) n =
+        show t1 ++ " → " ++ show t2 ++ " ⋅ " ++ show t3 ++ " =>>" ++ show n ++ " " ++ show' (c (TVar $ show n)) (n + 1)
       show' (InfTApp a b c) n =
         show a ++ " o " ++ show b ++ " =>>" ++ show n ++ " " ++ show' (c (TVar $ show n)) (n + 1)
       show' (CaseChk e a b) _ = show e ++ " ⇐{" ++ show a ++ " :: List} " ++ show b
@@ -136,6 +139,7 @@ ctsubst sa st (Chk e a) = Chk (etsubst sa st e) (ttsubst sa st a)
 ctsubst sa st (Inf e f) = Inf (etsubst sa st e) (ctsubst sa st . f)
 ctsubst sa st (InfAbs t1 f) = InfAbs (ttsubst sa st t1) (\a b -> ctsubst sa st (f a b))
 ctsubst sa st (InfApp t1 t2 e f) = InfApp (ttsubst sa st t1) (ttsubst sa st t2) (etsubst sa st e) (ctsubst sa st . f)
+ctsubst sa st (InfProj t1 t2 t3 f) = InfProj (ttsubst sa st t1) (ttsubst sa st t2) (ttsubst sa st t3) (ctsubst sa st . f)
 ctsubst sa st (InfTApp t1 t2 f) = InfTApp (ttsubst sa st t1) (ttsubst sa st t2) (ctsubst sa st . f)
 ctsubst sa st (CaseChk e a b) = CaseChk (etsubst sa st e) (ttsubst sa st a) (ttsubst sa st b)
 ctsubst sa st (CaseInf t1 e e1 f) = CaseInf (ttsubst sa st t1) (etsubst sa st e) (etsubst sa st e1) (ctsubst sa st . f)
@@ -194,7 +198,8 @@ tvarInJug (Sub t1 t2) = tvarInTyp t1 `union` tvarInTyp t2
 tvarInJug (Chk e t) = tvarInExp e `union` tvarInTyp t
 tvarInJug (Inf e f) = tvarInExp e `union` tvarInJug (f TTop)
 tvarInJug (InfAbs t f) = tvarInTyp t `union` tvarInJug (f TTop TTop)
-tvarInJug (InfApp t1 t2 e f) = tvarInExp e `union` tvarInTyp t1 `union` tvarInTyp t2 `union` tvarInJug (f TTop)
+tvarInJug (InfApp t1 t2 e c) = tvarInExp e `union` tvarInTyp t1 `union` tvarInTyp t2 `union` tvarInJug (c TTop)
+tvarInJug (InfProj t1 t2 t3 c) = tvarInTyp t1 `union` tvarInTyp t2 `union` tvarInTyp t3 `union` tvarInJug (c TTop)
 tvarInJug (InfTApp t1 t2 f) = tvarInTyp t1 `union` tvarInTyp t2 `union` tvarInJug (f TTop)
 tvarInJug (CaseChk e t1 t2) = tvarInExp e `union` tvarInTyp t1 `union` tvarInTyp t2
 tvarInJug (CaseInf t e1 e2 f) = tvarInTyp t `union` tvarInExp e1 `union` tvarInExp e2 `union` tvarInJug (f TTop)
@@ -248,6 +253,7 @@ varInJug (Chk e _) = varInExp e
 varInJug (Inf e f) = varInExp e `union` varInJug (f TTop)
 varInJug (InfAbs _ f) = varInJug (f TTop TTop)
 varInJug (InfApp _ _ e f) = varInExp e `union` varInJug (f TTop)
+varInJug (InfProj _ _ _ f) = varInJug (f TTop)
 varInJug (InfTApp _ _ f) = varInJug (f TTop)
 varInJug (CaseChk e _ _) = varInExp e
 varInJug (CaseInf _ e1 e2 f) = varInExp e1 `union` varInExp e2 `union` varInJug (f TTop)
@@ -485,6 +491,15 @@ bigStep info (WJug (Inf (Lam x e) c) : ws) = bigStep (info ++ curInfo ws' "⇒�
     y = pickNewVar ws [Lam x e]
     e' = eesubst x (Var y) e
     ws' = WJug (Chk e' (TVar b)) : WVar y (TVar a) : WJug (c (TArr (TVar a) (TVar b))) : WTVar b ETVarBind : WTVar a ETVarBind : ws
+bigStep info (WJug (Inf RcdNil c) : ws) = bigStep (info ++ curInfo ws' "⇒⟨⟩") ws' -- Record Extension
+  where
+    ws' = WJug (c TUnit) : ws
+bigStep info (WJug (Inf (RcdCons l1 e1 e2) c) : ws) = bigStep (info ++ curInfo ws' "⇒⟨⟩Cons") ws' -- Record Extension
+  where
+    ws' = WJug (Inf e1 (\t1 -> Inf e2 (\t2 -> c ((TLabel l1 `TArr` t1) `TIntersection` t2)))) : ws
+bigStep info (WJug (Inf (RcdProj e l) c) : w) = bigStep (info ++ curInfo ws' "⇒App") ws'
+  where
+    ws' = WJug (Inf e (\t1 -> InfAbs t1 (\t2 t3 -> InfProj t2 t3 (TLabel l) c))) : w
 bigStep info (WJug (Inf Nil c) : ws) = bigStep (info ++ curInfo ws' "⇒[]Nil") ws' -- Unformalized
   where
     a = pickNewTVar ws []
@@ -537,9 +552,12 @@ bigStep info (WJug (InfAbs (TVar a) c) : w)
     a1 = pickNewTVar w []
     a2 = pickNewTVar w [TVar a1]
     ws' = substWL a (TArr (TVar a1) (TVar a2)) (WJug (InfAbs (TArr (TVar a1) (TVar a2)) c) : WTVar a2 ETVarBind : WTVar a1 ETVarBind : w)
-bigStep info (WJug (InfApp t1 t2 e c) : w) = bigStep (info ++ curInfo ws' "∙>>=") ws'
+bigStep info (WJug (InfApp t1 t2 e c) : w) = bigStep (info ++ curInfo ws' "*>>=") ws'
   where
     ws' = WJug (Chk e t1) : WJug (c t2) : w
+bigStep info (WJug (InfProj t1 t2 t3 c) : w) = bigStep (info ++ curInfo ws' "∙>>=") ws'
+  where
+    ws' = WJug (Sub t3 t1) : WJug (c t2) : w
 --
 -- Typa Application Inference
 --
