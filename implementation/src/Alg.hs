@@ -4,7 +4,7 @@
 module Alg where
 
 import Data.List (delete, union)
--- import Parser (parseExp)
+import Parser (parseExp)
 import Syntax
 
 -- Algorithmic Judgment
@@ -183,8 +183,8 @@ tvarInExp Nil = []
 tvarInExp (Cons e1 e2) = tvarInExp e1 `union` tvarInExp e2
 tvarInExp (Case e1 e2 e3) = tvarInExp e1 `union` tvarInExp e2 `union` tvarInExp e3
 tvarInExp (Fix e) = tvarInExp e
-tvarInExp (Let x e1 e2) = tvarInExp e1 `union` tvarInExp e2
-tvarInExp (LetA x t e1 e2) = tvarInTyp t `union` tvarInExp e1 `union` tvarInExp e2
+tvarInExp (Let _ e1 e2) = tvarInExp e1 `union` tvarInExp e2
+tvarInExp (LetA _ t e1 e2) = tvarInTyp t `union` tvarInExp e1 `union` tvarInExp e2
 tvarInExp RcdNil = []
 tvarInExp (RcdCons _ e1 e2) = tvarInExp e1 `union` tvarInExp e2
 tvarInExp (RcdProj e _) = tvarInExp e
@@ -324,17 +324,13 @@ bigStep info [] = (True, info)
 bigStep info (WTVar _ _ : ws) = bigStep (info ++ curInfo ws "GCTVar") ws
 bigStep info (WVar _ _ : ws) = bigStep (info ++ curInfo ws "GCVar") ws
 --
---
 -- Subtyping
---
 --
 bigStep info (WJug (Sub _ TTop) : ws) = bigStep (info ++ curInfo ws "≤⊤") ws
 bigStep info (WJug (Sub TBot _) : ws) = bigStep (info ++ curInfo ws "≤⊥") ws
 bigStep info (WJug (Sub TUnit TUnit) : ws) = bigStep (info ++ curInfo ws "≤Unit") ws
 bigStep info (WJug (Sub TInt TInt) : ws) = bigStep (info ++ curInfo ws "≤Int") ws
 bigStep info (WJug (Sub TBool TBool) : ws) = bigStep (info ++ curInfo ws "≤Bool") ws
-bigStep info (WJug (Sub (TLabel l1) (TLabel l2)) : ws)
-  | l1 == l2 = bigStep (info ++ curInfo ws "≤Label") ws
 bigStep info (WJug (Sub (TVar a) (TVar b)) : ws)
   | a == b = bigStep (info ++ curInfo ws "≤TVar") ws
 bigStep info (WJug (Sub (TArr t1 t2) (TArr t3 t4)) : ws) = bigStep (info ++ curInfo ws' "≤→") ws'
@@ -384,24 +380,23 @@ bigStep info (WJug (Sub (TUnion t11 t12) t2) : ws) = bigStep (info ++ curInfo ws
 bigStep info (WJug (Sub t1 (TUnion t21 t22)) : ws) = case bigStep (info ++ curInfo (WJug (Sub t1 t21) : ws) "≤∪R1") (WJug (Sub t1 t21) : ws) of
   (True, info') -> (True, info')
   (False, _) -> bigStep (info ++ curInfo (WJug (Sub t1 t22) : ws) "≤∪R2") (WJug (Sub t1 t22) : ws)
---
--- New Subtyping
---
-bigStep info (WJug (Sub (TList a) (TList b)) : w) = bigStep (info ++ curInfo ws' "≤[]") ws'
+bigStep info (WJug (Sub (TLabel l1) (TLabel l2)) : ws) -- Record Extension
+  | l1 == l2 = bigStep (info ++ curInfo ws "≤Label") ws
+bigStep info (WJug (Sub (TList a) (TList b)) : w) = bigStep (info ++ curInfo ws' "≤[]") ws' -- Unformalized
   where
     ws' = WJug (Sub a b) : w
--- step (WJug (Sub (TVar a) (TList b)) : w)
---   | findTVar w a == ETVarBind = WJug (Sub (TVar x) b) : substWL a (TList (TVar x)) (WTVar x ETVarBind : w)
---   where
---     x = pickNewTVar w
--- step (WJug (Sub (TList b) (TVar a)) : w)
---   | findTVar w a == ETVarBind = WJug (Sub (TVar x) b) : substWL a (TList (TVar x)) (WTVar x ETVarBind : w)
---   where
---     x = pickNewTVar w
---
+bigStep info (WJug (Sub (TVar a) (TList t)) : w) -- Unformalized
+  | findTVar w a == ETVarBind = bigStep (info ++ curInfo ws' "≤[]αL") ws'
+  where
+    b = pickNewTVar w [t, TVar a]
+    ws' = WJug (Sub (TVar b) t) : substWL a (TList (TVar b)) (WTVar b ETVarBind : w)
+bigStep info (WJug (Sub (TVar a) (TList t)) : w) -- Unformalized
+  | findTVar w a == ETVarBind = bigStep (info ++ curInfo ws' "≤[]αR") ws'
+  where
+    b = pickNewTVar w [t, TVar a]
+    ws' = WJug (Sub (TVar b) t) : substWL a (TList (TVar b)) (WTVar b ETVarBind : w)
 --
 -- Checking
---
 --
 bigStep info (WJug (Chk (Lam x e) (TArr t1 t2)) : ws) = bigStep (info ++ curInfo ws' "⇐λ") ws'
   where
@@ -427,14 +422,28 @@ bigStep info (WJug (Chk e (TIntersection t1 t2)) : w) = bigStep (info ++ curInfo
 bigStep info (WJug (Chk e (TUnion t1 t2)) : ws) = case bigStep (info ++ curInfo (WJug (Chk e t1) : ws) "⇐∪1") (WJug (Chk e t1) : ws) of
   (True, info') -> (True, info')
   (False, _) -> bigStep (info ++ curInfo (WJug (Chk e t2) : ws) "⇐∪2") (WJug (Chk e t2) : ws)
+bigStep info (WJug (Chk Nil (TList _)) : ws) = bigStep (info ++ curInfo ws "⇐[]Nil") ws -- Unformalized
+bigStep info (WJug (Chk (Cons e1 e2) (TList a)) : w) = bigStep (info ++ curInfo ws' "⇐[]Cons") ws' -- Unformalized
+  where
+    ws' = WJug (Chk e1 a) : WJug (Chk e2 (TList a)) : w
+bigStep info (WJug (Chk (Case e e1 e2) t1) : ws) = bigStep (info ++ curInfo ws "⇐Case") ws' -- Unformalized
+  where
+    ws' = WJug (Chk e1 t1) : WJug (Inf e (\t2 -> CaseChk e2 t2 t1)) : ws
+bigStep info (WJug (Chk (Fix e) a) : ws) = bigStep (info ++ curInfo ws "⇐Fix") ws' -- Unformalized
+  where
+    ws' = WJug (Chk e (TArr a a)) : ws
+bigStep info (WJug (Chk (LetA x t e1 e2) b) : ws) = bigStep (info ++ curInfo ws "⇐LetrecAnno") ws' -- Unformalized
+  where
+    ws' = WJug (Chk (App (Ann (Lam x e2) (TArr t b)) (Ann (Fix (Lam x e1)) t)) b) : ws
 -- assumes non-overlapping with ⇔∩, ⇔∪
 bigStep info (WJug (Chk e t) : w) = bigStep (info ++ curInfo ws' "⇐Sub") ws'
   where
     ws' = WJug (Inf e (`Sub` t)) : w
---
+bigStep info (WJug (CaseChk e (TList t1) t2) : ws) = bigStep (info ++ curInfo ws "Case⇐") ws' -- Unformalized
+  where
+    ws' = WJug (Chk e (TArr t1 (TArr (TList t1) t2))) : ws
 --
 -- Inference
---
 --
 bigStep info (WJug (Inf (Var x) c) : ws) =
   case findVar x ws of
@@ -476,10 +485,34 @@ bigStep info (WJug (Inf (Lam x e) c) : ws) = bigStep (info ++ curInfo ws' "⇒�
     y = pickNewVar ws [Lam x e]
     e' = eesubst x (Var y) e
     ws' = WJug (Chk e' (TVar b)) : WVar y (TVar a) : WJug (c (TArr (TVar a) (TVar b))) : WTVar b ETVarBind : WTVar a ETVarBind : ws
---
+bigStep info (WJug (Inf Nil c) : ws) = bigStep (info ++ curInfo ws' "⇒[]Nil") ws' -- Unformalized
+  where
+    a = pickNewTVar ws []
+    ws' = WJug (c (TList (TVar a))) : WTVar a ETVarBind : ws
+bigStep info (WJug (Inf (Cons e1 e2) c) : ws) = bigStep (info ++ curInfo ws' "⇒[]Cons") ws' -- Unformalized
+  where
+    ws' = WJug (Inf e1 (\t -> ConsInf t e2 c)) : ws
+bigStep info (WJug (Inf (Case e e1 e2) c) : ws) = bigStep (info ++ curInfo ws' "⇒[]Case") ws' -- Unformalized
+  where
+    ws' = WJug (Inf e1 (\t -> CaseInf t e e2 c)) : ws
+bigStep info (WJug (ConsInf t e c) : w) = bigStep (info ++ curInfo ws' "[]Cons⇒") ws' -- Unformalized
+  where
+    ws' = WJug (Chk e (TList t)) : WJug (c t) : w
+bigStep info (WJug (CaseInf t1 e e2 c) : w) = bigStep (info ++ curInfo ws' "[]Case⇒") ws' -- Unformalized
+  where
+    ws' = WJug (Inf e (\t2 -> CaseChk e2 t2 t1)) : WJug (c t1) : w
+bigStep info (WJug (Inf (Fix e) c) : ws) = bigStep (info ++ curInfo ws' "⇒Fix") ws' -- Unformalized
+  where
+    a = pickNewTVar (WJug (Inf (Fix e) c) : ws) []
+    ws' = WJug (Chk e (TArr (TVar a) (TVar a))) : WJug (c (TVar a)) : WTVar a ETVarBind : ws
+bigStep info (WJug (Inf (Let x e1 e2) c) : w) = bigStep (info ++ curInfo ws' "⇒Let") ws' -- Unformalized
+  where
+    ws' = WJug (Inf (App (Lam x e2) (Fix (Lam x e1))) c) : w
+bigStep info (WJug (Inf (LetA x t e1 e2) c) : ws) = bigStep (info ++ curInfo ws' "⇒LetA") ws' -- Unformalized
+  where
+    ws' = WJug (Inf e2 c) : WJug (Chk e1 t) : WVar x t : ws
 --
 -- Matching and Application Inference
---
 --
 bigStep info (WJug (InfAbs (TArr t1 t2) c) : w) = bigStep (info ++ curInfo ws' "▹→") ws'
   where
@@ -507,11 +540,8 @@ bigStep info (WJug (InfAbs (TVar a) c) : w)
 bigStep info (WJug (InfApp t1 t2 e c) : w) = bigStep (info ++ curInfo ws' "∙>>=") ws'
   where
     ws' = WJug (Chk e t1) : WJug (c t2) : w
-
---
 --
 -- Typa Application Inference
---
 --
 bigStep info (WJug (InfTApp (TAll a t1) t2 c) : w) = bigStep (info ++ curInfo ws' "∘∀") ws'
   where
@@ -525,6 +555,13 @@ bigStep info (WJug (InfTApp (TIntersection t1 t2) t3 c) : ws) = case bigStep (in
 bigStep info (WJug (InfTApp (TUnion t1 t2) t3 c) : ws) = bigStep (info ++ curInfo ws' "∘∪") ws'
   where
     ws' = WJug (InfTApp t1 t3 (\t4 -> InfTApp t2 t3 (c . TUnion t4))) : ws
+--
+-- Dummy
+--
+bigStep info (WJug End : ws) = bigStep (info ++ curInfo ws "Dummy") ws
+--
+-- Stuck
+--
 bigStep info _ = (False, info)
 
 -- step :: Worklist -> Worklist
@@ -676,11 +713,12 @@ bigStep info _ = (False, info)
 --   print w
 --   runStep (step w)
 
--- run :: FilePath -> IO ()
--- run s = do
---   code <- readFile s
---   case parseExp code of
---     Left err -> putStrLn err
---     Right e -> runStep [WJug (Inf e (const End))]
+run :: FilePath -> IO ()
+run s = do
+  code <- readFile s
+  case parseExp code of
+    Left err -> putStrLn err
+    Right e -> putStrLn (snd (bigStep "" [WJug (Inf e (const End))]))
+
 ex_ws1 :: [Work]
 ex_ws1 = [WJug (Sub (TAll "a" (TArr (TVar "a") (TVar "a"))) (TAll "a" (TArr (TVar "a") (TVar "a"))))]
