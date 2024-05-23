@@ -30,6 +30,7 @@ endif
 	sed -e "s/aW/Γ/g" ${SED_FLAG} $@ 
 	sed -e "s/dE/Ψ/g" ${SED_FLAG} $@
 	sed -e "s/aE/Σ/g" ${SED_FLAG} $@ 
+	sed -e "s/fE/Δ/g" ${SED_FLAG} $@ 
 
 ott : ${OTT_OUTS}
 

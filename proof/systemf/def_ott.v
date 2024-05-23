@@ -10,23 +10,23 @@ Inductive ftyp : Set :=
  | ftyp_unit : ftyp
  | ftyp_var_b (_:nat)
  | ftyp_var_f (X:typvar)
- | ftyp_arrow (T1:ftyp) (T2:ftyp)
- | ftyp_all (T:ftyp)
- | ftyp_sum (T1:ftyp) (T2:ftyp)
- | ftyp_prod (T1:ftyp) (T2:ftyp).
+ | ftyp_arrow (A1:ftyp) (A2:ftyp)
+ | ftyp_all (A:ftyp)
+ | ftyp_sum (A1:ftyp) (A2:ftyp)
+ | ftyp_prod (A1:ftyp) (A2:ftyp).
 
 Inductive fbind : Set := 
  | fbind_tvar_empty : fbind
- | fbind_typ (T:ftyp).
+ | fbind_typ (A:ftyp).
 
 Inductive fexp : Set := 
  | fexp_unit : fexp
  | fexp_var_b (_:nat)
  | fexp_var_f (x:expvar)
- | fexp_abs (T:ftyp) (e:fexp)
+ | fexp_abs (A:ftyp) (e:fexp)
  | fexp_app (e1:fexp) (e2:fexp)
  | fexp_tabs (e:fexp)
- | fexp_tapp (e:fexp) (T:ftyp)
+ | fexp_tapp (e:fexp) (A:ftyp)
  | fexp_inl (e:fexp)
  | fexp_inr (e:fexp)
  | fexp_case (e:fexp) (e2:fexp) (e3:fexp)
@@ -45,10 +45,10 @@ Fixpoint is_fvalue_of_fexp (e_5:fexp) : bool :=
   | fexp_unit => false
   | (fexp_var_b nat) => false
   | (fexp_var_f x) => false
-  | (fexp_abs T e) => (true)
+  | (fexp_abs A e) => (true)
   | (fexp_app e1 e2) => false
   | (fexp_tabs e) => (true)
-  | (fexp_tapp e T) => false
+  | (fexp_tapp e A) => false
   | (fexp_inl e) => ((is_fvalue_of_fexp e))
   | (fexp_inr e) => ((is_fvalue_of_fexp e))
   | (fexp_case e e2 e3) => false
@@ -59,20 +59,20 @@ end.
 
 (** arities *)
 (** opening up abstractions *)
-Fixpoint open_ftyp_wrt_ftyp_rec (k:nat) (T_5:ftyp) (T__6:ftyp) {struct T__6}: ftyp :=
-  match T__6 with
+Fixpoint open_ftyp_wrt_ftyp_rec (k:nat) (A_5:ftyp) (A__6:ftyp) {struct A__6}: ftyp :=
+  match A__6 with
   | ftyp_unit => ftyp_unit 
   | (ftyp_var_b nat) => 
       match lt_eq_lt_dec nat k with
         | inleft (left _) => ftyp_var_b nat
-        | inleft (right _) => T_5
+        | inleft (right _) => A_5
         | inright _ => ftyp_var_b (nat - 1)
       end
   | (ftyp_var_f X) => ftyp_var_f X
-  | (ftyp_arrow T1 T2) => ftyp_arrow (open_ftyp_wrt_ftyp_rec k T_5 T1) (open_ftyp_wrt_ftyp_rec k T_5 T2)
-  | (ftyp_all T) => ftyp_all (open_ftyp_wrt_ftyp_rec (S k) T_5 T)
-  | (ftyp_sum T1 T2) => ftyp_sum (open_ftyp_wrt_ftyp_rec k T_5 T1) (open_ftyp_wrt_ftyp_rec k T_5 T2)
-  | (ftyp_prod T1 T2) => ftyp_prod (open_ftyp_wrt_ftyp_rec k T_5 T1) (open_ftyp_wrt_ftyp_rec k T_5 T2)
+  | (ftyp_arrow A1 A2) => ftyp_arrow (open_ftyp_wrt_ftyp_rec k A_5 A1) (open_ftyp_wrt_ftyp_rec k A_5 A2)
+  | (ftyp_all A) => ftyp_all (open_ftyp_wrt_ftyp_rec (S k) A_5 A)
+  | (ftyp_sum A1 A2) => ftyp_sum (open_ftyp_wrt_ftyp_rec k A_5 A1) (open_ftyp_wrt_ftyp_rec k A_5 A2)
+  | (ftyp_prod A1 A2) => ftyp_prod (open_ftyp_wrt_ftyp_rec k A_5 A1) (open_ftyp_wrt_ftyp_rec k A_5 A2)
 end.
 
 Fixpoint open_fexp_wrt_fexp_rec (k:nat) (e_5:fexp) (e__6:fexp) {struct e__6}: fexp :=
@@ -85,10 +85,10 @@ Fixpoint open_fexp_wrt_fexp_rec (k:nat) (e_5:fexp) (e__6:fexp) {struct e__6}: fe
         | inright _ => fexp_var_b (nat - 1)
       end
   | (fexp_var_f x) => fexp_var_f x
-  | (fexp_abs T e) => fexp_abs T (open_fexp_wrt_fexp_rec (S k) e_5 e)
+  | (fexp_abs A e) => fexp_abs A (open_fexp_wrt_fexp_rec (S k) e_5 e)
   | (fexp_app e1 e2) => fexp_app (open_fexp_wrt_fexp_rec k e_5 e1) (open_fexp_wrt_fexp_rec k e_5 e2)
   | (fexp_tabs e) => fexp_tabs (open_fexp_wrt_fexp_rec k e_5 e)
-  | (fexp_tapp e T) => fexp_tapp (open_fexp_wrt_fexp_rec k e_5 e) T
+  | (fexp_tapp e A) => fexp_tapp (open_fexp_wrt_fexp_rec k e_5 e) A
   | (fexp_inl e) => fexp_inl (open_fexp_wrt_fexp_rec k e_5 e)
   | (fexp_inr e) => fexp_inr (open_fexp_wrt_fexp_rec k e_5 e)
   | (fexp_case e e2 e3) => fexp_case (open_fexp_wrt_fexp_rec k e_5 e) (open_fexp_wrt_fexp_rec (S k) e_5 e2) (open_fexp_wrt_fexp_rec (S k) e_5 e3)
@@ -97,56 +97,56 @@ Fixpoint open_fexp_wrt_fexp_rec (k:nat) (e_5:fexp) (e__6:fexp) {struct e__6}: fe
   | (fexp_pair e1 e2) => fexp_pair (open_fexp_wrt_fexp_rec k e_5 e1) (open_fexp_wrt_fexp_rec k e_5 e2)
 end.
 
-Fixpoint open_fexp_wrt_ftyp_rec (k:nat) (T_5:ftyp) (e_5:fexp) {struct e_5}: fexp :=
+Fixpoint open_fexp_wrt_ftyp_rec (k:nat) (A_5:ftyp) (e_5:fexp) {struct e_5}: fexp :=
   match e_5 with
   | fexp_unit => fexp_unit 
   | (fexp_var_b nat) => fexp_var_b nat
   | (fexp_var_f x) => fexp_var_f x
-  | (fexp_abs T e) => fexp_abs (open_ftyp_wrt_ftyp_rec k T_5 T) (open_fexp_wrt_ftyp_rec k T_5 e)
-  | (fexp_app e1 e2) => fexp_app (open_fexp_wrt_ftyp_rec k T_5 e1) (open_fexp_wrt_ftyp_rec k T_5 e2)
-  | (fexp_tabs e) => fexp_tabs (open_fexp_wrt_ftyp_rec (S k) T_5 e)
-  | (fexp_tapp e T) => fexp_tapp (open_fexp_wrt_ftyp_rec k T_5 e) (open_ftyp_wrt_ftyp_rec k T_5 T)
-  | (fexp_inl e) => fexp_inl (open_fexp_wrt_ftyp_rec k T_5 e)
-  | (fexp_inr e) => fexp_inr (open_fexp_wrt_ftyp_rec k T_5 e)
-  | (fexp_case e e2 e3) => fexp_case (open_fexp_wrt_ftyp_rec k T_5 e) (open_fexp_wrt_ftyp_rec k T_5 e2) (open_fexp_wrt_ftyp_rec k T_5 e3)
-  | (fexp_proj1 e) => fexp_proj1 (open_fexp_wrt_ftyp_rec k T_5 e)
-  | (fexp_proj2 e) => fexp_proj2 (open_fexp_wrt_ftyp_rec k T_5 e)
-  | (fexp_pair e1 e2) => fexp_pair (open_fexp_wrt_ftyp_rec k T_5 e1) (open_fexp_wrt_ftyp_rec k T_5 e2)
+  | (fexp_abs A e) => fexp_abs (open_ftyp_wrt_ftyp_rec k A_5 A) (open_fexp_wrt_ftyp_rec k A_5 e)
+  | (fexp_app e1 e2) => fexp_app (open_fexp_wrt_ftyp_rec k A_5 e1) (open_fexp_wrt_ftyp_rec k A_5 e2)
+  | (fexp_tabs e) => fexp_tabs (open_fexp_wrt_ftyp_rec (S k) A_5 e)
+  | (fexp_tapp e A) => fexp_tapp (open_fexp_wrt_ftyp_rec k A_5 e) (open_ftyp_wrt_ftyp_rec k A_5 A)
+  | (fexp_inl e) => fexp_inl (open_fexp_wrt_ftyp_rec k A_5 e)
+  | (fexp_inr e) => fexp_inr (open_fexp_wrt_ftyp_rec k A_5 e)
+  | (fexp_case e e2 e3) => fexp_case (open_fexp_wrt_ftyp_rec k A_5 e) (open_fexp_wrt_ftyp_rec k A_5 e2) (open_fexp_wrt_ftyp_rec k A_5 e3)
+  | (fexp_proj1 e) => fexp_proj1 (open_fexp_wrt_ftyp_rec k A_5 e)
+  | (fexp_proj2 e) => fexp_proj2 (open_fexp_wrt_ftyp_rec k A_5 e)
+  | (fexp_pair e1 e2) => fexp_pair (open_fexp_wrt_ftyp_rec k A_5 e1) (open_fexp_wrt_ftyp_rec k A_5 e2)
 end.
 
-Definition open_fbind_wrt_ftyp_rec (k:nat) (T5:ftyp) (fb5:fbind) : fbind :=
+Definition open_fbind_wrt_ftyp_rec (k:nat) (A5:ftyp) (fb5:fbind) : fbind :=
   match fb5 with
   | fbind_tvar_empty => fbind_tvar_empty 
-  | (fbind_typ T) => fbind_typ (open_ftyp_wrt_ftyp_rec k T5 T)
+  | (fbind_typ A) => fbind_typ (open_ftyp_wrt_ftyp_rec k A5 A)
 end.
 
 Definition open_fexp_wrt_fexp e_5 e__6 := open_fexp_wrt_fexp_rec 0 e__6 e_5.
 
-Definition open_fexp_wrt_ftyp T_5 e_5 := open_fexp_wrt_ftyp_rec 0 e_5 T_5.
+Definition open_fexp_wrt_ftyp A_5 e_5 := open_fexp_wrt_ftyp_rec 0 e_5 A_5.
 
-Definition open_ftyp_wrt_ftyp T_5 T__6 := open_ftyp_wrt_ftyp_rec 0 T__6 T_5.
+Definition open_ftyp_wrt_ftyp A_5 A__6 := open_ftyp_wrt_ftyp_rec 0 A__6 A_5.
 
-Definition open_fbind_wrt_ftyp T5 fb5 := open_fbind_wrt_ftyp_rec 0 fb5 T5.
+Definition open_fbind_wrt_ftyp A5 fb5 := open_fbind_wrt_ftyp_rec 0 fb5 A5.
 
 (** closing up abstractions *)
-Fixpoint close_ftyp_wrt_ftyp_rec (k:nat) (T_5:var) (T__6:ftyp) {struct T__6}: ftyp :=
-  match T__6 with
+Fixpoint close_ftyp_wrt_ftyp_rec (k:nat) (A_5:var) (A__6:ftyp) {struct A__6}: ftyp :=
+  match A__6 with
   | ftyp_unit => ftyp_unit 
   | (ftyp_var_b nat) => 
        if (lt_dec nat k) 
          then ftyp_var_b nat
          else ftyp_var_b (S nat)
-  | (ftyp_var_f X) => if (T_5 === X) then (ftyp_var_b k) else (ftyp_var_f X)
-  | (ftyp_arrow T1 T2) => ftyp_arrow (close_ftyp_wrt_ftyp_rec k T_5 T1) (close_ftyp_wrt_ftyp_rec k T_5 T2)
-  | (ftyp_all T) => ftyp_all (close_ftyp_wrt_ftyp_rec (S k) T_5 T)
-  | (ftyp_sum T1 T2) => ftyp_sum (close_ftyp_wrt_ftyp_rec k T_5 T1) (close_ftyp_wrt_ftyp_rec k T_5 T2)
-  | (ftyp_prod T1 T2) => ftyp_prod (close_ftyp_wrt_ftyp_rec k T_5 T1) (close_ftyp_wrt_ftyp_rec k T_5 T2)
+  | (ftyp_var_f X) => if (A_5 === X) then (ftyp_var_b k) else (ftyp_var_f X)
+  | (ftyp_arrow A1 A2) => ftyp_arrow (close_ftyp_wrt_ftyp_rec k A_5 A1) (close_ftyp_wrt_ftyp_rec k A_5 A2)
+  | (ftyp_all A) => ftyp_all (close_ftyp_wrt_ftyp_rec (S k) A_5 A)
+  | (ftyp_sum A1 A2) => ftyp_sum (close_ftyp_wrt_ftyp_rec k A_5 A1) (close_ftyp_wrt_ftyp_rec k A_5 A2)
+  | (ftyp_prod A1 A2) => ftyp_prod (close_ftyp_wrt_ftyp_rec k A_5 A1) (close_ftyp_wrt_ftyp_rec k A_5 A2)
 end.
 
-Definition close_fbind_wrt_ftyp_rec (k:nat) (T5:var) (fb5:fbind) : fbind :=
+Definition close_fbind_wrt_ftyp_rec (k:nat) (A5:var) (fb5:fbind) : fbind :=
   match fb5 with
   | fbind_tvar_empty => fbind_tvar_empty 
-  | (fbind_typ T) => fbind_typ (close_ftyp_wrt_ftyp_rec k T5 T)
+  | (fbind_typ A) => fbind_typ (close_ftyp_wrt_ftyp_rec k A5 A)
 end.
 
 Fixpoint close_fexp_wrt_fexp_rec (k:nat) (e_5:var) (e__6:fexp) {struct e__6}: fexp :=
@@ -157,10 +157,10 @@ Fixpoint close_fexp_wrt_fexp_rec (k:nat) (e_5:var) (e__6:fexp) {struct e__6}: fe
          then fexp_var_b nat
          else fexp_var_b (S nat)
   | (fexp_var_f x) => if (e_5 === x) then (fexp_var_b k) else (fexp_var_f x)
-  | (fexp_abs T e) => fexp_abs T (close_fexp_wrt_fexp_rec (S k) e_5 e)
+  | (fexp_abs A e) => fexp_abs A (close_fexp_wrt_fexp_rec (S k) e_5 e)
   | (fexp_app e1 e2) => fexp_app (close_fexp_wrt_fexp_rec k e_5 e1) (close_fexp_wrt_fexp_rec k e_5 e2)
   | (fexp_tabs e) => fexp_tabs (close_fexp_wrt_fexp_rec k e_5 e)
-  | (fexp_tapp e T) => fexp_tapp (close_fexp_wrt_fexp_rec k e_5 e) T
+  | (fexp_tapp e A) => fexp_tapp (close_fexp_wrt_fexp_rec k e_5 e) A
   | (fexp_inl e) => fexp_inl (close_fexp_wrt_fexp_rec k e_5 e)
   | (fexp_inr e) => fexp_inr (close_fexp_wrt_fexp_rec k e_5 e)
   | (fexp_case e e2 e3) => fexp_case (close_fexp_wrt_fexp_rec k e_5 e) (close_fexp_wrt_fexp_rec (S k) e_5 e2) (close_fexp_wrt_fexp_rec (S k) e_5 e3)
@@ -169,30 +169,30 @@ Fixpoint close_fexp_wrt_fexp_rec (k:nat) (e_5:var) (e__6:fexp) {struct e__6}: fe
   | (fexp_pair e1 e2) => fexp_pair (close_fexp_wrt_fexp_rec k e_5 e1) (close_fexp_wrt_fexp_rec k e_5 e2)
 end.
 
-Fixpoint close_fexp_wrt_ftyp_rec (k:nat) (T_5:var) (e_5:fexp) {struct e_5}: fexp :=
+Fixpoint close_fexp_wrt_ftyp_rec (k:nat) (A_5:var) (e_5:fexp) {struct e_5}: fexp :=
   match e_5 with
   | fexp_unit => fexp_unit 
   | (fexp_var_b nat) => fexp_var_b nat
   | (fexp_var_f x) => fexp_var_f x
-  | (fexp_abs T e) => fexp_abs (close_ftyp_wrt_ftyp_rec k T_5 T) (close_fexp_wrt_ftyp_rec k T_5 e)
-  | (fexp_app e1 e2) => fexp_app (close_fexp_wrt_ftyp_rec k T_5 e1) (close_fexp_wrt_ftyp_rec k T_5 e2)
-  | (fexp_tabs e) => fexp_tabs (close_fexp_wrt_ftyp_rec (S k) T_5 e)
-  | (fexp_tapp e T) => fexp_tapp (close_fexp_wrt_ftyp_rec k T_5 e) (close_ftyp_wrt_ftyp_rec k T_5 T)
-  | (fexp_inl e) => fexp_inl (close_fexp_wrt_ftyp_rec k T_5 e)
-  | (fexp_inr e) => fexp_inr (close_fexp_wrt_ftyp_rec k T_5 e)
-  | (fexp_case e e2 e3) => fexp_case (close_fexp_wrt_ftyp_rec k T_5 e) (close_fexp_wrt_ftyp_rec k T_5 e2) (close_fexp_wrt_ftyp_rec k T_5 e3)
-  | (fexp_proj1 e) => fexp_proj1 (close_fexp_wrt_ftyp_rec k T_5 e)
-  | (fexp_proj2 e) => fexp_proj2 (close_fexp_wrt_ftyp_rec k T_5 e)
-  | (fexp_pair e1 e2) => fexp_pair (close_fexp_wrt_ftyp_rec k T_5 e1) (close_fexp_wrt_ftyp_rec k T_5 e2)
+  | (fexp_abs A e) => fexp_abs (close_ftyp_wrt_ftyp_rec k A_5 A) (close_fexp_wrt_ftyp_rec k A_5 e)
+  | (fexp_app e1 e2) => fexp_app (close_fexp_wrt_ftyp_rec k A_5 e1) (close_fexp_wrt_ftyp_rec k A_5 e2)
+  | (fexp_tabs e) => fexp_tabs (close_fexp_wrt_ftyp_rec (S k) A_5 e)
+  | (fexp_tapp e A) => fexp_tapp (close_fexp_wrt_ftyp_rec k A_5 e) (close_ftyp_wrt_ftyp_rec k A_5 A)
+  | (fexp_inl e) => fexp_inl (close_fexp_wrt_ftyp_rec k A_5 e)
+  | (fexp_inr e) => fexp_inr (close_fexp_wrt_ftyp_rec k A_5 e)
+  | (fexp_case e e2 e3) => fexp_case (close_fexp_wrt_ftyp_rec k A_5 e) (close_fexp_wrt_ftyp_rec k A_5 e2) (close_fexp_wrt_ftyp_rec k A_5 e3)
+  | (fexp_proj1 e) => fexp_proj1 (close_fexp_wrt_ftyp_rec k A_5 e)
+  | (fexp_proj2 e) => fexp_proj2 (close_fexp_wrt_ftyp_rec k A_5 e)
+  | (fexp_pair e1 e2) => fexp_pair (close_fexp_wrt_ftyp_rec k A_5 e1) (close_fexp_wrt_ftyp_rec k A_5 e2)
 end.
 
-Definition close_fbind_wrt_ftyp fb5 T5 := close_fbind_wrt_ftyp_rec 0 fb5 T5.
+Definition close_fbind_wrt_ftyp fb5 A5 := close_fbind_wrt_ftyp_rec 0 fb5 A5.
 
 Definition close_fexp_wrt_fexp e__6 e_5 := close_fexp_wrt_fexp_rec 0 e__6 e_5.
 
-Definition close_fexp_wrt_ftyp e_5 T_5 := close_fexp_wrt_ftyp_rec 0 e_5 T_5.
+Definition close_fexp_wrt_ftyp e_5 A_5 := close_fexp_wrt_ftyp_rec 0 e_5 A_5.
 
-Definition close_ftyp_wrt_ftyp T__6 T_5 := close_ftyp_wrt_ftyp_rec 0 T__6 T_5.
+Definition close_ftyp_wrt_ftyp A__6 A_5 := close_ftyp_wrt_ftyp_rec 0 A__6 A_5.
 
 (** terms are locally-closed pre-terms *)
 (** definitions *)
@@ -203,29 +203,29 @@ Inductive lc_ftyp : ftyp -> Prop :=    (* defn lc_ftyp *)
      (lc_ftyp ftyp_unit)
  | lc_ftyp_var_f : forall (X:typvar),
      (lc_ftyp (ftyp_var_f X))
- | lc_ftyp_arrow : forall (T1 T2:ftyp),
-     (lc_ftyp T1) ->
-     (lc_ftyp T2) ->
-     (lc_ftyp (ftyp_arrow T1 T2))
- | lc_ftyp_all : forall (T:ftyp),
-      ( forall X , lc_ftyp  ( open_ftyp_wrt_ftyp T (ftyp_var_f X) )  )  ->
-     (lc_ftyp (ftyp_all T))
- | lc_ftyp_sum : forall (T1 T2:ftyp),
-     (lc_ftyp T1) ->
-     (lc_ftyp T2) ->
-     (lc_ftyp (ftyp_sum T1 T2))
- | lc_ftyp_prod : forall (T1 T2:ftyp),
-     (lc_ftyp T1) ->
-     (lc_ftyp T2) ->
-     (lc_ftyp (ftyp_prod T1 T2)).
+ | lc_ftyp_arrow : forall (A1 A2:ftyp),
+     (lc_ftyp A1) ->
+     (lc_ftyp A2) ->
+     (lc_ftyp (ftyp_arrow A1 A2))
+ | lc_ftyp_all : forall (A:ftyp),
+      ( forall X , lc_ftyp  ( open_ftyp_wrt_ftyp A (ftyp_var_f X) )  )  ->
+     (lc_ftyp (ftyp_all A))
+ | lc_ftyp_sum : forall (A1 A2:ftyp),
+     (lc_ftyp A1) ->
+     (lc_ftyp A2) ->
+     (lc_ftyp (ftyp_sum A1 A2))
+ | lc_ftyp_prod : forall (A1 A2:ftyp),
+     (lc_ftyp A1) ->
+     (lc_ftyp A2) ->
+     (lc_ftyp (ftyp_prod A1 A2)).
 
 (* defns LC_fbind *)
 Inductive lc_fbind : fbind -> Prop :=    (* defn lc_fbind *)
  | lc_fbind_tvar_empty : 
      (lc_fbind fbind_tvar_empty)
- | lc_fbind_typ : forall (T:ftyp),
-     (lc_ftyp T) ->
-     (lc_fbind (fbind_typ T)).
+ | lc_fbind_typ : forall (A:ftyp),
+     (lc_ftyp A) ->
+     (lc_fbind (fbind_typ A)).
 
 (* defns LC_fexp *)
 Inductive lc_fexp : fexp -> Prop :=    (* defn lc_fexp *)
@@ -233,10 +233,10 @@ Inductive lc_fexp : fexp -> Prop :=    (* defn lc_fexp *)
      (lc_fexp fexp_unit)
  | lc_fexp_var_f : forall (x:expvar),
      (lc_fexp (fexp_var_f x))
- | lc_fexp_abs : forall (T:ftyp) (e:fexp),
-     (lc_ftyp T) ->
+ | lc_fexp_abs : forall (A:ftyp) (e:fexp),
+     (lc_ftyp A) ->
       ( forall x , lc_fexp  ( open_fexp_wrt_fexp e (fexp_var_f x) )  )  ->
-     (lc_fexp (fexp_abs T e))
+     (lc_fexp (fexp_abs A e))
  | lc_fexp_app : forall (e1 e2:fexp),
      (lc_fexp e1) ->
      (lc_fexp e2) ->
@@ -244,10 +244,10 @@ Inductive lc_fexp : fexp -> Prop :=    (* defn lc_fexp *)
  | lc_fexp_tabs : forall (e:fexp),
       ( forall X , lc_fexp  ( open_fexp_wrt_ftyp e (ftyp_var_f X) )  )  ->
      (lc_fexp (fexp_tabs e))
- | lc_fexp_tapp : forall (e:fexp) (T:ftyp),
+ | lc_fexp_tapp : forall (e:fexp) (A:ftyp),
      (lc_fexp e) ->
-     (lc_ftyp T) ->
-     (lc_fexp (fexp_tapp e T))
+     (lc_ftyp A) ->
+     (lc_fexp (fexp_tapp e A))
  | lc_fexp_inl : forall (e:fexp),
      (lc_fexp e) ->
      (lc_fexp (fexp_inl e))
@@ -270,21 +270,21 @@ Inductive lc_fexp : fexp -> Prop :=    (* defn lc_fexp *)
      (lc_fexp e2) ->
      (lc_fexp (fexp_pair e1 e2)).
 (** free variables *)
-Fixpoint fv_ftyp_in_ftyp (T_5:ftyp) : vars :=
-  match T_5 with
+Fixpoint fv_ftyp_in_ftyp (A_5:ftyp) : vars :=
+  match A_5 with
   | ftyp_unit => {}
   | (ftyp_var_b nat) => {}
   | (ftyp_var_f X) => {{X}}
-  | (ftyp_arrow T1 T2) => (fv_ftyp_in_ftyp T1) \u (fv_ftyp_in_ftyp T2)
-  | (ftyp_all T) => (fv_ftyp_in_ftyp T)
-  | (ftyp_sum T1 T2) => (fv_ftyp_in_ftyp T1) \u (fv_ftyp_in_ftyp T2)
-  | (ftyp_prod T1 T2) => (fv_ftyp_in_ftyp T1) \u (fv_ftyp_in_ftyp T2)
+  | (ftyp_arrow A1 A2) => (fv_ftyp_in_ftyp A1) \u (fv_ftyp_in_ftyp A2)
+  | (ftyp_all A) => (fv_ftyp_in_ftyp A)
+  | (ftyp_sum A1 A2) => (fv_ftyp_in_ftyp A1) \u (fv_ftyp_in_ftyp A2)
+  | (ftyp_prod A1 A2) => (fv_ftyp_in_ftyp A1) \u (fv_ftyp_in_ftyp A2)
 end.
 
 Definition fv_ftyp_in_fbind (fb5:fbind) : vars :=
   match fb5 with
   | fbind_tvar_empty => {}
-  | (fbind_typ T) => (fv_ftyp_in_ftyp T)
+  | (fbind_typ A) => (fv_ftyp_in_ftyp A)
 end.
 
 Fixpoint fv_fexp_in_fexp (e_5:fexp) : vars :=
@@ -292,10 +292,10 @@ Fixpoint fv_fexp_in_fexp (e_5:fexp) : vars :=
   | fexp_unit => {}
   | (fexp_var_b nat) => {}
   | (fexp_var_f x) => {{x}}
-  | (fexp_abs T e) => (fv_fexp_in_fexp e)
+  | (fexp_abs A e) => (fv_fexp_in_fexp e)
   | (fexp_app e1 e2) => (fv_fexp_in_fexp e1) \u (fv_fexp_in_fexp e2)
   | (fexp_tabs e) => (fv_fexp_in_fexp e)
-  | (fexp_tapp e T) => (fv_fexp_in_fexp e)
+  | (fexp_tapp e A) => (fv_fexp_in_fexp e)
   | (fexp_inl e) => (fv_fexp_in_fexp e)
   | (fexp_inr e) => (fv_fexp_in_fexp e)
   | (fexp_case e e2 e3) => (fv_fexp_in_fexp e) \u (fv_fexp_in_fexp e2) \u (fv_fexp_in_fexp e3)
@@ -309,10 +309,10 @@ Fixpoint fv_ftyp_in_fexp (e_5:fexp) : vars :=
   | fexp_unit => {}
   | (fexp_var_b nat) => {}
   | (fexp_var_f x) => {}
-  | (fexp_abs T e) => (fv_ftyp_in_ftyp T) \u (fv_ftyp_in_fexp e)
+  | (fexp_abs A e) => (fv_ftyp_in_ftyp A) \u (fv_ftyp_in_fexp e)
   | (fexp_app e1 e2) => (fv_ftyp_in_fexp e1) \u (fv_ftyp_in_fexp e2)
   | (fexp_tabs e) => (fv_ftyp_in_fexp e)
-  | (fexp_tapp e T) => (fv_ftyp_in_fexp e) \u (fv_ftyp_in_ftyp T)
+  | (fexp_tapp e A) => (fv_ftyp_in_fexp e) \u (fv_ftyp_in_ftyp A)
   | (fexp_inl e) => (fv_ftyp_in_fexp e)
   | (fexp_inr e) => (fv_ftyp_in_fexp e)
   | (fexp_case e e2 e3) => (fv_ftyp_in_fexp e) \u (fv_ftyp_in_fexp e2) \u (fv_ftyp_in_fexp e3)
@@ -322,21 +322,21 @@ Fixpoint fv_ftyp_in_fexp (e_5:fexp) : vars :=
 end.
 
 (** substitutions *)
-Fixpoint subst_typ_in_ftyp (T_5:ftyp) (X5:typvar) (T__6:ftyp) {struct T__6} : ftyp :=
-  match T__6 with
+Fixpoint subst_typ_in_ftyp (A_5:ftyp) (X5:typvar) (A__6:ftyp) {struct A__6} : ftyp :=
+  match A__6 with
   | ftyp_unit => ftyp_unit 
   | (ftyp_var_b nat) => ftyp_var_b nat
-  | (ftyp_var_f X) => (if eq_var X X5 then T_5 else (ftyp_var_f X))
-  | (ftyp_arrow T1 T2) => ftyp_arrow (subst_typ_in_ftyp T_5 X5 T1) (subst_typ_in_ftyp T_5 X5 T2)
-  | (ftyp_all T) => ftyp_all (subst_typ_in_ftyp T_5 X5 T)
-  | (ftyp_sum T1 T2) => ftyp_sum (subst_typ_in_ftyp T_5 X5 T1) (subst_typ_in_ftyp T_5 X5 T2)
-  | (ftyp_prod T1 T2) => ftyp_prod (subst_typ_in_ftyp T_5 X5 T1) (subst_typ_in_ftyp T_5 X5 T2)
+  | (ftyp_var_f X) => (if eq_var X X5 then A_5 else (ftyp_var_f X))
+  | (ftyp_arrow A1 A2) => ftyp_arrow (subst_typ_in_ftyp A_5 X5 A1) (subst_typ_in_ftyp A_5 X5 A2)
+  | (ftyp_all A) => ftyp_all (subst_typ_in_ftyp A_5 X5 A)
+  | (ftyp_sum A1 A2) => ftyp_sum (subst_typ_in_ftyp A_5 X5 A1) (subst_typ_in_ftyp A_5 X5 A2)
+  | (ftyp_prod A1 A2) => ftyp_prod (subst_typ_in_ftyp A_5 X5 A1) (subst_typ_in_ftyp A_5 X5 A2)
 end.
 
-Definition subst_typ_in_fbind (T5:ftyp) (X5:typvar) (fb5:fbind) : fbind :=
+Definition subst_typ_in_fbind (A5:ftyp) (X5:typvar) (fb5:fbind) : fbind :=
   match fb5 with
   | fbind_tvar_empty => fbind_tvar_empty 
-  | (fbind_typ T) => fbind_typ (subst_typ_in_ftyp T5 X5 T)
+  | (fbind_typ A) => fbind_typ (subst_typ_in_ftyp A5 X5 A)
 end.
 
 Fixpoint subst_exp_in_fexp (e_5:fexp) (x5:expvar) (e__6:fexp) {struct e__6} : fexp :=
@@ -344,10 +344,10 @@ Fixpoint subst_exp_in_fexp (e_5:fexp) (x5:expvar) (e__6:fexp) {struct e__6} : fe
   | fexp_unit => fexp_unit 
   | (fexp_var_b nat) => fexp_var_b nat
   | (fexp_var_f x) => (if eq_var x x5 then e_5 else (fexp_var_f x))
-  | (fexp_abs T e) => fexp_abs T (subst_exp_in_fexp e_5 x5 e)
+  | (fexp_abs A e) => fexp_abs A (subst_exp_in_fexp e_5 x5 e)
   | (fexp_app e1 e2) => fexp_app (subst_exp_in_fexp e_5 x5 e1) (subst_exp_in_fexp e_5 x5 e2)
   | (fexp_tabs e) => fexp_tabs (subst_exp_in_fexp e_5 x5 e)
-  | (fexp_tapp e T) => fexp_tapp (subst_exp_in_fexp e_5 x5 e) T
+  | (fexp_tapp e A) => fexp_tapp (subst_exp_in_fexp e_5 x5 e) A
   | (fexp_inl e) => fexp_inl (subst_exp_in_fexp e_5 x5 e)
   | (fexp_inr e) => fexp_inr (subst_exp_in_fexp e_5 x5 e)
   | (fexp_case e e2 e3) => fexp_case (subst_exp_in_fexp e_5 x5 e) (subst_exp_in_fexp e_5 x5 e2) (subst_exp_in_fexp e_5 x5 e3)
@@ -356,21 +356,21 @@ Fixpoint subst_exp_in_fexp (e_5:fexp) (x5:expvar) (e__6:fexp) {struct e__6} : fe
   | (fexp_pair e1 e2) => fexp_pair (subst_exp_in_fexp e_5 x5 e1) (subst_exp_in_fexp e_5 x5 e2)
 end.
 
-Fixpoint subst_typ_in_fexp (T_5:ftyp) (X5:typvar) (e_5:fexp) {struct e_5} : fexp :=
+Fixpoint subst_typ_in_fexp (A_5:ftyp) (X5:typvar) (e_5:fexp) {struct e_5} : fexp :=
   match e_5 with
   | fexp_unit => fexp_unit 
   | (fexp_var_b nat) => fexp_var_b nat
   | (fexp_var_f x) => fexp_var_f x
-  | (fexp_abs T e) => fexp_abs (subst_typ_in_ftyp T_5 X5 T) (subst_typ_in_fexp T_5 X5 e)
-  | (fexp_app e1 e2) => fexp_app (subst_typ_in_fexp T_5 X5 e1) (subst_typ_in_fexp T_5 X5 e2)
-  | (fexp_tabs e) => fexp_tabs (subst_typ_in_fexp T_5 X5 e)
-  | (fexp_tapp e T) => fexp_tapp (subst_typ_in_fexp T_5 X5 e) (subst_typ_in_ftyp T_5 X5 T)
-  | (fexp_inl e) => fexp_inl (subst_typ_in_fexp T_5 X5 e)
-  | (fexp_inr e) => fexp_inr (subst_typ_in_fexp T_5 X5 e)
-  | (fexp_case e e2 e3) => fexp_case (subst_typ_in_fexp T_5 X5 e) (subst_typ_in_fexp T_5 X5 e2) (subst_typ_in_fexp T_5 X5 e3)
-  | (fexp_proj1 e) => fexp_proj1 (subst_typ_in_fexp T_5 X5 e)
-  | (fexp_proj2 e) => fexp_proj2 (subst_typ_in_fexp T_5 X5 e)
-  | (fexp_pair e1 e2) => fexp_pair (subst_typ_in_fexp T_5 X5 e1) (subst_typ_in_fexp T_5 X5 e2)
+  | (fexp_abs A e) => fexp_abs (subst_typ_in_ftyp A_5 X5 A) (subst_typ_in_fexp A_5 X5 e)
+  | (fexp_app e1 e2) => fexp_app (subst_typ_in_fexp A_5 X5 e1) (subst_typ_in_fexp A_5 X5 e2)
+  | (fexp_tabs e) => fexp_tabs (subst_typ_in_fexp A_5 X5 e)
+  | (fexp_tapp e A) => fexp_tapp (subst_typ_in_fexp A_5 X5 e) (subst_typ_in_ftyp A_5 X5 A)
+  | (fexp_inl e) => fexp_inl (subst_typ_in_fexp A_5 X5 e)
+  | (fexp_inr e) => fexp_inr (subst_typ_in_fexp A_5 X5 e)
+  | (fexp_case e e2 e3) => fexp_case (subst_typ_in_fexp A_5 X5 e) (subst_typ_in_fexp A_5 X5 e2) (subst_typ_in_fexp A_5 X5 e3)
+  | (fexp_proj1 e) => fexp_proj1 (subst_typ_in_fexp A_5 X5 e)
+  | (fexp_proj2 e) => fexp_proj2 (subst_typ_in_fexp A_5 X5 e)
+  | (fexp_pair e1 e2) => fexp_pair (subst_typ_in_fexp A_5 X5 e1) (subst_typ_in_fexp A_5 X5 e2)
 end.
 
 
@@ -378,86 +378,86 @@ end.
 
 (* defns J_wf_typ *)
 Inductive f_wf_typ : fenv -> ftyp -> Prop :=    (* defn f_wf_typ *)
- | f_wf_typ__unit : forall (E:fenv),
-     f_wf_typ E ftyp_unit
- | f_wf_typ__var : forall (E:fenv) (X:typvar),
-      binds ( X ) ( fbind_tvar_empty ) ( E )  ->
-     f_wf_typ E (ftyp_var_f X)
- | f_wf_typ__arrow : forall (E:fenv) (T1 T2:ftyp),
-     f_wf_typ E T1 ->
-     f_wf_typ E T2 ->
-     f_wf_typ E (ftyp_arrow T1 T2)
- | f_wf_typ__all : forall (L:vars) (E:fenv) (T:ftyp),
-      ( forall X , X \notin  L  -> f_wf_typ  ( X ~ fbind_tvar_empty  ++  E )   ( open_ftyp_wrt_ftyp T (ftyp_var_f X) )  )  ->
-     f_wf_typ E (ftyp_all T)
- | f_wf_typ__sum : forall (E:fenv) (T1 T2:ftyp),
-     f_wf_typ E T1 ->
-     f_wf_typ E T2 ->
-     f_wf_typ E (ftyp_sum T1 T2)
- | f_wf_typ__prod : forall (E:fenv) (T1 T2:ftyp),
-     f_wf_typ E T1 ->
-     f_wf_typ E T2 ->
-     f_wf_typ E (ftyp_prod T1 T2).
+ | f_wf_typ__unit : forall (fE:fenv),
+     f_wf_typ fE ftyp_unit
+ | f_wf_typ__tvar : forall (fE:fenv) (X:typvar),
+      binds ( X ) ( fbind_tvar_empty ) ( fE )  ->
+     f_wf_typ fE (ftyp_var_f X)
+ | f_wf_typ__arrow : forall (fE:fenv) (A1 A2:ftyp),
+     f_wf_typ fE A1 ->
+     f_wf_typ fE A2 ->
+     f_wf_typ fE (ftyp_arrow A1 A2)
+ | f_wf_typ__all : forall (L:vars) (fE:fenv) (A:ftyp),
+      ( forall X , X \notin  L  -> f_wf_typ  ( X ~ fbind_tvar_empty  ++  fE )   ( open_ftyp_wrt_ftyp A (ftyp_var_f X) )  )  ->
+     f_wf_typ fE (ftyp_all A)
+ | f_wf_typ__sum : forall (fE:fenv) (A1 A2:ftyp),
+     f_wf_typ fE A1 ->
+     f_wf_typ fE A2 ->
+     f_wf_typ fE (ftyp_sum A1 A2)
+ | f_wf_typ__prod : forall (fE:fenv) (A1 A2:ftyp),
+     f_wf_typ fE A1 ->
+     f_wf_typ fE A2 ->
+     f_wf_typ fE (ftyp_prod A1 A2).
 
 (* defns J_f_wf_env *)
 Inductive f_wf_env : fenv -> Prop :=    (* defn f_wf_env *)
  | f_wf_env__empty : 
      f_wf_env  nil 
- | f_wf_env__sub : forall (E:fenv) (X:typvar),
-     f_wf_env E ->
-      ( X  `notin` dom ( E ))  ->
-     f_wf_env  ( X ~ fbind_tvar_empty  ++  E ) 
- | f_wf_env__typ : forall (E:fenv) (x:expvar) (T:ftyp),
-     f_wf_env E ->
-     f_wf_typ E T ->
-      ( x  `notin` dom ( E ))  ->
-     f_wf_env  ( x ~ (fbind_typ T)  ++  E ) .
+ | f_wf_env__sub : forall (fE:fenv) (X:typvar),
+     f_wf_env fE ->
+      ( X  `notin` dom ( fE ))  ->
+     f_wf_env  ( X ~ fbind_tvar_empty  ++  fE ) 
+ | f_wf_env__typ : forall (fE:fenv) (x:expvar) (A:ftyp),
+     f_wf_env fE ->
+     f_wf_typ fE A ->
+      ( x  `notin` dom ( fE ))  ->
+     f_wf_env  ( x ~ (fbind_typ A)  ++  fE ) .
 
 (* defns J_f_typing *)
 Inductive f_typing : fenv -> fexp -> ftyp -> Prop :=    (* defn f_typing *)
- | f_typing__unit : forall (E:fenv),
-     f_typing E fexp_unit ftyp_unit
- | f_typing__var : forall (E:fenv) (x:expvar) (T:ftyp),
-     f_wf_env E ->
-      binds ( x ) ( (fbind_typ T) ) ( E )  ->
-     f_typing E (fexp_var_f x) T
- | f_typing__abs : forall (L:vars) (E:fenv) (T1:ftyp) (e:fexp) (T2:ftyp),
-      ( forall x , x \notin  L  -> f_typing  ( x ~ (fbind_typ T1)  ++  E )   ( open_fexp_wrt_fexp e (fexp_var_f x) )  T2 )  ->
-     f_typing E (fexp_abs T1 e) (ftyp_arrow T1 T2)
- | f_typing__app : forall (E:fenv) (e1 e2:fexp) (T2 T1:ftyp),
-     f_typing E e1 (ftyp_arrow T1 T2) ->
-     f_typing E e2 T1 ->
-     f_typing E (fexp_app e1 e2) T2
- | f_typing__tabs : forall (L:vars) (E:fenv) (e:fexp) (T:ftyp),
-      ( forall X , X \notin  L  -> f_typing  ( X ~ fbind_tvar_empty  ++  E )   ( open_fexp_wrt_ftyp e (ftyp_var_f X) )   ( open_ftyp_wrt_ftyp T (ftyp_var_f X) )  )  ->
-     f_typing E (fexp_tabs e) (ftyp_all T)
- | f_typing__tapp : forall (E:fenv) (e1:fexp) (T2 T1:ftyp),
-     lc_ftyp T2 ->
-     f_typing E e1 (ftyp_all T1) ->
-     f_typing E (fexp_tapp e1 T2)  (open_ftyp_wrt_ftyp  T1   T2 ) 
- | f_typing__inl : forall (E:fenv) (e1:fexp) (T1 T2:ftyp),
-     f_typing E e1 T1 ->
-     f_wf_typ E T2 ->
-     f_typing E (fexp_inl e1) (ftyp_sum T1 T2)
- | f_typing__inr : forall (E:fenv) (e1:fexp) (T1 T2:ftyp),
-     f_typing E e1 T2 ->
-     f_wf_typ E T1 ->
-     f_typing E (fexp_inr e1) (ftyp_sum T1 T2)
- | f_typing__case : forall (L:vars) (E:fenv) (e1 e2 e3:fexp) (T T1 T2:ftyp),
-     f_typing E e1 (ftyp_sum T1 T2) ->
-      ( forall x , x \notin  L  -> f_typing  ( x ~ (fbind_typ T1)  ++  E )   ( open_fexp_wrt_fexp e2 (fexp_var_f x) )  T )  ->
-      ( forall y , y \notin  L  -> f_typing  ( y ~ (fbind_typ T2)  ++  E )   ( open_fexp_wrt_fexp e3 (fexp_var_f y) )  T )  ->
-     f_typing E (fexp_case e1 e2 e3) T
- | f_typing__pair : forall (E:fenv) (e1 e2:fexp) (T1 T2:ftyp),
-     f_typing E e1 T1 ->
-     f_typing E e2 T2 ->
-     f_typing E (fexp_pair e1 e2) (ftyp_prod T1 T2)
- | f_typing__proj1 : forall (E:fenv) (e:fexp) (T1 T2:ftyp),
-     f_typing E e (ftyp_prod T1 T2) ->
-     f_typing E (fexp_proj1 e) T1
- | f_typing__proj2 : forall (E:fenv) (e:fexp) (T2 T1:ftyp),
-     f_typing E e (ftyp_prod T1 T2) ->
-     f_typing E (fexp_proj2 e) T2.
+ | f_typing__unit : forall (fE:fenv),
+     f_typing fE fexp_unit ftyp_unit
+ | f_typing__var : forall (fE:fenv) (x:expvar) (A:ftyp),
+     f_wf_env fE ->
+      binds ( x ) ( (fbind_typ A) ) ( fE )  ->
+     f_typing fE (fexp_var_f x) A
+ | f_typing__abs : forall (L:vars) (fE:fenv) (A1:ftyp) (e:fexp) (A2:ftyp),
+      ( forall x , x \notin  L  -> f_typing  ( x ~ (fbind_typ A1)  ++  fE )   ( open_fexp_wrt_fexp e (fexp_var_f x) )  A2 )  ->
+     f_typing fE (fexp_abs A1 e) (ftyp_arrow A1 A2)
+ | f_typing__app : forall (fE:fenv) (e1 e2:fexp) (A2 A1:ftyp),
+     f_typing fE e1 (ftyp_arrow A1 A2) ->
+     f_typing fE e2 A1 ->
+     f_typing fE (fexp_app e1 e2) A2
+ | f_typing__tabs : forall (L:vars) (fE:fenv) (e:fexp) (A:ftyp),
+      ( forall X , X \notin  L  -> f_typing  ( X ~ fbind_tvar_empty  ++  fE )   ( open_fexp_wrt_ftyp e (ftyp_var_f X) )   ( open_ftyp_wrt_ftyp A (ftyp_var_f X) )  )  ->
+     f_typing fE (fexp_tabs e) (ftyp_all A)
+ | f_typing__tapp : forall (fE:fenv) (e1:fexp) (A2 A1:ftyp),
+     lc_ftyp A2 ->
+     f_typing fE e1 (ftyp_all A1) ->
+     f_typing fE (fexp_tapp e1 A2)  (open_ftyp_wrt_ftyp  A1   A2 ) 
+ | f_typing__inl : forall (fE:fenv) (e1:fexp) (A1 A2:ftyp),
+     f_typing fE e1 A1 ->
+     f_wf_typ fE A2 ->
+     f_typing fE (fexp_inl e1) (ftyp_sum A1 A2)
+ | f_typing__inr : forall (fE:fenv) (e1:fexp) (A1 A2:ftyp),
+     f_typing fE e1 A2 ->
+     f_wf_typ fE A1 ->
+     f_typing fE (fexp_inr e1) (ftyp_sum A1 A2)
+ | f_typing__case : forall (L:vars) (fE:fenv) (e1 e2 e3:fexp) (A A1 A2:ftyp),
+     f_typing fE e1 (ftyp_sum A1 A2) ->
+      ( forall x , x \notin  L  -> f_typing  ( x ~ (fbind_typ A1)  ++  fE )   ( open_fexp_wrt_fexp e2 (fexp_var_f x) )  A )  ->
+      ( forall y , y \notin  L  -> f_typing  ( y ~ (fbind_typ A2)  ++  fE )   ( open_fexp_wrt_fexp e3 (fexp_var_f y) )  A )  ->
+     f_typing fE (fexp_case e1 e2 e3) A
+ | f_typing__pair : forall (fE:fenv) (e1 e2:fexp) (A1 A2:ftyp),
+     f_typing fE e1 A1 ->
+     f_typing fE e2 A2 ->
+     f_typing fE (fexp_pair e1 e2) (ftyp_prod A1 A2)
+ | f_typing__proj1 : forall (fE:fenv) (e:fexp) (A1 A2:ftyp),
+     f_typing fE e (ftyp_prod A1 A2) ->
+     f_typing fE (fexp_proj1 e) A1
+ | f_typing__proj2 : forall (fE:fenv) (e:fexp) (A2 A1:ftyp),
+     f_typing fE e (ftyp_prod A1 A2) ->
+     f_typing fE (fexp_proj2 e) A2.
 
 (* defns J_f_exp_red *)
 Inductive f_exp_red : fexp -> fexp -> Prop :=    (* defn f_exp_red *)
@@ -470,20 +470,20 @@ Inductive f_exp_red : fexp -> fexp -> Prop :=    (* defn f_exp_red *)
      lc_fexp v1 ->
      f_exp_red e2 e2' ->
      f_exp_red (fexp_app v1 e2) (fexp_app v1 e2')
- | f_exp_red__tapp_1 : forall (e1:fexp) (T:ftyp) (e1':fexp),
-     lc_ftyp T ->
+ | f_exp_red__tapp_1 : forall (e1:fexp) (A:ftyp) (e1':fexp),
+     lc_ftyp A ->
      f_exp_red e1 e1' ->
-     f_exp_red (fexp_tapp e1 T) (fexp_tapp e1' T)
- | f_exp_red__abs : forall (T:ftyp) (e1 v2:fexp),
+     f_exp_red (fexp_tapp e1 A) (fexp_tapp e1' A)
+ | f_exp_red__abs : forall (A:ftyp) (e1 v2:fexp),
      Is_true (is_fvalue_of_fexp v2) ->
-     lc_ftyp T ->
-     lc_fexp (fexp_abs T e1) ->
+     lc_ftyp A ->
+     lc_fexp (fexp_abs A e1) ->
      lc_fexp v2 ->
-     f_exp_red (fexp_app  ( (fexp_abs T e1) )  v2)  (open_fexp_wrt_fexp  e1   v2 ) 
- | f_exp_red__tabs : forall (e1:fexp) (T2:ftyp),
+     f_exp_red (fexp_app  ( (fexp_abs A e1) )  v2)  (open_fexp_wrt_fexp  e1   v2 ) 
+ | f_exp_red__tabs : forall (e1:fexp) (A2:ftyp),
      lc_fexp (fexp_tabs e1) ->
-     lc_ftyp T2 ->
-     f_exp_red (fexp_tapp  ( (fexp_tabs e1) )  T2)  (open_fexp_wrt_ftyp  e1   T2 ) 
+     lc_ftyp A2 ->
+     f_exp_red (fexp_tapp  ( (fexp_tabs e1) )  A2)  (open_fexp_wrt_ftyp  e1   A2 ) 
  | f_exp_red__inl_1 : forall (e1 e1':fexp),
      f_exp_red e1 e1' ->
      f_exp_red (fexp_inl e1) (fexp_inl e1')

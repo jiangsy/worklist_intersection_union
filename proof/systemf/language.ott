@@ -3,23 +3,23 @@ metavar expvar, x, y, z ::= {{ repr-locally-nameless }}
 
 grammar
 
-ftyp, T, S, U :: ftyp_ ::=
+ftyp, A, B, C :: ftyp_ ::=
   | UNIT           ::   :: unit
   | X              ::   :: var
-  | T1 -> T2       ::   :: arrow
-  | ∀ X . T        ::   :: all  (+ bind X in T +)
-  | T1 + T2        ::   :: sum
-  | T1 × T2        ::   :: prod
-  | ( T )          :: S :: paren {{ coq ([[T]]) }}
-  | { T2 / X } T1  :: M :: subst {{ coq (open_ftyp_wrt_ftyp [[X T1]] [[T2]]) }}
+  | A1 -> A2       ::   :: arrow
+  | ∀ X . A        ::   :: all  (+ bind X in A +)
+  | A1 + A2        ::   :: sum
+  | A1 × A2        ::   :: prod
+  | ( A )          :: S :: paren {{ coq ([[A]]) }}
+  | { A2 / X } A1  :: M :: subst {{ coq (open_ftyp_wrt_ftyp [[X A1]] [[A2]]) }}
 
 fexp, e, f, g :: fexp_ ::=
   | unit                                ::   :: unit
   | x                                   ::   :: var
-  | \ x : T . e                         ::   :: abs  (+ bind x in e +)
+  | \ x : A . e                         ::   :: abs  (+ bind x in e +)
   | e1 e2                               ::   :: app
   | \ X . e                             ::   :: tabs (+ bind X in e +)
-  | e @ T                               ::   :: tapp
+  | e @ A                               ::   :: tapp
 %   | let x = e1 in e2                    ::   :: let (+ bind x in e2 +)
   | inl e                               ::   :: inl
   | inr e                               ::   :: inr
@@ -29,31 +29,31 @@ fexp, e, f, g :: fexp_ ::=
   | < e1 , e2 >                         ::   :: pair
   | ( e )                               :: S :: paren  {{ coq ([[e]]) }}
   | { e2 / x } e1                       :: M :: subst1 {{ coq (open_fexp_wrt_fexp [[x e1]] [[e2]]) }}
-  | { T2 / X } e1                       :: M :: subst2 {{ coq (open_fexp_wrt_ftyp [[X e1]] [[T2]]) }}
+  | { A2 / X } e1                       :: M :: subst2 {{ coq (open_fexp_wrt_ftyp [[X e1]] [[A2]]) }}
 
 fbind, fb :: fbind_ ::=
-  | : ■  ::   :: tvar_empty
-  | : T  ::   :: typ
+  | : □  ::   :: tvar_empty
+  | : A  ::   :: typ
 
 substitutions
-  single T X :: subst_typ_in
+  single A X :: subst_typ_in
   single e x :: subst_exp_in
 
 freevars
-  T X :: fv_ftyp_in
+  A X :: fv_ftyp_in
   e x :: fv_fexp_in
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 grammar
 
-fenv, E, F, G :: '' ::= {{ coq list (atom*fbind) }}
+fenv, fE, F, G :: '' ::= {{ coq list (atom*fbind) }}
   | empty   ::   :: empty {{ coq nil }}
-  | E , x fb ::   :: cons1 {{ coq ([[x]]~[[fb]] ++ [[E]]) }}
-  | E , X fb ::   :: cons2 {{ coq ([[X]]~[[fb]] ++ [[E]]) }}
+  | fE , x fb ::   :: cons1 {{ coq ([[x]]~[[fb]] ++ [[fE]]) }}
+  | fE , X fb ::   :: cons2 {{ coq ([[X]]~[[fb]] ++ [[fE]]) }}
 
 fvalue, v :: fvalue_ ::=
-  | \ x : T . e  ::   :: abs  (+ bind x in e +)
+  | \ x : A . e  ::   :: abs  (+ bind x in e +)
   | \ X . e      ::   :: tabs (+ bind X in e +)
   | inl v        ::   :: inl
   | inr v        ::   :: inr
@@ -61,11 +61,11 @@ fvalue, v :: fvalue_ ::=
 
 formula :: formula_ ::=
   | judgement       ::   :: judgement
-  | ( x fb ) in E    ::   :: binds1 {{ coq binds ([[x]]) ([[fb]]) ([[E]]) }}
-  | ( X fb ) in E    ::   :: binds2 {{ coq binds ([[X]]) ([[fb]]) ([[E]]) }}
-  | uniq E          ::   :: uniq   {{ coq uniq ([[E]]) }}
-  | x `notin` dom E ::   :: fresh1 {{ coq ([[x]] `notin` dom ([[E]])) }}
-  | X `notin` dom E ::   :: fresh2 {{ coq ([[X]] `notin` dom ([[E]])) }}
+  | ( x fb ) in fE    ::   :: binds1 {{ coq binds ([[x]]) ([[fb]]) ([[fE]]) }}
+  | ( X fb ) in fE    ::   :: binds2 {{ coq binds ([[X]]) ([[fb]]) ([[fE]]) }}
+  | uniq fE          ::   :: uniq   {{ coq uniq ([[fE]]) }}
+  | x `notin` dom fE ::   :: fresh1 {{ coq ([[x]] `notin` dom ([[fE]])) }}
+  | X `notin` dom fE ::   :: fresh2 {{ coq ([[X]] `notin` dom ([[fE]])) }}
 
 subrules
   v <:: e
@@ -76,33 +76,33 @@ defns
 J_wf_typ :: '' ::=
 
 defn
-E |- T :: :: f_wf_typ :: 'f_wf_typ__' by
+fE |- A :: :: f_wf_typ :: 'f_wf_typ__' by
 
 --------- :: unit
-E |- UNIT
+fE |- UNIT
 
-(X : ■) in E
--------------- :: var
-E |- X
+(X : □) in fE
+-------------- :: tvar
+fE |- X
 
-E |- T1
-E |- T2
+fE |- A1
+fE |- A2
 -------------- :: arrow
-E |- T1 -> T2
+fE |- A1 -> A2
 
-E, X : ■ |- T
+fE, X : □ |- A
 -------------------- :: all
-E |- ∀ X . T
+fE |- ∀ X . A
 
-E |- T1
-E |- T2
+fE |- A1
+fE |- A2
 ------------- :: sum
-E |- T1 + T2
+fE |- A1 + A2
 
-E |- T1
-E |- T2
+fE |- A1
+fE |- A2
 ------------- :: prod
-E |- T1 × T2
+fE |- A1 × A2
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -110,21 +110,21 @@ defns
 J_f_wf_env :: '' ::=
 
 defn
-|- E :: :: f_wf_env :: 'f_wf_env__' by
+|- fE :: :: f_wf_env :: 'f_wf_env__' by
 
 --------- :: empty
 |- empty
 
-|- E
-X `notin` dom E
+|- fE
+X `notin` dom fE
 ---------------- :: sub
-|- E , X : ■
+|- fE , X : □
 
-|- E
-E |- T
-x `notin` dom E
+|- fE
+fE |- A
+x `notin` dom fE
 ---------------- :: typ
-|- E , x : T
+|- fE , x : A
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -132,31 +132,31 @@ x `notin` dom E
 % Jsub :: '' ::=
 
 % defn
-% E |- T1 <: T2 :: :: sub :: 'sub_' by
+% fE |- A1 <: A2 :: :: sub :: 'sub_' by
 
-% |- E
-% E |- S
+% |- fE
+% fE |- S
 % -------------- :: top
-% E |- S <: top
+% fE |- S <: top
 
-% |- E
-% E |- X
+% |- fE
+% fE |- X
 % ------------ :: refl_tvar
-% E |- X <: X
+% fE |- X <: X
 
-% E |- T1 <: S1
-% E |- S2 <: T2
+% fE |- A1 <: S1
+% fE |- S2 <: A2
 % -------------------------- :: arrow
-% E |- S1 -> S2 <: T1 -> T2
+% fE |- S1 -> S2 <: A1 -> A2
 
-% E, X |- T1 <: T2
+% fE, X |- A1 <: A2
 % ---------------------------- :: all
-% E |- ∀ X . T1 <: ∀ X . T2
+% fE |- ∀ X . A1 <: ∀ X . A2
 
-% E |- S1 <: T1
-% E |- S2 <: T2
+% fE |- S1 <: A1
+% fE |- S2 <: A2
 % ------------------------ :: sum
-% E |- S1 + S2 <: T1 + T2
+% fE |- S1 + S2 <: A1 + A2
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -164,71 +164,71 @@ defns
 J_f_typing :: '' ::=
 
 defn
-E |- e : T :: :: f_typing :: 'f_typing__' by
+fE |- e : A :: :: f_typing :: 'f_typing__' by
 
 ---------------- :: unit
-E |- unit : UNIT
+fE |- unit : UNIT
 
-|- E
-(x:T) in E
+|- fE
+(x:A) in fE
 ----------- :: var
-E |- x : T
+fE |- x : A
 
-E, x : T1 |- e : T2
+fE, x : A1 |- e : A2
 --------------------------- :: abs
-E |- \x : T1. e : T1 -> T2
+fE |- \x : A1. e : A1 -> A2
 
-E |- e1 : T1 -> T2
-E |- e2 : T1
+fE |- e1 : A1 -> A2
+fE |- e2 : A1
 --------------------- :: app
-E |- e1 e2 : T2
+fE |- e1 e2 : A2
 
-E, X : ■ |- e : T
+fE, X : □ |- e : A
 -------------------------- :: tabs
-E |- \ X . e : ∀ X . T
+fE |- \ X . e : ∀ X . A
 
-E |- e1 : ∀ X . T1
+fE |- e1 : ∀ X . A1
 --------------------------- :: tapp
-E |- e1 @ T2 : {T2 / X} T1
+fE |- e1 @ A2 : {A2 / X} A1
 
-% E |- e : S
-% E |- S <: T
+% fE |- e : S
+% fE |- S <: A
 % ------------ :: sub
-% E |- e : T
+% fE |- e : A
 
-% E |- e1 : T1
-% E, x : T1 |- e2 : T2
+% fE |- e1 : A1
+% fE, x : A1 |- e2 : A2
 % --------------------------- :: let
-% E |- let x = e1 in e2 : T2
+% fE |- let x = e1 in e2 : A2
 
-E |- e1 : T1
-E |- T2
+fE |- e1 : A1
+fE |- A2
 ---------------------- :: inl
-E |- inl e1 : T1 + T2
+fE |- inl e1 : A1 + A2
 
-E |- e1 : T2
-E |- T1
+fE |- e1 : A2
+fE |- A1
 ---------------------- :: inr
-E |- inr e1 : T1 + T2
+fE |- inr e1 : A1 + A2
 
-E |- e1 : T1 + T2
-E, x : T1 |- e2 : T
-E, y : T2 |- e3 : T
+fE |- e1 : A1 + A2
+fE, x : A1 |- e2 : A
+fE, y : A2 |- e3 : A
 ---------------------------------------------- :: case
-E |- case e1 of inl x -> e2 | inr y -> e3 : T
+fE |- case e1 of inl x -> e2 | inr y -> e3 : A
 
-E |- e1 : T1
-E |- e2 : T2
+fE |- e1 : A1
+fE |- e2 : A2
 ---------------------------------------------- :: pair
-E |- < e1 , e2 > : T1 × T2
+fE |- < e1 , e2 > : A1 × A2
 
-E |- e : T1 × T2
+fE |- e : A1 × A2
 -------------------- :: proj1
-E |- proj1 e : T1
+fE |- proj1 e : A1
 
-E |- e : T1 × T2
+fE |- e : A1 × A2
 -------------------- :: proj2
-E |- proj2 e : T2
+fE |- proj2 e : A2
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -248,13 +248,13 @@ v1 e2 --> v1 e2'
 
 e1 --> e1'
 ----------------------- :: tapp_1
-e1 @ T --> e1' @ T
+e1 @ A --> e1' @ A
 
 ------------------------------- :: abs
-(\x:T. e1) v2  --> {v2 / x} e1
+(\x:A. e1) v2  --> {v2 / x} e1
 
 ------------------------------------ :: tabs
-(\X . e1) @ T2  --> {T2 / X} e1
+(\X . e1) @ A2  --> {A2 / X} e1
 
 % e1 --> e1'
 % --------------------------------------- :: let_1
