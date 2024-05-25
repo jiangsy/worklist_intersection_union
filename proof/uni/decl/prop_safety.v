@@ -1,14 +1,12 @@
+Require Import systemf.def_ott.
+Require Import systemf.prop_ln.
+
 Require Import uni.def_ott.
 Require Import uni.decl.def_extra.
 Require Import uni.prop_basic.
 Require Import uni.decl.prop_subtyping.
-Require Import uni.ltac_utils.
 Require Import uni.notations.
-
-
-Require Import systemf.def_ott.
-Require Import systemf.prop_ln.
-
+Require Import uni.ltac_utils.
 
 
 Lemma open_fexp_wrt_fexp_rec_lc_fexp : forall e2 e1 n,
@@ -144,22 +142,22 @@ Qed.
 
 
 Inductive d_sub_elab : denv -> typ -> typ -> fexp -> Prop :=
-  | sub_elab_top : forall (Ψ:denv) (A:typ),
+  | d_sub_elab__top : forall (Ψ:denv) (A:typ),
       d_wf_env Ψ ->
       d_wf_typ Ψ A ->
       d_sub_elab Ψ A typ_top (fexp_abs (trans_typ A) fexp_unit)
-  | sub_elab_bot : forall (Ψ:denv) (B:typ),
+  | d_sub_elab__bot : forall (Ψ:denv) (B:typ),
       d_wf_env Ψ ->
       d_wf_typ Ψ B ->
       d_sub_elab Ψ typ_bot B (fexp_abs (ftyp_all (ftyp_var_b 0)) (fexp_tapp (fexp_var_b 0) (trans_typ B)))
-  | sub_elab_unit : forall (Ψ:denv),
+  | d_sub_elab__unit : forall (Ψ:denv),
       d_wf_env Ψ ->
       d_sub_elab Ψ typ_unit typ_unit (fexp_abs ftyp_unit (fexp_var_b 0))
-  | sub_elab_tvar : forall (Ψ:denv) (X:typvar),
+  | d_sub_elab__tvar : forall (Ψ:denv) (X:typvar),
       d_wf_env Ψ ->
       d_wf_typ Ψ (typ_var_f X) ->
       d_sub_elab Ψ (typ_var_f X) (typ_var_f X) (fexp_abs (ftyp_var_f X) (fexp_var_b 0))
-  | sub_elab_arrow : forall (Ψ:denv) (A1 A2 B1 B2:typ) (co1 co2:fexp),
+  | d_sub_elab__arrow : forall (Ψ:denv) (A1 A2 B1 B2:typ) (co1 co2:fexp),
       d_sub_elab Ψ B1 A1 co1 ->
       d_sub_elab Ψ A2 B2 co2 ->
       d_sub_elab Ψ (typ_arrow A1 A2) (typ_arrow B1 B2)
@@ -168,13 +166,13 @@ Inductive d_sub_elab : denv -> typ -> typ -> fexp -> Prop :=
                             (fexp_app co2
                                       (fexp_app (fexp_var_b 1)
                                                 (fexp_app co1 (fexp_var_b 0))))))
-  | sub_elab_all : forall (L:vars) (Ψ:denv) (A B:typ) (co:fexp),
+  | d_sub_elab__all : forall (L:vars) (Ψ:denv) (A B:typ) (co:fexp),
       ( forall X , X \notin L -> s_in X  (open_typ_wrt_typ  A   (typ_var_f X) ) ) ->
       ( forall X , X \notin L -> s_in X  (open_typ_wrt_typ  B   (typ_var_f X) ) ) ->
       ( forall X , X \notin L -> d_sub_elab  ( X ~ dbind_stvar_empty  ++  Ψ )   (open_typ_wrt_typ  A   (typ_var_f X) )   (open_typ_wrt_typ  B   (typ_var_f X) ) (open_fexp_wrt_ftyp co (ftyp_var_f X)) ) ->
       d_sub_elab Ψ (typ_all A) (typ_all B)
         (fexp_abs (trans_typ (typ_all A)) (fexp_tabs (fexp_app (open_fexp_wrt_ftyp co (ftyp_var_b 0)) (fexp_tapp (fexp_var_b 0) (ftyp_var_b 0)))))
-  | sub_elab_alll : forall (L:vars) (Ψ:denv) (A B T:typ) (co:fexp),
+  | d_sub_elab__alll : forall (L:vars) (Ψ:denv) (A B T:typ) (co:fexp),
       neq_all B ->
       neq_intersection B ->
       neq_union B -> 
@@ -183,34 +181,34 @@ Inductive d_sub_elab : denv -> typ -> typ -> fexp -> Prop :=
       d_sub_elab Ψ  (open_typ_wrt_typ  A   T )  B co ->
       d_sub_elab Ψ (typ_all A) B
         (fexp_abs (trans_typ (typ_all A)) (fexp_app co (fexp_tapp (fexp_var_b 0) (trans_typ T))))
-  | sub_elab_intersection1 : forall (Ψ:denv) (A B1 B2:typ) (co1 co2:fexp),
+  | d_sub_elab__intersection1 : forall (Ψ:denv) (A B1 B2:typ) (co1 co2:fexp),
       d_sub_elab Ψ A B1 co1 ->
       d_sub_elab Ψ A B2 co2 ->
       d_sub_elab Ψ A (typ_intersection B1 B2)
         (fexp_abs (trans_typ A)
                   (fexp_pair (fexp_app co1 (fexp_var_b 0))
                           (fexp_app co2 (fexp_var_b 0))))
-  | sub_elab_intersection2 : forall (Ψ:denv) (A1 A2 B:typ) (co:fexp),
+  | d_sub_elab__intersection2 : forall (Ψ:denv) (A1 A2 B:typ) (co:fexp),
       d_sub_elab Ψ A1 B co ->
       d_wf_typ Ψ A2 ->
       d_sub_elab Ψ (typ_intersection A1 A2) B
         (fexp_abs (trans_typ (typ_intersection A1 A2)) (fexp_app co (fexp_proj1 (fexp_var_b 0))))
-  | sub_elab_intersection3 : forall (Ψ:denv) (A1 A2 B:typ) (co:fexp),
+  | d_sub_elab__intersection3 : forall (Ψ:denv) (A1 A2 B:typ) (co:fexp),
       d_sub_elab Ψ A2 B co ->
       d_wf_typ Ψ A1 ->
       d_sub_elab Ψ (typ_intersection A1 A2) B
         (fexp_abs (trans_typ (typ_intersection A1 A2)) (fexp_app co (fexp_proj2 (fexp_var_b 0))))
-  | sub_elab_union1 : forall (Ψ:denv) (A B1 B2:typ) (co:fexp),
+  | d_sub_elab__union1 : forall (Ψ:denv) (A B1 B2:typ) (co:fexp),
       d_sub_elab Ψ A B1 co ->
       d_wf_typ Ψ B2 ->
       d_sub_elab Ψ A (typ_union B1 B2)
         (fexp_abs (trans_typ A) (fexp_inl (fexp_app co (fexp_var_b 0))))
-  | sub_elab_union2 : forall (Ψ:denv) (A B1 B2:typ) (co:fexp),
+  | d_sub_elab__union2 : forall (Ψ:denv) (A B1 B2:typ) (co:fexp),
       d_sub_elab Ψ A B2 co ->
       d_wf_typ Ψ B1 ->
       d_sub_elab Ψ A (typ_union B1 B2)
         (fexp_abs (trans_typ A) (fexp_inr (fexp_app co (fexp_var_b 0))))
-  | sub_elab_union3 : forall (Ψ:denv) (A1 A2 B:typ) (co1 co2:fexp),
+  | d_sub_elab__union3 : forall (Ψ:denv) (A1 A2 B:typ) (co1 co2:fexp),
       d_sub_elab Ψ A1 B co1 ->
       d_sub_elab Ψ A2 B co2 ->
       d_sub_elab Ψ (typ_union A1 A2) B
@@ -383,18 +381,23 @@ Inductive d_chk_inf_elab : denv -> exp -> typing_mode -> typ -> fexp -> Prop :=
 #[local] Hint Constructors f_typing : core.
 
 
-Theorem sub_elab_sound: forall Ψ A B co,
+Theorem d_sub_elab_sound: forall Ψ A B co,
   Ψ ⊢ A <: B ↪ co -> Ψ ⊢ A <: B.
 Proof.
   intros. induction H; eauto.
 Qed.
 
 
-Theorem sub_elab_complete: forall Ψ A B,
+Theorem d_sub_elab_complete: forall Ψ A B,
   Ψ ⊢ A <: B -> exists co, Ψ ⊢ A <: B ↪ co.
 Proof with auto.
   intros. induction H; eauto 4; try solve [destruct_conj; eauto 4].
-  - admit.
+  - pick fresh X. inst_cofinites_with_keep X.
+    destruct H3 as [co ?].
+    exists 
+      (fexp_abs (trans_typ (typ_all A)) (fexp_tabs (fexp_app (open_fexp_wrt_ftyp (close_fexp_wrt_ftyp X co) (ftyp_var_b 0)) (fexp_tapp (fexp_var_b 0) (ftyp_var_b 0))))).
+    inst_cofinites_for d_sub_elab__all; intros; inst_cofinites_with X0; auto.
+    admit.  (* *, d_sub_elab_rename_tvar *)
 Admitted.
       
 
