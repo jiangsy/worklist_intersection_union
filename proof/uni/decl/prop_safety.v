@@ -10,6 +10,23 @@ Require Import systemf.def_ott.
 Require Import systemf.prop_ln.
 
 
+
+Lemma open_fexp_wrt_fexp_rec_lc_fexp : forall e2 e1 n,
+  lc_fexp e2 -> open_fexp_wrt_fexp_rec n e1 e2 = e2.
+Proof.
+  intros. apply open_fexp_wrt_fexp_rec_degree_fexp_wrt_fexp.
+  apply degree_fexp_wrt_fexp_O.
+  apply degree_fexp_wrt_fexp_of_lc_fexp. auto.
+Qed.
+
+Lemma open_fexp_wrt_ftyp_rec_lc_fexp : forall e T n,
+  lc_fexp e -> open_fexp_wrt_ftyp_rec n T e = e.
+Proof.
+  intros. apply open_fexp_wrt_ftyp_rec_degree_fexp_wrt_ftyp.
+  apply degree_fexp_wrt_ftyp_O.
+  apply degree_fexp_wrt_ftyp_of_lc_fexp. auto.
+Qed.
+
 Notation "Ψ ⊢ e : A" :=
   (f_typing Ψ e A) 
     (at level 65, e at next level, no associativity) : type_scope.
@@ -39,7 +56,6 @@ Fixpoint trans_env (Ψ : denv) : fenv :=
 
 Notation "ᵉ⟦ Ψ ⟧" := (trans_env Ψ) (at level 0, no associativity) : type_scope.
 
-
 Lemma trans_typ_open_typ_wrt_typ_rec : forall A1 A2 n,
   trans_typ (open_typ_wrt_typ_rec n A2 A1) = open_ftyp_wrt_ftyp_rec n ᵗ⟦ A2 ⟧ ᵗ⟦ A1 ⟧.
 Proof.
@@ -50,6 +66,7 @@ Proof.
   - rewrite IHA1_1. rewrite IHA1_2. auto.
   - rewrite IHA1_1. rewrite IHA1_2. auto.
 Qed.
+
 
 Theorem trans_typ_open_typ_wrt_typ : forall A1 A2,
   trans_typ (A1 ᵗ^^ₜ A2) = open_ftyp_wrt_ftyp (trans_typ A1) (trans_typ A2).
@@ -154,15 +171,14 @@ Inductive d_sub_elab : denv -> typ -> typ -> fexp -> Prop :=
   | sub_elab_all : forall (L:vars) (Ψ:denv) (A B:typ) (co:fexp),
       ( forall X , X \notin L -> s_in X  (open_typ_wrt_typ  A   (typ_var_f X) ) ) ->
       ( forall X , X \notin L -> s_in X  (open_typ_wrt_typ  B   (typ_var_f X) ) ) ->
-      ( forall X , X \notin L -> d_sub_elab  ( X ~ dbind_stvar_empty  ++  Ψ )   (open_typ_wrt_typ  A   (typ_var_f X) )   (open_typ_wrt_typ  B   (typ_var_f X) ) co ) ->
+      ( forall X , X \notin L -> d_sub_elab  ( X ~ dbind_stvar_empty  ++  Ψ )   (open_typ_wrt_typ  A   (typ_var_f X) )   (open_typ_wrt_typ  B   (typ_var_f X) ) (open_fexp_wrt_ftyp co (ftyp_var_f X)) ) ->
       d_sub_elab Ψ (typ_all A) (typ_all B)
-        (fexp_abs (trans_typ (typ_all A)) (fexp_tabs (fexp_app co (fexp_tapp (fexp_var_b 0) (ftyp_var_b 0)))))
+        (fexp_abs (trans_typ (typ_all A)) (fexp_tabs (fexp_app (open_fexp_wrt_ftyp co (ftyp_var_b 0)) (fexp_tapp (fexp_var_b 0) (ftyp_var_b 0)))))
   | sub_elab_alll : forall (L:vars) (Ψ:denv) (A B T:typ) (co:fexp),
       neq_all B ->
       neq_intersection B ->
       neq_union B -> 
       ( forall X , X \notin L -> s_in X  (open_typ_wrt_typ  A   (typ_var_f X) ) ) ->
-      d_wf_typ Ψ T ->
       d_mono_typ Ψ T ->
       d_sub_elab Ψ  (open_typ_wrt_typ  A   T )  B co ->
       d_sub_elab Ψ (typ_all A) B
@@ -200,71 +216,52 @@ Inductive d_sub_elab : denv -> typ -> typ -> fexp -> Prop :=
       d_sub_elab Ψ (typ_union A1 A2) B
         (fexp_abs (trans_typ (typ_union A1 A2)) (fexp_case (fexp_var_b 0) (fexp_app co1 (fexp_var_b 0)) (fexp_app co2 (fexp_var_b 0)))).
 
-
-#[local] Hint Constructors d_sub_elab : core.
-#[local] Hint Constructors f_typing : core.
-
-
-Theorem sub_elab_sound: forall Ψ A B C,
-  d_sub_elab Ψ A B C -> d_sub Ψ A B.
-Proof.
-  intros. induction H; eauto.
-Qed.
-
 Notation "Ψ ⊢ A <: B ↪ co" := (d_sub_elab Ψ A B co) (at level 65, A at next level, B at next level, no associativity) : type_scope.
 
-Theorem sub_elab_complete: forall Ψ A B,
-  Ψ ⊢ A <: B -> exists co, Ψ ⊢ A <: B ↪ co.
-Proof with auto.
-  intros. induction H; eauto.
-Admitted.
-
-
-Inductive infabs_elab : denv -> typ -> typ -> typ -> fexp -> Prop := 
+Inductive d_infabs_elab : denv -> typ -> typ -> typ -> fexp -> Prop := 
   | infabs_elab_bot : forall (Ψ:denv),
       d_wf_env Ψ ->
-      infabs_elab Ψ typ_bot typ_top typ_bot
+      d_infabs_elab Ψ typ_bot typ_top typ_bot
         (fexp_abs (ftyp_all (ftyp_var_b 0))
               (fexp_tapp (fexp_var_b 0) (ftyp_arrow ftyp_unit (ftyp_all (ftyp_var_b 0)))))
   | infabs_elab_arr : forall (Ψ:denv) (A B:typ),
       d_wf_env Ψ ->
       d_wf_typ Ψ A ->
       d_wf_typ Ψ B ->
-      infabs_elab Ψ (typ_arrow A B) A B
+      d_infabs_elab Ψ (typ_arrow A B) A B
         (fexp_abs (trans_typ (typ_arrow A B)) (fexp_var_b 0))
   | infabs_elab_all : forall (Ψ:denv) (A B C T:typ) (co:fexp),
       d_mono_typ Ψ T -> 
       d_wf_typ Ψ (typ_all A) ->
-      infabs_elab Ψ  (open_typ_wrt_typ  A   T ) B C co ->
-      infabs_elab Ψ (typ_all A) B C
+      d_infabs_elab Ψ  (open_typ_wrt_typ  A   T ) B C co ->
+      d_infabs_elab Ψ (typ_all A) B C
         (fexp_abs (trans_typ (typ_all A))
                   (fexp_app co (fexp_tapp (fexp_var_b 0) (trans_typ T))))
   | infabs_elab_intersection1 : forall (Ψ:denv) (A1 A2 B C:typ) (co:fexp),
       d_wf_typ Ψ A2 ->
-      infabs_elab Ψ A1 B C co ->
-      infabs_elab Ψ (typ_intersection A1 A2) B C
+      d_infabs_elab Ψ A1 B C co ->
+      d_infabs_elab Ψ (typ_intersection A1 A2) B C
         (fexp_abs (trans_typ (typ_intersection A1 A2))
                   (fexp_app co (fexp_proj1 (fexp_var_b 0))))
   | infabs_elab_intersection2 : forall (Ψ:denv) (A1 A2 B C:typ) (co:fexp),
       d_wf_typ Ψ A1 ->
-      infabs_elab Ψ A2 B C co ->
-      infabs_elab Ψ (typ_intersection A1 A2) B C
+      d_infabs_elab Ψ A2 B C co ->
+      d_infabs_elab Ψ (typ_intersection A1 A2) B C
         (fexp_abs (trans_typ (typ_intersection A1 A2))
                   (fexp_app co (fexp_proj2 (fexp_var_b 0))))
   | infabs_elab_union : forall (Ψ:denv) (A1 A2 B1 C1 B2 C2:typ) (co1 co2:fexp),
-      infabs_elab Ψ A1 B1 C1 co1 ->
-      infabs_elab Ψ A2 B2 C2 co2 ->
-      infabs_elab Ψ (typ_union A1 A2) (typ_intersection B1 B2) (typ_union C1 C2)
+      d_infabs_elab Ψ A1 B1 C1 co1 ->
+      d_infabs_elab Ψ A2 B2 C2 co2 ->
+      d_infabs_elab Ψ (typ_union A1 A2) (typ_intersection B1 B2) (typ_union C1 C2)
         (fexp_abs (trans_typ (typ_union A1 A2))
                   (fexp_abs (trans_typ (typ_intersection B1 B2))
                             (fexp_case (fexp_var_b 1)
                                       (fexp_inl (fexp_app co1 (fexp_proj1 (fexp_var_b 1))))
                                       (fexp_inr (fexp_app co2 (fexp_proj2 (fexp_var_b 1))))))).
 
-Notation "Ψ ⊢ A ▹ B → C ↪ co" :=   (infabs_elab Ψ A B C co) 
+Notation "Ψ ⊢ A ▹ B → C ↪ co" :=   (d_infabs_elab Ψ A B C co) 
   (at level 65, A at next level, B at next level, C at next level, no associativity) : type_scope.
-
-                                    
+                            
 Inductive d_inftapp_elab : denv -> typ -> typ -> typ -> fexp -> fexp -> Prop := 
   | inftapp_elab_bot : forall (Ψ:denv) (B:typ),
       d_wf_env Ψ -> 
@@ -332,7 +329,7 @@ Inductive d_chk_inf_elab : denv -> exp -> typing_mode -> typ -> fexp -> Prop :=
         fexp_unit
   | d_chk_inf_elab__inf_app : forall (Ψ:denv) (e1 e2:exp) (A B C:typ) (e1ᶠ co e2ᶠ:fexp),
       d_chk_inf_elab Ψ e1 typingmode__inf A e1ᶠ ->
-      infabs_elab Ψ A B C co ->
+      d_infabs_elab Ψ A B C co ->
       d_chk_inf_elab Ψ e2 typingmode__chk B e2ᶠ ->
       d_chk_inf_elab Ψ  ( (exp_app e1 e2) ) typingmode__inf C
         (fexp_app (fexp_app co e1ᶠ) e2ᶠ)
@@ -382,43 +379,33 @@ Inductive d_chk_inf_elab : denv -> exp -> typing_mode -> typ -> fexp -> Prop :=
         (fexp_inr eᶠ).
 
 
-(* 
+#[local] Hint Constructors d_sub_elab d_inftapp_elab d_infabs_elab d_chk_inf_elab : core.
+#[local] Hint Constructors f_typing : core.
 
 
-
-
-Hint Constructors d_sub_elab : safety.
-Hint Constructors typing : safety.
-
-
-
-
-Lemma open_fexp_wrt_fexp_rec_lc_fexp : forall e2 e1 n,
-  lc_fexp e2 -> open_fexp_wrt_fexp_rec n e1 e2 = e2.
+Theorem sub_elab_sound: forall Ψ A B co,
+  Ψ ⊢ A <: B ↪ co -> Ψ ⊢ A <: B.
 Proof.
-  intros. apply open_fexp_wrt_fexp_rec_degree_fexp_wrt_fexp.
-  apply degree_fexp_wrt_fexp_O.
-  apply degree_fexp_wrt_fexp_of_lc_fexp. auto.
+  intros. induction H; eauto.
 Qed.
 
-Lemma open_fexp_wrt_ftyp_rec_lc_fexp : forall e T n,
-  lc_fexp e -> open_fexp_wrt_ftyp_rec n T e = e.
-Proof.
-  intros. apply open_fexp_wrt_ftyp_rec_degree_fexp_wrt_ftyp.
-  apply degree_fexp_wrt_ftyp_O.
-  apply degree_fexp_wrt_ftyp_of_lc_fexp. auto.
-Qed.
 
-Theorem sub_elab_lc_fexp : forall Ψ A B C,
-  d_sub_elab Ψ A B C -> lc_fexp C.
-Proof.
-  intros. induction H.
-  - eauto with safety.
-  - apply lc_fexp_abs.
-  + apply lc_ftyp_all. intros.
-    unfold open_ftyp_wrt_ftyp. simpl. auto.
-  + intros.  unfold open_fexp_wrt_fexp. simpl.
-    eauto with safety.
+Theorem sub_elab_complete: forall Ψ A B,
+  Ψ ⊢ A <: B -> exists co, Ψ ⊢ A <: B ↪ co.
+Proof with auto.
+  intros. induction H; eauto 4; try solve [destruct_conj; eauto 4].
+  - admit.
+Admitted.
+      
+
+Theorem sub_elab_lc_fexp : forall Ψ A B co,
+  Ψ ⊢ A <: B ↪ co -> lc_fexp co.
+Proof with eauto.
+  (* intros. induction H...
+  - apply lc_fexp_abs...
+    + apply lc_ftyp_all. intros.
+      unfold open_ftyp_wrt_ftyp. simpl. auto.
+    + intros. unfold open_fexp_wrt_fexp. simpl...
   - apply lc_fexp_abs; auto. 
     intros. unfold open_fexp_wrt_fexp. simpl. auto.
   - apply lc_fexp_abs; auto. 
@@ -479,8 +466,11 @@ Proof.
     rewrite open_fexp_wrt_fexp_rec_lc_fexp; auto.
     apply lc_fexp_case; eauto with safety; intros;
     unfold open_fexp_wrt_fexp; simpl;
-    rewrite open_fexp_wrt_fexp_rec_lc_fexp; auto.
+    rewrite open_fexp_wrt_fexp_rec_lc_fexp; auto. *)
 Admitted.
+      
+
+(* 
 
 Theorem sub_sound_f : forall Ψ A B C,
   d_sub_elab Ψ A B C -> typing (trans_env Ψ) C (ftyp_arrow (trans_typ A) (trans_typ B)).
@@ -654,7 +644,7 @@ Qed.
 Hint Resolve lc_ftyp_all_id : safety.
 
 Theorem infabs_elab_lc_fexp : forall Ψ A B C Co,
-  infabs_elab Ψ A B C Co -> lc_fexp Co.
+  d_infabs_elab Ψ A B C Co -> lc_fexp Co.
 Proof.
   intros. induction H; eauto with safety;
   apply lc_fexp_abs; eauto with safety; simpl.
@@ -679,7 +669,7 @@ Proof.
 Admitted.
 
 Theorem infabs_sound_f : forall Ψ A B C Co,
-  infabs_elab Ψ A B C Co ->
+  d_infabs_elab Ψ A B C Co ->
   typing (trans_env Ψ) Co (ftyp_arrow (trans_typ A) (ftyp_arrow (trans_typ B) (trans_typ C))).
 Proof with eauto with safety.
   intros. induction H; simpl; eauto.

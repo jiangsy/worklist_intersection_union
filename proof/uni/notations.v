@@ -13,33 +13,27 @@ Notation "↑ n" := (typ_var_b n)
 
 Notation "{ B ᵗ/ₜ X } A" :=
   (subst_tvar_in_typ B X A)
-    ( at level 49, B at level 50, X at level 0
-    , right associativity) : type_scope.
+    ( at level 49, B at level 50, X at level 0, right associativity) : type_scope.
 
 Notation "{ e' ᵉ/ₑ x } e" :=
   (subst_var_in_exp e' x e)
-    ( at level 49, e' at level 50, x at level 0
-    , right associativity) : type_scope.
+    ( at level 49, e' at level 50, x at level 0, right associativity) : type_scope.
 
 Notation "{ A ᵉ/ₜ X } e" :=
   (subst_tvar_in_exp A X e)
-    ( at level 49, A at level 50, X at level 0
-    , right associativity) : type_scope.
+    ( at level 49, A at level 50, X at level 0, right associativity) : type_scope.
 
 Notation "{ A ᶜˢ/ₜ X } cs" :=
   (subst_tvar_in_conts A X cs)
-    ( at level 49, A at level 50, X at level 0
-    , right associativity) : type_scope. 
+    ( at level 49, A at level 50, X at level 0, right associativity) : type_scope. 
 
 Notation "{ A ᶜᵈ/ₜ X } cd" :=
   (subst_tvar_in_contd A X cd)
-    ( at level 49, A at level 50, X at level 0
-    , right associativity) : type_scope. 
+    ( at level 49, A at level 50, X at level 0, right associativity) : type_scope. 
 
 Notation "{ e ᶜˢ/ₑ x } cs" :=
   (subst_var_in_conts e x cs)
-    ( at level 49, e at level 50, x at level 0
-    , right associativity) : type_scope. 
+    ( at level 49, e at level 50, x at level 0, right associativity) : type_scope. 
 
 Notation "{ e ᶜᵈ/ₑ x } cd" :=
   (subst_var_in_contd e x cd)
@@ -107,16 +101,16 @@ Notation "Ψ ⊢ A <: B" :=
     (at level 65, A at next level, no associativity) : type_scope.
 
 Notation "Ψ ⊢ e ⇐ A" :=
-    (d_chk_inf Ψ e typingmode__chk A) 
-      (at level 65, e at next level, no associativity) : type_scope.
+  (d_chk_inf Ψ e typingmode__chk A) 
+    (at level 65, e at next level, no associativity) : type_scope.
 
 Notation "Ψ ⊢ e ⇒ A" := 
-    (d_chk_inf Ψ e typingmode__inf A) 
-      (at level 65, e at next level, no associativity) : type_scope.
+  (d_chk_inf Ψ e typingmode__inf A) 
+    (at level 65, e at next level, no associativity) : type_scope.
 
 Notation "Ψ ⊢ A ○ B ⇒⇒ C" :=
-    (d_inftapp Ψ A B C) 
-      (at level 65, A at next level, B at next level, no associativity) : type_scope. 
+  (d_inftapp Ψ A B C) 
+    (at level 65, A at next level, B at next level, no associativity) : type_scope. 
 
 Notation "Ψ ⊢ A ▹ B → C" :=
   (d_infabs Ψ A B C) 
