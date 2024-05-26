@@ -40,6 +40,11 @@ Ltac inst_cofinites_with_keep x :=
     end;
   intros.
 
+Tactic Notation "inst_cofinites_with" ident(x) := 
+  inst_cofinites_with x.
+
+Tactic Notation "inst_cofinites_with" ident(x) "(keep)" := 
+  inst_cofinites_with_keep x.
 
 Ltac inst_cofinites :=
   match goal with

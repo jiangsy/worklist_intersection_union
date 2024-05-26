@@ -216,8 +216,8 @@ findVar _ [] = Nothing
 tvarInTyps :: [Typ] -> [String]
 tvarInTyps = foldl union [] . map tvarInTyp
 
-pickNewTVar :: [Work] -> [Typ] -> [Char]
-pickNewTVar ws ts = genFreshTVar (wtvars `union` tvarInTyps ts)
+pickNewTVar :: [Work] -> [String] -> [Char]
+pickNewTVar ws as = genFreshTVar (wtvars `union` as)
   where
     wtvars =
       concatMap
@@ -263,8 +263,8 @@ varInJug End = []
 varInExps :: [Exp] -> [String]
 varInExps = foldl union [] . map varInExp
 
-pickNewVar :: [Work] -> [Exp] -> String
-pickNewVar ws es = genFreshVar (wvars `union` varInExps es)
+pickNewVar :: [Work] -> [String] -> String
+pickNewVar ws xs = genFreshVar (wvars `union` xs)
   where
     wvars =
       concatMap
@@ -344,35 +344,35 @@ bigStep info (WJug (Sub (TArr t1 t2) (TArr t3 t4)) : ws) = bigStep (info ++ curI
     ws' = WJug (Sub t2 t4) : WJug (Sub t3 t1) : ws
 bigStep info (WJug (Sub (TAll a t1) (TAll b t2)) : ws) = bigStep (info ++ curInfo ws' "≤∀") ws'
   where
-    c = pickNewTVar ws [t1, t2]
+    c = pickNewTVar (WJug (Sub (TAll a t1) (TAll b t2)) : ws) []
     t1' = ttsubst a (TVar c) t1
     t2' = ttsubst b (TVar c) t2
     ws' = WJug (Sub t1' t2') : WTVar c STVarBind : ws
 bigStep info (WJug (Sub (TAll a t1) t2) : ws)
   | notUnion t2 && notIntersection t2 = bigStep (info ++ curInfo ws' "≤∀L") ws'
   where
-    b = pickNewTVar ws [t1]
+    b = pickNewTVar (WJug (Sub (TAll a t1) t2) : ws) []
     t1' = ttsubst a (TVar b) t1
     ws' = WJug (Sub t1' t2) : WTVar b ETVarBind : ws
 bigStep info (WJug (Sub (TVar a) t) : w)
   | mono w t && findTVar w a == ETVarBind && (a `notElem` ftvarInTyp t) = bigStep (info ++ curInfo ws' "≤MonoL") ws'
   where
     ws' = substWL a t w
-bigStep info (WJug (Sub t (TVar a)) : w)
-  | mono w t && findTVar w a == ETVarBind && (a `notElem` ftvarInTyp t) = bigStep (info ++ curInfo ws' "≤MonoR") ws'
+bigStep info (WJug (Sub t (TVar a)) : ws)
+  | mono ws t && findTVar ws a == ETVarBind && (a `notElem` ftvarInTyp t) = bigStep (info ++ curInfo ws' "≤MonoR") ws'
   where
-    ws' = substWL a t w
+    ws' = substWL a t ws
 bigStep info (WJug (Sub (TVar a) (TArr t1 t2)) : ws)
   | not (mono ws (TArr t1 t2)) && findTVar ws a == ETVarBind = bigStep (info ++ curInfo ws' "≤SplitL") ws'
   where
     a1 = pickNewTVar ws []
-    a2 = pickNewTVar ws [TVar a1]
+    a2 = pickNewTVar ws [a1]
     ws' = WJug (Sub (TArr (TVar a1) (TVar a2)) (TArr t1 t2)) : substWL a (TArr (TVar a1) (TVar a2)) (WTVar a2 ETVarBind : WTVar a1 ETVarBind : ws)
 bigStep info (WJug (Sub (TArr t1 t2) (TVar a)) : ws)
   | not (mono ws (TArr t1 t2)) && findTVar ws a == ETVarBind = bigStep (info ++ curInfo ws' "≤SplitL") ws'
   where
     a1 = pickNewTVar ws []
-    a2 = pickNewTVar ws [TVar a1]
+    a2 = pickNewTVar ws [a1]
     ws' = WJug (Sub (TArr (TVar a1) (TVar a2)) (TArr t1 t2)) : substWL a (TArr (TVar a1) (TVar a2)) (WTVar a2 ETVarBind : WTVar a1 ETVarBind : ws)
 bigStep info (WJug (Sub t1 (TIntersection t2 t3)) : w) = bigStep (info ++ curInfo ws' "≤∩R") ws'
   where
@@ -394,34 +394,34 @@ bigStep info (WJug (Sub (TList a) (TList b)) : w) = bigStep (info ++ curInfo ws'
 bigStep info (WJug (Sub (TVar a) (TList t)) : w) -- Unformalized
   | findTVar w a == ETVarBind = bigStep (info ++ curInfo ws' "≤[]αL") ws'
   where
-    b = pickNewTVar w [t, TVar a]
+    b = pickNewTVar (WJug (Sub (TVar a) (TList t)) : w) []
     ws' = WJug (Sub (TVar b) t) : substWL a (TList (TVar b)) (WTVar b ETVarBind : w)
 bigStep info (WJug (Sub (TVar a) (TList t)) : w) -- Unformalized
   | findTVar w a == ETVarBind = bigStep (info ++ curInfo ws' "≤[]αR") ws'
   where
-    b = pickNewTVar w [t, TVar a]
+    b = pickNewTVar (WJug (Sub (TVar a) (TList t)) : w) []
     ws' = WJug (Sub (TVar b) t) : substWL a (TList (TVar b)) (WTVar b ETVarBind : w)
 --
 -- Checking
 --
 bigStep info (WJug (Chk (Lam x e) (TArr t1 t2)) : ws) = bigStep (info ++ curInfo ws' "⇐λ") ws'
   where
-    y = pickNewVar ws [Lam x e]
+    y = pickNewVar (WJug (Chk (Lam x e) (TArr t1 t2)) : ws) []
     e' = eesubst x (Var y) e
     ws' = WJug (Chk e' t2) : WVar y t1 : ws
 bigStep info (WJug (Chk (Lam x e) TTop) : ws) = bigStep (info ++ curInfo ws' "⇐λ⊤") ws'
   where
-    y = pickNewVar ws [Lam x e]
+    y = pickNewVar (WJug (Chk (Lam x e) TTop) : ws) []
     e' = eesubst x (Var y) e
     ws' = WJug (Chk e' TTop) : WVar y TBot : ws
-bigStep info (WJug (Chk (Lam x e) (TVar a)) : w)
-  | findTVar w a == ETVarBind = bigStep (info ++ curInfo ws' "⇐λα") ws'
+bigStep info (WJug (Chk (Lam x e) (TVar a)) : ws)
+  | findTVar ws a == ETVarBind = bigStep (info ++ curInfo ws' "⇐λα") ws'
   where
-    a1 = pickNewTVar w []
-    a2 = pickNewTVar w [TVar a1]
-    y = pickNewVar w [Lam x e]
+    a1 = pickNewTVar (WJug (Chk (Lam x e) (TVar a)) : ws) []
+    a2 = pickNewTVar (WJug (Chk (Lam x e) (TVar a)) : ws) [a1]
+    y = pickNewVar (WJug (Chk (Lam x e) (TVar a)) : ws) []
     e' = eesubst x (Var y) e'
-    ws' = WJug (Chk e' (TVar a2)) : WVar y (TVar a1) : substWL a (TArr (TVar a1) (TVar a2)) (WTVar a2 ETVarBind : WTVar a1 ETVarBind : w)
+    ws' = WJug (Chk e' (TVar a2)) : WVar y (TVar a1) : substWL a (TArr (TVar a1) (TVar a2)) (WTVar a2 ETVarBind : WTVar a1 ETVarBind : ws)
 bigStep info (WJug (Chk e (TIntersection t1 t2)) : w) = bigStep (info ++ curInfo ws' "⇐∩") ws'
   where
     ws' = WJug (Chk e t2) : WJug (Chk e t1) : w
@@ -467,28 +467,28 @@ bigStep info (WJug (Inf (Ann e a) c) : ws) = bigStep (info ++ curInfo ws' "⇒An
     ws' = WJug (Chk e a) : WJug (c a) : ws
 bigStep info (WJug (Inf (TAbs a (Ann e t)) c) : w) = bigStep (info ++ curInfo ws' "⇒ΛAnno") ws'
   where
-    b = pickNewTVar w [TAll a t]
+    b = pickNewTVar (WJug (Inf (TAbs a (Ann e t)) c) : w) []
     e' = etsubst a (TVar b) e
     t' = ttsubst a (TVar b) t
     ws' = WJug (Chk e' t') : WTVar b TVarBind : WJug (c (TAll b t')) : w
 -- \*** new rules
-bigStep info (WJug (Inf (TAbs a e) c) : w) = bigStep (info ++ curInfo ws' "⇒Λ") ws'
+bigStep info (WJug (Inf (TAbs a e) c) : ws) = bigStep (info ++ curInfo ws' "⇒Λ") ws'
   where
     -- \*** also tvars in e
-    b = pickNewTVar w []
+    b = pickNewTVar (WJug (Inf (TAbs a e) c) : ws) []
     e' = etsubst a (TVar b) e
-    ws' = WJug (Inf e' (c . TAll b)) : WTVar b TVarBind : w
-bigStep info (WJug (Inf (App e1 e2) c) : w) = bigStep (info ++ curInfo ws' "⇒App") ws'
+    ws' = WJug (Inf e' (c . TAll b)) : WTVar b TVarBind : ws
+bigStep info (WJug (Inf (App e1 e2) c) : ws) = bigStep (info ++ curInfo ws' "⇒App") ws'
   where
-    ws' = WJug (Inf e1 (\t1 -> InfAbs t1 (\t2 t3 -> InfApp t2 t3 e2 c))) : w
-bigStep info (WJug (Inf (TApp e t1) c) : w) = bigStep (info ++ curInfo ws' "⇒TApp") ws'
+    ws' = WJug (Inf e1 (\t1 -> InfAbs t1 (\t2 t3 -> InfApp t2 t3 e2 c))) : ws
+bigStep info (WJug (Inf (TApp e t1) c) : ws) = bigStep (info ++ curInfo ws' "⇒TApp") ws'
   where
-    ws' = WJug (Inf e (\t2 -> InfTApp t2 t1 c)) : w
+    ws' = WJug (Inf e (\t2 -> InfTApp t2 t1 c)) : ws
 bigStep info (WJug (Inf (Lam x e) c) : ws) = bigStep (info ++ curInfo ws' "⇒→Mono") ws'
   where
-    a = pickNewTVar ws []
-    b = pickNewTVar (WTVar a ETVarBind : ws) []
-    y = pickNewVar ws [Lam x e]
+    a = pickNewTVar (WJug (Inf (Lam x e) c) : ws) []
+    b = pickNewTVar (WJug (Inf (Lam x e) c) : ws) [a]
+    y = pickNewVar (WJug (Inf (Lam x e) c) : ws) []
     e' = eesubst x (Var y) e
     ws' = WJug (Chk e' (TVar b)) : WVar y (TVar a) : WJug (c (TArr (TVar a) (TVar b))) : WTVar b ETVarBind : WTVar a ETVarBind : ws
 bigStep info (WJug (Inf RcdNil c) : ws) = bigStep (info ++ curInfo ws' "⇒⟨⟩") ws' -- Record Extension
@@ -537,7 +537,7 @@ bigStep info (WJug (InfAbs TBot c) : w) = bigStep (info ++ curInfo ws' "▹⊥")
     ws' = WJug (c TTop TBot) : w
 bigStep info (WJug (InfAbs (TAll a t) c) : w) = bigStep (info ++ curInfo ws' "▹∀") ws'
   where
-    b = pickNewTVar w [TAll a t]
+    b = pickNewTVar (WJug (InfAbs (TAll a t) c) : w) []
     t' = ttsubst a (TVar b) t
     ws' = WJug (InfAbs t' c) : WTVar b ETVarBind : w
 bigStep info (WJug (InfAbs (TIntersection t1 t2) c) : ws) = case bigStep (info ++ curInfo (WJug (InfAbs t1 c) : ws) "▹∩1") (WJug (InfAbs t1 c) : ws) of
@@ -549,8 +549,8 @@ bigStep info (WJug (InfAbs (TUnion t1 t2) c) : ws) = bigStep (info ++ curInfo ws
 bigStep info (WJug (InfAbs (TVar a) c) : w)
   | findTVar w a == ETVarBind = bigStep (info ++ curInfo ws' "▹α") ws'
   where
-    a1 = pickNewTVar w []
-    a2 = pickNewTVar w [TVar a1]
+    a1 = pickNewTVar (WJug (InfAbs (TVar a) c) : w) []
+    a2 = pickNewTVar (WJug (InfAbs (TVar a) c) : w) [a1]
     ws' = substWL a (TArr (TVar a1) (TVar a2)) (WJug (InfAbs (TArr (TVar a1) (TVar a2)) c) : WTVar a2 ETVarBind : WTVar a1 ETVarBind : w)
 bigStep info (WJug (InfApp t1 t2 e c) : w) = bigStep (info ++ curInfo ws' "*>>=") ws'
   where
