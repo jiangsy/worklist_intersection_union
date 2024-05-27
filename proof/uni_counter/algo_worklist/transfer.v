@@ -1535,7 +1535,7 @@ Ltac  simpl_open_subst_typ :=
 
 Ltac simpl_open_subst_exp' :=
   match goal with
-  | H : context [ {?f ᵉ/ₑ ?x} (?e ᵉ^ₑ (?x')) ] |- _ =>
+  | H : context [ {?f ᵉ/ₑ ?x} (?e ᵉ^^ₑ (?x')) ] |- _ =>
     rewrite subst_exp_in_exp_open_exp_wrt_exp in H; auto;
     simpl in H; try destruct_eq_atom; auto
     (* try solve [rewrite subst_typ_in_typ_fresh_eq in H; auto] *)

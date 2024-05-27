@@ -289,13 +289,13 @@ Proof.
   - dependent destruction H5; eauto. simpl.
     inst_cofinites_for trans_exp__tabs;
     intros; inst_cofinites_with X0.
-    + assert (Htrans :  (X0, □) :: θ ᵉ⊩ exp_anno eᵃ Aᵃ ᵉ^ₜ ` X0 ⇝ exp_anno (eᵈ ᵉ^ₜ ` X0) ( Aᵈ ᵗ^ₜ X0)). {
+    + assert (Htrans :  (X0, □) :: θ ᵉ⊩ exp_anno eᵃ Aᵃ ᵉ^^ₜ ` X0 ⇝ exp_anno (eᵈ ᵉ^^ₜ ` X0) ( Aᵈ ᵗ^ₜ X0)). {
         constructor; eauto.
       }
       apply H0 in Htrans; eauto.
       simpl in Htrans. dependent destruction Htrans. rewrite subst_typ_in_exp_open_exp_wrt_typ_fresh2; eauto.
       apply trans_typ_weaken_cons; eauto.
-    + assert (Htrans :  (X0, □) :: θ ᵉ⊩ exp_anno eᵃ Aᵃ ᵉ^ₜ ` X0 ⇝ exp_anno (eᵈ ᵉ^ₜ ` X0) ( Aᵈ ᵗ^ₜ X0)). {
+    + assert (Htrans :  (X0, □) :: θ ᵉ⊩ exp_anno eᵃ Aᵃ ᵉ^^ₜ ` X0 ⇝ exp_anno (eᵈ ᵉ^^ₜ ` X0) ( Aᵈ ᵗ^ₜ X0)). {
         constructor; eauto.
       }
       apply H0 in Htrans; eauto.
@@ -1553,8 +1553,8 @@ Proof with eauto.
     + destruct_a_wf_wl. inst_cofinites_for a_wl_red__chk_absetvar; intros.
       eapply trans_wl_ss_binds_etvar_a_wl; eauto.
       inst_cofinites_with x. inst_cofinites_with X1. inst_cofinites_with X2.
-      assert (nil ⊩ work_check (eᵃ ᵉ^ₑ exp_var_f x) ` X2 ⫤ᵃ x ~ᵃ ` X1;ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ0 ⇝
-                    work_check (e ᵉ^ₑ exp_var_f x) A2 ⫤ᵈ x ~ᵈ A1;ᵈ Ω ⫣ (X2, dbind_typ A2) :: (X1, dbind_typ A1) :: θ0).
+      assert (nil ⊩ work_check (eᵃ ᵉ^^ₑ exp_var_f x) ` X2 ⫤ᵃ x ~ᵃ ` X1;ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ0 ⇝
+                    work_check (e ᵉ^^ₑ exp_var_f x) A2 ⫤ᵈ x ~ᵈ A1;ᵈ Ω ⫣ (X2, dbind_typ A2) :: (X1, dbind_typ A1) :: θ0).
       { apply wf_ss_binds_mono_typ in H3 as Hmono...
         dependent destruction Hmono.
         repeat (constructor; auto); simpl in *.
@@ -1564,7 +1564,7 @@ Proof with eauto.
       eapply aworklist_subst_transfer_same_dworklist_rev in H12 as Htransws...
       destruct Htransws as [θ' [Htransws [Hbinds Hwfss]]]...
       * apply H0; eauto. eapply aworklist_subst_wf_wl with 
-        (Γ:=(work_check (eᵃ ᵉ^ₑ exp_var_f x) ` X2 ⫤ᵃ x ~ᵃ ` X1;ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ0))... 
+        (Γ:=(work_check (eᵃ ᵉ^^ₑ exp_var_f x) ` X2 ⫤ᵃ x ~ᵃ ` X1;ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ0))... 
         repeat (econstructor; simpl; auto).
         eapply a_wf_exp_weaken_etvar_twice...
         simpl. constructor...

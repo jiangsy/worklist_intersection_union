@@ -460,8 +460,8 @@ Qed.
 
 
 Lemma a_wf_exp_weaken_etvar_twice : forall x X1 X2 T e Γ,
-  x ~ abind_var_typ T ++ ⌊ Γ ⌋ᵃ ᵉ⊢ᵃ e ᵉ^ₑ exp_var_f x ->
-  (x, abind_var_typ ` X1) :: (X2, ⬒) :: (X1, ⬒) :: ⌊ Γ ⌋ᵃ ᵉ⊢ᵃ e ᵉ^ₑ exp_var_f x.
+  x ~ abind_var_typ T ++ ⌊ Γ ⌋ᵃ ᵉ⊢ᵃ e ᵉ^^ₑ exp_var_f x ->
+  (x, abind_var_typ ` X1) :: (X2, ⬒) :: (X1, ⬒) :: ⌊ Γ ⌋ᵃ ᵉ⊢ᵃ e ᵉ^^ₑ exp_var_f x.
 Proof.
   intros. apply a_wf_exp_var_binds_another_cons with (A1:=T); auto.
   rewrite_env ((x ~ abind_var_typ T) ++ ((X2, ⬒) :: (X1 ~ ⬒)) ++ ⌊ Γ ⌋ᵃ).
@@ -1445,7 +1445,7 @@ Lemma ftvar_in_wf_exp_upper : forall Γ e,
 Proof.
   intros. dependent induction H; try solve [simpl; fsetdec].
   - inst_cofinites_by (L `union` dom (⌊ Γ ⌋ᵃ) `union` ftvar_in_exp e).
-    assert (ftvar_in_exp e [<=] ftvar_in_exp (e ᵉ^ₑ exp_var_f x)) by apply ftvar_in_exp_open_exp_wrt_exp_lower.
+    assert (ftvar_in_exp e [<=] ftvar_in_exp (e ᵉ^^ₑ exp_var_f x)) by apply ftvar_in_exp_open_exp_wrt_exp_lower.
     assert (x ~ abind_var_typ T ++ awl_to_aenv Γ = awl_to_aenv (x ~ᵃ T ;ᵃ Γ)) by (simpl; auto).
     eapply H1 in H3.
     simpl in *.

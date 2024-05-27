@@ -1487,7 +1487,7 @@ Ltac  simpl_open_subst_typ :=
 
 Ltac simpl_open_subst_exp' :=
   match goal with
-  | H : context [ {?f ᵉ/ₑ ?x} (?e ᵉ^ₑ (?x')) ] |- _ =>
+  | H : context [ {?f ᵉ/ₑ ?x} (?e ᵉ^^ₑ (?x')) ] |- _ =>
     rewrite subst_exp_in_exp_open_exp_wrt_exp in H; auto;
     simpl in H; try destruct_eq_atom; auto
     (* try solve [rewrite subst_typ_in_typ_fresh_eq in H; auto] *)
@@ -2606,7 +2606,7 @@ Proof with eauto.
     constructor...
   - dependent destruction H4.
     inst_cofinites_for trans_exp__tabs; intros; inst_cofinites_with X.
-    + assert ((X, □) :: θ ᵉ⊩ exp_anno eᵃ Aᵃ ᵉ^ₜ ` X ⇝ exp_anno eᵈ Aᵈ ᵉ^ₜ ` X).
+    + assert ((X, □) :: θ ᵉ⊩ exp_anno eᵃ Aᵃ ᵉ^^ₜ ` X ⇝ exp_anno eᵈ Aᵈ ᵉ^^ₜ ` X).
       constructor; auto.
       eapply H0 with (θ':=(X, □) :: θ') in H7 ; eauto. dependent destruction H7; eauto.
       intros. auto. destruct_binds...

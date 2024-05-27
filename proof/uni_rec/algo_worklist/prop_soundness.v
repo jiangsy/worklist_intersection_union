@@ -330,7 +330,7 @@ Proof.
     destruct e; simpl in x; try solve [inversion x].
     inst_cofinites_for trans_exp__tabs; intros; inst_cofinites_with X0.
     + dependent destruction x. 
-      assert (Htrans: (X0, □) :: θ ᵉ⊩ {Tᵃ ᵉ/ₜ X} exp_anno e A ᵉ^ₜ ` X0 ⇝ exp_anno (eᵈ ᵉ^ₜ ` X0) (Aᵈ ᵗ^ₜ X0)). {
+      assert (Htrans: (X0, □) :: θ ᵉ⊩ {Tᵃ ᵉ/ₜ X} exp_anno e A ᵉ^^ₜ ` X0 ⇝ exp_anno (eᵈ ᵉ^^ₜ ` X0) (Aᵈ ᵗ^ₜ X0)). {
         simpl. constructor. rewrite subst_typ_in_exp_open_exp_wrt_typ_fresh2 in H5; eauto.
         rewrite subst_typ_in_typ_open_typ_wrt_typ_fresh2 in H6; eauto.
       }
@@ -338,7 +338,7 @@ Proof.
       * dependent destruction Htrans; eauto.
       * apply trans_typ_weaken_cons; eauto.
     + dependent destruction x.
-      assert (Htrans: (X0, □) :: θ ᵉ⊩ {Tᵃ ᵉ/ₜ X} exp_anno e A ᵉ^ₜ ` X0 ⇝ exp_anno (eᵈ ᵉ^ₜ ` X0) (Aᵈ ᵗ^ₜ X0)). {
+      assert (Htrans: (X0, □) :: θ ᵉ⊩ {Tᵃ ᵉ/ₜ X} exp_anno e A ᵉ^^ₜ ` X0 ⇝ exp_anno (eᵈ ᵉ^^ₜ ` X0) (Aᵈ ᵗ^ₜ X0)). {
         simpl. constructor. rewrite subst_typ_in_exp_open_exp_wrt_typ_fresh2 in H5; eauto.
         rewrite subst_typ_in_typ_open_typ_wrt_typ_fresh2 in H6; eauto.
       }
@@ -1149,7 +1149,7 @@ Proof with eauto.
   - destruct_a_wf_wl.
     remember (fvar_in_exp e).
     pick fresh x. 
-    assert (⊢ᵃʷₛ (work_check (e ᵉ^ₑ exp_var_f x) A2 ⫤ᵃ x ~ᵃ A1;ᵃ Γ)). {
+    assert (⊢ᵃʷₛ (work_check (e ᵉ^^ₑ exp_var_f x) A2 ⫤ᵃ x ~ᵃ A1;ᵃ Γ)). {
       repeat (constructor; simpl; auto).
       eapply a_wf_exp_var_binds_another_cons...
       apply a_wf_typ_weaken_cons...
@@ -1177,11 +1177,11 @@ Proof with eauto.
     pick fresh x. pick fresh X1. pick fresh X2.
     inst_cofinites_with x. inst_cofinites_with X1. inst_cofinites_with X2.  
     assert (Hws: exists Γ1 Γ2, aworklist_subst 
-       (work_check (e ᵉ^ₑ exp_var_f x) ` X2  ⫤ᵃ x ~ᵃ ` X1;ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ) X
+       (work_check (e ᵉ^^ₑ exp_var_f x) ` X2  ⫤ᵃ x ~ᵃ ` X1;ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ) X
        (typ_arrow ` X1 ` X2) Γ1 Γ2). {
        eapply worklist_subst_fresh_etvar_total' with (X1:=X1) (X2:=X2) in H4 as Hws; auto.
        destruct Hws as [Γ1 [Γ2 Hws]].
-       exists Γ1, (work_check (e ᵉ^ₑ exp_var_f x) ` X2  ⫤ᵃ x ~ᵃ ` X1 ;ᵃ Γ2)...
+       exists Γ1, (work_check (e ᵉ^^ₑ exp_var_f x) ` X2  ⫤ᵃ x ~ᵃ ` X1 ;ᵃ Γ2)...
     }
     destruct Hws as [Γ1 [Γ2 Hsubst]].
     apply H6 in Hsubst as Hwsred.
@@ -1217,7 +1217,7 @@ Proof with eauto.
       * simpl. constructor... 
       * simpl...  
     + eapply aworklist_subst_wf_wl with 
-        (Γ:=(work_check (e ᵉ^ₑ exp_var_f x) ` X2  ⫤ᵃ x ~ᵃ ` X1;ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ)); eauto. 
+        (Γ:=(work_check (e ᵉ^^ₑ exp_var_f x) ` X2  ⫤ᵃ x ~ᵃ ` X1;ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ)); eauto. 
       * repeat (constructor; simpl; auto).
         apply a_wf_exp_var_binds_another_cons with (A1:=T)...
         rewrite_env ((x ~ abind_var_typ T) ++ ((X2, ⬒) :: (X1 ~ ⬒)) ++ ⌊ Γ ⌋ᵃ).
@@ -1225,7 +1225,7 @@ Proof with eauto.
       * simpl... constructor...
   (* \ x. e <= ⊤ *)
   - destruct_a_wf_wl. pick fresh x. inst_cofinites_with x. 
-    assert ( ⊢ᵃʷₛ (work_check (e ᵉ^ₑ exp_var_f x) typ_top ⫤ᵃ x ~ᵃ typ_bot;ᵃ Γ)). 
+    assert ( ⊢ᵃʷₛ (work_check (e ᵉ^^ₑ exp_var_f x) typ_top ⫤ᵃ x ~ᵃ typ_bot;ᵃ Γ)). 
     { repeat (constructor; simpl; auto). 
       eapply a_wf_exp_var_binds_another_cons; eauto.
     }
@@ -1270,7 +1270,7 @@ Proof with eauto.
   (* /\ a. e : A => _ *)
   - destruct_a_wf_wl. 
     pick fresh X. inst_cofinites_with X.
-    assert (Hwf: ⊢ᵃʷₛ (work_check (e ᵉ^ₜ ` X) (A ᵗ^ₜ X) ⫤ᵃ X ~ᵃ □ ;ᵃ work_applys cs (typ_all A) ⫤ᵃ Γ)). {
+    assert (Hwf: ⊢ᵃʷₛ (work_check (e ᵉ^^ₜ ` X) (A ᵗ^ₜ X) ⫤ᵃ X ~ᵃ □ ;ᵃ work_applys cs (typ_all A) ⫤ᵃ Γ)). {
       dependent destruction H0.
       repeat (constructor; simpl; auto).
       inst_cofinites_for a_wf_typ__all; intros.
@@ -1324,7 +1324,7 @@ Proof with eauto.
   - destruct_a_wf_wl.
     pick fresh x. pick fresh X1. pick fresh X2.
     inst_cofinites_with x. inst_cofinites_with X1. inst_cofinites_with X2.
-    assert (Hwf: ⊢ᵃʷₛ (work_check (e ᵉ^ₑ exp_var_f x) ` X2  ⫤ᵃ x ~ᵃ ` X1;ᵃ work_applys cs (typ_arrow ` X1 ` X2)
+    assert (Hwf: ⊢ᵃʷₛ (work_check (e ᵉ^^ₑ exp_var_f x) ` X2  ⫤ᵃ x ~ᵃ ` X1;ᵃ work_applys cs (typ_arrow ` X1 ` X2)
             ⫤ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ)). {
       repeat (constructor; simpl; auto).
       apply a_wf_exp_var_binds_another_cons with (A1:=T)...

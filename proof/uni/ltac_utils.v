@@ -1,7 +1,7 @@
 Require Import Coq.Program.Equality.
 Require Export Metalib.Metatheory.
 
-Require Import uni.notations.
+Require Export uni.notations.
 Require Export LibTactics.
 
 

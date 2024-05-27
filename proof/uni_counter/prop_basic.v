@@ -49,7 +49,7 @@ Qed.
 Lemma subst_typ_in_exp_open_exp_wrt_exp_fresh2: forall X e1 e2 A,
   lc_typ A ->
   X `notin` ftvar_in_exp e2 ->
-  (subst_typ_in_exp A X e1) ᵉ^ₑ e2 = subst_typ_in_exp A X (e1 ᵉ^ₑ e2).
+  (subst_typ_in_exp A X e1) ᵉ^^ₑ e2 = subst_typ_in_exp A X (e1 ᵉ^^ₑ e2).
 Proof.
   intros. 
   rewrite subst_typ_in_exp_open_exp_wrt_exp; auto.
@@ -60,7 +60,7 @@ Qed.
 Lemma subst_typ_in_exp_open_exp_wrt_typ_fresh2: forall X e A B,
   lc_typ A ->
   X `notin` ftvar_in_typ B ->
-  (subst_typ_in_exp A X e) ᵉ^ₜ B = subst_typ_in_exp A X (e ᵉ^ₜ B).
+  (subst_typ_in_exp A X e) ᵉ^^ₜ B = subst_typ_in_exp A X (e ᵉ^^ₜ B).
 Proof.
   intros. 
   rewrite subst_typ_in_exp_open_exp_wrt_typ; auto.
@@ -209,13 +209,13 @@ Proof with subst; simpl in *; eauto; try lia.
 Qed.
 
 
-
-Lemma typ_open_r_close_l : forall T1 T2 X
-  , X `notin` ftvar_in_typ T2
-  -> T1 = open_typ_wrt_typ T2 ` X -> close_typ_wrt_typ X T1 = T2.
+Lemma typ_open_r_close_l : forall A B X, 
+  X `notin` ftvar_in_typ B -> 
+  A = open_typ_wrt_typ B ` X -> 
+  close_typ_wrt_typ X A = B.
 Proof.
   intros * Fr H.
-  assert (close_typ_wrt_typ X T1 = close_typ_wrt_typ X (open_typ_wrt_typ T2 ` X)) by now rewrite H.
+  assert (close_typ_wrt_typ X A = close_typ_wrt_typ X (open_typ_wrt_typ B ` X)) by now rewrite H.
   now rewrite close_typ_wrt_typ_open_typ_wrt_typ in H0.
 Qed.
 
@@ -343,7 +343,7 @@ Proof with eauto using lc_typ_subst.
   intros. induction H; simpl...
   - destruct_eq_atom; auto.
   - pick fresh x0. apply lc_exp_abs_exists with (x1:=x0). 
-    replace (({e2 ᵉ/ₑ x} e) ᵉ^ₑ exp_var_f x0) with ({e2 ᵉ/ₑ x} (e ᵉ^ₑ exp_var_f x0))...
+    replace (({e2 ᵉ/ₑ x} e) ᵉ^^ₑ exp_var_f x0) with ({e2 ᵉ/ₑ x} (e ᵉ^^ₑ exp_var_f x0))...
     rewrite subst_exp_in_exp_open_exp_wrt_exp... simpl; destruct_eq_atom...
   - pick fresh X0. apply lc_exp_tabs_exists with (X1:=X0).
     rewrite <- subst_exp_in_exp_open_exp_wrt_typ...

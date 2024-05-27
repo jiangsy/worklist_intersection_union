@@ -463,8 +463,8 @@ Qed.
 
 
 Lemma a_wf_exp_weaken_etvar_twice : forall x X1 X2 T e Γ,
-  x ~ abind_var_typ T ++ ⌊ Γ ⌋ᵃ ᵉ⊢ᵃ e ᵉ^ₑ exp_var_f x ->
-  (x, abind_var_typ ` X1) :: (X2, ⬒) :: (X1, ⬒) :: ⌊ Γ ⌋ᵃ ᵉ⊢ᵃ e ᵉ^ₑ exp_var_f x.
+  x ~ abind_var_typ T ++ ⌊ Γ ⌋ᵃ ᵉ⊢ᵃ e ᵉ^^ₑ exp_var_f x ->
+  (x, abind_var_typ ` X1) :: (X2, ⬒) :: (X1, ⬒) :: ⌊ Γ ⌋ᵃ ᵉ⊢ᵃ e ᵉ^^ₑ exp_var_f x.
 Proof.
   intros. apply a_wf_exp_var_binds_another_cons with (A1:=T); auto.
   rewrite_env ((x ~ abind_var_typ T) ++ ((X2, ⬒) :: (X1 ~ ⬒)) ++ ⌊ Γ ⌋ᵃ).

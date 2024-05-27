@@ -1168,8 +1168,8 @@ Proof.
            subst. apply Jg; auto.
         -- pick fresh x. inst_cofinites_with x.
            pick fresh X1. pick fresh X2.
-           assert (Jg: (work_check (e ᵉ^ₑ exp_var_f x) ` X2 ⫤ᵃ x ~ᵃ ` X1 ;ᵃ work_applys cs (typ_arrow ` X1 ` X2) ⫤ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ) ⟶ᵃʷ⁎⋅ \/
-                     ~ (work_check (e ᵉ^ₑ exp_var_f x) ` X2 ⫤ᵃ x ~ᵃ ` X1 ;ᵃ work_applys cs (typ_arrow ` X1 ` X2) ⫤ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ) ⟶ᵃʷ⁎⋅).
+           assert (Jg: (work_check (e ᵉ^^ₑ exp_var_f x) ` X2 ⫤ᵃ x ~ᵃ ` X1 ;ᵃ work_applys cs (typ_arrow ` X1 ` X2) ⫤ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ) ⟶ᵃʷ⁎⋅ \/
+                     ~ (work_check (e ᵉ^^ₑ exp_var_f x) ` X2 ⫤ᵃ x ~ᵃ ` X1 ;ᵃ work_applys cs (typ_arrow ` X1 ` X2) ⫤ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ) ⟶ᵃʷ⁎⋅).
            { eapply IHne; eauto; simpl; try lia.
              constructor; auto. constructor; simpl; auto. constructor; simpl; auto.
              eapply a_wf_exp_weaken_etvar_twice with (T := T); eauto.
@@ -1185,8 +1185,8 @@ Proof.
            dependent destruction Hcontra.
            apply Jg; auto.
         -- destruct body5. pick fresh X.
-           assert (Jg: (work_check (e ᵉ^ₜ ` X) (A ᵗ^ₜ X) ⫤ᵃ X ~ᵃ □ ;ᵃ work_applys cs (typ_all A) ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/
-                     ~ (work_check (e ᵉ^ₜ ` X) (A ᵗ^ₜ X) ⫤ᵃ X ~ᵃ □ ;ᵃ work_applys cs (typ_all A) ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
+           assert (Jg: (work_check (e ᵉ^^ₜ ` X) (A ᵗ^ₜ X) ⫤ᵃ X ~ᵃ □ ;ᵃ work_applys cs (typ_all A) ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/
+                     ~ (work_check (e ᵉ^^ₜ ` X) (A ᵗ^ₜ X) ⫤ᵃ X ~ᵃ □ ;ᵃ work_applys cs (typ_all A) ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
            { eapply IHne; eauto; simpl; try lia. admit. admit. }
            admit.
         -- assert (Jg: (work_infer e (conts_inftapp A cs) ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/
@@ -1246,12 +1246,12 @@ Proof.
         -- dependent destruction H1; simpl in *;
              try solve [right; intro Hcontra; dependent destruction Hcontra; eapply Jg; eauto].
            ++ pick fresh x.
-              assert (Jgt: (work_check (e ᵉ^ₑ exp_var_f x) typ_top ⫤ᵃ x ~ᵃ typ_bot;ᵃ Γ) ⟶ᵃʷ⁎⋅ \/
-                         ~ (work_check (e ᵉ^ₑ exp_var_f x) typ_top ⫤ᵃ x ~ᵃ typ_bot;ᵃ Γ) ⟶ᵃʷ⁎⋅).
+              assert (Jgt: (work_check (e ᵉ^^ₑ exp_var_f x) typ_top ⫤ᵃ x ~ᵃ typ_bot;ᵃ Γ) ⟶ᵃʷ⁎⋅ \/
+                         ~ (work_check (e ᵉ^^ₑ exp_var_f x) typ_top ⫤ᵃ x ~ᵃ typ_bot;ᵃ Γ) ⟶ᵃʷ⁎⋅).
               { eapply IHne; eauto; simpl; try lia.
                 constructor; auto. constructor; auto. constructor; auto.
                 admit.
-                assert (Hexp: exp_size (x ~ᵃ typ_bot;ᵃ Γ) (e ᵉ^ₑ exp_var_f x) = exp_size Γ e) by admit. (* should be fine *)
+                assert (Hexp: exp_size (x ~ᵃ typ_bot;ᵃ Γ) (e ᵉ^^ₑ exp_var_f x) = exp_size Γ e) by admit. (* should be fine *)
                 lia. }
               destruct Jgt as [Jgt | Jgt].
               ** left. inst_cofinites_for a_wl_red__chk_abstop; eauto.
@@ -1282,12 +1282,12 @@ Proof.
               eapply Jg; eauto. unify_binds.
            ++ admit.
            ++ pick fresh x. inst_cofinites_with x.
-              assert (JgArr: (work_check (e ᵉ^ₑ exp_var_f x) A2 ⫤ᵃ x ~ᵃ A1;ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ 
-                           ~ (work_check (e ᵉ^ₑ exp_var_f x) A2 ⫤ᵃ x ~ᵃ A1;ᵃ Γ) ⟶ᵃʷ⁎⋅).
+              assert (JgArr: (work_check (e ᵉ^^ₑ exp_var_f x) A2 ⫤ᵃ x ~ᵃ A1;ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ 
+                           ~ (work_check (e ᵉ^^ₑ exp_var_f x) A2 ⫤ᵃ x ~ᵃ A1;ᵃ Γ) ⟶ᵃʷ⁎⋅).
               { eapply IHne; eauto; simpl; try lia.
                 constructor; auto. constructor; auto. constructor; auto.
                 admit. admit.
-                assert (Hexp: exp_size (x ~ᵃ A1;ᵃ Γ) (e ᵉ^ₑ exp_var_f x) = exp_size Γ e) by admit. (* should be fine *)
+                assert (Hexp: exp_size (x ~ᵃ A1;ᵃ Γ) (e ᵉ^^ₑ exp_var_f x) = exp_size Γ e) by admit. (* should be fine *)
                 rewrite Hexp. lia. } 
               destruct JgArr as [JgArr | JgArr]; auto.
               ** left. inst_cofinites_for a_wl_red__chk_absarrow; eauto.
