@@ -270,55 +270,55 @@ Inductive lc_fexp : fexp -> Prop :=    (* defn lc_fexp *)
      (lc_fexp e2) ->
      (lc_fexp (fexp_pair e1 e2)).
 (** free variables *)
-Fixpoint fv_ftyp_in_ftyp (A_5:ftyp) : vars :=
+Fixpoint ftvar_in_ftyp (A_5:ftyp) : vars :=
   match A_5 with
   | ftyp_unit => {}
   | (ftyp_var_b nat) => {}
   | (ftyp_var_f X) => {{X}}
-  | (ftyp_arrow A1 A2) => (fv_ftyp_in_ftyp A1) \u (fv_ftyp_in_ftyp A2)
-  | (ftyp_all A) => (fv_ftyp_in_ftyp A)
-  | (ftyp_sum A1 A2) => (fv_ftyp_in_ftyp A1) \u (fv_ftyp_in_ftyp A2)
-  | (ftyp_prod A1 A2) => (fv_ftyp_in_ftyp A1) \u (fv_ftyp_in_ftyp A2)
+  | (ftyp_arrow A1 A2) => (ftvar_in_ftyp A1) \u (ftvar_in_ftyp A2)
+  | (ftyp_all A) => (ftvar_in_ftyp A)
+  | (ftyp_sum A1 A2) => (ftvar_in_ftyp A1) \u (ftvar_in_ftyp A2)
+  | (ftyp_prod A1 A2) => (ftvar_in_ftyp A1) \u (ftvar_in_ftyp A2)
 end.
 
-Definition fv_ftyp_in_fbind (fb5:fbind) : vars :=
+Definition ftvar_in_fbind (fb5:fbind) : vars :=
   match fb5 with
   | fbind_tvar_empty => {}
-  | (fbind_typ A) => (fv_ftyp_in_ftyp A)
+  | (fbind_typ A) => (ftvar_in_ftyp A)
 end.
 
-Fixpoint fv_fexp_in_fexp (e_5:fexp) : vars :=
+Fixpoint fvar_in_fexp (e_5:fexp) : vars :=
   match e_5 with
   | fexp_unit => {}
   | (fexp_var_b nat) => {}
   | (fexp_var_f x) => {{x}}
-  | (fexp_abs A e) => (fv_fexp_in_fexp e)
-  | (fexp_app e1 e2) => (fv_fexp_in_fexp e1) \u (fv_fexp_in_fexp e2)
-  | (fexp_tabs e) => (fv_fexp_in_fexp e)
-  | (fexp_tapp e A) => (fv_fexp_in_fexp e)
-  | (fexp_inl e) => (fv_fexp_in_fexp e)
-  | (fexp_inr e) => (fv_fexp_in_fexp e)
-  | (fexp_case e e2 e3) => (fv_fexp_in_fexp e) \u (fv_fexp_in_fexp e2) \u (fv_fexp_in_fexp e3)
-  | (fexp_proj1 e) => (fv_fexp_in_fexp e)
-  | (fexp_proj2 e) => (fv_fexp_in_fexp e)
-  | (fexp_pair e1 e2) => (fv_fexp_in_fexp e1) \u (fv_fexp_in_fexp e2)
+  | (fexp_abs A e) => (fvar_in_fexp e)
+  | (fexp_app e1 e2) => (fvar_in_fexp e1) \u (fvar_in_fexp e2)
+  | (fexp_tabs e) => (fvar_in_fexp e)
+  | (fexp_tapp e A) => (fvar_in_fexp e)
+  | (fexp_inl e) => (fvar_in_fexp e)
+  | (fexp_inr e) => (fvar_in_fexp e)
+  | (fexp_case e e2 e3) => (fvar_in_fexp e) \u (fvar_in_fexp e2) \u (fvar_in_fexp e3)
+  | (fexp_proj1 e) => (fvar_in_fexp e)
+  | (fexp_proj2 e) => (fvar_in_fexp e)
+  | (fexp_pair e1 e2) => (fvar_in_fexp e1) \u (fvar_in_fexp e2)
 end.
 
-Fixpoint fv_ftyp_in_fexp (e_5:fexp) : vars :=
+Fixpoint ftvar_in_fexp (e_5:fexp) : vars :=
   match e_5 with
   | fexp_unit => {}
   | (fexp_var_b nat) => {}
   | (fexp_var_f x) => {}
-  | (fexp_abs A e) => (fv_ftyp_in_ftyp A) \u (fv_ftyp_in_fexp e)
-  | (fexp_app e1 e2) => (fv_ftyp_in_fexp e1) \u (fv_ftyp_in_fexp e2)
-  | (fexp_tabs e) => (fv_ftyp_in_fexp e)
-  | (fexp_tapp e A) => (fv_ftyp_in_fexp e) \u (fv_ftyp_in_ftyp A)
-  | (fexp_inl e) => (fv_ftyp_in_fexp e)
-  | (fexp_inr e) => (fv_ftyp_in_fexp e)
-  | (fexp_case e e2 e3) => (fv_ftyp_in_fexp e) \u (fv_ftyp_in_fexp e2) \u (fv_ftyp_in_fexp e3)
-  | (fexp_proj1 e) => (fv_ftyp_in_fexp e)
-  | (fexp_proj2 e) => (fv_ftyp_in_fexp e)
-  | (fexp_pair e1 e2) => (fv_ftyp_in_fexp e1) \u (fv_ftyp_in_fexp e2)
+  | (fexp_abs A e) => (ftvar_in_ftyp A) \u (ftvar_in_fexp e)
+  | (fexp_app e1 e2) => (ftvar_in_fexp e1) \u (ftvar_in_fexp e2)
+  | (fexp_tabs e) => (ftvar_in_fexp e)
+  | (fexp_tapp e A) => (ftvar_in_fexp e) \u (ftvar_in_ftyp A)
+  | (fexp_inl e) => (ftvar_in_fexp e)
+  | (fexp_inr e) => (ftvar_in_fexp e)
+  | (fexp_case e e2 e3) => (ftvar_in_fexp e) \u (ftvar_in_fexp e2) \u (ftvar_in_fexp e3)
+  | (fexp_proj1 e) => (ftvar_in_fexp e)
+  | (fexp_proj2 e) => (ftvar_in_fexp e)
+  | (fexp_pair e1 e2) => (ftvar_in_fexp e1) \u (ftvar_in_fexp e2)
 end.
 
 (** substitutions *)
@@ -378,86 +378,86 @@ end.
 
 (* defns J_wf_typ *)
 Inductive f_wf_typ : fenv -> ftyp -> Prop :=    (* defn f_wf_typ *)
- | f_wf_typ__unit : forall (fE:fenv),
-     f_wf_typ fE ftyp_unit
- | f_wf_typ__tvar : forall (fE:fenv) (X:typvar),
-      binds ( X ) ( fbind_tvar_empty ) ( fE )  ->
-     f_wf_typ fE (ftyp_var_f X)
- | f_wf_typ__arrow : forall (fE:fenv) (A1 A2:ftyp),
-     f_wf_typ fE A1 ->
-     f_wf_typ fE A2 ->
-     f_wf_typ fE (ftyp_arrow A1 A2)
- | f_wf_typ__all : forall (L:vars) (fE:fenv) (A:ftyp),
-      ( forall X , X \notin  L  -> f_wf_typ  ( X ~ fbind_tvar_empty  ++  fE )   ( open_ftyp_wrt_ftyp A (ftyp_var_f X) )  )  ->
-     f_wf_typ fE (ftyp_all A)
- | f_wf_typ__sum : forall (fE:fenv) (A1 A2:ftyp),
-     f_wf_typ fE A1 ->
-     f_wf_typ fE A2 ->
-     f_wf_typ fE (ftyp_sum A1 A2)
- | f_wf_typ__prod : forall (fE:fenv) (A1 A2:ftyp),
-     f_wf_typ fE A1 ->
-     f_wf_typ fE A2 ->
-     f_wf_typ fE (ftyp_prod A1 A2).
+ | f_wf_typ__unit : forall (Δ:fenv),
+     f_wf_typ Δ ftyp_unit
+ | f_wf_typ__tvar : forall (Δ:fenv) (X:typvar),
+      binds ( X ) ( fbind_tvar_empty ) ( Δ )  ->
+     f_wf_typ Δ (ftyp_var_f X)
+ | f_wf_typ__arrow : forall (Δ:fenv) (A1 A2:ftyp),
+     f_wf_typ Δ A1 ->
+     f_wf_typ Δ A2 ->
+     f_wf_typ Δ (ftyp_arrow A1 A2)
+ | f_wf_typ__all : forall (L:vars) (Δ:fenv) (A:ftyp),
+      ( forall X , X \notin  L  -> f_wf_typ  ( X ~ fbind_tvar_empty  ++  Δ )   ( open_ftyp_wrt_ftyp A (ftyp_var_f X) )  )  ->
+     f_wf_typ Δ (ftyp_all A)
+ | f_wf_typ__sum : forall (Δ:fenv) (A1 A2:ftyp),
+     f_wf_typ Δ A1 ->
+     f_wf_typ Δ A2 ->
+     f_wf_typ Δ (ftyp_sum A1 A2)
+ | f_wf_typ__prod : forall (Δ:fenv) (A1 A2:ftyp),
+     f_wf_typ Δ A1 ->
+     f_wf_typ Δ A2 ->
+     f_wf_typ Δ (ftyp_prod A1 A2).
 
 (* defns J_f_wf_env *)
 Inductive f_wf_env : fenv -> Prop :=    (* defn f_wf_env *)
  | f_wf_env__empty : 
      f_wf_env  nil 
- | f_wf_env__sub : forall (fE:fenv) (X:typvar),
-     f_wf_env fE ->
-      ( X  `notin` dom ( fE ))  ->
-     f_wf_env  ( X ~ fbind_tvar_empty  ++  fE ) 
- | f_wf_env__typ : forall (fE:fenv) (x:expvar) (A:ftyp),
-     f_wf_env fE ->
-     f_wf_typ fE A ->
-      ( x  `notin` dom ( fE ))  ->
-     f_wf_env  ( x ~ (fbind_typ A)  ++  fE ) .
+ | f_wf_env__sub : forall (Δ:fenv) (X:typvar),
+     f_wf_env Δ ->
+      ( X  `notin` dom ( Δ ))  ->
+     f_wf_env  ( X ~ fbind_tvar_empty  ++  Δ ) 
+ | f_wf_env__typ : forall (Δ:fenv) (x:expvar) (A:ftyp),
+     f_wf_env Δ ->
+     f_wf_typ Δ A ->
+      ( x  `notin` dom ( Δ ))  ->
+     f_wf_env  ( x ~ (fbind_typ A)  ++  Δ ) .
 
 (* defns J_f_typing *)
 Inductive f_typing : fenv -> fexp -> ftyp -> Prop :=    (* defn f_typing *)
- | f_typing__unit : forall (fE:fenv),
-     f_typing fE fexp_unit ftyp_unit
- | f_typing__var : forall (fE:fenv) (x:expvar) (A:ftyp),
-     f_wf_env fE ->
-      binds ( x ) ( (fbind_typ A) ) ( fE )  ->
-     f_typing fE (fexp_var_f x) A
- | f_typing__abs : forall (L:vars) (fE:fenv) (A1:ftyp) (e:fexp) (A2:ftyp),
-      ( forall x , x \notin  L  -> f_typing  ( x ~ (fbind_typ A1)  ++  fE )   ( open_fexp_wrt_fexp e (fexp_var_f x) )  A2 )  ->
-     f_typing fE (fexp_abs A1 e) (ftyp_arrow A1 A2)
- | f_typing__app : forall (fE:fenv) (e1 e2:fexp) (A2 A1:ftyp),
-     f_typing fE e1 (ftyp_arrow A1 A2) ->
-     f_typing fE e2 A1 ->
-     f_typing fE (fexp_app e1 e2) A2
- | f_typing__tabs : forall (L:vars) (fE:fenv) (e:fexp) (A:ftyp),
-      ( forall X , X \notin  L  -> f_typing  ( X ~ fbind_tvar_empty  ++  fE )   ( open_fexp_wrt_ftyp e (ftyp_var_f X) )   ( open_ftyp_wrt_ftyp A (ftyp_var_f X) )  )  ->
-     f_typing fE (fexp_tabs e) (ftyp_all A)
- | f_typing__tapp : forall (fE:fenv) (e1:fexp) (A2 A1:ftyp),
+ | f_typing__unit : forall (Δ:fenv),
+     f_typing Δ fexp_unit ftyp_unit
+ | f_typing__var : forall (Δ:fenv) (x:expvar) (A:ftyp),
+     f_wf_env Δ ->
+      binds ( x ) ( (fbind_typ A) ) ( Δ )  ->
+     f_typing Δ (fexp_var_f x) A
+ | f_typing__abs : forall (L:vars) (Δ:fenv) (A1:ftyp) (e:fexp) (A2:ftyp),
+      ( forall x , x \notin  L  -> f_typing  ( x ~ (fbind_typ A1)  ++  Δ )   ( open_fexp_wrt_fexp e (fexp_var_f x) )  A2 )  ->
+     f_typing Δ (fexp_abs A1 e) (ftyp_arrow A1 A2)
+ | f_typing__app : forall (Δ:fenv) (e1 e2:fexp) (A2 A1:ftyp),
+     f_typing Δ e1 (ftyp_arrow A1 A2) ->
+     f_typing Δ e2 A1 ->
+     f_typing Δ (fexp_app e1 e2) A2
+ | f_typing__tabs : forall (L:vars) (Δ:fenv) (e:fexp) (A:ftyp),
+      ( forall X , X \notin  L  -> f_typing  ( X ~ fbind_tvar_empty  ++  Δ )   ( open_fexp_wrt_ftyp e (ftyp_var_f X) )   ( open_ftyp_wrt_ftyp A (ftyp_var_f X) )  )  ->
+     f_typing Δ (fexp_tabs e) (ftyp_all A)
+ | f_typing__tapp : forall (Δ:fenv) (e1:fexp) (A2 A1:ftyp),
      lc_ftyp A2 ->
-     f_typing fE e1 (ftyp_all A1) ->
-     f_typing fE (fexp_tapp e1 A2)  (open_ftyp_wrt_ftyp  A1   A2 ) 
- | f_typing__inl : forall (fE:fenv) (e1:fexp) (A1 A2:ftyp),
-     f_typing fE e1 A1 ->
-     f_wf_typ fE A2 ->
-     f_typing fE (fexp_inl e1) (ftyp_sum A1 A2)
- | f_typing__inr : forall (fE:fenv) (e1:fexp) (A1 A2:ftyp),
-     f_typing fE e1 A2 ->
-     f_wf_typ fE A1 ->
-     f_typing fE (fexp_inr e1) (ftyp_sum A1 A2)
- | f_typing__case : forall (L:vars) (fE:fenv) (e1 e2 e3:fexp) (A A1 A2:ftyp),
-     f_typing fE e1 (ftyp_sum A1 A2) ->
-      ( forall x , x \notin  L  -> f_typing  ( x ~ (fbind_typ A1)  ++  fE )   ( open_fexp_wrt_fexp e2 (fexp_var_f x) )  A )  ->
-      ( forall y , y \notin  L  -> f_typing  ( y ~ (fbind_typ A2)  ++  fE )   ( open_fexp_wrt_fexp e3 (fexp_var_f y) )  A )  ->
-     f_typing fE (fexp_case e1 e2 e3) A
- | f_typing__pair : forall (fE:fenv) (e1 e2:fexp) (A1 A2:ftyp),
-     f_typing fE e1 A1 ->
-     f_typing fE e2 A2 ->
-     f_typing fE (fexp_pair e1 e2) (ftyp_prod A1 A2)
- | f_typing__proj1 : forall (fE:fenv) (e:fexp) (A1 A2:ftyp),
-     f_typing fE e (ftyp_prod A1 A2) ->
-     f_typing fE (fexp_proj1 e) A1
- | f_typing__proj2 : forall (fE:fenv) (e:fexp) (A2 A1:ftyp),
-     f_typing fE e (ftyp_prod A1 A2) ->
-     f_typing fE (fexp_proj2 e) A2.
+     f_typing Δ e1 (ftyp_all A1) ->
+     f_typing Δ (fexp_tapp e1 A2)  (open_ftyp_wrt_ftyp  A1   A2 ) 
+ | f_typing__inl : forall (Δ:fenv) (e1:fexp) (A1 A2:ftyp),
+     f_typing Δ e1 A1 ->
+     f_wf_typ Δ A2 ->
+     f_typing Δ (fexp_inl e1) (ftyp_sum A1 A2)
+ | f_typing__inr : forall (Δ:fenv) (e1:fexp) (A1 A2:ftyp),
+     f_typing Δ e1 A2 ->
+     f_wf_typ Δ A1 ->
+     f_typing Δ (fexp_inr e1) (ftyp_sum A1 A2)
+ | f_typing__case : forall (L:vars) (Δ:fenv) (e1 e2 e3:fexp) (A A1 A2:ftyp),
+     f_typing Δ e1 (ftyp_sum A1 A2) ->
+      ( forall x , x \notin  L  -> f_typing  ( x ~ (fbind_typ A1)  ++  Δ )   ( open_fexp_wrt_fexp e2 (fexp_var_f x) )  A )  ->
+      ( forall y , y \notin  L  -> f_typing  ( y ~ (fbind_typ A2)  ++  Δ )   ( open_fexp_wrt_fexp e3 (fexp_var_f y) )  A )  ->
+     f_typing Δ (fexp_case e1 e2 e3) A
+ | f_typing__pair : forall (Δ:fenv) (e1 e2:fexp) (A1 A2:ftyp),
+     f_typing Δ e1 A1 ->
+     f_typing Δ e2 A2 ->
+     f_typing Δ (fexp_pair e1 e2) (ftyp_prod A1 A2)
+ | f_typing__proj1 : forall (Δ:fenv) (e:fexp) (A1 A2:ftyp),
+     f_typing Δ e (ftyp_prod A1 A2) ->
+     f_typing Δ (fexp_proj1 e) A1
+ | f_typing__proj2 : forall (Δ:fenv) (e:fexp) (A2 A1:ftyp),
+     f_typing Δ e (ftyp_prod A1 A2) ->
+     f_typing Δ (fexp_proj2 e) A2.
 
 (* defns J_f_exp_red *)
 Inductive f_exp_red : fexp -> fexp -> Prop :=    (* defn f_exp_red *)

@@ -40,8 +40,8 @@ substitutions
   single e x :: subst_exp_in
 
 freevars
-  A X :: fv_ftyp_in
-  e x :: fv_fexp_in
+  A X :: ftvar_in
+  e x :: fvar_in
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
