@@ -8,7 +8,6 @@ Require Import systemf.prop_basic.
 Require Import uni.prop_basic.
 Require Import uni.decl.prop_basic.
 Require Import uni.decl.prop_rename.
-(* Require Import uni.decl.prop_subtyping. *)
 Require Import uni.ltac_utils.
 
 
@@ -467,91 +466,6 @@ Proof with auto.
 Qed.
 
 
-Theorem sub_elab_lc_fexp : forall Ψ A B coᶠ,
-  Ψ ⊢ A <: B ↪ coᶠ -> lc_fexp coᶠ.
-Proof with eauto 4.
-  intros. induction H...
-  - apply lc_fexp_abs...
-    + apply lc_ftyp_all. intros.
-      unfold open_ftyp_wrt_ftyp. simpl. auto.
-    + intros. unfold open_fexp_wrt_fexp. simpl...
-  - apply lc_fexp_abs; auto. 
-    intros. unfold open_fexp_wrt_fexp. simpl. auto. 
-  (* 
-  - apply lc_fexp_abs...
-    + apply lc_ftyp_all. intros.
-      unfold open_ftyp_wrt_ftyp. simpl. auto.
-    + intros. unfold open_fexp_wrt_fexp. simpl...
-
-  - apply lc_fexp_abs; auto. 
-    intros. unfold open_fexp_wrt_fexp. simpl. auto.
-  - apply lc_fexp_abs; auto. 
-    intros. unfold open_fexp_wrt_fexp. simpl. auto.
-  - apply sub_elab_sound in H. apply sub_elab_sound in H0.
-    apply d_sub_d_wf in H. apply d_sub_d_wf in H0.
-    destruct H as [_ [? ?]]. destruct H0 as [_ [? ?]].
-    apply lc_fexp_abs.
-    + apply lc_ftyp_arrow; eauto with safety.
-    + intros. unfold open_fexp_wrt_fexp. simpl.
-    rewrite open_fexp_wrt_fexp_rec_lc_fexp; auto.
-    rewrite open_fexp_wrt_fexp_rec_lc_fexp; auto.
-    apply lc_fexp_abs; eauto with safety.
-    intros. unfold open_fexp_wrt_fexp. simpl.
-    rewrite open_fexp_wrt_fexp_rec_lc_fexp; auto.
-    rewrite open_fexp_wrt_fexp_rec_lc_fexp; auto.
-  - admit.
-  - admit.
-  - apply sub_elab_sound in H. apply sub_elab_sound in H0.
-    apply d_sub_d_wf in H. apply d_sub_d_wf in H0.
-    destruct H as [_ [? ?]]. destruct H0 as [_ [? ?]].
-    apply lc_fexp_abs; eauto with safety.
-    intros. unfold open_fexp_wrt_fexp. simpl.
-    rewrite open_fexp_wrt_fexp_rec_lc_fexp; auto.
-    rewrite open_fexp_wrt_fexp_rec_lc_fexp; auto.
-  - apply sub_elab_sound in H.
-    apply d_sub_d_wf in H.
-    destruct H as [_ [? ?]].
-    apply lc_fexp_abs; eauto with safety.
-    intros. unfold open_fexp_wrt_fexp. simpl.
-    rewrite open_fexp_wrt_fexp_rec_lc_fexp; auto.
-  - apply sub_elab_sound in H.
-    apply d_sub_d_wf in H.
-    destruct H as [_ [? ?]].
-    apply lc_fexp_abs; eauto with safety.
-    intros. unfold open_fexp_wrt_fexp. simpl.
-    rewrite open_fexp_wrt_fexp_rec_lc_fexp; auto.
-  - apply sub_elab_sound in H.
-    apply d_sub_d_wf in H.
-    destruct H as [_ [? ?]].
-    apply lc_fexp_abs; eauto with safety.
-    intros. unfold open_fexp_wrt_fexp. simpl.
-    rewrite open_fexp_wrt_fexp_rec_lc_fexp; auto.
-  - apply sub_elab_sound in H.
-    apply d_sub_d_wf in H.
-    destruct H as [_ [? ?]].
-    apply lc_fexp_abs; eauto with safety.
-    intros. unfold open_fexp_wrt_fexp. simpl.
-    rewrite open_fexp_wrt_fexp_rec_lc_fexp; auto.
-  - apply sub_elab_sound in H. apply sub_elab_sound in H0.
-    apply d_sub_d_wf in H. apply d_sub_d_wf in H0.
-    destruct H as [_ [? ?]]. destruct H0 as [_ [? ?]].
-    apply lc_fexp_abs; eauto with safety.
-    intros. unfold open_fexp_wrt_fexp. simpl.
-    rewrite open_fexp_wrt_fexp_rec_lc_fexp; auto.
-    rewrite open_fexp_wrt_fexp_rec_lc_fexp; auto.
-    apply lc_fexp_case; eauto with safety; intros;
-    unfold open_fexp_wrt_fexp; simpl;
-    rewrite open_fexp_wrt_fexp_rec_lc_fexp; auto. *)
-Admitted.
-      
-
-Theorem d_sub_elab_sound_f : forall Ψ A B coᶠ,
-  Ψ ⊢ A <: B ↪ coᶠ -> ⟦ Ψ ⟧ ⊢ coᶠ : ftyp_arrow ᵗ⟦ A ⟧ ᵗ⟦ B ⟧.
-Proof with eauto 4.
-  intros. induction H...
-Admitted.
-
-
 Theorem d_infabs_elab_sound : forall Ψ A B C coᶠ,
   Ψ ⊢ A ▹ B → C ↪ coᶠ -> Ψ ⊢ A ▹ B → C.
 Proof.  
@@ -565,12 +479,6 @@ Proof with eauto 4.
   intros. induction H; try solve [destruct_conj; eauto].
 Qed.
 
-
-Theorem d_infabs_elab_sound_f : forall Ψ A B C coᶠ,
-  Ψ ⊢ A ▹ B → C ↪ coᶠ -> 
-  ⟦ Ψ ⟧ ⊢ coᶠ : ftyp_arrow ᵗ⟦ A ⟧ (ftyp_arrow ᵗ⟦ B ⟧ ᵗ⟦ C ⟧).
-Proof.
-Admitted.
 
 
 Theorem d_inftapp_elab_sound : forall Ψ A B C co1ᶠ co2ᶠ,
@@ -587,26 +495,12 @@ Proof.
 Qed.
 
 
-Theorem d_inftapp_elab_sound_f : forall Ψ A B C co1ᶠ co2ᶠ,
-  Ψ ⊢ A ○ B ⇒⇒ C ↪ co1ᶠ | co2ᶠ ->
-  exists D, ⟦ Ψ ⟧ ⊢ co1ᶠ : ftyp_arrow ᵗ⟦ A ⟧ D /\ ⟦ Ψ ⟧ ⊢ co2ᶠ : ftyp_arrow D ᵗ⟦ C ⟧.
-Proof.
-Admitted.
-
 
 Theorem d_chk_inf_elab_sound : forall Ψ e mode A eᶠ,
   d_chk_inf_elab Ψ e mode A eᶠ -> d_chk_inf Ψ e mode A.
 Proof with eauto using d_sub_elab_sound, d_infabs_elab_sound, d_inftapp_elab_sound.
   intros. induction H...
 Qed.
-
-
-
-Theorem d_chk_inf_elab_lc_fexp : forall Ψ e A eᶠ mode,
-  d_chk_inf_elab Ψ e mode A eᶠ -> lc_fexp eᶠ.
-Proof.
-  intros. induction H; eauto; simpl.
-Admitted.
 
 
 Lemma d_infabs_elab_rename_tvar : forall Ψ1 Ψ2 X Y A B C coᶠ,
@@ -843,6 +737,34 @@ Proof.
   - apply d_sub_elab_complete in H0.
     destruct_conj; eauto.
 Qed.
+
+
+Theorem d_sub_elab_sound_f : forall Ψ A B coᶠ,
+  Ψ ⊢ A <: B ↪ coᶠ -> ⟦ Ψ ⟧ ⊢ coᶠ : ftyp_arrow ᵗ⟦ A ⟧ ᵗ⟦ B ⟧.
+Proof with eauto 4.
+  intros. induction H...
+Admitted.
+
+
+Theorem d_infabs_elab_sound_f : forall Ψ A B C coᶠ,
+  Ψ ⊢ A ▹ B → C ↪ coᶠ -> 
+  ⟦ Ψ ⟧ ⊢ coᶠ : ftyp_arrow ᵗ⟦ A ⟧ (ftyp_arrow ᵗ⟦ B ⟧ ᵗ⟦ C ⟧).
+Proof.
+Admitted.
+
+
+Theorem d_inftapp_elab_sound_f : forall Ψ A B C co1ᶠ co2ᶠ,
+  Ψ ⊢ A ○ B ⇒⇒ C ↪ co1ᶠ | co2ᶠ ->
+  exists D, ⟦ Ψ ⟧ ⊢ co1ᶠ : ftyp_arrow ᵗ⟦ A ⟧ D /\ ⟦ Ψ ⟧ ⊢ co2ᶠ : ftyp_arrow D ᵗ⟦ C ⟧.
+Proof.
+Admitted.
+
+
+Theorem d_chk_inf_elab_lc_fexp : forall Ψ e A eᶠ mode,
+  d_chk_inf_elab Ψ e mode A eᶠ -> lc_fexp eᶠ.
+Proof.
+  intros. induction H; eauto; simpl.
+Admitted.
 
 
 Theorem d_chk_inf_elab_sound_f : forall Ψ e A eᶠ mode,
