@@ -583,12 +583,6 @@ bigStep n info ws@(WJug End : w) = bigStep (n - 1) (info ++ curInfo ws "Dummy") 
 --
 bigStep _ info _ = (False, info)
 
-ws1 :: [Work]
-ws1 = [WJug (Inf (Lam "x" (Lam "y" (ILit 1))) (const End))]
-
-res1 :: (Bool, String)
-res1 = bigStep 11 "" ws1
-
 run :: FilePath -> IO ()
 run s = do
   code <- readFile s
@@ -602,3 +596,9 @@ run s = do
 
 ex_ws1 :: [Work]
 ex_ws1 = [WJug (Sub (TAll "a" (TArr (TVar "a") (TVar "a"))) (TAll "a" (TArr (TVar "a") (TVar "a"))))]
+
+ws1 :: [Work]
+ws1 = [WJug (Inf (Ann (Lam "x" (App (App (Var "plus") (Var "x")) (ILit 1))) (TArr (TIntersection TInt TBool) TInt)) (const End)), WVar "plus" (TArr TInt (TArr TInt TInt))]
+
+res1 :: (Bool, String)
+res1 = bigStep 30 "" ws1
