@@ -322,55 +322,55 @@ Fixpoint ftvar_in_fexp (e_5:fexp) : vars :=
 end.
 
 (** substitutions *)
-Fixpoint subst_typ_in_ftyp (A_5:ftyp) (X5:typvar) (A__6:ftyp) {struct A__6} : ftyp :=
+Fixpoint subst_ftyp_in_ftyp (A_5:ftyp) (X5:typvar) (A__6:ftyp) {struct A__6} : ftyp :=
   match A__6 with
   | ftyp_unit => ftyp_unit 
   | (ftyp_var_b nat) => ftyp_var_b nat
   | (ftyp_var_f X) => (if eq_var X X5 then A_5 else (ftyp_var_f X))
-  | (ftyp_arrow A1 A2) => ftyp_arrow (subst_typ_in_ftyp A_5 X5 A1) (subst_typ_in_ftyp A_5 X5 A2)
-  | (ftyp_all A) => ftyp_all (subst_typ_in_ftyp A_5 X5 A)
-  | (ftyp_sum A1 A2) => ftyp_sum (subst_typ_in_ftyp A_5 X5 A1) (subst_typ_in_ftyp A_5 X5 A2)
-  | (ftyp_prod A1 A2) => ftyp_prod (subst_typ_in_ftyp A_5 X5 A1) (subst_typ_in_ftyp A_5 X5 A2)
+  | (ftyp_arrow A1 A2) => ftyp_arrow (subst_ftyp_in_ftyp A_5 X5 A1) (subst_ftyp_in_ftyp A_5 X5 A2)
+  | (ftyp_all A) => ftyp_all (subst_ftyp_in_ftyp A_5 X5 A)
+  | (ftyp_sum A1 A2) => ftyp_sum (subst_ftyp_in_ftyp A_5 X5 A1) (subst_ftyp_in_ftyp A_5 X5 A2)
+  | (ftyp_prod A1 A2) => ftyp_prod (subst_ftyp_in_ftyp A_5 X5 A1) (subst_ftyp_in_ftyp A_5 X5 A2)
 end.
 
-Definition subst_typ_in_fbind (A5:ftyp) (X5:typvar) (fb5:fbind) : fbind :=
+Definition subst_ftyp_in_fbind (A5:ftyp) (X5:typvar) (fb5:fbind) : fbind :=
   match fb5 with
   | fbind_tvar_empty => fbind_tvar_empty 
-  | (fbind_typ A) => fbind_typ (subst_typ_in_ftyp A5 X5 A)
+  | (fbind_typ A) => fbind_typ (subst_ftyp_in_ftyp A5 X5 A)
 end.
 
-Fixpoint subst_exp_in_fexp (e_5:fexp) (x5:expvar) (e__6:fexp) {struct e__6} : fexp :=
+Fixpoint subst_fexp_in_fexp (e_5:fexp) (x5:expvar) (e__6:fexp) {struct e__6} : fexp :=
   match e__6 with
   | fexp_unit => fexp_unit 
   | (fexp_var_b nat) => fexp_var_b nat
   | (fexp_var_f x) => (if eq_var x x5 then e_5 else (fexp_var_f x))
-  | (fexp_abs A e) => fexp_abs A (subst_exp_in_fexp e_5 x5 e)
-  | (fexp_app e1 e2) => fexp_app (subst_exp_in_fexp e_5 x5 e1) (subst_exp_in_fexp e_5 x5 e2)
-  | (fexp_tabs e) => fexp_tabs (subst_exp_in_fexp e_5 x5 e)
-  | (fexp_tapp e A) => fexp_tapp (subst_exp_in_fexp e_5 x5 e) A
-  | (fexp_inl e) => fexp_inl (subst_exp_in_fexp e_5 x5 e)
-  | (fexp_inr e) => fexp_inr (subst_exp_in_fexp e_5 x5 e)
-  | (fexp_case e e2 e3) => fexp_case (subst_exp_in_fexp e_5 x5 e) (subst_exp_in_fexp e_5 x5 e2) (subst_exp_in_fexp e_5 x5 e3)
-  | (fexp_proj1 e) => fexp_proj1 (subst_exp_in_fexp e_5 x5 e)
-  | (fexp_proj2 e) => fexp_proj2 (subst_exp_in_fexp e_5 x5 e)
-  | (fexp_pair e1 e2) => fexp_pair (subst_exp_in_fexp e_5 x5 e1) (subst_exp_in_fexp e_5 x5 e2)
+  | (fexp_abs A e) => fexp_abs A (subst_fexp_in_fexp e_5 x5 e)
+  | (fexp_app e1 e2) => fexp_app (subst_fexp_in_fexp e_5 x5 e1) (subst_fexp_in_fexp e_5 x5 e2)
+  | (fexp_tabs e) => fexp_tabs (subst_fexp_in_fexp e_5 x5 e)
+  | (fexp_tapp e A) => fexp_tapp (subst_fexp_in_fexp e_5 x5 e) A
+  | (fexp_inl e) => fexp_inl (subst_fexp_in_fexp e_5 x5 e)
+  | (fexp_inr e) => fexp_inr (subst_fexp_in_fexp e_5 x5 e)
+  | (fexp_case e e2 e3) => fexp_case (subst_fexp_in_fexp e_5 x5 e) (subst_fexp_in_fexp e_5 x5 e2) (subst_fexp_in_fexp e_5 x5 e3)
+  | (fexp_proj1 e) => fexp_proj1 (subst_fexp_in_fexp e_5 x5 e)
+  | (fexp_proj2 e) => fexp_proj2 (subst_fexp_in_fexp e_5 x5 e)
+  | (fexp_pair e1 e2) => fexp_pair (subst_fexp_in_fexp e_5 x5 e1) (subst_fexp_in_fexp e_5 x5 e2)
 end.
 
-Fixpoint subst_typ_in_fexp (A_5:ftyp) (X5:typvar) (e_5:fexp) {struct e_5} : fexp :=
+Fixpoint subst_ftyp_in_fexp (A_5:ftyp) (X5:typvar) (e_5:fexp) {struct e_5} : fexp :=
   match e_5 with
   | fexp_unit => fexp_unit 
   | (fexp_var_b nat) => fexp_var_b nat
   | (fexp_var_f x) => fexp_var_f x
-  | (fexp_abs A e) => fexp_abs (subst_typ_in_ftyp A_5 X5 A) (subst_typ_in_fexp A_5 X5 e)
-  | (fexp_app e1 e2) => fexp_app (subst_typ_in_fexp A_5 X5 e1) (subst_typ_in_fexp A_5 X5 e2)
-  | (fexp_tabs e) => fexp_tabs (subst_typ_in_fexp A_5 X5 e)
-  | (fexp_tapp e A) => fexp_tapp (subst_typ_in_fexp A_5 X5 e) (subst_typ_in_ftyp A_5 X5 A)
-  | (fexp_inl e) => fexp_inl (subst_typ_in_fexp A_5 X5 e)
-  | (fexp_inr e) => fexp_inr (subst_typ_in_fexp A_5 X5 e)
-  | (fexp_case e e2 e3) => fexp_case (subst_typ_in_fexp A_5 X5 e) (subst_typ_in_fexp A_5 X5 e2) (subst_typ_in_fexp A_5 X5 e3)
-  | (fexp_proj1 e) => fexp_proj1 (subst_typ_in_fexp A_5 X5 e)
-  | (fexp_proj2 e) => fexp_proj2 (subst_typ_in_fexp A_5 X5 e)
-  | (fexp_pair e1 e2) => fexp_pair (subst_typ_in_fexp A_5 X5 e1) (subst_typ_in_fexp A_5 X5 e2)
+  | (fexp_abs A e) => fexp_abs (subst_ftyp_in_ftyp A_5 X5 A) (subst_ftyp_in_fexp A_5 X5 e)
+  | (fexp_app e1 e2) => fexp_app (subst_ftyp_in_fexp A_5 X5 e1) (subst_ftyp_in_fexp A_5 X5 e2)
+  | (fexp_tabs e) => fexp_tabs (subst_ftyp_in_fexp A_5 X5 e)
+  | (fexp_tapp e A) => fexp_tapp (subst_ftyp_in_fexp A_5 X5 e) (subst_ftyp_in_ftyp A_5 X5 A)
+  | (fexp_inl e) => fexp_inl (subst_ftyp_in_fexp A_5 X5 e)
+  | (fexp_inr e) => fexp_inr (subst_ftyp_in_fexp A_5 X5 e)
+  | (fexp_case e e2 e3) => fexp_case (subst_ftyp_in_fexp A_5 X5 e) (subst_ftyp_in_fexp A_5 X5 e2) (subst_ftyp_in_fexp A_5 X5 e3)
+  | (fexp_proj1 e) => fexp_proj1 (subst_ftyp_in_fexp A_5 X5 e)
+  | (fexp_proj2 e) => fexp_proj2 (subst_ftyp_in_fexp A_5 X5 e)
+  | (fexp_pair e1 e2) => fexp_pair (subst_ftyp_in_fexp A_5 X5 e1) (subst_ftyp_in_fexp A_5 X5 e2)
 end.
 
 

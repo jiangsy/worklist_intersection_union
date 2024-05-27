@@ -377,7 +377,7 @@ Proof.
 Qed.
 
 Lemma trans_typ_rename_tvar : forall A X Y,
-  subst_typ_in_ftyp (ftyp_var_f Y) X ᵗ⟦ A ⟧ = ᵗ⟦ {`Y ᵗ/ₜ X} A ⟧.
+  subst_ftyp_in_ftyp (ftyp_var_f Y) X ᵗ⟦ A ⟧ = ᵗ⟦ {`Y ᵗ/ₜ X} A ⟧.
 Proof.
   intros. induction A; simpl; eauto.
   - destruct_eq_atom; auto.
@@ -392,12 +392,15 @@ Lemma d_sub_elab_rename_dtvar : forall Ψ1 Ψ2 A B b X Y coᶠ,
   b = □ \/ b = ■ ->
   Ψ2 ++ (X , b) :: Ψ1  ⊢ A <: B ↪ coᶠ ->
   Y ∉ (dom (Ψ2 ++ (X, b) :: Ψ1)) ->
-  (map (subst_tvar_in_dbind `Y X) Ψ2) ++ (Y , b) :: Ψ1  ⊢ {`Y ᵗ/ₜ X} A <: {`Y ᵗ/ₜ X} B ↪ subst_typ_in_fexp (ftyp_var_f Y) X coᶠ.
+  (map (subst_tvar_in_dbind `Y X) Ψ2) ++ (Y , b) :: Ψ1  ⊢ {`Y ᵗ/ₜ X} A <: {`Y ᵗ/ₜ X} B ↪ subst_ftyp_in_fexp (ftyp_var_f Y) X coᶠ.
 Proof with eauto 6 using d_wf_typ_rename_dtvar, d_wf_env_rename_dtvar.
   intros. dependent induction H0; eauto; try solve [simpl; repeat rewrite trans_typ_rename_tvar; eauto 6 using d_wf_typ_rename_dtvar, d_wf_env_rename_dtvar].
   - simpl. destruct_eq_atom; auto.
     + econstructor; eauto... destruct H; eauto.
-    + econstructor; eauto... admit.
+    + econstructor; eauto...
+      dependent destruction H0; apply binds_remove_mid in H; apply binds_app_iff in H; destruct H...
+      * econstructor... apply binds_app_2. apply binds_map with (f:=(subst_tvar_in_dbind ` Y X)) in H...
+      * eapply d_wf_typ__stvar. apply binds_app_2. apply binds_map with (f:=(subst_tvar_in_dbind ` Y X)) in H...
   - simpl. repeat rewrite trans_typ_rename_tvar.
     replace (ftyp_all ᵗ⟦ {` Y ᵗ/ₜ X} A ⟧) with (ᵗ⟦ typ_all ( {` Y ᵗ/ₜ X} A ) ⟧) by auto.
     inst_cofinites_for d_sub_elab__all; intros; inst_cofinites_with X0; auto.
@@ -407,7 +410,10 @@ Proof with eauto 6 using d_wf_typ_rename_dtvar, d_wf_env_rename_dtvar.
       apply s_in_subst_inv...
     + rewrite subst_tvar_in_typ_open_typ_wrt_typ_fresh2...
       rewrite subst_tvar_in_typ_open_typ_wrt_typ_fresh2...
-      admit.
+      replace (ftyp_var_f X0) with (subst_ftyp_in_ftyp (ftyp_var_f Y) X (ftyp_var_f X0))...
+      * rewrite <- subst_ftyp_in_fexp_open_fexp_wrt_ftyp...
+        rewrite_env (map (subst_tvar_in_dbind ` Y X) (X0 ~ ■ ++ Ψ2) ++ (Y, b) :: Ψ1)...
+      * simpl. destruct_eq_atom...
   - simpl. repeat rewrite trans_typ_rename_tvar.
     inst_cofinites_for d_sub_elab__alll; intros; inst_cofinites_with X0; eauto...
     + rewrite subst_tvar_in_typ_open_typ_wrt_typ_fresh2...
@@ -418,17 +424,19 @@ Proof with eauto 6 using d_wf_typ_rename_dtvar, d_wf_env_rename_dtvar.
   - simpl; repeat rewrite trans_typ_rename_tvar... econstructor...
   - simpl; repeat rewrite trans_typ_rename_tvar... econstructor...
   - simpl; repeat rewrite trans_typ_rename_tvar... econstructor...
-Admitted.
+Qed.
+
 
 Lemma d_sub_elab_rename_tvar_cons : forall Ψ A B X Y coᶠ b,
   b = □ \/ b = ■ ->
   Y `notin` dom ((X, b) :: Ψ) ->
   (X , b) :: Ψ ⊢ A <: B ↪ coᶠ ->
-  (Y , b) :: Ψ ⊢ {`Y ᵗ/ₜ X} A <: {`Y ᵗ/ₜ X} B ↪ subst_typ_in_fexp (ftyp_var_f Y) X coᶠ.
+  (Y , b) :: Ψ ⊢ {`Y ᵗ/ₜ X} A <: {`Y ᵗ/ₜ X} B ↪ subst_ftyp_in_fexp (ftyp_var_f Y) X coᶠ.
 Proof.
   intros. rewrite_env ((map (subst_tvar_in_dbind `Y X) nil) ++ (Y , b) :: Ψ). 
   eapply d_sub_elab_rename_dtvar; eauto.
 Qed.
+
 
 Theorem d_sub_elab_complete: forall Ψ A B,
   Ψ ⊢ A <: B -> exists coᶠ, Ψ ⊢ A <: B ↪ coᶠ.
@@ -441,11 +449,12 @@ Proof with auto.
     inst_cofinites_for d_sub_elab__all; intros; inst_cofinites_with X0; auto.
     erewrite <- subst_tvar_in_typ_open_typ_wrt_typ_tvar2 with (X:=X)...
     erewrite <- subst_tvar_in_typ_open_typ_wrt_typ_tvar2 with (X:=X) (A:=B)...
-    erewrite (subst_typ_in_fexp_intro X (close_fexp_wrt_ftyp X coᶠ)) by apply close_fexp_wrt_ftyp_notin.
+    erewrite (subst_ftyp_in_fexp_intro X (close_fexp_wrt_ftyp X coᶠ)) by apply close_fexp_wrt_ftyp_notin.
     + rewrite open_fexp_wrt_ftyp_close_fexp_wrt_ftyp.
       eapply d_sub_elab_rename_tvar_cons; eauto.
 Qed.
       
+
 Theorem sub_elab_lc_fexp : forall Ψ A B coᶠ,
   Ψ ⊢ A <: B ↪ coᶠ -> lc_fexp coᶠ.
 Proof with eauto 4.
