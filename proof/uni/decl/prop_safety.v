@@ -205,6 +205,7 @@ Inductive d_sub_elab : denv -> typ -> typ -> fexp -> Prop :=
 
 Notation "Ψ ⊢ A <: B ↪ coᶠ" := (d_sub_elab Ψ A B coᶠ) (at level 65, A at next level, B at next level, no associativity) : type_scope.
 
+
 Inductive d_infabs_elab : denv -> typ -> typ -> typ -> fexp -> Prop := 
   | infabs_elab_bot : forall (Ψ:denv),
       d_wf_env Ψ ->
@@ -248,7 +249,8 @@ Inductive d_infabs_elab : denv -> typ -> typ -> typ -> fexp -> Prop :=
 
 Notation "Ψ ⊢ A ▹ B → C ↪ coᶠ" :=   (d_infabs_elab Ψ A B C coᶠ) 
   (at level 65, A at next level, B at next level, C at next level, no associativity) : type_scope.
-                            
+    
+  
 Inductive d_inftapp_elab : denv -> typ -> typ -> typ -> fexp -> fexp -> Prop := 
   | inftapp_elab_bot : forall (Ψ:denv) (B:typ),
       d_wf_env Ψ -> 
@@ -376,6 +378,7 @@ Proof.
   intros. induction H; eauto.
 Qed.
 
+
 Lemma trans_typ_rename_tvar : forall A X Y,
   subst_ftyp_in_ftyp (ftyp_var_f Y) X ᵗ⟦ A ⟧ = ᵗ⟦ {`Y ᵗ/ₜ X} A ⟧.
 Proof.
@@ -392,35 +395,35 @@ Lemma d_sub_elab_rename_dtvar : forall Ψ1 Ψ2 A B b X Y coᶠ,
   b = □ \/ b = ■ ->
   Ψ2 ++ (X , b) :: Ψ1  ⊢ A <: B ↪ coᶠ ->
   Y ∉ (dom (Ψ2 ++ (X, b) :: Ψ1)) ->
-  (map (subst_tvar_in_dbind `Y X) Ψ2) ++ (Y , b) :: Ψ1  ⊢ {`Y ᵗ/ₜ X} A <: {`Y ᵗ/ₜ X} B ↪ subst_ftyp_in_fexp (ftyp_var_f Y) X coᶠ.
+  (map (subst_typ_in_dbind `Y X) Ψ2) ++ (Y , b) :: Ψ1  ⊢ {`Y ᵗ/ₜ X} A <: {`Y ᵗ/ₜ X} B ↪ subst_ftyp_in_fexp (ftyp_var_f Y) X coᶠ.
 Proof with eauto 6 using d_wf_typ_rename_dtvar, d_wf_env_rename_dtvar.
   intros. dependent induction H0; eauto; try solve [simpl; repeat rewrite trans_typ_rename_tvar; eauto 6 using d_wf_typ_rename_dtvar, d_wf_env_rename_dtvar].
   - simpl. destruct_eq_atom; auto.
     + econstructor; eauto... destruct H; eauto.
     + econstructor; eauto...
       dependent destruction H0; apply binds_remove_mid in H; apply binds_app_iff in H; destruct H...
-      * econstructor... apply binds_app_2. apply binds_map with (f:=(subst_tvar_in_dbind ` Y X)) in H...
-      * eapply d_wf_typ__stvar. apply binds_app_2. apply binds_map with (f:=(subst_tvar_in_dbind ` Y X)) in H...
+      * econstructor... apply binds_app_2. apply binds_map with (f:=(subst_typ_in_dbind ` Y X)) in H...
+      * eapply d_wf_typ__stvar. apply binds_app_2. apply binds_map with (f:=(subst_typ_in_dbind ` Y X)) in H...
   - simpl. repeat rewrite trans_typ_rename_tvar.
     replace (ftyp_all ᵗ⟦ {` Y ᵗ/ₜ X} A ⟧) with (ᵗ⟦ typ_all ( {` Y ᵗ/ₜ X} A ) ⟧) by auto.
     inst_cofinites_for d_sub_elab__all; intros; inst_cofinites_with X0; auto.
-    + rewrite subst_tvar_in_typ_open_typ_wrt_typ_fresh2...
+    + rewrite subst_typ_in_typ_open_typ_wrt_typ_fresh2...
       apply s_in_subst_inv...
-    + rewrite subst_tvar_in_typ_open_typ_wrt_typ_fresh2...
+    + rewrite subst_typ_in_typ_open_typ_wrt_typ_fresh2...
       apply s_in_subst_inv...
-    + rewrite subst_tvar_in_typ_open_typ_wrt_typ_fresh2...
-      rewrite subst_tvar_in_typ_open_typ_wrt_typ_fresh2...
+    + rewrite subst_typ_in_typ_open_typ_wrt_typ_fresh2...
+      rewrite subst_typ_in_typ_open_typ_wrt_typ_fresh2...
       replace (ftyp_var_f X0) with (subst_ftyp_in_ftyp (ftyp_var_f Y) X (ftyp_var_f X0))...
       * rewrite <- subst_ftyp_in_fexp_open_fexp_wrt_ftyp...
-        rewrite_env (map (subst_tvar_in_dbind ` Y X) (X0 ~ ■ ++ Ψ2) ++ (Y, b) :: Ψ1)...
+        rewrite_env (map (subst_typ_in_dbind ` Y X) (X0 ~ ■ ++ Ψ2) ++ (Y, b) :: Ψ1)...
       * simpl. destruct_eq_atom...
   - simpl. repeat rewrite trans_typ_rename_tvar.
     inst_cofinites_for d_sub_elab__alll; intros; inst_cofinites_with X0; eauto...
-    + rewrite subst_tvar_in_typ_open_typ_wrt_typ_fresh2...
+    + rewrite subst_typ_in_typ_open_typ_wrt_typ_fresh2...
       apply s_in_subst_inv...
     + eapply d_mono_typ_rename_dtvar...
       apply d_sub_elab_sound in H4. apply d_sub_d_wf_env in H4...
-    + rewrite <- subst_tvar_in_typ_open_typ_wrt_typ...
+    + rewrite <- subst_typ_in_typ_open_typ_wrt_typ...
   - simpl; repeat rewrite trans_typ_rename_tvar... econstructor...
   - simpl; repeat rewrite trans_typ_rename_tvar... econstructor...
   - simpl; repeat rewrite trans_typ_rename_tvar... econstructor...
@@ -433,9 +436,25 @@ Lemma d_sub_elab_rename_tvar_cons : forall Ψ A B X Y coᶠ b,
   (X , b) :: Ψ ⊢ A <: B ↪ coᶠ ->
   (Y , b) :: Ψ ⊢ {`Y ᵗ/ₜ X} A <: {`Y ᵗ/ₜ X} B ↪ subst_ftyp_in_fexp (ftyp_var_f Y) X coᶠ.
 Proof.
-  intros. rewrite_env ((map (subst_tvar_in_dbind `Y X) nil) ++ (Y , b) :: Ψ). 
+  intros. rewrite_env ((map (subst_typ_in_dbind `Y X) nil) ++ (Y , b) :: Ψ). 
   eapply d_sub_elab_rename_dtvar; eauto.
 Qed.
+
+
+Ltac rewrite_close_open_subst :=
+  match goal with
+  | H : _ |- context [open_ftyp_wrt_ftyp (close_ftyp_wrt_ftyp ?X ?A) ?B] =>
+      erewrite (subst_ftyp_in_ftyp_intro X (close_ftyp_wrt_ftyp X A)) by apply close_ftyp_wrt_ftyp_notin;
+      rewrite open_ftyp_wrt_ftyp_close_ftyp_wrt_ftyp
+  | H : _ |- context [open_fexp_wrt_ftyp (close_fexp_wrt_ftyp ?X ?e) ?B] =>
+      erewrite (subst_ftyp_in_fexp_intro X (close_fexp_wrt_ftyp X e)) by apply close_fexp_wrt_ftyp_notin;
+      rewrite open_fexp_wrt_ftyp_close_fexp_wrt_ftyp
+  | H : _ |- context [open_fexp_wrt_fexp (close_fexp_wrt_fexp ?x ?e) ?e'] =>
+      erewrite (subst_fexp_in_fexp_intro x (close_fexp_wrt_fexp x e)) by apply close_fexp_wrt_fexp_notin;
+      rewrite open_fexp_wrt_fexp_close_fexp_wrt_fexp
+  | H : _ |- _ => idtac
+  end.
+
 
 
 Theorem d_sub_elab_complete: forall Ψ A B,
@@ -447,13 +466,13 @@ Proof with auto.
     exists 
       (fexp_abs (trans_typ (typ_all A)) (fexp_tabs (fexp_app (close_fexp_wrt_ftyp X coᶠ) (fexp_tapp (fexp_var_b 0) (ftyp_var_b 0))))).
     inst_cofinites_for d_sub_elab__all; intros; inst_cofinites_with X0; auto.
-    erewrite <- subst_tvar_in_typ_open_typ_wrt_typ_tvar2 with (X:=X)...
-    erewrite <- subst_tvar_in_typ_open_typ_wrt_typ_tvar2 with (X:=X) (A:=B)...
+    erewrite <- subst_typ_in_typ_open_typ_wrt_typ_tvar2 with (X:=X)...
+    erewrite <- subst_typ_in_typ_open_typ_wrt_typ_tvar2 with (X:=X) (A:=B)...
     erewrite (subst_ftyp_in_fexp_intro X (close_fexp_wrt_ftyp X coᶠ)) by apply close_fexp_wrt_ftyp_notin.
     + rewrite open_fexp_wrt_ftyp_close_fexp_wrt_ftyp.
       eapply d_sub_elab_rename_tvar_cons; eauto.
 Qed.
-      
+
 
 Theorem sub_elab_lc_fexp : forall Ψ A B coᶠ,
   Ψ ⊢ A <: B ↪ coᶠ -> lc_fexp coᶠ.
@@ -539,10 +558,11 @@ Proof with eauto 4.
 Admitted.
 
 
-Theorem d_infabs_complete : forall Ψ A B C,
+Theorem d_infabs_elab_complete : forall Ψ A B C,
   Ψ ⊢ A ▹ B → C -> exists coᶠ, Ψ ⊢ A ▹ B → C ↪ coᶠ.
-Proof.
-Admitted.
+Proof with eauto 4.
+  intros. induction H; try solve [destruct_conj; eauto].
+Qed.
 
 
 Theorem d_infabs_elab_sound_f : forall Ψ A B C coᶠ,
@@ -555,7 +575,8 @@ Admitted.
 Theorem d_inftapp_elab_complete : forall Ψ A B C,
   Ψ ⊢ A ○ B ⇒⇒ C -> exists co1ᶠ co2ᶠ, Ψ ⊢ A ○ B ⇒⇒ C ↪ co1ᶠ | co2ᶠ.
 Proof.
-Admitted.
+  intros. induction H; try solve [destruct_conj; eauto].
+Qed.
 
 Theorem d_inftapp_elab_sound_f : forall Ψ A B C co1ᶠ co2ᶠ,
   Ψ ⊢ A ○ B ⇒⇒ C ↪ co1ᶠ | co2ᶠ ->
@@ -570,9 +591,73 @@ Proof.
 Admitted.
 
 
+Lemma d_chk_inf_elab_rename_dtvar : forall Ψ1 Ψ2 X Y e A b eᶠ mode,
+  d_chk_inf_elab (Ψ2 ++ (X , b) :: Ψ1) e mode A eᶠ ->
+  Y `notin` dom (Ψ2 ++ (X , b) :: Ψ1) ->
+  d_chk_inf_elab (Ψ2 ++ (Y, b) :: Ψ1) e mode ({` Y ᵗ/ₜ X} A) (subst_ftyp_in_fexp (ftyp_var_f Y) X eᶠ).
+Proof with eauto.
+  intros. dependent induction H...
+Admitted.
+
+
+
+Lemma d_chk_inf_elab_rename_var : forall Ψ1 Ψ2 x y e A B eᶠ mode,
+  d_chk_inf_elab (Ψ2 ++ (x ~ dbind_typ B) ++ Ψ1) e mode A eᶠ ->
+  y `notin` dom (Ψ2 ++ (x ~ dbind_typ B) ++ Ψ1) ->
+  d_chk_inf_elab (Ψ2 ++ (y ~ dbind_typ B) ++ Ψ1) ({exp_var_f y ᵉ/ₑ x} e) mode A (subst_fexp_in_fexp (fexp_var_f y) x eᶠ).
+Proof with eauto.
+  intros. dependent induction H...
+Admitted.
+
+
+Corollary d_chk_inf_elab_rename_var_cons : forall Ψ x y e A B eᶠ mode,
+  d_chk_inf_elab ((x ~ dbind_typ B) ++ Ψ) e mode A eᶠ ->
+  y `notin` dom ((x ~ dbind_typ B) ++ Ψ) ->
+  d_chk_inf_elab ((y ~ dbind_typ B) ++ Ψ) ({exp_var_f y ᵉ/ₑ x} e) mode A (subst_fexp_in_fexp (fexp_var_f y) x eᶠ).
+Proof.
+  intros. rewrite_env (nil ++ (y ~ dbind_typ B) ++ Ψ).
+  apply d_chk_inf_elab_rename_var; eauto.
+Qed.
+
+
 Theorem d_chk_inf_elab_complete : forall Ψ e mode A,
   d_chk_inf Ψ e mode A -> exists eᶠ, d_chk_inf_elab Ψ e mode A eᶠ.
 Proof.
+  intros. induction H; try solve [destruct_conj; eauto]. 
+  - apply d_infabs_elab_complete in H0...
+    destruct_conj; eauto.
+  (* λx. e => τ1 -> τ2 *)
+  - pick fresh x. inst_cofinites_with x.
+    destruct H1 as [eᶠ].
+    exists (fexp_abs (trans_typ A) (close_fexp_wrt_fexp x eᶠ)).
+    inst_cofinites_for d_chk_inf_elab__inf_abs_mono; eauto.
+    intros. rewrite_close_open_subst.
+     admit. (* d_chk_inf_elab_rename_var *)
+  - pick fresh X. inst_cofinites_with X (keep).
+    destruct H2 as [eᶠ].
+    exists (fexp_tabs (close_fexp_wrt_ftyp X eᶠ)).
+    inst_cofinites_for d_chk_inf_elab__inf_tabs.
+    + intros. inst_cofinites_with X0. auto.
+    + intros. rewrite_close_open_subst. 
+      erewrite <- subst_typ_in_typ_open_typ_wrt_typ_tvar2; eauto.
+      admit.  (* d_chk_inf_elab_rename_tvar *)
+  - apply d_inftapp_elab_complete in H1.
+    destruct_conj; eauto.
+  (* λx. e <= ⊤ *)
+  - exists fexp_unit...
+    pick fresh x. inst_cofinites_with x.
+    destruct H0 as [eᶠ].
+    inst_cofinites_for d_chk_inf_elab__chk_abs_top eᶠ:=(close_fexp_wrt_fexp x eᶠ).
+    intros.
+    rewrite_close_open_subst.
+    admit.  (* d_chk_inf_elab_rename_var *)
+  - pick fresh x. inst_cofinites_with x.
+    destruct H1 as [eᶠ].
+    exists (fexp_abs (trans_typ A1) (close_fexp_wrt_fexp x eᶠ)).
+    inst_cofinites_for d_chk_inf_elab__chk_abs; eauto.
+    intros. admit. (* d_chk_inf_elab_rename_var *)
+  - apply d_sub_elab_complete in H0.
+    destruct_conj; eauto.
 Admitted. 
 
 

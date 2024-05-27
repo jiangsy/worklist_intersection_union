@@ -725,7 +725,7 @@ Proof.
       eapply uniq_remove_mid with (F := (y, dbind_typ A) :: nil). auto.
   - dependent destruction Hes1. dependent destruction Hes2.
     pick fresh x'. inst_cofinites_with x'.
-    rewrite subst_var_in_exp_open_exp_wrt_exp_var in H2; auto.
+    rewrite subst_exp_in_exp_open_exp_wrt_exp_var in H2; auto.
     eapply IHm with (Ψ1 := Ψ1) (Ψ2 := x' ~ dbind_typ typ_bot ++ Ψ2) (y := y) (n2 := n0) in H1; auto.
     + rewrite size_exp_open_exp_wrt_exp_var. lia.
     + constructor; auto.
@@ -736,7 +736,7 @@ Proof.
     eapply IHm in Hes1_2; eauto; try lia.
   - dependent destruction Hes1. dependent destruction Hes2.
     pick fresh X. inst_cofinites_with X.
-    rewrite <- subst_var_in_exp_open_exp_wrt_typ in H3; auto.
+    rewrite <- subst_exp_in_exp_open_exp_wrt_typ in H3; auto.
     assert (m0 = m1) by admit. subst. (* d_iuv_det *)
     eapply IHm with (Ψ1 := Ψ1) (Ψ2 := X ~ □ ++ Ψ2) (y := y) (n2 := n0) in H1; auto.
     + simpl in Hlt. rewrite size_exp_open_exp_wrt_typ_var. lia.

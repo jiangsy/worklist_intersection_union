@@ -12,46 +12,46 @@ Notation "↑ n" := (typ_var_b n)
   (at level 0, n at level 0, no associativity) : type_scope.
 
 Notation "{ B ᵗ/ₜ X } A" :=
-  (subst_tvar_in_typ B X A)
+  (subst_typ_in_typ B X A)
     ( at level 49, B at level 50, X at level 0, right associativity) : type_scope.
 
 Notation "{ e' ᵉ/ₑ x } e" :=
-  (subst_var_in_exp e' x e)
+  (subst_exp_in_exp e' x e)
     ( at level 49, e' at level 50, x at level 0, right associativity) : type_scope.
 
 Notation "{ A ᵉ/ₜ X } e" :=
-  (subst_tvar_in_exp A X e)
+  (subst_typ_in_exp A X e)
     ( at level 49, A at level 50, X at level 0, right associativity) : type_scope.
 
 Notation "{ A ᶜˢ/ₜ X } cs" :=
-  (subst_tvar_in_conts A X cs)
+  (subst_typ_in_conts A X cs)
     ( at level 49, A at level 50, X at level 0, right associativity) : type_scope. 
 
 Notation "{ A ᶜᵈ/ₜ X } cd" :=
-  (subst_tvar_in_contd A X cd)
+  (subst_typ_in_contd A X cd)
     ( at level 49, A at level 50, X at level 0, right associativity) : type_scope. 
 
 Notation "{ e ᶜˢ/ₑ x } cs" :=
-  (subst_var_in_conts e x cs)
+  (subst_exp_in_conts e x cs)
     ( at level 49, e at level 50, x at level 0, right associativity) : type_scope. 
 
 Notation "{ e ᶜᵈ/ₑ x } cd" :=
-  (subst_var_in_contd e x cd)
+  (subst_exp_in_contd e x cd)
     ( at level 49, e at level 50, x at level 0
     , right associativity) : type_scope. 
 
 Notation "{ A ʷ/ₜ X } w" :=
-  (subst_tvar_in_work A X w)
+  (subst_typ_in_work A X w)
     ( at level 49, A at level 50, X at level 0
     , right associativity) : type_scope. 
 
 Notation "{ e ʷ/ₑ x } w" :=
-  (subst_var_in_work e x w)
+  (subst_exp_in_work e x w)
     ( at level 49, e at level 50, x at level 0
     , right associativity) : type_scope. 
 
 Notation "{ A ᵃʷ/ₜ X } Γ" :=
-  (subst_tvar_in_aworklist A X Γ)
+  (subst_typ_in_aworklist A X Γ)
     ( at level 49, A at level 50, X at level 0
     , right associativity) : type_scope. 
 

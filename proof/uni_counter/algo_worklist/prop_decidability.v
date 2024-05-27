@@ -369,7 +369,7 @@ Qed.
 
 Lemma iuv_size_subst_mono : forall Σ A X A0,
   Σ ᵗ⊢ᵃₘ A ->
-  iuv_size (subst_tvar_in_typ A X A0) = iuv_size A0.
+  iuv_size (subst_typ_in_typ A X A0) = iuv_size A0.
 Proof.
   intros Σ A X A0 Hmono.
   induction A0; simpl; auto.
@@ -377,7 +377,7 @@ Proof.
   eapply iuv_size_mono; eauto.
 Qed.
 
-Lemma exp_split_size_subst_tvar_in_exp_mono : forall n Σ A X e,
+Lemma exp_split_size_subst_typ_in_exp_mono : forall n Σ A X e,
   size_exp e < n ->
   Σ ᵗ⊢ᵃₘ A -> exp_split_size Σ ({A ᵉ/ₜ X} e) = exp_split_size Σ e.
 Proof.
@@ -396,25 +396,25 @@ Proof.
     erewrite iuv_size_subst_mono; eauto.
 Qed.
 
-Lemma exp_size_subst_tvar_in_exp_mono : forall Γ A X e,
+Lemma exp_size_subst_typ_in_exp_mono : forall Γ A X e,
   ⌊ Γ ⌋ᵃ ᵗ⊢ᵃₘ A ->
   exp_size Γ ({A ᵉ/ₜ X} e) = exp_size Γ e
-with body_size_subst_tvar_in_body_mono : forall Γ A X b,
+with body_size_subst_typ_in_body_mono : forall Γ A X b,
   ⌊ Γ ⌋ᵃ ᵗ⊢ᵃₘ A ->
   body_size Γ ({A ᵇ/ₜ X} b) = body_size Γ b.
 Proof.
   - intros Γ A X e Hmono.
     induction e; simpl; eauto.
-    erewrite IHe1. erewrite exp_split_size_subst_tvar_in_exp_mono; eauto.
+    erewrite IHe1. erewrite exp_split_size_subst_typ_in_exp_mono; eauto.
     erewrite IHe. erewrite iu_size_subst_mono; eauto.
   - intros. destruct b. simpl.
     erewrite iu_size_subst_mono; eauto. 
 Qed.
 
-Lemma exp_size_conts_subst_tvar_in_conts_mono : forall Γ X A c,
+Lemma exp_size_conts_subst_typ_in_conts_mono : forall Γ X A c,
   ⌊ Γ ⌋ᵃ ᵗ⊢ᵃₘ A ->
   exp_size_conts Γ ({A ᶜˢ/ₜ X} c) = exp_size_conts Γ c
-with exp_size_contd_subst_tvar_in_contd_mono : forall Γ X A c,
+with exp_size_contd_subst_typ_in_contd_mono : forall Γ X A c,
   ⌊ Γ ⌋ᵃ ᵗ⊢ᵃₘ A ->
   exp_size_contd Γ ({A ᶜᵈ/ₜ X} c) = exp_size_contd Γ c.
 Proof.
@@ -422,18 +422,18 @@ Proof.
   induction c; simpl; eauto.
   intros Γ X A c Hmono.
   induction c; simpl; eauto.
-  erewrite exp_size_subst_tvar_in_exp_mono; eauto.
+  erewrite exp_size_subst_typ_in_exp_mono; eauto.
 Qed.
 
-Lemma exp_size_work_subst_tvar_in_work_mono : forall Γ X A w,
+Lemma exp_size_work_subst_typ_in_work_mono : forall Γ X A w,
   ⌊ Γ ⌋ᵃ ᵗ⊢ᵃₘ A ->
   exp_size_work Γ ({A ʷ/ₜ X} w) = exp_size_work Γ w.
 Proof.
   intros Γ X A w Hmono.
   induction w; intros; simpl;
-    try erewrite exp_size_subst_tvar_in_exp_mono;
-    try erewrite exp_size_conts_subst_tvar_in_conts_mono;
-    try erewrite exp_size_contd_subst_tvar_in_contd_mono;
+    try erewrite exp_size_subst_typ_in_exp_mono;
+    try erewrite exp_size_conts_subst_typ_in_conts_mono;
+    try erewrite exp_size_contd_subst_typ_in_contd_mono;
     try erewrite iu_size_subst_mono; eauto.
 Qed.
 
@@ -445,33 +445,33 @@ Proof.
     try solve [intros; rewrite IHΓ1; simpl; lia].
 Qed.
 
-Lemma judge_size_conts_subst_tvar_in_conts : forall X A c,
-  judge_size_conts (subst_tvar_in_conts A X c) = judge_size_conts c
-with judge_size_contd_subst_tvar_in_contd : forall X A c,
-  judge_size_contd (subst_tvar_in_contd A X c) = judge_size_contd c.
+Lemma judge_size_conts_subst_typ_in_conts : forall X A c,
+  judge_size_conts (subst_typ_in_conts A X c) = judge_size_conts c
+with judge_size_contd_subst_typ_in_contd : forall X A c,
+  judge_size_contd (subst_typ_in_contd A X c) = judge_size_contd c.
 Proof.
   intros X A c.
   induction c; simpl; eauto.
   intros X A c.
   induction c; simpl; eauto.
-  erewrite judge_size_conts_subst_tvar_in_conts; eauto.
+  erewrite judge_size_conts_subst_typ_in_conts; eauto.
 Qed.
 
-Lemma judge_size_work_subst_tvar_in_work : forall X A w,
-  judge_size_work (subst_tvar_in_work A X w) = judge_size_work w.
+Lemma judge_size_work_subst_typ_in_work : forall X A w,
+  judge_size_work (subst_typ_in_work A X w) = judge_size_work w.
 Proof.
   intros X A w.
   induction w; intros; simpl;
-    try erewrite judge_size_conts_subst_tvar_in_conts;
-    try erewrite judge_size_contd_subst_tvar_in_contd; eauto.
+    try erewrite judge_size_conts_subst_typ_in_conts;
+    try erewrite judge_size_contd_subst_typ_in_contd; eauto.
 Qed.
 
-Lemma judge_size_wl_subst_tvar_in_aworklist : forall Γ X A,
-  judge_size_wl (subst_tvar_in_aworklist A X Γ) = judge_size_wl Γ.
+Lemma judge_size_wl_subst_typ_in_aworklist : forall Γ X A,
+  judge_size_wl (subst_typ_in_aworklist A X Γ) = judge_size_wl Γ.
 Proof.
   intros Γ.
   induction Γ; intros; simpl in *;
-    try erewrite judge_size_work_subst_tvar_in_work; eauto.
+    try erewrite judge_size_work_subst_typ_in_work; eauto.
 Qed. 
 
 Lemma apply_conts_det : forall c A w1 w2,
@@ -866,7 +866,7 @@ Lemma exp_size_wl_aworklist_subst' : forall Γ2 Γ X A Γ1 Γ1' Γ2',
   ⊢ᵃʷ (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) -> 
   aworklist_subst (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) X A Γ1' Γ2' -> a_mono_typ (awl_to_aenv Γ) A ->
   (* ⌊ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1 ⌋ᵃ *)
-  exp_size_wl (subst_tvar_in_aworklist A X Γ2' ⧺ Γ1') = exp_size_wl (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1).
+  exp_size_wl (subst_typ_in_aworklist A X Γ2' ⧺ Γ1') = exp_size_wl (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1).
 Proof.
   intros Γ2. induction Γ2; intros;
     dependent destruction H0; dependent destruction H; simpl in *; eauto;
@@ -878,7 +878,7 @@ Admitted.
 Lemma exp_size_wl_aworklist_subst : forall Γ X A Γ1 Γ2,
   ⊢ᵃʷ Γ -> 
   aworklist_subst Γ X A Γ1 Γ2 -> a_mono_typ (awl_to_aenv Γ) A ->
-  exp_size_wl (subst_tvar_in_aworklist A X Γ2 ⧺ Γ1) = exp_size_wl Γ.
+  exp_size_wl (subst_typ_in_aworklist A X Γ2 ⧺ Γ1) = exp_size_wl Γ.
 Admitted.
 
 Lemma lookup_tvar_bind_etvar : forall Γ2 Γ1 X X0,
@@ -954,7 +954,7 @@ Lemma split_depth_wl_aworklist_subst : forall Γ2 X A Γ1 Γ1' Γ2',
   ⊢ᵃʷ (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) -> 
   aworklist_subst (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) X A Γ1' Γ2' -> a_mono_typ (⌊ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1 ⌋ᵃ) A ->
   X ∉ ftvar_in_typ A ->
-  split_depth_wl (subst_tvar_in_aworklist A X Γ2' ⧺ Γ1') = split_depth_wl (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1).
+  split_depth_wl (subst_typ_in_aworklist A X Γ2' ⧺ Γ1') = split_depth_wl (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1).
 Proof.
   intros Γ2. induction Γ2; intros * Hwf Hsubst Hmono Hnotin; simpl in *.
   - eapply a_mono_typ_strengthen_cons in Hmono; eauto.
@@ -975,7 +975,7 @@ Admitted.
   ⊢ᵃʷ (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) -> 
   X ∉ ftvar_in_typ B ->
   aworklist_subst (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) X A Γ1' Γ2' -> a_mono_typ (awl_to_aenv Γ) A ->
-  split_depth (⌊ subst_tvar_in_aworklist A X Γ2' ⧺ Γ1' ⌋ᵃ) B = split_depth (⌊ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1 ⌋ᵃ) B.
+  split_depth (⌊ subst_typ_in_aworklist A X Γ2' ⧺ Γ1' ⌋ᵃ) B = split_depth (⌊ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1 ⌋ᵃ) B.
 Proof.
   intros Γ2. induction Γ2; intros Γ X0 A B Γ1 Γ1' Γ2' Hwf Hnotin Hsubst Hmono;
     dependent destruction Hsubst; dependent destruction Hwf; simpl in *; eauto;
@@ -987,7 +987,7 @@ Proof.
 Lemma split_depth_work_aworklist_subst : forall Γ2 Γ X A Γ1 Γ1' Γ2',
   ⊢ᵃʷ (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) -> 
   aworklist_subst (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) X A Γ1' Γ2' -> a_mono_typ (awl_to_aenv Γ) A ->
-  split_depth_work (subst_tvar_in_aworklist A X Γ2' ⧺ Γ1') = split_depth_wl (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1). *)
+  split_depth_work (subst_typ_in_aworklist A X Γ2' ⧺ Γ1') = split_depth_wl (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1). *)
 
 (* Lemma split_depth_rec_non_mono_lt : forall A Γ1 Γ2 n m,
   ⊢ᵃʷ Γ -> a_mono_typ (awl_to_aenv Γ) A ->
@@ -1061,7 +1061,7 @@ Lemma split_depth_rec_aworklist_subst_ : forall B Γ2 X A Γ1 Γ1' Γ2' n,
   ⊢ᵃʷ (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) -> 
   aworklist_subst (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) X A Γ1' Γ2' -> a_mono_typ (⌊ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1 ⌋ᵃ) A ->
   X ∉ ftvar_in_typ B ->
-  split_depth_rec (⌊ subst_tvar_in_aworklist A X Γ2' ⧺ Γ1' ⌋ᵃ) B n = split_depth_rec (⌊ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1 ⌋ᵃ) B n.
+  split_depth_rec (⌊ subst_typ_in_aworklist A X Γ2' ⧺ Γ1' ⌋ᵃ) B n = split_depth_rec (⌊ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1 ⌋ᵃ) B n.
 Proof.
   intros B. induction B; intros * Hwf Hsubst Hmono Hnotin; unfold split_depth; simpl in *; eauto.
   - admit.
@@ -1079,11 +1079,11 @@ Lemma split_depth_rec_aworklist_subst : forall B Γ2 X A Γ1 Γ1' Γ2' n,
   ⊢ᵃʷ (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) -> 
   aworklist_subst (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) X A Γ1' Γ2' -> a_mono_typ (⌊ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1 ⌋ᵃ) A ->
   X ∉ ftvar_in_typ A ->
-  split_depth_rec (⌊ subst_tvar_in_aworklist A X Γ2' ⧺ Γ1' ⌋ᵃ) ({A /ᵗ X} B) n = split_depth_rec (⌊ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1 ⌋ᵃ) B n.
+  split_depth_rec (⌊ subst_typ_in_aworklist A X Γ2' ⧺ Γ1' ⌋ᵃ) ({A /ᵗ X} B) n = split_depth_rec (⌊ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1 ⌋ᵃ) B n.
 Proof.
   intros.
   erewrite split_depth_rec_subst; eauto. erewrite split_depth_rec_aworklist_subst_; eauto.
-  eapply subst_tvar_in_typ_fresh_same; eauto.
+  eapply subst_typ_in_typ_fresh_same; eauto.
 Qed.  
 
 *)
@@ -1259,9 +1259,9 @@ Proof.
                  apply rename_var_in_a_wf_wwl_a_wl_red with (x:=x) (y:=x') in Jgt; auto.
                  --- simpl in Jgt. destruct_eq_atom.
                      rewrite rename_var_in_aworklist_fresh_eq in Jgt; auto.
-                     rewrite subst_var_in_exp_open_exp_wrt_exp in Jgt; auto.
+                     rewrite subst_exp_in_exp_open_exp_wrt_exp in Jgt; auto.
                      simpl in Jgt. destruct_eq_atom.
-                     rewrite subst_var_in_exp_fresh_eq in Jgt; auto.
+                     rewrite subst_exp_in_exp_fresh_eq in Jgt; auto.
                  --- apply a_wf_wl_a_wf_wwl.
                      constructor; auto. constructor; auto. constructor; auto.
                      simpl. apply a_wf_exp_var_binds_another with (Σ2 := nil) (A1 := T); simpl; auto.
@@ -1270,9 +1270,9 @@ Proof.
                  apply rename_var_in_a_wf_wwl_a_wl_red with (x:=x1) (y:=x) in H1; auto.
                  --- simpl in H1. destruct_eq_atom.
                      rewrite rename_var_in_aworklist_fresh_eq in H1; auto.
-                     rewrite subst_var_in_exp_open_exp_wrt_exp in H1; auto.
+                     rewrite subst_exp_in_exp_open_exp_wrt_exp in H1; auto.
                      simpl in H1. destruct_eq_atom.
-                     rewrite subst_var_in_exp_fresh_eq in H1; auto.
+                     rewrite subst_exp_in_exp_fresh_eq in H1; auto.
                  --- apply a_wf_wl_a_wf_wwl.
                      constructor; auto. constructor; auto. constructor; auto.
                      simpl. apply a_wf_exp_var_binds_another with (Σ2 := nil) (A1 := T); simpl; auto.
@@ -1295,9 +1295,9 @@ Proof.
                  apply rename_var_in_a_wf_wwl_a_wl_red with (x:=x) (y:=x') in JgArr; auto.
                  --- simpl in JgArr. destruct_eq_atom.
                      rewrite rename_var_in_aworklist_fresh_eq in JgArr; auto.
-                     rewrite subst_var_in_exp_open_exp_wrt_exp in JgArr; auto.
+                     rewrite subst_exp_in_exp_open_exp_wrt_exp in JgArr; auto.
                      simpl in JgArr. destruct_eq_atom.
-                     rewrite subst_var_in_exp_fresh_eq in JgArr; auto.
+                     rewrite subst_exp_in_exp_fresh_eq in JgArr; auto.
                  --- apply a_wf_wl_a_wf_wwl.
                      constructor; auto. constructor; auto. constructor; auto.
                      simpl. apply a_wf_exp_var_binds_another with (Σ2 := nil) (A1 := T); simpl; auto.
@@ -1307,9 +1307,9 @@ Proof.
                  apply rename_var_in_a_wf_wwl_a_wl_red with (x:=x1) (y:=x) in H1; auto.
                  --- simpl in H1. destruct_eq_atom.
                      rewrite rename_var_in_aworklist_fresh_eq in H1; auto.
-                     rewrite subst_var_in_exp_open_exp_wrt_exp in H1; auto.
+                     rewrite subst_exp_in_exp_open_exp_wrt_exp in H1; auto.
                      simpl in H1. destruct_eq_atom.
-                     rewrite subst_var_in_exp_fresh_eq in H1; auto.
+                     rewrite subst_exp_in_exp_fresh_eq in H1; auto.
                  --- apply a_wf_wl_a_wf_wwl.
                      constructor; auto. constructor; auto. constructor; auto.
                      simpl. apply a_wf_exp_var_binds_another with (Σ2 := nil) (A1 := T); simpl; auto.
@@ -1406,8 +1406,8 @@ Proof.
             apply rename_tvar_in_a_wf_wwl_a_wl_red with (X:=X) (Y:=X') in Jg.
             ** simpl in Jg. destruct_eq_atom.
                rewrite rename_tvar_in_aworklist_fresh_eq in Jg; auto.
-               rewrite subst_tvar_in_contd_fresh_eq in Jg; auto.
-               rewrite subst_tvar_in_typ_open_typ_wrt_typ_tvar2 in Jg; auto.
+               rewrite subst_typ_in_contd_fresh_eq in Jg; auto.
+               rewrite subst_typ_in_typ_open_typ_wrt_typ_tvar2 in Jg; auto.
             ** unfold not. intros. subst. solve_notin_eq X'.
             ** eapply a_wf_wl_a_wf_wwl.
                constructor; simpl; auto. constructor; simpl; auto. constructor; simpl; auto.
@@ -1420,8 +1420,8 @@ Proof.
             apply rename_tvar_in_a_wf_wwl_a_wl_red with (X:=X1) (Y:=X) in H3; auto.
             ** simpl in H3. destruct_eq_atom.
                rewrite rename_tvar_in_aworklist_fresh_eq in H3; auto.
-               rewrite subst_tvar_in_contd_fresh_eq in H3; auto.
-               rewrite subst_tvar_in_typ_open_typ_wrt_typ_tvar2 in H3; auto.
+               rewrite subst_typ_in_contd_fresh_eq in H3; auto.
+               rewrite subst_typ_in_typ_open_typ_wrt_typ_tvar2 in H3; auto.
             ** eapply a_wf_wl_a_wf_wwl.
                constructor; simpl; auto. constructor; auto. admit.
       -- assert (Jg: (work_infabs A1 (contd_infabsunion A2 cd) ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/
@@ -1699,8 +1699,8 @@ Proof.
               binds X abind_etvar_empty (awl_to_aenv Γ) ->
               a_mono_typ (awl_to_aenv Γ) B ->
               aworklist_subst Γ X B Γ1 Γ2 ->
-              (subst_tvar_in_aworklist B X Γ2 ⧺ Γ1) ⟶ᵃʷ⁎⋅ \/
-            ~ (subst_tvar_in_aworklist B X Γ2 ⧺ Γ1) ⟶ᵃʷ⁎⋅).
+              (subst_typ_in_aworklist B X Γ2 ⧺ Γ1) ⟶ᵃʷ⁎⋅ \/
+            ~ (subst_typ_in_aworklist B X Γ2 ⧺ Γ1) ⟶ᵃʷ⁎⋅).
     { intros Γ1 Γ2 X Heq Hbin Hmono Hsub. subst.
       eapply IHnw; eauto; simpl in *; try lia.
       admit. admit. admit. admit. admit. admit.
@@ -1722,20 +1722,20 @@ Proof.
               binds X abind_etvar_empty (awl_to_aenv Γ) ->
               a_mono_typ (awl_to_aenv Γ) A ->
               aworklist_subst Γ X A Γ1 Γ2 ->
-              (subst_tvar_in_aworklist A X Γ2 ⧺ Γ1) ⟶ᵃʷ⁎⋅ \/
-            ~ (subst_tvar_in_aworklist A X Γ2 ⧺ Γ1) ⟶ᵃʷ⁎⋅) by admit.
+              (subst_typ_in_aworklist A X Γ2 ⧺ Γ1) ⟶ᵃʷ⁎⋅ \/
+            ~ (subst_typ_in_aworklist A X Γ2 ⧺ Γ1) ⟶ᵃʷ⁎⋅) by admit.
     (* { intros E Γ1 Γ2 X Heq Hbin Hmono Hsub. subst.
       eapply IHnw.
       admit. (* safe: wf *)
       - rewrite exp_size_wl_awl_app.
         rewrite exp_size_wl_awl_app.
         rewrite exp_size_wl_etvar_list.
-        erewrite exp_size_wl_subst_tvar_in_aworklist_mono; eauto. simpl.
+        erewrite exp_size_wl_subst_typ_in_aworklist_mono; eauto. simpl.
         eapply exp_size_wl_aworklist_subst in Hsub as Heq. lia.
       - rewrite judge_size_wl_awl_app.
         rewrite judge_size_wl_awl_app.
         rewrite judge_size_wl_etvar_list.
-        erewrite judge_size_wl_subst_tvar_in_aworklist; eauto. simpl.
+        erewrite judge_size_wl_subst_typ_in_aworklist; eauto. simpl.
         eapply judge_size_wl_aworklist_subst in Hsub as Heq. lia.
       - admit.
       - admit. 
@@ -1904,8 +1904,8 @@ Proof.
             assert (Hsubst: aworklist_subst (work_sub ` X (typ_arrow A1 A2) ⫤ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) X
                                             (typ_arrow ` X1 ` X2) (X1 ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1) (work_sub ` X (typ_arrow A1 A2) ⫤ᵃ Γ2)).
             { eapply a_ws1__work_stay. eapply worklist_subst_fresh_etvar_total with (Γ1 := Γ1) (Γ2 := Γ2); eauto. }
-            assert (JgArr1: (work_sub ` X2 (subst_tvar_in_typ (typ_arrow ` X1 ` X2) X A2) ⫤ᵃ work_sub (subst_tvar_in_typ (typ_arrow ` X1 ` X2) X A1) ` X1 ⫤ᵃ subst_tvar_in_aworklist (typ_arrow ` X1 ` X2) X Γ2 ⧺ X1 ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1) ⟶ᵃʷ⁎⋅ \/
-                          ~ (work_sub ` X2 (subst_tvar_in_typ (typ_arrow ` X1 ` X2) X A2) ⫤ᵃ work_sub (subst_tvar_in_typ (typ_arrow ` X1 ` X2) X A1) ` X1 ⫤ᵃ subst_tvar_in_aworklist (typ_arrow ` X1 ` X2) X Γ2 ⧺ X1 ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1) ⟶ᵃʷ⁎⋅).
+            assert (JgArr1: (work_sub ` X2 (subst_typ_in_typ (typ_arrow ` X1 ` X2) X A2) ⫤ᵃ work_sub (subst_typ_in_typ (typ_arrow ` X1 ` X2) X A1) ` X1 ⫤ᵃ subst_typ_in_aworklist (typ_arrow ` X1 ` X2) X Γ2 ⧺ X1 ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1) ⟶ᵃʷ⁎⋅ \/
+                          ~ (work_sub ` X2 (subst_typ_in_typ (typ_arrow ` X1 ` X2) X A2) ⫤ᵃ work_sub (subst_typ_in_typ (typ_arrow ` X1 ` X2) X A1) ` X1 ⫤ᵃ subst_typ_in_aworklist (typ_arrow ` X1 ` X2) X Γ2 ⧺ X1 ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1) ⟶ᵃʷ⁎⋅).
             { eapply IHnm; simpl in *; eauto.
               admit. admit. admit. admit. admit. admit. admit. admit.
             }          
@@ -1962,7 +1962,7 @@ Proof.
             apply rename_tvar_in_a_wf_wwl_a_wl_red with (X:=X) (Y:=X') in JgAlll'; auto.
             ** simpl in JgAlll'. destruct_eq_atom.
                rewrite rename_tvar_in_aworklist_fresh_eq in JgAlll'; auto.
-               rewrite subst_tvar_in_typ_open_typ_wrt_typ_tvar2 in JgAlll'; auto.
+               rewrite subst_typ_in_typ_open_typ_wrt_typ_tvar2 in JgAlll'; auto.
             ** apply a_wf_wl_a_wf_wwl.
                apply a_wf_wl__conswork_sub; auto.
                apply a_wf_typ_tvar_etvar with (Σ2 := nil). simpl. auto.
@@ -1971,11 +1971,11 @@ Proof.
             apply rename_tvar_in_a_wf_wwl_a_wl_red with (X:=X1) (Y:=X) in H4; auto.
             ** simpl in H4. destruct_eq_atom.
                rewrite rename_tvar_in_aworklist_fresh_eq in H4; auto.
-               rewrite subst_tvar_in_typ_open_typ_wrt_typ_tvar2 in H4; auto.
+               rewrite subst_typ_in_typ_open_typ_wrt_typ_tvar2 in H4; auto.
             ** apply a_wf_wl_a_wf_wwl.
                apply a_wf_wl__conswork_sub; auto. simpl.
                apply a_wf_typ_tvar_etvar with (Σ2 := nil). simpl.
-               rewrite <- subst_tvar_in_typ_open_typ_wrt_typ_tvar2 with (X := X); auto.
+               rewrite <- subst_typ_in_typ_open_typ_wrt_typ_tvar2 with (X := X); auto.
                apply a_wf_typ_rename_tvar_cons; auto.
       -- pick fresh X. inst_cofinites_with X.
          destruct JgAlll with (X:=X) (A1:=A) (L:=L) as [JgAlll' | JgAlll']; auto.
@@ -1984,7 +1984,7 @@ Proof.
             apply rename_tvar_in_a_wf_wwl_a_wl_red with (X:=X) (Y:=X') in JgAlll'; auto.
             ** simpl in JgAlll'. destruct_eq_atom.
                rewrite rename_tvar_in_aworklist_fresh_eq in JgAlll'; auto.
-               rewrite subst_tvar_in_typ_open_typ_wrt_typ_tvar2 in JgAlll'; auto.
+               rewrite subst_typ_in_typ_open_typ_wrt_typ_tvar2 in JgAlll'; auto.
             ** apply a_wf_wl_a_wf_wwl.
                apply a_wf_wl__conswork_sub; auto.
                apply a_wf_typ_tvar_etvar with (Σ2 := nil). simpl. auto.
@@ -1993,11 +1993,11 @@ Proof.
             apply rename_tvar_in_a_wf_wwl_a_wl_red with (X:=X1) (Y:=X) in H4; auto.
             ** simpl in H4. destruct_eq_atom.
                rewrite rename_tvar_in_aworklist_fresh_eq in H4; auto.
-               rewrite subst_tvar_in_typ_open_typ_wrt_typ_tvar2 in H4; auto.
+               rewrite subst_typ_in_typ_open_typ_wrt_typ_tvar2 in H4; auto.
             ** apply a_wf_wl_a_wf_wwl.
                apply a_wf_wl__conswork_sub; auto. simpl.
                apply a_wf_typ_tvar_etvar with (Σ2 := nil). simpl.
-               rewrite <- subst_tvar_in_typ_open_typ_wrt_typ_tvar2 with (X := X); auto.
+               rewrite <- subst_typ_in_typ_open_typ_wrt_typ_tvar2 with (X := X); auto.
                apply a_wf_typ_rename_tvar_cons; auto.
       -- pick fresh X. inst_cofinites_with X.
          destruct JgAlll with (X:=X) (A1:=A) (L:=L) as [JgAlll' | JgAlll']; auto.
@@ -2006,7 +2006,7 @@ Proof.
             apply rename_tvar_in_a_wf_wwl_a_wl_red with (X:=X) (Y:=X') in JgAlll'; auto.
             ** simpl in JgAlll'. destruct_eq_atom.
                rewrite rename_tvar_in_aworklist_fresh_eq in JgAlll'; auto.
-               rewrite subst_tvar_in_typ_open_typ_wrt_typ_tvar2 in JgAlll'; auto.
+               rewrite subst_typ_in_typ_open_typ_wrt_typ_tvar2 in JgAlll'; auto.
             ** apply a_wf_wl_a_wf_wwl.
                apply a_wf_wl__conswork_sub; auto.
                apply a_wf_typ_tvar_etvar with (Σ2 := nil). simpl. auto.
@@ -2015,11 +2015,11 @@ Proof.
             apply rename_tvar_in_a_wf_wwl_a_wl_red with (X:=X1) (Y:=X) in H4; auto.
             ** simpl in H4. destruct_eq_atom.
                rewrite rename_tvar_in_aworklist_fresh_eq in H4; auto.
-               rewrite subst_tvar_in_typ_open_typ_wrt_typ_tvar2 in H4; auto.
+               rewrite subst_typ_in_typ_open_typ_wrt_typ_tvar2 in H4; auto.
             ** apply a_wf_wl_a_wf_wwl.
                apply a_wf_wl__conswork_sub; auto. simpl.
                apply a_wf_typ_tvar_etvar with (Σ2 := nil). simpl.
-               rewrite <- subst_tvar_in_typ_open_typ_wrt_typ_tvar2 with (X := X); auto.
+               rewrite <- subst_typ_in_typ_open_typ_wrt_typ_tvar2 with (X := X); auto.
                apply a_wf_typ_rename_tvar_cons; auto.
       -- pick fresh X1. inst_cofinites_with X1.
          destruct JgAlll with (X:=X1) (A1:=A) (L:=L) as [JgAlll' | JgAlll']; auto.
@@ -2028,7 +2028,7 @@ Proof.
             apply rename_tvar_in_a_wf_wwl_a_wl_red with (X:=X1) (Y:=X') in JgAlll'; auto.
             ** simpl in JgAlll'. destruct_eq_atom.
                rewrite rename_tvar_in_aworklist_fresh_eq in JgAlll'; auto.
-               rewrite subst_tvar_in_typ_open_typ_wrt_typ_tvar2 in JgAlll'; auto.
+               rewrite subst_typ_in_typ_open_typ_wrt_typ_tvar2 in JgAlll'; auto.
             ** apply a_wf_wl_a_wf_wwl.
                apply a_wf_wl__conswork_sub; auto.
                apply a_wf_typ_tvar_etvar with (Σ2 := nil). simpl. auto.
@@ -2038,11 +2038,11 @@ Proof.
             apply rename_tvar_in_a_wf_wwl_a_wl_red with (X:=X1') (Y:=X1) in H5; auto.
             ** simpl in H5. destruct_eq_atom.
                rewrite rename_tvar_in_aworklist_fresh_eq in H5; auto.
-               rewrite subst_tvar_in_typ_open_typ_wrt_typ_tvar2 in H5; auto.
+               rewrite subst_typ_in_typ_open_typ_wrt_typ_tvar2 in H5; auto.
             ** apply a_wf_wl_a_wf_wwl.
                apply a_wf_wl__conswork_sub; auto. simpl.
                apply a_wf_typ_tvar_etvar with (Σ2 := nil). simpl.
-               rewrite <- subst_tvar_in_typ_open_typ_wrt_typ_tvar2 with (X := X1); auto.
+               rewrite <- subst_typ_in_typ_open_typ_wrt_typ_tvar2 with (X := X1); auto.
                apply a_wf_typ_rename_tvar_cons; auto.
                simpl. auto.
       -- pick fresh X1. inst_cofinites_with X1.
@@ -2052,7 +2052,7 @@ Proof.
             apply rename_tvar_in_a_wf_wwl_a_wl_red with (X:=X1) (Y:=X') in JgAlll'; auto.
             ** simpl in JgAlll'. destruct_eq_atom.
                rewrite rename_tvar_in_aworklist_fresh_eq in JgAlll'; auto.
-               rewrite subst_tvar_in_typ_open_typ_wrt_typ_tvar2 in JgAlll'; auto.
+               rewrite subst_typ_in_typ_open_typ_wrt_typ_tvar2 in JgAlll'; auto.
             ** apply a_wf_wl_a_wf_wwl.
                apply a_wf_wl__conswork_sub; auto.
                apply a_wf_typ_tvar_etvar with (Σ2 := nil). simpl. auto.
@@ -2062,11 +2062,11 @@ Proof.
             apply rename_tvar_in_a_wf_wwl_a_wl_red with (X:=X1') (Y:=X1) in H5; auto.
             ** simpl in H5. destruct_eq_atom.
                rewrite rename_tvar_in_aworklist_fresh_eq in H5; auto.
-               rewrite subst_tvar_in_typ_open_typ_wrt_typ_tvar2 in H5; auto.
+               rewrite subst_typ_in_typ_open_typ_wrt_typ_tvar2 in H5; auto.
             ** apply a_wf_wl_a_wf_wwl.
                apply a_wf_wl__conswork_sub; auto. simpl.
                apply a_wf_typ_tvar_etvar with (Σ2 := nil). simpl.
-               rewrite <- subst_tvar_in_typ_open_typ_wrt_typ_tvar2 with (X := X1); auto.
+               rewrite <- subst_typ_in_typ_open_typ_wrt_typ_tvar2 with (X := X1); auto.
                apply a_wf_typ_rename_tvar_cons; auto.
                simpl. auto.
       -- pick fresh X1. inst_cofinites_with X1.
@@ -2076,7 +2076,7 @@ Proof.
             apply rename_tvar_in_a_wf_wwl_a_wl_red with (X:=X1) (Y:=X') in JgAlll'; auto.
             ** simpl in JgAlll'. destruct_eq_atom.
                rewrite rename_tvar_in_aworklist_fresh_eq in JgAlll'; auto.
-               rewrite subst_tvar_in_typ_open_typ_wrt_typ_tvar2 in JgAlll'; auto.
+               rewrite subst_typ_in_typ_open_typ_wrt_typ_tvar2 in JgAlll'; auto.
             ** apply a_wf_wl_a_wf_wwl.
                apply a_wf_wl__conswork_sub; auto.
                apply a_wf_typ_tvar_etvar with (Σ2 := nil). simpl. auto.
@@ -2086,11 +2086,11 @@ Proof.
             apply rename_tvar_in_a_wf_wwl_a_wl_red with (X:=X1') (Y:=X1) in H5; auto.
             ** simpl in H5. destruct_eq_atom.
                rewrite rename_tvar_in_aworklist_fresh_eq in H5; auto.
-               rewrite subst_tvar_in_typ_open_typ_wrt_typ_tvar2 in H5; auto.
+               rewrite subst_typ_in_typ_open_typ_wrt_typ_tvar2 in H5; auto.
             ** apply a_wf_wl_a_wf_wwl.
                apply a_wf_wl__conswork_sub; auto. simpl.
                apply a_wf_typ_tvar_etvar with (Σ2 := nil). simpl.
-               rewrite <- subst_tvar_in_typ_open_typ_wrt_typ_tvar2 with (X := X1); auto.
+               rewrite <- subst_typ_in_typ_open_typ_wrt_typ_tvar2 with (X := X1); auto.
                apply a_wf_typ_rename_tvar_cons; auto.
                simpl. auto.
       -- pick fresh X. inst_cofinites_with X.
@@ -2100,9 +2100,9 @@ Proof.
             apply rename_tvar_in_a_wf_wwl_a_wl_red with (X:=X) (Y:=X') in JgAlll'; auto.
             ** simpl in JgAlll'. destruct_eq_atom.
                rewrite rename_tvar_in_aworklist_fresh_eq in JgAlll'; auto.
-               rewrite subst_tvar_in_typ_open_typ_wrt_typ_tvar2 in JgAlll'; auto.
-               rewrite subst_tvar_in_typ_fresh_eq in JgAlll'; auto.
-               rewrite subst_tvar_in_typ_fresh_eq in JgAlll'; auto.
+               rewrite subst_typ_in_typ_open_typ_wrt_typ_tvar2 in JgAlll'; auto.
+               rewrite subst_typ_in_typ_fresh_eq in JgAlll'; auto.
+               rewrite subst_typ_in_typ_fresh_eq in JgAlll'; auto.
             ** apply a_wf_wl_a_wf_wwl.
                apply a_wf_wl__conswork_sub; auto.
                apply a_wf_typ_tvar_etvar with (Σ2 := nil). simpl. auto.
@@ -2112,13 +2112,13 @@ Proof.
             apply rename_tvar_in_a_wf_wwl_a_wl_red with (X:=X1) (Y:=X) in H4; auto.
             ** simpl in H4. destruct_eq_atom.
                rewrite rename_tvar_in_aworklist_fresh_eq in H4; auto.
-               rewrite subst_tvar_in_typ_open_typ_wrt_typ_tvar2 in H4; auto.
-               rewrite subst_tvar_in_typ_fresh_eq in H4; auto.
-               rewrite subst_tvar_in_typ_fresh_eq in H4; auto.
+               rewrite subst_typ_in_typ_open_typ_wrt_typ_tvar2 in H4; auto.
+               rewrite subst_typ_in_typ_fresh_eq in H4; auto.
+               rewrite subst_typ_in_typ_fresh_eq in H4; auto.
             ** apply a_wf_wl_a_wf_wwl.
                apply a_wf_wl__conswork_sub; auto. simpl.
                apply a_wf_typ_tvar_etvar with (Σ2 := nil). simpl.
-               rewrite <- subst_tvar_in_typ_open_typ_wrt_typ_tvar2 with (X := X); auto.
+               rewrite <- subst_typ_in_typ_open_typ_wrt_typ_tvar2 with (X := X); auto.
                apply a_wf_typ_rename_tvar_cons; auto.
                apply a_wf_typ_weaken_cons; auto.
       --  pick fresh X. inst_cofinites_with X.
@@ -2133,8 +2133,8 @@ Proof.
              apply rename_tvar_in_a_wf_wwl_a_wl_red with (X:=X) (Y:=X') in JgAll; auto.
              ** simpl in JgAll. destruct_eq_atom.
                 rewrite rename_tvar_in_aworklist_fresh_eq in JgAll; auto.
-                rewrite subst_tvar_in_typ_open_typ_wrt_typ_tvar2 in JgAll; auto.
-                rewrite subst_tvar_in_typ_open_typ_wrt_typ_tvar2 in JgAll; auto.
+                rewrite subst_typ_in_typ_open_typ_wrt_typ_tvar2 in JgAll; auto.
+                rewrite subst_typ_in_typ_open_typ_wrt_typ_tvar2 in JgAll; auto.
             ** apply a_wf_wl_a_wf_wwl.
                apply a_wf_wl__conswork_sub; auto. simpl.
                apply a_wf_typ_tvar_stvar with (Σ2 := nil). simpl. auto.
@@ -2144,15 +2144,15 @@ Proof.
              apply rename_tvar_in_a_wf_wwl_a_wl_red with (X:=X1) (Y:=X) in H3; auto.
             ** simpl in H3. destruct_eq_atom.
                rewrite rename_tvar_in_aworklist_fresh_eq in H3; auto.
-               rewrite subst_tvar_in_typ_open_typ_wrt_typ_tvar2 in H3; auto.
-               rewrite subst_tvar_in_typ_open_typ_wrt_typ_tvar2 in H3; auto.
+               rewrite subst_typ_in_typ_open_typ_wrt_typ_tvar2 in H3; auto.
+               rewrite subst_typ_in_typ_open_typ_wrt_typ_tvar2 in H3; auto.
             ** apply a_wf_wl_a_wf_wwl.
                apply a_wf_wl__conswork_sub; auto. simpl.
                apply a_wf_typ_tvar_stvar with (Σ2 := nil). simpl.
-               rewrite <- subst_tvar_in_typ_open_typ_wrt_typ_tvar2 with (X := X); auto.
+               rewrite <- subst_typ_in_typ_open_typ_wrt_typ_tvar2 with (X := X); auto.
                apply a_wf_typ_rename_tvar_cons; auto.
                apply a_wf_typ_tvar_stvar with (Σ2 := nil). simpl.
-               rewrite <- subst_tvar_in_typ_open_typ_wrt_typ_tvar2 with (X := X); auto.
+               rewrite <- subst_typ_in_typ_open_typ_wrt_typ_tvar2 with (X := X); auto.
                apply a_wf_typ_rename_tvar_cons; auto.
       -- edestruct JgUnion1 as [JgUnion1' | JgUnion1']; eauto.
          edestruct JgUnion2 as [JgUnion2' | JgUnion2']; eauto.
