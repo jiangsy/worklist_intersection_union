@@ -53,7 +53,6 @@ Proof with eauto.
 Qed.
 
 
-
 Lemma d_wf_env_rename_var : forall Ψ1 Ψ2 x y A,
   ⊢ᵈ Ψ2 ++ (x , dbind_typ A) :: Ψ1 ->
   y ∉ dom (Ψ2 ++ (x , dbind_typ A) :: Ψ1) ->
@@ -68,7 +67,6 @@ Proof with eauto.
     + rewrite_env (((x0, dbind_typ A0) :: Ψ2) ++ (y, dbind_typ A) :: Ψ1). eapply d_wf_tenv_rename_var; eauto.
       constructor; auto.
 Qed.
-
 
 
 Lemma subst_exp_in_exp_refl : forall x e,
@@ -96,6 +94,7 @@ Proof with eauto using d_wf_typ_rename_var, d_wf_env_rename_var, d_mono_typ_rena
     eapply H2... eauto.
 Qed.
 
+
 Theorem d_infabs_rename_var : forall Ψ1 Ψ2 x y A B C D, 
   d_infabs (Ψ2 ++ (x , dbind_typ D) :: Ψ1) A B C ->
   y ∉ (dom (Ψ2 ++ (x, dbind_typ B) :: Ψ1)) ->
@@ -106,6 +105,7 @@ Proof with eauto 4 using d_wf_typ_rename_var, d_wf_tenv_rename_var, d_mono_typ_r
   - eapply d_infabs__all with (T:=T)...
 Qed.
 
+
 Theorem d_inftapp_rename_var : forall Ψ1 Ψ2 x y A B C D, 
   d_inftapp (Ψ2 ++ (x , dbind_typ D) :: Ψ1) A B C ->
   y ∉ (dom (Ψ2 ++ (x, dbind_typ B) :: Ψ1)) ->
@@ -113,6 +113,7 @@ Theorem d_inftapp_rename_var : forall Ψ1 Ψ2 x y A B C D,
 Proof with eauto using d_wf_typ_rename_var, d_wf_tenv_rename_var, d_mono_typ_rename_var.
   intros. dependent induction H...
 Qed.
+
 
 Theorem d_chk_inf_rename_var' : forall Ψ1 Ψ2 x y e A B mode, 
   d_chk_inf (Ψ2 ++ (x , dbind_typ B) :: Ψ1) e mode A ->

@@ -42,7 +42,6 @@ Inductive d_infabs : denv -> typ -> typ -> typ -> Prop :=
       d_infabs Ψ (typ_arrow A B) A B
   | d_infabs__all : forall (Ψ:denv) (A B C T:typ),
       d_mono_typ Ψ T -> 
-      d_wf_typ Ψ T ->
       d_wf_typ Ψ (typ_all A) ->
       d_infabs Ψ  (open_typ_wrt_typ  A  T ) B C ->
       d_infabs Ψ (typ_all A) B C
