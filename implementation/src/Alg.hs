@@ -25,20 +25,20 @@ showJudgment :: Judgment -> String
 showJudgment (Sub t1 t2) = show t1 ++ " ≤ " ++ show t2
 showJudgment (Chk e t) = show e ++ " ⇐ " ++ show t
 showJudgment (Inf e a c) =
-  show e ++ " ⇒" ++ show a ++ " " ++ showJudgment c
+  show e ++ " ⇒" ++ a ++ " " ++ showJudgment c
 showJudgment (InfAbs t a b c) =
-  show t ++ " ▹" ++ show a ++ "," ++ show b ++ " " ++ showJudgment c
+  show t ++ " ▹" ++ a ++ "," ++ b ++ " " ++ showJudgment c
 showJudgment (InfApp t1 t2 e a c) =
-  show t1 ++ " → " ++ show t2 ++ " ⊙ " ++ show e ++ " ➤" ++ show a ++ " " ++ showJudgment c
+  show t1 ++ " → " ++ show t2 ++ " ⊙ " ++ show e ++ " ➤" ++ a ++ " " ++ showJudgment c
 showJudgment (InfProj t1 t2 t3 a c) =
-  show t1 ++ " → " ++ show t2 ++ " ⊗ " ++ show t3 ++ " ➤" ++ show a ++ " " ++ showJudgment c
+  show t1 ++ " → " ++ show t2 ++ " ⊗ " ++ show t3 ++ " ➤" ++ a ++ " " ++ showJudgment c
 showJudgment (InfTApp t1 t2 a c) =
-  show t1 ++ " o " ++ show t2 ++ " ➤" ++ show a ++ " " ++ showJudgment c
+  show t1 ++ " o " ++ show t2 ++ " ➤" ++ a ++ " " ++ showJudgment c
 showJudgment (CaseChk e t1 t2) = show e ++ " ⇐{" ++ show t1 ++ " :: List} " ++ show t2
 showJudgment (CaseInf t e1 e2 a c) =
-  show t ++ " # " ++ show e1 ++ " # " ++ show e2 ++ " ➤[]" ++ show a ++ " " ++ showJudgment c
+  show t ++ " # " ++ show e1 ++ " # " ++ show e2 ++ " ➤[]" ++ a ++ " " ++ showJudgment c
 showJudgment (ConsInf t e a c) =
-  show e ++ " ⇐ [" ++ show t ++ "] ⇒" ++ show a ++ " " ++ showJudgment c
+  show e ++ " ⇐ [" ++ show t ++ "] ⇒" ++ a ++ " " ++ showJudgment c
 showJudgment End = "End"
 
 instance Show Judgment where
@@ -335,28 +335,119 @@ notUnion _ = True
 curInfo :: [Work] -> String -> String
 curInfo ws s1 = "   " ++ show ws ++ "\n-->{ Rule: " ++ s1 ++ replicate (15 - length s1) ' ' ++ " }\n"
 
+baseRules :: [String]
+baseRules =
+  [ "GCTVar",
+    "GCVar",
+    "≤⊤",
+    "≤⊥",
+    "≤Unit",
+    "≤Int",
+    "≤Bool",
+    "≤TVar",
+    "≤→",
+    "≤∀",
+    "≤∀L",
+    "≤MonoL",
+    "≤MonoR",
+    "≤SplitL",
+    "≤SplitR",
+    "≤∩R",
+    "≤∩L",
+    "≤∪L",
+    "≤∪R",
+    "⇐λ",
+    "⇐λ⊤",
+    "⇐λα",
+    "⇐∩",
+    "⇐∪",
+    "⇐Sub",
+    "⇒Var",
+    "⇒Int",
+    "⇒Bool",
+    "⇒Anno",
+    "⇒ΛAnno",
+    "⇒App",
+    "⇒TApp",
+    "⇒→Mono",
+    "▹→",
+    "▹⊥",
+    "▹∀",
+    "▹∩",
+    "▹∪",
+    "▹α",
+    "⊙➤",
+    "∘∀",
+    "∘⊥",
+    "∘∩",
+    "∘∪"
+  ]
+
+rcdRules :: [String]
+rcdRules =
+  [ "≤Label",
+    "⇒⟨⟩",
+    "⇒⟨⟩Cons",
+    "⇒Proj",
+    "⊗➤"
+  ]
+
+extRules :: [String]
+extRules =
+  [ "≤[]",
+    "≤[]αL",
+    "≤[]αR",
+    "⇐[]Ni",
+    "⇐[]Cons",
+    "⇐Case",
+    "⇐Fix",
+    "⇐LetA",
+    "Case⇐",
+    "⇒Λ",
+    "⇒[]Nil",
+    "⇒[]Cons",
+    "⇒[]Case",
+    "[]Cons⇒",
+    "[]Case⇒",
+    "⇒Fix",
+    "⇒Let",
+    "⇒LetA"
+  ]
+
+-- useRule :: String -> Bool
+-- useRule rName = rName `elem` baseRules
+
 useRule :: String -> Bool
 useRule _ = True
 
 bigStep :: Int -> String -> [Work] -> (Bool, String)
 bigStep n info _ | n <= 0 = (False, info)
 bigStep _ info [] = (True, info)
-bigStep n info ws@(WTVar _ _ : w) | useRule "GCTVar" = bigStep (n - 1) (info ++ curInfo ws "GCTVar") w
-bigStep n info ws@(WVar _ _ : w) | useRule "GCVar" = bigStep (n - 1) (info ++ curInfo ws "GCVar") w
+bigStep n info ws@(WTVar _ _ : w)
+  | useRule "GCTVar" = bigStep (n - 1) (info ++ curInfo ws "GCTVar") w
+bigStep n info ws@(WVar _ _ : w)
+  | useRule "GCVar" = bigStep (n - 1) (info ++ curInfo ws "GCVar") w
 --
 -- Subtyping
 --
-bigStep n info ws@(WJug (Sub _ TTop) : w) | useRule "≤⊤" = bigStep (n - 1) (info ++ curInfo ws "≤⊤") w
-bigStep n info ws@(WJug (Sub TBot _) : w) | useRule "≤⊥" = bigStep (n - 1) (info ++ curInfo ws "≤⊥") w
-bigStep n info ws@(WJug (Sub TUnit TUnit) : w) | useRule "≤Unit" = bigStep (n - 1) (info ++ curInfo ws "≤Unit") w
-bigStep n info ws@(WJug (Sub TInt TInt) : w) | useRule "≤Int" = bigStep (n - 1) (info ++ curInfo ws "≤Int") w
-bigStep n info ws@(WJug (Sub TBool TBool) : w) | useRule "≤Bool" = bigStep (n - 1) (info ++ curInfo ws "≤Bool") w
+bigStep n info ws@(WJug (Sub _ TTop) : w)
+  | useRule "≤⊤" = bigStep (n - 1) (info ++ curInfo ws "≤⊤") w
+bigStep n info ws@(WJug (Sub TBot _) : w)
+  | useRule "≤⊥" = bigStep (n - 1) (info ++ curInfo ws "≤⊥") w
+bigStep n info ws@(WJug (Sub TUnit TUnit) : w)
+  | useRule "≤Unit" = bigStep (n - 1) (info ++ curInfo ws "≤Unit") w
+bigStep n info ws@(WJug (Sub TInt TInt) : w)
+  | useRule "≤Int" = bigStep (n - 1) (info ++ curInfo ws "≤Int") w
+bigStep n info ws@(WJug (Sub TBool TBool) : w)
+  | useRule "≤Bool" = bigStep (n - 1) (info ++ curInfo ws "≤Bool") w
 bigStep n info ws@(WJug (Sub (TVar a) (TVar b)) : w)
   | useRule "≤TVar" && a == b = bigStep (n - 1) (info ++ curInfo ws "≤TVar") w
-bigStep n info ws@(WJug (Sub (TArr t1 t2) (TArr t3 t4)) : w) | useRule "≤→" = bigStep (n - 1) (info ++ curInfo ws "≤→") ws'
+bigStep n info ws@(WJug (Sub (TArr t1 t2) (TArr t3 t4)) : w)
+  | useRule "≤→" = bigStep (n - 1) (info ++ curInfo ws "≤→") ws'
   where
     ws' = WJug (Sub t2 t4) : WJug (Sub t3 t1) : w
-bigStep n info ws@(WJug (Sub (TAll a t1) (TAll b t2)) : w) | useRule "≤∀" = bigStep (n - 1) (info ++ curInfo ws "≤∀") ws'
+bigStep n info ws@(WJug (Sub (TAll a t1) (TAll b t2)) : w)
+  | useRule "≤∀" = bigStep (n - 1) (info ++ curInfo ws "≤∀") ws'
   where
     c = pickNewTVar ws []
     t1' = ttsubst a (TVar c) t1
@@ -388,21 +479,26 @@ bigStep n info ws@(WJug (Sub (TArr t1 t2) (TVar a)) : w)
     a1 = pickNewTVar w []
     a2 = pickNewTVar w [a1]
     ws' = WJug (Sub (TArr (TVar a1) (TVar a2)) (TArr t1 t2)) : substWL a (TArr (TVar a1) (TVar a2)) (WTVar a2 ETVarBind : WTVar a1 ETVarBind : w)
-bigStep n info ws@(WJug (Sub t1 (TIntersection t2 t3)) : w) | useRule "≤∩R" = bigStep (n - 1) (info ++ curInfo ws "≤∩R") ws'
+bigStep n info ws@(WJug (Sub t1 (TIntersection t2 t3)) : w)
+  | useRule "≤∩R" = bigStep (n - 1) (info ++ curInfo ws "≤∩R") ws'
   where
     ws' = WJug (Sub t1 t3) : WJug (Sub t1 t2) : w
-bigStep n info ws@(WJug (Sub (TIntersection t11 t12) t2) : w) | useRule "≤∩L" = case bigStep (n - 1) (info ++ curInfo ws "≤∩L1") (WJug (Sub t11 t2) : w) of
-  (True, info') -> (True, info')
-  (False, _) -> bigStep (n - 1) (info ++ curInfo ws "≤∩L2") (WJug (Sub t12 t2) : w)
-bigStep n info ws@(WJug (Sub (TUnion t11 t12) t2) : w) | useRule "≤∪L" = bigStep (n - 1) (info ++ curInfo ws "≤∪L") ws'
+bigStep n info ws@(WJug (Sub (TIntersection t11 t12) t2) : w)
+  | useRule "≤∩L" = case bigStep (n - 1) (info ++ curInfo ws "≤∩L1") (WJug (Sub t11 t2) : w) of
+      (True, info') -> (True, info')
+      (False, _) -> bigStep (n - 1) (info ++ curInfo ws "≤∩L2") (WJug (Sub t12 t2) : w)
+bigStep n info ws@(WJug (Sub (TUnion t11 t12) t2) : w)
+  | useRule "≤∪L" = bigStep (n - 1) (info ++ curInfo ws "≤∪L") ws'
   where
     ws' = WJug (Sub t11 t2) : WJug (Sub t12 t2) : w
-bigStep n info ws@(WJug (Sub t1 (TUnion t21 t22)) : w) | useRule "≤∪R" = case bigStep (n - 1) (info ++ curInfo ws "≤∪R1") (WJug (Sub t1 t21) : w) of
-  (True, info') -> (True, info')
-  (False, _) -> bigStep (n - 1) (info ++ curInfo ws "≤∪R2") (WJug (Sub t1 t22) : w)
+bigStep n info ws@(WJug (Sub t1 (TUnion t21 t22)) : w)
+  | useRule "≤∪R" = case bigStep (n - 1) (info ++ curInfo ws "≤∪R1") (WJug (Sub t1 t21) : w) of
+      (True, info') -> (True, info')
+      (False, _) -> bigStep (n - 1) (info ++ curInfo ws "≤∪R2") (WJug (Sub t1 t22) : w)
 bigStep n info ws@(WJug (Sub (TLabel l1) (TLabel l2)) : w) -- Record Extension
   | useRule "≤Label" && l1 == l2 = bigStep (n - 1) (info ++ curInfo ws "≤Label") w
-bigStep n info ws@(WJug (Sub (TList a) (TList b)) : w) | useRule "≤[]" = bigStep (n - 1) (info ++ curInfo ws "≤[]") ws' -- Unformalized
+bigStep n info ws@(WJug (Sub (TList a) (TList b)) : w)
+  | useRule "≤[]" = bigStep (n - 1) (info ++ curInfo ws "≤[]") ws' -- Unformalized
   where
     ws' = WJug (Sub a b) : w
 bigStep n info ws@(WJug (Sub (TVar a) (TList t)) : w) -- Unformalized
@@ -462,7 +558,7 @@ bigStep n info ws@(WJug (Chk (Fix e) t) : w) -- Unformalized
   where
     ws' = WJug (Chk e (TArr t t)) : w
 bigStep n info ws@(WJug (Chk (LetA x t1 e1 e2) t2) : w) -- Unformalized
-  | useRule "⇐LetrecAnno" = bigStep (n - 1) (info ++ curInfo ws "⇐LetrecAnno") ws'
+  | useRule "⇐LetA" = bigStep (n - 1) (info ++ curInfo ws "⇐LetA") ws'
   where
     ws' = WJug (Chk (App (Ann (Lam x e2) (TArr t1 t2)) (Ann (Fix (Lam x e1)) t1)) t2) : w
 -- assumes non-overlapping with ⇔∩, ⇔∪
@@ -471,34 +567,42 @@ bigStep n info ws@(WJug (Chk e t) : w)
   where
     b = pickNewTVar ws []
     ws' = WJug (Inf e b (Sub (TVar b) t)) : w
-bigStep n info ws@(WJug (CaseChk e (TList t1) t2) : w) | useRule "Case⇐" = bigStep (n - 1) (info ++ curInfo ws "Case⇐") ws' -- Unformalized
+bigStep n info ws@(WJug (CaseChk e (TList t1) t2) : w)
+  | useRule "Case⇐" = bigStep (n - 1) (info ++ curInfo ws "Case⇐") ws' -- Unformalized
   where
     ws' = WJug (Chk e (TArr t1 (TArr (TList t1) t2))) : w
 --
 -- Inference
 --
-bigStep n info ws@(WJug (Inf (Var x) b c) : w) | useRule "⇒Var" =
-  case findVar x w of
-    Just t -> bigStep (n - 1) (info ++ curInfo ws "⇒Var") ws'
-      where
-        ws' = WJug (ctsubst b t c) : w
-bigStep n info ws@(WJug (Inf (ILit _) b c) : w) | useRule "⇒Int" = bigStep (n - 1) (info ++ curInfo ws "⇒Int") ws'
+bigStep n info ws@(WJug (Inf (Var x) b c) : w)
+  | useRule "⇒Var" =
+      case findVar x w of
+        Just t -> bigStep (n - 1) (info ++ curInfo ws "⇒Var") ws'
+          where
+            ws' = WJug (ctsubst b t c) : w
+        Nothing -> (False, info)
+bigStep n info ws@(WJug (Inf (ILit _) b c) : w)
+  | useRule "⇒Int" = bigStep (n - 1) (info ++ curInfo ws "⇒Int") ws'
   where
     ws' = WJug (ctsubst b TInt c) : w
-bigStep n info ws@(WJug (Inf (BLit _) b c) : w) | useRule "⇒Bool" = bigStep (n - 1) (info ++ curInfo ws "⇒Bool") ws'
+bigStep n info ws@(WJug (Inf (BLit _) b c) : w)
+  | useRule "⇒Bool" = bigStep (n - 1) (info ++ curInfo ws "⇒Bool") ws'
   where
     ws' = WJug (ctsubst b TBool c) : w
-bigStep n info ws@(WJug (Inf (Ann e t) b c) : w) | useRule "⇒Anno" = bigStep (n - 1) (info ++ curInfo ws "⇒Anno") ws'
+bigStep n info ws@(WJug (Inf (Ann e t) b c) : w)
+  | useRule "⇒Anno" = bigStep (n - 1) (info ++ curInfo ws "⇒Anno") ws'
   where
     ws' = WJug (Chk e t) : WJug (ctsubst b t c) : w
-bigStep n info ws@(WJug (Inf (TAbs a (Ann e t)) b c) : w) | useRule "⇒ΛAnno" = bigStep (n - 1) (info ++ curInfo ws "⇒ΛAnno") ws'
+bigStep n info ws@(WJug (Inf (TAbs a (Ann e t)) b c) : w)
+  | useRule "⇒ΛAnno" = bigStep (n - 1) (info ++ curInfo ws "⇒ΛAnno") ws'
   where
     a1 = pickNewTVar ws []
     e' = etsubst a (TVar a1) e
     t' = ttsubst a (TVar a1) t
     ws' = WJug (Chk e' t') : WTVar b TVarBind : WJug (ctsubst b (TAll a1 t') c) : w
 -- \*** new rules
-bigStep n info ws@(WJug (Inf (TAbs a e) b c) : w) | useRule "⇒Λ" = bigStep (n - 1) (info ++ curInfo ws "⇒Λ") ws'
+bigStep n info ws@(WJug (Inf (TAbs a e) b c) : w)
+  | useRule "⇒Λ" = bigStep (n - 1) (info ++ curInfo ws "⇒Λ") ws'
   where
     -- \*** also tvars in e
     a1 = pickNewTVar ws []
@@ -506,84 +610,103 @@ bigStep n info ws@(WJug (Inf (TAbs a e) b c) : w) | useRule "⇒Λ" = bigStep (n
     b1 = pickNewTVar ws [a1, a2]
     e' = etsubst a (TVar a1) e
     ws' = WJug (Inf e' b1 (ctsubst b (TAll a2 (TVar b1)) c)) : WTVar a1 TVarBind : w
-bigStep n info ws@(WJug (Inf (App e1 e2) a c) : w) | useRule "⇒App" = bigStep (n - 1) (info ++ curInfo ws "⇒App") ws'
+bigStep n info ws@(WJug (Inf (App e1 e2) a c) : w)
+  | useRule "⇒App" = bigStep (n - 1) (info ++ curInfo ws "⇒App") ws'
   where
     a1 = pickNewTVar ws []
     a2 = pickNewTVar ws [a1]
     a3 = pickNewTVar ws [a1, a2]
     ws' = WJug (Inf e1 a1 (InfAbs (TVar a1) a2 a3 (InfApp (TVar a2) (TVar a3) e2 a c))) : w
-bigStep n info ws@(WJug (Inf (TApp e t1) b c) : w) | useRule "⇒TApp" = bigStep (n - 1) (info ++ curInfo ws "⇒TApp") ws'
+bigStep n info ws@(WJug (Inf (TApp e t1) b c) : w)
+  | useRule "⇒TApp" = bigStep (n - 1) (info ++ curInfo ws "⇒TApp") ws'
   where
     b1 = pickNewTVar ws []
     ws' = WJug (Inf e b1 (InfTApp (TVar b1) t1 b c)) : w
-bigStep n info ws@(WJug (Inf (Lam x e) b c) : w) | useRule "⇒→Mono" = bigStep (n - 1) (info ++ curInfo ws "⇒→Mono") ws'
+bigStep n info ws@(WJug (Inf (Lam x e) b c) : w)
+  | useRule "⇒→Mono" = bigStep (n - 1) (info ++ curInfo ws "⇒→Mono") ws'
   where
     a1 = pickNewTVar ws []
     a2 = pickNewTVar ws [a1]
     y = pickNewVar ws []
     e' = eesubst x (Var y) e
     ws' = WJug (Chk e' (TVar a2)) : WVar y (TVar a1) : WJug (ctsubst b (TArr (TVar a1) (TVar a2)) c) : WTVar a2 ETVarBind : WTVar a1 ETVarBind : w
-bigStep n info ws@(WJug (Inf RcdNil b c) : w) | useRule "⇒⟨⟩" = bigStep (n - 1) (info ++ curInfo ws "⇒⟨⟩") ws' -- Record Extension
+bigStep n info ws@(WJug (Inf RcdNil b c) : w)
+  | useRule "⇒⟨⟩" = bigStep (n - 1) (info ++ curInfo ws "⇒⟨⟩") ws' -- Record Extension
   where
     ws' = WJug (ctsubst b TUnit c) : w
-bigStep n info ws@(WJug (Inf (RcdCons l1 e1 e2) b c) : w) | useRule "⇒⟨⟩Cons" = bigStep (n - 1) (info ++ curInfo ws "⇒⟨⟩Cons") ws' -- Record Extension
+bigStep n info ws@(WJug (Inf (RcdCons l1 e1 e2) b c) : w)
+  | useRule "⇒⟨⟩Cons" = bigStep (n - 1) (info ++ curInfo ws "⇒⟨⟩Cons") ws' -- Record Extension
   where
     b1 = pickNewTVar ws []
     b2 = pickNewTVar ws [b1]
     ws' = WJug (Inf e1 b1 (Inf e2 b2 (ctsubst b ((TLabel l1 `TArr` TVar b1) `TIntersection` TVar b2) c))) : w
-bigStep n info ws@(WJug (Inf (RcdProj e l) b c) : w) | useRule "⇒Proj" = bigStep (n - 1) (info ++ curInfo ws "⇒Proj") ws' -- Record Extension
+bigStep n info ws@(WJug (Inf (RcdProj e l) b c) : w)
+  | useRule "⇒Proj" = bigStep (n - 1) (info ++ curInfo ws "⇒Proj") ws' -- Record Extension
   where
     b1 = pickNewTVar ws []
     b2 = pickNewTVar ws [b1]
     b3 = pickNewTVar ws [b1, b2]
     ws' = WJug (Inf e b1 (InfAbs (TVar b1) b2 b3 (InfProj (TVar b2) (TVar b3) (TLabel l) b c))) : w
-bigStep n info ws@(WJug (Inf Nil b c) : w) | useRule "⇒[]Nil" = bigStep (n - 1) (info ++ curInfo ws "⇒[]Nil") ws' -- Unformalized
+bigStep n info ws@(WJug (Inf Nil b c) : w)
+  | useRule "⇒[]Nil" = bigStep (n - 1) (info ++ curInfo ws "⇒[]Nil") ws' -- Unformalized
   where
     a = pickNewTVar w []
     ws' = WJug (ctsubst b (TList (TVar a)) c) : WTVar a ETVarBind : w
-bigStep n info ws@(WJug (Inf (Cons e1 e2) b c) : w) | useRule "⇒[]Cons" = bigStep (n - 1) (info ++ curInfo ws "⇒[]Cons") ws' -- Unformalized
+bigStep n info ws@(WJug (Inf (Cons e1 e2) b c) : w)
+  | useRule "⇒[]Cons" = bigStep (n - 1) (info ++ curInfo ws "⇒[]Cons") ws' -- Unformalized
   where
     b1 = pickNewTVar ws []
     ws' = WJug (Inf e1 b1 (ConsInf (TVar b1) e2 b c)) : w
-bigStep n info ws@(WJug (Inf (Case e e1 e2) b c) : w) | useRule "⇒[]Case" = bigStep (n - 1) (info ++ curInfo ws "⇒[]Case") ws' -- Unformalized
+bigStep n info ws@(WJug (Inf (Case e e1 e2) b c) : w)
+  | useRule "⇒[]Case" = bigStep (n - 1) (info ++ curInfo ws "⇒[]Case") ws' -- Unformalized
   where
     b1 = pickNewTVar ws []
     ws' = WJug (Inf e1 b1 (CaseInf (TVar b1) e e2 b c)) : w
-bigStep n info ws@(WJug (ConsInf t e b c) : w) | useRule "[]Cons⇒" = bigStep (n - 1) (info ++ curInfo ws "[]Cons⇒") ws' -- Unformalized
+bigStep n info ws@(WJug (ConsInf t e b c) : w)
+  | useRule "[]Cons⇒" = bigStep (n - 1) (info ++ curInfo ws "[]Cons⇒") ws' -- Unformalized
   where
     ws' = WJug (Chk e (TList t)) : WJug (ctsubst b t c) : w
-bigStep n info ws@(WJug (CaseInf t1 e1 e2 b c) : w) | useRule "[]Case⇒" = bigStep (n - 1) (info ++ curInfo ws "[]Case⇒") ws' -- Unformalized
+bigStep n info ws@(WJug (CaseInf t1 e1 e2 b c) : w)
+  | useRule "[]Case⇒" = bigStep (n - 1) (info ++ curInfo ws "[]Case⇒") ws' -- Unformalized
   where
     b1 = pickNewTVar ws []
     ws' = WJug (Inf e1 b1 (CaseChk e2 (TVar b1) t1)) : WJug (ctsubst b t1 c) : w
-bigStep n info ws@(WJug (Inf (Fix e) b c) : w) | useRule "⇒Fix" = bigStep (n - 1) (info ++ curInfo ws "⇒Fix") ws' -- Unformalized
+bigStep n info ws@(WJug (Inf (Fix e) b c) : w)
+  | useRule "⇒Fix" = bigStep (n - 1) (info ++ curInfo ws "⇒Fix") ws' -- Unformalized
   where
     a = pickNewTVar ws []
     ws' = WJug (Chk e (TArr (TVar a) (TVar a))) : WJug (ctsubst b (TVar a) c) : WTVar a ETVarBind : w
-bigStep n info ws@(WJug (Inf (Let x e1 e2) b c) : w) | useRule "⇒Let" = bigStep (n - 1) (info ++ curInfo ws "⇒Let") ws' -- Unformalized
+bigStep n info ws@(WJug (Inf (Let x e1 e2) b c) : w)
+  | useRule "⇒Let" = bigStep (n - 1) (info ++ curInfo ws "⇒Let") ws' -- Unformalized
   where
     ws' = WJug (Inf (App (Lam x e2) (Fix (Lam x e1))) b c) : w
-bigStep n info ws@(WJug (Inf (LetA x t e1 e2) b c) : w) | useRule "⇒LetA" = bigStep (n - 1) (info ++ curInfo ws "⇒LetA") ws' -- Unformalized
+bigStep n info ws@(WJug (Inf (LetA x t e1 e2) b c) : w)
+  | useRule "⇒LetA" = bigStep (n - 1) (info ++ curInfo ws "⇒LetA") ws' -- Unformalized
   where
     ws' = WJug (Inf e2 b c) : WJug (Chk e1 t) : WVar x t : w
 --
 -- Matching and Application Inference
 --
-bigStep n info ws@(WJug (InfAbs (TArr t1 t2) b1 b2 c) : w) | useRule "▹→" = bigStep (n - 1) (info ++ curInfo ws "▹→") ws'
+bigStep n info ws@(WJug (InfAbs (TArr t1 t2) b1 b2 c) : w)
+  | useRule "▹→" = bigStep (n - 1) (info ++ curInfo ws "▹→") ws'
   where
     ws' = WJug (ctsubst b2 t2 (ctsubst b1 t1 c)) : w
-bigStep n info ws@(WJug (InfAbs TBot b1 b2 c) : w) | useRule "▹⊥" = bigStep (n - 1) (info ++ curInfo ws "▹⊥") ws'
+bigStep n info ws@(WJug (InfAbs TBot b1 b2 c) : w)
+  | useRule "▹⊥" = bigStep (n - 1) (info ++ curInfo ws "▹⊥") ws'
   where
     ws' = WJug (ctsubst b2 TBot (ctsubst b1 TTop c)) : w
-bigStep n info ws@(WJug (InfAbs (TAll a t) b1 b2 c) : w) | useRule "▹∀" = bigStep (n - 1) (info ++ curInfo ws "▹∀") ws'
+bigStep n info ws@(WJug (InfAbs (TAll a t) b1 b2 c) : w)
+  | useRule "▹∀" = bigStep (n - 1) (info ++ curInfo ws "▹∀") ws'
   where
     a1 = pickNewTVar ws []
     t' = ttsubst a (TVar a1) t
     ws' = WJug (InfAbs t' b1 b2 c) : WTVar a1 ETVarBind : w
-bigStep n info ws@(WJug (InfAbs (TIntersection t1 t2) b1 b2 c) : w) | useRule "▹∩" = case bigStep (n - 1) (info ++ curInfo ws "▹∩1") (WJug (InfAbs t1 b1 b2 c) : w) of
-  (True, info') -> (True, info')
-  (False, _) -> bigStep (n - 1) (info ++ curInfo ws "▹∩2") (WJug (InfAbs t2 b1 b2 c) : w)
-bigStep n info ws@(WJug (InfAbs (TUnion t1 t2) b1 b2 c) : w) | useRule "▹∪" = bigStep (n - 1) (info ++ curInfo ws "▹∪") ws'
+bigStep n info ws@(WJug (InfAbs (TIntersection t1 t2) b1 b2 c) : w)
+  | useRule "▹∩" = case bigStep (n - 1) (info ++ curInfo ws "▹∩1") (WJug (InfAbs t1 b1 b2 c) : w) of
+      (True, info') -> (True, info')
+      (False, _) -> bigStep (n - 1) (info ++ curInfo ws "▹∩2") (WJug (InfAbs t2 b1 b2 c) : w)
+bigStep n info ws@(WJug (InfAbs (TUnion t1 t2) b1 b2 c) : w)
+  | useRule "▹∪" = bigStep (n - 1) (info ++ curInfo ws "▹∪") ws'
   where
     b3 = pickNewTVar ws []
     b4 = pickNewTVar ws [b3]
@@ -596,25 +719,31 @@ bigStep n info ws@(WJug (InfAbs (TVar a) b1 b2 c) : w)
     a1 = pickNewTVar ws []
     a2 = pickNewTVar ws [a1]
     ws' = substWL a (TArr (TVar a1) (TVar a2)) (WJug (InfAbs (TVar a) b1 b2 c) : WTVar a2 ETVarBind : WTVar a1 ETVarBind : w)
-bigStep n info ws@(WJug (InfApp t1 t2 e b c) : w) | useRule "⊙➤" = bigStep (n - 1) (info ++ curInfo ws "⊙➤") ws'
+bigStep n info ws@(WJug (InfApp t1 t2 e b c) : w)
+  | useRule "⊙➤" = bigStep (n - 1) (info ++ curInfo ws "⊙➤") ws'
   where
     ws' = WJug (Chk e t1) : WJug (ctsubst b t2 c) : w
-bigStep n info ws@(WJug (InfProj t1 t2 t3 b c) : w) | useRule "⊗➤" = bigStep (n - 1) (info ++ curInfo ws "⊗➤") ws'
+bigStep n info ws@(WJug (InfProj t1 t2 t3 b c) : w)
+  | useRule "⊗➤" = bigStep (n - 1) (info ++ curInfo ws "⊗➤") ws'
   where
     ws' = WJug (Sub t3 t1) : WJug (ctsubst b t2 c) : w
 --
 -- Type Application Inference
 --
-bigStep n info ws@(WJug (InfTApp (TAll a t1) t2 b c) : w) | useRule "∘∀" = bigStep (n - 1) (info ++ curInfo ws "∘∀") ws'
+bigStep n info ws@(WJug (InfTApp (TAll a t1) t2 b c) : w)
+  | useRule "∘∀" = bigStep (n - 1) (info ++ curInfo ws "∘∀") ws'
   where
     ws' = WJug (ctsubst b (ttsubst a t2 t1) c) : w
-bigStep n info ws@(WJug (InfTApp TBot _ b c) : w) | useRule "∘⊥" = bigStep (n - 1) (info ++ curInfo ws "∘⊥") ws'
+bigStep n info ws@(WJug (InfTApp TBot _ b c) : w)
+  | useRule "∘⊥" = bigStep (n - 1) (info ++ curInfo ws "∘⊥") ws'
   where
     ws' = WJug (ctsubst b TBot c) : w
-bigStep n info ws@(WJug (InfTApp (TIntersection t1 t2) t3 b c) : w) | useRule "∘∩" = case bigStep (n - 1) (info ++ curInfo ws "∘∩1") (WJug (InfTApp t1 t3 b c) : w) of
-  (True, info') -> (True, info')
-  (False, _) -> bigStep (n - 1) (info ++ curInfo ws "∘∩1") (WJug (InfTApp t2 t3 b c) : w)
-bigStep n info ws@(WJug (InfTApp (TUnion t1 t2) t3 b c) : w) | useRule "∘∪" = bigStep (n - 1) (info ++ curInfo ws "∘∪") ws'
+bigStep n info ws@(WJug (InfTApp (TIntersection t1 t2) t3 b c) : w)
+  | useRule "∘∩" = case bigStep (n - 1) (info ++ curInfo ws "∘∩1") (WJug (InfTApp t1 t3 b c) : w) of
+      (True, info') -> (True, info')
+      (False, _) -> bigStep (n - 1) (info ++ curInfo ws "∘∩1") (WJug (InfTApp t2 t3 b c) : w)
+bigStep n info ws@(WJug (InfTApp (TUnion t1 t2) t3 b c) : w)
+  | useRule "∘∪" = bigStep (n - 1) (info ++ curInfo ws "∘∪") ws'
   where
     b1 = pickNewTVar ws []
     b2 = pickNewTVar ws [b1]
@@ -634,10 +763,11 @@ run s = do
   case parseExp code of
     Left err -> putStrLn err
     Right e ->
-      let (flag, message) = bigStep 100 "" [WJug (Inf e "a" End)]
-       in case flag of
-            True -> putStrLn $ "Accepted!\n" ++ message
-            False -> putStrLn $ "Rejected!\n" ++ message
+      (if flag then putStrLn $ "Accepted!\n" ++ message else putStrLn $ "Rejected!\n" ++ message)
+      where
+        b = pickNewTVar [] (tvarInExp e)
+        ws = [WJug (Inf e b End)]
+        (flag, message) = bigStep 100 "" ws
 
 ex_ws1 :: [Work]
 ex_ws1 = [WJug (Sub (TAll "a" (TArr (TVar "a") (TVar "a"))) (TAll "a" (TArr (TVar "a") (TVar "a"))))]
@@ -649,4 +779,4 @@ ws1 :: [Work]
 ws1 = [WJug (Inf (Ann (Lam "x" (App (App (Var "plus") (Var "x")) (ILit 1))) (TArr (TIntersection TInt TBool) TInt)) "a" End), WVar "plus" (TArr TInt (TArr TInt TInt))]
 
 res1 :: (Bool, String)
-res1 = bigStep 35 "" ws1
+res1 = bigStep 40 "" ws1
