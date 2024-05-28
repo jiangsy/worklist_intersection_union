@@ -1,3 +1,3 @@
 let plus = \x -> \y -> 1
     in 
-        let f1 :: (Int \/ Bool) -> Int = \x -> plus x 1 in f1
+        let f :: Int -> Int = \x0 -> plus x0 1 in f
