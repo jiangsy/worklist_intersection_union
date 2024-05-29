@@ -728,6 +728,15 @@ Lemma rename_tvar_in_aworklist_a_wf_work : forall Γ X Y w,
 Proof with auto 8 using rename_tvar_in_aworklist_a_wf_typ, rename_tvar_in_aworklist_a_wf_exp, rename_tvar_in_aworklist_a_wf_conts, rename_tvar_in_aworklist_a_wf_contd.
   intros. dependent destruction H1; try repeat destruct_wf_arrow; simpl... 
 Qed.
+
+
+Lemma a_exp_split_size_rename_tvar : forall Γ X Y e n,
+  ⊢ᵃʷ Γ ->
+  ⌊ Γ ⌋ᵃ ᵉ⊢ᵃ e ->
+  a_exp_split_size (⌊ Γ ⌋ᵃ) e n ->
+  (a_exp_split_size (⌊ {Y ᵃʷ/ₜᵥ X} Γ ⌋ᵃ) ({` Y ᵉ/ₜ X} e) n).
+Proof.
+Admitted.
   
 
 Lemma rename_tvar_in_aworklist_a_wf_wwl : forall Γ X Y,
@@ -860,7 +869,7 @@ Theorem rename_tvar_in_a_wf_wwl_a_wl_red : forall Γ X Y,
   Y ∉ dom (⌊ Γ ⌋ᵃ) ->
   Γ ⟶ᵃʷ⁎⋅ ->
   {Y ᵃʷ/ₜᵥ X} Γ ⟶ᵃʷ⁎⋅.
-(* Proof with eauto.
+Proof with eauto.
   intros. dependent induction H2; try solve [simpl in *; try apply_IH_a_wf_wwl; eauto]; create_ftvar_in_awl_set.
   - simpl in *. destruct (X0 == X); apply_IH_a_wf_wwl...
   - simpl.
@@ -1082,20 +1091,16 @@ Theorem rename_tvar_in_a_wf_wwl_a_wl_red : forall Γ X Y,
   - simpl in *.
     destruct_a_wf_wl.
     inst_cofinites_for a_wl_red__inf_tabs...
-    intros. inst_cofinites_with X0.
-    rewrite subst_typ_in_exp_open_exp_wrt_typ in H6...
-    simpl in H6.
-    rewrite <- subst_typ_in_typ_open_typ_wrt_typ_fresh2 in H6...
+    intros. inst_cofinites_with X0 (keep).
+    rewrite subst_typ_in_exp_open_exp_wrt_typ in H8...
+    simpl in H8.
+    rewrite <- subst_typ_in_typ_open_typ_wrt_typ_fresh2 in H8...
     destruct_eq_atom...
     auto_apply...
-    + rewrite open_body_wrt_typ_anno in *.
-      dependent destruction H1. dependent destruction H0.
-      repeat (constructor; simpl; auto)...
-      inst_cofinites_for a_wf_typ__all; intros.
-      * apply s_in_rename with (Y:=X1) in H1.
-        rewrite subst_typ_in_typ_open_typ_wrt_typ_tvar2 in H1...
-      * apply a_wf_typ_rename_tvar_cons with (Y:=X1) in H2.
-        rewrite subst_typ_in_typ_open_typ_wrt_typ_tvar2 in H2...
+    + dependent destruction H5. 
+      repeat (constructor; simpl; auto).
+      inst_cofinites_for a_wf_typ__all; intros; inst_cofinites_with X1; auto.
+      * dependent destruction H10...
   - simpl in *. destruct_a_wf_wl.
     inst_cofinites_for a_wl_red__inf_abs_mono.
     intros. inst_cofinites_with x. inst_cofinites_with X1. inst_cofinites_with X2.
@@ -1106,7 +1111,7 @@ Theorem rename_tvar_in_a_wf_wwl_a_wl_red : forall Γ X Y,
       rewrite_env (nil ++ ((X2, ⬒) :: (X1 ~ ⬒)) ++ ⌊ Γ ⌋ᵃ).
       apply a_wf_conts_weaken...
   - simpl in *. destruct_a_wf_wl.
-    assert (a_exp_split_size (⌊ {Y ᵃʷ/ₜᵥ X} Γ ⌋ᵃ) ({` Y ᵉ/ₜ X} e1) n) by admit.
+    eapply a_exp_split_size_rename_tvar with (X:=X) (Y:=Y) in H4; eauto.
     econstructor; eauto.
     eapply IHa_wl_red; eauto.
   - simpl in *. destruct_a_wf_wl. dependent destruction H0.
@@ -1173,8 +1178,8 @@ Theorem rename_tvar_in_a_wf_wwl_a_wl_red : forall Γ X Y,
     eapply apply_contd_rename_tvar with (X:=X) (Y:=Y) in H2 as Hac...
     eapply a_wl_red__applyd...
     auto_apply...
-    eapply a_wf_wwl_apply_contd in H0...  *)
-Admitted.
+    eapply a_wf_wwl_apply_contd in H0... 
+Qed.
 
 
 Theorem rename_tvar_in_a_wf_twl_a_wl_red : forall Γ X Y,
@@ -1621,8 +1626,11 @@ Proof with eauto using rename_var_a_wf_typ.
     + simpl. destruct_eq_atom...
     + rewrite subst_exp_in_exp_open_exp_wrt_exp... simpl. destruct_eq_atom...
   - inst_cofinites_for a_wf_exp__tabs; intros; inst_cofinites_with X; auto.
-    simpl in *. constructor...
-Admitted.
+    simpl in *.
+    rewrite <- subst_exp_in_exp_open_exp_wrt_typ; eauto.
+    rewrite_env (⌊ {y ᵃʷ/ₑᵥ x} ( X ~ᵃ □ ;ᵃ Γ )⌋ᵃ)...
+Qed.
+
 
 Lemma rename_var_a_wf_conts : forall Γ x y cs,
   ⊢ᵃʷ Γ ->
@@ -1687,13 +1695,23 @@ Ltac create_fvar_in_awl_set :=
     assert (Hfv: x ∉ fvar_in_aworklist' Γ) by (rewrite fvar_in_aworklist_upper; auto)
   end.
 
+Lemma a_exp_split_size_rename_var : forall Γ x y e n,
+  ⊢ᵃʷ Γ ->
+  ⌊ Γ ⌋ᵃ ᵉ⊢ᵃ e ->
+  y `notin` dom ( ⌊ Γ ⌋ᵃ ) ->
+  a_exp_split_size (⌊ Γ ⌋ᵃ) e n -> 
+  a_exp_split_size (⌊ {y ᵃʷ/ₑᵥ x} Γ ⌋ᵃ) ({exp_var_f y ᵉ/ₑ x} e) n.
+Proof.
+  intros.
+Admitted.
+
 Theorem rename_var_in_a_wf_wwl_a_wl_red : forall Γ x y,
   ⊢ᵃʷ Γ ->
   y <> x ->
   y ∉ dom (⌊ Γ ⌋ᵃ) ->
   Γ ⟶ᵃʷ⁎⋅ ->
   {y ᵃʷ/ₑᵥ x} Γ ⟶ᵃʷ⁎⋅.
-(* Proof with eauto.
+Proof with eauto.
   intros. dependent induction H2; try solve [simpl in *; try apply_IH_a_wf_wwl; eauto]; create_fvar_in_awl_set.
   - simpl.
     destruct_a_wf_wl. dependent destruction H.
@@ -1816,17 +1834,13 @@ Theorem rename_var_in_a_wf_wwl_a_wl_red : forall Γ x y,
     + auto_apply; auto. destruct_a_wf_wl. unify_binds. apply a_wf_wwl_a_wf_env in H1 as Hwfenv. apply a_wf_env_bind_a_wf_typ in H...
   - destruct_a_wf_wl. simpl in *.
     inst_cofinites_for a_wl_red__inf_tabs...
-    intros. inst_cofinites_with X.
+    intros. inst_cofinites_with X (keep).
     rewrite subst_exp_in_exp_open_exp_wrt_typ in *...
-    rewrite open_body_wrt_typ_anno in *.
     auto_apply...
-    dependent destruction H0. dependent destruction H.
+    dependent destruction H5.
     repeat (constructor; simpl; auto).
-    + inst_cofinites_for a_wf_typ__all; intros.
-      * apply s_in_rename with (Y:=X0) in H0...
-        rewrite subst_typ_in_typ_open_typ_wrt_typ_tvar2 in H0...
-      * apply a_wf_typ_rename_tvar_cons with (Y:=X0) in H1...
-        rewrite subst_typ_in_typ_open_typ_wrt_typ_tvar2 in H1...
+    + inst_cofinites_for a_wf_typ__all; intros; auto.
+      inst_cofinites_with X0; auto. dependent destruction H10...
   - destruct_a_wf_wl. simpl in *.
     inst_cofinites_for a_wl_red__inf_abs_mono.
     intros.
@@ -1840,7 +1854,7 @@ Theorem rename_var_in_a_wf_wwl_a_wl_red : forall Γ x y,
     apply a_wf_exp_weaken_etvar_twice with (T:=T)...
     apply a_wf_conts_weaken_cons...  apply a_wf_conts_weaken_cons...
   - simpl in *. destruct_a_wf_wl.
-    assert (a_exp_split_size (⌊ {y ᵃʷ/ₑᵥ x} Γ ⌋ᵃ) ({exp_var_f y ᵉ/ₑ x} e1) n) by admit.
+    apply a_exp_split_size_rename_var with (x:=x) (y:=y) in H5...
     econstructor; eauto.
     eapply IHa_wl_red; eauto.
   - destruct_a_wf_wl. dependent destruction H. simpl in *.
@@ -1880,8 +1894,8 @@ Theorem rename_var_in_a_wf_wwl_a_wl_red : forall Γ x y,
     eapply rename_var_apply_contd with (y:=y) (x:=x) in H2 as Hac.
     econstructor; eauto.
     auto_apply...
-    eapply a_wf_wwl_apply_contd; eauto. *)
-Admitted.
+    eapply a_wf_wwl_apply_contd; eauto.
+Qed.
 
 
 Theorem rename_var_in_a_wf_twl_a_wl_red : forall Γ x y,
@@ -1905,4 +1919,3 @@ Proof.
   intros. eapply rename_var_in_a_wf_wwl_a_wl_red; eauto.
   apply a_wf_wl_a_wf_wwl; auto.
 Qed.  
-

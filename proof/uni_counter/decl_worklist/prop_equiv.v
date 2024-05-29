@@ -821,10 +821,10 @@ Proof.
   - admit.
 Admitted.
 
-Lemma d_iuv_size_rename_cons : forall Ψ X X0 A n,
+Lemma d_iuv_size_rename_cons : forall Ψ X Y A n,
   (* some additional conditions *)
   d_iuv_size (X ~ □ ++ Ψ) (A ᵗ^ₜ X) n ->
-  d_iuv_size (X0 ~ □ ++ Ψ) (A ᵗ^ₜ X0) n.
+  d_iuv_size (Y ~ □ ++ Ψ) (A ᵗ^ₜ Y) n.
 Admitted.
 
 Lemma num_occurs_in_typ_rename_cons : forall X X0 A n,
