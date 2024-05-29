@@ -68,8 +68,10 @@ Inductive a_iuv_size : aenv -> typ -> nat -> Prop :=
   | a_iuv_size__all : forall L Σ A n m,
       (forall X,
         X \notin L ->
-        a_iuv_size (X ~ abind_tvar_empty ++ Σ) (open_typ_wrt_typ A (typ_var_f X)) n /\
-          num_occurs_in_typ X (open_typ_wrt_typ A (typ_var_f X)) m) ->
+        a_iuv_size (X ~ abind_tvar_empty ++ Σ) (open_typ_wrt_typ A (typ_var_f X)) n) ->
+      (forall X,
+        X \notin L ->
+        num_occurs_in_typ X (open_typ_wrt_typ A (typ_var_f X)) m) ->
       a_iuv_size Σ (typ_all A) (n + m)
   | a_iuv_size__union : forall Σ A1 A2 n1 n2,
       a_iuv_size Σ A1 n1 ->

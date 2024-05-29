@@ -69,6 +69,7 @@ Proof.
   - destruct_eq_atom; dependent destruction H; auto.
 Qed.
 
+
 Corollary rename_tvar_in_aworklist_neq_tvar_bind_same : forall Γ X1 X2 Y b,
   ⊢ᵃʷ Γ ->
   X1 <> X2 ->
@@ -81,6 +82,7 @@ Proof.
   destruct_eq_atom; auto.
 Qed.
 
+
 Corollary rename_tvar_in_aworklist_eq_tvar_bind_same : forall Γ X X' b,
   ⊢ᵃʷ Γ ->
   X' ∉ ftvar_in_aworklist' Γ ->
@@ -91,6 +93,20 @@ Proof.
   intros. eapply rename_tvar_in_aworklist_tvar_bind_same with (X2:=X) in H1; eauto...
   destruct_eq_atom; auto.
 Qed.
+
+
+Lemma rename_tvar_in_aworklist_var_bind_same : forall Γ x X Y A,
+  ⊢ᵃʷ Γ ->
+  Y ∉ ftvar_in_aworklist' Γ ->
+  x ~ A ∈ᵃ ⌊ Γ ⌋ᵃ ->
+  x ~ {` Y ᵗ/ₜ X} A ∈ᵃ ⌊ {Y ᵃʷ/ₜᵥ X} Γ ⌋ᵃ.
+Proof.
+  intros. induction Γ; simpl in *; auto.
+  - destruct ab; simpl; 
+      dependent destruction H; destruct_eq_atom; destruct_binds; auto.
+  - destruct_eq_atom; dependent destruction H; auto.
+Qed.
+
 
 Lemma rename_tvar_in_aworklist_app : forall Γ1 Γ2 X Y,
   {Y ᵃʷ/ₜᵥ X} Γ2 ⧺ {Y ᵃʷ/ₜᵥ X} Γ1 = {Y ᵃʷ/ₜᵥ X} (Γ2 ⧺ Γ1).
@@ -703,7 +719,9 @@ Proof with eauto using rename_tvar_in_aworklist_a_wf_typ.
       simpl. destruct_eq_atom. auto.
 Qed.
 
+
 #[local] Hint Immediate  a_wf_exp_weaken_etvar_twice : core.
+
 
 Lemma rename_tvar_in_aworklist_a_wf_conts : forall Γ X Y cs,
   ⊢ᵃʷ Γ ->
@@ -720,6 +738,7 @@ Proof with auto using rename_tvar_in_aworklist_a_wf_typ, rename_tvar_in_aworklis
   - intros. clear rename_tvar_in_aworklist_a_wf_contd. dependent induction H1; try repeat destruct_wf_arrow; simpl in *; auto...
 Qed.
 
+
 Lemma rename_tvar_in_aworklist_a_wf_work : forall Γ X Y w,
   ⊢ᵃʷ Γ ->
   Y ∉ dom (⌊ Γ ⌋ᵃ)  ->
@@ -728,6 +747,21 @@ Lemma rename_tvar_in_aworklist_a_wf_work : forall Γ X Y w,
 Proof with auto 8 using rename_tvar_in_aworklist_a_wf_typ, rename_tvar_in_aworklist_a_wf_exp, rename_tvar_in_aworklist_a_wf_conts, rename_tvar_in_aworklist_a_wf_contd.
   intros. dependent destruction H1; try repeat destruct_wf_arrow; simpl... 
 Qed.
+  
+
+Lemma num_occurs_in_typ_rename : forall A X X0 Y n,
+  num_occurs_in_typ X A n ->
+  X <> Y ->
+  X0 <> X ->
+  num_occurs_in_typ X ({`X0 ᵗ/ₜ Y} A) n.
+Proof with eauto 6 using num_occurs_in_typ.
+  intros. induction H; simpl; destruct_eq_atom; eauto...
+  - inst_cofinites_for num_occurs_in_typ__all. intros. inst_cofinites_with Y0. 
+    rewrite subst_typ_in_typ_open_typ_wrt_typ_fresh2...
+  - econstructor...
+  - econstructor...
+Qed.
+
 
 Lemma a_iuv_size_rename_tvar : forall Γ X Y A m, 
   ⊢ᵃʷ Γ ->
@@ -737,18 +771,44 @@ Lemma a_iuv_size_rename_tvar : forall Γ X Y A m,
   a_iuv_size (⌊ {Y ᵃʷ/ₜᵥ X} Γ ⌋ᵃ) ({` Y ᵗ/ₜ X} A) m.
 Proof with eauto using a_iuv_size.
   intros. dependent induction H2; simpl...
+  (* TODO: may improve this duplicated fragment later *)
   - destruct_eq_atom; eauto...
-    admit.
-    admit.
-  - admit.
-  - admit.
+    + dependent destruction H0; 
+      eapply rename_tvar_in_aworklist_eq_tvar_bind_same with (X':=Y) in H0; eauto using a_iuv_size; 
+      rewrite ftvar_in_a_wf_wwl_upper; eauto.
+    + dependent destruction H0;
+      eapply rename_tvar_in_aworklist_neq_tvar_bind_same with (X1:=X0) (X2:=X) in H0; eauto using a_iuv_size; 
+      rewrite ftvar_in_a_wf_wwl_upper; eauto.
+  - destruct_eq_atom; eauto...
+    + dependent destruction H0; 
+      eapply rename_tvar_in_aworklist_eq_tvar_bind_same with (X':=Y) in H0; eauto using a_iuv_size; 
+      rewrite ftvar_in_a_wf_wwl_upper; eauto.
+    + dependent destruction H0;
+      eapply rename_tvar_in_aworklist_neq_tvar_bind_same with (X1:=X0) (X2:=X) in H0; eauto using a_iuv_size; 
+      rewrite ftvar_in_a_wf_wwl_upper; eauto.
+  - destruct_eq_atom; eauto...
+    + dependent destruction H0; 
+      eapply rename_tvar_in_aworklist_eq_tvar_bind_same with (X':=Y) in H0; eauto using a_iuv_size; 
+      rewrite ftvar_in_a_wf_wwl_upper; eauto.
+    + dependent destruction H0;
+      eapply rename_tvar_in_aworklist_neq_tvar_bind_same with (X1:=X0) (X2:=X) in H0; eauto using a_iuv_size; 
+      rewrite ftvar_in_a_wf_wwl_upper; eauto.
   - dependent destruction H0...
-  - admit.
+  - inst_cofinites_for a_iuv_size__all; intros;
+    inst_cofinites_with X0.
+    + rewrite subst_typ_in_typ_open_typ_wrt_typ_fresh2...
+      replace (X0 ~ □ ++ ⌊ {Y ᵃʷ/ₜᵥ X} Γ ⌋ᵃ) with (⌊ {Y ᵃʷ/ₜᵥ X} (X0 ~ᵃ □ ;ᵃ Γ) ⌋ᵃ) by (simpl; destruct_eq_atom; auto)...
+      eapply H3; eauto.
+      dependent destruction H0. pick fresh X1. inst_cofinites_with X1.
+      eapply a_wf_typ_rename_tvar_cons with (Y:=X0) in H1. 
+      rewrite subst_typ_in_typ_open_typ_wrt_typ_tvar2 in H1...
+    + rewrite subst_typ_in_typ_open_typ_wrt_typ_fresh2...
+      apply num_occurs_in_typ_rename...
   - dependent destruction H0...
     econstructor...
   - dependent destruction H0...
     econstructor...
-Admitted.
+Qed.
 
 
 Lemma a_exp_split_size_rename_tvar : forall Γ X Y e n,
@@ -756,27 +816,33 @@ Lemma a_exp_split_size_rename_tvar : forall Γ X Y e n,
   ⌊ Γ ⌋ᵃ ᵉ⊢ᵃ e ->
   Y `notin` dom (⌊ Γ ⌋ᵃ) ->
   a_exp_split_size (⌊ Γ ⌋ᵃ) e n ->
-  (a_exp_split_size (⌊ {Y ᵃʷ/ₜᵥ X} Γ ⌋ᵃ) ({` Y ᵉ/ₜ X} e) n).
-Proof with eauto using a_exp_split_size.
+  a_exp_split_size (⌊ {Y ᵃʷ/ₜᵥ X} Γ ⌋ᵃ) ({` Y ᵉ/ₜ X} e) n.
+Proof with eauto using a_exp_split_size, a_iuv_size_rename_tvar.
   intros. dependent induction H2; simpl in *...
-  - admit.
-  - inst_cofinites_for a_exp_split_size__abs; intros.
+  - eapply rename_tvar_in_aworklist_var_bind_same with (X:=X) (Y:=Y) in H3 as Hbind; eauto.
+    replace (exp_var_f x) with ( {`Y ᵉ/ₜ X} (exp_var_f x)) by auto.
+    eapply a_iuv_size_rename_tvar in H2...
+    + eapply a_wf_env_bind_a_wf_typ; eauto. apply a_wf_wwl_a_wf_env...
+    + rewrite ftvar_in_a_wf_wwl_upper; eauto.
+  - dependent destruction H0. 
+    inst_cofinites_for a_exp_split_size__abs; intros.
     inst_cofinites_with x.
     rewrite subst_typ_in_exp_open_exp_wrt_exp_fresh2...
     rewrite_env ((⌊ {Y ᵃʷ/ₜᵥ X} (x ~ᵃ typ_bot ;ᵃ Γ) ⌋ᵃ))...
     eapply H2; eauto.
-    admit.
+    simpl. eapply a_wf_exp_var_binds_another_cons...
   - dependent destruction H0. econstructor...
-  - inst_cofinites_for a_exp_split_size__tabs; intros.
-    inst_cofinites_with X0.
-    rewrite subst_typ_in_exp_open_exp_wrt_typ_fresh2...
-    + admit.
-    + dependent destruction H0. admit.
-  - dependent destruction H0. econstructor...
-    admit.
-  - dependent destruction H0. econstructor...
-    admit.
-Admitted.
+  - dependent destruction H0. inst_cofinites_for a_exp_split_size__tabs; intros.
+    + inst_cofinites_with X0. dependent destruction H1.
+      rewrite subst_typ_in_exp_open_exp_wrt_typ_fresh2...
+      replace (X0 ~ □ ++ ⌊ {Y ᵃʷ/ₜᵥ X} Γ ⌋ᵃ) with (⌊ {Y ᵃʷ/ₜᵥ X} (X0 ~ᵃ □ ;ᵃ Γ) ⌋ᵃ) by (simpl; destruct_eq_atom; auto)...
+    + replace (typ_all ({` Y ᵗ/ₜ X} A)) with ({` Y ᵗ/ₜ X} (typ_all A)) by auto.
+      eapply a_iuv_size_rename_tvar; eauto.
+      inst_cofinites_for a_wf_typ__all; intros; inst_cofinites_with X0; auto.
+      dependent destruction H1...
+  - dependent destruction H0... econstructor...
+  - dependent destruction H0... econstructor...
+Qed.
   
 
 Lemma rename_tvar_in_aworklist_a_wf_wwl : forall Γ X Y,
@@ -862,13 +928,13 @@ Proof.
 Qed.
 
 
-
 Corollary a_wf_typ_weaken_cons_twice : forall X1 X2 A Σ,
   Σ ᵗ⊢ᵃ A ->
   (X2, ⬒) :: (X1, ⬒) :: Σ ᵗ⊢ᵃ A.
 Proof.
   intros. apply a_wf_typ_weaken_cons. apply a_wf_typ_weaken_cons. auto.
 Qed.
+
 
 Lemma a_mono_typ_false_rename : forall Γ X Y A,
   ⊢ᵃʷ Γ ->
@@ -886,6 +952,7 @@ Qed.
 
 
 #[local] Hint Immediate a_wf_typ_weaken_cons_twice : core.
+
 
 Ltac fold_subst :=
   match goal with
@@ -1220,6 +1287,9 @@ Proof with eauto.
     auto_apply...
     eapply a_wf_wwl_apply_contd in H0... 
 Qed.
+
+
+Print Assumptions rename_tvar_in_a_wf_wwl_a_wl_red.
 
 
 Theorem rename_tvar_in_a_wf_twl_a_wl_red : forall Γ X Y,
