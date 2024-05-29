@@ -191,7 +191,10 @@ labelType = do
 ------------------------------------------------------------------------
 
 sc :: Parser ()
-sc = L.space space1 empty empty
+sc = L.space space1 lineCmnt blockCmnt
+  where
+    lineCmnt  = L.skipLineComment "--"
+    blockCmnt = L.skipBlockComment "{-" "-}"
 
 lexeme :: Parser a -> Parser a
 lexeme = L.lexeme sc
