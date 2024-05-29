@@ -156,7 +156,7 @@ tOperators = [[InfixR (TArr <$ symbol "->"), InfixR (TIntersection <$ symbol "/\
 atype :: Parser Typ
 atype =
   choice
-    [pForall, TVar <$> identifier, tconst, listType, parens pType]
+    [pForall, TVar <$> identifier, tconst, listType, labelType, parens pType]
 
 pForall :: Parser Typ
 pForall = do
@@ -180,6 +180,11 @@ listType = do
   t <- pType
   symbol "]"
   return $ TList t
+
+labelType :: Parser Typ
+labelType = do
+  rword "Label"
+  TLabel <$> identifier
 
 ------------------------------------------------------------------------
 -- Misc
