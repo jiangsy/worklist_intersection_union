@@ -729,13 +729,53 @@ Proof with auto 8 using rename_tvar_in_aworklist_a_wf_typ, rename_tvar_in_aworkl
   intros. dependent destruction H1; try repeat destruct_wf_arrow; simpl... 
 Qed.
 
+Lemma a_iuv_size_rename_tvar : forall Γ X Y A m, 
+  ⊢ᵃʷ Γ ->
+  ⌊ Γ ⌋ᵃ ᵗ⊢ᵃ A ->
+  Y `notin` dom (⌊ Γ ⌋ᵃ) ->
+  a_iuv_size (⌊ Γ ⌋ᵃ) A m ->
+  a_iuv_size (⌊ {Y ᵃʷ/ₜᵥ X} Γ ⌋ᵃ) ({` Y ᵗ/ₜ X} A) m.
+Proof with eauto using a_iuv_size.
+  intros. dependent induction H2; simpl...
+  - destruct_eq_atom; eauto...
+    admit.
+    admit.
+  - admit.
+  - admit.
+  - dependent destruction H0...
+  - admit.
+  - dependent destruction H0...
+    econstructor...
+  - dependent destruction H0...
+    econstructor...
+Admitted.
+
 
 Lemma a_exp_split_size_rename_tvar : forall Γ X Y e n,
   ⊢ᵃʷ Γ ->
   ⌊ Γ ⌋ᵃ ᵉ⊢ᵃ e ->
+  Y `notin` dom (⌊ Γ ⌋ᵃ) ->
   a_exp_split_size (⌊ Γ ⌋ᵃ) e n ->
   (a_exp_split_size (⌊ {Y ᵃʷ/ₜᵥ X} Γ ⌋ᵃ) ({` Y ᵉ/ₜ X} e) n).
-Proof.
+Proof with eauto using a_exp_split_size.
+  intros. dependent induction H2; simpl in *...
+  - admit.
+  - inst_cofinites_for a_exp_split_size__abs; intros.
+    inst_cofinites_with x.
+    rewrite subst_typ_in_exp_open_exp_wrt_exp_fresh2...
+    rewrite_env ((⌊ {Y ᵃʷ/ₜᵥ X} (x ~ᵃ typ_bot ;ᵃ Γ) ⌋ᵃ))...
+    eapply H2; eauto.
+    admit.
+  - dependent destruction H0. econstructor...
+  - inst_cofinites_for a_exp_split_size__tabs; intros.
+    inst_cofinites_with X0.
+    rewrite subst_typ_in_exp_open_exp_wrt_typ_fresh2...
+    + admit.
+    + dependent destruction H0. admit.
+  - dependent destruction H0. econstructor...
+    admit.
+  - dependent destruction H0. econstructor...
+    admit.
 Admitted.
   
 

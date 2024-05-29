@@ -100,7 +100,7 @@ Inductive a_exp_split_size : aenv -> exp -> nat -> Prop :=
   | a_exp_split_size__tabs : forall L Σ e A n m,
       (forall X, X \notin  L ->
         a_exp_split_size (X ~ abind_tvar_empty ++ Σ) (open_exp_wrt_typ e (typ_var_f X)) n) ->
-      a_iuv_size Σ A m ->
+      a_iuv_size Σ (typ_all A) m ->
       a_exp_split_size Σ (exp_tabs (exp_anno e A)) ((1 + n) * (2 + m))
   | a_exp_split_size__tapp : forall Σ e A n m,
       a_exp_split_size Σ e n ->
@@ -109,8 +109,7 @@ Inductive a_exp_split_size : aenv -> exp -> nat -> Prop :=
   | a_exp_split_size__anno : forall Σ e A n m,
       a_exp_split_size Σ e n ->
       a_iuv_size Σ A m ->
-      a_exp_split_size Σ (exp_anno e A) ((1 + n) * (2 + m))
-  .
+      a_exp_split_size Σ (exp_anno e A) ((1 + n) * (2 + m)).
     
 
 (* defns Jaworklist_reduction *)
