@@ -575,8 +575,26 @@ Lemma num_occurs_in_typ_open_typ_wrt_typ_rename : forall X Y Z A n,
   num_occurs_in_typ X (open_typ_wrt_typ A (typ_var_f Z)) n.
 Admitted.
 
-Lemma num_occurs_in_typ_total : forall Ψ X A,
+Lemma num_occurs_in_typ_total_a_wf_typ : forall Ψ X A,
   a_wf_typ Ψ A -> exists n, num_occurs_in_typ X A n.
+Proof.
+  intros * Hwf. induction Hwf; eauto using num_occurs_in_typ;
+    try solve [destruct (X == X0); subst; eauto using num_occurs_in_typ].
+  - destruct IHHwf1 as [n1 IHHwf1]. destruct IHHwf2 as [n2 IHHwf2].
+    eauto using num_occurs_in_typ.
+  - pick fresh Y. inst_cofinites_with Y.
+    destruct H1 as [n H1]. exists n.
+    eapply num_occurs_in_typ__all with (L := L). intros * Hnin.
+    eapply num_occurs_in_typ_open_typ_wrt_typ_rename with (Z := Y0) in H1. auto.
+  - destruct IHHwf1 as [n1 IHHwf1]. destruct IHHwf2 as [n2 IHHwf2].
+    eauto using num_occurs_in_typ.
+  - destruct IHHwf1 as [n1 IHHwf1]. destruct IHHwf2 as [n2 IHHwf2]. 
+    eauto using num_occurs_in_typ.
+Qed.
+
+(* Please consider refactor *)
+Lemma num_occurs_in_typ_total_d_wf_typ : forall Ψ X A,
+  Ψ ᵗ⊢ᵈ A -> exists n, num_occurs_in_typ X A n.
 Proof.
   intros * Hwf. induction Hwf; eauto using num_occurs_in_typ;
     try solve [destruct (X == X0); subst; eauto using num_occurs_in_typ].
@@ -803,7 +821,69 @@ Proof.
   - admit.
 Admitted.
 
-(* Lemma d_iuv_size *)
+Lemma d_iuv_size_rename_cons : forall Ψ X X0 A n,
+  (* some additional conditions *)
+  d_iuv_size (X ~ □ ++ Ψ) (A ᵗ^ₜ X) n ->
+  d_iuv_size (X0 ~ □ ++ Ψ) (A ᵗ^ₜ X0) n.
+Admitted.
+
+Lemma num_occurs_in_typ_rename_cons : forall X X0 A n,
+  (* some additional conditions *)
+  num_occurs_in_typ X (A ᵗ^ₜ X) n ->
+  num_occurs_in_typ X0 (A ᵗ^ₜ X0) n.
+Admitted.
+
+Lemma d_iuv_size_total : forall Ψ A,
+  Ψ ᵗ⊢ᵈ A -> exists n, d_iuv_size Ψ A n.
+Proof.
+  intros * Hwf. dependent induction Hwf; eauto using d_iuv_size.
+  - destruct IHHwf1 as [n1 IHHwf1]. destruct IHHwf2 as [n2 IHHwf2].
+    eauto using d_iuv_size.
+  - pick fresh X. inst_cofinites_with X.
+    destruct H1 as [n H1].
+    edestruct num_occurs_in_typ_total_d_wf_typ with (X := X) as [m H2] in H0; eauto.
+    exists (n + m).
+    inst_cofinites_for d_iuv_size__all.
+    + intros X0 Hnin. eapply d_iuv_size_rename_cons; eauto.
+    + intros X0 Hnin. eapply num_occurs_in_typ_rename_cons; eauto.
+  - destruct IHHwf1 as [n1 IHHwf1].
+    destruct IHHwf2 as [n2 IHHwf2].
+    eauto using d_iuv_size.
+  - destruct IHHwf1 as [n1 IHHwf1].
+    destruct IHHwf2 as [n2 IHHwf2].
+    eauto using d_iuv_size.
+Qed.
+
+Lemma d_iuv_size_open_typ_wrt_typ_cons : forall X Ψ A B n m1 m2,
+  d_iuv_size Ψ (A ᵗ^^ₜ B) n ->
+  d_iuv_size (X ~ □ ++ Ψ) (A ᵗ^ₜ X) m1 -> d_iuv_size Ψ B m2 ->
+  n <= (1 + m1) * (2 + m2).
+Admitted.
+
+Lemma inftapp_iuv_size : forall Ψ A B C na nb nc,
+  Ψ ⊢ A ○ B ⇒⇒ C ->
+  d_iuv_size Ψ A na ->
+  d_iuv_size Ψ B nb ->
+  d_iuv_size Ψ C nc ->
+  nc <= (1 + na) * (2 + nb).
+Proof.
+  intros.
+  generalize dependent nc.
+  generalize dependent nb.
+  generalize dependent na. induction H; intros.
+  - dependent destruction H3. lia.
+  - dependent destruction H2.
+    pick fresh X. inst_cofinites_with X.
+    eapply d_iuv_size_open_typ_wrt_typ_cons with (n := nc) (m1 := n) (m2 := nb) in H5; eauto. lia.
+  - dependent destruction H1.
+    eapply IHd_inftapp in H1_; eauto. lia.
+  - dependent destruction H1.
+    eapply IHd_inftapp in H1_0; eauto. lia.
+  - dependent destruction H1.
+    dependent destruction H3.
+    eapply IHd_inftapp1 in H1_; eauto.
+    eapply IHd_inftapp2 in H1_0; eauto. lia.
+Qed. 
 
 Lemma inf_iuv_size_d_exp_split_size : forall Ω A e n m,
   ⊢ᵈʷₛ Ω ->
@@ -813,25 +893,56 @@ Lemma inf_iuv_size_d_exp_split_size : forall Ω A e n m,
   m <= n.
 Proof.
   intros * Hwf Hinf. generalize dependent n. generalize dependent m.
-  dependent induction Hinf; intros * Hes Hiuv; dependent destruction Hes; simpl; auto; try lia.
+  dependent induction Hinf; intros * Hes Hiuv;
+    dependent destruction Hes; simpl; auto; try lia.
   - eapply binds_unique in H0; eauto.
-    dependent destruction H0. admit. (* d_iuv_det *)
-  (* - assert (Hle: iuv_size C <= iuv_size A). { eapply infabs_iuv_size_C; eauto. }
-    assert (Hle': iuv_size A ≤ n1). { eapply IHHinf1; eauto. } lia.
-  - dependent destruction H.
-    eapply iuv_size_d_mono in H. eapply iuv_size_d_mono in H0. subst. lia.
-  - assert (Hle: iuv_size C <= (1 + iuv_size A) * (2 + iuv_size B)). { eapply inftapp_iuv_size; eauto. }
-    assert (Hle': iuv_size A <= n). { eapply IHHinf; eauto. }
-    eapply le_trans with (m := (1 + iuv_size A) * (2 + iuv_size B)); try lia.
-    replace (S (S (iuv_size B + n * S (S (iuv_size B))))) with ((1 + n) * (2 + iuv_size B)) by lia.
-    eapply mult_le_compat_r. lia. *)
+    dependent destruction H0.
+    eapply d_iuv_size_det in H2; eauto. lia.
+  - eapply d_iuv_size_det with (n2 := m) in H0; auto. lia.
+  - dependent destruction Hiuv. auto.
+  - eapply d_chk_inf_wf in Hinf1.
+    destruct Hinf1 as [Hwf1 [Hwf2 Hwf3]].
+    eapply d_iuv_size_total in Hwf2 as HiuvA.
+    destruct HiuvA as [n HiuvA].
+    apply infabs_d_iuv_size_C with (n := n) (m := m) in H; auto.
+    apply IHHinf1 with (m := n) in Hes1; auto. lia.
+  - dependent destruction H. dependent destruction Hiuv.
+    eapply d_iuv_size_d_mono in H.
+    eapply d_iuv_size_d_mono in H0.
+    eapply d_iuv_size_det in H; eauto.
+    eapply d_iuv_size_det in H0; eauto. lia.
+  - eapply d_iuv_size_det in H3; eauto. lia.
+  - eapply d_chk_inf_wf in Hinf.
+    destruct Hinf as [Hwf1 [Hwf2 Hwf3]].
+    eapply d_iuv_size_total in Hwf2 as HiuvA.
+    destruct HiuvA as [na HiuvA].
+    apply inftapp_iuv_size with (na := na) (nb := m0) (nc := m) in H0; auto.
+    eapply IHHinf with (m := na) in Hes; auto.
+    replace (S (S (m0 + n * S (S m0)))) with ((1 + n) * (2 + m0)) by lia.
+    apply le_trans with (m := (1 + na) * (2 + m0)); auto.
+    eapply mult_le_compat_r. lia.
+Qed.
+
+Lemma d_iuv_size_close : forall A Ψ X n,
+  d_iuv_size (X ~ □ ++ Ψ) (A ᵗ^ₜ X) n -> d_iuv_size Ψ A n .
+(* change the lemma and its name to whatever you like *)
 Admitted.
 
-(* Lemma iu_size_le_iuv_size : forall A,
-  iu_size A <= iuv_size A.
+Lemma iu_size_le_d_iuv_size : forall A Ψ n,
+  d_iuv_size Ψ A n -> iu_size A <= n.
 Proof.
-  induction A; simpl; auto; try lia.
-Qed. *)
+  intro A. induction A; intros * Hiuv; simpl; try lia.
+  - dependent destruction Hiuv.
+    eapply IHA1 in Hiuv1. eapply IHA2 in Hiuv2. lia.
+  - dependent destruction Hiuv.
+    pick fresh X. inst_cofinites_with X.
+    eapply d_iuv_size_close in H.
+    eapply IHA in H. lia.
+  - dependent destruction Hiuv.
+    eapply IHA1 in Hiuv1. eapply IHA2 in Hiuv2. lia.
+  - dependent destruction Hiuv.
+    eapply IHA1 in Hiuv1. eapply IHA2 in Hiuv2. lia.
+Qed.
 
 Lemma d_wl_red_chk_inf_complete: forall Ω e A mode,
   d_chk_inf (dwl_to_denv Ω) e mode A -> 
@@ -853,9 +964,13 @@ Proof with auto.
     apply d_infabs_d_wf in H0 as Hwft. intuition.
     eapply d_wl_red_infabs_complete; eauto.
     econstructor... econstructor...
-    eapply inf_iuv_size_d_exp_split_size in H as Hle1; eauto.
-    eapply infabs_iuv_size_B in H0 as Hle2.
-    specialize (iu_size_le_iuv_size B) as Hle3. lia.
+    eapply d_iuv_size_total in H8.
+    eapply d_iuv_size_total in H7.
+    destruct H8 as [na HiuvA].
+    destruct H7 as [nb HiuvB].
+    eapply inf_iuv_size_d_exp_split_size in HiuvA as Hle; eauto.
+    eapply infabs_d_iuv_size_B with (n := na) (m := nb) in H0 as Hle2; eauto.
+    eapply iu_size_le_d_iuv_size in HiuvB. lia.
     econstructor.
     assert ((work_check e2 B ⫤ᵈ Ω) ⟶ᵈʷ⁎⋅).
       apply IHd_chk_inf2; auto.
@@ -874,6 +989,8 @@ Proof with auto.
     eapply d_wl_red__inf_tabs with (L:=L `union` L0 `union` dom (dwl_to_denv Ω)); eauto. 
     intros. inst_cofinites_with X. dependent destruction H3.
     apply H1; auto 7.
+    repeat constructor; simpl; auto.
+    admit. (* wf *)
   - destruct_d_wf_wl.
     apply d_chk_inf_wf_typ in H0.
     econstructor.
@@ -904,7 +1021,7 @@ Proof with auto.
   - destruct_d_wf_wl. eapply d_wl_red__chk_inter; eauto 11...
   - destruct_d_wf_wl. eauto 7. 
   - destruct_d_wf_wl. eauto 7. 
-Qed.
+Admitted.
 
 
 Theorem d_wl_red_complete: forall Ω, 

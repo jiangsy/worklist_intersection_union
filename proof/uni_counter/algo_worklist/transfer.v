@@ -6,7 +6,8 @@ Require Import Lia.
 
 Require Import uni_counter.notations.
 Require Import uni_counter.decl.prop_basic.
-(* Require Import uni_counter.decl_wozrklist.prop_equiv. *)
+Require Import uni_counter.decl_worklist.def.
+Require Import uni_counter.decl_worklist.prop_equiv.
 (* Require Import uni_counter.decl.prop_subtyping. *)
 Require Import uni_counter.algo_worklist.def_extra.
 Require Import uni_counter.algo_worklist.prop_basic.
@@ -156,10 +157,10 @@ Inductive trans_conts : subst_set -> conts -> conts -> Prop :=
     trans_typ θ Aᵃ Aᵈ ->
     trans_conts θ (conts_sub Aᵃ) (conts_sub Aᵈ)
 with trans_contd : subst_set -> contd -> contd -> Prop :=
-  | trans_contd__infapp : forall θ eᵃ eᵈ csᵃ csᵈ,
+  | trans_contd__infapp : forall θ eᵃ eᵈ csᵃ csᵈ n,
     trans_exp θ eᵃ eᵈ ->
     trans_conts θ csᵃ csᵈ ->
-    trans_contd θ (contd_infapp eᵃ csᵃ) (contd_infapp eᵈ csᵈ)
+    trans_contd θ (contd_infapp n eᵃ csᵃ) (contd_infapp n eᵈ csᵈ)
   | trans_contd__infabs_union : forall θ Aᵃ Aᵈ cdᵃ cdᵈ,
     trans_typ θ Aᵃ Aᵈ ->
     trans_contd θ cdᵃ cdᵈ ->
@@ -239,9 +240,6 @@ Notation "θ ᵗ⊩ Aᵃ ⇝ Aᵈ" := (trans_typ θ Aᵃ Aᵈ)
 Notation "θ ᵉ⊩ eᵃ ⇝ eᵈ" := (trans_exp θ eᵃ eᵈ)
   (at level 65, eᵃ at next level, no associativity).
 
-Notation "θ ᵇ⊩ bᵃ ⇝ bᵈ" := (trans_body θ bᵃ bᵈ)
-  (at level 65, bᵃ at next level, no associativity).
-
 Notation "θ ᶜˢ⊩ csᵃ ⇝ csᵈ" := (trans_conts θ csᵃ csᵈ)
   (at level 65, csᵃ at next level, no associativity).
 
@@ -286,7 +284,7 @@ Definition transfer (Γ : aworklist) (Ω : dworklist)  : Prop :=
   exists θ', trans_worklist nil Γ Ω θ'.
 
 
-#[export] Hint Constructors trans_typ trans_exp trans_body trans_conts trans_contd trans_work trans_worklist wf_ss : core.
+#[export] Hint Constructors trans_typ trans_exp trans_conts trans_contd trans_work trans_worklist wf_ss : core.
 
 
 Lemma binds_same_move_etvar_before : forall θ1 θ2 X1 X2 b1 b2 Y (b : dbind),
@@ -672,45 +670,31 @@ Qed.
 
 Lemma trans_exp_lc_aexp : forall θ eᵃ eᵈ,
   θ ᵉ⊩ eᵃ ⇝ eᵈ ->
-  lc_exp eᵃ
-with trans_body_lc_abody : forall θ bᵃ bᵈ,  
-  θ ᵇ⊩ bᵃ ⇝ bᵈ ->
-  lc_body bᵃ.
+  lc_exp eᵃ.
 Proof.
-  - intros. induction H; auto. 
-    + inst_cofinites_by L using_name X.   
-      apply lc_exp_tabs_exists with (X1:=X).
-      eapply trans_body_lc_abody; eauto.
-    + constructor; auto.
-      eapply trans_typ_lc_atyp; eauto.
-    + constructor; auto.
-      eapply trans_typ_lc_atyp; eauto.
-  - intros. destruct bᵃ.
-    + dependent destruction H. constructor; auto.
-      eapply trans_exp_lc_aexp; eauto.
-      eapply trans_typ_lc_atyp; eauto.
+  intros. induction H; auto. 
+  - inst_cofinites_by L using_name X.   
+    apply lc_exp_tabs_exists with (X1:=X). 
+    econstructor; eauto using trans_typ_lc_atyp.
+  - constructor; auto.
+    eapply trans_typ_lc_atyp; eauto.
+  - constructor; auto.
+    eapply trans_typ_lc_atyp; eauto.
 Qed.
 
 
 Lemma trans_exp_lc_dexp : forall θ eᵃ eᵈ,
   θ ᵉ⊩ eᵃ ⇝ eᵈ ->
-  lc_exp eᵈ
-with trans_body_lc_dbody : forall θ bᵃ bᵈ,  
-  θ ᵇ⊩ bᵃ ⇝ bᵈ ->
-  lc_body bᵈ.
+  lc_exp eᵈ.
 Proof.
-  - intros. induction H; auto. 
-    + inst_cofinites_by L using_name X.   
-      apply lc_exp_tabs_exists with (X1:=X).
-      eapply trans_body_lc_dbody; eauto.
-    + constructor; auto.
-      eapply trans_typ_lc_dtyp; eauto.
-    + constructor; auto.
-      eapply trans_typ_lc_dtyp; eauto.
-  - intros. destruct bᵃ.
-    + dependent destruction H. constructor; auto.
-      eapply trans_exp_lc_dexp; eauto.
-      eapply trans_typ_lc_dtyp; eauto.
+  intros. induction H; auto. 
+  - inst_cofinites_by L using_name X.   
+    apply lc_exp_tabs_exists with (X1:=X).
+    econstructor; eauto using trans_typ_lc_dtyp.
+  - constructor; auto.
+    eapply trans_typ_lc_dtyp; eauto.
+  - constructor; auto.
+    eapply trans_typ_lc_dtyp; eauto.
 Qed.
 
 
@@ -796,30 +780,22 @@ Lemma trans_exp_det : forall θ eᵃ e₁ᵈ e₂ᵈ,
   uniq θ -> 
   θ ᵉ⊩ eᵃ ⇝ e₁ᵈ -> 
   θ ᵉ⊩ eᵃ ⇝ e₂ᵈ -> 
-  e₁ᵈ = e₂ᵈ
-with trans_body_det : forall θ bᵃ b₁ᵈ b₂ᵈ,
-  uniq θ -> 
-  θ ᵇ⊩ bᵃ ⇝ b₁ᵈ -> 
-  θ ᵇ⊩ bᵃ ⇝ b₂ᵈ -> 
-  b₁ᵈ = b₂ᵈ.
+  e₁ᵈ = e₂ᵈ.
 Proof with eauto.
-  - intros. generalize dependent e₂ᵈ.
-    induction H0; (intros e₂ᵈ H2; dependent destruction H2; auto).
-    + inst_cofinites_by (L `union` L0 `union` (fvar_in_exp eᵈ) `union` (fvar_in_exp eᵈ0) `union`  dom θ) using_name x.
-      apply f_equal.
-      eapply open_exp_wrt_exp_inj with (x1:=x); auto.  
-    + apply f_equal2...
-    + inst_cofinites_by (L `union` L0 `union` (ftvar_in_body bᵈ) `union` (ftvar_in_body bᵈ0) `union`  dom θ) using_name X.
-      apply f_equal.
-      eapply open_body_wrt_typ_inj with (X1:=X); auto.
-      eapply trans_body_det with (θ:=((X, □) :: θ))...
-    + apply f_equal2... unify_trans_typ.
-    + apply f_equal2... unify_trans_typ.
-  - intros. generalize dependent b₂ᵈ.
-    induction H0; intros.
-    dependent destruction H2.
-    apply f_equal2... unify_trans_typ.
-Qed.
+  intros * Huniq Htrans1 Htrans2. generalize dependent e₂ᵈ.
+  induction Htrans1; (intros; dependent destruction Htrans2; auto).
+  - inst_cofinites_by (L `union` L0 `union` (fvar_in_exp eᵈ) `union` (fvar_in_exp eᵈ0) `union`  dom θ) using_name x.
+    apply f_equal.
+    eapply open_exp_wrt_exp_inj with (x1:=x); auto.  
+  - apply f_equal2...
+  - pick fresh X. inst_cofinites_with X.
+    apply f_equal.
+    apply f_equal2.
+    + eapply open_exp_wrt_typ_inj with (X1:=X); auto.
+    + eapply open_typ_wrt_typ_inj with (X1:=X); auto. unify_trans_typ.
+  - apply f_equal2... unify_trans_typ.
+  - apply f_equal2... unify_trans_typ.
+ Qed.
 
 Ltac unify_trans_exp :=
   match goal with
@@ -878,10 +854,12 @@ Proof.
     exists ((X, dbind_typ T):: θ''). rewrite H2. auto.
 Qed.
 
+Open Scope dworklist.
+
 Lemma trans_wl_split : forall Γ1 Γ2 Ω θ θ',
   θ ⊩ (Γ2 ⧺ Γ1) ⇝ Ω ⫣ θ' ->
   exists Ω1 Ω2 θ'', 
-    Ω = dwl_app Ω2 Ω1 /\
+    Ω = dwl_app Ω2 Ω1 /\ 
     θ  ⊩ Γ1 ⇝ Ω1 ⫣ θ'' /\ 
     θ'' ⊩ Γ2 ⇝ Ω2 ⫣ θ'.
 Proof.
@@ -1128,19 +1106,6 @@ Proof.
     intros. inst_cofinites_with Y.
     apply H4... apply binds_cons; auto.
     auto.
-Qed.
-
-Lemma trans_body_dtvar_abody_s_in_dbody : forall θ X bᵃ bᵈ b,
-  b = dbind_tvar_empty \/ b = dbind_stvar_empty ->
-  θ ᵇ⊩ bᵃ ⇝ bᵈ ->
-  binds X b θ ->
-  s_in_b X bᵃ ->
-  s_in_b X bᵈ.
-Proof.
-  intros. dependent destruction H0; simpl in *.
-  dependent destruction H3.
-  constructor. eapply trans_exp_lc_dexp; eauto. 
-  eapply trans_typ_dtvar_atyp_s_in_dtyp; eauto.
 Qed.
 
 
@@ -1420,84 +1385,64 @@ Qed.
 
 Lemma trans_exp_rename_var : forall θ eᵃ eᵈ x x', 
   θ ᵉ⊩ eᵃ ⇝ eᵈ ->
-  θ ᵉ⊩ {(exp_var_f x') ᵉ/ₑ x} eᵃ ⇝ {(exp_var_f x') ᵉ/ₑ x} eᵈ
-with trans_body_rename_var : forall θ bᵃ bᵈ x x', 
-  θ ᵇ⊩ bᵃ ⇝ bᵈ ->
-  θ ᵇ⊩ {(exp_var_f x') ᵇ/ₑ x} bᵃ ⇝ {(exp_var_f x') ᵇ/ₑ x} bᵈ.
+  θ ᵉ⊩ {(exp_var_f x') ᵉ/ₑ x} eᵃ ⇝ {(exp_var_f x') ᵉ/ₑ x} eᵈ.
 Proof with auto.
-  - intros. dependent induction H; simpl; auto...
-    + unfold eq_dec. destruct (EqDec_eq_of_X x0 x); subst.
-      * econstructor... 
-      * econstructor... 
-    + eapply trans_exp__abs with (L:=L `union` singleton x). intros.
-      inst_cofinites_with x0.
-      erewrite subst_var_in_exp_open_exp_wrt_exp in H0...
-      erewrite subst_var_in_exp_open_exp_wrt_exp in H0...
-      simpl in H0...
-      unfold eq_dec in H0. destruct (EqDec_eq_of_X x0 x).
-      * subst. apply notin_union_2 in H1. apply notin_singleton_1 in H1. contradiction.
-      * auto.
-    + eapply trans_exp__tabs with (L:=L). intros.
-      inst_cofinites_with X.
-      erewrite <- subst_var_in_body_open_body_wrt_typ...
-      erewrite <- subst_var_in_body_open_body_wrt_typ...
-  - intros. dependent induction H; simpl; auto...
+  intros. dependent induction H; simpl; auto...
+  - unfold eq_dec. destruct (EqDec_eq_of_X x0 x); subst.
+    + econstructor... 
+    + econstructor... 
+  - eapply trans_exp__abs with (L:=L `union` singleton x). intros.
+    inst_cofinites_with x0.
+    erewrite subst_var_in_exp_open_exp_wrt_exp in H0...
+    erewrite subst_var_in_exp_open_exp_wrt_exp in H0...
+    simpl in H0...
+    unfold eq_dec in H0. destruct (EqDec_eq_of_X x0 x).
+    + subst. apply notin_union_2 in H1. apply notin_singleton_1 in H1. contradiction.
+    + auto.
+  - eapply trans_exp__tabs with (L:=L); intros;
+    inst_cofinites_with X...
+    + erewrite <- subst_var_in_exp_open_exp_wrt_typ...
+      erewrite <- subst_var_in_exp_open_exp_wrt_typ...
 Qed.
 
 
 Lemma trans_exp_rename_tvar : forall θ1 θ2 eᵃ eᵈ X X', 
   θ2 ++ (X, dbind_tvar_empty) :: θ1 ᵉ⊩ eᵃ ⇝ eᵈ ->
   X' ∉ dom (θ2 ++ θ1) ->
-  map (subst_tvar_in_dbind (` X') X) θ2  ++ (X', dbind_tvar_empty) :: θ1 ᵉ⊩ 
-      subst_tvar_in_exp `X' X eᵃ ⇝ subst_tvar_in_exp `X' X eᵈ
-with trans_body_rename_tvar :  forall θ1 θ2 bᵃ bᵈ X X', 
-  θ2 ++ (X, dbind_tvar_empty) :: θ1 ᵇ⊩ bᵃ ⇝ bᵈ ->
-  X' ∉ dom (θ2 ++ θ1) ->
-  map (subst_tvar_in_dbind (` X') X) θ2  ++ (X', dbind_tvar_empty) :: θ1 ᵇ⊩ 
-      subst_tvar_in_body `X' X bᵃ ⇝ subst_tvar_in_body `X' X bᵈ.
+  map (subst_tvar_in_dbind ` X' X) θ2 ++ (X', □) :: θ1 ᵉ⊩ {` X' ᵉ/ₜ X} eᵃ ⇝ {` X' ᵉ/ₜ X} eᵈ.
 Proof with auto.
-  - intros. dependent induction H; simpl in *...
-    + constructor...
-      eapply wf_ss_rename_tvar; eauto.
-    + constructor.
-      eapply wf_ss_rename_tvar; eauto.
-    + inst_cofinites_for trans_exp__abs.
-      intros. inst_cofinites_with x.
-      eapply H0 in H1; eauto.
-      rewrite subst_tvar_in_exp_open_exp_wrt_exp in H1...
-      rewrite subst_tvar_in_exp_open_exp_wrt_exp in H1...
-    + inst_cofinites_for trans_exp__tabs.
-      intros. inst_cofinites_with X0.
-      rewrite_env (((X0, □) :: θ2) ++ (X, □) :: θ1 ) in H.
-      apply trans_body_rename_tvar with (X':=X') in H...
-      rewrite subst_tvar_in_body_open_body_wrt_typ in H...
-      rewrite subst_tvar_in_body_open_body_wrt_typ in H...
-      simpl in H. destruct_eq_atom.
-      auto.
-    + constructor...
-      apply trans_typ_rename_tvar...
-    + constructor...
-      apply trans_typ_rename_tvar...
-  - intros. destruct bᵃ. dependent destruction H.
-    simpl. constructor...
+  intros. dependent induction H; simpl in *...
+  - constructor...
+    eapply wf_ss_rename_tvar; eauto.
+  - constructor.
+    eapply wf_ss_rename_tvar; eauto.
+  - inst_cofinites_for trans_exp__abs.
+    intros. inst_cofinites_with x.
+    eapply H0 in H1; eauto.
+    rewrite subst_tvar_in_exp_open_exp_wrt_exp in H1...
+    rewrite subst_tvar_in_exp_open_exp_wrt_exp in H1...
+  - inst_cofinites_for trans_exp__tabs;
+    intros; inst_cofinites_with X0.
+    + repeat (rewrite subst_tvar_in_exp_open_exp_wrt_typ_fresh2; eauto).
+      rewrite_env (map (subst_tvar_in_dbind (` X') X) ((X0, □) :: θ2) ++ (X', □) :: θ1).
+      eapply H0; eauto.
+    + repeat (rewrite subst_tvar_in_typ_open_typ_wrt_typ_fresh2; eauto).
+      rewrite_env (map (subst_tvar_in_dbind (` X') X) ((X0, □) :: θ2) ++ (X', □) :: θ1).
+      apply trans_typ_rename_tvar; eauto.
+  - constructor...
+    apply trans_typ_rename_tvar...
+  - constructor...
     apply trans_typ_rename_tvar...
 Qed.
-
 
 
 Lemma trans_exp_rename_tvar_cons : forall θ eᵃ eᵈ X X', 
   (X, dbind_tvar_empty) :: θ ᵉ⊩ eᵃ ⇝ eᵈ ->
   X' ∉ dom θ ->
-  (X', dbind_tvar_empty) :: θ ᵉ⊩ subst_tvar_in_exp `X' X eᵃ ⇝ subst_tvar_in_exp `X' X eᵈ
-with trans_body_rename_tvar_cons :  forall θ bᵃ bᵈ X X', 
-  (X, dbind_tvar_empty) :: θ ᵇ⊩ bᵃ ⇝ bᵈ ->
-  X' ∉ dom θ ->
-  (X', dbind_tvar_empty) :: θ ᵇ⊩ subst_tvar_in_body `X' X bᵃ ⇝ subst_tvar_in_body `X' X bᵈ.
+  (X', dbind_tvar_empty) :: θ ᵉ⊩ subst_tvar_in_exp `X' X eᵃ ⇝ subst_tvar_in_exp `X' X eᵈ.
 Proof.
   intros. rewrite_env (map (subst_tvar_in_dbind (` X') X) nil ++ (X', □) :: θ). 
     apply trans_exp_rename_tvar; auto.
-  intros. rewrite_env (map (subst_tvar_in_dbind (` X') X) nil ++ (X', □) :: θ). 
-    apply trans_body_rename_tvar; auto.
 Qed.
 
 
@@ -1626,52 +1571,46 @@ Qed.
 Lemma trans_exp_total : forall θ Γ Ω eᵃ,
   a_wf_exp (awl_to_aenv Γ) eᵃ ->  
   nil ⊩ Γ ⇝ Ω ⫣ θ -> 
-  exists eᵈ, trans_exp θ eᵃ eᵈ
-with trans_body_total : forall θ Γ Ω bᵃ,
-  a_wf_body (awl_to_aenv Γ) bᵃ ->  
-  nil ⊩ Γ ⇝ Ω ⫣ θ -> 
-  exists bᵈ, trans_body θ bᵃ bᵈ.
+  exists eᵈ, trans_exp θ eᵃ eᵈ.
 Proof with eauto using trans_typ_total.
-  - intros. clear trans_exp_total.
-    generalize dependent Ω. 
-    generalize dependent θ. 
-    dependent induction H; intros...
-    + pick fresh x. 
-      eapply trans_typ_total in H...
-      destruct H as [Tᵈ].
-      assert ((nil ⊩ (x ~ᵃ T ;ᵃ Γ) ⇝ (x ~ᵈ Tᵈ ;ᵈ Ω) ⫣ θ)) by auto.
-      eapply H1 with (θ:=θ) in H3...
-      destruct H3 as [eᵈ].
-      exists (exp_abs (close_exp_wrt_exp x eᵈ)). 
-      inst_cofinites_for trans_exp__abs. intros.
-      solve_trans_exp_open_close.
-    + assert ((exists e1ᵈ, θ ᵉ⊩ e1 ⇝ e1ᵈ) -> (exists e2ᵈ, θ ᵉ⊩ e2 ⇝ e2ᵈ) -> exists eᵈ , θ ᵉ⊩ exp_app e1 e2 ⇝ eᵈ). {
-        intros. destruct_conj...
-      }
-      apply H2...
-    + inst_cofinites_by (L `union` dom (awl_to_aenv Γ) `union` ftvar_in_body body5 `union` dom θ) using_name X.
-      assert (nil ⊩ (X ~ᵃ □ ;ᵃ Γ) ⇝ (X ~ᵈ □ ;ᵈ Ω) ⫣ (X, □) :: θ) by auto.
-      eapply trans_body_total with (Ω:=dworklist_cons_var Ω X dbind_tvar_empty) (θ:=(X, dbind_tvar_empty)::θ) in H2...
-      destruct H2 as [bᵈ].
-      exists (exp_tabs (close_body_wrt_typ X bᵈ)).
-      eapply trans_exp__tabs with (L:=L `union` dom θ). intros.
-      erewrite (subst_tvar_in_body_intro X)...
-      erewrite (subst_tvar_in_body_intro X (close_body_wrt_typ X bᵈ)) by apply close_body_wrt_typ_notin_rec.
-      rewrite open_body_wrt_typ_close_body_wrt_typ.
-      apply trans_body_rename_tvar_cons with (X':=X0) in H2; auto.
-    + assert (Hex: (exists eᵈ, θ ᵉ⊩ e ⇝ eᵈ) -> (exists Aᵈ, θ ᵗ⊩ A ⇝ Aᵈ) -> exists eᵈ, θ ᵉ⊩ exp_tapp e A ⇝ eᵈ). {
-        intros. destruct_conj...
-      } 
-      apply Hex...
-    + assert (Hex: (exists eᵈ, θ ᵉ⊩ e ⇝ eᵈ) -> (exists Aᵈ, θ ᵗ⊩ A ⇝ Aᵈ) -> exists eᵈ, θ ᵉ⊩ exp_anno e A ⇝ eᵈ). {
-       intros. destruct_conj...
-      } 
-      apply Hex...
-  - intros. clear trans_body_total. dependent destruction H; intros.
-    + assert (Hex: (exists eᵈ, θ ᵉ⊩ e ⇝ eᵈ) -> (exists Aᵈ, θ ᵗ⊩ A ⇝ Aᵈ) -> exists bᵈ, θ ᵇ⊩ body_anno e A ⇝ bᵈ). {
-       intros. destruct_conj. eauto...
-     }
-     apply Hex... 
+  intros. generalize dependent Ω. 
+  generalize dependent θ. 
+  dependent induction H; intros...
+  - pick fresh x. 
+    eapply trans_typ_total in H...
+    destruct H as [Tᵈ].
+    assert ((nil ⊩ (x ~ᵃ T ;ᵃ Γ) ⇝ (x ~ᵈ Tᵈ ;ᵈ Ω) ⫣ θ)) by auto.
+    eapply H1 with (θ:=θ) in H3...
+    destruct H3 as [eᵈ].
+    exists (exp_abs (close_exp_wrt_exp x eᵈ)). 
+    inst_cofinites_for trans_exp__abs. intros.
+    solve_trans_exp_open_close.
+  - assert ((exists e1ᵈ, θ ᵉ⊩ e1 ⇝ e1ᵈ) -> (exists e2ᵈ, θ ᵉ⊩ e2 ⇝ e2ᵈ) -> exists eᵈ , θ ᵉ⊩ exp_app e1 e2 ⇝ eᵈ). {
+      intros. destruct_conj...
+    }
+    apply H2...
+  - pick fresh X; inst_cofinites_with X.
+    assert (nil ⊩ (X ~ᵃ □ ;ᵃ Γ) ⇝ (X ~ᵈ □ ;ᵈ Ω) ⫣ (X, □) :: θ) by auto.
+    replace (X ~ □ ++ ⌊ Γ ⌋ᵃ )%abind with (⌊ X ~ᵃ □ ;ᵃ Γ ⌋ᵃ) in * by auto.
+    (* eapply trans_typ_total in H0... *)
+    eapply H1 in H3...
+    destruct H3 as [eᵈ]. dependent destruction H3... 
+    exists (exp_tabs (exp_anno (close_exp_wrt_typ X eᵈ) (close_typ_wrt_typ X A1ᵈ))).
+    inst_cofinites_for trans_exp__tabs; intros.
+    + rewrite_close_open_subst. apply trans_exp_rename_tvar_cons with (X':=X0) in H3; eauto.
+      rewrite subst_tvar_in_exp_open_exp_wrt_typ in H3... simpl in H3. destruct_eq_atom...
+      rewrite subst_tvar_in_exp_fresh_eq in H3...
+    + rewrite_close_open_subst. apply trans_typ_rename_tvar_cons with (X':=X0) in H4; eauto.
+      rewrite subst_tvar_in_typ_open_typ_wrt_typ in H4... simpl in H4. destruct_eq_atom...
+      rewrite subst_tvar_in_typ_fresh_eq in H4...
+  - assert (Hex: (exists eᵈ, θ ᵉ⊩ e ⇝ eᵈ) -> (exists Aᵈ, θ ᵗ⊩ A ⇝ Aᵈ) -> exists eᵈ, θ ᵉ⊩ exp_tapp e A ⇝ eᵈ). {
+      intros. destruct_conj...
+    } 
+    apply Hex...
+  - assert (Hex: (exists eᵈ, θ ᵉ⊩ e ⇝ eᵈ) -> (exists Aᵈ, θ ᵗ⊩ A ⇝ Aᵈ) -> exists eᵈ, θ ᵉ⊩ exp_anno e A ⇝ eᵈ). {
+      intros. destruct_conj...
+    } 
+    apply Hex...
 Qed.
 
 Lemma trans_conts_total : forall θ Γ Ω csᵃ,
@@ -2123,44 +2062,34 @@ Lemma trans_wl_a_wf_exp_d_wf_exp' : forall Γ Ω θ eᵃ eᵈ,
   nil ⊩ Γ ⇝ Ω ⫣ θ ->
   θ ᵉ⊩ eᵃ ⇝ eᵈ ->
   ⌊ Γ ⌋ᵃ ᵉ⊢ᵃ eᵃ ->
-  d_wf_exp (dwl_to_denv Ω) eᵈ
-with trans_wl_a_wf_body_d_wf_body' : forall Γ Ω θ bᵃ bᵈ,
-  lc_body bᵃ ->
-  nil ⊩ Γ ⇝ Ω ⫣ θ ->
-  θ ᵇ⊩ bᵃ ⇝ bᵈ ->
-  ⌊ Γ ⌋ᵃ ᵇ⊢ᵃ bᵃ ->
-  d_wf_body (dwl_to_denv Ω) bᵈ.
+  d_wf_exp (dwl_to_denv Ω) eᵈ.
 Proof with auto.
-  - clear trans_wl_a_wf_exp_d_wf_exp'. intros * Hlc Htranswl Htranse Hwfe.
-    generalize dependent Ω. 
-    generalize dependent Γ.
-    generalize dependent θ. 
-    generalize dependent eᵈ.
-    dependent induction Hlc; intros; dependent destruction Htranse...
-    + dependent destruction Hwfe.
-      eapply trans_wl_a_wl_binds_var_binds_d_wl with (Ω:=Ω) in H0; eauto.
-      destruct H0 as [Aᵈ Hbinds]. econstructor; eauto. 
-    + dependent destruction Hwfe. 
-      inst_cofinites_for d_wf_exp__abs T:=typ_unit...
-      intros. inst_cofinites_with x.
-      rewrite_env (dwl_to_denv (dworklist_cons_var Ω x (dbind_typ typ_unit))).
-      eapply H0; eauto. simpl.
-      rewrite_env (nil ++ (x, abind_var_typ typ_unit) :: ⌊ Γ ⌋ᵃ). 
-      eapply a_wf_exp_var_binds_another with (A1:=T); eauto.
-    + dependent destruction Hwfe. constructor; eauto.
-    + dependent destruction Hwfe. inst_cofinites_for d_wf_exp__tabs;
-      intros; inst_cofinites_with X...
-      * eapply trans_body_dtvar_abody_s_in_dbody with (b:=dbind_tvar_empty); eauto.
-      * rewrite_env (dwl_to_denv (X ~ᵈ □ ;ᵈ Ω)). 
-        eapply trans_wl_a_wf_body_d_wf_body' with (Γ:=X ~ᵃ □ ;ᵃ Γ); eauto.
-        constructor...
-    + dependent destruction Hwfe. constructor; eauto.
-      eapply trans_wl_a_wf_typ_d_wf_typ; eauto.
-    + dependent destruction Hwfe. constructor; eauto.
-      eapply trans_wl_a_wf_typ_d_wf_typ; eauto.
-  - intros * Hlc Htranswl Htranse Hwfe.
-    dependent destruction Hlc. dependent destruction Htranse...
-    dependent destruction Hwfe. constructor; eauto.
+  intros * Hlc Htranswl Htranse Hwfe.
+  generalize dependent Ω. 
+  generalize dependent Γ.
+  generalize dependent θ. 
+  generalize dependent eᵈ.
+  dependent induction Hlc; intros; dependent destruction Htranse...
+  - dependent destruction Hwfe.
+    eapply trans_wl_a_wl_binds_var_binds_d_wl with (Ω:=Ω) in H0; eauto.
+    destruct H0 as [Aᵈ Hbinds]. econstructor; eauto. 
+  - dependent destruction Hwfe. 
+    inst_cofinites_for d_wf_exp__abs T:=typ_unit...
+    intros. inst_cofinites_with x.
+    rewrite_env (dwl_to_denv (dworklist_cons_var Ω x (dbind_typ typ_unit))).
+    eapply H0; eauto. simpl.
+    rewrite_env (nil ++ (x, abind_var_typ typ_unit) :: ⌊ Γ ⌋ᵃ). 
+    eapply a_wf_exp_var_binds_another with (A1:=T); eauto.
+  - dependent destruction Hwfe. constructor; eauto.
+  - dependent destruction Hwfe. inst_cofinites_for d_wf_exp__tabs;
+    intros; inst_cofinites_with X...
+    + eapply trans_typ_dtvar_atyp_s_in_dtyp with (b:=dbind_tvar_empty); eauto.
+    + rewrite_env (⌊ X ~ᵈ □ ;ᵈ Ω ⌋ᵈ). 
+      eapply H0 with (Γ:=X ~ᵃ □ ;ᵃ Γ); eauto.
+      constructor; eauto. econstructor...
+  - dependent destruction Hwfe. constructor; eauto.
+    eapply trans_wl_a_wf_typ_d_wf_typ; eauto.
+  - dependent destruction Hwfe. constructor; eauto.
     eapply trans_wl_a_wf_typ_d_wf_typ; eauto.
 Qed.
 
@@ -2169,17 +2098,10 @@ Lemma trans_wl_a_wf_exp_d_wf_exp : forall Γ Ω θ eᵃ eᵈ,
   nil ⊩ Γ ⇝ Ω ⫣ θ ->
   θ ᵉ⊩ eᵃ ⇝ eᵈ ->
   a_wf_exp (awl_to_aenv Γ) eᵃ ->
-  d_wf_exp (dwl_to_denv Ω) eᵈ
-with trans_wl_a_wf_body_d_wf_body : forall Γ Ω θ bᵃ bᵈ,
-  nil ⊩ Γ ⇝ Ω ⫣ θ ->
-  θ ᵇ⊩ bᵃ ⇝ bᵈ ->
-  a_wf_body (awl_to_aenv Γ) bᵃ ->
-  d_wf_body (dwl_to_denv Ω) bᵈ.
+  d_wf_exp (dwl_to_denv Ω) eᵈ.
 Proof.
-  - intros. apply trans_exp_lc_aexp in H0 as Hlc.
-    eapply trans_wl_a_wf_exp_d_wf_exp'; eauto.
-  - intros. apply trans_body_lc_abody in H0 as Hlc.
-    eapply trans_wl_a_wf_body_d_wf_body'; eauto.
+  intros. apply trans_exp_lc_aexp in H0 as Hlc.
+  eapply trans_wl_a_wf_exp_d_wf_exp'; eauto.
 Qed.
 
 Lemma trans_wl_a_wf_conts_d_wf_conts : forall Γ Ω θ csᵃ csᵈ,  
@@ -2351,22 +2273,20 @@ Qed.
 Lemma trans_exp_strengthen_etvar : forall θ1 θ2 X T eᵃ eᵈ,
   (θ2 ++ (X, dbind_typ T) :: θ1) ᵉ⊩ eᵃ ⇝ eᵈ ->
   X ∉ ftvar_in_exp eᵃ ->
-  θ2 ++ θ1 ᵉ⊩ eᵃ ⇝ eᵈ
-with trans_body_strengthen_etvar : forall θ1 θ2 X T bᵃ bᵈ,
-  (θ2 ++ (X, dbind_typ T) :: θ1) ᵇ⊩ bᵃ ⇝ bᵈ ->
-  X ∉ ftvar_in_body bᵃ ->
-  θ2 ++ θ1 ᵇ⊩ bᵃ ⇝ bᵈ.
+  θ2 ++ θ1 ᵉ⊩ eᵃ ⇝ eᵈ.
 Proof with eauto using wf_ss_strengthen_etvar, trans_typ_strengthen_etvar.
-  - intros. clear trans_exp_strengthen_etvar. dependent induction H; simpl in *...
-    + inst_cofinites_for trans_exp__abs. intros.
-      inst_cofinites_with x...
-      eapply H0... rewrite ftvar_in_exp_open_exp_wrt_exp_upper...
-    + remember (ftvar_in_body bᵃ). inst_cofinites_for trans_exp__tabs. subst.
-      intros. rewrite_env (((X0, □) :: θ2) ++ θ1).
-      eapply trans_body_strengthen_etvar; eauto.
-      rewrite ftvar_in_body_open_body_wrt_typ_upper...
-  - intros. clear trans_body_strengthen_etvar.
-    dependent destruction H. simpl in *...
+  intros. dependent induction H; simpl in *...
+  - inst_cofinites_for trans_exp__abs. intros.
+    inst_cofinites_with x...
+    eapply H0... rewrite ftvar_in_exp_open_exp_wrt_exp_upper...
+  - inst_cofinites_for trans_exp__tabs; subst; intros; inst_cofinites_with X0.
+    + rewrite_env (((X0, □) :: θ2) ++ θ1).
+      eapply H0 with (X:=X) (T:=T); eauto.
+      rewrite ftvar_in_exp_open_exp_wrt_typ_upper...
+    + rewrite_env (((X0, □) :: θ2) ++ θ1).
+      eapply trans_typ_strengthen_dtvar; eauto.
+      rewrite ftvar_in_typ_open_typ_wrt_typ_upper...
+      apply trans_typ_wf_ss in H1...
 Qed.
 
 
@@ -2461,34 +2381,24 @@ Qed.
 Lemma trans_exp_weaken : forall θ1 θ2 θ3 eᵃ eᵈ,
   θ3 ++ θ1 ᵉ⊩ eᵃ ⇝ eᵈ ->
   wf_ss (θ3 ++ θ2 ++ θ1) ->
-  (θ3 ++ θ2 ++ θ1) ᵉ⊩ eᵃ ⇝ eᵈ
-with trans_body_weaken : forall θ1 θ2 θ3 bᵃ bᵈ,
-  θ3 ++ θ1 ᵇ⊩ bᵃ ⇝ bᵈ ->
-  wf_ss (θ3 ++ θ2 ++ θ1) ->
-  (θ3 ++ θ2 ++ θ1) ᵇ⊩ bᵃ ⇝ bᵈ.
+  (θ3 ++ θ2 ++ θ1) ᵉ⊩ eᵃ ⇝ eᵈ.
 Proof with auto using trans_typ_weaken.
-  - intros. generalize dependent θ2. clear trans_exp_weaken. dependent induction H...
-    + intros. inst_cofinites_for trans_exp__abs. intros. inst_cofinites_with x.
-      eapply H0...
-    + intros. inst_cofinites_for trans_exp__tabs. intros. inst_cofinites_with X.
-      rewrite_env (((X, □) :: θ3) ++ θ2 ++ θ1).
-      eapply trans_body_weaken...
-      constructor...
-  - intros. dependent destruction H; intros.
-    + constructor...
+  intros. generalize dependent θ2. dependent induction H...
+  - intros. inst_cofinites_for trans_exp__abs. intros. inst_cofinites_with x.
+    eapply H0...
+  - intros. inst_cofinites_for trans_exp__tabs; intros; inst_cofinites_with X.
+    + rewrite_env (((X, □) :: θ3) ++ θ2 ++ θ1).
+      eapply H0... econstructor...
+    + rewrite_env (((X, □) :: θ3) ++ θ2 ++ θ1).
+      eapply trans_typ_weaken... econstructor...
 Qed. 
 
 Lemma trans_exp_weaken_cons : forall θ X b eᵃ eᵈ,
   θ ᵉ⊩ eᵃ ⇝ eᵈ ->
   wf_ss ((X, b) :: θ) ->
-  (X, b) :: θ ᵉ⊩ eᵃ ⇝ eᵈ
-with trans_body_weaken_cons : forall θ X b bᵃ bᵈ,
-  θ ᵇ⊩ bᵃ ⇝ bᵈ ->
-  wf_ss ((X, b) :: θ) ->
-  (X, b) :: θ ᵇ⊩ bᵃ ⇝ bᵈ.
+  (X, b) :: θ ᵉ⊩ eᵃ ⇝ eᵈ.
 Proof.
-  - intros. rewrite_env (nil ++ (X ~ b) ++ θ). apply trans_exp_weaken; auto.
-  - intros. rewrite_env (nil ++ (X ~ b) ++ θ). apply trans_body_weaken; auto.
+  intros. rewrite_env (nil ++ (X ~ b) ++ θ). apply trans_exp_weaken; auto.
 Qed. 
 
 Lemma trans_conts_weaken : forall θ1 θ2 θ3 csᵃ csᵈ,
@@ -2671,51 +2581,43 @@ Lemma trans_exp_reorder_ss' : forall θ θ' eᵃ eᵈ,
   wf_ss θ' ->
   (forall X b, X `in` ftvar_in_exp eᵃ -> binds X b θ -> binds X b θ') ->
   θ ᵉ⊩ eᵃ ⇝ eᵈ ->
-  θ' ᵉ⊩ eᵃ ⇝ eᵈ
-with trans_body_reorder' : forall θ θ' bᵃ bᵈ,
-  lc_body bᵃ ->
-  wf_ss θ ->
-  wf_ss θ' ->
-  (forall X b, X `in` ftvar_in_body bᵃ -> binds X b θ -> binds X b θ') ->
-  θ ᵇ⊩ bᵃ ⇝ bᵈ ->
-  θ' ᵇ⊩ bᵃ ⇝ bᵈ.
+  θ' ᵉ⊩ eᵃ ⇝ eᵈ.
 Proof with eauto.
-  - intros * Hlc. 
-    generalize dependent θ'. generalize dependent θ. generalize dependent eᵈ.
-    induction Hlc; clear trans_exp_reorder_ss'; intros; try solve [dependent destruction H2; eauto].
-    + dependent destruction H4...
-      inst_cofinites_for trans_exp__abs. intros. 
-      inst_cofinites_with x.
-      eapply H0 with (θ:=θ)... intros.
-      apply H3...
-      rewrite ftvar_in_exp_open_exp_wrt_exp_upper in H6. simpl in *. fsetdec.
-    + simpl in *. dependent destruction H2...
-      constructor...
-    + dependent destruction H3.
-      inst_cofinites_for trans_exp__tabs. intros. 
-      inst_cofinites_with X.
-      eapply trans_body_reorder' with (θ:=(X, dbind_tvar_empty) :: θ)...
-      * intros. destruct (X0 == X). 
-        -- subst. inversion H6. 
-           ++ dependent destruction H7... 
-           ++ apply binds_dom_contradiction in H7... contradiction.
-        -- apply binds_cons... apply H2.
-           rewrite ftvar_in_body_open_body_wrt_typ_upper in H5.
-           apply union_iff in H5. inversion H5.
-           ++ simpl in H7. apply singleton_iff in H7. subst. contradiction.
-           ++ auto.
-           ++ inversion H6.
-              ** dependent destruction H7... contradiction.
-              ** auto. 
-    + simpl in *. dependent destruction H3...
-      constructor... eapply trans_typ_reorder_ss with (θ:=θ)...
-    + simpl in *. dependent destruction H3...
-      constructor... eapply trans_typ_reorder_ss with (θ:=θ)...
-  - intros. clear trans_body_reorder'. 
-    dependent destruction H.
-    dependent destruction H4; simpl in *...
+  intros * Hlc. 
+  generalize dependent θ'. generalize dependent θ. generalize dependent eᵈ.
+  induction Hlc; intros; try solve [dependent destruction H2; eauto].
+  - dependent destruction H4...
+    inst_cofinites_for trans_exp__abs. intros. 
+    inst_cofinites_with x.
+    eapply H0 with (θ:=θ)... intros.
+    apply H3...
+    rewrite ftvar_in_exp_open_exp_wrt_exp_upper in H6. simpl in *. fsetdec.
+  - simpl in *. dependent destruction H2...
     constructor...
-    + eapply trans_typ_reorder_ss with (θ:=θ)...
+  - dependent destruction H4.
+    inst_cofinites_for trans_exp__tabs; intros; inst_cofinites_with X.
+    + assert ((X, □) :: θ ᵉ⊩ exp_anno eᵃ Aᵃ ᵉ^ₜ ` X ⇝ exp_anno eᵈ Aᵈ ᵉ^ₜ ` X).
+      constructor; auto.
+      eapply H0 with (θ':=(X, □) :: θ') in H7 ; eauto. dependent destruction H7; eauto.
+      intros. auto. destruct_binds...
+      apply binds_cons. apply H3...
+      apply union_iff in H8. inversion H8.
+      * rewrite ftvar_in_exp_open_exp_wrt_typ_rec_upper in H9...
+        apply union_iff in H9. inversion H9. apply singleton_iff in H10. subst.
+        apply binds_dom_contradiction in H11... contradiction. auto.  
+      * rewrite ftvar_in_typ_open_typ_wrt_typ_rec_upper in H9...
+        apply union_iff in H9. inversion H9. apply singleton_iff in H10. subst.
+        apply binds_dom_contradiction in H11... contradiction. auto.
+    + eapply trans_typ_reorder_ss with (θ:=(X, □) :: θ); eauto.
+      intros. destruct_binds...
+      apply binds_cons. apply H3...
+      rewrite ftvar_in_typ_open_typ_wrt_typ_upper in H7.
+      apply union_iff in H7. inversion H7. apply singleton_iff in H8. subst.
+      apply binds_dom_contradiction in H10... contradiction. auto.
+  - simpl in *. dependent destruction H3...
+    constructor... eapply trans_typ_reorder_ss with (θ:=θ)...
+  - simpl in *. dependent destruction H3...
+    constructor... eapply trans_typ_reorder_ss with (θ:=θ)...
 Qed.
 
 Lemma trans_exp_reorder_ss : forall θ θ' eᵃ eᵈ,
@@ -2723,17 +2625,10 @@ Lemma trans_exp_reorder_ss : forall θ θ' eᵃ eᵈ,
   wf_ss θ' ->
   (forall X b, X `in` ftvar_in_exp eᵃ -> binds X b θ -> binds X b θ') ->
   θ ᵉ⊩ eᵃ ⇝ eᵈ ->
-  θ' ᵉ⊩ eᵃ ⇝ eᵈ
-with trans_body_reorder : forall θ θ' bᵃ bᵈ,
-  wf_ss θ ->
-  wf_ss θ' ->
-  (forall X b, X `in` ftvar_in_body bᵃ -> binds X b θ -> binds X b θ') ->
-  θ ᵇ⊩ bᵃ ⇝ bᵈ ->
-  θ' ᵇ⊩ bᵃ ⇝ bᵈ.
+  θ' ᵉ⊩ eᵃ ⇝ eᵈ.
 Proof with eauto.
-  - intros. apply trans_exp_lc_aexp in H2 as Hlc. 
-    eapply trans_exp_reorder_ss' with (θ:=θ); eauto.
-  - intros. apply trans_body_lc_abody in H2 as Hlc. eapply trans_body_reorder' with (θ:=θ); eauto.
+  intros. apply trans_exp_lc_aexp in H2 as Hlc. 
+  eapply trans_exp_reorder_ss' with (θ:=θ); eauto.
 Qed.
 
 

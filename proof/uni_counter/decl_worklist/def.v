@@ -151,7 +151,7 @@ Inductive d_exp_split_size : denv -> exp -> nat -> Prop :=
   | d_exp_split_size__tabs : forall L Ψ e A n m,
       (forall X, X \notin  L ->
         d_exp_split_size (X ~ dbind_tvar_empty ++ Ψ) (open_exp_wrt_typ e (typ_var_f X)) n) ->
-      d_iuv_size Ψ A m ->
+      d_iuv_size Ψ (typ_all A) m ->
       d_exp_split_size Ψ (exp_tabs (exp_anno e A)) ((1 + n) * (2 + m))
   | d_exp_split_size__tapp : forall Ψ e A n m,
       d_exp_split_size Ψ e n ->
