@@ -347,8 +347,8 @@ Proof.
 Qed.
 
 
-Lemma ss_to_denv_subst_tvar_in_dbind_comm : forall θ X A,
-  ss_to_denv (map (subst_tvar_in_dbind A X) θ) = map (subst_tvar_in_dbind A X) (ss_to_denv θ). 
+Lemma ss_to_denv_subst_typ_in_dbind_comm : forall θ X A,
+  ss_to_denv (map (subst_typ_in_dbind A X) θ) = map (subst_typ_in_dbind A X) (ss_to_denv θ). 
 Proof.
   intros. induction θ; simpl; auto.
   - destruct a as [Y]; destruct d; simpl; rewrite IHθ; auto.
@@ -1039,22 +1039,22 @@ Qed.
 Lemma wf_ss_rename_tvar : forall θ1 θ2 X X',
   wf_ss (θ2 ++ (X, □) :: θ1) ->
   X' ∉ dom (θ2 ++ θ1) ->
-  wf_ss (map (subst_tvar_in_dbind ` X' X) θ2 ++ (X', □) :: θ1).
+  wf_ss (map (subst_typ_in_dbind ` X' X) θ2 ++ (X', □) :: θ1).
 Proof with eauto.
   intros. induction θ2; simpl in *...
   - inversion H; subst...
   - dependent destruction a.
     inversion H; subst...
     econstructor...
-    replace (ss_to_denv (map (subst_tvar_in_dbind ` X' X) θ2 ++ (X', □) :: θ1))
-        with ((map (subst_tvar_in_dbind ` X' X) (ss_to_denv θ2) ++ (X', □) :: (ss_to_denv θ1))).
+    replace (ss_to_denv (map (subst_typ_in_dbind ` X' X) θ2 ++ (X', □) :: θ1))
+        with ((map (subst_typ_in_dbind ` X' X) (ss_to_denv θ2) ++ (X', □) :: (ss_to_denv θ1))).
     + simpl. apply d_mono_typ_rename_tvar...
       * replace (ss_to_denv θ2 ++ X ~ □ ++ ss_to_denv θ1) with (ss_to_denv (θ2 ++ (X, □) :: θ1))...
         apply wf_ss_uniq_ss_to_denv...
         autorewrite with core in *...
       * rewrite dom_app. repeat rewrite dom_ss_to_denv_upper...
       * rewrite ss_to_denv_app in *...
-    + rewrite ss_to_denv_app. rewrite ss_to_denv_subst_tvar_in_dbind_comm...
+    + rewrite ss_to_denv_app. rewrite ss_to_denv_subst_typ_in_dbind_comm...
 Qed.
 
 
@@ -1222,13 +1222,13 @@ Lemma ss_binds_rename_tvar : forall θ1 θ2 X X' Y b,
   wf_ss (θ2 ++ (X, dbind_tvar_empty) :: θ1) ->
   binds X' b (θ2 ++ (X, dbind_tvar_empty) :: θ1) ->
   X' <> X ->
-  binds X' (subst_tvar_in_dbind (` Y) X b) (map (subst_tvar_in_dbind (`Y) X) θ2 ++ (Y, dbind_tvar_empty) :: θ1).
+  binds X' (subst_typ_in_dbind (` Y) X b) (map (subst_typ_in_dbind (`Y) X) θ2 ++ (Y, dbind_tvar_empty) :: θ1).
 Proof with eauto.
   intros. induction θ2.
   - simpl in *. destruct_binds; auto.
     dependent destruction H.
     rewrite <- wf_ss_ftvar_in_dbind_upper in H0; eauto.
-    rewrite subst_tvar_in_dbind_fresh_eq...
+    rewrite subst_typ_in_dbind_fresh_eq...
   - destruct a as [X0 b0]; destruct b0; destruct_binds; simpl in *; auto.
     + dependent destruction H...  
     + dependent destruction H...
@@ -1239,7 +1239,7 @@ Qed.
 Lemma trans_typ_rename_tvar : forall θ1 θ2 Aᵃ Aᵈ X X', 
   θ2 ++ (X, dbind_tvar_empty) :: θ1 ᵗ⊩ Aᵃ ⇝ Aᵈ ->
   X' ∉ dom (θ2 ++ θ1) ->
-  map (subst_tvar_in_dbind (` X') X) θ2  ++ (X', dbind_tvar_empty) :: θ1 ᵗ⊩ {` X' ᵗ/ₜ X} Aᵃ ⇝ {` X' ᵗ/ₜ X} Aᵈ.
+  map (subst_typ_in_dbind (` X') X) θ2  ++ (X', dbind_tvar_empty) :: θ1 ᵗ⊩ {` X' ᵗ/ₜ X} Aᵃ ⇝ {` X' ᵗ/ₜ X} Aᵈ.
 Proof with eauto using wf_ss_rename_tvar.
   intros. dependent induction H; simpl; auto...
   - destruct_eq_atom... 
@@ -1255,11 +1255,11 @@ Proof with eauto using wf_ss_rename_tvar.
       eapply ss_binds_rename_tvar with (Y:=X') in H0; eauto.
   - inst_cofinites_for trans_typ__all;
     intros; inst_cofinites_with X0... 
-    + rewrite subst_tvar_in_typ_open_typ_wrt_typ_fresh2...
+    + rewrite subst_typ_in_typ_open_typ_wrt_typ_fresh2...
       apply s_in_subst_inv...
-    + rewrite subst_tvar_in_typ_open_typ_wrt_typ_fresh2...
-      rewrite subst_tvar_in_typ_open_typ_wrt_typ_fresh2...
-      rewrite_env (map (subst_tvar_in_dbind ` X' X) ((X0, □) :: θ2) ++ (X', □) :: θ1).
+    + rewrite subst_typ_in_typ_open_typ_wrt_typ_fresh2...
+      rewrite subst_typ_in_typ_open_typ_wrt_typ_fresh2...
+      rewrite_env (map (subst_typ_in_dbind ` X' X) ((X0, □) :: θ2) ++ (X', □) :: θ1).
       eapply H1...
 Qed.
 
@@ -1269,7 +1269,7 @@ Corollary trans_typ_rename_tvar_cons : forall θ Aᵃ Aᵈ X X',
   (X', dbind_tvar_empty) :: θ ᵗ⊩ {` X' ᵗ/ₜ X} Aᵃ ⇝ {` X' ᵗ/ₜ X} Aᵈ.
 Proof.
   intros. 
-  rewrite_env (map (subst_tvar_in_dbind (` X') X) nil  ++ (X', dbind_tvar_empty) :: θ).
+  rewrite_env (map (subst_typ_in_dbind (` X') X) nil  ++ (X', dbind_tvar_empty) :: θ).
   eapply trans_typ_rename_tvar; auto.
 Qed.
 
@@ -1449,13 +1449,13 @@ Qed.
 Ltac rewrite_close_open_subst :=
   match goal with
   | H : _ |- context [open_typ_wrt_typ (close_typ_wrt_typ ?X ?A) ?B] =>
-      erewrite (subst_tvar_in_typ_intro X (close_typ_wrt_typ X A)) by apply close_typ_wrt_typ_notin;
+      erewrite (subst_typ_in_typ_intro X (close_typ_wrt_typ X A)) by apply close_typ_wrt_typ_notin;
       rewrite open_typ_wrt_typ_close_typ_wrt_typ
   | H : _ |- context [open_exp_wrt_typ (close_exp_wrt_typ ?X ?e) ?B] =>
-      erewrite (subst_tvar_in_exp_intro X (close_exp_wrt_typ X e)) by apply close_exp_wrt_typ_notin;
+      erewrite (subst_typ_in_exp_intro X (close_exp_wrt_typ X e)) by apply close_exp_wrt_typ_notin;
       rewrite open_exp_wrt_typ_close_exp_wrt_typ
   | H : _ |- context [open_exp_wrt_exp (close_exp_wrt_exp ?x ?e) ?e'] =>
-      erewrite (subst_var_in_exp_intro x (close_exp_wrt_exp x e)) by apply close_exp_wrt_exp_notin;
+      erewrite (subst_exp_in_exp_intro x (close_exp_wrt_exp x e)) by apply close_exp_wrt_exp_notin;
       rewrite open_exp_wrt_exp_close_exp_wrt_exp
   | H : _ |- _ => idtac
   end.
@@ -1463,14 +1463,14 @@ Ltac rewrite_close_open_subst :=
 Ltac simpl_open_subst_typ' :=
   match goal with
   | H : context [ {?B ᵗ/ₜ ?X} (?A ᵗ^ₜ (?X')) ] |- _ =>
-    rewrite subst_tvar_in_typ_open_typ_wrt_typ in H; auto;
+    rewrite subst_typ_in_typ_open_typ_wrt_typ in H; auto;
     simpl in H; try destruct_eq_atom; auto
-    (* try solve [rewrite subst_tvar_in_typ_fresh_eq in H; auto] *)
+    (* try solve [rewrite subst_typ_in_typ_fresh_eq in H; auto] *)
   | H1 : context [ {?B ᵗ/ₜ ?X} ?A ], H2 : context [ftvar_in_typ ?A] |- _ =>
       let H := fresh "H" in
       try (
         assert (H : X ∉ ftvar_in_typ A) by auto;
-        rewrite subst_tvar_in_typ_fresh_eq in H1; auto; clear H)
+        rewrite subst_typ_in_typ_fresh_eq in H1; auto; clear H)
 end.
 
 
@@ -1480,15 +1480,15 @@ Ltac  simpl_open_subst_typ :=
 
 Ltac simpl_open_subst_exp' :=
   match goal with
-  | H : context [ {?f ᵉ/ₑ ?x} (?e ᵉ^ₑ (?x')) ] |- _ =>
-    rewrite subst_var_in_exp_open_exp_wrt_exp in H; auto;
+  | H : context [ {?f ᵉ/ₑ ?x} (?e ᵉ^^ₑ (?x')) ] |- _ =>
+    rewrite subst_exp_in_exp_open_exp_wrt_exp in H; auto;
     simpl in H; try destruct_eq_atom; auto
-    (* try solve [rewrite subst_tvar_in_typ_fresh_eq in H; auto] *)
+    (* try solve [rewrite subst_typ_in_typ_fresh_eq in H; auto] *)
   | H1 : context [ {?f ᵉ/ₑ ?x} ?e ], H2 : context [fvar_in_exp ?e] |- _ =>
       let H := fresh "H" in
       try (
         assert (H : x ∉ fvar_in_exp e) by auto;
-        rewrite subst_var_in_exp_fresh_eq in H1; auto; clear H)
+        rewrite subst_exp_in_exp_fresh_eq in H1; auto; clear H)
 end.
 
 Ltac  simpl_open_subst_exp :=
@@ -2685,7 +2685,7 @@ Qed.
 
 Lemma iu_size_subst_mono : forall Σ A X A0,
   a_mono_typ Σ A ->
-  iu_size (subst_tvar_in_typ A X A0) = iu_size A0.
+  iu_size (subst_typ_in_typ A X A0) = iu_size A0.
 Proof.
   intros Σ A X A0 Hmono.
   induction A0; simpl; auto.

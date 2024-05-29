@@ -2087,7 +2087,7 @@ Qed.
 
 Lemma close_ftyp_wrt_ftyp_rec_open_ftyp_wrt_ftyp_rec_mutual :
 (forall A1 X1 n1,
-  X1 `notin` fv_ftyp_in_ftyp A1 ->
+  X1 `notin` ftvar_in_ftyp A1 ->
   close_ftyp_wrt_ftyp_rec n1 X1 (open_ftyp_wrt_ftyp_rec n1 (ftyp_var_f X1) A1) = A1).
 Proof.
 apply_mutual_ind ftyp_mutind;
@@ -2100,7 +2100,7 @@ Qed.
 
 Lemma close_ftyp_wrt_ftyp_rec_open_ftyp_wrt_ftyp_rec :
 forall A1 X1 n1,
-  X1 `notin` fv_ftyp_in_ftyp A1 ->
+  X1 `notin` ftvar_in_ftyp A1 ->
   close_ftyp_wrt_ftyp_rec n1 X1 (open_ftyp_wrt_ftyp_rec n1 (ftyp_var_f X1) A1) = A1.
 Proof.
 pose proof close_ftyp_wrt_ftyp_rec_open_ftyp_wrt_ftyp_rec_mutual as H; intuition eauto.
@@ -2115,7 +2115,7 @@ Qed.
 
 Lemma close_fexp_wrt_ftyp_rec_open_fexp_wrt_ftyp_rec_mutual :
 (forall e1 X1 n1,
-  X1 `notin` fv_ftyp_in_fexp e1 ->
+  X1 `notin` ftvar_in_fexp e1 ->
   close_fexp_wrt_ftyp_rec n1 X1 (open_fexp_wrt_ftyp_rec n1 (ftyp_var_f X1) e1) = e1).
 Proof.
 apply_mutual_ind fexp_mutind;
@@ -2128,7 +2128,7 @@ Qed.
 
 Lemma close_fexp_wrt_ftyp_rec_open_fexp_wrt_ftyp_rec :
 forall e1 X1 n1,
-  X1 `notin` fv_ftyp_in_fexp e1 ->
+  X1 `notin` ftvar_in_fexp e1 ->
   close_fexp_wrt_ftyp_rec n1 X1 (open_fexp_wrt_ftyp_rec n1 (ftyp_var_f X1) e1) = e1.
 Proof.
 pose proof close_fexp_wrt_ftyp_rec_open_fexp_wrt_ftyp_rec_mutual as H; intuition eauto.
@@ -2143,7 +2143,7 @@ Qed.
 
 Lemma close_fexp_wrt_fexp_rec_open_fexp_wrt_fexp_rec_mutual :
 (forall e1 x1 n1,
-  x1 `notin` fv_fexp_in_fexp e1 ->
+  x1 `notin` fvar_in_fexp e1 ->
   close_fexp_wrt_fexp_rec n1 x1 (open_fexp_wrt_fexp_rec n1 (fexp_var_f x1) e1) = e1).
 Proof.
 apply_mutual_ind fexp_mutind;
@@ -2156,7 +2156,7 @@ Qed.
 
 Lemma close_fexp_wrt_fexp_rec_open_fexp_wrt_fexp_rec :
 forall e1 x1 n1,
-  x1 `notin` fv_fexp_in_fexp e1 ->
+  x1 `notin` fvar_in_fexp e1 ->
   close_fexp_wrt_fexp_rec n1 x1 (open_fexp_wrt_fexp_rec n1 (fexp_var_f x1) e1) = e1.
 Proof.
 pose proof close_fexp_wrt_fexp_rec_open_fexp_wrt_fexp_rec_mutual as H; intuition eauto.
@@ -2171,7 +2171,7 @@ Qed.
 
 Lemma close_fbind_wrt_ftyp_rec_open_fbind_wrt_ftyp_rec_mutual :
 (forall fb1 X1 n1,
-  X1 `notin` fv_ftyp_in_fbind fb1 ->
+  X1 `notin` ftvar_in_fbind fb1 ->
   close_fbind_wrt_ftyp_rec n1 X1 (open_fbind_wrt_ftyp_rec n1 (ftyp_var_f X1) fb1) = fb1).
 Proof.
 apply_mutual_ind fbind_mutind;
@@ -2184,7 +2184,7 @@ Qed.
 
 Lemma close_fbind_wrt_ftyp_rec_open_fbind_wrt_ftyp_rec :
 forall fb1 X1 n1,
-  X1 `notin` fv_ftyp_in_fbind fb1 ->
+  X1 `notin` ftvar_in_fbind fb1 ->
   close_fbind_wrt_ftyp_rec n1 X1 (open_fbind_wrt_ftyp_rec n1 (ftyp_var_f X1) fb1) = fb1.
 Proof.
 pose proof close_fbind_wrt_ftyp_rec_open_fbind_wrt_ftyp_rec_mutual as H; intuition eauto.
@@ -2197,7 +2197,7 @@ Qed.
 
 Lemma close_ftyp_wrt_ftyp_open_ftyp_wrt_ftyp :
 forall A1 X1,
-  X1 `notin` fv_ftyp_in_ftyp A1 ->
+  X1 `notin` ftvar_in_ftyp A1 ->
   close_ftyp_wrt_ftyp X1 (open_ftyp_wrt_ftyp A1 (ftyp_var_f X1)) = A1.
 Proof.
 unfold close_ftyp_wrt_ftyp; unfold open_ftyp_wrt_ftyp; default_simp.
@@ -2208,7 +2208,7 @@ Qed.
 
 Lemma close_fexp_wrt_ftyp_open_fexp_wrt_ftyp :
 forall e1 X1,
-  X1 `notin` fv_ftyp_in_fexp e1 ->
+  X1 `notin` ftvar_in_fexp e1 ->
   close_fexp_wrt_ftyp X1 (open_fexp_wrt_ftyp e1 (ftyp_var_f X1)) = e1.
 Proof.
 unfold close_fexp_wrt_ftyp; unfold open_fexp_wrt_ftyp; default_simp.
@@ -2219,7 +2219,7 @@ Qed.
 
 Lemma close_fexp_wrt_fexp_open_fexp_wrt_fexp :
 forall e1 x1,
-  x1 `notin` fv_fexp_in_fexp e1 ->
+  x1 `notin` fvar_in_fexp e1 ->
   close_fexp_wrt_fexp x1 (open_fexp_wrt_fexp e1 (fexp_var_f x1)) = e1.
 Proof.
 unfold close_fexp_wrt_fexp; unfold open_fexp_wrt_fexp; default_simp.
@@ -2230,7 +2230,7 @@ Qed.
 
 Lemma close_fbind_wrt_ftyp_open_fbind_wrt_ftyp :
 forall fb1 X1,
-  X1 `notin` fv_ftyp_in_fbind fb1 ->
+  X1 `notin` ftvar_in_fbind fb1 ->
   close_fbind_wrt_ftyp X1 (open_fbind_wrt_ftyp fb1 (ftyp_var_f X1)) = fb1.
 Proof.
 unfold close_fbind_wrt_ftyp; unfold open_fbind_wrt_ftyp; default_simp.
@@ -2387,8 +2387,8 @@ Qed.
 
 Lemma open_ftyp_wrt_ftyp_rec_inj_mutual :
 (forall A2 A1 X1 n1,
-  X1 `notin` fv_ftyp_in_ftyp A2 ->
-  X1 `notin` fv_ftyp_in_ftyp A1 ->
+  X1 `notin` ftvar_in_ftyp A2 ->
+  X1 `notin` ftvar_in_ftyp A1 ->
   open_ftyp_wrt_ftyp_rec n1 (ftyp_var_f X1) A2 = open_ftyp_wrt_ftyp_rec n1 (ftyp_var_f X1) A1 ->
   A2 = A1).
 Proof.
@@ -2405,8 +2405,8 @@ Qed.
 
 Lemma open_ftyp_wrt_ftyp_rec_inj :
 forall A2 A1 X1 n1,
-  X1 `notin` fv_ftyp_in_ftyp A2 ->
-  X1 `notin` fv_ftyp_in_ftyp A1 ->
+  X1 `notin` ftvar_in_ftyp A2 ->
+  X1 `notin` ftvar_in_ftyp A1 ->
   open_ftyp_wrt_ftyp_rec n1 (ftyp_var_f X1) A2 = open_ftyp_wrt_ftyp_rec n1 (ftyp_var_f X1) A1 ->
   A2 = A1.
 Proof.
@@ -2421,8 +2421,8 @@ Qed.
 
 Lemma open_fexp_wrt_ftyp_rec_inj_mutual :
 (forall e2 e1 X1 n1,
-  X1 `notin` fv_ftyp_in_fexp e2 ->
-  X1 `notin` fv_ftyp_in_fexp e1 ->
+  X1 `notin` ftvar_in_fexp e2 ->
+  X1 `notin` ftvar_in_fexp e1 ->
   open_fexp_wrt_ftyp_rec n1 (ftyp_var_f X1) e2 = open_fexp_wrt_ftyp_rec n1 (ftyp_var_f X1) e1 ->
   e2 = e1).
 Proof.
@@ -2439,8 +2439,8 @@ Qed.
 
 Lemma open_fexp_wrt_ftyp_rec_inj :
 forall e2 e1 X1 n1,
-  X1 `notin` fv_ftyp_in_fexp e2 ->
-  X1 `notin` fv_ftyp_in_fexp e1 ->
+  X1 `notin` ftvar_in_fexp e2 ->
+  X1 `notin` ftvar_in_fexp e1 ->
   open_fexp_wrt_ftyp_rec n1 (ftyp_var_f X1) e2 = open_fexp_wrt_ftyp_rec n1 (ftyp_var_f X1) e1 ->
   e2 = e1.
 Proof.
@@ -2455,8 +2455,8 @@ Qed.
 
 Lemma open_fexp_wrt_fexp_rec_inj_mutual :
 (forall e2 e1 x1 n1,
-  x1 `notin` fv_fexp_in_fexp e2 ->
-  x1 `notin` fv_fexp_in_fexp e1 ->
+  x1 `notin` fvar_in_fexp e2 ->
+  x1 `notin` fvar_in_fexp e1 ->
   open_fexp_wrt_fexp_rec n1 (fexp_var_f x1) e2 = open_fexp_wrt_fexp_rec n1 (fexp_var_f x1) e1 ->
   e2 = e1).
 Proof.
@@ -2473,8 +2473,8 @@ Qed.
 
 Lemma open_fexp_wrt_fexp_rec_inj :
 forall e2 e1 x1 n1,
-  x1 `notin` fv_fexp_in_fexp e2 ->
-  x1 `notin` fv_fexp_in_fexp e1 ->
+  x1 `notin` fvar_in_fexp e2 ->
+  x1 `notin` fvar_in_fexp e1 ->
   open_fexp_wrt_fexp_rec n1 (fexp_var_f x1) e2 = open_fexp_wrt_fexp_rec n1 (fexp_var_f x1) e1 ->
   e2 = e1.
 Proof.
@@ -2489,8 +2489,8 @@ Qed.
 
 Lemma open_fbind_wrt_ftyp_rec_inj_mutual :
 (forall fb2 fb1 X1 n1,
-  X1 `notin` fv_ftyp_in_fbind fb2 ->
-  X1 `notin` fv_ftyp_in_fbind fb1 ->
+  X1 `notin` ftvar_in_fbind fb2 ->
+  X1 `notin` ftvar_in_fbind fb1 ->
   open_fbind_wrt_ftyp_rec n1 (ftyp_var_f X1) fb2 = open_fbind_wrt_ftyp_rec n1 (ftyp_var_f X1) fb1 ->
   fb2 = fb1).
 Proof.
@@ -2507,8 +2507,8 @@ Qed.
 
 Lemma open_fbind_wrt_ftyp_rec_inj :
 forall fb2 fb1 X1 n1,
-  X1 `notin` fv_ftyp_in_fbind fb2 ->
-  X1 `notin` fv_ftyp_in_fbind fb1 ->
+  X1 `notin` ftvar_in_fbind fb2 ->
+  X1 `notin` ftvar_in_fbind fb1 ->
   open_fbind_wrt_ftyp_rec n1 (ftyp_var_f X1) fb2 = open_fbind_wrt_ftyp_rec n1 (ftyp_var_f X1) fb1 ->
   fb2 = fb1.
 Proof.
@@ -2521,8 +2521,8 @@ Qed.
 
 Lemma open_ftyp_wrt_ftyp_inj :
 forall A2 A1 X1,
-  X1 `notin` fv_ftyp_in_ftyp A2 ->
-  X1 `notin` fv_ftyp_in_ftyp A1 ->
+  X1 `notin` ftvar_in_ftyp A2 ->
+  X1 `notin` ftvar_in_ftyp A1 ->
   open_ftyp_wrt_ftyp A2 (ftyp_var_f X1) = open_ftyp_wrt_ftyp A1 (ftyp_var_f X1) ->
   A2 = A1.
 Proof.
@@ -2533,8 +2533,8 @@ Qed.
 
 Lemma open_fexp_wrt_ftyp_inj :
 forall e2 e1 X1,
-  X1 `notin` fv_ftyp_in_fexp e2 ->
-  X1 `notin` fv_ftyp_in_fexp e1 ->
+  X1 `notin` ftvar_in_fexp e2 ->
+  X1 `notin` ftvar_in_fexp e1 ->
   open_fexp_wrt_ftyp e2 (ftyp_var_f X1) = open_fexp_wrt_ftyp e1 (ftyp_var_f X1) ->
   e2 = e1.
 Proof.
@@ -2545,8 +2545,8 @@ Qed.
 
 Lemma open_fexp_wrt_fexp_inj :
 forall e2 e1 x1,
-  x1 `notin` fv_fexp_in_fexp e2 ->
-  x1 `notin` fv_fexp_in_fexp e1 ->
+  x1 `notin` fvar_in_fexp e2 ->
+  x1 `notin` fvar_in_fexp e1 ->
   open_fexp_wrt_fexp e2 (fexp_var_f x1) = open_fexp_wrt_fexp e1 (fexp_var_f x1) ->
   e2 = e1.
 Proof.
@@ -2557,8 +2557,8 @@ Qed.
 
 Lemma open_fbind_wrt_ftyp_inj :
 forall fb2 fb1 X1,
-  X1 `notin` fv_ftyp_in_fbind fb2 ->
-  X1 `notin` fv_ftyp_in_fbind fb1 ->
+  X1 `notin` ftvar_in_fbind fb2 ->
+  X1 `notin` ftvar_in_fbind fb1 ->
   open_fbind_wrt_ftyp fb2 (ftyp_var_f X1) = open_fbind_wrt_ftyp fb1 (ftyp_var_f X1) ->
   fb2 = fb1.
 Proof.
@@ -3264,7 +3264,7 @@ Ltac default_autorewrite ::= fail.
 Lemma close_ftyp_wrt_ftyp_rec_degree_ftyp_wrt_ftyp_mutual :
 (forall A1 X1 n1,
   degree_ftyp_wrt_ftyp n1 A1 ->
-  X1 `notin` fv_ftyp_in_ftyp A1 ->
+  X1 `notin` ftvar_in_ftyp A1 ->
   close_ftyp_wrt_ftyp_rec n1 X1 A1 = A1).
 Proof.
 apply_mutual_ind ftyp_mutind;
@@ -3278,7 +3278,7 @@ Qed.
 Lemma close_ftyp_wrt_ftyp_rec_degree_ftyp_wrt_ftyp :
 forall A1 X1 n1,
   degree_ftyp_wrt_ftyp n1 A1 ->
-  X1 `notin` fv_ftyp_in_ftyp A1 ->
+  X1 `notin` ftvar_in_ftyp A1 ->
   close_ftyp_wrt_ftyp_rec n1 X1 A1 = A1.
 Proof.
 pose proof close_ftyp_wrt_ftyp_rec_degree_ftyp_wrt_ftyp_mutual as H; intuition eauto.
@@ -3294,7 +3294,7 @@ Qed.
 Lemma close_fexp_wrt_ftyp_rec_degree_fexp_wrt_ftyp_mutual :
 (forall e1 X1 n1,
   degree_fexp_wrt_ftyp n1 e1 ->
-  X1 `notin` fv_ftyp_in_fexp e1 ->
+  X1 `notin` ftvar_in_fexp e1 ->
   close_fexp_wrt_ftyp_rec n1 X1 e1 = e1).
 Proof.
 apply_mutual_ind fexp_mutind;
@@ -3308,7 +3308,7 @@ Qed.
 Lemma close_fexp_wrt_ftyp_rec_degree_fexp_wrt_ftyp :
 forall e1 X1 n1,
   degree_fexp_wrt_ftyp n1 e1 ->
-  X1 `notin` fv_ftyp_in_fexp e1 ->
+  X1 `notin` ftvar_in_fexp e1 ->
   close_fexp_wrt_ftyp_rec n1 X1 e1 = e1.
 Proof.
 pose proof close_fexp_wrt_ftyp_rec_degree_fexp_wrt_ftyp_mutual as H; intuition eauto.
@@ -3324,7 +3324,7 @@ Qed.
 Lemma close_fexp_wrt_fexp_rec_degree_fexp_wrt_fexp_mutual :
 (forall e1 x1 n1,
   degree_fexp_wrt_fexp n1 e1 ->
-  x1 `notin` fv_fexp_in_fexp e1 ->
+  x1 `notin` fvar_in_fexp e1 ->
   close_fexp_wrt_fexp_rec n1 x1 e1 = e1).
 Proof.
 apply_mutual_ind fexp_mutind;
@@ -3338,7 +3338,7 @@ Qed.
 Lemma close_fexp_wrt_fexp_rec_degree_fexp_wrt_fexp :
 forall e1 x1 n1,
   degree_fexp_wrt_fexp n1 e1 ->
-  x1 `notin` fv_fexp_in_fexp e1 ->
+  x1 `notin` fvar_in_fexp e1 ->
   close_fexp_wrt_fexp_rec n1 x1 e1 = e1.
 Proof.
 pose proof close_fexp_wrt_fexp_rec_degree_fexp_wrt_fexp_mutual as H; intuition eauto.
@@ -3354,7 +3354,7 @@ Qed.
 Lemma close_fbind_wrt_ftyp_rec_degree_fbind_wrt_ftyp_mutual :
 (forall fb1 X1 n1,
   degree_fbind_wrt_ftyp n1 fb1 ->
-  X1 `notin` fv_ftyp_in_fbind fb1 ->
+  X1 `notin` ftvar_in_fbind fb1 ->
   close_fbind_wrt_ftyp_rec n1 X1 fb1 = fb1).
 Proof.
 apply_mutual_ind fbind_mutind;
@@ -3368,7 +3368,7 @@ Qed.
 Lemma close_fbind_wrt_ftyp_rec_degree_fbind_wrt_ftyp :
 forall fb1 X1 n1,
   degree_fbind_wrt_ftyp n1 fb1 ->
-  X1 `notin` fv_ftyp_in_fbind fb1 ->
+  X1 `notin` ftvar_in_fbind fb1 ->
   close_fbind_wrt_ftyp_rec n1 X1 fb1 = fb1.
 Proof.
 pose proof close_fbind_wrt_ftyp_rec_degree_fbind_wrt_ftyp_mutual as H; intuition eauto.
@@ -3382,7 +3382,7 @@ Qed.
 Lemma close_ftyp_wrt_ftyp_lc_ftyp :
 forall A1 X1,
   lc_ftyp A1 ->
-  X1 `notin` fv_ftyp_in_ftyp A1 ->
+  X1 `notin` ftvar_in_ftyp A1 ->
   close_ftyp_wrt_ftyp X1 A1 = A1.
 Proof.
 unfold close_ftyp_wrt_ftyp; default_simp.
@@ -3394,7 +3394,7 @@ Qed.
 Lemma close_fexp_wrt_ftyp_lc_fexp :
 forall e1 X1,
   lc_fexp e1 ->
-  X1 `notin` fv_ftyp_in_fexp e1 ->
+  X1 `notin` ftvar_in_fexp e1 ->
   close_fexp_wrt_ftyp X1 e1 = e1.
 Proof.
 unfold close_fexp_wrt_ftyp; default_simp.
@@ -3406,7 +3406,7 @@ Qed.
 Lemma close_fexp_wrt_fexp_lc_fexp :
 forall e1 x1,
   lc_fexp e1 ->
-  x1 `notin` fv_fexp_in_fexp e1 ->
+  x1 `notin` fvar_in_fexp e1 ->
   close_fexp_wrt_fexp x1 e1 = e1.
 Proof.
 unfold close_fexp_wrt_fexp; default_simp.
@@ -3418,7 +3418,7 @@ Qed.
 Lemma close_fbind_wrt_ftyp_lc_fbind :
 forall fb1 X1,
   lc_fbind fb1 ->
-  X1 `notin` fv_ftyp_in_fbind fb1 ->
+  X1 `notin` ftvar_in_fbind fb1 ->
   close_fbind_wrt_ftyp X1 fb1 = fb1.
 Proof.
 unfold close_fbind_wrt_ftyp; default_simp.
@@ -3592,9 +3592,9 @@ Ltac default_autorewrite ::= autorewrite with lngen.
 
 (* begin hide *)
 
-Lemma fv_ftyp_in_ftyp_close_ftyp_wrt_ftyp_rec_mutual :
+Lemma ftvar_in_ftyp_close_ftyp_wrt_ftyp_rec_mutual :
 (forall A1 X1 n1,
-  fv_ftyp_in_ftyp (close_ftyp_wrt_ftyp_rec n1 X1 A1) [=] remove X1 (fv_ftyp_in_ftyp A1)).
+  ftvar_in_ftyp (close_ftyp_wrt_ftyp_rec n1 X1 A1) [=] remove X1 (ftvar_in_ftyp A1)).
 Proof.
 apply_mutual_ind ftyp_mutind;
 default_simp; fsetdec.
@@ -3604,23 +3604,23 @@ Qed.
 
 (* begin hide *)
 
-Lemma fv_ftyp_in_ftyp_close_ftyp_wrt_ftyp_rec :
+Lemma ftvar_in_ftyp_close_ftyp_wrt_ftyp_rec :
 forall A1 X1 n1,
-  fv_ftyp_in_ftyp (close_ftyp_wrt_ftyp_rec n1 X1 A1) [=] remove X1 (fv_ftyp_in_ftyp A1).
+  ftvar_in_ftyp (close_ftyp_wrt_ftyp_rec n1 X1 A1) [=] remove X1 (ftvar_in_ftyp A1).
 Proof.
-pose proof fv_ftyp_in_ftyp_close_ftyp_wrt_ftyp_rec_mutual as H; intuition eauto.
+pose proof ftvar_in_ftyp_close_ftyp_wrt_ftyp_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve fv_ftyp_in_ftyp_close_ftyp_wrt_ftyp_rec : lngen.
-#[export] Hint Rewrite fv_ftyp_in_ftyp_close_ftyp_wrt_ftyp_rec using solve [auto] : lngen.
+#[export] Hint Resolve ftvar_in_ftyp_close_ftyp_wrt_ftyp_rec : lngen.
+#[export] Hint Rewrite ftvar_in_ftyp_close_ftyp_wrt_ftyp_rec using solve [auto] : lngen.
 
 (* end hide *)
 
 (* begin hide *)
 
-Lemma fv_ftyp_in_fexp_close_fexp_wrt_ftyp_rec_mutual :
+Lemma ftvar_in_fexp_close_fexp_wrt_ftyp_rec_mutual :
 (forall e1 X1 n1,
-  fv_ftyp_in_fexp (close_fexp_wrt_ftyp_rec n1 X1 e1) [=] remove X1 (fv_ftyp_in_fexp e1)).
+  ftvar_in_fexp (close_fexp_wrt_ftyp_rec n1 X1 e1) [=] remove X1 (ftvar_in_fexp e1)).
 Proof.
 apply_mutual_ind fexp_mutind;
 default_simp; fsetdec.
@@ -3630,23 +3630,23 @@ Qed.
 
 (* begin hide *)
 
-Lemma fv_ftyp_in_fexp_close_fexp_wrt_ftyp_rec :
+Lemma ftvar_in_fexp_close_fexp_wrt_ftyp_rec :
 forall e1 X1 n1,
-  fv_ftyp_in_fexp (close_fexp_wrt_ftyp_rec n1 X1 e1) [=] remove X1 (fv_ftyp_in_fexp e1).
+  ftvar_in_fexp (close_fexp_wrt_ftyp_rec n1 X1 e1) [=] remove X1 (ftvar_in_fexp e1).
 Proof.
-pose proof fv_ftyp_in_fexp_close_fexp_wrt_ftyp_rec_mutual as H; intuition eauto.
+pose proof ftvar_in_fexp_close_fexp_wrt_ftyp_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve fv_ftyp_in_fexp_close_fexp_wrt_ftyp_rec : lngen.
-#[export] Hint Rewrite fv_ftyp_in_fexp_close_fexp_wrt_ftyp_rec using solve [auto] : lngen.
+#[export] Hint Resolve ftvar_in_fexp_close_fexp_wrt_ftyp_rec : lngen.
+#[export] Hint Rewrite ftvar_in_fexp_close_fexp_wrt_ftyp_rec using solve [auto] : lngen.
 
 (* end hide *)
 
 (* begin hide *)
 
-Lemma fv_ftyp_in_fexp_close_fexp_wrt_fexp_rec_mutual :
+Lemma ftvar_in_fexp_close_fexp_wrt_fexp_rec_mutual :
 (forall e1 x1 n1,
-  fv_ftyp_in_fexp (close_fexp_wrt_fexp_rec n1 x1 e1) [=] fv_ftyp_in_fexp e1).
+  ftvar_in_fexp (close_fexp_wrt_fexp_rec n1 x1 e1) [=] ftvar_in_fexp e1).
 Proof.
 apply_mutual_ind fexp_mutind;
 default_simp; fsetdec.
@@ -3656,23 +3656,23 @@ Qed.
 
 (* begin hide *)
 
-Lemma fv_ftyp_in_fexp_close_fexp_wrt_fexp_rec :
+Lemma ftvar_in_fexp_close_fexp_wrt_fexp_rec :
 forall e1 x1 n1,
-  fv_ftyp_in_fexp (close_fexp_wrt_fexp_rec n1 x1 e1) [=] fv_ftyp_in_fexp e1.
+  ftvar_in_fexp (close_fexp_wrt_fexp_rec n1 x1 e1) [=] ftvar_in_fexp e1.
 Proof.
-pose proof fv_ftyp_in_fexp_close_fexp_wrt_fexp_rec_mutual as H; intuition eauto.
+pose proof ftvar_in_fexp_close_fexp_wrt_fexp_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve fv_ftyp_in_fexp_close_fexp_wrt_fexp_rec : lngen.
-#[export] Hint Rewrite fv_ftyp_in_fexp_close_fexp_wrt_fexp_rec using solve [auto] : lngen.
+#[export] Hint Resolve ftvar_in_fexp_close_fexp_wrt_fexp_rec : lngen.
+#[export] Hint Rewrite ftvar_in_fexp_close_fexp_wrt_fexp_rec using solve [auto] : lngen.
 
 (* end hide *)
 
 (* begin hide *)
 
-Lemma fv_fexp_in_fexp_close_fexp_wrt_ftyp_rec_mutual :
+Lemma fvar_in_fexp_close_fexp_wrt_ftyp_rec_mutual :
 (forall e1 X1 n1,
-  fv_fexp_in_fexp (close_fexp_wrt_ftyp_rec n1 X1 e1) [=] fv_fexp_in_fexp e1).
+  fvar_in_fexp (close_fexp_wrt_ftyp_rec n1 X1 e1) [=] fvar_in_fexp e1).
 Proof.
 apply_mutual_ind fexp_mutind;
 default_simp; fsetdec.
@@ -3682,23 +3682,23 @@ Qed.
 
 (* begin hide *)
 
-Lemma fv_fexp_in_fexp_close_fexp_wrt_ftyp_rec :
+Lemma fvar_in_fexp_close_fexp_wrt_ftyp_rec :
 forall e1 X1 n1,
-  fv_fexp_in_fexp (close_fexp_wrt_ftyp_rec n1 X1 e1) [=] fv_fexp_in_fexp e1.
+  fvar_in_fexp (close_fexp_wrt_ftyp_rec n1 X1 e1) [=] fvar_in_fexp e1.
 Proof.
-pose proof fv_fexp_in_fexp_close_fexp_wrt_ftyp_rec_mutual as H; intuition eauto.
+pose proof fvar_in_fexp_close_fexp_wrt_ftyp_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve fv_fexp_in_fexp_close_fexp_wrt_ftyp_rec : lngen.
-#[export] Hint Rewrite fv_fexp_in_fexp_close_fexp_wrt_ftyp_rec using solve [auto] : lngen.
+#[export] Hint Resolve fvar_in_fexp_close_fexp_wrt_ftyp_rec : lngen.
+#[export] Hint Rewrite fvar_in_fexp_close_fexp_wrt_ftyp_rec using solve [auto] : lngen.
 
 (* end hide *)
 
 (* begin hide *)
 
-Lemma fv_fexp_in_fexp_close_fexp_wrt_fexp_rec_mutual :
+Lemma fvar_in_fexp_close_fexp_wrt_fexp_rec_mutual :
 (forall e1 x1 n1,
-  fv_fexp_in_fexp (close_fexp_wrt_fexp_rec n1 x1 e1) [=] remove x1 (fv_fexp_in_fexp e1)).
+  fvar_in_fexp (close_fexp_wrt_fexp_rec n1 x1 e1) [=] remove x1 (fvar_in_fexp e1)).
 Proof.
 apply_mutual_ind fexp_mutind;
 default_simp; fsetdec.
@@ -3708,23 +3708,23 @@ Qed.
 
 (* begin hide *)
 
-Lemma fv_fexp_in_fexp_close_fexp_wrt_fexp_rec :
+Lemma fvar_in_fexp_close_fexp_wrt_fexp_rec :
 forall e1 x1 n1,
-  fv_fexp_in_fexp (close_fexp_wrt_fexp_rec n1 x1 e1) [=] remove x1 (fv_fexp_in_fexp e1).
+  fvar_in_fexp (close_fexp_wrt_fexp_rec n1 x1 e1) [=] remove x1 (fvar_in_fexp e1).
 Proof.
-pose proof fv_fexp_in_fexp_close_fexp_wrt_fexp_rec_mutual as H; intuition eauto.
+pose proof fvar_in_fexp_close_fexp_wrt_fexp_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve fv_fexp_in_fexp_close_fexp_wrt_fexp_rec : lngen.
-#[export] Hint Rewrite fv_fexp_in_fexp_close_fexp_wrt_fexp_rec using solve [auto] : lngen.
+#[export] Hint Resolve fvar_in_fexp_close_fexp_wrt_fexp_rec : lngen.
+#[export] Hint Rewrite fvar_in_fexp_close_fexp_wrt_fexp_rec using solve [auto] : lngen.
 
 (* end hide *)
 
 (* begin hide *)
 
-Lemma fv_ftyp_in_fbind_close_fbind_wrt_ftyp_rec_mutual :
+Lemma ftvar_in_fbind_close_fbind_wrt_ftyp_rec_mutual :
 (forall fb1 X1 n1,
-  fv_ftyp_in_fbind (close_fbind_wrt_ftyp_rec n1 X1 fb1) [=] remove X1 (fv_ftyp_in_fbind fb1)).
+  ftvar_in_fbind (close_fbind_wrt_ftyp_rec n1 X1 fb1) [=] remove X1 (ftvar_in_fbind fb1)).
 Proof.
 apply_mutual_ind fbind_mutind;
 default_simp; fsetdec.
@@ -3734,83 +3734,83 @@ Qed.
 
 (* begin hide *)
 
-Lemma fv_ftyp_in_fbind_close_fbind_wrt_ftyp_rec :
+Lemma ftvar_in_fbind_close_fbind_wrt_ftyp_rec :
 forall fb1 X1 n1,
-  fv_ftyp_in_fbind (close_fbind_wrt_ftyp_rec n1 X1 fb1) [=] remove X1 (fv_ftyp_in_fbind fb1).
+  ftvar_in_fbind (close_fbind_wrt_ftyp_rec n1 X1 fb1) [=] remove X1 (ftvar_in_fbind fb1).
 Proof.
-pose proof fv_ftyp_in_fbind_close_fbind_wrt_ftyp_rec_mutual as H; intuition eauto.
+pose proof ftvar_in_fbind_close_fbind_wrt_ftyp_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve fv_ftyp_in_fbind_close_fbind_wrt_ftyp_rec : lngen.
-#[export] Hint Rewrite fv_ftyp_in_fbind_close_fbind_wrt_ftyp_rec using solve [auto] : lngen.
+#[export] Hint Resolve ftvar_in_fbind_close_fbind_wrt_ftyp_rec : lngen.
+#[export] Hint Rewrite ftvar_in_fbind_close_fbind_wrt_ftyp_rec using solve [auto] : lngen.
 
 (* end hide *)
 
-Lemma fv_ftyp_in_ftyp_close_ftyp_wrt_ftyp :
+Lemma ftvar_in_ftyp_close_ftyp_wrt_ftyp :
 forall A1 X1,
-  fv_ftyp_in_ftyp (close_ftyp_wrt_ftyp X1 A1) [=] remove X1 (fv_ftyp_in_ftyp A1).
+  ftvar_in_ftyp (close_ftyp_wrt_ftyp X1 A1) [=] remove X1 (ftvar_in_ftyp A1).
 Proof.
 unfold close_ftyp_wrt_ftyp; default_simp.
 Qed.
 
-#[export] Hint Resolve fv_ftyp_in_ftyp_close_ftyp_wrt_ftyp : lngen.
-#[export] Hint Rewrite fv_ftyp_in_ftyp_close_ftyp_wrt_ftyp using solve [auto] : lngen.
+#[export] Hint Resolve ftvar_in_ftyp_close_ftyp_wrt_ftyp : lngen.
+#[export] Hint Rewrite ftvar_in_ftyp_close_ftyp_wrt_ftyp using solve [auto] : lngen.
 
-Lemma fv_ftyp_in_fexp_close_fexp_wrt_ftyp :
+Lemma ftvar_in_fexp_close_fexp_wrt_ftyp :
 forall e1 X1,
-  fv_ftyp_in_fexp (close_fexp_wrt_ftyp X1 e1) [=] remove X1 (fv_ftyp_in_fexp e1).
+  ftvar_in_fexp (close_fexp_wrt_ftyp X1 e1) [=] remove X1 (ftvar_in_fexp e1).
 Proof.
 unfold close_fexp_wrt_ftyp; default_simp.
 Qed.
 
-#[export] Hint Resolve fv_ftyp_in_fexp_close_fexp_wrt_ftyp : lngen.
-#[export] Hint Rewrite fv_ftyp_in_fexp_close_fexp_wrt_ftyp using solve [auto] : lngen.
+#[export] Hint Resolve ftvar_in_fexp_close_fexp_wrt_ftyp : lngen.
+#[export] Hint Rewrite ftvar_in_fexp_close_fexp_wrt_ftyp using solve [auto] : lngen.
 
-Lemma fv_ftyp_in_fexp_close_fexp_wrt_fexp :
+Lemma ftvar_in_fexp_close_fexp_wrt_fexp :
 forall e1 x1,
-  fv_ftyp_in_fexp (close_fexp_wrt_fexp x1 e1) [=] fv_ftyp_in_fexp e1.
+  ftvar_in_fexp (close_fexp_wrt_fexp x1 e1) [=] ftvar_in_fexp e1.
 Proof.
 unfold close_fexp_wrt_fexp; default_simp.
 Qed.
 
-#[export] Hint Resolve fv_ftyp_in_fexp_close_fexp_wrt_fexp : lngen.
-#[export] Hint Rewrite fv_ftyp_in_fexp_close_fexp_wrt_fexp using solve [auto] : lngen.
+#[export] Hint Resolve ftvar_in_fexp_close_fexp_wrt_fexp : lngen.
+#[export] Hint Rewrite ftvar_in_fexp_close_fexp_wrt_fexp using solve [auto] : lngen.
 
-Lemma fv_fexp_in_fexp_close_fexp_wrt_ftyp :
+Lemma fvar_in_fexp_close_fexp_wrt_ftyp :
 forall e1 X1,
-  fv_fexp_in_fexp (close_fexp_wrt_ftyp X1 e1) [=] fv_fexp_in_fexp e1.
+  fvar_in_fexp (close_fexp_wrt_ftyp X1 e1) [=] fvar_in_fexp e1.
 Proof.
 unfold close_fexp_wrt_ftyp; default_simp.
 Qed.
 
-#[export] Hint Resolve fv_fexp_in_fexp_close_fexp_wrt_ftyp : lngen.
-#[export] Hint Rewrite fv_fexp_in_fexp_close_fexp_wrt_ftyp using solve [auto] : lngen.
+#[export] Hint Resolve fvar_in_fexp_close_fexp_wrt_ftyp : lngen.
+#[export] Hint Rewrite fvar_in_fexp_close_fexp_wrt_ftyp using solve [auto] : lngen.
 
-Lemma fv_fexp_in_fexp_close_fexp_wrt_fexp :
+Lemma fvar_in_fexp_close_fexp_wrt_fexp :
 forall e1 x1,
-  fv_fexp_in_fexp (close_fexp_wrt_fexp x1 e1) [=] remove x1 (fv_fexp_in_fexp e1).
+  fvar_in_fexp (close_fexp_wrt_fexp x1 e1) [=] remove x1 (fvar_in_fexp e1).
 Proof.
 unfold close_fexp_wrt_fexp; default_simp.
 Qed.
 
-#[export] Hint Resolve fv_fexp_in_fexp_close_fexp_wrt_fexp : lngen.
-#[export] Hint Rewrite fv_fexp_in_fexp_close_fexp_wrt_fexp using solve [auto] : lngen.
+#[export] Hint Resolve fvar_in_fexp_close_fexp_wrt_fexp : lngen.
+#[export] Hint Rewrite fvar_in_fexp_close_fexp_wrt_fexp using solve [auto] : lngen.
 
-Lemma fv_ftyp_in_fbind_close_fbind_wrt_ftyp :
+Lemma ftvar_in_fbind_close_fbind_wrt_ftyp :
 forall fb1 X1,
-  fv_ftyp_in_fbind (close_fbind_wrt_ftyp X1 fb1) [=] remove X1 (fv_ftyp_in_fbind fb1).
+  ftvar_in_fbind (close_fbind_wrt_ftyp X1 fb1) [=] remove X1 (ftvar_in_fbind fb1).
 Proof.
 unfold close_fbind_wrt_ftyp; default_simp.
 Qed.
 
-#[export] Hint Resolve fv_ftyp_in_fbind_close_fbind_wrt_ftyp : lngen.
-#[export] Hint Rewrite fv_ftyp_in_fbind_close_fbind_wrt_ftyp using solve [auto] : lngen.
+#[export] Hint Resolve ftvar_in_fbind_close_fbind_wrt_ftyp : lngen.
+#[export] Hint Rewrite ftvar_in_fbind_close_fbind_wrt_ftyp using solve [auto] : lngen.
 
 (* begin hide *)
 
-Lemma fv_ftyp_in_ftyp_open_ftyp_wrt_ftyp_rec_lower_mutual :
+Lemma ftvar_in_ftyp_open_ftyp_wrt_ftyp_rec_lower_mutual :
 (forall A1 A2 n1,
-  fv_ftyp_in_ftyp A1 [<=] fv_ftyp_in_ftyp (open_ftyp_wrt_ftyp_rec n1 A2 A1)).
+  ftvar_in_ftyp A1 [<=] ftvar_in_ftyp (open_ftyp_wrt_ftyp_rec n1 A2 A1)).
 Proof.
 apply_mutual_ind ftyp_mutind;
 default_simp; fsetdec.
@@ -3820,22 +3820,22 @@ Qed.
 
 (* begin hide *)
 
-Lemma fv_ftyp_in_ftyp_open_ftyp_wrt_ftyp_rec_lower :
+Lemma ftvar_in_ftyp_open_ftyp_wrt_ftyp_rec_lower :
 forall A1 A2 n1,
-  fv_ftyp_in_ftyp A1 [<=] fv_ftyp_in_ftyp (open_ftyp_wrt_ftyp_rec n1 A2 A1).
+  ftvar_in_ftyp A1 [<=] ftvar_in_ftyp (open_ftyp_wrt_ftyp_rec n1 A2 A1).
 Proof.
-pose proof fv_ftyp_in_ftyp_open_ftyp_wrt_ftyp_rec_lower_mutual as H; intuition eauto.
+pose proof ftvar_in_ftyp_open_ftyp_wrt_ftyp_rec_lower_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve fv_ftyp_in_ftyp_open_ftyp_wrt_ftyp_rec_lower : lngen.
+#[export] Hint Resolve ftvar_in_ftyp_open_ftyp_wrt_ftyp_rec_lower : lngen.
 
 (* end hide *)
 
 (* begin hide *)
 
-Lemma fv_ftyp_in_fexp_open_fexp_wrt_ftyp_rec_lower_mutual :
+Lemma ftvar_in_fexp_open_fexp_wrt_ftyp_rec_lower_mutual :
 (forall e1 A1 n1,
-  fv_ftyp_in_fexp e1 [<=] fv_ftyp_in_fexp (open_fexp_wrt_ftyp_rec n1 A1 e1)).
+  ftvar_in_fexp e1 [<=] ftvar_in_fexp (open_fexp_wrt_ftyp_rec n1 A1 e1)).
 Proof.
 apply_mutual_ind fexp_mutind;
 default_simp; fsetdec.
@@ -3845,22 +3845,22 @@ Qed.
 
 (* begin hide *)
 
-Lemma fv_ftyp_in_fexp_open_fexp_wrt_ftyp_rec_lower :
+Lemma ftvar_in_fexp_open_fexp_wrt_ftyp_rec_lower :
 forall e1 A1 n1,
-  fv_ftyp_in_fexp e1 [<=] fv_ftyp_in_fexp (open_fexp_wrt_ftyp_rec n1 A1 e1).
+  ftvar_in_fexp e1 [<=] ftvar_in_fexp (open_fexp_wrt_ftyp_rec n1 A1 e1).
 Proof.
-pose proof fv_ftyp_in_fexp_open_fexp_wrt_ftyp_rec_lower_mutual as H; intuition eauto.
+pose proof ftvar_in_fexp_open_fexp_wrt_ftyp_rec_lower_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve fv_ftyp_in_fexp_open_fexp_wrt_ftyp_rec_lower : lngen.
+#[export] Hint Resolve ftvar_in_fexp_open_fexp_wrt_ftyp_rec_lower : lngen.
 
 (* end hide *)
 
 (* begin hide *)
 
-Lemma fv_ftyp_in_fexp_open_fexp_wrt_fexp_rec_lower_mutual :
+Lemma ftvar_in_fexp_open_fexp_wrt_fexp_rec_lower_mutual :
 (forall e1 e2 n1,
-  fv_ftyp_in_fexp e1 [<=] fv_ftyp_in_fexp (open_fexp_wrt_fexp_rec n1 e2 e1)).
+  ftvar_in_fexp e1 [<=] ftvar_in_fexp (open_fexp_wrt_fexp_rec n1 e2 e1)).
 Proof.
 apply_mutual_ind fexp_mutind;
 default_simp; fsetdec.
@@ -3870,22 +3870,22 @@ Qed.
 
 (* begin hide *)
 
-Lemma fv_ftyp_in_fexp_open_fexp_wrt_fexp_rec_lower :
+Lemma ftvar_in_fexp_open_fexp_wrt_fexp_rec_lower :
 forall e1 e2 n1,
-  fv_ftyp_in_fexp e1 [<=] fv_ftyp_in_fexp (open_fexp_wrt_fexp_rec n1 e2 e1).
+  ftvar_in_fexp e1 [<=] ftvar_in_fexp (open_fexp_wrt_fexp_rec n1 e2 e1).
 Proof.
-pose proof fv_ftyp_in_fexp_open_fexp_wrt_fexp_rec_lower_mutual as H; intuition eauto.
+pose proof ftvar_in_fexp_open_fexp_wrt_fexp_rec_lower_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve fv_ftyp_in_fexp_open_fexp_wrt_fexp_rec_lower : lngen.
+#[export] Hint Resolve ftvar_in_fexp_open_fexp_wrt_fexp_rec_lower : lngen.
 
 (* end hide *)
 
 (* begin hide *)
 
-Lemma fv_fexp_in_fexp_open_fexp_wrt_ftyp_rec_lower_mutual :
+Lemma fvar_in_fexp_open_fexp_wrt_ftyp_rec_lower_mutual :
 (forall e1 A1 n1,
-  fv_fexp_in_fexp e1 [<=] fv_fexp_in_fexp (open_fexp_wrt_ftyp_rec n1 A1 e1)).
+  fvar_in_fexp e1 [<=] fvar_in_fexp (open_fexp_wrt_ftyp_rec n1 A1 e1)).
 Proof.
 apply_mutual_ind fexp_mutind;
 default_simp; fsetdec.
@@ -3895,22 +3895,22 @@ Qed.
 
 (* begin hide *)
 
-Lemma fv_fexp_in_fexp_open_fexp_wrt_ftyp_rec_lower :
+Lemma fvar_in_fexp_open_fexp_wrt_ftyp_rec_lower :
 forall e1 A1 n1,
-  fv_fexp_in_fexp e1 [<=] fv_fexp_in_fexp (open_fexp_wrt_ftyp_rec n1 A1 e1).
+  fvar_in_fexp e1 [<=] fvar_in_fexp (open_fexp_wrt_ftyp_rec n1 A1 e1).
 Proof.
-pose proof fv_fexp_in_fexp_open_fexp_wrt_ftyp_rec_lower_mutual as H; intuition eauto.
+pose proof fvar_in_fexp_open_fexp_wrt_ftyp_rec_lower_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve fv_fexp_in_fexp_open_fexp_wrt_ftyp_rec_lower : lngen.
+#[export] Hint Resolve fvar_in_fexp_open_fexp_wrt_ftyp_rec_lower : lngen.
 
 (* end hide *)
 
 (* begin hide *)
 
-Lemma fv_fexp_in_fexp_open_fexp_wrt_fexp_rec_lower_mutual :
+Lemma fvar_in_fexp_open_fexp_wrt_fexp_rec_lower_mutual :
 (forall e1 e2 n1,
-  fv_fexp_in_fexp e1 [<=] fv_fexp_in_fexp (open_fexp_wrt_fexp_rec n1 e2 e1)).
+  fvar_in_fexp e1 [<=] fvar_in_fexp (open_fexp_wrt_fexp_rec n1 e2 e1)).
 Proof.
 apply_mutual_ind fexp_mutind;
 default_simp; fsetdec.
@@ -3920,22 +3920,22 @@ Qed.
 
 (* begin hide *)
 
-Lemma fv_fexp_in_fexp_open_fexp_wrt_fexp_rec_lower :
+Lemma fvar_in_fexp_open_fexp_wrt_fexp_rec_lower :
 forall e1 e2 n1,
-  fv_fexp_in_fexp e1 [<=] fv_fexp_in_fexp (open_fexp_wrt_fexp_rec n1 e2 e1).
+  fvar_in_fexp e1 [<=] fvar_in_fexp (open_fexp_wrt_fexp_rec n1 e2 e1).
 Proof.
-pose proof fv_fexp_in_fexp_open_fexp_wrt_fexp_rec_lower_mutual as H; intuition eauto.
+pose proof fvar_in_fexp_open_fexp_wrt_fexp_rec_lower_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve fv_fexp_in_fexp_open_fexp_wrt_fexp_rec_lower : lngen.
+#[export] Hint Resolve fvar_in_fexp_open_fexp_wrt_fexp_rec_lower : lngen.
 
 (* end hide *)
 
 (* begin hide *)
 
-Lemma fv_ftyp_in_fbind_open_fbind_wrt_ftyp_rec_lower_mutual :
+Lemma ftvar_in_fbind_open_fbind_wrt_ftyp_rec_lower_mutual :
 (forall fb1 A1 n1,
-  fv_ftyp_in_fbind fb1 [<=] fv_ftyp_in_fbind (open_fbind_wrt_ftyp_rec n1 A1 fb1)).
+  ftvar_in_fbind fb1 [<=] ftvar_in_fbind (open_fbind_wrt_ftyp_rec n1 A1 fb1)).
 Proof.
 apply_mutual_ind fbind_mutind;
 default_simp; fsetdec.
@@ -3945,76 +3945,76 @@ Qed.
 
 (* begin hide *)
 
-Lemma fv_ftyp_in_fbind_open_fbind_wrt_ftyp_rec_lower :
+Lemma ftvar_in_fbind_open_fbind_wrt_ftyp_rec_lower :
 forall fb1 A1 n1,
-  fv_ftyp_in_fbind fb1 [<=] fv_ftyp_in_fbind (open_fbind_wrt_ftyp_rec n1 A1 fb1).
+  ftvar_in_fbind fb1 [<=] ftvar_in_fbind (open_fbind_wrt_ftyp_rec n1 A1 fb1).
 Proof.
-pose proof fv_ftyp_in_fbind_open_fbind_wrt_ftyp_rec_lower_mutual as H; intuition eauto.
+pose proof ftvar_in_fbind_open_fbind_wrt_ftyp_rec_lower_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve fv_ftyp_in_fbind_open_fbind_wrt_ftyp_rec_lower : lngen.
+#[export] Hint Resolve ftvar_in_fbind_open_fbind_wrt_ftyp_rec_lower : lngen.
 
 (* end hide *)
 
-Lemma fv_ftyp_in_ftyp_open_ftyp_wrt_ftyp_lower :
+Lemma ftvar_in_ftyp_open_ftyp_wrt_ftyp_lower :
 forall A1 A2,
-  fv_ftyp_in_ftyp A1 [<=] fv_ftyp_in_ftyp (open_ftyp_wrt_ftyp A1 A2).
+  ftvar_in_ftyp A1 [<=] ftvar_in_ftyp (open_ftyp_wrt_ftyp A1 A2).
 Proof.
 unfold open_ftyp_wrt_ftyp; default_simp.
 Qed.
 
-#[export] Hint Resolve fv_ftyp_in_ftyp_open_ftyp_wrt_ftyp_lower : lngen.
+#[export] Hint Resolve ftvar_in_ftyp_open_ftyp_wrt_ftyp_lower : lngen.
 
-Lemma fv_ftyp_in_fexp_open_fexp_wrt_ftyp_lower :
+Lemma ftvar_in_fexp_open_fexp_wrt_ftyp_lower :
 forall e1 A1,
-  fv_ftyp_in_fexp e1 [<=] fv_ftyp_in_fexp (open_fexp_wrt_ftyp e1 A1).
+  ftvar_in_fexp e1 [<=] ftvar_in_fexp (open_fexp_wrt_ftyp e1 A1).
 Proof.
 unfold open_fexp_wrt_ftyp; default_simp.
 Qed.
 
-#[export] Hint Resolve fv_ftyp_in_fexp_open_fexp_wrt_ftyp_lower : lngen.
+#[export] Hint Resolve ftvar_in_fexp_open_fexp_wrt_ftyp_lower : lngen.
 
-Lemma fv_ftyp_in_fexp_open_fexp_wrt_fexp_lower :
+Lemma ftvar_in_fexp_open_fexp_wrt_fexp_lower :
 forall e1 e2,
-  fv_ftyp_in_fexp e1 [<=] fv_ftyp_in_fexp (open_fexp_wrt_fexp e1 e2).
+  ftvar_in_fexp e1 [<=] ftvar_in_fexp (open_fexp_wrt_fexp e1 e2).
 Proof.
 unfold open_fexp_wrt_fexp; default_simp.
 Qed.
 
-#[export] Hint Resolve fv_ftyp_in_fexp_open_fexp_wrt_fexp_lower : lngen.
+#[export] Hint Resolve ftvar_in_fexp_open_fexp_wrt_fexp_lower : lngen.
 
-Lemma fv_fexp_in_fexp_open_fexp_wrt_ftyp_lower :
+Lemma fvar_in_fexp_open_fexp_wrt_ftyp_lower :
 forall e1 A1,
-  fv_fexp_in_fexp e1 [<=] fv_fexp_in_fexp (open_fexp_wrt_ftyp e1 A1).
+  fvar_in_fexp e1 [<=] fvar_in_fexp (open_fexp_wrt_ftyp e1 A1).
 Proof.
 unfold open_fexp_wrt_ftyp; default_simp.
 Qed.
 
-#[export] Hint Resolve fv_fexp_in_fexp_open_fexp_wrt_ftyp_lower : lngen.
+#[export] Hint Resolve fvar_in_fexp_open_fexp_wrt_ftyp_lower : lngen.
 
-Lemma fv_fexp_in_fexp_open_fexp_wrt_fexp_lower :
+Lemma fvar_in_fexp_open_fexp_wrt_fexp_lower :
 forall e1 e2,
-  fv_fexp_in_fexp e1 [<=] fv_fexp_in_fexp (open_fexp_wrt_fexp e1 e2).
+  fvar_in_fexp e1 [<=] fvar_in_fexp (open_fexp_wrt_fexp e1 e2).
 Proof.
 unfold open_fexp_wrt_fexp; default_simp.
 Qed.
 
-#[export] Hint Resolve fv_fexp_in_fexp_open_fexp_wrt_fexp_lower : lngen.
+#[export] Hint Resolve fvar_in_fexp_open_fexp_wrt_fexp_lower : lngen.
 
-Lemma fv_ftyp_in_fbind_open_fbind_wrt_ftyp_lower :
+Lemma ftvar_in_fbind_open_fbind_wrt_ftyp_lower :
 forall fb1 A1,
-  fv_ftyp_in_fbind fb1 [<=] fv_ftyp_in_fbind (open_fbind_wrt_ftyp fb1 A1).
+  ftvar_in_fbind fb1 [<=] ftvar_in_fbind (open_fbind_wrt_ftyp fb1 A1).
 Proof.
 unfold open_fbind_wrt_ftyp; default_simp.
 Qed.
 
-#[export] Hint Resolve fv_ftyp_in_fbind_open_fbind_wrt_ftyp_lower : lngen.
+#[export] Hint Resolve ftvar_in_fbind_open_fbind_wrt_ftyp_lower : lngen.
 
 (* begin hide *)
 
-Lemma fv_ftyp_in_ftyp_open_ftyp_wrt_ftyp_rec_upper_mutual :
+Lemma ftvar_in_ftyp_open_ftyp_wrt_ftyp_rec_upper_mutual :
 (forall A1 A2 n1,
-  fv_ftyp_in_ftyp (open_ftyp_wrt_ftyp_rec n1 A2 A1) [<=] fv_ftyp_in_ftyp A2 `union` fv_ftyp_in_ftyp A1).
+  ftvar_in_ftyp (open_ftyp_wrt_ftyp_rec n1 A2 A1) [<=] ftvar_in_ftyp A2 `union` ftvar_in_ftyp A1).
 Proof.
 apply_mutual_ind ftyp_mutind;
 default_simp; fsetdec.
@@ -4024,22 +4024,22 @@ Qed.
 
 (* begin hide *)
 
-Lemma fv_ftyp_in_ftyp_open_ftyp_wrt_ftyp_rec_upper :
+Lemma ftvar_in_ftyp_open_ftyp_wrt_ftyp_rec_upper :
 forall A1 A2 n1,
-  fv_ftyp_in_ftyp (open_ftyp_wrt_ftyp_rec n1 A2 A1) [<=] fv_ftyp_in_ftyp A2 `union` fv_ftyp_in_ftyp A1.
+  ftvar_in_ftyp (open_ftyp_wrt_ftyp_rec n1 A2 A1) [<=] ftvar_in_ftyp A2 `union` ftvar_in_ftyp A1.
 Proof.
-pose proof fv_ftyp_in_ftyp_open_ftyp_wrt_ftyp_rec_upper_mutual as H; intuition eauto.
+pose proof ftvar_in_ftyp_open_ftyp_wrt_ftyp_rec_upper_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve fv_ftyp_in_ftyp_open_ftyp_wrt_ftyp_rec_upper : lngen.
+#[export] Hint Resolve ftvar_in_ftyp_open_ftyp_wrt_ftyp_rec_upper : lngen.
 
 (* end hide *)
 
 (* begin hide *)
 
-Lemma fv_ftyp_in_fexp_open_fexp_wrt_ftyp_rec_upper_mutual :
+Lemma ftvar_in_fexp_open_fexp_wrt_ftyp_rec_upper_mutual :
 (forall e1 A1 n1,
-  fv_ftyp_in_fexp (open_fexp_wrt_ftyp_rec n1 A1 e1) [<=] fv_ftyp_in_ftyp A1 `union` fv_ftyp_in_fexp e1).
+  ftvar_in_fexp (open_fexp_wrt_ftyp_rec n1 A1 e1) [<=] ftvar_in_ftyp A1 `union` ftvar_in_fexp e1).
 Proof.
 apply_mutual_ind fexp_mutind;
 default_simp; fsetdec.
@@ -4049,22 +4049,22 @@ Qed.
 
 (* begin hide *)
 
-Lemma fv_ftyp_in_fexp_open_fexp_wrt_ftyp_rec_upper :
+Lemma ftvar_in_fexp_open_fexp_wrt_ftyp_rec_upper :
 forall e1 A1 n1,
-  fv_ftyp_in_fexp (open_fexp_wrt_ftyp_rec n1 A1 e1) [<=] fv_ftyp_in_ftyp A1 `union` fv_ftyp_in_fexp e1.
+  ftvar_in_fexp (open_fexp_wrt_ftyp_rec n1 A1 e1) [<=] ftvar_in_ftyp A1 `union` ftvar_in_fexp e1.
 Proof.
-pose proof fv_ftyp_in_fexp_open_fexp_wrt_ftyp_rec_upper_mutual as H; intuition eauto.
+pose proof ftvar_in_fexp_open_fexp_wrt_ftyp_rec_upper_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve fv_ftyp_in_fexp_open_fexp_wrt_ftyp_rec_upper : lngen.
+#[export] Hint Resolve ftvar_in_fexp_open_fexp_wrt_ftyp_rec_upper : lngen.
 
 (* end hide *)
 
 (* begin hide *)
 
-Lemma fv_ftyp_in_fexp_open_fexp_wrt_fexp_rec_upper_mutual :
+Lemma ftvar_in_fexp_open_fexp_wrt_fexp_rec_upper_mutual :
 (forall e1 e2 n1,
-  fv_ftyp_in_fexp (open_fexp_wrt_fexp_rec n1 e2 e1) [<=] fv_ftyp_in_fexp e2 `union` fv_ftyp_in_fexp e1).
+  ftvar_in_fexp (open_fexp_wrt_fexp_rec n1 e2 e1) [<=] ftvar_in_fexp e2 `union` ftvar_in_fexp e1).
 Proof.
 apply_mutual_ind fexp_mutind;
 default_simp; fsetdec.
@@ -4074,22 +4074,22 @@ Qed.
 
 (* begin hide *)
 
-Lemma fv_ftyp_in_fexp_open_fexp_wrt_fexp_rec_upper :
+Lemma ftvar_in_fexp_open_fexp_wrt_fexp_rec_upper :
 forall e1 e2 n1,
-  fv_ftyp_in_fexp (open_fexp_wrt_fexp_rec n1 e2 e1) [<=] fv_ftyp_in_fexp e2 `union` fv_ftyp_in_fexp e1.
+  ftvar_in_fexp (open_fexp_wrt_fexp_rec n1 e2 e1) [<=] ftvar_in_fexp e2 `union` ftvar_in_fexp e1.
 Proof.
-pose proof fv_ftyp_in_fexp_open_fexp_wrt_fexp_rec_upper_mutual as H; intuition eauto.
+pose proof ftvar_in_fexp_open_fexp_wrt_fexp_rec_upper_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve fv_ftyp_in_fexp_open_fexp_wrt_fexp_rec_upper : lngen.
+#[export] Hint Resolve ftvar_in_fexp_open_fexp_wrt_fexp_rec_upper : lngen.
 
 (* end hide *)
 
 (* begin hide *)
 
-Lemma fv_fexp_in_fexp_open_fexp_wrt_ftyp_rec_upper_mutual :
+Lemma fvar_in_fexp_open_fexp_wrt_ftyp_rec_upper_mutual :
 (forall e1 A1 n1,
-  fv_fexp_in_fexp (open_fexp_wrt_ftyp_rec n1 A1 e1) [<=] fv_fexp_in_fexp e1).
+  fvar_in_fexp (open_fexp_wrt_ftyp_rec n1 A1 e1) [<=] fvar_in_fexp e1).
 Proof.
 apply_mutual_ind fexp_mutind;
 default_simp; fsetdec.
@@ -4099,22 +4099,22 @@ Qed.
 
 (* begin hide *)
 
-Lemma fv_fexp_in_fexp_open_fexp_wrt_ftyp_rec_upper :
+Lemma fvar_in_fexp_open_fexp_wrt_ftyp_rec_upper :
 forall e1 A1 n1,
-  fv_fexp_in_fexp (open_fexp_wrt_ftyp_rec n1 A1 e1) [<=] fv_fexp_in_fexp e1.
+  fvar_in_fexp (open_fexp_wrt_ftyp_rec n1 A1 e1) [<=] fvar_in_fexp e1.
 Proof.
-pose proof fv_fexp_in_fexp_open_fexp_wrt_ftyp_rec_upper_mutual as H; intuition eauto.
+pose proof fvar_in_fexp_open_fexp_wrt_ftyp_rec_upper_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve fv_fexp_in_fexp_open_fexp_wrt_ftyp_rec_upper : lngen.
+#[export] Hint Resolve fvar_in_fexp_open_fexp_wrt_ftyp_rec_upper : lngen.
 
 (* end hide *)
 
 (* begin hide *)
 
-Lemma fv_fexp_in_fexp_open_fexp_wrt_fexp_rec_upper_mutual :
+Lemma fvar_in_fexp_open_fexp_wrt_fexp_rec_upper_mutual :
 (forall e1 e2 n1,
-  fv_fexp_in_fexp (open_fexp_wrt_fexp_rec n1 e2 e1) [<=] fv_fexp_in_fexp e2 `union` fv_fexp_in_fexp e1).
+  fvar_in_fexp (open_fexp_wrt_fexp_rec n1 e2 e1) [<=] fvar_in_fexp e2 `union` fvar_in_fexp e1).
 Proof.
 apply_mutual_ind fexp_mutind;
 default_simp; fsetdec.
@@ -4124,22 +4124,22 @@ Qed.
 
 (* begin hide *)
 
-Lemma fv_fexp_in_fexp_open_fexp_wrt_fexp_rec_upper :
+Lemma fvar_in_fexp_open_fexp_wrt_fexp_rec_upper :
 forall e1 e2 n1,
-  fv_fexp_in_fexp (open_fexp_wrt_fexp_rec n1 e2 e1) [<=] fv_fexp_in_fexp e2 `union` fv_fexp_in_fexp e1.
+  fvar_in_fexp (open_fexp_wrt_fexp_rec n1 e2 e1) [<=] fvar_in_fexp e2 `union` fvar_in_fexp e1.
 Proof.
-pose proof fv_fexp_in_fexp_open_fexp_wrt_fexp_rec_upper_mutual as H; intuition eauto.
+pose proof fvar_in_fexp_open_fexp_wrt_fexp_rec_upper_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve fv_fexp_in_fexp_open_fexp_wrt_fexp_rec_upper : lngen.
+#[export] Hint Resolve fvar_in_fexp_open_fexp_wrt_fexp_rec_upper : lngen.
 
 (* end hide *)
 
 (* begin hide *)
 
-Lemma fv_ftyp_in_fbind_open_fbind_wrt_ftyp_rec_upper_mutual :
+Lemma ftvar_in_fbind_open_fbind_wrt_ftyp_rec_upper_mutual :
 (forall fb1 A1 n1,
-  fv_ftyp_in_fbind (open_fbind_wrt_ftyp_rec n1 A1 fb1) [<=] fv_ftyp_in_ftyp A1 `union` fv_ftyp_in_fbind fb1).
+  ftvar_in_fbind (open_fbind_wrt_ftyp_rec n1 A1 fb1) [<=] ftvar_in_ftyp A1 `union` ftvar_in_fbind fb1).
 Proof.
 apply_mutual_ind fbind_mutind;
 default_simp; fsetdec.
@@ -4149,77 +4149,77 @@ Qed.
 
 (* begin hide *)
 
-Lemma fv_ftyp_in_fbind_open_fbind_wrt_ftyp_rec_upper :
+Lemma ftvar_in_fbind_open_fbind_wrt_ftyp_rec_upper :
 forall fb1 A1 n1,
-  fv_ftyp_in_fbind (open_fbind_wrt_ftyp_rec n1 A1 fb1) [<=] fv_ftyp_in_ftyp A1 `union` fv_ftyp_in_fbind fb1.
+  ftvar_in_fbind (open_fbind_wrt_ftyp_rec n1 A1 fb1) [<=] ftvar_in_ftyp A1 `union` ftvar_in_fbind fb1.
 Proof.
-pose proof fv_ftyp_in_fbind_open_fbind_wrt_ftyp_rec_upper_mutual as H; intuition eauto.
+pose proof ftvar_in_fbind_open_fbind_wrt_ftyp_rec_upper_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve fv_ftyp_in_fbind_open_fbind_wrt_ftyp_rec_upper : lngen.
+#[export] Hint Resolve ftvar_in_fbind_open_fbind_wrt_ftyp_rec_upper : lngen.
 
 (* end hide *)
 
-Lemma fv_ftyp_in_ftyp_open_ftyp_wrt_ftyp_upper :
+Lemma ftvar_in_ftyp_open_ftyp_wrt_ftyp_upper :
 forall A1 A2,
-  fv_ftyp_in_ftyp (open_ftyp_wrt_ftyp A1 A2) [<=] fv_ftyp_in_ftyp A2 `union` fv_ftyp_in_ftyp A1.
+  ftvar_in_ftyp (open_ftyp_wrt_ftyp A1 A2) [<=] ftvar_in_ftyp A2 `union` ftvar_in_ftyp A1.
 Proof.
 unfold open_ftyp_wrt_ftyp; default_simp.
 Qed.
 
-#[export] Hint Resolve fv_ftyp_in_ftyp_open_ftyp_wrt_ftyp_upper : lngen.
+#[export] Hint Resolve ftvar_in_ftyp_open_ftyp_wrt_ftyp_upper : lngen.
 
-Lemma fv_ftyp_in_fexp_open_fexp_wrt_ftyp_upper :
+Lemma ftvar_in_fexp_open_fexp_wrt_ftyp_upper :
 forall e1 A1,
-  fv_ftyp_in_fexp (open_fexp_wrt_ftyp e1 A1) [<=] fv_ftyp_in_ftyp A1 `union` fv_ftyp_in_fexp e1.
+  ftvar_in_fexp (open_fexp_wrt_ftyp e1 A1) [<=] ftvar_in_ftyp A1 `union` ftvar_in_fexp e1.
 Proof.
 unfold open_fexp_wrt_ftyp; default_simp.
 Qed.
 
-#[export] Hint Resolve fv_ftyp_in_fexp_open_fexp_wrt_ftyp_upper : lngen.
+#[export] Hint Resolve ftvar_in_fexp_open_fexp_wrt_ftyp_upper : lngen.
 
-Lemma fv_ftyp_in_fexp_open_fexp_wrt_fexp_upper :
+Lemma ftvar_in_fexp_open_fexp_wrt_fexp_upper :
 forall e1 e2,
-  fv_ftyp_in_fexp (open_fexp_wrt_fexp e1 e2) [<=] fv_ftyp_in_fexp e2 `union` fv_ftyp_in_fexp e1.
+  ftvar_in_fexp (open_fexp_wrt_fexp e1 e2) [<=] ftvar_in_fexp e2 `union` ftvar_in_fexp e1.
 Proof.
 unfold open_fexp_wrt_fexp; default_simp.
 Qed.
 
-#[export] Hint Resolve fv_ftyp_in_fexp_open_fexp_wrt_fexp_upper : lngen.
+#[export] Hint Resolve ftvar_in_fexp_open_fexp_wrt_fexp_upper : lngen.
 
-Lemma fv_fexp_in_fexp_open_fexp_wrt_ftyp_upper :
+Lemma fvar_in_fexp_open_fexp_wrt_ftyp_upper :
 forall e1 A1,
-  fv_fexp_in_fexp (open_fexp_wrt_ftyp e1 A1) [<=] fv_fexp_in_fexp e1.
+  fvar_in_fexp (open_fexp_wrt_ftyp e1 A1) [<=] fvar_in_fexp e1.
 Proof.
 unfold open_fexp_wrt_ftyp; default_simp.
 Qed.
 
-#[export] Hint Resolve fv_fexp_in_fexp_open_fexp_wrt_ftyp_upper : lngen.
+#[export] Hint Resolve fvar_in_fexp_open_fexp_wrt_ftyp_upper : lngen.
 
-Lemma fv_fexp_in_fexp_open_fexp_wrt_fexp_upper :
+Lemma fvar_in_fexp_open_fexp_wrt_fexp_upper :
 forall e1 e2,
-  fv_fexp_in_fexp (open_fexp_wrt_fexp e1 e2) [<=] fv_fexp_in_fexp e2 `union` fv_fexp_in_fexp e1.
+  fvar_in_fexp (open_fexp_wrt_fexp e1 e2) [<=] fvar_in_fexp e2 `union` fvar_in_fexp e1.
 Proof.
 unfold open_fexp_wrt_fexp; default_simp.
 Qed.
 
-#[export] Hint Resolve fv_fexp_in_fexp_open_fexp_wrt_fexp_upper : lngen.
+#[export] Hint Resolve fvar_in_fexp_open_fexp_wrt_fexp_upper : lngen.
 
-Lemma fv_ftyp_in_fbind_open_fbind_wrt_ftyp_upper :
+Lemma ftvar_in_fbind_open_fbind_wrt_ftyp_upper :
 forall fb1 A1,
-  fv_ftyp_in_fbind (open_fbind_wrt_ftyp fb1 A1) [<=] fv_ftyp_in_ftyp A1 `union` fv_ftyp_in_fbind fb1.
+  ftvar_in_fbind (open_fbind_wrt_ftyp fb1 A1) [<=] ftvar_in_ftyp A1 `union` ftvar_in_fbind fb1.
 Proof.
 unfold open_fbind_wrt_ftyp; default_simp.
 Qed.
 
-#[export] Hint Resolve fv_ftyp_in_fbind_open_fbind_wrt_ftyp_upper : lngen.
+#[export] Hint Resolve ftvar_in_fbind_open_fbind_wrt_ftyp_upper : lngen.
 
 (* begin hide *)
 
-Lemma fv_ftyp_in_ftyp_subst_typ_in_ftyp_fresh_mutual :
+Lemma ftvar_in_ftyp_subst_ftyp_in_ftyp_fresh_mutual :
 (forall A1 A2 X1,
-  X1 `notin` fv_ftyp_in_ftyp A1 ->
-  fv_ftyp_in_ftyp (subst_typ_in_ftyp A2 X1 A1) [=] fv_ftyp_in_ftyp A1).
+  X1 `notin` ftvar_in_ftyp A1 ->
+  ftvar_in_ftyp (subst_ftyp_in_ftyp A2 X1 A1) [=] ftvar_in_ftyp A1).
 Proof.
 apply_mutual_ind ftyp_mutind;
 default_simp; fsetdec.
@@ -4227,23 +4227,23 @@ Qed.
 
 (* end hide *)
 
-Lemma fv_ftyp_in_ftyp_subst_typ_in_ftyp_fresh :
+Lemma ftvar_in_ftyp_subst_ftyp_in_ftyp_fresh :
 forall A1 A2 X1,
-  X1 `notin` fv_ftyp_in_ftyp A1 ->
-  fv_ftyp_in_ftyp (subst_typ_in_ftyp A2 X1 A1) [=] fv_ftyp_in_ftyp A1.
+  X1 `notin` ftvar_in_ftyp A1 ->
+  ftvar_in_ftyp (subst_ftyp_in_ftyp A2 X1 A1) [=] ftvar_in_ftyp A1.
 Proof.
-pose proof fv_ftyp_in_ftyp_subst_typ_in_ftyp_fresh_mutual as H; intuition eauto.
+pose proof ftvar_in_ftyp_subst_ftyp_in_ftyp_fresh_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve fv_ftyp_in_ftyp_subst_typ_in_ftyp_fresh : lngen.
-#[export] Hint Rewrite fv_ftyp_in_ftyp_subst_typ_in_ftyp_fresh using solve [auto] : lngen.
+#[export] Hint Resolve ftvar_in_ftyp_subst_ftyp_in_ftyp_fresh : lngen.
+#[export] Hint Rewrite ftvar_in_ftyp_subst_ftyp_in_ftyp_fresh using solve [auto] : lngen.
 
 (* begin hide *)
 
-Lemma fv_ftyp_in_fexp_subst_typ_in_fexp_fresh_mutual :
+Lemma ftvar_in_fexp_subst_ftyp_in_fexp_fresh_mutual :
 (forall e1 A1 X1,
-  X1 `notin` fv_ftyp_in_fexp e1 ->
-  fv_ftyp_in_fexp (subst_typ_in_fexp A1 X1 e1) [=] fv_ftyp_in_fexp e1).
+  X1 `notin` ftvar_in_fexp e1 ->
+  ftvar_in_fexp (subst_ftyp_in_fexp A1 X1 e1) [=] ftvar_in_fexp e1).
 Proof.
 apply_mutual_ind fexp_mutind;
 default_simp; fsetdec.
@@ -4251,22 +4251,22 @@ Qed.
 
 (* end hide *)
 
-Lemma fv_ftyp_in_fexp_subst_typ_in_fexp_fresh :
+Lemma ftvar_in_fexp_subst_ftyp_in_fexp_fresh :
 forall e1 A1 X1,
-  X1 `notin` fv_ftyp_in_fexp e1 ->
-  fv_ftyp_in_fexp (subst_typ_in_fexp A1 X1 e1) [=] fv_ftyp_in_fexp e1.
+  X1 `notin` ftvar_in_fexp e1 ->
+  ftvar_in_fexp (subst_ftyp_in_fexp A1 X1 e1) [=] ftvar_in_fexp e1.
 Proof.
-pose proof fv_ftyp_in_fexp_subst_typ_in_fexp_fresh_mutual as H; intuition eauto.
+pose proof ftvar_in_fexp_subst_ftyp_in_fexp_fresh_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve fv_ftyp_in_fexp_subst_typ_in_fexp_fresh : lngen.
-#[export] Hint Rewrite fv_ftyp_in_fexp_subst_typ_in_fexp_fresh using solve [auto] : lngen.
+#[export] Hint Resolve ftvar_in_fexp_subst_ftyp_in_fexp_fresh : lngen.
+#[export] Hint Rewrite ftvar_in_fexp_subst_ftyp_in_fexp_fresh using solve [auto] : lngen.
 
 (* begin hide *)
 
-Lemma fv_ftyp_in_fexp_subst_exp_in_fexp_fresh_mutual :
+Lemma ftvar_in_fexp_subst_fexp_in_fexp_fresh_mutual :
 (forall e1 A1 X1,
-  fv_fexp_in_fexp (subst_typ_in_fexp A1 X1 e1) [=] fv_fexp_in_fexp e1).
+  fvar_in_fexp (subst_ftyp_in_fexp A1 X1 e1) [=] fvar_in_fexp e1).
 Proof.
 apply_mutual_ind fexp_mutind;
 default_simp; fsetdec.
@@ -4274,22 +4274,22 @@ Qed.
 
 (* end hide *)
 
-Lemma fv_ftyp_in_fexp_subst_exp_in_fexp_fresh :
+Lemma ftvar_in_fexp_subst_fexp_in_fexp_fresh :
 forall e1 A1 X1,
-  fv_fexp_in_fexp (subst_typ_in_fexp A1 X1 e1) [=] fv_fexp_in_fexp e1.
+  fvar_in_fexp (subst_ftyp_in_fexp A1 X1 e1) [=] fvar_in_fexp e1.
 Proof.
-pose proof fv_ftyp_in_fexp_subst_exp_in_fexp_fresh_mutual as H; intuition eauto.
+pose proof ftvar_in_fexp_subst_fexp_in_fexp_fresh_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve fv_ftyp_in_fexp_subst_exp_in_fexp_fresh : lngen.
-#[export] Hint Rewrite fv_ftyp_in_fexp_subst_exp_in_fexp_fresh using solve [auto] : lngen.
+#[export] Hint Resolve ftvar_in_fexp_subst_fexp_in_fexp_fresh : lngen.
+#[export] Hint Rewrite ftvar_in_fexp_subst_fexp_in_fexp_fresh using solve [auto] : lngen.
 
 (* begin hide *)
 
-Lemma fv_fexp_in_fexp_subst_exp_in_fexp_fresh_mutual :
+Lemma fvar_in_fexp_subst_fexp_in_fexp_fresh_mutual :
 (forall e1 e2 x1,
-  x1 `notin` fv_fexp_in_fexp e1 ->
-  fv_fexp_in_fexp (subst_exp_in_fexp e2 x1 e1) [=] fv_fexp_in_fexp e1).
+  x1 `notin` fvar_in_fexp e1 ->
+  fvar_in_fexp (subst_fexp_in_fexp e2 x1 e1) [=] fvar_in_fexp e1).
 Proof.
 apply_mutual_ind fexp_mutind;
 default_simp; fsetdec.
@@ -4297,23 +4297,23 @@ Qed.
 
 (* end hide *)
 
-Lemma fv_fexp_in_fexp_subst_exp_in_fexp_fresh :
+Lemma fvar_in_fexp_subst_fexp_in_fexp_fresh :
 forall e1 e2 x1,
-  x1 `notin` fv_fexp_in_fexp e1 ->
-  fv_fexp_in_fexp (subst_exp_in_fexp e2 x1 e1) [=] fv_fexp_in_fexp e1.
+  x1 `notin` fvar_in_fexp e1 ->
+  fvar_in_fexp (subst_fexp_in_fexp e2 x1 e1) [=] fvar_in_fexp e1.
 Proof.
-pose proof fv_fexp_in_fexp_subst_exp_in_fexp_fresh_mutual as H; intuition eauto.
+pose proof fvar_in_fexp_subst_fexp_in_fexp_fresh_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve fv_fexp_in_fexp_subst_exp_in_fexp_fresh : lngen.
-#[export] Hint Rewrite fv_fexp_in_fexp_subst_exp_in_fexp_fresh using solve [auto] : lngen.
+#[export] Hint Resolve fvar_in_fexp_subst_fexp_in_fexp_fresh : lngen.
+#[export] Hint Rewrite fvar_in_fexp_subst_fexp_in_fexp_fresh using solve [auto] : lngen.
 
 (* begin hide *)
 
-Lemma fv_ftyp_in_fbind_subst_typ_in_fbind_fresh_mutual :
+Lemma ftvar_in_fbind_subst_ftyp_in_fbind_fresh_mutual :
 (forall fb1 A1 X1,
-  X1 `notin` fv_ftyp_in_fbind fb1 ->
-  fv_ftyp_in_fbind (subst_typ_in_fbind A1 X1 fb1) [=] fv_ftyp_in_fbind fb1).
+  X1 `notin` ftvar_in_fbind fb1 ->
+  ftvar_in_fbind (subst_ftyp_in_fbind A1 X1 fb1) [=] ftvar_in_fbind fb1).
 Proof.
 apply_mutual_ind fbind_mutind;
 default_simp; fsetdec.
@@ -4321,22 +4321,22 @@ Qed.
 
 (* end hide *)
 
-Lemma fv_ftyp_in_fbind_subst_typ_in_fbind_fresh :
+Lemma ftvar_in_fbind_subst_ftyp_in_fbind_fresh :
 forall fb1 A1 X1,
-  X1 `notin` fv_ftyp_in_fbind fb1 ->
-  fv_ftyp_in_fbind (subst_typ_in_fbind A1 X1 fb1) [=] fv_ftyp_in_fbind fb1.
+  X1 `notin` ftvar_in_fbind fb1 ->
+  ftvar_in_fbind (subst_ftyp_in_fbind A1 X1 fb1) [=] ftvar_in_fbind fb1.
 Proof.
-pose proof fv_ftyp_in_fbind_subst_typ_in_fbind_fresh_mutual as H; intuition eauto.
+pose proof ftvar_in_fbind_subst_ftyp_in_fbind_fresh_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve fv_ftyp_in_fbind_subst_typ_in_fbind_fresh : lngen.
-#[export] Hint Rewrite fv_ftyp_in_fbind_subst_typ_in_fbind_fresh using solve [auto] : lngen.
+#[export] Hint Resolve ftvar_in_fbind_subst_ftyp_in_fbind_fresh : lngen.
+#[export] Hint Rewrite ftvar_in_fbind_subst_ftyp_in_fbind_fresh using solve [auto] : lngen.
 
 (* begin hide *)
 
-Lemma fv_ftyp_in_ftyp_subst_typ_in_ftyp_lower_mutual :
+Lemma ftvar_in_ftyp_subst_ftyp_in_ftyp_lower_mutual :
 (forall A1 A2 X1,
-  remove X1 (fv_ftyp_in_ftyp A1) [<=] fv_ftyp_in_ftyp (subst_typ_in_ftyp A2 X1 A1)).
+  remove X1 (ftvar_in_ftyp A1) [<=] ftvar_in_ftyp (subst_ftyp_in_ftyp A2 X1 A1)).
 Proof.
 apply_mutual_ind ftyp_mutind;
 default_simp; fsetdec.
@@ -4344,20 +4344,20 @@ Qed.
 
 (* end hide *)
 
-Lemma fv_ftyp_in_ftyp_subst_typ_in_ftyp_lower :
+Lemma ftvar_in_ftyp_subst_ftyp_in_ftyp_lower :
 forall A1 A2 X1,
-  remove X1 (fv_ftyp_in_ftyp A1) [<=] fv_ftyp_in_ftyp (subst_typ_in_ftyp A2 X1 A1).
+  remove X1 (ftvar_in_ftyp A1) [<=] ftvar_in_ftyp (subst_ftyp_in_ftyp A2 X1 A1).
 Proof.
-pose proof fv_ftyp_in_ftyp_subst_typ_in_ftyp_lower_mutual as H; intuition eauto.
+pose proof ftvar_in_ftyp_subst_ftyp_in_ftyp_lower_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve fv_ftyp_in_ftyp_subst_typ_in_ftyp_lower : lngen.
+#[export] Hint Resolve ftvar_in_ftyp_subst_ftyp_in_ftyp_lower : lngen.
 
 (* begin hide *)
 
-Lemma fv_ftyp_in_fexp_subst_typ_in_fexp_lower_mutual :
+Lemma ftvar_in_fexp_subst_ftyp_in_fexp_lower_mutual :
 (forall e1 A1 X1,
-  remove X1 (fv_ftyp_in_fexp e1) [<=] fv_ftyp_in_fexp (subst_typ_in_fexp A1 X1 e1)).
+  remove X1 (ftvar_in_fexp e1) [<=] ftvar_in_fexp (subst_ftyp_in_fexp A1 X1 e1)).
 Proof.
 apply_mutual_ind fexp_mutind;
 default_simp; fsetdec.
@@ -4365,20 +4365,20 @@ Qed.
 
 (* end hide *)
 
-Lemma fv_ftyp_in_fexp_subst_typ_in_fexp_lower :
+Lemma ftvar_in_fexp_subst_ftyp_in_fexp_lower :
 forall e1 A1 X1,
-  remove X1 (fv_ftyp_in_fexp e1) [<=] fv_ftyp_in_fexp (subst_typ_in_fexp A1 X1 e1).
+  remove X1 (ftvar_in_fexp e1) [<=] ftvar_in_fexp (subst_ftyp_in_fexp A1 X1 e1).
 Proof.
-pose proof fv_ftyp_in_fexp_subst_typ_in_fexp_lower_mutual as H; intuition eauto.
+pose proof ftvar_in_fexp_subst_ftyp_in_fexp_lower_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve fv_ftyp_in_fexp_subst_typ_in_fexp_lower : lngen.
+#[export] Hint Resolve ftvar_in_fexp_subst_ftyp_in_fexp_lower : lngen.
 
 (* begin hide *)
 
-Lemma fv_ftyp_in_fexp_subst_exp_in_fexp_lower_mutual :
+Lemma ftvar_in_fexp_subst_fexp_in_fexp_lower_mutual :
 (forall e1 e2 x1,
-  fv_ftyp_in_fexp e1 [<=] fv_ftyp_in_fexp (subst_exp_in_fexp e2 x1 e1)).
+  ftvar_in_fexp e1 [<=] ftvar_in_fexp (subst_fexp_in_fexp e2 x1 e1)).
 Proof.
 apply_mutual_ind fexp_mutind;
 default_simp; fsetdec.
@@ -4386,20 +4386,20 @@ Qed.
 
 (* end hide *)
 
-Lemma fv_ftyp_in_fexp_subst_exp_in_fexp_lower :
+Lemma ftvar_in_fexp_subst_fexp_in_fexp_lower :
 forall e1 e2 x1,
-  fv_ftyp_in_fexp e1 [<=] fv_ftyp_in_fexp (subst_exp_in_fexp e2 x1 e1).
+  ftvar_in_fexp e1 [<=] ftvar_in_fexp (subst_fexp_in_fexp e2 x1 e1).
 Proof.
-pose proof fv_ftyp_in_fexp_subst_exp_in_fexp_lower_mutual as H; intuition eauto.
+pose proof ftvar_in_fexp_subst_fexp_in_fexp_lower_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve fv_ftyp_in_fexp_subst_exp_in_fexp_lower : lngen.
+#[export] Hint Resolve ftvar_in_fexp_subst_fexp_in_fexp_lower : lngen.
 
 (* begin hide *)
 
-Lemma fv_fexp_in_fexp_subst_typ_in_fexp_lower_mutual :
+Lemma fvar_in_fexp_subst_ftyp_in_fexp_lower_mutual :
 (forall e1 A1 X1,
-  fv_fexp_in_fexp e1 [<=] fv_fexp_in_fexp (subst_typ_in_fexp A1 X1 e1)).
+  fvar_in_fexp e1 [<=] fvar_in_fexp (subst_ftyp_in_fexp A1 X1 e1)).
 Proof.
 apply_mutual_ind fexp_mutind;
 default_simp; fsetdec.
@@ -4407,20 +4407,20 @@ Qed.
 
 (* end hide *)
 
-Lemma fv_fexp_in_fexp_subst_typ_in_fexp_lower :
+Lemma fvar_in_fexp_subst_ftyp_in_fexp_lower :
 forall e1 A1 X1,
-  fv_fexp_in_fexp e1 [<=] fv_fexp_in_fexp (subst_typ_in_fexp A1 X1 e1).
+  fvar_in_fexp e1 [<=] fvar_in_fexp (subst_ftyp_in_fexp A1 X1 e1).
 Proof.
-pose proof fv_fexp_in_fexp_subst_typ_in_fexp_lower_mutual as H; intuition eauto.
+pose proof fvar_in_fexp_subst_ftyp_in_fexp_lower_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve fv_fexp_in_fexp_subst_typ_in_fexp_lower : lngen.
+#[export] Hint Resolve fvar_in_fexp_subst_ftyp_in_fexp_lower : lngen.
 
 (* begin hide *)
 
-Lemma fv_fexp_in_fexp_subst_exp_in_fexp_lower_mutual :
+Lemma fvar_in_fexp_subst_fexp_in_fexp_lower_mutual :
 (forall e1 e2 x1,
-  remove x1 (fv_fexp_in_fexp e1) [<=] fv_fexp_in_fexp (subst_exp_in_fexp e2 x1 e1)).
+  remove x1 (fvar_in_fexp e1) [<=] fvar_in_fexp (subst_fexp_in_fexp e2 x1 e1)).
 Proof.
 apply_mutual_ind fexp_mutind;
 default_simp; fsetdec.
@@ -4428,20 +4428,20 @@ Qed.
 
 (* end hide *)
 
-Lemma fv_fexp_in_fexp_subst_exp_in_fexp_lower :
+Lemma fvar_in_fexp_subst_fexp_in_fexp_lower :
 forall e1 e2 x1,
-  remove x1 (fv_fexp_in_fexp e1) [<=] fv_fexp_in_fexp (subst_exp_in_fexp e2 x1 e1).
+  remove x1 (fvar_in_fexp e1) [<=] fvar_in_fexp (subst_fexp_in_fexp e2 x1 e1).
 Proof.
-pose proof fv_fexp_in_fexp_subst_exp_in_fexp_lower_mutual as H; intuition eauto.
+pose proof fvar_in_fexp_subst_fexp_in_fexp_lower_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve fv_fexp_in_fexp_subst_exp_in_fexp_lower : lngen.
+#[export] Hint Resolve fvar_in_fexp_subst_fexp_in_fexp_lower : lngen.
 
 (* begin hide *)
 
-Lemma fv_ftyp_in_fbind_subst_typ_in_fbind_lower_mutual :
+Lemma ftvar_in_fbind_subst_ftyp_in_fbind_lower_mutual :
 (forall fb1 A1 X1,
-  remove X1 (fv_ftyp_in_fbind fb1) [<=] fv_ftyp_in_fbind (subst_typ_in_fbind A1 X1 fb1)).
+  remove X1 (ftvar_in_fbind fb1) [<=] ftvar_in_fbind (subst_ftyp_in_fbind A1 X1 fb1)).
 Proof.
 apply_mutual_ind fbind_mutind;
 default_simp; fsetdec.
@@ -4449,22 +4449,22 @@ Qed.
 
 (* end hide *)
 
-Lemma fv_ftyp_in_fbind_subst_typ_in_fbind_lower :
+Lemma ftvar_in_fbind_subst_ftyp_in_fbind_lower :
 forall fb1 A1 X1,
-  remove X1 (fv_ftyp_in_fbind fb1) [<=] fv_ftyp_in_fbind (subst_typ_in_fbind A1 X1 fb1).
+  remove X1 (ftvar_in_fbind fb1) [<=] ftvar_in_fbind (subst_ftyp_in_fbind A1 X1 fb1).
 Proof.
-pose proof fv_ftyp_in_fbind_subst_typ_in_fbind_lower_mutual as H; intuition eauto.
+pose proof ftvar_in_fbind_subst_ftyp_in_fbind_lower_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve fv_ftyp_in_fbind_subst_typ_in_fbind_lower : lngen.
+#[export] Hint Resolve ftvar_in_fbind_subst_ftyp_in_fbind_lower : lngen.
 
 (* begin hide *)
 
-Lemma fv_ftyp_in_ftyp_subst_typ_in_ftyp_notin_mutual :
+Lemma ftvar_in_ftyp_subst_ftyp_in_ftyp_notin_mutual :
 (forall A1 A2 X1 X2,
-  X2 `notin` fv_ftyp_in_ftyp A1 ->
-  X2 `notin` fv_ftyp_in_ftyp A2 ->
-  X2 `notin` fv_ftyp_in_ftyp (subst_typ_in_ftyp A2 X1 A1)).
+  X2 `notin` ftvar_in_ftyp A1 ->
+  X2 `notin` ftvar_in_ftyp A2 ->
+  X2 `notin` ftvar_in_ftyp (subst_ftyp_in_ftyp A2 X1 A1)).
 Proof.
 apply_mutual_ind ftyp_mutind;
 default_simp; fsetdec.
@@ -4472,24 +4472,24 @@ Qed.
 
 (* end hide *)
 
-Lemma fv_ftyp_in_ftyp_subst_typ_in_ftyp_notin :
+Lemma ftvar_in_ftyp_subst_ftyp_in_ftyp_notin :
 forall A1 A2 X1 X2,
-  X2 `notin` fv_ftyp_in_ftyp A1 ->
-  X2 `notin` fv_ftyp_in_ftyp A2 ->
-  X2 `notin` fv_ftyp_in_ftyp (subst_typ_in_ftyp A2 X1 A1).
+  X2 `notin` ftvar_in_ftyp A1 ->
+  X2 `notin` ftvar_in_ftyp A2 ->
+  X2 `notin` ftvar_in_ftyp (subst_ftyp_in_ftyp A2 X1 A1).
 Proof.
-pose proof fv_ftyp_in_ftyp_subst_typ_in_ftyp_notin_mutual as H; intuition eauto.
+pose proof ftvar_in_ftyp_subst_ftyp_in_ftyp_notin_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve fv_ftyp_in_ftyp_subst_typ_in_ftyp_notin : lngen.
+#[export] Hint Resolve ftvar_in_ftyp_subst_ftyp_in_ftyp_notin : lngen.
 
 (* begin hide *)
 
-Lemma fv_ftyp_in_fexp_subst_typ_in_fexp_notin_mutual :
+Lemma ftvar_in_fexp_subst_ftyp_in_fexp_notin_mutual :
 (forall e1 A1 X1 X2,
-  X2 `notin` fv_ftyp_in_fexp e1 ->
-  X2 `notin` fv_ftyp_in_ftyp A1 ->
-  X2 `notin` fv_ftyp_in_fexp (subst_typ_in_fexp A1 X1 e1)).
+  X2 `notin` ftvar_in_fexp e1 ->
+  X2 `notin` ftvar_in_ftyp A1 ->
+  X2 `notin` ftvar_in_fexp (subst_ftyp_in_fexp A1 X1 e1)).
 Proof.
 apply_mutual_ind fexp_mutind;
 default_simp; fsetdec.
@@ -4497,24 +4497,24 @@ Qed.
 
 (* end hide *)
 
-Lemma fv_ftyp_in_fexp_subst_typ_in_fexp_notin :
+Lemma ftvar_in_fexp_subst_ftyp_in_fexp_notin :
 forall e1 A1 X1 X2,
-  X2 `notin` fv_ftyp_in_fexp e1 ->
-  X2 `notin` fv_ftyp_in_ftyp A1 ->
-  X2 `notin` fv_ftyp_in_fexp (subst_typ_in_fexp A1 X1 e1).
+  X2 `notin` ftvar_in_fexp e1 ->
+  X2 `notin` ftvar_in_ftyp A1 ->
+  X2 `notin` ftvar_in_fexp (subst_ftyp_in_fexp A1 X1 e1).
 Proof.
-pose proof fv_ftyp_in_fexp_subst_typ_in_fexp_notin_mutual as H; intuition eauto.
+pose proof ftvar_in_fexp_subst_ftyp_in_fexp_notin_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve fv_ftyp_in_fexp_subst_typ_in_fexp_notin : lngen.
+#[export] Hint Resolve ftvar_in_fexp_subst_ftyp_in_fexp_notin : lngen.
 
 (* begin hide *)
 
-Lemma fv_ftyp_in_fexp_subst_exp_in_fexp_notin_mutual :
+Lemma ftvar_in_fexp_subst_fexp_in_fexp_notin_mutual :
 (forall e1 e2 x1 X1,
-  X1 `notin` fv_ftyp_in_fexp e1 ->
-  X1 `notin` fv_ftyp_in_fexp e2 ->
-  X1 `notin` fv_ftyp_in_fexp (subst_exp_in_fexp e2 x1 e1)).
+  X1 `notin` ftvar_in_fexp e1 ->
+  X1 `notin` ftvar_in_fexp e2 ->
+  X1 `notin` ftvar_in_fexp (subst_fexp_in_fexp e2 x1 e1)).
 Proof.
 apply_mutual_ind fexp_mutind;
 default_simp; fsetdec.
@@ -4522,23 +4522,23 @@ Qed.
 
 (* end hide *)
 
-Lemma fv_ftyp_in_fexp_subst_exp_in_fexp_notin :
+Lemma ftvar_in_fexp_subst_fexp_in_fexp_notin :
 forall e1 e2 x1 X1,
-  X1 `notin` fv_ftyp_in_fexp e1 ->
-  X1 `notin` fv_ftyp_in_fexp e2 ->
-  X1 `notin` fv_ftyp_in_fexp (subst_exp_in_fexp e2 x1 e1).
+  X1 `notin` ftvar_in_fexp e1 ->
+  X1 `notin` ftvar_in_fexp e2 ->
+  X1 `notin` ftvar_in_fexp (subst_fexp_in_fexp e2 x1 e1).
 Proof.
-pose proof fv_ftyp_in_fexp_subst_exp_in_fexp_notin_mutual as H; intuition eauto.
+pose proof ftvar_in_fexp_subst_fexp_in_fexp_notin_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve fv_ftyp_in_fexp_subst_exp_in_fexp_notin : lngen.
+#[export] Hint Resolve ftvar_in_fexp_subst_fexp_in_fexp_notin : lngen.
 
 (* begin hide *)
 
-Lemma fv_fexp_in_fexp_subst_typ_in_fexp_notin_mutual :
+Lemma fvar_in_fexp_subst_ftyp_in_fexp_notin_mutual :
 (forall e1 A1 X1 x1,
-  x1 `notin` fv_fexp_in_fexp e1 ->
-  x1 `notin` fv_fexp_in_fexp (subst_typ_in_fexp A1 X1 e1)).
+  x1 `notin` fvar_in_fexp e1 ->
+  x1 `notin` fvar_in_fexp (subst_ftyp_in_fexp A1 X1 e1)).
 Proof.
 apply_mutual_ind fexp_mutind;
 default_simp; fsetdec.
@@ -4546,23 +4546,23 @@ Qed.
 
 (* end hide *)
 
-Lemma fv_fexp_in_fexp_subst_typ_in_fexp_notin :
+Lemma fvar_in_fexp_subst_ftyp_in_fexp_notin :
 forall e1 A1 X1 x1,
-  x1 `notin` fv_fexp_in_fexp e1 ->
-  x1 `notin` fv_fexp_in_fexp (subst_typ_in_fexp A1 X1 e1).
+  x1 `notin` fvar_in_fexp e1 ->
+  x1 `notin` fvar_in_fexp (subst_ftyp_in_fexp A1 X1 e1).
 Proof.
-pose proof fv_fexp_in_fexp_subst_typ_in_fexp_notin_mutual as H; intuition eauto.
+pose proof fvar_in_fexp_subst_ftyp_in_fexp_notin_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve fv_fexp_in_fexp_subst_typ_in_fexp_notin : lngen.
+#[export] Hint Resolve fvar_in_fexp_subst_ftyp_in_fexp_notin : lngen.
 
 (* begin hide *)
 
-Lemma fv_fexp_in_fexp_subst_exp_in_fexp_notin_mutual :
+Lemma fvar_in_fexp_subst_fexp_in_fexp_notin_mutual :
 (forall e1 e2 x1 x2,
-  x2 `notin` fv_fexp_in_fexp e1 ->
-  x2 `notin` fv_fexp_in_fexp e2 ->
-  x2 `notin` fv_fexp_in_fexp (subst_exp_in_fexp e2 x1 e1)).
+  x2 `notin` fvar_in_fexp e1 ->
+  x2 `notin` fvar_in_fexp e2 ->
+  x2 `notin` fvar_in_fexp (subst_fexp_in_fexp e2 x1 e1)).
 Proof.
 apply_mutual_ind fexp_mutind;
 default_simp; fsetdec.
@@ -4570,24 +4570,24 @@ Qed.
 
 (* end hide *)
 
-Lemma fv_fexp_in_fexp_subst_exp_in_fexp_notin :
+Lemma fvar_in_fexp_subst_fexp_in_fexp_notin :
 forall e1 e2 x1 x2,
-  x2 `notin` fv_fexp_in_fexp e1 ->
-  x2 `notin` fv_fexp_in_fexp e2 ->
-  x2 `notin` fv_fexp_in_fexp (subst_exp_in_fexp e2 x1 e1).
+  x2 `notin` fvar_in_fexp e1 ->
+  x2 `notin` fvar_in_fexp e2 ->
+  x2 `notin` fvar_in_fexp (subst_fexp_in_fexp e2 x1 e1).
 Proof.
-pose proof fv_fexp_in_fexp_subst_exp_in_fexp_notin_mutual as H; intuition eauto.
+pose proof fvar_in_fexp_subst_fexp_in_fexp_notin_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve fv_fexp_in_fexp_subst_exp_in_fexp_notin : lngen.
+#[export] Hint Resolve fvar_in_fexp_subst_fexp_in_fexp_notin : lngen.
 
 (* begin hide *)
 
-Lemma fv_ftyp_in_fbind_subst_typ_in_fbind_notin_mutual :
+Lemma ftvar_in_fbind_subst_ftyp_in_fbind_notin_mutual :
 (forall fb1 A1 X1 X2,
-  X2 `notin` fv_ftyp_in_fbind fb1 ->
-  X2 `notin` fv_ftyp_in_ftyp A1 ->
-  X2 `notin` fv_ftyp_in_fbind (subst_typ_in_fbind A1 X1 fb1)).
+  X2 `notin` ftvar_in_fbind fb1 ->
+  X2 `notin` ftvar_in_ftyp A1 ->
+  X2 `notin` ftvar_in_fbind (subst_ftyp_in_fbind A1 X1 fb1)).
 Proof.
 apply_mutual_ind fbind_mutind;
 default_simp; fsetdec.
@@ -4595,22 +4595,22 @@ Qed.
 
 (* end hide *)
 
-Lemma fv_ftyp_in_fbind_subst_typ_in_fbind_notin :
+Lemma ftvar_in_fbind_subst_ftyp_in_fbind_notin :
 forall fb1 A1 X1 X2,
-  X2 `notin` fv_ftyp_in_fbind fb1 ->
-  X2 `notin` fv_ftyp_in_ftyp A1 ->
-  X2 `notin` fv_ftyp_in_fbind (subst_typ_in_fbind A1 X1 fb1).
+  X2 `notin` ftvar_in_fbind fb1 ->
+  X2 `notin` ftvar_in_ftyp A1 ->
+  X2 `notin` ftvar_in_fbind (subst_ftyp_in_fbind A1 X1 fb1).
 Proof.
-pose proof fv_ftyp_in_fbind_subst_typ_in_fbind_notin_mutual as H; intuition eauto.
+pose proof ftvar_in_fbind_subst_ftyp_in_fbind_notin_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve fv_ftyp_in_fbind_subst_typ_in_fbind_notin : lngen.
+#[export] Hint Resolve ftvar_in_fbind_subst_ftyp_in_fbind_notin : lngen.
 
 (* begin hide *)
 
-Lemma fv_ftyp_in_ftyp_subst_typ_in_ftyp_upper_mutual :
+Lemma ftvar_in_ftyp_subst_ftyp_in_ftyp_upper_mutual :
 (forall A1 A2 X1,
-  fv_ftyp_in_ftyp (subst_typ_in_ftyp A2 X1 A1) [<=] fv_ftyp_in_ftyp A2 `union` remove X1 (fv_ftyp_in_ftyp A1)).
+  ftvar_in_ftyp (subst_ftyp_in_ftyp A2 X1 A1) [<=] ftvar_in_ftyp A2 `union` remove X1 (ftvar_in_ftyp A1)).
 Proof.
 apply_mutual_ind ftyp_mutind;
 default_simp; fsetdec.
@@ -4618,20 +4618,20 @@ Qed.
 
 (* end hide *)
 
-Lemma fv_ftyp_in_ftyp_subst_typ_in_ftyp_upper :
+Lemma ftvar_in_ftyp_subst_ftyp_in_ftyp_upper :
 forall A1 A2 X1,
-  fv_ftyp_in_ftyp (subst_typ_in_ftyp A2 X1 A1) [<=] fv_ftyp_in_ftyp A2 `union` remove X1 (fv_ftyp_in_ftyp A1).
+  ftvar_in_ftyp (subst_ftyp_in_ftyp A2 X1 A1) [<=] ftvar_in_ftyp A2 `union` remove X1 (ftvar_in_ftyp A1).
 Proof.
-pose proof fv_ftyp_in_ftyp_subst_typ_in_ftyp_upper_mutual as H; intuition eauto.
+pose proof ftvar_in_ftyp_subst_ftyp_in_ftyp_upper_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve fv_ftyp_in_ftyp_subst_typ_in_ftyp_upper : lngen.
+#[export] Hint Resolve ftvar_in_ftyp_subst_ftyp_in_ftyp_upper : lngen.
 
 (* begin hide *)
 
-Lemma fv_ftyp_in_fexp_subst_typ_in_fexp_upper_mutual :
+Lemma ftvar_in_fexp_subst_ftyp_in_fexp_upper_mutual :
 (forall e1 A1 X1,
-  fv_ftyp_in_fexp (subst_typ_in_fexp A1 X1 e1) [<=] fv_ftyp_in_ftyp A1 `union` remove X1 (fv_ftyp_in_fexp e1)).
+  ftvar_in_fexp (subst_ftyp_in_fexp A1 X1 e1) [<=] ftvar_in_ftyp A1 `union` remove X1 (ftvar_in_fexp e1)).
 Proof.
 apply_mutual_ind fexp_mutind;
 default_simp; fsetdec.
@@ -4639,20 +4639,20 @@ Qed.
 
 (* end hide *)
 
-Lemma fv_ftyp_in_fexp_subst_typ_in_fexp_upper :
+Lemma ftvar_in_fexp_subst_ftyp_in_fexp_upper :
 forall e1 A1 X1,
-  fv_ftyp_in_fexp (subst_typ_in_fexp A1 X1 e1) [<=] fv_ftyp_in_ftyp A1 `union` remove X1 (fv_ftyp_in_fexp e1).
+  ftvar_in_fexp (subst_ftyp_in_fexp A1 X1 e1) [<=] ftvar_in_ftyp A1 `union` remove X1 (ftvar_in_fexp e1).
 Proof.
-pose proof fv_ftyp_in_fexp_subst_typ_in_fexp_upper_mutual as H; intuition eauto.
+pose proof ftvar_in_fexp_subst_ftyp_in_fexp_upper_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve fv_ftyp_in_fexp_subst_typ_in_fexp_upper : lngen.
+#[export] Hint Resolve ftvar_in_fexp_subst_ftyp_in_fexp_upper : lngen.
 
 (* begin hide *)
 
-Lemma fv_ftyp_in_fexp_subst_exp_in_fexp_upper_mutual :
+Lemma ftvar_in_fexp_subst_fexp_in_fexp_upper_mutual :
 (forall e1 e2 x1,
-  fv_ftyp_in_fexp (subst_exp_in_fexp e2 x1 e1) [<=] fv_ftyp_in_fexp e2 `union` fv_ftyp_in_fexp e1).
+  ftvar_in_fexp (subst_fexp_in_fexp e2 x1 e1) [<=] ftvar_in_fexp e2 `union` ftvar_in_fexp e1).
 Proof.
 apply_mutual_ind fexp_mutind;
 default_simp; fsetdec.
@@ -4660,20 +4660,20 @@ Qed.
 
 (* end hide *)
 
-Lemma fv_ftyp_in_fexp_subst_exp_in_fexp_upper :
+Lemma ftvar_in_fexp_subst_fexp_in_fexp_upper :
 forall e1 e2 x1,
-  fv_ftyp_in_fexp (subst_exp_in_fexp e2 x1 e1) [<=] fv_ftyp_in_fexp e2 `union` fv_ftyp_in_fexp e1.
+  ftvar_in_fexp (subst_fexp_in_fexp e2 x1 e1) [<=] ftvar_in_fexp e2 `union` ftvar_in_fexp e1.
 Proof.
-pose proof fv_ftyp_in_fexp_subst_exp_in_fexp_upper_mutual as H; intuition eauto.
+pose proof ftvar_in_fexp_subst_fexp_in_fexp_upper_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve fv_ftyp_in_fexp_subst_exp_in_fexp_upper : lngen.
+#[export] Hint Resolve ftvar_in_fexp_subst_fexp_in_fexp_upper : lngen.
 
 (* begin hide *)
 
-Lemma fv_fexp_in_fexp_subst_typ_in_fexp_upper_mutual :
+Lemma fvar_in_fexp_subst_ftyp_in_fexp_upper_mutual :
 (forall e1 A1 X1,
-  fv_fexp_in_fexp (subst_typ_in_fexp A1 X1 e1) [<=] fv_fexp_in_fexp e1).
+  fvar_in_fexp (subst_ftyp_in_fexp A1 X1 e1) [<=] fvar_in_fexp e1).
 Proof.
 apply_mutual_ind fexp_mutind;
 default_simp; fsetdec.
@@ -4681,20 +4681,20 @@ Qed.
 
 (* end hide *)
 
-Lemma fv_fexp_in_fexp_subst_typ_in_fexp_upper :
+Lemma fvar_in_fexp_subst_ftyp_in_fexp_upper :
 forall e1 A1 X1,
-  fv_fexp_in_fexp (subst_typ_in_fexp A1 X1 e1) [<=] fv_fexp_in_fexp e1.
+  fvar_in_fexp (subst_ftyp_in_fexp A1 X1 e1) [<=] fvar_in_fexp e1.
 Proof.
-pose proof fv_fexp_in_fexp_subst_typ_in_fexp_upper_mutual as H; intuition eauto.
+pose proof fvar_in_fexp_subst_ftyp_in_fexp_upper_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve fv_fexp_in_fexp_subst_typ_in_fexp_upper : lngen.
+#[export] Hint Resolve fvar_in_fexp_subst_ftyp_in_fexp_upper : lngen.
 
 (* begin hide *)
 
-Lemma fv_fexp_in_fexp_subst_exp_in_fexp_upper_mutual :
+Lemma fvar_in_fexp_subst_fexp_in_fexp_upper_mutual :
 (forall e1 e2 x1,
-  fv_fexp_in_fexp (subst_exp_in_fexp e2 x1 e1) [<=] fv_fexp_in_fexp e2 `union` remove x1 (fv_fexp_in_fexp e1)).
+  fvar_in_fexp (subst_fexp_in_fexp e2 x1 e1) [<=] fvar_in_fexp e2 `union` remove x1 (fvar_in_fexp e1)).
 Proof.
 apply_mutual_ind fexp_mutind;
 default_simp; fsetdec.
@@ -4702,20 +4702,20 @@ Qed.
 
 (* end hide *)
 
-Lemma fv_fexp_in_fexp_subst_exp_in_fexp_upper :
+Lemma fvar_in_fexp_subst_fexp_in_fexp_upper :
 forall e1 e2 x1,
-  fv_fexp_in_fexp (subst_exp_in_fexp e2 x1 e1) [<=] fv_fexp_in_fexp e2 `union` remove x1 (fv_fexp_in_fexp e1).
+  fvar_in_fexp (subst_fexp_in_fexp e2 x1 e1) [<=] fvar_in_fexp e2 `union` remove x1 (fvar_in_fexp e1).
 Proof.
-pose proof fv_fexp_in_fexp_subst_exp_in_fexp_upper_mutual as H; intuition eauto.
+pose proof fvar_in_fexp_subst_fexp_in_fexp_upper_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve fv_fexp_in_fexp_subst_exp_in_fexp_upper : lngen.
+#[export] Hint Resolve fvar_in_fexp_subst_fexp_in_fexp_upper : lngen.
 
 (* begin hide *)
 
-Lemma fv_ftyp_in_fbind_subst_typ_in_fbind_upper_mutual :
+Lemma ftvar_in_fbind_subst_ftyp_in_fbind_upper_mutual :
 (forall fb1 A1 X1,
-  fv_ftyp_in_fbind (subst_typ_in_fbind A1 X1 fb1) [<=] fv_ftyp_in_ftyp A1 `union` remove X1 (fv_ftyp_in_fbind fb1)).
+  ftvar_in_fbind (subst_ftyp_in_fbind A1 X1 fb1) [<=] ftvar_in_ftyp A1 `union` remove X1 (ftvar_in_fbind fb1)).
 Proof.
 apply_mutual_ind fbind_mutind;
 default_simp; fsetdec.
@@ -4723,14 +4723,14 @@ Qed.
 
 (* end hide *)
 
-Lemma fv_ftyp_in_fbind_subst_typ_in_fbind_upper :
+Lemma ftvar_in_fbind_subst_ftyp_in_fbind_upper :
 forall fb1 A1 X1,
-  fv_ftyp_in_fbind (subst_typ_in_fbind A1 X1 fb1) [<=] fv_ftyp_in_ftyp A1 `union` remove X1 (fv_ftyp_in_fbind fb1).
+  ftvar_in_fbind (subst_ftyp_in_fbind A1 X1 fb1) [<=] ftvar_in_ftyp A1 `union` remove X1 (ftvar_in_fbind fb1).
 Proof.
-pose proof fv_ftyp_in_fbind_subst_typ_in_fbind_upper_mutual as H; intuition eauto.
+pose proof ftvar_in_fbind_subst_ftyp_in_fbind_upper_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve fv_ftyp_in_fbind_subst_typ_in_fbind_upper : lngen.
+#[export] Hint Resolve ftvar_in_fbind_subst_ftyp_in_fbind_upper : lngen.
 
 
 (* *********************************************************************** *)
@@ -4741,12 +4741,12 @@ Ltac default_autorewrite ::= autorewrite with lngen.
 
 (* begin hide *)
 
-Lemma subst_typ_in_ftyp_close_ftyp_wrt_ftyp_rec_mutual :
+Lemma subst_ftyp_in_ftyp_close_ftyp_wrt_ftyp_rec_mutual :
 (forall A2 A1 X1 X2 n1,
   degree_ftyp_wrt_ftyp n1 A1 ->
   X1 <> X2 ->
-  X2 `notin` fv_ftyp_in_ftyp A1 ->
-  subst_typ_in_ftyp A1 X1 (close_ftyp_wrt_ftyp_rec n1 X2 A2) = close_ftyp_wrt_ftyp_rec n1 X2 (subst_typ_in_ftyp A1 X1 A2)).
+  X2 `notin` ftvar_in_ftyp A1 ->
+  subst_ftyp_in_ftyp A1 X1 (close_ftyp_wrt_ftyp_rec n1 X2 A2) = close_ftyp_wrt_ftyp_rec n1 X2 (subst_ftyp_in_ftyp A1 X1 A2)).
 Proof.
 apply_mutual_ind ftyp_mutind;
 default_simp.
@@ -4754,26 +4754,26 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_typ_in_ftyp_close_ftyp_wrt_ftyp_rec :
+Lemma subst_ftyp_in_ftyp_close_ftyp_wrt_ftyp_rec :
 forall A2 A1 X1 X2 n1,
   degree_ftyp_wrt_ftyp n1 A1 ->
   X1 <> X2 ->
-  X2 `notin` fv_ftyp_in_ftyp A1 ->
-  subst_typ_in_ftyp A1 X1 (close_ftyp_wrt_ftyp_rec n1 X2 A2) = close_ftyp_wrt_ftyp_rec n1 X2 (subst_typ_in_ftyp A1 X1 A2).
+  X2 `notin` ftvar_in_ftyp A1 ->
+  subst_ftyp_in_ftyp A1 X1 (close_ftyp_wrt_ftyp_rec n1 X2 A2) = close_ftyp_wrt_ftyp_rec n1 X2 (subst_ftyp_in_ftyp A1 X1 A2).
 Proof.
-pose proof subst_typ_in_ftyp_close_ftyp_wrt_ftyp_rec_mutual as H; intuition eauto.
+pose proof subst_ftyp_in_ftyp_close_ftyp_wrt_ftyp_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_typ_in_ftyp_close_ftyp_wrt_ftyp_rec : lngen.
+#[export] Hint Resolve subst_ftyp_in_ftyp_close_ftyp_wrt_ftyp_rec : lngen.
 
 (* begin hide *)
 
-Lemma subst_typ_in_fexp_close_fexp_wrt_ftyp_rec_mutual :
+Lemma subst_ftyp_in_fexp_close_fexp_wrt_ftyp_rec_mutual :
 (forall e1 A1 X1 X2 n1,
   degree_ftyp_wrt_ftyp n1 A1 ->
   X1 <> X2 ->
-  X2 `notin` fv_ftyp_in_ftyp A1 ->
-  subst_typ_in_fexp A1 X1 (close_fexp_wrt_ftyp_rec n1 X2 e1) = close_fexp_wrt_ftyp_rec n1 X2 (subst_typ_in_fexp A1 X1 e1)).
+  X2 `notin` ftvar_in_ftyp A1 ->
+  subst_ftyp_in_fexp A1 X1 (close_fexp_wrt_ftyp_rec n1 X2 e1) = close_fexp_wrt_ftyp_rec n1 X2 (subst_ftyp_in_fexp A1 X1 e1)).
 Proof.
 apply_mutual_ind fexp_mutind;
 default_simp.
@@ -4781,23 +4781,23 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_typ_in_fexp_close_fexp_wrt_ftyp_rec :
+Lemma subst_ftyp_in_fexp_close_fexp_wrt_ftyp_rec :
 forall e1 A1 X1 X2 n1,
   degree_ftyp_wrt_ftyp n1 A1 ->
   X1 <> X2 ->
-  X2 `notin` fv_ftyp_in_ftyp A1 ->
-  subst_typ_in_fexp A1 X1 (close_fexp_wrt_ftyp_rec n1 X2 e1) = close_fexp_wrt_ftyp_rec n1 X2 (subst_typ_in_fexp A1 X1 e1).
+  X2 `notin` ftvar_in_ftyp A1 ->
+  subst_ftyp_in_fexp A1 X1 (close_fexp_wrt_ftyp_rec n1 X2 e1) = close_fexp_wrt_ftyp_rec n1 X2 (subst_ftyp_in_fexp A1 X1 e1).
 Proof.
-pose proof subst_typ_in_fexp_close_fexp_wrt_ftyp_rec_mutual as H; intuition eauto.
+pose proof subst_ftyp_in_fexp_close_fexp_wrt_ftyp_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_typ_in_fexp_close_fexp_wrt_ftyp_rec : lngen.
+#[export] Hint Resolve subst_ftyp_in_fexp_close_fexp_wrt_ftyp_rec : lngen.
 
 (* begin hide *)
 
-Lemma subst_typ_in_fexp_close_fexp_wrt_fexp_rec_mutual :
+Lemma subst_ftyp_in_fexp_close_fexp_wrt_fexp_rec_mutual :
 (forall e1 A1 x1 X1 n1,
-  subst_typ_in_fexp A1 x1 (close_fexp_wrt_fexp_rec n1 X1 e1) = close_fexp_wrt_fexp_rec n1 X1 (subst_typ_in_fexp A1 x1 e1)).
+  subst_ftyp_in_fexp A1 x1 (close_fexp_wrt_fexp_rec n1 X1 e1) = close_fexp_wrt_fexp_rec n1 X1 (subst_ftyp_in_fexp A1 x1 e1)).
 Proof.
 apply_mutual_ind fexp_mutind;
 default_simp.
@@ -4805,22 +4805,22 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_typ_in_fexp_close_fexp_wrt_fexp_rec :
+Lemma subst_ftyp_in_fexp_close_fexp_wrt_fexp_rec :
 forall e1 A1 x1 X1 n1,
-  subst_typ_in_fexp A1 x1 (close_fexp_wrt_fexp_rec n1 X1 e1) = close_fexp_wrt_fexp_rec n1 X1 (subst_typ_in_fexp A1 x1 e1).
+  subst_ftyp_in_fexp A1 x1 (close_fexp_wrt_fexp_rec n1 X1 e1) = close_fexp_wrt_fexp_rec n1 X1 (subst_ftyp_in_fexp A1 x1 e1).
 Proof.
-pose proof subst_typ_in_fexp_close_fexp_wrt_fexp_rec_mutual as H; intuition eauto.
+pose proof subst_ftyp_in_fexp_close_fexp_wrt_fexp_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_typ_in_fexp_close_fexp_wrt_fexp_rec : lngen.
+#[export] Hint Resolve subst_ftyp_in_fexp_close_fexp_wrt_fexp_rec : lngen.
 
 (* begin hide *)
 
-Lemma subst_exp_in_fexp_close_fexp_wrt_ftyp_rec_mutual :
+Lemma subst_fexp_in_fexp_close_fexp_wrt_ftyp_rec_mutual :
 (forall e2 e1 X1 x1 n1,
   degree_fexp_wrt_ftyp n1 e1 ->
-  x1 `notin` fv_ftyp_in_fexp e1 ->
-  subst_exp_in_fexp e1 X1 (close_fexp_wrt_ftyp_rec n1 x1 e2) = close_fexp_wrt_ftyp_rec n1 x1 (subst_exp_in_fexp e1 X1 e2)).
+  x1 `notin` ftvar_in_fexp e1 ->
+  subst_fexp_in_fexp e1 X1 (close_fexp_wrt_ftyp_rec n1 x1 e2) = close_fexp_wrt_ftyp_rec n1 x1 (subst_fexp_in_fexp e1 X1 e2)).
 Proof.
 apply_mutual_ind fexp_mutind;
 default_simp.
@@ -4828,25 +4828,25 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_exp_in_fexp_close_fexp_wrt_ftyp_rec :
+Lemma subst_fexp_in_fexp_close_fexp_wrt_ftyp_rec :
 forall e2 e1 X1 x1 n1,
   degree_fexp_wrt_ftyp n1 e1 ->
-  x1 `notin` fv_ftyp_in_fexp e1 ->
-  subst_exp_in_fexp e1 X1 (close_fexp_wrt_ftyp_rec n1 x1 e2) = close_fexp_wrt_ftyp_rec n1 x1 (subst_exp_in_fexp e1 X1 e2).
+  x1 `notin` ftvar_in_fexp e1 ->
+  subst_fexp_in_fexp e1 X1 (close_fexp_wrt_ftyp_rec n1 x1 e2) = close_fexp_wrt_ftyp_rec n1 x1 (subst_fexp_in_fexp e1 X1 e2).
 Proof.
-pose proof subst_exp_in_fexp_close_fexp_wrt_ftyp_rec_mutual as H; intuition eauto.
+pose proof subst_fexp_in_fexp_close_fexp_wrt_ftyp_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_exp_in_fexp_close_fexp_wrt_ftyp_rec : lngen.
+#[export] Hint Resolve subst_fexp_in_fexp_close_fexp_wrt_ftyp_rec : lngen.
 
 (* begin hide *)
 
-Lemma subst_exp_in_fexp_close_fexp_wrt_fexp_rec_mutual :
+Lemma subst_fexp_in_fexp_close_fexp_wrt_fexp_rec_mutual :
 (forall e2 e1 x1 x2 n1,
   degree_fexp_wrt_fexp n1 e1 ->
   x1 <> x2 ->
-  x2 `notin` fv_fexp_in_fexp e1 ->
-  subst_exp_in_fexp e1 x1 (close_fexp_wrt_fexp_rec n1 x2 e2) = close_fexp_wrt_fexp_rec n1 x2 (subst_exp_in_fexp e1 x1 e2)).
+  x2 `notin` fvar_in_fexp e1 ->
+  subst_fexp_in_fexp e1 x1 (close_fexp_wrt_fexp_rec n1 x2 e2) = close_fexp_wrt_fexp_rec n1 x2 (subst_fexp_in_fexp e1 x1 e2)).
 Proof.
 apply_mutual_ind fexp_mutind;
 default_simp.
@@ -4854,26 +4854,26 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_exp_in_fexp_close_fexp_wrt_fexp_rec :
+Lemma subst_fexp_in_fexp_close_fexp_wrt_fexp_rec :
 forall e2 e1 x1 x2 n1,
   degree_fexp_wrt_fexp n1 e1 ->
   x1 <> x2 ->
-  x2 `notin` fv_fexp_in_fexp e1 ->
-  subst_exp_in_fexp e1 x1 (close_fexp_wrt_fexp_rec n1 x2 e2) = close_fexp_wrt_fexp_rec n1 x2 (subst_exp_in_fexp e1 x1 e2).
+  x2 `notin` fvar_in_fexp e1 ->
+  subst_fexp_in_fexp e1 x1 (close_fexp_wrt_fexp_rec n1 x2 e2) = close_fexp_wrt_fexp_rec n1 x2 (subst_fexp_in_fexp e1 x1 e2).
 Proof.
-pose proof subst_exp_in_fexp_close_fexp_wrt_fexp_rec_mutual as H; intuition eauto.
+pose proof subst_fexp_in_fexp_close_fexp_wrt_fexp_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_exp_in_fexp_close_fexp_wrt_fexp_rec : lngen.
+#[export] Hint Resolve subst_fexp_in_fexp_close_fexp_wrt_fexp_rec : lngen.
 
 (* begin hide *)
 
-Lemma subst_typ_in_fbind_close_fbind_wrt_ftyp_rec_mutual :
+Lemma subst_ftyp_in_fbind_close_fbind_wrt_ftyp_rec_mutual :
 (forall fb1 A1 X1 X2 n1,
   degree_ftyp_wrt_ftyp n1 A1 ->
   X1 <> X2 ->
-  X2 `notin` fv_ftyp_in_ftyp A1 ->
-  subst_typ_in_fbind A1 X1 (close_fbind_wrt_ftyp_rec n1 X2 fb1) = close_fbind_wrt_ftyp_rec n1 X2 (subst_typ_in_fbind A1 X1 fb1)).
+  X2 `notin` ftvar_in_ftyp A1 ->
+  subst_ftyp_in_fbind A1 X1 (close_fbind_wrt_ftyp_rec n1 X2 fb1) = close_fbind_wrt_ftyp_rec n1 X2 (subst_ftyp_in_fbind A1 X1 fb1)).
 Proof.
 apply_mutual_ind fbind_mutind;
 default_simp.
@@ -4881,88 +4881,88 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_typ_in_fbind_close_fbind_wrt_ftyp_rec :
+Lemma subst_ftyp_in_fbind_close_fbind_wrt_ftyp_rec :
 forall fb1 A1 X1 X2 n1,
   degree_ftyp_wrt_ftyp n1 A1 ->
   X1 <> X2 ->
-  X2 `notin` fv_ftyp_in_ftyp A1 ->
-  subst_typ_in_fbind A1 X1 (close_fbind_wrt_ftyp_rec n1 X2 fb1) = close_fbind_wrt_ftyp_rec n1 X2 (subst_typ_in_fbind A1 X1 fb1).
+  X2 `notin` ftvar_in_ftyp A1 ->
+  subst_ftyp_in_fbind A1 X1 (close_fbind_wrt_ftyp_rec n1 X2 fb1) = close_fbind_wrt_ftyp_rec n1 X2 (subst_ftyp_in_fbind A1 X1 fb1).
 Proof.
-pose proof subst_typ_in_fbind_close_fbind_wrt_ftyp_rec_mutual as H; intuition eauto.
+pose proof subst_ftyp_in_fbind_close_fbind_wrt_ftyp_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_typ_in_fbind_close_fbind_wrt_ftyp_rec : lngen.
+#[export] Hint Resolve subst_ftyp_in_fbind_close_fbind_wrt_ftyp_rec : lngen.
 
-Lemma subst_typ_in_ftyp_close_ftyp_wrt_ftyp :
+Lemma subst_ftyp_in_ftyp_close_ftyp_wrt_ftyp :
 forall A2 A1 X1 X2,
   lc_ftyp A1 ->  X1 <> X2 ->
-  X2 `notin` fv_ftyp_in_ftyp A1 ->
-  subst_typ_in_ftyp A1 X1 (close_ftyp_wrt_ftyp X2 A2) = close_ftyp_wrt_ftyp X2 (subst_typ_in_ftyp A1 X1 A2).
+  X2 `notin` ftvar_in_ftyp A1 ->
+  subst_ftyp_in_ftyp A1 X1 (close_ftyp_wrt_ftyp X2 A2) = close_ftyp_wrt_ftyp X2 (subst_ftyp_in_ftyp A1 X1 A2).
 Proof.
 unfold close_ftyp_wrt_ftyp; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_typ_in_ftyp_close_ftyp_wrt_ftyp : lngen.
+#[export] Hint Resolve subst_ftyp_in_ftyp_close_ftyp_wrt_ftyp : lngen.
 
-Lemma subst_typ_in_fexp_close_fexp_wrt_ftyp :
+Lemma subst_ftyp_in_fexp_close_fexp_wrt_ftyp :
 forall e1 A1 X1 X2,
   lc_ftyp A1 ->  X1 <> X2 ->
-  X2 `notin` fv_ftyp_in_ftyp A1 ->
-  subst_typ_in_fexp A1 X1 (close_fexp_wrt_ftyp X2 e1) = close_fexp_wrt_ftyp X2 (subst_typ_in_fexp A1 X1 e1).
+  X2 `notin` ftvar_in_ftyp A1 ->
+  subst_ftyp_in_fexp A1 X1 (close_fexp_wrt_ftyp X2 e1) = close_fexp_wrt_ftyp X2 (subst_ftyp_in_fexp A1 X1 e1).
 Proof.
 unfold close_fexp_wrt_ftyp; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_typ_in_fexp_close_fexp_wrt_ftyp : lngen.
+#[export] Hint Resolve subst_ftyp_in_fexp_close_fexp_wrt_ftyp : lngen.
 
-Lemma subst_typ_in_fexp_close_fexp_wrt_fexp :
+Lemma subst_ftyp_in_fexp_close_fexp_wrt_fexp :
 forall e1 A1 x1 X1,
-  lc_ftyp A1 ->  subst_typ_in_fexp A1 x1 (close_fexp_wrt_fexp X1 e1) = close_fexp_wrt_fexp X1 (subst_typ_in_fexp A1 x1 e1).
+  lc_ftyp A1 ->  subst_ftyp_in_fexp A1 x1 (close_fexp_wrt_fexp X1 e1) = close_fexp_wrt_fexp X1 (subst_ftyp_in_fexp A1 x1 e1).
 Proof.
 unfold close_fexp_wrt_fexp; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_typ_in_fexp_close_fexp_wrt_fexp : lngen.
+#[export] Hint Resolve subst_ftyp_in_fexp_close_fexp_wrt_fexp : lngen.
 
-Lemma subst_exp_in_fexp_close_fexp_wrt_ftyp :
+Lemma subst_fexp_in_fexp_close_fexp_wrt_ftyp :
 forall e2 e1 X1 x1,
-  lc_fexp e1 ->  x1 `notin` fv_ftyp_in_fexp e1 ->
-  subst_exp_in_fexp e1 X1 (close_fexp_wrt_ftyp x1 e2) = close_fexp_wrt_ftyp x1 (subst_exp_in_fexp e1 X1 e2).
+  lc_fexp e1 ->  x1 `notin` ftvar_in_fexp e1 ->
+  subst_fexp_in_fexp e1 X1 (close_fexp_wrt_ftyp x1 e2) = close_fexp_wrt_ftyp x1 (subst_fexp_in_fexp e1 X1 e2).
 Proof.
 unfold close_fexp_wrt_ftyp; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_exp_in_fexp_close_fexp_wrt_ftyp : lngen.
+#[export] Hint Resolve subst_fexp_in_fexp_close_fexp_wrt_ftyp : lngen.
 
-Lemma subst_exp_in_fexp_close_fexp_wrt_fexp :
+Lemma subst_fexp_in_fexp_close_fexp_wrt_fexp :
 forall e2 e1 x1 x2,
   lc_fexp e1 ->  x1 <> x2 ->
-  x2 `notin` fv_fexp_in_fexp e1 ->
-  subst_exp_in_fexp e1 x1 (close_fexp_wrt_fexp x2 e2) = close_fexp_wrt_fexp x2 (subst_exp_in_fexp e1 x1 e2).
+  x2 `notin` fvar_in_fexp e1 ->
+  subst_fexp_in_fexp e1 x1 (close_fexp_wrt_fexp x2 e2) = close_fexp_wrt_fexp x2 (subst_fexp_in_fexp e1 x1 e2).
 Proof.
 unfold close_fexp_wrt_fexp; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_exp_in_fexp_close_fexp_wrt_fexp : lngen.
+#[export] Hint Resolve subst_fexp_in_fexp_close_fexp_wrt_fexp : lngen.
 
-Lemma subst_typ_in_fbind_close_fbind_wrt_ftyp :
+Lemma subst_ftyp_in_fbind_close_fbind_wrt_ftyp :
 forall fb1 A1 X1 X2,
   lc_ftyp A1 ->  X1 <> X2 ->
-  X2 `notin` fv_ftyp_in_ftyp A1 ->
-  subst_typ_in_fbind A1 X1 (close_fbind_wrt_ftyp X2 fb1) = close_fbind_wrt_ftyp X2 (subst_typ_in_fbind A1 X1 fb1).
+  X2 `notin` ftvar_in_ftyp A1 ->
+  subst_ftyp_in_fbind A1 X1 (close_fbind_wrt_ftyp X2 fb1) = close_fbind_wrt_ftyp X2 (subst_ftyp_in_fbind A1 X1 fb1).
 Proof.
 unfold close_fbind_wrt_ftyp; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_typ_in_fbind_close_fbind_wrt_ftyp : lngen.
+#[export] Hint Resolve subst_ftyp_in_fbind_close_fbind_wrt_ftyp : lngen.
 
 (* begin hide *)
 
-Lemma subst_typ_in_ftyp_degree_ftyp_wrt_ftyp_mutual :
+Lemma subst_ftyp_in_ftyp_degree_ftyp_wrt_ftyp_mutual :
 (forall A1 A2 X1 n1,
   degree_ftyp_wrt_ftyp n1 A1 ->
   degree_ftyp_wrt_ftyp n1 A2 ->
-  degree_ftyp_wrt_ftyp n1 (subst_typ_in_ftyp A2 X1 A1)).
+  degree_ftyp_wrt_ftyp n1 (subst_ftyp_in_ftyp A2 X1 A1)).
 Proof.
 apply_mutual_ind ftyp_mutind;
 default_simp.
@@ -4970,24 +4970,24 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_typ_in_ftyp_degree_ftyp_wrt_ftyp :
+Lemma subst_ftyp_in_ftyp_degree_ftyp_wrt_ftyp :
 forall A1 A2 X1 n1,
   degree_ftyp_wrt_ftyp n1 A1 ->
   degree_ftyp_wrt_ftyp n1 A2 ->
-  degree_ftyp_wrt_ftyp n1 (subst_typ_in_ftyp A2 X1 A1).
+  degree_ftyp_wrt_ftyp n1 (subst_ftyp_in_ftyp A2 X1 A1).
 Proof.
-pose proof subst_typ_in_ftyp_degree_ftyp_wrt_ftyp_mutual as H; intuition eauto.
+pose proof subst_ftyp_in_ftyp_degree_ftyp_wrt_ftyp_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_typ_in_ftyp_degree_ftyp_wrt_ftyp : lngen.
+#[export] Hint Resolve subst_ftyp_in_ftyp_degree_ftyp_wrt_ftyp : lngen.
 
 (* begin hide *)
 
-Lemma subst_typ_in_fexp_degree_fexp_wrt_ftyp_mutual :
+Lemma subst_ftyp_in_fexp_degree_fexp_wrt_ftyp_mutual :
 (forall e1 A1 X1 n1,
   degree_fexp_wrt_ftyp n1 e1 ->
   degree_ftyp_wrt_ftyp n1 A1 ->
-  degree_fexp_wrt_ftyp n1 (subst_typ_in_fexp A1 X1 e1)).
+  degree_fexp_wrt_ftyp n1 (subst_ftyp_in_fexp A1 X1 e1)).
 Proof.
 apply_mutual_ind fexp_mutind;
 default_simp.
@@ -4995,23 +4995,23 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_typ_in_fexp_degree_fexp_wrt_ftyp :
+Lemma subst_ftyp_in_fexp_degree_fexp_wrt_ftyp :
 forall e1 A1 X1 n1,
   degree_fexp_wrt_ftyp n1 e1 ->
   degree_ftyp_wrt_ftyp n1 A1 ->
-  degree_fexp_wrt_ftyp n1 (subst_typ_in_fexp A1 X1 e1).
+  degree_fexp_wrt_ftyp n1 (subst_ftyp_in_fexp A1 X1 e1).
 Proof.
-pose proof subst_typ_in_fexp_degree_fexp_wrt_ftyp_mutual as H; intuition eauto.
+pose proof subst_ftyp_in_fexp_degree_fexp_wrt_ftyp_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_typ_in_fexp_degree_fexp_wrt_ftyp : lngen.
+#[export] Hint Resolve subst_ftyp_in_fexp_degree_fexp_wrt_ftyp : lngen.
 
 (* begin hide *)
 
-Lemma subst_typ_in_fexp_degree_fexp_wrt_fexp_mutual :
+Lemma subst_ftyp_in_fexp_degree_fexp_wrt_fexp_mutual :
 (forall e1 A1 X1 n1,
   degree_fexp_wrt_fexp n1 e1 ->
-  degree_fexp_wrt_fexp n1 (subst_typ_in_fexp A1 X1 e1)).
+  degree_fexp_wrt_fexp n1 (subst_ftyp_in_fexp A1 X1 e1)).
 Proof.
 apply_mutual_ind fexp_mutind;
 default_simp.
@@ -5019,23 +5019,23 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_typ_in_fexp_degree_fexp_wrt_fexp :
+Lemma subst_ftyp_in_fexp_degree_fexp_wrt_fexp :
 forall e1 A1 X1 n1,
   degree_fexp_wrt_fexp n1 e1 ->
-  degree_fexp_wrt_fexp n1 (subst_typ_in_fexp A1 X1 e1).
+  degree_fexp_wrt_fexp n1 (subst_ftyp_in_fexp A1 X1 e1).
 Proof.
-pose proof subst_typ_in_fexp_degree_fexp_wrt_fexp_mutual as H; intuition eauto.
+pose proof subst_ftyp_in_fexp_degree_fexp_wrt_fexp_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_typ_in_fexp_degree_fexp_wrt_fexp : lngen.
+#[export] Hint Resolve subst_ftyp_in_fexp_degree_fexp_wrt_fexp : lngen.
 
 (* begin hide *)
 
-Lemma subst_exp_in_fexp_degree_fexp_wrt_ftyp_mutual :
+Lemma subst_fexp_in_fexp_degree_fexp_wrt_ftyp_mutual :
 (forall e1 e2 x1 n1,
   degree_fexp_wrt_ftyp n1 e1 ->
   degree_fexp_wrt_ftyp n1 e2 ->
-  degree_fexp_wrt_ftyp n1 (subst_exp_in_fexp e2 x1 e1)).
+  degree_fexp_wrt_ftyp n1 (subst_fexp_in_fexp e2 x1 e1)).
 Proof.
 apply_mutual_ind fexp_mutind;
 default_simp.
@@ -5043,24 +5043,24 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_exp_in_fexp_degree_fexp_wrt_ftyp :
+Lemma subst_fexp_in_fexp_degree_fexp_wrt_ftyp :
 forall e1 e2 x1 n1,
   degree_fexp_wrt_ftyp n1 e1 ->
   degree_fexp_wrt_ftyp n1 e2 ->
-  degree_fexp_wrt_ftyp n1 (subst_exp_in_fexp e2 x1 e1).
+  degree_fexp_wrt_ftyp n1 (subst_fexp_in_fexp e2 x1 e1).
 Proof.
-pose proof subst_exp_in_fexp_degree_fexp_wrt_ftyp_mutual as H; intuition eauto.
+pose proof subst_fexp_in_fexp_degree_fexp_wrt_ftyp_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_exp_in_fexp_degree_fexp_wrt_ftyp : lngen.
+#[export] Hint Resolve subst_fexp_in_fexp_degree_fexp_wrt_ftyp : lngen.
 
 (* begin hide *)
 
-Lemma subst_exp_in_fexp_degree_fexp_wrt_fexp_mutual :
+Lemma subst_fexp_in_fexp_degree_fexp_wrt_fexp_mutual :
 (forall e1 e2 x1 n1,
   degree_fexp_wrt_fexp n1 e1 ->
   degree_fexp_wrt_fexp n1 e2 ->
-  degree_fexp_wrt_fexp n1 (subst_exp_in_fexp e2 x1 e1)).
+  degree_fexp_wrt_fexp n1 (subst_fexp_in_fexp e2 x1 e1)).
 Proof.
 apply_mutual_ind fexp_mutind;
 default_simp.
@@ -5068,24 +5068,24 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_exp_in_fexp_degree_fexp_wrt_fexp :
+Lemma subst_fexp_in_fexp_degree_fexp_wrt_fexp :
 forall e1 e2 x1 n1,
   degree_fexp_wrt_fexp n1 e1 ->
   degree_fexp_wrt_fexp n1 e2 ->
-  degree_fexp_wrt_fexp n1 (subst_exp_in_fexp e2 x1 e1).
+  degree_fexp_wrt_fexp n1 (subst_fexp_in_fexp e2 x1 e1).
 Proof.
-pose proof subst_exp_in_fexp_degree_fexp_wrt_fexp_mutual as H; intuition eauto.
+pose proof subst_fexp_in_fexp_degree_fexp_wrt_fexp_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_exp_in_fexp_degree_fexp_wrt_fexp : lngen.
+#[export] Hint Resolve subst_fexp_in_fexp_degree_fexp_wrt_fexp : lngen.
 
 (* begin hide *)
 
-Lemma subst_typ_in_fbind_degree_fbind_wrt_ftyp_mutual :
+Lemma subst_ftyp_in_fbind_degree_fbind_wrt_ftyp_mutual :
 (forall fb1 A1 X1 n1,
   degree_fbind_wrt_ftyp n1 fb1 ->
   degree_ftyp_wrt_ftyp n1 A1 ->
-  degree_fbind_wrt_ftyp n1 (subst_typ_in_fbind A1 X1 fb1)).
+  degree_fbind_wrt_ftyp n1 (subst_ftyp_in_fbind A1 X1 fb1)).
 Proof.
 apply_mutual_ind fbind_mutind;
 default_simp.
@@ -5093,23 +5093,23 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_typ_in_fbind_degree_fbind_wrt_ftyp :
+Lemma subst_ftyp_in_fbind_degree_fbind_wrt_ftyp :
 forall fb1 A1 X1 n1,
   degree_fbind_wrt_ftyp n1 fb1 ->
   degree_ftyp_wrt_ftyp n1 A1 ->
-  degree_fbind_wrt_ftyp n1 (subst_typ_in_fbind A1 X1 fb1).
+  degree_fbind_wrt_ftyp n1 (subst_ftyp_in_fbind A1 X1 fb1).
 Proof.
-pose proof subst_typ_in_fbind_degree_fbind_wrt_ftyp_mutual as H; intuition eauto.
+pose proof subst_ftyp_in_fbind_degree_fbind_wrt_ftyp_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_typ_in_fbind_degree_fbind_wrt_ftyp : lngen.
+#[export] Hint Resolve subst_ftyp_in_fbind_degree_fbind_wrt_ftyp : lngen.
 
 (* begin hide *)
 
-Lemma subst_typ_in_ftyp_fresh_eq_mutual :
+Lemma subst_ftyp_in_ftyp_fresh_eq_mutual :
 (forall A2 A1 X1,
-  X1 `notin` fv_ftyp_in_ftyp A2 ->
-  subst_typ_in_ftyp A1 X1 A2 = A2).
+  X1 `notin` ftvar_in_ftyp A2 ->
+  subst_ftyp_in_ftyp A1 X1 A2 = A2).
 Proof.
 apply_mutual_ind ftyp_mutind;
 default_simp.
@@ -5117,23 +5117,23 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_typ_in_ftyp_fresh_eq :
+Lemma subst_ftyp_in_ftyp_fresh_eq :
 forall A2 A1 X1,
-  X1 `notin` fv_ftyp_in_ftyp A2 ->
-  subst_typ_in_ftyp A1 X1 A2 = A2.
+  X1 `notin` ftvar_in_ftyp A2 ->
+  subst_ftyp_in_ftyp A1 X1 A2 = A2.
 Proof.
-pose proof subst_typ_in_ftyp_fresh_eq_mutual as H; intuition eauto.
+pose proof subst_ftyp_in_ftyp_fresh_eq_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_typ_in_ftyp_fresh_eq : lngen.
-#[export] Hint Rewrite subst_typ_in_ftyp_fresh_eq using solve [auto] : lngen.
+#[export] Hint Resolve subst_ftyp_in_ftyp_fresh_eq : lngen.
+#[export] Hint Rewrite subst_ftyp_in_ftyp_fresh_eq using solve [auto] : lngen.
 
 (* begin hide *)
 
-Lemma subst_typ_in_fexp_fresh_eq_mutual :
+Lemma subst_ftyp_in_fexp_fresh_eq_mutual :
 (forall e1 A1 X1,
-  X1 `notin` fv_ftyp_in_fexp e1 ->
-  subst_typ_in_fexp A1 X1 e1 = e1).
+  X1 `notin` ftvar_in_fexp e1 ->
+  subst_ftyp_in_fexp A1 X1 e1 = e1).
 Proof.
 apply_mutual_ind fexp_mutind;
 default_simp.
@@ -5141,23 +5141,23 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_typ_in_fexp_fresh_eq :
+Lemma subst_ftyp_in_fexp_fresh_eq :
 forall e1 A1 X1,
-  X1 `notin` fv_ftyp_in_fexp e1 ->
-  subst_typ_in_fexp A1 X1 e1 = e1.
+  X1 `notin` ftvar_in_fexp e1 ->
+  subst_ftyp_in_fexp A1 X1 e1 = e1.
 Proof.
-pose proof subst_typ_in_fexp_fresh_eq_mutual as H; intuition eauto.
+pose proof subst_ftyp_in_fexp_fresh_eq_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_typ_in_fexp_fresh_eq : lngen.
-#[export] Hint Rewrite subst_typ_in_fexp_fresh_eq using solve [auto] : lngen.
+#[export] Hint Resolve subst_ftyp_in_fexp_fresh_eq : lngen.
+#[export] Hint Rewrite subst_ftyp_in_fexp_fresh_eq using solve [auto] : lngen.
 
 (* begin hide *)
 
-Lemma subst_exp_in_fexp_fresh_eq_mutual :
+Lemma subst_fexp_in_fexp_fresh_eq_mutual :
 (forall e2 e1 x1,
-  x1 `notin` fv_fexp_in_fexp e2 ->
-  subst_exp_in_fexp e1 x1 e2 = e2).
+  x1 `notin` fvar_in_fexp e2 ->
+  subst_fexp_in_fexp e1 x1 e2 = e2).
 Proof.
 apply_mutual_ind fexp_mutind;
 default_simp.
@@ -5165,23 +5165,23 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_exp_in_fexp_fresh_eq :
+Lemma subst_fexp_in_fexp_fresh_eq :
 forall e2 e1 x1,
-  x1 `notin` fv_fexp_in_fexp e2 ->
-  subst_exp_in_fexp e1 x1 e2 = e2.
+  x1 `notin` fvar_in_fexp e2 ->
+  subst_fexp_in_fexp e1 x1 e2 = e2.
 Proof.
-pose proof subst_exp_in_fexp_fresh_eq_mutual as H; intuition eauto.
+pose proof subst_fexp_in_fexp_fresh_eq_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_exp_in_fexp_fresh_eq : lngen.
-#[export] Hint Rewrite subst_exp_in_fexp_fresh_eq using solve [auto] : lngen.
+#[export] Hint Resolve subst_fexp_in_fexp_fresh_eq : lngen.
+#[export] Hint Rewrite subst_fexp_in_fexp_fresh_eq using solve [auto] : lngen.
 
 (* begin hide *)
 
-Lemma subst_typ_in_fbind_fresh_eq_mutual :
+Lemma subst_ftyp_in_fbind_fresh_eq_mutual :
 (forall fb1 A1 X1,
-  X1 `notin` fv_ftyp_in_fbind fb1 ->
-  subst_typ_in_fbind A1 X1 fb1 = fb1).
+  X1 `notin` ftvar_in_fbind fb1 ->
+  subst_ftyp_in_fbind A1 X1 fb1 = fb1).
 Proof.
 apply_mutual_ind fbind_mutind;
 default_simp.
@@ -5189,23 +5189,23 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_typ_in_fbind_fresh_eq :
+Lemma subst_ftyp_in_fbind_fresh_eq :
 forall fb1 A1 X1,
-  X1 `notin` fv_ftyp_in_fbind fb1 ->
-  subst_typ_in_fbind A1 X1 fb1 = fb1.
+  X1 `notin` ftvar_in_fbind fb1 ->
+  subst_ftyp_in_fbind A1 X1 fb1 = fb1.
 Proof.
-pose proof subst_typ_in_fbind_fresh_eq_mutual as H; intuition eauto.
+pose proof subst_ftyp_in_fbind_fresh_eq_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_typ_in_fbind_fresh_eq : lngen.
-#[export] Hint Rewrite subst_typ_in_fbind_fresh_eq using solve [auto] : lngen.
+#[export] Hint Resolve subst_ftyp_in_fbind_fresh_eq : lngen.
+#[export] Hint Rewrite subst_ftyp_in_fbind_fresh_eq using solve [auto] : lngen.
 
 (* begin hide *)
 
-Lemma subst_typ_in_ftyp_fresh_same_mutual :
+Lemma subst_ftyp_in_ftyp_fresh_same_mutual :
 (forall A2 A1 X1,
-  X1 `notin` fv_ftyp_in_ftyp A1 ->
-  X1 `notin` fv_ftyp_in_ftyp (subst_typ_in_ftyp A1 X1 A2)).
+  X1 `notin` ftvar_in_ftyp A1 ->
+  X1 `notin` ftvar_in_ftyp (subst_ftyp_in_ftyp A1 X1 A2)).
 Proof.
 apply_mutual_ind ftyp_mutind;
 default_simp.
@@ -5213,22 +5213,22 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_typ_in_ftyp_fresh_same :
+Lemma subst_ftyp_in_ftyp_fresh_same :
 forall A2 A1 X1,
-  X1 `notin` fv_ftyp_in_ftyp A1 ->
-  X1 `notin` fv_ftyp_in_ftyp (subst_typ_in_ftyp A1 X1 A2).
+  X1 `notin` ftvar_in_ftyp A1 ->
+  X1 `notin` ftvar_in_ftyp (subst_ftyp_in_ftyp A1 X1 A2).
 Proof.
-pose proof subst_typ_in_ftyp_fresh_same_mutual as H; intuition eauto.
+pose proof subst_ftyp_in_ftyp_fresh_same_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_typ_in_ftyp_fresh_same : lngen.
+#[export] Hint Resolve subst_ftyp_in_ftyp_fresh_same : lngen.
 
 (* begin hide *)
 
-Lemma subst_typ_in_fexp_fresh_same_mutual :
+Lemma subst_ftyp_in_fexp_fresh_same_mutual :
 (forall e1 A1 X1,
-  X1 `notin` fv_ftyp_in_ftyp A1 ->
-  X1 `notin` fv_ftyp_in_fexp (subst_typ_in_fexp A1 X1 e1)).
+  X1 `notin` ftvar_in_ftyp A1 ->
+  X1 `notin` ftvar_in_fexp (subst_ftyp_in_fexp A1 X1 e1)).
 Proof.
 apply_mutual_ind fexp_mutind;
 default_simp.
@@ -5236,22 +5236,22 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_typ_in_fexp_fresh_same :
+Lemma subst_ftyp_in_fexp_fresh_same :
 forall e1 A1 X1,
-  X1 `notin` fv_ftyp_in_ftyp A1 ->
-  X1 `notin` fv_ftyp_in_fexp (subst_typ_in_fexp A1 X1 e1).
+  X1 `notin` ftvar_in_ftyp A1 ->
+  X1 `notin` ftvar_in_fexp (subst_ftyp_in_fexp A1 X1 e1).
 Proof.
-pose proof subst_typ_in_fexp_fresh_same_mutual as H; intuition eauto.
+pose proof subst_ftyp_in_fexp_fresh_same_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_typ_in_fexp_fresh_same : lngen.
+#[export] Hint Resolve subst_ftyp_in_fexp_fresh_same : lngen.
 
 (* begin hide *)
 
-Lemma subst_exp_in_fexp_fresh_same_mutual :
+Lemma subst_fexp_in_fexp_fresh_same_mutual :
 (forall e2 e1 x1,
-  x1 `notin` fv_fexp_in_fexp e1 ->
-  x1 `notin` fv_fexp_in_fexp (subst_exp_in_fexp e1 x1 e2)).
+  x1 `notin` fvar_in_fexp e1 ->
+  x1 `notin` fvar_in_fexp (subst_fexp_in_fexp e1 x1 e2)).
 Proof.
 apply_mutual_ind fexp_mutind;
 default_simp.
@@ -5259,22 +5259,22 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_exp_in_fexp_fresh_same :
+Lemma subst_fexp_in_fexp_fresh_same :
 forall e2 e1 x1,
-  x1 `notin` fv_fexp_in_fexp e1 ->
-  x1 `notin` fv_fexp_in_fexp (subst_exp_in_fexp e1 x1 e2).
+  x1 `notin` fvar_in_fexp e1 ->
+  x1 `notin` fvar_in_fexp (subst_fexp_in_fexp e1 x1 e2).
 Proof.
-pose proof subst_exp_in_fexp_fresh_same_mutual as H; intuition eauto.
+pose proof subst_fexp_in_fexp_fresh_same_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_exp_in_fexp_fresh_same : lngen.
+#[export] Hint Resolve subst_fexp_in_fexp_fresh_same : lngen.
 
 (* begin hide *)
 
-Lemma subst_typ_in_fbind_fresh_same_mutual :
+Lemma subst_ftyp_in_fbind_fresh_same_mutual :
 (forall fb1 A1 X1,
-  X1 `notin` fv_ftyp_in_ftyp A1 ->
-  X1 `notin` fv_ftyp_in_fbind (subst_typ_in_fbind A1 X1 fb1)).
+  X1 `notin` ftvar_in_ftyp A1 ->
+  X1 `notin` ftvar_in_fbind (subst_ftyp_in_fbind A1 X1 fb1)).
 Proof.
 apply_mutual_ind fbind_mutind;
 default_simp.
@@ -5282,23 +5282,23 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_typ_in_fbind_fresh_same :
+Lemma subst_ftyp_in_fbind_fresh_same :
 forall fb1 A1 X1,
-  X1 `notin` fv_ftyp_in_ftyp A1 ->
-  X1 `notin` fv_ftyp_in_fbind (subst_typ_in_fbind A1 X1 fb1).
+  X1 `notin` ftvar_in_ftyp A1 ->
+  X1 `notin` ftvar_in_fbind (subst_ftyp_in_fbind A1 X1 fb1).
 Proof.
-pose proof subst_typ_in_fbind_fresh_same_mutual as H; intuition eauto.
+pose proof subst_ftyp_in_fbind_fresh_same_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_typ_in_fbind_fresh_same : lngen.
+#[export] Hint Resolve subst_ftyp_in_fbind_fresh_same : lngen.
 
 (* begin hide *)
 
-Lemma subst_typ_in_ftyp_fresh_mutual :
+Lemma subst_ftyp_in_ftyp_fresh_mutual :
 (forall A2 A1 X1 X2,
-  X1 `notin` fv_ftyp_in_ftyp A2 ->
-  X1 `notin` fv_ftyp_in_ftyp A1 ->
-  X1 `notin` fv_ftyp_in_ftyp (subst_typ_in_ftyp A1 X2 A2)).
+  X1 `notin` ftvar_in_ftyp A2 ->
+  X1 `notin` ftvar_in_ftyp A1 ->
+  X1 `notin` ftvar_in_ftyp (subst_ftyp_in_ftyp A1 X2 A2)).
 Proof.
 apply_mutual_ind ftyp_mutind;
 default_simp.
@@ -5306,24 +5306,24 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_typ_in_ftyp_fresh :
+Lemma subst_ftyp_in_ftyp_fresh :
 forall A2 A1 X1 X2,
-  X1 `notin` fv_ftyp_in_ftyp A2 ->
-  X1 `notin` fv_ftyp_in_ftyp A1 ->
-  X1 `notin` fv_ftyp_in_ftyp (subst_typ_in_ftyp A1 X2 A2).
+  X1 `notin` ftvar_in_ftyp A2 ->
+  X1 `notin` ftvar_in_ftyp A1 ->
+  X1 `notin` ftvar_in_ftyp (subst_ftyp_in_ftyp A1 X2 A2).
 Proof.
-pose proof subst_typ_in_ftyp_fresh_mutual as H; intuition eauto.
+pose proof subst_ftyp_in_ftyp_fresh_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_typ_in_ftyp_fresh : lngen.
+#[export] Hint Resolve subst_ftyp_in_ftyp_fresh : lngen.
 
 (* begin hide *)
 
-Lemma subst_typ_in_fexp_fresh_mutual :
+Lemma subst_ftyp_in_fexp_fresh_mutual :
 (forall e1 A1 X1 X2,
-  X1 `notin` fv_ftyp_in_fexp e1 ->
-  X1 `notin` fv_ftyp_in_ftyp A1 ->
-  X1 `notin` fv_ftyp_in_fexp (subst_typ_in_fexp A1 X2 e1)).
+  X1 `notin` ftvar_in_fexp e1 ->
+  X1 `notin` ftvar_in_ftyp A1 ->
+  X1 `notin` ftvar_in_fexp (subst_ftyp_in_fexp A1 X2 e1)).
 Proof.
 apply_mutual_ind fexp_mutind;
 default_simp.
@@ -5331,24 +5331,24 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_typ_in_fexp_fresh :
+Lemma subst_ftyp_in_fexp_fresh :
 forall e1 A1 X1 X2,
-  X1 `notin` fv_ftyp_in_fexp e1 ->
-  X1 `notin` fv_ftyp_in_ftyp A1 ->
-  X1 `notin` fv_ftyp_in_fexp (subst_typ_in_fexp A1 X2 e1).
+  X1 `notin` ftvar_in_fexp e1 ->
+  X1 `notin` ftvar_in_ftyp A1 ->
+  X1 `notin` ftvar_in_fexp (subst_ftyp_in_fexp A1 X2 e1).
 Proof.
-pose proof subst_typ_in_fexp_fresh_mutual as H; intuition eauto.
+pose proof subst_ftyp_in_fexp_fresh_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_typ_in_fexp_fresh : lngen.
+#[export] Hint Resolve subst_ftyp_in_fexp_fresh : lngen.
 
 (* begin hide *)
 
-Lemma subst_exp_in_fexp_fresh_mutual :
+Lemma subst_fexp_in_fexp_fresh_mutual :
 (forall e2 e1 x1 x2,
-  x1 `notin` fv_fexp_in_fexp e2 ->
-  x1 `notin` fv_fexp_in_fexp e1 ->
-  x1 `notin` fv_fexp_in_fexp (subst_exp_in_fexp e1 x2 e2)).
+  x1 `notin` fvar_in_fexp e2 ->
+  x1 `notin` fvar_in_fexp e1 ->
+  x1 `notin` fvar_in_fexp (subst_fexp_in_fexp e1 x2 e2)).
 Proof.
 apply_mutual_ind fexp_mutind;
 default_simp.
@@ -5356,24 +5356,24 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_exp_in_fexp_fresh :
+Lemma subst_fexp_in_fexp_fresh :
 forall e2 e1 x1 x2,
-  x1 `notin` fv_fexp_in_fexp e2 ->
-  x1 `notin` fv_fexp_in_fexp e1 ->
-  x1 `notin` fv_fexp_in_fexp (subst_exp_in_fexp e1 x2 e2).
+  x1 `notin` fvar_in_fexp e2 ->
+  x1 `notin` fvar_in_fexp e1 ->
+  x1 `notin` fvar_in_fexp (subst_fexp_in_fexp e1 x2 e2).
 Proof.
-pose proof subst_exp_in_fexp_fresh_mutual as H; intuition eauto.
+pose proof subst_fexp_in_fexp_fresh_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_exp_in_fexp_fresh : lngen.
+#[export] Hint Resolve subst_fexp_in_fexp_fresh : lngen.
 
 (* begin hide *)
 
-Lemma subst_typ_in_fbind_fresh_mutual :
+Lemma subst_ftyp_in_fbind_fresh_mutual :
 (forall fb1 A1 X1 X2,
-  X1 `notin` fv_ftyp_in_fbind fb1 ->
-  X1 `notin` fv_ftyp_in_ftyp A1 ->
-  X1 `notin` fv_ftyp_in_fbind (subst_typ_in_fbind A1 X2 fb1)).
+  X1 `notin` ftvar_in_fbind fb1 ->
+  X1 `notin` ftvar_in_ftyp A1 ->
+  X1 `notin` ftvar_in_fbind (subst_ftyp_in_fbind A1 X2 fb1)).
 Proof.
 apply_mutual_ind fbind_mutind;
 default_simp.
@@ -5381,67 +5381,67 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_typ_in_fbind_fresh :
+Lemma subst_ftyp_in_fbind_fresh :
 forall fb1 A1 X1 X2,
-  X1 `notin` fv_ftyp_in_fbind fb1 ->
-  X1 `notin` fv_ftyp_in_ftyp A1 ->
-  X1 `notin` fv_ftyp_in_fbind (subst_typ_in_fbind A1 X2 fb1).
+  X1 `notin` ftvar_in_fbind fb1 ->
+  X1 `notin` ftvar_in_ftyp A1 ->
+  X1 `notin` ftvar_in_fbind (subst_ftyp_in_fbind A1 X2 fb1).
 Proof.
-pose proof subst_typ_in_fbind_fresh_mutual as H; intuition eauto.
+pose proof subst_ftyp_in_fbind_fresh_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_typ_in_fbind_fresh : lngen.
+#[export] Hint Resolve subst_ftyp_in_fbind_fresh : lngen.
 
-Lemma subst_typ_in_ftyp_lc_ftyp :
+Lemma subst_ftyp_in_ftyp_lc_ftyp :
 forall A1 A2 X1,
   lc_ftyp A1 ->
   lc_ftyp A2 ->
-  lc_ftyp (subst_typ_in_ftyp A2 X1 A1).
+  lc_ftyp (subst_ftyp_in_ftyp A2 X1 A1).
 Proof.
 default_simp.
 Qed.
 
-#[export] Hint Resolve subst_typ_in_ftyp_lc_ftyp : lngen.
+#[export] Hint Resolve subst_ftyp_in_ftyp_lc_ftyp : lngen.
 
-Lemma subst_typ_in_fexp_lc_fexp :
+Lemma subst_ftyp_in_fexp_lc_fexp :
 forall e1 A1 X1,
   lc_fexp e1 ->
   lc_ftyp A1 ->
-  lc_fexp (subst_typ_in_fexp A1 X1 e1).
+  lc_fexp (subst_ftyp_in_fexp A1 X1 e1).
 Proof.
 default_simp.
 Qed.
 
-#[export] Hint Resolve subst_typ_in_fexp_lc_fexp : lngen.
+#[export] Hint Resolve subst_ftyp_in_fexp_lc_fexp : lngen.
 
-Lemma subst_exp_in_fexp_lc_fexp :
+Lemma subst_fexp_in_fexp_lc_fexp :
 forall e1 e2 x1,
   lc_fexp e1 ->
   lc_fexp e2 ->
-  lc_fexp (subst_exp_in_fexp e2 x1 e1).
+  lc_fexp (subst_fexp_in_fexp e2 x1 e1).
 Proof.
 default_simp.
 Qed.
 
-#[export] Hint Resolve subst_exp_in_fexp_lc_fexp : lngen.
+#[export] Hint Resolve subst_fexp_in_fexp_lc_fexp : lngen.
 
-Lemma subst_typ_in_fbind_lc_fbind :
+Lemma subst_ftyp_in_fbind_lc_fbind :
 forall fb1 A1 X1,
   lc_fbind fb1 ->
   lc_ftyp A1 ->
-  lc_fbind (subst_typ_in_fbind A1 X1 fb1).
+  lc_fbind (subst_ftyp_in_fbind A1 X1 fb1).
 Proof.
 default_simp.
 Qed.
 
-#[export] Hint Resolve subst_typ_in_fbind_lc_fbind : lngen.
+#[export] Hint Resolve subst_ftyp_in_fbind_lc_fbind : lngen.
 
 (* begin hide *)
 
-Lemma subst_typ_in_ftyp_open_ftyp_wrt_ftyp_rec_mutual :
+Lemma subst_ftyp_in_ftyp_open_ftyp_wrt_ftyp_rec_mutual :
 (forall A3 A1 A2 X1 n1,
   lc_ftyp A1 ->
-  subst_typ_in_ftyp A1 X1 (open_ftyp_wrt_ftyp_rec n1 A2 A3) = open_ftyp_wrt_ftyp_rec n1 (subst_typ_in_ftyp A1 X1 A2) (subst_typ_in_ftyp A1 X1 A3)).
+  subst_ftyp_in_ftyp A1 X1 (open_ftyp_wrt_ftyp_rec n1 A2 A3) = open_ftyp_wrt_ftyp_rec n1 (subst_ftyp_in_ftyp A1 X1 A2) (subst_ftyp_in_ftyp A1 X1 A3)).
 Proof.
 apply_mutual_ind ftyp_mutind;
 default_simp.
@@ -5451,24 +5451,24 @@ Qed.
 
 (* begin hide *)
 
-Lemma subst_typ_in_ftyp_open_ftyp_wrt_ftyp_rec :
+Lemma subst_ftyp_in_ftyp_open_ftyp_wrt_ftyp_rec :
 forall A3 A1 A2 X1 n1,
   lc_ftyp A1 ->
-  subst_typ_in_ftyp A1 X1 (open_ftyp_wrt_ftyp_rec n1 A2 A3) = open_ftyp_wrt_ftyp_rec n1 (subst_typ_in_ftyp A1 X1 A2) (subst_typ_in_ftyp A1 X1 A3).
+  subst_ftyp_in_ftyp A1 X1 (open_ftyp_wrt_ftyp_rec n1 A2 A3) = open_ftyp_wrt_ftyp_rec n1 (subst_ftyp_in_ftyp A1 X1 A2) (subst_ftyp_in_ftyp A1 X1 A3).
 Proof.
-pose proof subst_typ_in_ftyp_open_ftyp_wrt_ftyp_rec_mutual as H; intuition eauto.
+pose proof subst_ftyp_in_ftyp_open_ftyp_wrt_ftyp_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_typ_in_ftyp_open_ftyp_wrt_ftyp_rec : lngen.
+#[export] Hint Resolve subst_ftyp_in_ftyp_open_ftyp_wrt_ftyp_rec : lngen.
 
 (* end hide *)
 
 (* begin hide *)
 
-Lemma subst_typ_in_fexp_open_fexp_wrt_ftyp_rec_mutual :
+Lemma subst_ftyp_in_fexp_open_fexp_wrt_ftyp_rec_mutual :
 (forall e1 A1 A2 X1 n1,
   lc_ftyp A1 ->
-  subst_typ_in_fexp A1 X1 (open_fexp_wrt_ftyp_rec n1 A2 e1) = open_fexp_wrt_ftyp_rec n1 (subst_typ_in_ftyp A1 X1 A2) (subst_typ_in_fexp A1 X1 e1)).
+  subst_ftyp_in_fexp A1 X1 (open_fexp_wrt_ftyp_rec n1 A2 e1) = open_fexp_wrt_ftyp_rec n1 (subst_ftyp_in_ftyp A1 X1 A2) (subst_ftyp_in_fexp A1 X1 e1)).
 Proof.
 apply_mutual_ind fexp_mutind;
 default_simp.
@@ -5478,23 +5478,23 @@ Qed.
 
 (* begin hide *)
 
-Lemma subst_typ_in_fexp_open_fexp_wrt_ftyp_rec :
+Lemma subst_ftyp_in_fexp_open_fexp_wrt_ftyp_rec :
 forall e1 A1 A2 X1 n1,
   lc_ftyp A1 ->
-  subst_typ_in_fexp A1 X1 (open_fexp_wrt_ftyp_rec n1 A2 e1) = open_fexp_wrt_ftyp_rec n1 (subst_typ_in_ftyp A1 X1 A2) (subst_typ_in_fexp A1 X1 e1).
+  subst_ftyp_in_fexp A1 X1 (open_fexp_wrt_ftyp_rec n1 A2 e1) = open_fexp_wrt_ftyp_rec n1 (subst_ftyp_in_ftyp A1 X1 A2) (subst_ftyp_in_fexp A1 X1 e1).
 Proof.
-pose proof subst_typ_in_fexp_open_fexp_wrt_ftyp_rec_mutual as H; intuition eauto.
+pose proof subst_ftyp_in_fexp_open_fexp_wrt_ftyp_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_typ_in_fexp_open_fexp_wrt_ftyp_rec : lngen.
+#[export] Hint Resolve subst_ftyp_in_fexp_open_fexp_wrt_ftyp_rec : lngen.
 
 (* end hide *)
 
 (* begin hide *)
 
-Lemma subst_typ_in_fexp_open_fexp_wrt_fexp_rec_mutual :
+Lemma subst_ftyp_in_fexp_open_fexp_wrt_fexp_rec_mutual :
 (forall e2 A1 e1 X1 n1,
-  subst_typ_in_fexp A1 X1 (open_fexp_wrt_fexp_rec n1 e1 e2) = open_fexp_wrt_fexp_rec n1 (subst_typ_in_fexp A1 X1 e1) (subst_typ_in_fexp A1 X1 e2)).
+  subst_ftyp_in_fexp A1 X1 (open_fexp_wrt_fexp_rec n1 e1 e2) = open_fexp_wrt_fexp_rec n1 (subst_ftyp_in_fexp A1 X1 e1) (subst_ftyp_in_fexp A1 X1 e2)).
 Proof.
 apply_mutual_ind fexp_mutind;
 default_simp.
@@ -5504,23 +5504,23 @@ Qed.
 
 (* begin hide *)
 
-Lemma subst_typ_in_fexp_open_fexp_wrt_fexp_rec :
+Lemma subst_ftyp_in_fexp_open_fexp_wrt_fexp_rec :
 forall e2 A1 e1 X1 n1,
-  subst_typ_in_fexp A1 X1 (open_fexp_wrt_fexp_rec n1 e1 e2) = open_fexp_wrt_fexp_rec n1 (subst_typ_in_fexp A1 X1 e1) (subst_typ_in_fexp A1 X1 e2).
+  subst_ftyp_in_fexp A1 X1 (open_fexp_wrt_fexp_rec n1 e1 e2) = open_fexp_wrt_fexp_rec n1 (subst_ftyp_in_fexp A1 X1 e1) (subst_ftyp_in_fexp A1 X1 e2).
 Proof.
-pose proof subst_typ_in_fexp_open_fexp_wrt_fexp_rec_mutual as H; intuition eauto.
+pose proof subst_ftyp_in_fexp_open_fexp_wrt_fexp_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_typ_in_fexp_open_fexp_wrt_fexp_rec : lngen.
+#[export] Hint Resolve subst_ftyp_in_fexp_open_fexp_wrt_fexp_rec : lngen.
 
 (* end hide *)
 
 (* begin hide *)
 
-Lemma subst_exp_in_fexp_open_fexp_wrt_ftyp_rec_mutual :
+Lemma subst_fexp_in_fexp_open_fexp_wrt_ftyp_rec_mutual :
 (forall e2 e1 A1 x1 n1,
   lc_fexp e1 ->
-  subst_exp_in_fexp e1 x1 (open_fexp_wrt_ftyp_rec n1 A1 e2) = open_fexp_wrt_ftyp_rec n1 A1 (subst_exp_in_fexp e1 x1 e2)).
+  subst_fexp_in_fexp e1 x1 (open_fexp_wrt_ftyp_rec n1 A1 e2) = open_fexp_wrt_ftyp_rec n1 A1 (subst_fexp_in_fexp e1 x1 e2)).
 Proof.
 apply_mutual_ind fexp_mutind;
 default_simp.
@@ -5530,24 +5530,24 @@ Qed.
 
 (* begin hide *)
 
-Lemma subst_exp_in_fexp_open_fexp_wrt_ftyp_rec :
+Lemma subst_fexp_in_fexp_open_fexp_wrt_ftyp_rec :
 forall e2 e1 A1 x1 n1,
   lc_fexp e1 ->
-  subst_exp_in_fexp e1 x1 (open_fexp_wrt_ftyp_rec n1 A1 e2) = open_fexp_wrt_ftyp_rec n1 A1 (subst_exp_in_fexp e1 x1 e2).
+  subst_fexp_in_fexp e1 x1 (open_fexp_wrt_ftyp_rec n1 A1 e2) = open_fexp_wrt_ftyp_rec n1 A1 (subst_fexp_in_fexp e1 x1 e2).
 Proof.
-pose proof subst_exp_in_fexp_open_fexp_wrt_ftyp_rec_mutual as H; intuition eauto.
+pose proof subst_fexp_in_fexp_open_fexp_wrt_ftyp_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_exp_in_fexp_open_fexp_wrt_ftyp_rec : lngen.
+#[export] Hint Resolve subst_fexp_in_fexp_open_fexp_wrt_ftyp_rec : lngen.
 
 (* end hide *)
 
 (* begin hide *)
 
-Lemma subst_exp_in_fexp_open_fexp_wrt_fexp_rec_mutual :
+Lemma subst_fexp_in_fexp_open_fexp_wrt_fexp_rec_mutual :
 (forall e3 e1 e2 x1 n1,
   lc_fexp e1 ->
-  subst_exp_in_fexp e1 x1 (open_fexp_wrt_fexp_rec n1 e2 e3) = open_fexp_wrt_fexp_rec n1 (subst_exp_in_fexp e1 x1 e2) (subst_exp_in_fexp e1 x1 e3)).
+  subst_fexp_in_fexp e1 x1 (open_fexp_wrt_fexp_rec n1 e2 e3) = open_fexp_wrt_fexp_rec n1 (subst_fexp_in_fexp e1 x1 e2) (subst_fexp_in_fexp e1 x1 e3)).
 Proof.
 apply_mutual_ind fexp_mutind;
 default_simp.
@@ -5557,24 +5557,24 @@ Qed.
 
 (* begin hide *)
 
-Lemma subst_exp_in_fexp_open_fexp_wrt_fexp_rec :
+Lemma subst_fexp_in_fexp_open_fexp_wrt_fexp_rec :
 forall e3 e1 e2 x1 n1,
   lc_fexp e1 ->
-  subst_exp_in_fexp e1 x1 (open_fexp_wrt_fexp_rec n1 e2 e3) = open_fexp_wrt_fexp_rec n1 (subst_exp_in_fexp e1 x1 e2) (subst_exp_in_fexp e1 x1 e3).
+  subst_fexp_in_fexp e1 x1 (open_fexp_wrt_fexp_rec n1 e2 e3) = open_fexp_wrt_fexp_rec n1 (subst_fexp_in_fexp e1 x1 e2) (subst_fexp_in_fexp e1 x1 e3).
 Proof.
-pose proof subst_exp_in_fexp_open_fexp_wrt_fexp_rec_mutual as H; intuition eauto.
+pose proof subst_fexp_in_fexp_open_fexp_wrt_fexp_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_exp_in_fexp_open_fexp_wrt_fexp_rec : lngen.
+#[export] Hint Resolve subst_fexp_in_fexp_open_fexp_wrt_fexp_rec : lngen.
 
 (* end hide *)
 
 (* begin hide *)
 
-Lemma subst_typ_in_fbind_open_fbind_wrt_ftyp_rec_mutual :
+Lemma subst_ftyp_in_fbind_open_fbind_wrt_ftyp_rec_mutual :
 (forall fb1 A1 A2 X1 n1,
   lc_ftyp A1 ->
-  subst_typ_in_fbind A1 X1 (open_fbind_wrt_ftyp_rec n1 A2 fb1) = open_fbind_wrt_ftyp_rec n1 (subst_typ_in_ftyp A1 X1 A2) (subst_typ_in_fbind A1 X1 fb1)).
+  subst_ftyp_in_fbind A1 X1 (open_fbind_wrt_ftyp_rec n1 A2 fb1) = open_fbind_wrt_ftyp_rec n1 (subst_ftyp_in_ftyp A1 X1 A2) (subst_ftyp_in_fbind A1 X1 fb1)).
 Proof.
 apply_mutual_ind fbind_mutind;
 default_simp.
@@ -5584,145 +5584,145 @@ Qed.
 
 (* begin hide *)
 
-Lemma subst_typ_in_fbind_open_fbind_wrt_ftyp_rec :
+Lemma subst_ftyp_in_fbind_open_fbind_wrt_ftyp_rec :
 forall fb1 A1 A2 X1 n1,
   lc_ftyp A1 ->
-  subst_typ_in_fbind A1 X1 (open_fbind_wrt_ftyp_rec n1 A2 fb1) = open_fbind_wrt_ftyp_rec n1 (subst_typ_in_ftyp A1 X1 A2) (subst_typ_in_fbind A1 X1 fb1).
+  subst_ftyp_in_fbind A1 X1 (open_fbind_wrt_ftyp_rec n1 A2 fb1) = open_fbind_wrt_ftyp_rec n1 (subst_ftyp_in_ftyp A1 X1 A2) (subst_ftyp_in_fbind A1 X1 fb1).
 Proof.
-pose proof subst_typ_in_fbind_open_fbind_wrt_ftyp_rec_mutual as H; intuition eauto.
+pose proof subst_ftyp_in_fbind_open_fbind_wrt_ftyp_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_typ_in_fbind_open_fbind_wrt_ftyp_rec : lngen.
+#[export] Hint Resolve subst_ftyp_in_fbind_open_fbind_wrt_ftyp_rec : lngen.
 
 (* end hide *)
 
-Lemma subst_typ_in_ftyp_open_ftyp_wrt_ftyp :
+Lemma subst_ftyp_in_ftyp_open_ftyp_wrt_ftyp :
 forall A3 A1 A2 X1,
   lc_ftyp A1 ->
-  subst_typ_in_ftyp A1 X1 (open_ftyp_wrt_ftyp A3 A2) = open_ftyp_wrt_ftyp (subst_typ_in_ftyp A1 X1 A3) (subst_typ_in_ftyp A1 X1 A2).
+  subst_ftyp_in_ftyp A1 X1 (open_ftyp_wrt_ftyp A3 A2) = open_ftyp_wrt_ftyp (subst_ftyp_in_ftyp A1 X1 A3) (subst_ftyp_in_ftyp A1 X1 A2).
 Proof.
 unfold open_ftyp_wrt_ftyp; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_typ_in_ftyp_open_ftyp_wrt_ftyp : lngen.
+#[export] Hint Resolve subst_ftyp_in_ftyp_open_ftyp_wrt_ftyp : lngen.
 
-Lemma subst_typ_in_fexp_open_fexp_wrt_ftyp :
+Lemma subst_ftyp_in_fexp_open_fexp_wrt_ftyp :
 forall e1 A1 A2 X1,
   lc_ftyp A1 ->
-  subst_typ_in_fexp A1 X1 (open_fexp_wrt_ftyp e1 A2) = open_fexp_wrt_ftyp (subst_typ_in_fexp A1 X1 e1) (subst_typ_in_ftyp A1 X1 A2).
+  subst_ftyp_in_fexp A1 X1 (open_fexp_wrt_ftyp e1 A2) = open_fexp_wrt_ftyp (subst_ftyp_in_fexp A1 X1 e1) (subst_ftyp_in_ftyp A1 X1 A2).
 Proof.
 unfold open_fexp_wrt_ftyp; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_typ_in_fexp_open_fexp_wrt_ftyp : lngen.
+#[export] Hint Resolve subst_ftyp_in_fexp_open_fexp_wrt_ftyp : lngen.
 
-Lemma subst_typ_in_fexp_open_fexp_wrt_fexp :
+Lemma subst_ftyp_in_fexp_open_fexp_wrt_fexp :
 forall e2 A1 e1 X1,
-  subst_typ_in_fexp A1 X1 (open_fexp_wrt_fexp e2 e1) = open_fexp_wrt_fexp (subst_typ_in_fexp A1 X1 e2) (subst_typ_in_fexp A1 X1 e1).
+  subst_ftyp_in_fexp A1 X1 (open_fexp_wrt_fexp e2 e1) = open_fexp_wrt_fexp (subst_ftyp_in_fexp A1 X1 e2) (subst_ftyp_in_fexp A1 X1 e1).
 Proof.
 unfold open_fexp_wrt_fexp; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_typ_in_fexp_open_fexp_wrt_fexp : lngen.
+#[export] Hint Resolve subst_ftyp_in_fexp_open_fexp_wrt_fexp : lngen.
 
-Lemma subst_exp_in_fexp_open_fexp_wrt_ftyp :
+Lemma subst_fexp_in_fexp_open_fexp_wrt_ftyp :
 forall e2 e1 A1 x1,
   lc_fexp e1 ->
-  subst_exp_in_fexp e1 x1 (open_fexp_wrt_ftyp e2 A1) = open_fexp_wrt_ftyp (subst_exp_in_fexp e1 x1 e2) A1.
+  subst_fexp_in_fexp e1 x1 (open_fexp_wrt_ftyp e2 A1) = open_fexp_wrt_ftyp (subst_fexp_in_fexp e1 x1 e2) A1.
 Proof.
 unfold open_fexp_wrt_ftyp; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_exp_in_fexp_open_fexp_wrt_ftyp : lngen.
+#[export] Hint Resolve subst_fexp_in_fexp_open_fexp_wrt_ftyp : lngen.
 
-Lemma subst_exp_in_fexp_open_fexp_wrt_fexp :
+Lemma subst_fexp_in_fexp_open_fexp_wrt_fexp :
 forall e3 e1 e2 x1,
   lc_fexp e1 ->
-  subst_exp_in_fexp e1 x1 (open_fexp_wrt_fexp e3 e2) = open_fexp_wrt_fexp (subst_exp_in_fexp e1 x1 e3) (subst_exp_in_fexp e1 x1 e2).
+  subst_fexp_in_fexp e1 x1 (open_fexp_wrt_fexp e3 e2) = open_fexp_wrt_fexp (subst_fexp_in_fexp e1 x1 e3) (subst_fexp_in_fexp e1 x1 e2).
 Proof.
 unfold open_fexp_wrt_fexp; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_exp_in_fexp_open_fexp_wrt_fexp : lngen.
+#[export] Hint Resolve subst_fexp_in_fexp_open_fexp_wrt_fexp : lngen.
 
-Lemma subst_typ_in_fbind_open_fbind_wrt_ftyp :
+Lemma subst_ftyp_in_fbind_open_fbind_wrt_ftyp :
 forall fb1 A1 A2 X1,
   lc_ftyp A1 ->
-  subst_typ_in_fbind A1 X1 (open_fbind_wrt_ftyp fb1 A2) = open_fbind_wrt_ftyp (subst_typ_in_fbind A1 X1 fb1) (subst_typ_in_ftyp A1 X1 A2).
+  subst_ftyp_in_fbind A1 X1 (open_fbind_wrt_ftyp fb1 A2) = open_fbind_wrt_ftyp (subst_ftyp_in_fbind A1 X1 fb1) (subst_ftyp_in_ftyp A1 X1 A2).
 Proof.
 unfold open_fbind_wrt_ftyp; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_typ_in_fbind_open_fbind_wrt_ftyp : lngen.
+#[export] Hint Resolve subst_ftyp_in_fbind_open_fbind_wrt_ftyp : lngen.
 
-Lemma subst_typ_in_ftyp_open_ftyp_wrt_ftyp_var :
+Lemma subst_ftyp_in_ftyp_open_ftyp_wrt_ftyp_var :
 forall A2 A1 X1 X2,
   X1 <> X2 ->
   lc_ftyp A1 ->
-  open_ftyp_wrt_ftyp (subst_typ_in_ftyp A1 X1 A2) (ftyp_var_f X2) = subst_typ_in_ftyp A1 X1 (open_ftyp_wrt_ftyp A2 (ftyp_var_f X2)).
+  open_ftyp_wrt_ftyp (subst_ftyp_in_ftyp A1 X1 A2) (ftyp_var_f X2) = subst_ftyp_in_ftyp A1 X1 (open_ftyp_wrt_ftyp A2 (ftyp_var_f X2)).
 Proof.
-intros; rewrite subst_typ_in_ftyp_open_ftyp_wrt_ftyp; default_simp.
+intros; rewrite subst_ftyp_in_ftyp_open_ftyp_wrt_ftyp; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_typ_in_ftyp_open_ftyp_wrt_ftyp_var : lngen.
+#[export] Hint Resolve subst_ftyp_in_ftyp_open_ftyp_wrt_ftyp_var : lngen.
 
-Lemma subst_typ_in_fexp_open_fexp_wrt_ftyp_var :
+Lemma subst_ftyp_in_fexp_open_fexp_wrt_ftyp_var :
 forall e1 A1 X1 X2,
   X1 <> X2 ->
   lc_ftyp A1 ->
-  open_fexp_wrt_ftyp (subst_typ_in_fexp A1 X1 e1) (ftyp_var_f X2) = subst_typ_in_fexp A1 X1 (open_fexp_wrt_ftyp e1 (ftyp_var_f X2)).
+  open_fexp_wrt_ftyp (subst_ftyp_in_fexp A1 X1 e1) (ftyp_var_f X2) = subst_ftyp_in_fexp A1 X1 (open_fexp_wrt_ftyp e1 (ftyp_var_f X2)).
 Proof.
-intros; rewrite subst_typ_in_fexp_open_fexp_wrt_ftyp; default_simp.
+intros; rewrite subst_ftyp_in_fexp_open_fexp_wrt_ftyp; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_typ_in_fexp_open_fexp_wrt_ftyp_var : lngen.
+#[export] Hint Resolve subst_ftyp_in_fexp_open_fexp_wrt_ftyp_var : lngen.
 
-Lemma subst_typ_in_fexp_open_fexp_wrt_fexp_var :
+Lemma subst_ftyp_in_fexp_open_fexp_wrt_fexp_var :
 forall e1 A1 X1 x1,
-  open_fexp_wrt_fexp (subst_typ_in_fexp A1 X1 e1) (fexp_var_f x1) = subst_typ_in_fexp A1 X1 (open_fexp_wrt_fexp e1 (fexp_var_f x1)).
+  open_fexp_wrt_fexp (subst_ftyp_in_fexp A1 X1 e1) (fexp_var_f x1) = subst_ftyp_in_fexp A1 X1 (open_fexp_wrt_fexp e1 (fexp_var_f x1)).
 Proof.
-intros; rewrite subst_typ_in_fexp_open_fexp_wrt_fexp; default_simp.
+intros; rewrite subst_ftyp_in_fexp_open_fexp_wrt_fexp; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_typ_in_fexp_open_fexp_wrt_fexp_var : lngen.
+#[export] Hint Resolve subst_ftyp_in_fexp_open_fexp_wrt_fexp_var : lngen.
 
-Lemma subst_exp_in_fexp_open_fexp_wrt_ftyp_var :
+Lemma subst_fexp_in_fexp_open_fexp_wrt_ftyp_var :
 forall e2 e1 x1 X1,
   lc_fexp e1 ->
-  open_fexp_wrt_ftyp (subst_exp_in_fexp e1 x1 e2) (ftyp_var_f X1) = subst_exp_in_fexp e1 x1 (open_fexp_wrt_ftyp e2 (ftyp_var_f X1)).
+  open_fexp_wrt_ftyp (subst_fexp_in_fexp e1 x1 e2) (ftyp_var_f X1) = subst_fexp_in_fexp e1 x1 (open_fexp_wrt_ftyp e2 (ftyp_var_f X1)).
 Proof.
-intros; rewrite subst_exp_in_fexp_open_fexp_wrt_ftyp; default_simp.
+intros; rewrite subst_fexp_in_fexp_open_fexp_wrt_ftyp; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_exp_in_fexp_open_fexp_wrt_ftyp_var : lngen.
+#[export] Hint Resolve subst_fexp_in_fexp_open_fexp_wrt_ftyp_var : lngen.
 
-Lemma subst_exp_in_fexp_open_fexp_wrt_fexp_var :
+Lemma subst_fexp_in_fexp_open_fexp_wrt_fexp_var :
 forall e2 e1 x1 x2,
   x1 <> x2 ->
   lc_fexp e1 ->
-  open_fexp_wrt_fexp (subst_exp_in_fexp e1 x1 e2) (fexp_var_f x2) = subst_exp_in_fexp e1 x1 (open_fexp_wrt_fexp e2 (fexp_var_f x2)).
+  open_fexp_wrt_fexp (subst_fexp_in_fexp e1 x1 e2) (fexp_var_f x2) = subst_fexp_in_fexp e1 x1 (open_fexp_wrt_fexp e2 (fexp_var_f x2)).
 Proof.
-intros; rewrite subst_exp_in_fexp_open_fexp_wrt_fexp; default_simp.
+intros; rewrite subst_fexp_in_fexp_open_fexp_wrt_fexp; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_exp_in_fexp_open_fexp_wrt_fexp_var : lngen.
+#[export] Hint Resolve subst_fexp_in_fexp_open_fexp_wrt_fexp_var : lngen.
 
-Lemma subst_typ_in_fbind_open_fbind_wrt_ftyp_var :
+Lemma subst_ftyp_in_fbind_open_fbind_wrt_ftyp_var :
 forall fb1 A1 X1 X2,
   X1 <> X2 ->
   lc_ftyp A1 ->
-  open_fbind_wrt_ftyp (subst_typ_in_fbind A1 X1 fb1) (ftyp_var_f X2) = subst_typ_in_fbind A1 X1 (open_fbind_wrt_ftyp fb1 (ftyp_var_f X2)).
+  open_fbind_wrt_ftyp (subst_ftyp_in_fbind A1 X1 fb1) (ftyp_var_f X2) = subst_ftyp_in_fbind A1 X1 (open_fbind_wrt_ftyp fb1 (ftyp_var_f X2)).
 Proof.
-intros; rewrite subst_typ_in_fbind_open_fbind_wrt_ftyp; default_simp.
+intros; rewrite subst_ftyp_in_fbind_open_fbind_wrt_ftyp; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_typ_in_fbind_open_fbind_wrt_ftyp_var : lngen.
+#[export] Hint Resolve subst_ftyp_in_fbind_open_fbind_wrt_ftyp_var : lngen.
 
 (* begin hide *)
 
-Lemma subst_typ_in_ftyp_spec_rec_mutual :
+Lemma subst_ftyp_in_ftyp_spec_rec_mutual :
 (forall A1 A2 X1 n1,
-  subst_typ_in_ftyp A2 X1 A1 = open_ftyp_wrt_ftyp_rec n1 A2 (close_ftyp_wrt_ftyp_rec n1 X1 A1)).
+  subst_ftyp_in_ftyp A2 X1 A1 = open_ftyp_wrt_ftyp_rec n1 A2 (close_ftyp_wrt_ftyp_rec n1 X1 A1)).
 Proof.
 apply_mutual_ind ftyp_mutind;
 default_simp.
@@ -5732,22 +5732,22 @@ Qed.
 
 (* begin hide *)
 
-Lemma subst_typ_in_ftyp_spec_rec :
+Lemma subst_ftyp_in_ftyp_spec_rec :
 forall A1 A2 X1 n1,
-  subst_typ_in_ftyp A2 X1 A1 = open_ftyp_wrt_ftyp_rec n1 A2 (close_ftyp_wrt_ftyp_rec n1 X1 A1).
+  subst_ftyp_in_ftyp A2 X1 A1 = open_ftyp_wrt_ftyp_rec n1 A2 (close_ftyp_wrt_ftyp_rec n1 X1 A1).
 Proof.
-pose proof subst_typ_in_ftyp_spec_rec_mutual as H; intuition eauto.
+pose proof subst_ftyp_in_ftyp_spec_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_typ_in_ftyp_spec_rec : lngen.
+#[export] Hint Resolve subst_ftyp_in_ftyp_spec_rec : lngen.
 
 (* end hide *)
 
 (* begin hide *)
 
-Lemma subst_typ_in_fexp_spec_rec_mutual :
+Lemma subst_ftyp_in_fexp_spec_rec_mutual :
 (forall e1 A1 X1 n1,
-  subst_typ_in_fexp A1 X1 e1 = open_fexp_wrt_ftyp_rec n1 A1 (close_fexp_wrt_ftyp_rec n1 X1 e1)).
+  subst_ftyp_in_fexp A1 X1 e1 = open_fexp_wrt_ftyp_rec n1 A1 (close_fexp_wrt_ftyp_rec n1 X1 e1)).
 Proof.
 apply_mutual_ind fexp_mutind;
 default_simp.
@@ -5757,22 +5757,22 @@ Qed.
 
 (* begin hide *)
 
-Lemma subst_typ_in_fexp_spec_rec :
+Lemma subst_ftyp_in_fexp_spec_rec :
 forall e1 A1 X1 n1,
-  subst_typ_in_fexp A1 X1 e1 = open_fexp_wrt_ftyp_rec n1 A1 (close_fexp_wrt_ftyp_rec n1 X1 e1).
+  subst_ftyp_in_fexp A1 X1 e1 = open_fexp_wrt_ftyp_rec n1 A1 (close_fexp_wrt_ftyp_rec n1 X1 e1).
 Proof.
-pose proof subst_typ_in_fexp_spec_rec_mutual as H; intuition eauto.
+pose proof subst_ftyp_in_fexp_spec_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_typ_in_fexp_spec_rec : lngen.
+#[export] Hint Resolve subst_ftyp_in_fexp_spec_rec : lngen.
 
 (* end hide *)
 
 (* begin hide *)
 
-Lemma subst_exp_in_fexp_spec_rec_mutual :
+Lemma subst_fexp_in_fexp_spec_rec_mutual :
 (forall e1 e2 x1 n1,
-  subst_exp_in_fexp e2 x1 e1 = open_fexp_wrt_fexp_rec n1 e2 (close_fexp_wrt_fexp_rec n1 x1 e1)).
+  subst_fexp_in_fexp e2 x1 e1 = open_fexp_wrt_fexp_rec n1 e2 (close_fexp_wrt_fexp_rec n1 x1 e1)).
 Proof.
 apply_mutual_ind fexp_mutind;
 default_simp.
@@ -5782,22 +5782,22 @@ Qed.
 
 (* begin hide *)
 
-Lemma subst_exp_in_fexp_spec_rec :
+Lemma subst_fexp_in_fexp_spec_rec :
 forall e1 e2 x1 n1,
-  subst_exp_in_fexp e2 x1 e1 = open_fexp_wrt_fexp_rec n1 e2 (close_fexp_wrt_fexp_rec n1 x1 e1).
+  subst_fexp_in_fexp e2 x1 e1 = open_fexp_wrt_fexp_rec n1 e2 (close_fexp_wrt_fexp_rec n1 x1 e1).
 Proof.
-pose proof subst_exp_in_fexp_spec_rec_mutual as H; intuition eauto.
+pose proof subst_fexp_in_fexp_spec_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_exp_in_fexp_spec_rec : lngen.
+#[export] Hint Resolve subst_fexp_in_fexp_spec_rec : lngen.
 
 (* end hide *)
 
 (* begin hide *)
 
-Lemma subst_typ_in_fbind_spec_rec_mutual :
+Lemma subst_ftyp_in_fbind_spec_rec_mutual :
 (forall fb1 A1 X1 n1,
-  subst_typ_in_fbind A1 X1 fb1 = open_fbind_wrt_ftyp_rec n1 A1 (close_fbind_wrt_ftyp_rec n1 X1 fb1)).
+  subst_ftyp_in_fbind A1 X1 fb1 = open_fbind_wrt_ftyp_rec n1 A1 (close_fbind_wrt_ftyp_rec n1 X1 fb1)).
 Proof.
 apply_mutual_ind fbind_mutind;
 default_simp.
@@ -5807,60 +5807,60 @@ Qed.
 
 (* begin hide *)
 
-Lemma subst_typ_in_fbind_spec_rec :
+Lemma subst_ftyp_in_fbind_spec_rec :
 forall fb1 A1 X1 n1,
-  subst_typ_in_fbind A1 X1 fb1 = open_fbind_wrt_ftyp_rec n1 A1 (close_fbind_wrt_ftyp_rec n1 X1 fb1).
+  subst_ftyp_in_fbind A1 X1 fb1 = open_fbind_wrt_ftyp_rec n1 A1 (close_fbind_wrt_ftyp_rec n1 X1 fb1).
 Proof.
-pose proof subst_typ_in_fbind_spec_rec_mutual as H; intuition eauto.
+pose proof subst_ftyp_in_fbind_spec_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_typ_in_fbind_spec_rec : lngen.
+#[export] Hint Resolve subst_ftyp_in_fbind_spec_rec : lngen.
 
 (* end hide *)
 
-Lemma subst_typ_in_ftyp_spec :
+Lemma subst_ftyp_in_ftyp_spec :
 forall A1 A2 X1,
-  subst_typ_in_ftyp A2 X1 A1 = open_ftyp_wrt_ftyp (close_ftyp_wrt_ftyp X1 A1) A2.
+  subst_ftyp_in_ftyp A2 X1 A1 = open_ftyp_wrt_ftyp (close_ftyp_wrt_ftyp X1 A1) A2.
 Proof.
 unfold close_ftyp_wrt_ftyp; unfold open_ftyp_wrt_ftyp; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_typ_in_ftyp_spec : lngen.
+#[export] Hint Resolve subst_ftyp_in_ftyp_spec : lngen.
 
-Lemma subst_typ_in_fexp_spec :
+Lemma subst_ftyp_in_fexp_spec :
 forall e1 A1 X1,
-  subst_typ_in_fexp A1 X1 e1 = open_fexp_wrt_ftyp (close_fexp_wrt_ftyp X1 e1) A1.
+  subst_ftyp_in_fexp A1 X1 e1 = open_fexp_wrt_ftyp (close_fexp_wrt_ftyp X1 e1) A1.
 Proof.
 unfold close_fexp_wrt_ftyp; unfold open_fexp_wrt_ftyp; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_typ_in_fexp_spec : lngen.
+#[export] Hint Resolve subst_ftyp_in_fexp_spec : lngen.
 
-Lemma subst_exp_in_fexp_spec :
+Lemma subst_fexp_in_fexp_spec :
 forall e1 e2 x1,
-  subst_exp_in_fexp e2 x1 e1 = open_fexp_wrt_fexp (close_fexp_wrt_fexp x1 e1) e2.
+  subst_fexp_in_fexp e2 x1 e1 = open_fexp_wrt_fexp (close_fexp_wrt_fexp x1 e1) e2.
 Proof.
 unfold close_fexp_wrt_fexp; unfold open_fexp_wrt_fexp; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_exp_in_fexp_spec : lngen.
+#[export] Hint Resolve subst_fexp_in_fexp_spec : lngen.
 
-Lemma subst_typ_in_fbind_spec :
+Lemma subst_ftyp_in_fbind_spec :
 forall fb1 A1 X1,
-  subst_typ_in_fbind A1 X1 fb1 = open_fbind_wrt_ftyp (close_fbind_wrt_ftyp X1 fb1) A1.
+  subst_ftyp_in_fbind A1 X1 fb1 = open_fbind_wrt_ftyp (close_fbind_wrt_ftyp X1 fb1) A1.
 Proof.
 unfold close_fbind_wrt_ftyp; unfold open_fbind_wrt_ftyp; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_typ_in_fbind_spec : lngen.
+#[export] Hint Resolve subst_ftyp_in_fbind_spec : lngen.
 
 (* begin hide *)
 
-Lemma subst_typ_in_ftyp_subst_typ_in_ftyp_mutual :
+Lemma subst_ftyp_in_ftyp_subst_ftyp_in_ftyp_mutual :
 (forall A1 A2 A3 X2 X1,
-  X2 `notin` fv_ftyp_in_ftyp A2 ->
+  X2 `notin` ftvar_in_ftyp A2 ->
   X2 <> X1 ->
-  subst_typ_in_ftyp A2 X1 (subst_typ_in_ftyp A3 X2 A1) = subst_typ_in_ftyp (subst_typ_in_ftyp A2 X1 A3) X2 (subst_typ_in_ftyp A2 X1 A1)).
+  subst_ftyp_in_ftyp A2 X1 (subst_ftyp_in_ftyp A3 X2 A1) = subst_ftyp_in_ftyp (subst_ftyp_in_ftyp A2 X1 A3) X2 (subst_ftyp_in_ftyp A2 X1 A1)).
 Proof.
 apply_mutual_ind ftyp_mutind;
 default_simp.
@@ -5868,24 +5868,24 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_typ_in_ftyp_subst_typ_in_ftyp :
+Lemma subst_ftyp_in_ftyp_subst_ftyp_in_ftyp :
 forall A1 A2 A3 X2 X1,
-  X2 `notin` fv_ftyp_in_ftyp A2 ->
+  X2 `notin` ftvar_in_ftyp A2 ->
   X2 <> X1 ->
-  subst_typ_in_ftyp A2 X1 (subst_typ_in_ftyp A3 X2 A1) = subst_typ_in_ftyp (subst_typ_in_ftyp A2 X1 A3) X2 (subst_typ_in_ftyp A2 X1 A1).
+  subst_ftyp_in_ftyp A2 X1 (subst_ftyp_in_ftyp A3 X2 A1) = subst_ftyp_in_ftyp (subst_ftyp_in_ftyp A2 X1 A3) X2 (subst_ftyp_in_ftyp A2 X1 A1).
 Proof.
-pose proof subst_typ_in_ftyp_subst_typ_in_ftyp_mutual as H; intuition eauto.
+pose proof subst_ftyp_in_ftyp_subst_ftyp_in_ftyp_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_typ_in_ftyp_subst_typ_in_ftyp : lngen.
+#[export] Hint Resolve subst_ftyp_in_ftyp_subst_ftyp_in_ftyp : lngen.
 
 (* begin hide *)
 
-Lemma subst_typ_in_fexp_subst_typ_in_fexp_mutual :
+Lemma subst_ftyp_in_fexp_subst_ftyp_in_fexp_mutual :
 (forall e1 A1 A2 X2 X1,
-  X2 `notin` fv_ftyp_in_ftyp A1 ->
+  X2 `notin` ftvar_in_ftyp A1 ->
   X2 <> X1 ->
-  subst_typ_in_fexp A1 X1 (subst_typ_in_fexp A2 X2 e1) = subst_typ_in_fexp (subst_typ_in_ftyp A1 X1 A2) X2 (subst_typ_in_fexp A1 X1 e1)).
+  subst_ftyp_in_fexp A1 X1 (subst_ftyp_in_fexp A2 X2 e1) = subst_ftyp_in_fexp (subst_ftyp_in_ftyp A1 X1 A2) X2 (subst_ftyp_in_fexp A1 X1 e1)).
 Proof.
 apply_mutual_ind fexp_mutind;
 default_simp.
@@ -5893,22 +5893,22 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_typ_in_fexp_subst_typ_in_fexp :
+Lemma subst_ftyp_in_fexp_subst_ftyp_in_fexp :
 forall e1 A1 A2 X2 X1,
-  X2 `notin` fv_ftyp_in_ftyp A1 ->
+  X2 `notin` ftvar_in_ftyp A1 ->
   X2 <> X1 ->
-  subst_typ_in_fexp A1 X1 (subst_typ_in_fexp A2 X2 e1) = subst_typ_in_fexp (subst_typ_in_ftyp A1 X1 A2) X2 (subst_typ_in_fexp A1 X1 e1).
+  subst_ftyp_in_fexp A1 X1 (subst_ftyp_in_fexp A2 X2 e1) = subst_ftyp_in_fexp (subst_ftyp_in_ftyp A1 X1 A2) X2 (subst_ftyp_in_fexp A1 X1 e1).
 Proof.
-pose proof subst_typ_in_fexp_subst_typ_in_fexp_mutual as H; intuition eauto.
+pose proof subst_ftyp_in_fexp_subst_ftyp_in_fexp_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_typ_in_fexp_subst_typ_in_fexp : lngen.
+#[export] Hint Resolve subst_ftyp_in_fexp_subst_ftyp_in_fexp : lngen.
 
 (* begin hide *)
 
-Lemma subst_typ_in_fexp_subst_exp_in_fexp_mutual :
+Lemma subst_ftyp_in_fexp_subst_fexp_in_fexp_mutual :
 (forall e1 A1 e2 x1 X1,
-  subst_typ_in_fexp A1 X1 (subst_exp_in_fexp e2 x1 e1) = subst_exp_in_fexp (subst_typ_in_fexp A1 X1 e2) x1 (subst_typ_in_fexp A1 X1 e1)).
+  subst_ftyp_in_fexp A1 X1 (subst_fexp_in_fexp e2 x1 e1) = subst_fexp_in_fexp (subst_ftyp_in_fexp A1 X1 e2) x1 (subst_ftyp_in_fexp A1 X1 e1)).
 Proof.
 apply_mutual_ind fexp_mutind;
 default_simp.
@@ -5916,21 +5916,21 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_typ_in_fexp_subst_exp_in_fexp :
+Lemma subst_ftyp_in_fexp_subst_fexp_in_fexp :
 forall e1 A1 e2 x1 X1,
-  subst_typ_in_fexp A1 X1 (subst_exp_in_fexp e2 x1 e1) = subst_exp_in_fexp (subst_typ_in_fexp A1 X1 e2) x1 (subst_typ_in_fexp A1 X1 e1).
+  subst_ftyp_in_fexp A1 X1 (subst_fexp_in_fexp e2 x1 e1) = subst_fexp_in_fexp (subst_ftyp_in_fexp A1 X1 e2) x1 (subst_ftyp_in_fexp A1 X1 e1).
 Proof.
-pose proof subst_typ_in_fexp_subst_exp_in_fexp_mutual as H; intuition eauto.
+pose proof subst_ftyp_in_fexp_subst_fexp_in_fexp_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_typ_in_fexp_subst_exp_in_fexp : lngen.
+#[export] Hint Resolve subst_ftyp_in_fexp_subst_fexp_in_fexp : lngen.
 
 (* begin hide *)
 
-Lemma subst_exp_in_fexp_subst_typ_in_fexp_mutual :
+Lemma subst_fexp_in_fexp_subst_ftyp_in_fexp_mutual :
 (forall e1 e2 A1 X1 x1,
-  X1 `notin` fv_ftyp_in_fexp e2 ->
-  subst_exp_in_fexp e2 x1 (subst_typ_in_fexp A1 X1 e1) = subst_typ_in_fexp A1 X1 (subst_exp_in_fexp e2 x1 e1)).
+  X1 `notin` ftvar_in_fexp e2 ->
+  subst_fexp_in_fexp e2 x1 (subst_ftyp_in_fexp A1 X1 e1) = subst_ftyp_in_fexp A1 X1 (subst_fexp_in_fexp e2 x1 e1)).
 Proof.
 apply_mutual_ind fexp_mutind;
 default_simp.
@@ -5938,23 +5938,23 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_exp_in_fexp_subst_typ_in_fexp :
+Lemma subst_fexp_in_fexp_subst_ftyp_in_fexp :
 forall e1 e2 A1 X1 x1,
-  X1 `notin` fv_ftyp_in_fexp e2 ->
-  subst_exp_in_fexp e2 x1 (subst_typ_in_fexp A1 X1 e1) = subst_typ_in_fexp A1 X1 (subst_exp_in_fexp e2 x1 e1).
+  X1 `notin` ftvar_in_fexp e2 ->
+  subst_fexp_in_fexp e2 x1 (subst_ftyp_in_fexp A1 X1 e1) = subst_ftyp_in_fexp A1 X1 (subst_fexp_in_fexp e2 x1 e1).
 Proof.
-pose proof subst_exp_in_fexp_subst_typ_in_fexp_mutual as H; intuition eauto.
+pose proof subst_fexp_in_fexp_subst_ftyp_in_fexp_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_exp_in_fexp_subst_typ_in_fexp : lngen.
+#[export] Hint Resolve subst_fexp_in_fexp_subst_ftyp_in_fexp : lngen.
 
 (* begin hide *)
 
-Lemma subst_exp_in_fexp_subst_exp_in_fexp_mutual :
+Lemma subst_fexp_in_fexp_subst_fexp_in_fexp_mutual :
 (forall e1 e2 e3 x2 x1,
-  x2 `notin` fv_fexp_in_fexp e2 ->
+  x2 `notin` fvar_in_fexp e2 ->
   x2 <> x1 ->
-  subst_exp_in_fexp e2 x1 (subst_exp_in_fexp e3 x2 e1) = subst_exp_in_fexp (subst_exp_in_fexp e2 x1 e3) x2 (subst_exp_in_fexp e2 x1 e1)).
+  subst_fexp_in_fexp e2 x1 (subst_fexp_in_fexp e3 x2 e1) = subst_fexp_in_fexp (subst_fexp_in_fexp e2 x1 e3) x2 (subst_fexp_in_fexp e2 x1 e1)).
 Proof.
 apply_mutual_ind fexp_mutind;
 default_simp.
@@ -5962,24 +5962,24 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_exp_in_fexp_subst_exp_in_fexp :
+Lemma subst_fexp_in_fexp_subst_fexp_in_fexp :
 forall e1 e2 e3 x2 x1,
-  x2 `notin` fv_fexp_in_fexp e2 ->
+  x2 `notin` fvar_in_fexp e2 ->
   x2 <> x1 ->
-  subst_exp_in_fexp e2 x1 (subst_exp_in_fexp e3 x2 e1) = subst_exp_in_fexp (subst_exp_in_fexp e2 x1 e3) x2 (subst_exp_in_fexp e2 x1 e1).
+  subst_fexp_in_fexp e2 x1 (subst_fexp_in_fexp e3 x2 e1) = subst_fexp_in_fexp (subst_fexp_in_fexp e2 x1 e3) x2 (subst_fexp_in_fexp e2 x1 e1).
 Proof.
-pose proof subst_exp_in_fexp_subst_exp_in_fexp_mutual as H; intuition eauto.
+pose proof subst_fexp_in_fexp_subst_fexp_in_fexp_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_exp_in_fexp_subst_exp_in_fexp : lngen.
+#[export] Hint Resolve subst_fexp_in_fexp_subst_fexp_in_fexp : lngen.
 
 (* begin hide *)
 
-Lemma subst_typ_in_fbind_subst_typ_in_fbind_mutual :
+Lemma subst_ftyp_in_fbind_subst_ftyp_in_fbind_mutual :
 (forall fb1 A1 A2 X2 X1,
-  X2 `notin` fv_ftyp_in_ftyp A1 ->
+  X2 `notin` ftvar_in_ftyp A1 ->
   X2 <> X1 ->
-  subst_typ_in_fbind A1 X1 (subst_typ_in_fbind A2 X2 fb1) = subst_typ_in_fbind (subst_typ_in_ftyp A1 X1 A2) X2 (subst_typ_in_fbind A1 X1 fb1)).
+  subst_ftyp_in_fbind A1 X1 (subst_ftyp_in_fbind A2 X2 fb1) = subst_ftyp_in_fbind (subst_ftyp_in_ftyp A1 X1 A2) X2 (subst_ftyp_in_fbind A1 X1 fb1)).
 Proof.
 apply_mutual_ind fbind_mutind;
 default_simp.
@@ -5987,26 +5987,26 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_typ_in_fbind_subst_typ_in_fbind :
+Lemma subst_ftyp_in_fbind_subst_ftyp_in_fbind :
 forall fb1 A1 A2 X2 X1,
-  X2 `notin` fv_ftyp_in_ftyp A1 ->
+  X2 `notin` ftvar_in_ftyp A1 ->
   X2 <> X1 ->
-  subst_typ_in_fbind A1 X1 (subst_typ_in_fbind A2 X2 fb1) = subst_typ_in_fbind (subst_typ_in_ftyp A1 X1 A2) X2 (subst_typ_in_fbind A1 X1 fb1).
+  subst_ftyp_in_fbind A1 X1 (subst_ftyp_in_fbind A2 X2 fb1) = subst_ftyp_in_fbind (subst_ftyp_in_ftyp A1 X1 A2) X2 (subst_ftyp_in_fbind A1 X1 fb1).
 Proof.
-pose proof subst_typ_in_fbind_subst_typ_in_fbind_mutual as H; intuition eauto.
+pose proof subst_ftyp_in_fbind_subst_ftyp_in_fbind_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_typ_in_fbind_subst_typ_in_fbind : lngen.
+#[export] Hint Resolve subst_ftyp_in_fbind_subst_ftyp_in_fbind : lngen.
 
 (* begin hide *)
 
-Lemma subst_typ_in_ftyp_close_ftyp_wrt_ftyp_rec_open_ftyp_wrt_ftyp_rec_mutual :
+Lemma subst_ftyp_in_ftyp_close_ftyp_wrt_ftyp_rec_open_ftyp_wrt_ftyp_rec_mutual :
 (forall A2 A1 X1 X2 n1,
-  X2 `notin` fv_ftyp_in_ftyp A2 ->
-  X2 `notin` fv_ftyp_in_ftyp A1 ->
+  X2 `notin` ftvar_in_ftyp A2 ->
+  X2 `notin` ftvar_in_ftyp A1 ->
   X2 <> X1 ->
   degree_ftyp_wrt_ftyp n1 A1 ->
-  subst_typ_in_ftyp A1 X1 A2 = close_ftyp_wrt_ftyp_rec n1 X2 (subst_typ_in_ftyp A1 X1 (open_ftyp_wrt_ftyp_rec n1 (ftyp_var_f X2) A2))).
+  subst_ftyp_in_ftyp A1 X1 A2 = close_ftyp_wrt_ftyp_rec n1 X2 (subst_ftyp_in_ftyp A1 X1 (open_ftyp_wrt_ftyp_rec n1 (ftyp_var_f X2) A2))).
 Proof.
 apply_mutual_ind ftyp_mutrec;
 default_simp.
@@ -6016,30 +6016,30 @@ Qed.
 
 (* begin hide *)
 
-Lemma subst_typ_in_ftyp_close_ftyp_wrt_ftyp_rec_open_ftyp_wrt_ftyp_rec :
+Lemma subst_ftyp_in_ftyp_close_ftyp_wrt_ftyp_rec_open_ftyp_wrt_ftyp_rec :
 forall A2 A1 X1 X2 n1,
-  X2 `notin` fv_ftyp_in_ftyp A2 ->
-  X2 `notin` fv_ftyp_in_ftyp A1 ->
+  X2 `notin` ftvar_in_ftyp A2 ->
+  X2 `notin` ftvar_in_ftyp A1 ->
   X2 <> X1 ->
   degree_ftyp_wrt_ftyp n1 A1 ->
-  subst_typ_in_ftyp A1 X1 A2 = close_ftyp_wrt_ftyp_rec n1 X2 (subst_typ_in_ftyp A1 X1 (open_ftyp_wrt_ftyp_rec n1 (ftyp_var_f X2) A2)).
+  subst_ftyp_in_ftyp A1 X1 A2 = close_ftyp_wrt_ftyp_rec n1 X2 (subst_ftyp_in_ftyp A1 X1 (open_ftyp_wrt_ftyp_rec n1 (ftyp_var_f X2) A2)).
 Proof.
-pose proof subst_typ_in_ftyp_close_ftyp_wrt_ftyp_rec_open_ftyp_wrt_ftyp_rec_mutual as H; intuition eauto.
+pose proof subst_ftyp_in_ftyp_close_ftyp_wrt_ftyp_rec_open_ftyp_wrt_ftyp_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_typ_in_ftyp_close_ftyp_wrt_ftyp_rec_open_ftyp_wrt_ftyp_rec : lngen.
+#[export] Hint Resolve subst_ftyp_in_ftyp_close_ftyp_wrt_ftyp_rec_open_ftyp_wrt_ftyp_rec : lngen.
 
 (* end hide *)
 
 (* begin hide *)
 
-Lemma subst_typ_in_fexp_close_fexp_wrt_ftyp_rec_open_fexp_wrt_ftyp_rec_mutual :
+Lemma subst_ftyp_in_fexp_close_fexp_wrt_ftyp_rec_open_fexp_wrt_ftyp_rec_mutual :
 (forall e1 A1 X1 X2 n1,
-  X2 `notin` fv_ftyp_in_fexp e1 ->
-  X2 `notin` fv_ftyp_in_ftyp A1 ->
+  X2 `notin` ftvar_in_fexp e1 ->
+  X2 `notin` ftvar_in_ftyp A1 ->
   X2 <> X1 ->
   degree_ftyp_wrt_ftyp n1 A1 ->
-  subst_typ_in_fexp A1 X1 e1 = close_fexp_wrt_ftyp_rec n1 X2 (subst_typ_in_fexp A1 X1 (open_fexp_wrt_ftyp_rec n1 (ftyp_var_f X2) e1))).
+  subst_ftyp_in_fexp A1 X1 e1 = close_fexp_wrt_ftyp_rec n1 X2 (subst_ftyp_in_fexp A1 X1 (open_fexp_wrt_ftyp_rec n1 (ftyp_var_f X2) e1))).
 Proof.
 apply_mutual_ind fexp_mutrec;
 default_simp.
@@ -6049,27 +6049,27 @@ Qed.
 
 (* begin hide *)
 
-Lemma subst_typ_in_fexp_close_fexp_wrt_ftyp_rec_open_fexp_wrt_ftyp_rec :
+Lemma subst_ftyp_in_fexp_close_fexp_wrt_ftyp_rec_open_fexp_wrt_ftyp_rec :
 forall e1 A1 X1 X2 n1,
-  X2 `notin` fv_ftyp_in_fexp e1 ->
-  X2 `notin` fv_ftyp_in_ftyp A1 ->
+  X2 `notin` ftvar_in_fexp e1 ->
+  X2 `notin` ftvar_in_ftyp A1 ->
   X2 <> X1 ->
   degree_ftyp_wrt_ftyp n1 A1 ->
-  subst_typ_in_fexp A1 X1 e1 = close_fexp_wrt_ftyp_rec n1 X2 (subst_typ_in_fexp A1 X1 (open_fexp_wrt_ftyp_rec n1 (ftyp_var_f X2) e1)).
+  subst_ftyp_in_fexp A1 X1 e1 = close_fexp_wrt_ftyp_rec n1 X2 (subst_ftyp_in_fexp A1 X1 (open_fexp_wrt_ftyp_rec n1 (ftyp_var_f X2) e1)).
 Proof.
-pose proof subst_typ_in_fexp_close_fexp_wrt_ftyp_rec_open_fexp_wrt_ftyp_rec_mutual as H; intuition eauto.
+pose proof subst_ftyp_in_fexp_close_fexp_wrt_ftyp_rec_open_fexp_wrt_ftyp_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_typ_in_fexp_close_fexp_wrt_ftyp_rec_open_fexp_wrt_ftyp_rec : lngen.
+#[export] Hint Resolve subst_ftyp_in_fexp_close_fexp_wrt_ftyp_rec_open_fexp_wrt_ftyp_rec : lngen.
 
 (* end hide *)
 
 (* begin hide *)
 
-Lemma subst_typ_in_fexp_close_fexp_wrt_fexp_rec_open_fexp_wrt_fexp_rec_mutual :
+Lemma subst_ftyp_in_fexp_close_fexp_wrt_fexp_rec_open_fexp_wrt_fexp_rec_mutual :
 (forall e1 A1 X1 x1 n1,
-  x1 `notin` fv_fexp_in_fexp e1 ->
-  subst_typ_in_fexp A1 X1 e1 = close_fexp_wrt_fexp_rec n1 x1 (subst_typ_in_fexp A1 X1 (open_fexp_wrt_fexp_rec n1 (fexp_var_f x1) e1))).
+  x1 `notin` fvar_in_fexp e1 ->
+  subst_ftyp_in_fexp A1 X1 e1 = close_fexp_wrt_fexp_rec n1 x1 (subst_ftyp_in_fexp A1 X1 (open_fexp_wrt_fexp_rec n1 (fexp_var_f x1) e1))).
 Proof.
 apply_mutual_ind fexp_mutrec;
 default_simp.
@@ -6079,26 +6079,26 @@ Qed.
 
 (* begin hide *)
 
-Lemma subst_typ_in_fexp_close_fexp_wrt_fexp_rec_open_fexp_wrt_fexp_rec :
+Lemma subst_ftyp_in_fexp_close_fexp_wrt_fexp_rec_open_fexp_wrt_fexp_rec :
 forall e1 A1 X1 x1 n1,
-  x1 `notin` fv_fexp_in_fexp e1 ->
-  subst_typ_in_fexp A1 X1 e1 = close_fexp_wrt_fexp_rec n1 x1 (subst_typ_in_fexp A1 X1 (open_fexp_wrt_fexp_rec n1 (fexp_var_f x1) e1)).
+  x1 `notin` fvar_in_fexp e1 ->
+  subst_ftyp_in_fexp A1 X1 e1 = close_fexp_wrt_fexp_rec n1 x1 (subst_ftyp_in_fexp A1 X1 (open_fexp_wrt_fexp_rec n1 (fexp_var_f x1) e1)).
 Proof.
-pose proof subst_typ_in_fexp_close_fexp_wrt_fexp_rec_open_fexp_wrt_fexp_rec_mutual as H; intuition eauto.
+pose proof subst_ftyp_in_fexp_close_fexp_wrt_fexp_rec_open_fexp_wrt_fexp_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_typ_in_fexp_close_fexp_wrt_fexp_rec_open_fexp_wrt_fexp_rec : lngen.
+#[export] Hint Resolve subst_ftyp_in_fexp_close_fexp_wrt_fexp_rec_open_fexp_wrt_fexp_rec : lngen.
 
 (* end hide *)
 
 (* begin hide *)
 
-Lemma subst_exp_in_fexp_close_fexp_wrt_ftyp_rec_open_fexp_wrt_ftyp_rec_mutual :
+Lemma subst_fexp_in_fexp_close_fexp_wrt_ftyp_rec_open_fexp_wrt_ftyp_rec_mutual :
 (forall e2 e1 x1 X1 n1,
-  X1 `notin` fv_ftyp_in_fexp e2 ->
-  X1 `notin` fv_ftyp_in_fexp e1 ->
+  X1 `notin` ftvar_in_fexp e2 ->
+  X1 `notin` ftvar_in_fexp e1 ->
   degree_fexp_wrt_ftyp n1 e1 ->
-  subst_exp_in_fexp e1 x1 e2 = close_fexp_wrt_ftyp_rec n1 X1 (subst_exp_in_fexp e1 x1 (open_fexp_wrt_ftyp_rec n1 (ftyp_var_f X1) e2))).
+  subst_fexp_in_fexp e1 x1 e2 = close_fexp_wrt_ftyp_rec n1 X1 (subst_fexp_in_fexp e1 x1 (open_fexp_wrt_ftyp_rec n1 (ftyp_var_f X1) e2))).
 Proof.
 apply_mutual_ind fexp_mutrec;
 default_simp.
@@ -6108,29 +6108,29 @@ Qed.
 
 (* begin hide *)
 
-Lemma subst_exp_in_fexp_close_fexp_wrt_ftyp_rec_open_fexp_wrt_ftyp_rec :
+Lemma subst_fexp_in_fexp_close_fexp_wrt_ftyp_rec_open_fexp_wrt_ftyp_rec :
 forall e2 e1 x1 X1 n1,
-  X1 `notin` fv_ftyp_in_fexp e2 ->
-  X1 `notin` fv_ftyp_in_fexp e1 ->
+  X1 `notin` ftvar_in_fexp e2 ->
+  X1 `notin` ftvar_in_fexp e1 ->
   degree_fexp_wrt_ftyp n1 e1 ->
-  subst_exp_in_fexp e1 x1 e2 = close_fexp_wrt_ftyp_rec n1 X1 (subst_exp_in_fexp e1 x1 (open_fexp_wrt_ftyp_rec n1 (ftyp_var_f X1) e2)).
+  subst_fexp_in_fexp e1 x1 e2 = close_fexp_wrt_ftyp_rec n1 X1 (subst_fexp_in_fexp e1 x1 (open_fexp_wrt_ftyp_rec n1 (ftyp_var_f X1) e2)).
 Proof.
-pose proof subst_exp_in_fexp_close_fexp_wrt_ftyp_rec_open_fexp_wrt_ftyp_rec_mutual as H; intuition eauto.
+pose proof subst_fexp_in_fexp_close_fexp_wrt_ftyp_rec_open_fexp_wrt_ftyp_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_exp_in_fexp_close_fexp_wrt_ftyp_rec_open_fexp_wrt_ftyp_rec : lngen.
+#[export] Hint Resolve subst_fexp_in_fexp_close_fexp_wrt_ftyp_rec_open_fexp_wrt_ftyp_rec : lngen.
 
 (* end hide *)
 
 (* begin hide *)
 
-Lemma subst_exp_in_fexp_close_fexp_wrt_fexp_rec_open_fexp_wrt_fexp_rec_mutual :
+Lemma subst_fexp_in_fexp_close_fexp_wrt_fexp_rec_open_fexp_wrt_fexp_rec_mutual :
 (forall e2 e1 x1 x2 n1,
-  x2 `notin` fv_fexp_in_fexp e2 ->
-  x2 `notin` fv_fexp_in_fexp e1 ->
+  x2 `notin` fvar_in_fexp e2 ->
+  x2 `notin` fvar_in_fexp e1 ->
   x2 <> x1 ->
   degree_fexp_wrt_fexp n1 e1 ->
-  subst_exp_in_fexp e1 x1 e2 = close_fexp_wrt_fexp_rec n1 x2 (subst_exp_in_fexp e1 x1 (open_fexp_wrt_fexp_rec n1 (fexp_var_f x2) e2))).
+  subst_fexp_in_fexp e1 x1 e2 = close_fexp_wrt_fexp_rec n1 x2 (subst_fexp_in_fexp e1 x1 (open_fexp_wrt_fexp_rec n1 (fexp_var_f x2) e2))).
 Proof.
 apply_mutual_ind fexp_mutrec;
 default_simp.
@@ -6140,30 +6140,30 @@ Qed.
 
 (* begin hide *)
 
-Lemma subst_exp_in_fexp_close_fexp_wrt_fexp_rec_open_fexp_wrt_fexp_rec :
+Lemma subst_fexp_in_fexp_close_fexp_wrt_fexp_rec_open_fexp_wrt_fexp_rec :
 forall e2 e1 x1 x2 n1,
-  x2 `notin` fv_fexp_in_fexp e2 ->
-  x2 `notin` fv_fexp_in_fexp e1 ->
+  x2 `notin` fvar_in_fexp e2 ->
+  x2 `notin` fvar_in_fexp e1 ->
   x2 <> x1 ->
   degree_fexp_wrt_fexp n1 e1 ->
-  subst_exp_in_fexp e1 x1 e2 = close_fexp_wrt_fexp_rec n1 x2 (subst_exp_in_fexp e1 x1 (open_fexp_wrt_fexp_rec n1 (fexp_var_f x2) e2)).
+  subst_fexp_in_fexp e1 x1 e2 = close_fexp_wrt_fexp_rec n1 x2 (subst_fexp_in_fexp e1 x1 (open_fexp_wrt_fexp_rec n1 (fexp_var_f x2) e2)).
 Proof.
-pose proof subst_exp_in_fexp_close_fexp_wrt_fexp_rec_open_fexp_wrt_fexp_rec_mutual as H; intuition eauto.
+pose proof subst_fexp_in_fexp_close_fexp_wrt_fexp_rec_open_fexp_wrt_fexp_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_exp_in_fexp_close_fexp_wrt_fexp_rec_open_fexp_wrt_fexp_rec : lngen.
+#[export] Hint Resolve subst_fexp_in_fexp_close_fexp_wrt_fexp_rec_open_fexp_wrt_fexp_rec : lngen.
 
 (* end hide *)
 
 (* begin hide *)
 
-Lemma subst_typ_in_fbind_close_fbind_wrt_ftyp_rec_open_fbind_wrt_ftyp_rec_mutual :
+Lemma subst_ftyp_in_fbind_close_fbind_wrt_ftyp_rec_open_fbind_wrt_ftyp_rec_mutual :
 (forall fb1 A1 X1 X2 n1,
-  X2 `notin` fv_ftyp_in_fbind fb1 ->
-  X2 `notin` fv_ftyp_in_ftyp A1 ->
+  X2 `notin` ftvar_in_fbind fb1 ->
+  X2 `notin` ftvar_in_ftyp A1 ->
   X2 <> X1 ->
   degree_ftyp_wrt_ftyp n1 A1 ->
-  subst_typ_in_fbind A1 X1 fb1 = close_fbind_wrt_ftyp_rec n1 X2 (subst_typ_in_fbind A1 X1 (open_fbind_wrt_ftyp_rec n1 (ftyp_var_f X2) fb1))).
+  subst_ftyp_in_fbind A1 X1 fb1 = close_fbind_wrt_ftyp_rec n1 X2 (subst_ftyp_in_fbind A1 X1 (open_fbind_wrt_ftyp_rec n1 (ftyp_var_f X2) fb1))).
 Proof.
 apply_mutual_ind fbind_mutrec;
 default_simp.
@@ -6173,181 +6173,181 @@ Qed.
 
 (* begin hide *)
 
-Lemma subst_typ_in_fbind_close_fbind_wrt_ftyp_rec_open_fbind_wrt_ftyp_rec :
+Lemma subst_ftyp_in_fbind_close_fbind_wrt_ftyp_rec_open_fbind_wrt_ftyp_rec :
 forall fb1 A1 X1 X2 n1,
-  X2 `notin` fv_ftyp_in_fbind fb1 ->
-  X2 `notin` fv_ftyp_in_ftyp A1 ->
+  X2 `notin` ftvar_in_fbind fb1 ->
+  X2 `notin` ftvar_in_ftyp A1 ->
   X2 <> X1 ->
   degree_ftyp_wrt_ftyp n1 A1 ->
-  subst_typ_in_fbind A1 X1 fb1 = close_fbind_wrt_ftyp_rec n1 X2 (subst_typ_in_fbind A1 X1 (open_fbind_wrt_ftyp_rec n1 (ftyp_var_f X2) fb1)).
+  subst_ftyp_in_fbind A1 X1 fb1 = close_fbind_wrt_ftyp_rec n1 X2 (subst_ftyp_in_fbind A1 X1 (open_fbind_wrt_ftyp_rec n1 (ftyp_var_f X2) fb1)).
 Proof.
-pose proof subst_typ_in_fbind_close_fbind_wrt_ftyp_rec_open_fbind_wrt_ftyp_rec_mutual as H; intuition eauto.
+pose proof subst_ftyp_in_fbind_close_fbind_wrt_ftyp_rec_open_fbind_wrt_ftyp_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_typ_in_fbind_close_fbind_wrt_ftyp_rec_open_fbind_wrt_ftyp_rec : lngen.
+#[export] Hint Resolve subst_ftyp_in_fbind_close_fbind_wrt_ftyp_rec_open_fbind_wrt_ftyp_rec : lngen.
 
 (* end hide *)
 
-Lemma subst_typ_in_ftyp_close_ftyp_wrt_ftyp_open_ftyp_wrt_ftyp :
+Lemma subst_ftyp_in_ftyp_close_ftyp_wrt_ftyp_open_ftyp_wrt_ftyp :
 forall A2 A1 X1 X2,
-  X2 `notin` fv_ftyp_in_ftyp A2 ->
-  X2 `notin` fv_ftyp_in_ftyp A1 ->
+  X2 `notin` ftvar_in_ftyp A2 ->
+  X2 `notin` ftvar_in_ftyp A1 ->
   X2 <> X1 ->
   lc_ftyp A1 ->
-  subst_typ_in_ftyp A1 X1 A2 = close_ftyp_wrt_ftyp X2 (subst_typ_in_ftyp A1 X1 (open_ftyp_wrt_ftyp A2 (ftyp_var_f X2))).
+  subst_ftyp_in_ftyp A1 X1 A2 = close_ftyp_wrt_ftyp X2 (subst_ftyp_in_ftyp A1 X1 (open_ftyp_wrt_ftyp A2 (ftyp_var_f X2))).
 Proof.
 unfold close_ftyp_wrt_ftyp; unfold open_ftyp_wrt_ftyp; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_typ_in_ftyp_close_ftyp_wrt_ftyp_open_ftyp_wrt_ftyp : lngen.
+#[export] Hint Resolve subst_ftyp_in_ftyp_close_ftyp_wrt_ftyp_open_ftyp_wrt_ftyp : lngen.
 
-Lemma subst_typ_in_fexp_close_fexp_wrt_ftyp_open_fexp_wrt_ftyp :
+Lemma subst_ftyp_in_fexp_close_fexp_wrt_ftyp_open_fexp_wrt_ftyp :
 forall e1 A1 X1 X2,
-  X2 `notin` fv_ftyp_in_fexp e1 ->
-  X2 `notin` fv_ftyp_in_ftyp A1 ->
+  X2 `notin` ftvar_in_fexp e1 ->
+  X2 `notin` ftvar_in_ftyp A1 ->
   X2 <> X1 ->
   lc_ftyp A1 ->
-  subst_typ_in_fexp A1 X1 e1 = close_fexp_wrt_ftyp X2 (subst_typ_in_fexp A1 X1 (open_fexp_wrt_ftyp e1 (ftyp_var_f X2))).
+  subst_ftyp_in_fexp A1 X1 e1 = close_fexp_wrt_ftyp X2 (subst_ftyp_in_fexp A1 X1 (open_fexp_wrt_ftyp e1 (ftyp_var_f X2))).
 Proof.
 unfold close_fexp_wrt_ftyp; unfold open_fexp_wrt_ftyp; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_typ_in_fexp_close_fexp_wrt_ftyp_open_fexp_wrt_ftyp : lngen.
+#[export] Hint Resolve subst_ftyp_in_fexp_close_fexp_wrt_ftyp_open_fexp_wrt_ftyp : lngen.
 
-Lemma subst_typ_in_fexp_close_fexp_wrt_fexp_open_fexp_wrt_fexp :
+Lemma subst_ftyp_in_fexp_close_fexp_wrt_fexp_open_fexp_wrt_fexp :
 forall e1 A1 X1 x1,
-  x1 `notin` fv_fexp_in_fexp e1 ->
+  x1 `notin` fvar_in_fexp e1 ->
   lc_ftyp A1 ->
-  subst_typ_in_fexp A1 X1 e1 = close_fexp_wrt_fexp x1 (subst_typ_in_fexp A1 X1 (open_fexp_wrt_fexp e1 (fexp_var_f x1))).
+  subst_ftyp_in_fexp A1 X1 e1 = close_fexp_wrt_fexp x1 (subst_ftyp_in_fexp A1 X1 (open_fexp_wrt_fexp e1 (fexp_var_f x1))).
 Proof.
 unfold close_fexp_wrt_fexp; unfold open_fexp_wrt_fexp; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_typ_in_fexp_close_fexp_wrt_fexp_open_fexp_wrt_fexp : lngen.
+#[export] Hint Resolve subst_ftyp_in_fexp_close_fexp_wrt_fexp_open_fexp_wrt_fexp : lngen.
 
-Lemma subst_exp_in_fexp_close_fexp_wrt_ftyp_open_fexp_wrt_ftyp :
+Lemma subst_fexp_in_fexp_close_fexp_wrt_ftyp_open_fexp_wrt_ftyp :
 forall e2 e1 x1 X1,
-  X1 `notin` fv_ftyp_in_fexp e2 ->
-  X1 `notin` fv_ftyp_in_fexp e1 ->
+  X1 `notin` ftvar_in_fexp e2 ->
+  X1 `notin` ftvar_in_fexp e1 ->
   lc_fexp e1 ->
-  subst_exp_in_fexp e1 x1 e2 = close_fexp_wrt_ftyp X1 (subst_exp_in_fexp e1 x1 (open_fexp_wrt_ftyp e2 (ftyp_var_f X1))).
+  subst_fexp_in_fexp e1 x1 e2 = close_fexp_wrt_ftyp X1 (subst_fexp_in_fexp e1 x1 (open_fexp_wrt_ftyp e2 (ftyp_var_f X1))).
 Proof.
 unfold close_fexp_wrt_ftyp; unfold open_fexp_wrt_ftyp; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_exp_in_fexp_close_fexp_wrt_ftyp_open_fexp_wrt_ftyp : lngen.
+#[export] Hint Resolve subst_fexp_in_fexp_close_fexp_wrt_ftyp_open_fexp_wrt_ftyp : lngen.
 
-Lemma subst_exp_in_fexp_close_fexp_wrt_fexp_open_fexp_wrt_fexp :
+Lemma subst_fexp_in_fexp_close_fexp_wrt_fexp_open_fexp_wrt_fexp :
 forall e2 e1 x1 x2,
-  x2 `notin` fv_fexp_in_fexp e2 ->
-  x2 `notin` fv_fexp_in_fexp e1 ->
+  x2 `notin` fvar_in_fexp e2 ->
+  x2 `notin` fvar_in_fexp e1 ->
   x2 <> x1 ->
   lc_fexp e1 ->
-  subst_exp_in_fexp e1 x1 e2 = close_fexp_wrt_fexp x2 (subst_exp_in_fexp e1 x1 (open_fexp_wrt_fexp e2 (fexp_var_f x2))).
+  subst_fexp_in_fexp e1 x1 e2 = close_fexp_wrt_fexp x2 (subst_fexp_in_fexp e1 x1 (open_fexp_wrt_fexp e2 (fexp_var_f x2))).
 Proof.
 unfold close_fexp_wrt_fexp; unfold open_fexp_wrt_fexp; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_exp_in_fexp_close_fexp_wrt_fexp_open_fexp_wrt_fexp : lngen.
+#[export] Hint Resolve subst_fexp_in_fexp_close_fexp_wrt_fexp_open_fexp_wrt_fexp : lngen.
 
-Lemma subst_typ_in_fbind_close_fbind_wrt_ftyp_open_fbind_wrt_ftyp :
+Lemma subst_ftyp_in_fbind_close_fbind_wrt_ftyp_open_fbind_wrt_ftyp :
 forall fb1 A1 X1 X2,
-  X2 `notin` fv_ftyp_in_fbind fb1 ->
-  X2 `notin` fv_ftyp_in_ftyp A1 ->
+  X2 `notin` ftvar_in_fbind fb1 ->
+  X2 `notin` ftvar_in_ftyp A1 ->
   X2 <> X1 ->
   lc_ftyp A1 ->
-  subst_typ_in_fbind A1 X1 fb1 = close_fbind_wrt_ftyp X2 (subst_typ_in_fbind A1 X1 (open_fbind_wrt_ftyp fb1 (ftyp_var_f X2))).
+  subst_ftyp_in_fbind A1 X1 fb1 = close_fbind_wrt_ftyp X2 (subst_ftyp_in_fbind A1 X1 (open_fbind_wrt_ftyp fb1 (ftyp_var_f X2))).
 Proof.
 unfold close_fbind_wrt_ftyp; unfold open_fbind_wrt_ftyp; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_typ_in_fbind_close_fbind_wrt_ftyp_open_fbind_wrt_ftyp : lngen.
+#[export] Hint Resolve subst_ftyp_in_fbind_close_fbind_wrt_ftyp_open_fbind_wrt_ftyp : lngen.
 
-Lemma subst_typ_in_ftyp_ftyp_all :
+Lemma subst_ftyp_in_ftyp_ftyp_all :
 forall X2 A2 A1 X1,
   lc_ftyp A1 ->
-  X2 `notin` fv_ftyp_in_ftyp A1 `union` fv_ftyp_in_ftyp A2 `union` singleton X1 ->
-  subst_typ_in_ftyp A1 X1 (ftyp_all A2) = ftyp_all (close_ftyp_wrt_ftyp X2 (subst_typ_in_ftyp A1 X1 (open_ftyp_wrt_ftyp A2 (ftyp_var_f X2)))).
+  X2 `notin` ftvar_in_ftyp A1 `union` ftvar_in_ftyp A2 `union` singleton X1 ->
+  subst_ftyp_in_ftyp A1 X1 (ftyp_all A2) = ftyp_all (close_ftyp_wrt_ftyp X2 (subst_ftyp_in_ftyp A1 X1 (open_ftyp_wrt_ftyp A2 (ftyp_var_f X2)))).
 Proof.
 default_simp.
 Qed.
 
-#[export] Hint Resolve subst_typ_in_ftyp_ftyp_all : lngen.
+#[export] Hint Resolve subst_ftyp_in_ftyp_ftyp_all : lngen.
 
-Lemma subst_typ_in_fexp_fexp_abs :
+Lemma subst_ftyp_in_fexp_fexp_abs :
 forall x1 A2 e1 A1 X1,
   lc_ftyp A1 ->
-  x1 `notin` fv_fexp_in_fexp e1 ->
-  subst_typ_in_fexp A1 X1 (fexp_abs A2 e1) = fexp_abs (subst_typ_in_ftyp A1 X1 A2) (close_fexp_wrt_fexp x1 (subst_typ_in_fexp A1 X1 (open_fexp_wrt_fexp e1 (fexp_var_f x1)))).
+  x1 `notin` fvar_in_fexp e1 ->
+  subst_ftyp_in_fexp A1 X1 (fexp_abs A2 e1) = fexp_abs (subst_ftyp_in_ftyp A1 X1 A2) (close_fexp_wrt_fexp x1 (subst_ftyp_in_fexp A1 X1 (open_fexp_wrt_fexp e1 (fexp_var_f x1)))).
 Proof.
 default_simp.
 Qed.
 
-#[export] Hint Resolve subst_typ_in_fexp_fexp_abs : lngen.
+#[export] Hint Resolve subst_ftyp_in_fexp_fexp_abs : lngen.
 
-Lemma subst_typ_in_fexp_fexp_tabs :
+Lemma subst_ftyp_in_fexp_fexp_tabs :
 forall X2 e1 A1 X1,
   lc_ftyp A1 ->
-  X2 `notin` fv_ftyp_in_ftyp A1 `union` fv_ftyp_in_fexp e1 `union` singleton X1 ->
-  subst_typ_in_fexp A1 X1 (fexp_tabs e1) = fexp_tabs (close_fexp_wrt_ftyp X2 (subst_typ_in_fexp A1 X1 (open_fexp_wrt_ftyp e1 (ftyp_var_f X2)))).
+  X2 `notin` ftvar_in_ftyp A1 `union` ftvar_in_fexp e1 `union` singleton X1 ->
+  subst_ftyp_in_fexp A1 X1 (fexp_tabs e1) = fexp_tabs (close_fexp_wrt_ftyp X2 (subst_ftyp_in_fexp A1 X1 (open_fexp_wrt_ftyp e1 (ftyp_var_f X2)))).
 Proof.
 default_simp.
 Qed.
 
-#[export] Hint Resolve subst_typ_in_fexp_fexp_tabs : lngen.
+#[export] Hint Resolve subst_ftyp_in_fexp_fexp_tabs : lngen.
 
-Lemma subst_typ_in_fexp_fexp_case :
+Lemma subst_ftyp_in_fexp_fexp_case :
 forall x1 y1 e1 e2 e3 A1 X1,
   lc_ftyp A1 ->
-  x1 `notin` fv_fexp_in_fexp e2 ->
-  y1 `notin` fv_fexp_in_fexp e3 ->
-  subst_typ_in_fexp A1 X1 (fexp_case e1 e2 e3) = fexp_case (subst_typ_in_fexp A1 X1 e1) (close_fexp_wrt_fexp x1 (subst_typ_in_fexp A1 X1 (open_fexp_wrt_fexp e2 (fexp_var_f x1)))) (close_fexp_wrt_fexp y1 (subst_typ_in_fexp A1 X1 (open_fexp_wrt_fexp e3 (fexp_var_f y1)))).
+  x1 `notin` fvar_in_fexp e2 ->
+  y1 `notin` fvar_in_fexp e3 ->
+  subst_ftyp_in_fexp A1 X1 (fexp_case e1 e2 e3) = fexp_case (subst_ftyp_in_fexp A1 X1 e1) (close_fexp_wrt_fexp x1 (subst_ftyp_in_fexp A1 X1 (open_fexp_wrt_fexp e2 (fexp_var_f x1)))) (close_fexp_wrt_fexp y1 (subst_ftyp_in_fexp A1 X1 (open_fexp_wrt_fexp e3 (fexp_var_f y1)))).
 Proof.
 default_simp.
 Qed.
 
-#[export] Hint Resolve subst_typ_in_fexp_fexp_case : lngen.
+#[export] Hint Resolve subst_ftyp_in_fexp_fexp_case : lngen.
 
-Lemma subst_exp_in_fexp_fexp_abs :
+Lemma subst_fexp_in_fexp_fexp_abs :
 forall x2 A1 e2 e1 x1,
   lc_fexp e1 ->
-  x2 `notin` fv_fexp_in_fexp e1 `union` fv_fexp_in_fexp e2 `union` singleton x1 ->
-  subst_exp_in_fexp e1 x1 (fexp_abs A1 e2) = fexp_abs (A1) (close_fexp_wrt_fexp x2 (subst_exp_in_fexp e1 x1 (open_fexp_wrt_fexp e2 (fexp_var_f x2)))).
+  x2 `notin` fvar_in_fexp e1 `union` fvar_in_fexp e2 `union` singleton x1 ->
+  subst_fexp_in_fexp e1 x1 (fexp_abs A1 e2) = fexp_abs (A1) (close_fexp_wrt_fexp x2 (subst_fexp_in_fexp e1 x1 (open_fexp_wrt_fexp e2 (fexp_var_f x2)))).
 Proof.
 default_simp.
 Qed.
 
-#[export] Hint Resolve subst_exp_in_fexp_fexp_abs : lngen.
+#[export] Hint Resolve subst_fexp_in_fexp_fexp_abs : lngen.
 
-Lemma subst_exp_in_fexp_fexp_tabs :
+Lemma subst_fexp_in_fexp_fexp_tabs :
 forall X1 e2 e1 x1,
   lc_fexp e1 ->
-  X1 `notin` fv_ftyp_in_fexp e1 `union` fv_ftyp_in_fexp e2 ->
-  subst_exp_in_fexp e1 x1 (fexp_tabs e2) = fexp_tabs (close_fexp_wrt_ftyp X1 (subst_exp_in_fexp e1 x1 (open_fexp_wrt_ftyp e2 (ftyp_var_f X1)))).
+  X1 `notin` ftvar_in_fexp e1 `union` ftvar_in_fexp e2 ->
+  subst_fexp_in_fexp e1 x1 (fexp_tabs e2) = fexp_tabs (close_fexp_wrt_ftyp X1 (subst_fexp_in_fexp e1 x1 (open_fexp_wrt_ftyp e2 (ftyp_var_f X1)))).
 Proof.
 default_simp.
 Qed.
 
-#[export] Hint Resolve subst_exp_in_fexp_fexp_tabs : lngen.
+#[export] Hint Resolve subst_fexp_in_fexp_fexp_tabs : lngen.
 
-Lemma subst_exp_in_fexp_fexp_case :
+Lemma subst_fexp_in_fexp_fexp_case :
 forall x2 y1 e2 e3 e4 e1 x1,
   lc_fexp e1 ->
-  x2 `notin` fv_fexp_in_fexp e1 `union` fv_fexp_in_fexp e3 `union` singleton x1 ->
-  y1 `notin` fv_fexp_in_fexp e1 `union` fv_fexp_in_fexp e4 `union` singleton x1 ->
-  subst_exp_in_fexp e1 x1 (fexp_case e2 e3 e4) = fexp_case (subst_exp_in_fexp e1 x1 e2) (close_fexp_wrt_fexp x2 (subst_exp_in_fexp e1 x1 (open_fexp_wrt_fexp e3 (fexp_var_f x2)))) (close_fexp_wrt_fexp y1 (subst_exp_in_fexp e1 x1 (open_fexp_wrt_fexp e4 (fexp_var_f y1)))).
+  x2 `notin` fvar_in_fexp e1 `union` fvar_in_fexp e3 `union` singleton x1 ->
+  y1 `notin` fvar_in_fexp e1 `union` fvar_in_fexp e4 `union` singleton x1 ->
+  subst_fexp_in_fexp e1 x1 (fexp_case e2 e3 e4) = fexp_case (subst_fexp_in_fexp e1 x1 e2) (close_fexp_wrt_fexp x2 (subst_fexp_in_fexp e1 x1 (open_fexp_wrt_fexp e3 (fexp_var_f x2)))) (close_fexp_wrt_fexp y1 (subst_fexp_in_fexp e1 x1 (open_fexp_wrt_fexp e4 (fexp_var_f y1)))).
 Proof.
 default_simp.
 Qed.
 
-#[export] Hint Resolve subst_exp_in_fexp_fexp_case : lngen.
+#[export] Hint Resolve subst_fexp_in_fexp_fexp_case : lngen.
 
 (* begin hide *)
 
-Lemma subst_typ_in_ftyp_intro_rec_mutual :
+Lemma subst_ftyp_in_ftyp_intro_rec_mutual :
 (forall A1 X1 A2 n1,
-  X1 `notin` fv_ftyp_in_ftyp A1 ->
-  open_ftyp_wrt_ftyp_rec n1 A2 A1 = subst_typ_in_ftyp A2 X1 (open_ftyp_wrt_ftyp_rec n1 (ftyp_var_f X1) A1)).
+  X1 `notin` ftvar_in_ftyp A1 ->
+  open_ftyp_wrt_ftyp_rec n1 A2 A1 = subst_ftyp_in_ftyp A2 X1 (open_ftyp_wrt_ftyp_rec n1 (ftyp_var_f X1) A1)).
 Proof.
 apply_mutual_ind ftyp_mutind;
 default_simp.
@@ -6355,23 +6355,23 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_typ_in_ftyp_intro_rec :
+Lemma subst_ftyp_in_ftyp_intro_rec :
 forall A1 X1 A2 n1,
-  X1 `notin` fv_ftyp_in_ftyp A1 ->
-  open_ftyp_wrt_ftyp_rec n1 A2 A1 = subst_typ_in_ftyp A2 X1 (open_ftyp_wrt_ftyp_rec n1 (ftyp_var_f X1) A1).
+  X1 `notin` ftvar_in_ftyp A1 ->
+  open_ftyp_wrt_ftyp_rec n1 A2 A1 = subst_ftyp_in_ftyp A2 X1 (open_ftyp_wrt_ftyp_rec n1 (ftyp_var_f X1) A1).
 Proof.
-pose proof subst_typ_in_ftyp_intro_rec_mutual as H; intuition eauto.
+pose proof subst_ftyp_in_ftyp_intro_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_typ_in_ftyp_intro_rec : lngen.
-#[export] Hint Rewrite subst_typ_in_ftyp_intro_rec using solve [auto] : lngen.
+#[export] Hint Resolve subst_ftyp_in_ftyp_intro_rec : lngen.
+#[export] Hint Rewrite subst_ftyp_in_ftyp_intro_rec using solve [auto] : lngen.
 
 (* begin hide *)
 
-Lemma subst_typ_in_fexp_intro_rec_mutual :
+Lemma subst_ftyp_in_fexp_intro_rec_mutual :
 (forall e1 X1 A1 n1,
-  X1 `notin` fv_ftyp_in_fexp e1 ->
-  open_fexp_wrt_ftyp_rec n1 A1 e1 = subst_typ_in_fexp A1 X1 (open_fexp_wrt_ftyp_rec n1 (ftyp_var_f X1) e1)).
+  X1 `notin` ftvar_in_fexp e1 ->
+  open_fexp_wrt_ftyp_rec n1 A1 e1 = subst_ftyp_in_fexp A1 X1 (open_fexp_wrt_ftyp_rec n1 (ftyp_var_f X1) e1)).
 Proof.
 apply_mutual_ind fexp_mutind;
 default_simp.
@@ -6379,23 +6379,23 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_typ_in_fexp_intro_rec :
+Lemma subst_ftyp_in_fexp_intro_rec :
 forall e1 X1 A1 n1,
-  X1 `notin` fv_ftyp_in_fexp e1 ->
-  open_fexp_wrt_ftyp_rec n1 A1 e1 = subst_typ_in_fexp A1 X1 (open_fexp_wrt_ftyp_rec n1 (ftyp_var_f X1) e1).
+  X1 `notin` ftvar_in_fexp e1 ->
+  open_fexp_wrt_ftyp_rec n1 A1 e1 = subst_ftyp_in_fexp A1 X1 (open_fexp_wrt_ftyp_rec n1 (ftyp_var_f X1) e1).
 Proof.
-pose proof subst_typ_in_fexp_intro_rec_mutual as H; intuition eauto.
+pose proof subst_ftyp_in_fexp_intro_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_typ_in_fexp_intro_rec : lngen.
-#[export] Hint Rewrite subst_typ_in_fexp_intro_rec using solve [auto] : lngen.
+#[export] Hint Resolve subst_ftyp_in_fexp_intro_rec : lngen.
+#[export] Hint Rewrite subst_ftyp_in_fexp_intro_rec using solve [auto] : lngen.
 
 (* begin hide *)
 
-Lemma subst_exp_in_fexp_intro_rec_mutual :
+Lemma subst_fexp_in_fexp_intro_rec_mutual :
 (forall e1 x1 e2 n1,
-  x1 `notin` fv_fexp_in_fexp e1 ->
-  open_fexp_wrt_fexp_rec n1 e2 e1 = subst_exp_in_fexp e2 x1 (open_fexp_wrt_fexp_rec n1 (fexp_var_f x1) e1)).
+  x1 `notin` fvar_in_fexp e1 ->
+  open_fexp_wrt_fexp_rec n1 e2 e1 = subst_fexp_in_fexp e2 x1 (open_fexp_wrt_fexp_rec n1 (fexp_var_f x1) e1)).
 Proof.
 apply_mutual_ind fexp_mutind;
 default_simp.
@@ -6403,23 +6403,23 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_exp_in_fexp_intro_rec :
+Lemma subst_fexp_in_fexp_intro_rec :
 forall e1 x1 e2 n1,
-  x1 `notin` fv_fexp_in_fexp e1 ->
-  open_fexp_wrt_fexp_rec n1 e2 e1 = subst_exp_in_fexp e2 x1 (open_fexp_wrt_fexp_rec n1 (fexp_var_f x1) e1).
+  x1 `notin` fvar_in_fexp e1 ->
+  open_fexp_wrt_fexp_rec n1 e2 e1 = subst_fexp_in_fexp e2 x1 (open_fexp_wrt_fexp_rec n1 (fexp_var_f x1) e1).
 Proof.
-pose proof subst_exp_in_fexp_intro_rec_mutual as H; intuition eauto.
+pose proof subst_fexp_in_fexp_intro_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_exp_in_fexp_intro_rec : lngen.
-#[export] Hint Rewrite subst_exp_in_fexp_intro_rec using solve [auto] : lngen.
+#[export] Hint Resolve subst_fexp_in_fexp_intro_rec : lngen.
+#[export] Hint Rewrite subst_fexp_in_fexp_intro_rec using solve [auto] : lngen.
 
 (* begin hide *)
 
-Lemma subst_typ_in_fbind_intro_rec_mutual :
+Lemma subst_ftyp_in_fbind_intro_rec_mutual :
 (forall fb1 X1 A1 n1,
-  X1 `notin` fv_ftyp_in_fbind fb1 ->
-  open_fbind_wrt_ftyp_rec n1 A1 fb1 = subst_typ_in_fbind A1 X1 (open_fbind_wrt_ftyp_rec n1 (ftyp_var_f X1) fb1)).
+  X1 `notin` ftvar_in_fbind fb1 ->
+  open_fbind_wrt_ftyp_rec n1 A1 fb1 = subst_ftyp_in_fbind A1 X1 (open_fbind_wrt_ftyp_rec n1 (ftyp_var_f X1) fb1)).
 Proof.
 apply_mutual_ind fbind_mutind;
 default_simp.
@@ -6427,56 +6427,56 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_typ_in_fbind_intro_rec :
+Lemma subst_ftyp_in_fbind_intro_rec :
 forall fb1 X1 A1 n1,
-  X1 `notin` fv_ftyp_in_fbind fb1 ->
-  open_fbind_wrt_ftyp_rec n1 A1 fb1 = subst_typ_in_fbind A1 X1 (open_fbind_wrt_ftyp_rec n1 (ftyp_var_f X1) fb1).
+  X1 `notin` ftvar_in_fbind fb1 ->
+  open_fbind_wrt_ftyp_rec n1 A1 fb1 = subst_ftyp_in_fbind A1 X1 (open_fbind_wrt_ftyp_rec n1 (ftyp_var_f X1) fb1).
 Proof.
-pose proof subst_typ_in_fbind_intro_rec_mutual as H; intuition eauto.
+pose proof subst_ftyp_in_fbind_intro_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_typ_in_fbind_intro_rec : lngen.
-#[export] Hint Rewrite subst_typ_in_fbind_intro_rec using solve [auto] : lngen.
+#[export] Hint Resolve subst_ftyp_in_fbind_intro_rec : lngen.
+#[export] Hint Rewrite subst_ftyp_in_fbind_intro_rec using solve [auto] : lngen.
 
-Lemma subst_typ_in_ftyp_intro :
+Lemma subst_ftyp_in_ftyp_intro :
 forall X1 A1 A2,
-  X1 `notin` fv_ftyp_in_ftyp A1 ->
-  open_ftyp_wrt_ftyp A1 A2 = subst_typ_in_ftyp A2 X1 (open_ftyp_wrt_ftyp A1 (ftyp_var_f X1)).
+  X1 `notin` ftvar_in_ftyp A1 ->
+  open_ftyp_wrt_ftyp A1 A2 = subst_ftyp_in_ftyp A2 X1 (open_ftyp_wrt_ftyp A1 (ftyp_var_f X1)).
 Proof.
 unfold open_ftyp_wrt_ftyp; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_typ_in_ftyp_intro : lngen.
+#[export] Hint Resolve subst_ftyp_in_ftyp_intro : lngen.
 
-Lemma subst_typ_in_fexp_intro :
+Lemma subst_ftyp_in_fexp_intro :
 forall X1 e1 A1,
-  X1 `notin` fv_ftyp_in_fexp e1 ->
-  open_fexp_wrt_ftyp e1 A1 = subst_typ_in_fexp A1 X1 (open_fexp_wrt_ftyp e1 (ftyp_var_f X1)).
+  X1 `notin` ftvar_in_fexp e1 ->
+  open_fexp_wrt_ftyp e1 A1 = subst_ftyp_in_fexp A1 X1 (open_fexp_wrt_ftyp e1 (ftyp_var_f X1)).
 Proof.
 unfold open_fexp_wrt_ftyp; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_typ_in_fexp_intro : lngen.
+#[export] Hint Resolve subst_ftyp_in_fexp_intro : lngen.
 
-Lemma subst_exp_in_fexp_intro :
+Lemma subst_fexp_in_fexp_intro :
 forall x1 e1 e2,
-  x1 `notin` fv_fexp_in_fexp e1 ->
-  open_fexp_wrt_fexp e1 e2 = subst_exp_in_fexp e2 x1 (open_fexp_wrt_fexp e1 (fexp_var_f x1)).
+  x1 `notin` fvar_in_fexp e1 ->
+  open_fexp_wrt_fexp e1 e2 = subst_fexp_in_fexp e2 x1 (open_fexp_wrt_fexp e1 (fexp_var_f x1)).
 Proof.
 unfold open_fexp_wrt_fexp; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_exp_in_fexp_intro : lngen.
+#[export] Hint Resolve subst_fexp_in_fexp_intro : lngen.
 
-Lemma subst_typ_in_fbind_intro :
+Lemma subst_ftyp_in_fbind_intro :
 forall X1 fb1 A1,
-  X1 `notin` fv_ftyp_in_fbind fb1 ->
-  open_fbind_wrt_ftyp fb1 A1 = subst_typ_in_fbind A1 X1 (open_fbind_wrt_ftyp fb1 (ftyp_var_f X1)).
+  X1 `notin` ftvar_in_fbind fb1 ->
+  open_fbind_wrt_ftyp fb1 A1 = subst_ftyp_in_fbind A1 X1 (open_fbind_wrt_ftyp fb1 (ftyp_var_f X1)).
 Proof.
 unfold open_fbind_wrt_ftyp; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_typ_in_fbind_intro : lngen.
+#[export] Hint Resolve subst_ftyp_in_fbind_intro : lngen.
 
 
 (* *********************************************************************** *)

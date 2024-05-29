@@ -10897,10 +10897,10 @@ Qed.
 
 (* begin hide *)
 
-Lemma ftvar_in_typ_subst_tvar_in_typ_fresh_mutual :
+Lemma ftvar_in_typ_subst_typ_in_typ_fresh_mutual :
 (forall A1 A2 X1,
   X1 `notin` ftvar_in_typ A1 ->
-  ftvar_in_typ (subst_tvar_in_typ A2 X1 A1) [=] ftvar_in_typ A1).
+  ftvar_in_typ (subst_typ_in_typ A2 X1 A1) [=] ftvar_in_typ A1).
 Proof.
 apply_mutual_ind typ_mutind;
 default_simp; fsetdec.
@@ -10908,23 +10908,23 @@ Qed.
 
 (* end hide *)
 
-Lemma ftvar_in_typ_subst_tvar_in_typ_fresh :
+Lemma ftvar_in_typ_subst_typ_in_typ_fresh :
 forall A1 A2 X1,
   X1 `notin` ftvar_in_typ A1 ->
-  ftvar_in_typ (subst_tvar_in_typ A2 X1 A1) [=] ftvar_in_typ A1.
+  ftvar_in_typ (subst_typ_in_typ A2 X1 A1) [=] ftvar_in_typ A1.
 Proof.
-pose proof ftvar_in_typ_subst_tvar_in_typ_fresh_mutual as H; intuition eauto.
+pose proof ftvar_in_typ_subst_typ_in_typ_fresh_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve ftvar_in_typ_subst_tvar_in_typ_fresh : lngen.
-#[export] Hint Rewrite ftvar_in_typ_subst_tvar_in_typ_fresh using solve [auto] : lngen.
+#[export] Hint Resolve ftvar_in_typ_subst_typ_in_typ_fresh : lngen.
+#[export] Hint Rewrite ftvar_in_typ_subst_typ_in_typ_fresh using solve [auto] : lngen.
 
 (* begin hide *)
 
-Lemma ftvar_in_abind_subst_tvar_in_abind_fresh_mutual :
+Lemma ftvar_in_abind_subst_typ_in_abind_fresh_mutual :
 (forall ab1 A1 X1,
   X1 `notin` ftvar_in_abind ab1 ->
-  ftvar_in_abind (subst_tvar_in_abind A1 X1 ab1) [=] ftvar_in_abind ab1).
+  ftvar_in_abind (subst_typ_in_abind A1 X1 ab1) [=] ftvar_in_abind ab1).
 Proof.
 apply_mutual_ind abind_mutind;
 default_simp; fsetdec.
@@ -10932,23 +10932,23 @@ Qed.
 
 (* end hide *)
 
-Lemma ftvar_in_abind_subst_tvar_in_abind_fresh :
+Lemma ftvar_in_abind_subst_typ_in_abind_fresh :
 forall ab1 A1 X1,
   X1 `notin` ftvar_in_abind ab1 ->
-  ftvar_in_abind (subst_tvar_in_abind A1 X1 ab1) [=] ftvar_in_abind ab1.
+  ftvar_in_abind (subst_typ_in_abind A1 X1 ab1) [=] ftvar_in_abind ab1.
 Proof.
-pose proof ftvar_in_abind_subst_tvar_in_abind_fresh_mutual as H; intuition eauto.
+pose proof ftvar_in_abind_subst_typ_in_abind_fresh_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve ftvar_in_abind_subst_tvar_in_abind_fresh : lngen.
-#[export] Hint Rewrite ftvar_in_abind_subst_tvar_in_abind_fresh using solve [auto] : lngen.
+#[export] Hint Resolve ftvar_in_abind_subst_typ_in_abind_fresh : lngen.
+#[export] Hint Rewrite ftvar_in_abind_subst_typ_in_abind_fresh using solve [auto] : lngen.
 
 (* begin hide *)
 
-Lemma ftvar_in_exp_subst_tvar_in_exp_fresh_mutual :
+Lemma ftvar_in_exp_subst_typ_in_exp_fresh_mutual :
 (forall e1 A1 X1,
   X1 `notin` ftvar_in_exp e1 ->
-  ftvar_in_exp (subst_tvar_in_exp A1 X1 e1) [=] ftvar_in_exp e1).
+  ftvar_in_exp (subst_typ_in_exp A1 X1 e1) [=] ftvar_in_exp e1).
 Proof.
 apply_mutual_ind exp_mutind;
 default_simp; fsetdec.
@@ -10956,22 +10956,22 @@ Qed.
 
 (* end hide *)
 
-Lemma ftvar_in_exp_subst_tvar_in_exp_fresh :
+Lemma ftvar_in_exp_subst_typ_in_exp_fresh :
 forall e1 A1 X1,
   X1 `notin` ftvar_in_exp e1 ->
-  ftvar_in_exp (subst_tvar_in_exp A1 X1 e1) [=] ftvar_in_exp e1.
+  ftvar_in_exp (subst_typ_in_exp A1 X1 e1) [=] ftvar_in_exp e1.
 Proof.
-pose proof ftvar_in_exp_subst_tvar_in_exp_fresh_mutual as H; intuition eauto.
+pose proof ftvar_in_exp_subst_typ_in_exp_fresh_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve ftvar_in_exp_subst_tvar_in_exp_fresh : lngen.
-#[export] Hint Rewrite ftvar_in_exp_subst_tvar_in_exp_fresh using solve [auto] : lngen.
+#[export] Hint Resolve ftvar_in_exp_subst_typ_in_exp_fresh : lngen.
+#[export] Hint Rewrite ftvar_in_exp_subst_typ_in_exp_fresh using solve [auto] : lngen.
 
 (* begin hide *)
 
-Lemma ftvar_in_exp_subst_var_in_exp_fresh_mutual :
+Lemma ftvar_in_exp_subst_exp_in_exp_fresh_mutual :
 (forall e1 A1 X1,
-  fvar_in_exp (subst_tvar_in_exp A1 X1 e1) [=] fvar_in_exp e1).
+  fvar_in_exp (subst_typ_in_exp A1 X1 e1) [=] fvar_in_exp e1).
 Proof.
 apply_mutual_ind exp_mutind;
 default_simp; fsetdec.
@@ -10979,22 +10979,22 @@ Qed.
 
 (* end hide *)
 
-Lemma ftvar_in_exp_subst_var_in_exp_fresh :
+Lemma ftvar_in_exp_subst_exp_in_exp_fresh :
 forall e1 A1 X1,
-  fvar_in_exp (subst_tvar_in_exp A1 X1 e1) [=] fvar_in_exp e1.
+  fvar_in_exp (subst_typ_in_exp A1 X1 e1) [=] fvar_in_exp e1.
 Proof.
-pose proof ftvar_in_exp_subst_var_in_exp_fresh_mutual as H; intuition eauto.
+pose proof ftvar_in_exp_subst_exp_in_exp_fresh_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve ftvar_in_exp_subst_var_in_exp_fresh : lngen.
-#[export] Hint Rewrite ftvar_in_exp_subst_var_in_exp_fresh using solve [auto] : lngen.
+#[export] Hint Resolve ftvar_in_exp_subst_exp_in_exp_fresh : lngen.
+#[export] Hint Rewrite ftvar_in_exp_subst_exp_in_exp_fresh using solve [auto] : lngen.
 
 (* begin hide *)
 
-Lemma fvar_in_exp_subst_var_in_exp_fresh_mutual :
+Lemma fvar_in_exp_subst_exp_in_exp_fresh_mutual :
 (forall e1 e2 x1,
   x1 `notin` fvar_in_exp e1 ->
-  fvar_in_exp (subst_var_in_exp e2 x1 e1) [=] fvar_in_exp e1).
+  fvar_in_exp (subst_exp_in_exp e2 x1 e1) [=] fvar_in_exp e1).
 Proof.
 apply_mutual_ind exp_mutind;
 default_simp; fsetdec.
@@ -11002,26 +11002,26 @@ Qed.
 
 (* end hide *)
 
-Lemma fvar_in_exp_subst_var_in_exp_fresh :
+Lemma fvar_in_exp_subst_exp_in_exp_fresh :
 forall e1 e2 x1,
   x1 `notin` fvar_in_exp e1 ->
-  fvar_in_exp (subst_var_in_exp e2 x1 e1) [=] fvar_in_exp e1.
+  fvar_in_exp (subst_exp_in_exp e2 x1 e1) [=] fvar_in_exp e1.
 Proof.
-pose proof fvar_in_exp_subst_var_in_exp_fresh_mutual as H; intuition eauto.
+pose proof fvar_in_exp_subst_exp_in_exp_fresh_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve fvar_in_exp_subst_var_in_exp_fresh : lngen.
-#[export] Hint Rewrite fvar_in_exp_subst_var_in_exp_fresh using solve [auto] : lngen.
+#[export] Hint Resolve fvar_in_exp_subst_exp_in_exp_fresh : lngen.
+#[export] Hint Rewrite fvar_in_exp_subst_exp_in_exp_fresh using solve [auto] : lngen.
 
 (* begin hide *)
 
-Lemma ftvar_in_contd_subst_tvar_in_contd_fresh_ftvar_in_conts_subst_tvar_in_conts_fresh_mutual :
+Lemma ftvar_in_contd_subst_typ_in_contd_fresh_ftvar_in_conts_subst_typ_in_conts_fresh_mutual :
 (forall cd1 A1 X1,
   X1 `notin` ftvar_in_contd cd1 ->
-  ftvar_in_contd (subst_tvar_in_contd A1 X1 cd1) [=] ftvar_in_contd cd1) /\
+  ftvar_in_contd (subst_typ_in_contd A1 X1 cd1) [=] ftvar_in_contd cd1) /\
 (forall cs1 A1 X1,
   X1 `notin` ftvar_in_conts cs1 ->
-  ftvar_in_conts (subst_tvar_in_conts A1 X1 cs1) [=] ftvar_in_conts cs1).
+  ftvar_in_conts (subst_typ_in_conts A1 X1 cs1) [=] ftvar_in_conts cs1).
 Proof.
 apply_mutual_ind contd_conts_mutind;
 default_simp; fsetdec.
@@ -11029,35 +11029,35 @@ Qed.
 
 (* end hide *)
 
-Lemma ftvar_in_contd_subst_tvar_in_contd_fresh :
+Lemma ftvar_in_contd_subst_typ_in_contd_fresh :
 forall cd1 A1 X1,
   X1 `notin` ftvar_in_contd cd1 ->
-  ftvar_in_contd (subst_tvar_in_contd A1 X1 cd1) [=] ftvar_in_contd cd1.
+  ftvar_in_contd (subst_typ_in_contd A1 X1 cd1) [=] ftvar_in_contd cd1.
 Proof.
-pose proof ftvar_in_contd_subst_tvar_in_contd_fresh_ftvar_in_conts_subst_tvar_in_conts_fresh_mutual as H; intuition eauto.
+pose proof ftvar_in_contd_subst_typ_in_contd_fresh_ftvar_in_conts_subst_typ_in_conts_fresh_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve ftvar_in_contd_subst_tvar_in_contd_fresh : lngen.
-#[export] Hint Rewrite ftvar_in_contd_subst_tvar_in_contd_fresh using solve [auto] : lngen.
+#[export] Hint Resolve ftvar_in_contd_subst_typ_in_contd_fresh : lngen.
+#[export] Hint Rewrite ftvar_in_contd_subst_typ_in_contd_fresh using solve [auto] : lngen.
 
-Lemma ftvar_in_conts_subst_tvar_in_conts_fresh :
+Lemma ftvar_in_conts_subst_typ_in_conts_fresh :
 forall cs1 A1 X1,
   X1 `notin` ftvar_in_conts cs1 ->
-  ftvar_in_conts (subst_tvar_in_conts A1 X1 cs1) [=] ftvar_in_conts cs1.
+  ftvar_in_conts (subst_typ_in_conts A1 X1 cs1) [=] ftvar_in_conts cs1.
 Proof.
-pose proof ftvar_in_contd_subst_tvar_in_contd_fresh_ftvar_in_conts_subst_tvar_in_conts_fresh_mutual as H; intuition eauto.
+pose proof ftvar_in_contd_subst_typ_in_contd_fresh_ftvar_in_conts_subst_typ_in_conts_fresh_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve ftvar_in_conts_subst_tvar_in_conts_fresh : lngen.
-#[export] Hint Rewrite ftvar_in_conts_subst_tvar_in_conts_fresh using solve [auto] : lngen.
+#[export] Hint Resolve ftvar_in_conts_subst_typ_in_conts_fresh : lngen.
+#[export] Hint Rewrite ftvar_in_conts_subst_typ_in_conts_fresh using solve [auto] : lngen.
 
 (* begin hide *)
 
-Lemma ftvar_in_contd_subst_var_in_contd_fresh_ftvar_in_conts_subst_var_in_conts_fresh_mutual :
+Lemma ftvar_in_contd_subst_exp_in_contd_fresh_ftvar_in_conts_subst_exp_in_conts_fresh_mutual :
 (forall cd1 A1 X1,
-  fvar_in_contd (subst_tvar_in_contd A1 X1 cd1) [=] fvar_in_contd cd1) /\
+  fvar_in_contd (subst_typ_in_contd A1 X1 cd1) [=] fvar_in_contd cd1) /\
 (forall cs1 A1 X1,
-  fvar_in_conts (subst_tvar_in_conts A1 X1 cs1) [=] fvar_in_conts cs1).
+  fvar_in_conts (subst_typ_in_conts A1 X1 cs1) [=] fvar_in_conts cs1).
 Proof.
 apply_mutual_ind contd_conts_mutind;
 default_simp; fsetdec.
@@ -11065,35 +11065,35 @@ Qed.
 
 (* end hide *)
 
-Lemma ftvar_in_contd_subst_var_in_contd_fresh :
+Lemma ftvar_in_contd_subst_exp_in_contd_fresh :
 forall cd1 A1 X1,
-  fvar_in_contd (subst_tvar_in_contd A1 X1 cd1) [=] fvar_in_contd cd1.
+  fvar_in_contd (subst_typ_in_contd A1 X1 cd1) [=] fvar_in_contd cd1.
 Proof.
-pose proof ftvar_in_contd_subst_var_in_contd_fresh_ftvar_in_conts_subst_var_in_conts_fresh_mutual as H; intuition eauto.
+pose proof ftvar_in_contd_subst_exp_in_contd_fresh_ftvar_in_conts_subst_exp_in_conts_fresh_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve ftvar_in_contd_subst_var_in_contd_fresh : lngen.
-#[export] Hint Rewrite ftvar_in_contd_subst_var_in_contd_fresh using solve [auto] : lngen.
+#[export] Hint Resolve ftvar_in_contd_subst_exp_in_contd_fresh : lngen.
+#[export] Hint Rewrite ftvar_in_contd_subst_exp_in_contd_fresh using solve [auto] : lngen.
 
-Lemma ftvar_in_conts_subst_var_in_conts_fresh :
+Lemma ftvar_in_conts_subst_exp_in_conts_fresh :
 forall cs1 A1 X1,
-  fvar_in_conts (subst_tvar_in_conts A1 X1 cs1) [=] fvar_in_conts cs1.
+  fvar_in_conts (subst_typ_in_conts A1 X1 cs1) [=] fvar_in_conts cs1.
 Proof.
-pose proof ftvar_in_contd_subst_var_in_contd_fresh_ftvar_in_conts_subst_var_in_conts_fresh_mutual as H; intuition eauto.
+pose proof ftvar_in_contd_subst_exp_in_contd_fresh_ftvar_in_conts_subst_exp_in_conts_fresh_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve ftvar_in_conts_subst_var_in_conts_fresh : lngen.
-#[export] Hint Rewrite ftvar_in_conts_subst_var_in_conts_fresh using solve [auto] : lngen.
+#[export] Hint Resolve ftvar_in_conts_subst_exp_in_conts_fresh : lngen.
+#[export] Hint Rewrite ftvar_in_conts_subst_exp_in_conts_fresh using solve [auto] : lngen.
 
 (* begin hide *)
 
-Lemma fvar_in_contd_subst_var_in_contd_fresh_fvar_in_conts_subst_var_in_conts_fresh_mutual :
+Lemma fvar_in_contd_subst_exp_in_contd_fresh_fvar_in_conts_subst_exp_in_conts_fresh_mutual :
 (forall cd1 e1 x1,
   x1 `notin` fvar_in_contd cd1 ->
-  fvar_in_contd (subst_var_in_contd e1 x1 cd1) [=] fvar_in_contd cd1) /\
+  fvar_in_contd (subst_exp_in_contd e1 x1 cd1) [=] fvar_in_contd cd1) /\
 (forall cs1 e1 x1,
   x1 `notin` fvar_in_conts cs1 ->
-  fvar_in_conts (subst_var_in_conts e1 x1 cs1) [=] fvar_in_conts cs1).
+  fvar_in_conts (subst_exp_in_conts e1 x1 cs1) [=] fvar_in_conts cs1).
 Proof.
 apply_mutual_ind contd_conts_mutind;
 default_simp; fsetdec.
@@ -11101,34 +11101,34 @@ Qed.
 
 (* end hide *)
 
-Lemma fvar_in_contd_subst_var_in_contd_fresh :
+Lemma fvar_in_contd_subst_exp_in_contd_fresh :
 forall cd1 e1 x1,
   x1 `notin` fvar_in_contd cd1 ->
-  fvar_in_contd (subst_var_in_contd e1 x1 cd1) [=] fvar_in_contd cd1.
+  fvar_in_contd (subst_exp_in_contd e1 x1 cd1) [=] fvar_in_contd cd1.
 Proof.
-pose proof fvar_in_contd_subst_var_in_contd_fresh_fvar_in_conts_subst_var_in_conts_fresh_mutual as H; intuition eauto.
+pose proof fvar_in_contd_subst_exp_in_contd_fresh_fvar_in_conts_subst_exp_in_conts_fresh_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve fvar_in_contd_subst_var_in_contd_fresh : lngen.
-#[export] Hint Rewrite fvar_in_contd_subst_var_in_contd_fresh using solve [auto] : lngen.
+#[export] Hint Resolve fvar_in_contd_subst_exp_in_contd_fresh : lngen.
+#[export] Hint Rewrite fvar_in_contd_subst_exp_in_contd_fresh using solve [auto] : lngen.
 
-Lemma fvar_in_conts_subst_var_in_conts_fresh :
+Lemma fvar_in_conts_subst_exp_in_conts_fresh :
 forall cs1 e1 x1,
   x1 `notin` fvar_in_conts cs1 ->
-  fvar_in_conts (subst_var_in_conts e1 x1 cs1) [=] fvar_in_conts cs1.
+  fvar_in_conts (subst_exp_in_conts e1 x1 cs1) [=] fvar_in_conts cs1.
 Proof.
-pose proof fvar_in_contd_subst_var_in_contd_fresh_fvar_in_conts_subst_var_in_conts_fresh_mutual as H; intuition eauto.
+pose proof fvar_in_contd_subst_exp_in_contd_fresh_fvar_in_conts_subst_exp_in_conts_fresh_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve fvar_in_conts_subst_var_in_conts_fresh : lngen.
-#[export] Hint Rewrite fvar_in_conts_subst_var_in_conts_fresh using solve [auto] : lngen.
+#[export] Hint Resolve fvar_in_conts_subst_exp_in_conts_fresh : lngen.
+#[export] Hint Rewrite fvar_in_conts_subst_exp_in_conts_fresh using solve [auto] : lngen.
 
 (* begin hide *)
 
-Lemma ftvar_in_dbind_subst_tvar_in_dbind_fresh_mutual :
+Lemma ftvar_in_dbind_subst_typ_in_dbind_fresh_mutual :
 (forall db1 A1 X1,
   X1 `notin` ftvar_in_dbind db1 ->
-  ftvar_in_dbind (subst_tvar_in_dbind A1 X1 db1) [=] ftvar_in_dbind db1).
+  ftvar_in_dbind (subst_typ_in_dbind A1 X1 db1) [=] ftvar_in_dbind db1).
 Proof.
 apply_mutual_ind dbind_mutind;
 default_simp; fsetdec.
@@ -11136,23 +11136,23 @@ Qed.
 
 (* end hide *)
 
-Lemma ftvar_in_dbind_subst_tvar_in_dbind_fresh :
+Lemma ftvar_in_dbind_subst_typ_in_dbind_fresh :
 forall db1 A1 X1,
   X1 `notin` ftvar_in_dbind db1 ->
-  ftvar_in_dbind (subst_tvar_in_dbind A1 X1 db1) [=] ftvar_in_dbind db1.
+  ftvar_in_dbind (subst_typ_in_dbind A1 X1 db1) [=] ftvar_in_dbind db1.
 Proof.
-pose proof ftvar_in_dbind_subst_tvar_in_dbind_fresh_mutual as H; intuition eauto.
+pose proof ftvar_in_dbind_subst_typ_in_dbind_fresh_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve ftvar_in_dbind_subst_tvar_in_dbind_fresh : lngen.
-#[export] Hint Rewrite ftvar_in_dbind_subst_tvar_in_dbind_fresh using solve [auto] : lngen.
+#[export] Hint Resolve ftvar_in_dbind_subst_typ_in_dbind_fresh : lngen.
+#[export] Hint Rewrite ftvar_in_dbind_subst_typ_in_dbind_fresh using solve [auto] : lngen.
 
 (* begin hide *)
 
-Lemma ftvar_in_work_subst_tvar_in_work_fresh_mutual :
+Lemma ftvar_in_work_subst_typ_in_work_fresh_mutual :
 (forall w1 A1 X1,
   X1 `notin` ftvar_in_work w1 ->
-  ftvar_in_work (subst_tvar_in_work A1 X1 w1) [=] ftvar_in_work w1).
+  ftvar_in_work (subst_typ_in_work A1 X1 w1) [=] ftvar_in_work w1).
 Proof.
 apply_mutual_ind work_mutind;
 default_simp; fsetdec.
@@ -11160,22 +11160,22 @@ Qed.
 
 (* end hide *)
 
-Lemma ftvar_in_work_subst_tvar_in_work_fresh :
+Lemma ftvar_in_work_subst_typ_in_work_fresh :
 forall w1 A1 X1,
   X1 `notin` ftvar_in_work w1 ->
-  ftvar_in_work (subst_tvar_in_work A1 X1 w1) [=] ftvar_in_work w1.
+  ftvar_in_work (subst_typ_in_work A1 X1 w1) [=] ftvar_in_work w1.
 Proof.
-pose proof ftvar_in_work_subst_tvar_in_work_fresh_mutual as H; intuition eauto.
+pose proof ftvar_in_work_subst_typ_in_work_fresh_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve ftvar_in_work_subst_tvar_in_work_fresh : lngen.
-#[export] Hint Rewrite ftvar_in_work_subst_tvar_in_work_fresh using solve [auto] : lngen.
+#[export] Hint Resolve ftvar_in_work_subst_typ_in_work_fresh : lngen.
+#[export] Hint Rewrite ftvar_in_work_subst_typ_in_work_fresh using solve [auto] : lngen.
 
 (* begin hide *)
 
-Lemma ftvar_in_work_subst_var_in_work_fresh_mutual :
+Lemma ftvar_in_work_subst_exp_in_work_fresh_mutual :
 (forall w1 A1 X1,
-  fvar_in_work (subst_tvar_in_work A1 X1 w1) [=] fvar_in_work w1).
+  fvar_in_work (subst_typ_in_work A1 X1 w1) [=] fvar_in_work w1).
 Proof.
 apply_mutual_ind work_mutind;
 default_simp; fsetdec.
@@ -11183,22 +11183,22 @@ Qed.
 
 (* end hide *)
 
-Lemma ftvar_in_work_subst_var_in_work_fresh :
+Lemma ftvar_in_work_subst_exp_in_work_fresh :
 forall w1 A1 X1,
-  fvar_in_work (subst_tvar_in_work A1 X1 w1) [=] fvar_in_work w1.
+  fvar_in_work (subst_typ_in_work A1 X1 w1) [=] fvar_in_work w1.
 Proof.
-pose proof ftvar_in_work_subst_var_in_work_fresh_mutual as H; intuition eauto.
+pose proof ftvar_in_work_subst_exp_in_work_fresh_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve ftvar_in_work_subst_var_in_work_fresh : lngen.
-#[export] Hint Rewrite ftvar_in_work_subst_var_in_work_fresh using solve [auto] : lngen.
+#[export] Hint Resolve ftvar_in_work_subst_exp_in_work_fresh : lngen.
+#[export] Hint Rewrite ftvar_in_work_subst_exp_in_work_fresh using solve [auto] : lngen.
 
 (* begin hide *)
 
-Lemma fvar_in_work_subst_var_in_work_fresh_mutual :
+Lemma fvar_in_work_subst_exp_in_work_fresh_mutual :
 (forall w1 e1 x1,
   x1 `notin` fvar_in_work w1 ->
-  fvar_in_work (subst_var_in_work e1 x1 w1) [=] fvar_in_work w1).
+  fvar_in_work (subst_exp_in_work e1 x1 w1) [=] fvar_in_work w1).
 Proof.
 apply_mutual_ind work_mutind;
 default_simp; fsetdec.
@@ -11206,22 +11206,22 @@ Qed.
 
 (* end hide *)
 
-Lemma fvar_in_work_subst_var_in_work_fresh :
+Lemma fvar_in_work_subst_exp_in_work_fresh :
 forall w1 e1 x1,
   x1 `notin` fvar_in_work w1 ->
-  fvar_in_work (subst_var_in_work e1 x1 w1) [=] fvar_in_work w1.
+  fvar_in_work (subst_exp_in_work e1 x1 w1) [=] fvar_in_work w1.
 Proof.
-pose proof fvar_in_work_subst_var_in_work_fresh_mutual as H; intuition eauto.
+pose proof fvar_in_work_subst_exp_in_work_fresh_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve fvar_in_work_subst_var_in_work_fresh : lngen.
-#[export] Hint Rewrite fvar_in_work_subst_var_in_work_fresh using solve [auto] : lngen.
+#[export] Hint Resolve fvar_in_work_subst_exp_in_work_fresh : lngen.
+#[export] Hint Rewrite fvar_in_work_subst_exp_in_work_fresh using solve [auto] : lngen.
 
 (* begin hide *)
 
-Lemma ftvar_in_typ_subst_tvar_in_typ_lower_mutual :
+Lemma ftvar_in_typ_subst_typ_in_typ_lower_mutual :
 (forall A1 A2 X1,
-  remove X1 (ftvar_in_typ A1) [<=] ftvar_in_typ (subst_tvar_in_typ A2 X1 A1)).
+  remove X1 (ftvar_in_typ A1) [<=] ftvar_in_typ (subst_typ_in_typ A2 X1 A1)).
 Proof.
 apply_mutual_ind typ_mutind;
 default_simp; fsetdec.
@@ -11229,20 +11229,20 @@ Qed.
 
 (* end hide *)
 
-Lemma ftvar_in_typ_subst_tvar_in_typ_lower :
+Lemma ftvar_in_typ_subst_typ_in_typ_lower :
 forall A1 A2 X1,
-  remove X1 (ftvar_in_typ A1) [<=] ftvar_in_typ (subst_tvar_in_typ A2 X1 A1).
+  remove X1 (ftvar_in_typ A1) [<=] ftvar_in_typ (subst_typ_in_typ A2 X1 A1).
 Proof.
-pose proof ftvar_in_typ_subst_tvar_in_typ_lower_mutual as H; intuition eauto.
+pose proof ftvar_in_typ_subst_typ_in_typ_lower_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve ftvar_in_typ_subst_tvar_in_typ_lower : lngen.
+#[export] Hint Resolve ftvar_in_typ_subst_typ_in_typ_lower : lngen.
 
 (* begin hide *)
 
-Lemma ftvar_in_abind_subst_tvar_in_abind_lower_mutual :
+Lemma ftvar_in_abind_subst_typ_in_abind_lower_mutual :
 (forall ab1 A1 X1,
-  remove X1 (ftvar_in_abind ab1) [<=] ftvar_in_abind (subst_tvar_in_abind A1 X1 ab1)).
+  remove X1 (ftvar_in_abind ab1) [<=] ftvar_in_abind (subst_typ_in_abind A1 X1 ab1)).
 Proof.
 apply_mutual_ind abind_mutind;
 default_simp; fsetdec.
@@ -11250,20 +11250,20 @@ Qed.
 
 (* end hide *)
 
-Lemma ftvar_in_abind_subst_tvar_in_abind_lower :
+Lemma ftvar_in_abind_subst_typ_in_abind_lower :
 forall ab1 A1 X1,
-  remove X1 (ftvar_in_abind ab1) [<=] ftvar_in_abind (subst_tvar_in_abind A1 X1 ab1).
+  remove X1 (ftvar_in_abind ab1) [<=] ftvar_in_abind (subst_typ_in_abind A1 X1 ab1).
 Proof.
-pose proof ftvar_in_abind_subst_tvar_in_abind_lower_mutual as H; intuition eauto.
+pose proof ftvar_in_abind_subst_typ_in_abind_lower_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve ftvar_in_abind_subst_tvar_in_abind_lower : lngen.
+#[export] Hint Resolve ftvar_in_abind_subst_typ_in_abind_lower : lngen.
 
 (* begin hide *)
 
-Lemma ftvar_in_exp_subst_tvar_in_exp_lower_mutual :
+Lemma ftvar_in_exp_subst_typ_in_exp_lower_mutual :
 (forall e1 A1 X1,
-  remove X1 (ftvar_in_exp e1) [<=] ftvar_in_exp (subst_tvar_in_exp A1 X1 e1)).
+  remove X1 (ftvar_in_exp e1) [<=] ftvar_in_exp (subst_typ_in_exp A1 X1 e1)).
 Proof.
 apply_mutual_ind exp_mutind;
 default_simp; fsetdec.
@@ -11271,20 +11271,20 @@ Qed.
 
 (* end hide *)
 
-Lemma ftvar_in_exp_subst_tvar_in_exp_lower :
+Lemma ftvar_in_exp_subst_typ_in_exp_lower :
 forall e1 A1 X1,
-  remove X1 (ftvar_in_exp e1) [<=] ftvar_in_exp (subst_tvar_in_exp A1 X1 e1).
+  remove X1 (ftvar_in_exp e1) [<=] ftvar_in_exp (subst_typ_in_exp A1 X1 e1).
 Proof.
-pose proof ftvar_in_exp_subst_tvar_in_exp_lower_mutual as H; intuition eauto.
+pose proof ftvar_in_exp_subst_typ_in_exp_lower_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve ftvar_in_exp_subst_tvar_in_exp_lower : lngen.
+#[export] Hint Resolve ftvar_in_exp_subst_typ_in_exp_lower : lngen.
 
 (* begin hide *)
 
-Lemma ftvar_in_exp_subst_var_in_exp_lower_mutual :
+Lemma ftvar_in_exp_subst_exp_in_exp_lower_mutual :
 (forall e1 e2 x1,
-  ftvar_in_exp e1 [<=] ftvar_in_exp (subst_var_in_exp e2 x1 e1)).
+  ftvar_in_exp e1 [<=] ftvar_in_exp (subst_exp_in_exp e2 x1 e1)).
 Proof.
 apply_mutual_ind exp_mutind;
 default_simp; fsetdec.
@@ -11292,20 +11292,20 @@ Qed.
 
 (* end hide *)
 
-Lemma ftvar_in_exp_subst_var_in_exp_lower :
+Lemma ftvar_in_exp_subst_exp_in_exp_lower :
 forall e1 e2 x1,
-  ftvar_in_exp e1 [<=] ftvar_in_exp (subst_var_in_exp e2 x1 e1).
+  ftvar_in_exp e1 [<=] ftvar_in_exp (subst_exp_in_exp e2 x1 e1).
 Proof.
-pose proof ftvar_in_exp_subst_var_in_exp_lower_mutual as H; intuition eauto.
+pose proof ftvar_in_exp_subst_exp_in_exp_lower_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve ftvar_in_exp_subst_var_in_exp_lower : lngen.
+#[export] Hint Resolve ftvar_in_exp_subst_exp_in_exp_lower : lngen.
 
 (* begin hide *)
 
-Lemma fvar_in_exp_subst_tvar_in_exp_lower_mutual :
+Lemma fvar_in_exp_subst_typ_in_exp_lower_mutual :
 (forall e1 A1 X1,
-  fvar_in_exp e1 [<=] fvar_in_exp (subst_tvar_in_exp A1 X1 e1)).
+  fvar_in_exp e1 [<=] fvar_in_exp (subst_typ_in_exp A1 X1 e1)).
 Proof.
 apply_mutual_ind exp_mutind;
 default_simp; fsetdec.
@@ -11313,20 +11313,20 @@ Qed.
 
 (* end hide *)
 
-Lemma fvar_in_exp_subst_tvar_in_exp_lower :
+Lemma fvar_in_exp_subst_typ_in_exp_lower :
 forall e1 A1 X1,
-  fvar_in_exp e1 [<=] fvar_in_exp (subst_tvar_in_exp A1 X1 e1).
+  fvar_in_exp e1 [<=] fvar_in_exp (subst_typ_in_exp A1 X1 e1).
 Proof.
-pose proof fvar_in_exp_subst_tvar_in_exp_lower_mutual as H; intuition eauto.
+pose proof fvar_in_exp_subst_typ_in_exp_lower_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve fvar_in_exp_subst_tvar_in_exp_lower : lngen.
+#[export] Hint Resolve fvar_in_exp_subst_typ_in_exp_lower : lngen.
 
 (* begin hide *)
 
-Lemma fvar_in_exp_subst_var_in_exp_lower_mutual :
+Lemma fvar_in_exp_subst_exp_in_exp_lower_mutual :
 (forall e1 e2 x1,
-  remove x1 (fvar_in_exp e1) [<=] fvar_in_exp (subst_var_in_exp e2 x1 e1)).
+  remove x1 (fvar_in_exp e1) [<=] fvar_in_exp (subst_exp_in_exp e2 x1 e1)).
 Proof.
 apply_mutual_ind exp_mutind;
 default_simp; fsetdec.
@@ -11334,22 +11334,22 @@ Qed.
 
 (* end hide *)
 
-Lemma fvar_in_exp_subst_var_in_exp_lower :
+Lemma fvar_in_exp_subst_exp_in_exp_lower :
 forall e1 e2 x1,
-  remove x1 (fvar_in_exp e1) [<=] fvar_in_exp (subst_var_in_exp e2 x1 e1).
+  remove x1 (fvar_in_exp e1) [<=] fvar_in_exp (subst_exp_in_exp e2 x1 e1).
 Proof.
-pose proof fvar_in_exp_subst_var_in_exp_lower_mutual as H; intuition eauto.
+pose proof fvar_in_exp_subst_exp_in_exp_lower_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve fvar_in_exp_subst_var_in_exp_lower : lngen.
+#[export] Hint Resolve fvar_in_exp_subst_exp_in_exp_lower : lngen.
 
 (* begin hide *)
 
-Lemma ftvar_in_contd_subst_tvar_in_contd_lower_ftvar_in_conts_subst_tvar_in_conts_lower_mutual :
+Lemma ftvar_in_contd_subst_typ_in_contd_lower_ftvar_in_conts_subst_typ_in_conts_lower_mutual :
 (forall cd1 A1 X1,
-  remove X1 (ftvar_in_contd cd1) [<=] ftvar_in_contd (subst_tvar_in_contd A1 X1 cd1)) /\
+  remove X1 (ftvar_in_contd cd1) [<=] ftvar_in_contd (subst_typ_in_contd A1 X1 cd1)) /\
 (forall cs1 A1 X1,
-  remove X1 (ftvar_in_conts cs1) [<=] ftvar_in_conts (subst_tvar_in_conts A1 X1 cs1)).
+  remove X1 (ftvar_in_conts cs1) [<=] ftvar_in_conts (subst_typ_in_conts A1 X1 cs1)).
 Proof.
 apply_mutual_ind contd_conts_mutind;
 default_simp; fsetdec.
@@ -11357,31 +11357,31 @@ Qed.
 
 (* end hide *)
 
-Lemma ftvar_in_contd_subst_tvar_in_contd_lower :
+Lemma ftvar_in_contd_subst_typ_in_contd_lower :
 forall cd1 A1 X1,
-  remove X1 (ftvar_in_contd cd1) [<=] ftvar_in_contd (subst_tvar_in_contd A1 X1 cd1).
+  remove X1 (ftvar_in_contd cd1) [<=] ftvar_in_contd (subst_typ_in_contd A1 X1 cd1).
 Proof.
-pose proof ftvar_in_contd_subst_tvar_in_contd_lower_ftvar_in_conts_subst_tvar_in_conts_lower_mutual as H; intuition eauto.
+pose proof ftvar_in_contd_subst_typ_in_contd_lower_ftvar_in_conts_subst_typ_in_conts_lower_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve ftvar_in_contd_subst_tvar_in_contd_lower : lngen.
+#[export] Hint Resolve ftvar_in_contd_subst_typ_in_contd_lower : lngen.
 
-Lemma ftvar_in_conts_subst_tvar_in_conts_lower :
+Lemma ftvar_in_conts_subst_typ_in_conts_lower :
 forall cs1 A1 X1,
-  remove X1 (ftvar_in_conts cs1) [<=] ftvar_in_conts (subst_tvar_in_conts A1 X1 cs1).
+  remove X1 (ftvar_in_conts cs1) [<=] ftvar_in_conts (subst_typ_in_conts A1 X1 cs1).
 Proof.
-pose proof ftvar_in_contd_subst_tvar_in_contd_lower_ftvar_in_conts_subst_tvar_in_conts_lower_mutual as H; intuition eauto.
+pose proof ftvar_in_contd_subst_typ_in_contd_lower_ftvar_in_conts_subst_typ_in_conts_lower_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve ftvar_in_conts_subst_tvar_in_conts_lower : lngen.
+#[export] Hint Resolve ftvar_in_conts_subst_typ_in_conts_lower : lngen.
 
 (* begin hide *)
 
-Lemma ftvar_in_contd_subst_var_in_contd_lower_ftvar_in_conts_subst_var_in_conts_lower_mutual :
+Lemma ftvar_in_contd_subst_exp_in_contd_lower_ftvar_in_conts_subst_exp_in_conts_lower_mutual :
 (forall cd1 e1 x1,
-  ftvar_in_contd cd1 [<=] ftvar_in_contd (subst_var_in_contd e1 x1 cd1)) /\
+  ftvar_in_contd cd1 [<=] ftvar_in_contd (subst_exp_in_contd e1 x1 cd1)) /\
 (forall cs1 e1 x1,
-  ftvar_in_conts cs1 [<=] ftvar_in_conts (subst_var_in_conts e1 x1 cs1)).
+  ftvar_in_conts cs1 [<=] ftvar_in_conts (subst_exp_in_conts e1 x1 cs1)).
 Proof.
 apply_mutual_ind contd_conts_mutind;
 default_simp; fsetdec.
@@ -11389,31 +11389,31 @@ Qed.
 
 (* end hide *)
 
-Lemma ftvar_in_contd_subst_var_in_contd_lower :
+Lemma ftvar_in_contd_subst_exp_in_contd_lower :
 forall cd1 e1 x1,
-  ftvar_in_contd cd1 [<=] ftvar_in_contd (subst_var_in_contd e1 x1 cd1).
+  ftvar_in_contd cd1 [<=] ftvar_in_contd (subst_exp_in_contd e1 x1 cd1).
 Proof.
-pose proof ftvar_in_contd_subst_var_in_contd_lower_ftvar_in_conts_subst_var_in_conts_lower_mutual as H; intuition eauto.
+pose proof ftvar_in_contd_subst_exp_in_contd_lower_ftvar_in_conts_subst_exp_in_conts_lower_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve ftvar_in_contd_subst_var_in_contd_lower : lngen.
+#[export] Hint Resolve ftvar_in_contd_subst_exp_in_contd_lower : lngen.
 
-Lemma ftvar_in_conts_subst_var_in_conts_lower :
+Lemma ftvar_in_conts_subst_exp_in_conts_lower :
 forall cs1 e1 x1,
-  ftvar_in_conts cs1 [<=] ftvar_in_conts (subst_var_in_conts e1 x1 cs1).
+  ftvar_in_conts cs1 [<=] ftvar_in_conts (subst_exp_in_conts e1 x1 cs1).
 Proof.
-pose proof ftvar_in_contd_subst_var_in_contd_lower_ftvar_in_conts_subst_var_in_conts_lower_mutual as H; intuition eauto.
+pose proof ftvar_in_contd_subst_exp_in_contd_lower_ftvar_in_conts_subst_exp_in_conts_lower_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve ftvar_in_conts_subst_var_in_conts_lower : lngen.
+#[export] Hint Resolve ftvar_in_conts_subst_exp_in_conts_lower : lngen.
 
 (* begin hide *)
 
-Lemma fvar_in_contd_subst_tvar_in_contd_lower_fvar_in_conts_subst_tvar_in_conts_lower_mutual :
+Lemma fvar_in_contd_subst_typ_in_contd_lower_fvar_in_conts_subst_typ_in_conts_lower_mutual :
 (forall cd1 A1 X1,
-  fvar_in_contd cd1 [<=] fvar_in_contd (subst_tvar_in_contd A1 X1 cd1)) /\
+  fvar_in_contd cd1 [<=] fvar_in_contd (subst_typ_in_contd A1 X1 cd1)) /\
 (forall cs1 A1 X1,
-  fvar_in_conts cs1 [<=] fvar_in_conts (subst_tvar_in_conts A1 X1 cs1)).
+  fvar_in_conts cs1 [<=] fvar_in_conts (subst_typ_in_conts A1 X1 cs1)).
 Proof.
 apply_mutual_ind contd_conts_mutind;
 default_simp; fsetdec.
@@ -11421,31 +11421,31 @@ Qed.
 
 (* end hide *)
 
-Lemma fvar_in_contd_subst_tvar_in_contd_lower :
+Lemma fvar_in_contd_subst_typ_in_contd_lower :
 forall cd1 A1 X1,
-  fvar_in_contd cd1 [<=] fvar_in_contd (subst_tvar_in_contd A1 X1 cd1).
+  fvar_in_contd cd1 [<=] fvar_in_contd (subst_typ_in_contd A1 X1 cd1).
 Proof.
-pose proof fvar_in_contd_subst_tvar_in_contd_lower_fvar_in_conts_subst_tvar_in_conts_lower_mutual as H; intuition eauto.
+pose proof fvar_in_contd_subst_typ_in_contd_lower_fvar_in_conts_subst_typ_in_conts_lower_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve fvar_in_contd_subst_tvar_in_contd_lower : lngen.
+#[export] Hint Resolve fvar_in_contd_subst_typ_in_contd_lower : lngen.
 
-Lemma fvar_in_conts_subst_tvar_in_conts_lower :
+Lemma fvar_in_conts_subst_typ_in_conts_lower :
 forall cs1 A1 X1,
-  fvar_in_conts cs1 [<=] fvar_in_conts (subst_tvar_in_conts A1 X1 cs1).
+  fvar_in_conts cs1 [<=] fvar_in_conts (subst_typ_in_conts A1 X1 cs1).
 Proof.
-pose proof fvar_in_contd_subst_tvar_in_contd_lower_fvar_in_conts_subst_tvar_in_conts_lower_mutual as H; intuition eauto.
+pose proof fvar_in_contd_subst_typ_in_contd_lower_fvar_in_conts_subst_typ_in_conts_lower_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve fvar_in_conts_subst_tvar_in_conts_lower : lngen.
+#[export] Hint Resolve fvar_in_conts_subst_typ_in_conts_lower : lngen.
 
 (* begin hide *)
 
-Lemma fvar_in_contd_subst_var_in_contd_lower_fvar_in_conts_subst_var_in_conts_lower_mutual :
+Lemma fvar_in_contd_subst_exp_in_contd_lower_fvar_in_conts_subst_exp_in_conts_lower_mutual :
 (forall cd1 e1 x1,
-  remove x1 (fvar_in_contd cd1) [<=] fvar_in_contd (subst_var_in_contd e1 x1 cd1)) /\
+  remove x1 (fvar_in_contd cd1) [<=] fvar_in_contd (subst_exp_in_contd e1 x1 cd1)) /\
 (forall cs1 e1 x1,
-  remove x1 (fvar_in_conts cs1) [<=] fvar_in_conts (subst_var_in_conts e1 x1 cs1)).
+  remove x1 (fvar_in_conts cs1) [<=] fvar_in_conts (subst_exp_in_conts e1 x1 cs1)).
 Proof.
 apply_mutual_ind contd_conts_mutind;
 default_simp; fsetdec.
@@ -11453,29 +11453,29 @@ Qed.
 
 (* end hide *)
 
-Lemma fvar_in_contd_subst_var_in_contd_lower :
+Lemma fvar_in_contd_subst_exp_in_contd_lower :
 forall cd1 e1 x1,
-  remove x1 (fvar_in_contd cd1) [<=] fvar_in_contd (subst_var_in_contd e1 x1 cd1).
+  remove x1 (fvar_in_contd cd1) [<=] fvar_in_contd (subst_exp_in_contd e1 x1 cd1).
 Proof.
-pose proof fvar_in_contd_subst_var_in_contd_lower_fvar_in_conts_subst_var_in_conts_lower_mutual as H; intuition eauto.
+pose proof fvar_in_contd_subst_exp_in_contd_lower_fvar_in_conts_subst_exp_in_conts_lower_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve fvar_in_contd_subst_var_in_contd_lower : lngen.
+#[export] Hint Resolve fvar_in_contd_subst_exp_in_contd_lower : lngen.
 
-Lemma fvar_in_conts_subst_var_in_conts_lower :
+Lemma fvar_in_conts_subst_exp_in_conts_lower :
 forall cs1 e1 x1,
-  remove x1 (fvar_in_conts cs1) [<=] fvar_in_conts (subst_var_in_conts e1 x1 cs1).
+  remove x1 (fvar_in_conts cs1) [<=] fvar_in_conts (subst_exp_in_conts e1 x1 cs1).
 Proof.
-pose proof fvar_in_contd_subst_var_in_contd_lower_fvar_in_conts_subst_var_in_conts_lower_mutual as H; intuition eauto.
+pose proof fvar_in_contd_subst_exp_in_contd_lower_fvar_in_conts_subst_exp_in_conts_lower_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve fvar_in_conts_subst_var_in_conts_lower : lngen.
+#[export] Hint Resolve fvar_in_conts_subst_exp_in_conts_lower : lngen.
 
 (* begin hide *)
 
-Lemma ftvar_in_dbind_subst_tvar_in_dbind_lower_mutual :
+Lemma ftvar_in_dbind_subst_typ_in_dbind_lower_mutual :
 (forall db1 A1 X1,
-  remove X1 (ftvar_in_dbind db1) [<=] ftvar_in_dbind (subst_tvar_in_dbind A1 X1 db1)).
+  remove X1 (ftvar_in_dbind db1) [<=] ftvar_in_dbind (subst_typ_in_dbind A1 X1 db1)).
 Proof.
 apply_mutual_ind dbind_mutind;
 default_simp; fsetdec.
@@ -11483,20 +11483,20 @@ Qed.
 
 (* end hide *)
 
-Lemma ftvar_in_dbind_subst_tvar_in_dbind_lower :
+Lemma ftvar_in_dbind_subst_typ_in_dbind_lower :
 forall db1 A1 X1,
-  remove X1 (ftvar_in_dbind db1) [<=] ftvar_in_dbind (subst_tvar_in_dbind A1 X1 db1).
+  remove X1 (ftvar_in_dbind db1) [<=] ftvar_in_dbind (subst_typ_in_dbind A1 X1 db1).
 Proof.
-pose proof ftvar_in_dbind_subst_tvar_in_dbind_lower_mutual as H; intuition eauto.
+pose proof ftvar_in_dbind_subst_typ_in_dbind_lower_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve ftvar_in_dbind_subst_tvar_in_dbind_lower : lngen.
+#[export] Hint Resolve ftvar_in_dbind_subst_typ_in_dbind_lower : lngen.
 
 (* begin hide *)
 
-Lemma ftvar_in_work_subst_tvar_in_work_lower_mutual :
+Lemma ftvar_in_work_subst_typ_in_work_lower_mutual :
 (forall w1 A1 X1,
-  remove X1 (ftvar_in_work w1) [<=] ftvar_in_work (subst_tvar_in_work A1 X1 w1)).
+  remove X1 (ftvar_in_work w1) [<=] ftvar_in_work (subst_typ_in_work A1 X1 w1)).
 Proof.
 apply_mutual_ind work_mutind;
 default_simp; fsetdec.
@@ -11504,20 +11504,20 @@ Qed.
 
 (* end hide *)
 
-Lemma ftvar_in_work_subst_tvar_in_work_lower :
+Lemma ftvar_in_work_subst_typ_in_work_lower :
 forall w1 A1 X1,
-  remove X1 (ftvar_in_work w1) [<=] ftvar_in_work (subst_tvar_in_work A1 X1 w1).
+  remove X1 (ftvar_in_work w1) [<=] ftvar_in_work (subst_typ_in_work A1 X1 w1).
 Proof.
-pose proof ftvar_in_work_subst_tvar_in_work_lower_mutual as H; intuition eauto.
+pose proof ftvar_in_work_subst_typ_in_work_lower_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve ftvar_in_work_subst_tvar_in_work_lower : lngen.
+#[export] Hint Resolve ftvar_in_work_subst_typ_in_work_lower : lngen.
 
 (* begin hide *)
 
-Lemma ftvar_in_work_subst_var_in_work_lower_mutual :
+Lemma ftvar_in_work_subst_exp_in_work_lower_mutual :
 (forall w1 e1 x1,
-  ftvar_in_work w1 [<=] ftvar_in_work (subst_var_in_work e1 x1 w1)).
+  ftvar_in_work w1 [<=] ftvar_in_work (subst_exp_in_work e1 x1 w1)).
 Proof.
 apply_mutual_ind work_mutind;
 default_simp; fsetdec.
@@ -11525,20 +11525,20 @@ Qed.
 
 (* end hide *)
 
-Lemma ftvar_in_work_subst_var_in_work_lower :
+Lemma ftvar_in_work_subst_exp_in_work_lower :
 forall w1 e1 x1,
-  ftvar_in_work w1 [<=] ftvar_in_work (subst_var_in_work e1 x1 w1).
+  ftvar_in_work w1 [<=] ftvar_in_work (subst_exp_in_work e1 x1 w1).
 Proof.
-pose proof ftvar_in_work_subst_var_in_work_lower_mutual as H; intuition eauto.
+pose proof ftvar_in_work_subst_exp_in_work_lower_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve ftvar_in_work_subst_var_in_work_lower : lngen.
+#[export] Hint Resolve ftvar_in_work_subst_exp_in_work_lower : lngen.
 
 (* begin hide *)
 
-Lemma fvar_in_work_subst_tvar_in_work_lower_mutual :
+Lemma fvar_in_work_subst_typ_in_work_lower_mutual :
 (forall w1 A1 X1,
-  fvar_in_work w1 [<=] fvar_in_work (subst_tvar_in_work A1 X1 w1)).
+  fvar_in_work w1 [<=] fvar_in_work (subst_typ_in_work A1 X1 w1)).
 Proof.
 apply_mutual_ind work_mutind;
 default_simp; fsetdec.
@@ -11546,20 +11546,20 @@ Qed.
 
 (* end hide *)
 
-Lemma fvar_in_work_subst_tvar_in_work_lower :
+Lemma fvar_in_work_subst_typ_in_work_lower :
 forall w1 A1 X1,
-  fvar_in_work w1 [<=] fvar_in_work (subst_tvar_in_work A1 X1 w1).
+  fvar_in_work w1 [<=] fvar_in_work (subst_typ_in_work A1 X1 w1).
 Proof.
-pose proof fvar_in_work_subst_tvar_in_work_lower_mutual as H; intuition eauto.
+pose proof fvar_in_work_subst_typ_in_work_lower_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve fvar_in_work_subst_tvar_in_work_lower : lngen.
+#[export] Hint Resolve fvar_in_work_subst_typ_in_work_lower : lngen.
 
 (* begin hide *)
 
-Lemma fvar_in_work_subst_var_in_work_lower_mutual :
+Lemma fvar_in_work_subst_exp_in_work_lower_mutual :
 (forall w1 e1 x1,
-  remove x1 (fvar_in_work w1) [<=] fvar_in_work (subst_var_in_work e1 x1 w1)).
+  remove x1 (fvar_in_work w1) [<=] fvar_in_work (subst_exp_in_work e1 x1 w1)).
 Proof.
 apply_mutual_ind work_mutind;
 default_simp; fsetdec.
@@ -11567,22 +11567,22 @@ Qed.
 
 (* end hide *)
 
-Lemma fvar_in_work_subst_var_in_work_lower :
+Lemma fvar_in_work_subst_exp_in_work_lower :
 forall w1 e1 x1,
-  remove x1 (fvar_in_work w1) [<=] fvar_in_work (subst_var_in_work e1 x1 w1).
+  remove x1 (fvar_in_work w1) [<=] fvar_in_work (subst_exp_in_work e1 x1 w1).
 Proof.
-pose proof fvar_in_work_subst_var_in_work_lower_mutual as H; intuition eauto.
+pose proof fvar_in_work_subst_exp_in_work_lower_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve fvar_in_work_subst_var_in_work_lower : lngen.
+#[export] Hint Resolve fvar_in_work_subst_exp_in_work_lower : lngen.
 
 (* begin hide *)
 
-Lemma ftvar_in_typ_subst_tvar_in_typ_notin_mutual :
+Lemma ftvar_in_typ_subst_typ_in_typ_notin_mutual :
 (forall A1 A2 X1 X2,
   X2 `notin` ftvar_in_typ A1 ->
   X2 `notin` ftvar_in_typ A2 ->
-  X2 `notin` ftvar_in_typ (subst_tvar_in_typ A2 X1 A1)).
+  X2 `notin` ftvar_in_typ (subst_typ_in_typ A2 X1 A1)).
 Proof.
 apply_mutual_ind typ_mutind;
 default_simp; fsetdec.
@@ -11590,24 +11590,24 @@ Qed.
 
 (* end hide *)
 
-Lemma ftvar_in_typ_subst_tvar_in_typ_notin :
+Lemma ftvar_in_typ_subst_typ_in_typ_notin :
 forall A1 A2 X1 X2,
   X2 `notin` ftvar_in_typ A1 ->
   X2 `notin` ftvar_in_typ A2 ->
-  X2 `notin` ftvar_in_typ (subst_tvar_in_typ A2 X1 A1).
+  X2 `notin` ftvar_in_typ (subst_typ_in_typ A2 X1 A1).
 Proof.
-pose proof ftvar_in_typ_subst_tvar_in_typ_notin_mutual as H; intuition eauto.
+pose proof ftvar_in_typ_subst_typ_in_typ_notin_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve ftvar_in_typ_subst_tvar_in_typ_notin : lngen.
+#[export] Hint Resolve ftvar_in_typ_subst_typ_in_typ_notin : lngen.
 
 (* begin hide *)
 
-Lemma ftvar_in_abind_subst_tvar_in_abind_notin_mutual :
+Lemma ftvar_in_abind_subst_typ_in_abind_notin_mutual :
 (forall ab1 A1 X1 X2,
   X2 `notin` ftvar_in_abind ab1 ->
   X2 `notin` ftvar_in_typ A1 ->
-  X2 `notin` ftvar_in_abind (subst_tvar_in_abind A1 X1 ab1)).
+  X2 `notin` ftvar_in_abind (subst_typ_in_abind A1 X1 ab1)).
 Proof.
 apply_mutual_ind abind_mutind;
 default_simp; fsetdec.
@@ -11615,24 +11615,24 @@ Qed.
 
 (* end hide *)
 
-Lemma ftvar_in_abind_subst_tvar_in_abind_notin :
+Lemma ftvar_in_abind_subst_typ_in_abind_notin :
 forall ab1 A1 X1 X2,
   X2 `notin` ftvar_in_abind ab1 ->
   X2 `notin` ftvar_in_typ A1 ->
-  X2 `notin` ftvar_in_abind (subst_tvar_in_abind A1 X1 ab1).
+  X2 `notin` ftvar_in_abind (subst_typ_in_abind A1 X1 ab1).
 Proof.
-pose proof ftvar_in_abind_subst_tvar_in_abind_notin_mutual as H; intuition eauto.
+pose proof ftvar_in_abind_subst_typ_in_abind_notin_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve ftvar_in_abind_subst_tvar_in_abind_notin : lngen.
+#[export] Hint Resolve ftvar_in_abind_subst_typ_in_abind_notin : lngen.
 
 (* begin hide *)
 
-Lemma ftvar_in_exp_subst_tvar_in_exp_notin_mutual :
+Lemma ftvar_in_exp_subst_typ_in_exp_notin_mutual :
 (forall e1 A1 X1 X2,
   X2 `notin` ftvar_in_exp e1 ->
   X2 `notin` ftvar_in_typ A1 ->
-  X2 `notin` ftvar_in_exp (subst_tvar_in_exp A1 X1 e1)).
+  X2 `notin` ftvar_in_exp (subst_typ_in_exp A1 X1 e1)).
 Proof.
 apply_mutual_ind exp_mutind;
 default_simp; fsetdec.
@@ -11640,24 +11640,24 @@ Qed.
 
 (* end hide *)
 
-Lemma ftvar_in_exp_subst_tvar_in_exp_notin :
+Lemma ftvar_in_exp_subst_typ_in_exp_notin :
 forall e1 A1 X1 X2,
   X2 `notin` ftvar_in_exp e1 ->
   X2 `notin` ftvar_in_typ A1 ->
-  X2 `notin` ftvar_in_exp (subst_tvar_in_exp A1 X1 e1).
+  X2 `notin` ftvar_in_exp (subst_typ_in_exp A1 X1 e1).
 Proof.
-pose proof ftvar_in_exp_subst_tvar_in_exp_notin_mutual as H; intuition eauto.
+pose proof ftvar_in_exp_subst_typ_in_exp_notin_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve ftvar_in_exp_subst_tvar_in_exp_notin : lngen.
+#[export] Hint Resolve ftvar_in_exp_subst_typ_in_exp_notin : lngen.
 
 (* begin hide *)
 
-Lemma ftvar_in_exp_subst_var_in_exp_notin_mutual :
+Lemma ftvar_in_exp_subst_exp_in_exp_notin_mutual :
 (forall e1 e2 x1 X1,
   X1 `notin` ftvar_in_exp e1 ->
   X1 `notin` ftvar_in_exp e2 ->
-  X1 `notin` ftvar_in_exp (subst_var_in_exp e2 x1 e1)).
+  X1 `notin` ftvar_in_exp (subst_exp_in_exp e2 x1 e1)).
 Proof.
 apply_mutual_ind exp_mutind;
 default_simp; fsetdec.
@@ -11665,23 +11665,23 @@ Qed.
 
 (* end hide *)
 
-Lemma ftvar_in_exp_subst_var_in_exp_notin :
+Lemma ftvar_in_exp_subst_exp_in_exp_notin :
 forall e1 e2 x1 X1,
   X1 `notin` ftvar_in_exp e1 ->
   X1 `notin` ftvar_in_exp e2 ->
-  X1 `notin` ftvar_in_exp (subst_var_in_exp e2 x1 e1).
+  X1 `notin` ftvar_in_exp (subst_exp_in_exp e2 x1 e1).
 Proof.
-pose proof ftvar_in_exp_subst_var_in_exp_notin_mutual as H; intuition eauto.
+pose proof ftvar_in_exp_subst_exp_in_exp_notin_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve ftvar_in_exp_subst_var_in_exp_notin : lngen.
+#[export] Hint Resolve ftvar_in_exp_subst_exp_in_exp_notin : lngen.
 
 (* begin hide *)
 
-Lemma fvar_in_exp_subst_tvar_in_exp_notin_mutual :
+Lemma fvar_in_exp_subst_typ_in_exp_notin_mutual :
 (forall e1 A1 X1 x1,
   x1 `notin` fvar_in_exp e1 ->
-  x1 `notin` fvar_in_exp (subst_tvar_in_exp A1 X1 e1)).
+  x1 `notin` fvar_in_exp (subst_typ_in_exp A1 X1 e1)).
 Proof.
 apply_mutual_ind exp_mutind;
 default_simp; fsetdec.
@@ -11689,23 +11689,23 @@ Qed.
 
 (* end hide *)
 
-Lemma fvar_in_exp_subst_tvar_in_exp_notin :
+Lemma fvar_in_exp_subst_typ_in_exp_notin :
 forall e1 A1 X1 x1,
   x1 `notin` fvar_in_exp e1 ->
-  x1 `notin` fvar_in_exp (subst_tvar_in_exp A1 X1 e1).
+  x1 `notin` fvar_in_exp (subst_typ_in_exp A1 X1 e1).
 Proof.
-pose proof fvar_in_exp_subst_tvar_in_exp_notin_mutual as H; intuition eauto.
+pose proof fvar_in_exp_subst_typ_in_exp_notin_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve fvar_in_exp_subst_tvar_in_exp_notin : lngen.
+#[export] Hint Resolve fvar_in_exp_subst_typ_in_exp_notin : lngen.
 
 (* begin hide *)
 
-Lemma fvar_in_exp_subst_var_in_exp_notin_mutual :
+Lemma fvar_in_exp_subst_exp_in_exp_notin_mutual :
 (forall e1 e2 x1 x2,
   x2 `notin` fvar_in_exp e1 ->
   x2 `notin` fvar_in_exp e2 ->
-  x2 `notin` fvar_in_exp (subst_var_in_exp e2 x1 e1)).
+  x2 `notin` fvar_in_exp (subst_exp_in_exp e2 x1 e1)).
 Proof.
 apply_mutual_ind exp_mutind;
 default_simp; fsetdec.
@@ -11713,28 +11713,28 @@ Qed.
 
 (* end hide *)
 
-Lemma fvar_in_exp_subst_var_in_exp_notin :
+Lemma fvar_in_exp_subst_exp_in_exp_notin :
 forall e1 e2 x1 x2,
   x2 `notin` fvar_in_exp e1 ->
   x2 `notin` fvar_in_exp e2 ->
-  x2 `notin` fvar_in_exp (subst_var_in_exp e2 x1 e1).
+  x2 `notin` fvar_in_exp (subst_exp_in_exp e2 x1 e1).
 Proof.
-pose proof fvar_in_exp_subst_var_in_exp_notin_mutual as H; intuition eauto.
+pose proof fvar_in_exp_subst_exp_in_exp_notin_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve fvar_in_exp_subst_var_in_exp_notin : lngen.
+#[export] Hint Resolve fvar_in_exp_subst_exp_in_exp_notin : lngen.
 
 (* begin hide *)
 
-Lemma ftvar_in_contd_subst_tvar_in_contd_notin_ftvar_in_conts_subst_tvar_in_conts_notin_mutual :
+Lemma ftvar_in_contd_subst_typ_in_contd_notin_ftvar_in_conts_subst_typ_in_conts_notin_mutual :
 (forall cd1 A1 X1 X2,
   X2 `notin` ftvar_in_contd cd1 ->
   X2 `notin` ftvar_in_typ A1 ->
-  X2 `notin` ftvar_in_contd (subst_tvar_in_contd A1 X1 cd1)) /\
+  X2 `notin` ftvar_in_contd (subst_typ_in_contd A1 X1 cd1)) /\
 (forall cs1 A1 X1 X2,
   X2 `notin` ftvar_in_conts cs1 ->
   X2 `notin` ftvar_in_typ A1 ->
-  X2 `notin` ftvar_in_conts (subst_tvar_in_conts A1 X1 cs1)).
+  X2 `notin` ftvar_in_conts (subst_typ_in_conts A1 X1 cs1)).
 Proof.
 apply_mutual_ind contd_conts_mutind;
 default_simp; fsetdec.
@@ -11742,39 +11742,39 @@ Qed.
 
 (* end hide *)
 
-Lemma ftvar_in_contd_subst_tvar_in_contd_notin :
+Lemma ftvar_in_contd_subst_typ_in_contd_notin :
 forall cd1 A1 X1 X2,
   X2 `notin` ftvar_in_contd cd1 ->
   X2 `notin` ftvar_in_typ A1 ->
-  X2 `notin` ftvar_in_contd (subst_tvar_in_contd A1 X1 cd1).
+  X2 `notin` ftvar_in_contd (subst_typ_in_contd A1 X1 cd1).
 Proof.
-pose proof ftvar_in_contd_subst_tvar_in_contd_notin_ftvar_in_conts_subst_tvar_in_conts_notin_mutual as H; intuition eauto.
+pose proof ftvar_in_contd_subst_typ_in_contd_notin_ftvar_in_conts_subst_typ_in_conts_notin_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve ftvar_in_contd_subst_tvar_in_contd_notin : lngen.
+#[export] Hint Resolve ftvar_in_contd_subst_typ_in_contd_notin : lngen.
 
-Lemma ftvar_in_conts_subst_tvar_in_conts_notin :
+Lemma ftvar_in_conts_subst_typ_in_conts_notin :
 forall cs1 A1 X1 X2,
   X2 `notin` ftvar_in_conts cs1 ->
   X2 `notin` ftvar_in_typ A1 ->
-  X2 `notin` ftvar_in_conts (subst_tvar_in_conts A1 X1 cs1).
+  X2 `notin` ftvar_in_conts (subst_typ_in_conts A1 X1 cs1).
 Proof.
-pose proof ftvar_in_contd_subst_tvar_in_contd_notin_ftvar_in_conts_subst_tvar_in_conts_notin_mutual as H; intuition eauto.
+pose proof ftvar_in_contd_subst_typ_in_contd_notin_ftvar_in_conts_subst_typ_in_conts_notin_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve ftvar_in_conts_subst_tvar_in_conts_notin : lngen.
+#[export] Hint Resolve ftvar_in_conts_subst_typ_in_conts_notin : lngen.
 
 (* begin hide *)
 
-Lemma ftvar_in_contd_subst_var_in_contd_notin_ftvar_in_conts_subst_var_in_conts_notin_mutual :
+Lemma ftvar_in_contd_subst_exp_in_contd_notin_ftvar_in_conts_subst_exp_in_conts_notin_mutual :
 (forall cd1 e1 x1 X1,
   X1 `notin` ftvar_in_contd cd1 ->
   X1 `notin` ftvar_in_exp e1 ->
-  X1 `notin` ftvar_in_contd (subst_var_in_contd e1 x1 cd1)) /\
+  X1 `notin` ftvar_in_contd (subst_exp_in_contd e1 x1 cd1)) /\
 (forall cs1 e1 x1 X1,
   X1 `notin` ftvar_in_conts cs1 ->
   X1 `notin` ftvar_in_exp e1 ->
-  X1 `notin` ftvar_in_conts (subst_var_in_conts e1 x1 cs1)).
+  X1 `notin` ftvar_in_conts (subst_exp_in_conts e1 x1 cs1)).
 Proof.
 apply_mutual_ind contd_conts_mutind;
 default_simp; fsetdec.
@@ -11782,37 +11782,37 @@ Qed.
 
 (* end hide *)
 
-Lemma ftvar_in_contd_subst_var_in_contd_notin :
+Lemma ftvar_in_contd_subst_exp_in_contd_notin :
 forall cd1 e1 x1 X1,
   X1 `notin` ftvar_in_contd cd1 ->
   X1 `notin` ftvar_in_exp e1 ->
-  X1 `notin` ftvar_in_contd (subst_var_in_contd e1 x1 cd1).
+  X1 `notin` ftvar_in_contd (subst_exp_in_contd e1 x1 cd1).
 Proof.
-pose proof ftvar_in_contd_subst_var_in_contd_notin_ftvar_in_conts_subst_var_in_conts_notin_mutual as H; intuition eauto.
+pose proof ftvar_in_contd_subst_exp_in_contd_notin_ftvar_in_conts_subst_exp_in_conts_notin_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve ftvar_in_contd_subst_var_in_contd_notin : lngen.
+#[export] Hint Resolve ftvar_in_contd_subst_exp_in_contd_notin : lngen.
 
-Lemma ftvar_in_conts_subst_var_in_conts_notin :
+Lemma ftvar_in_conts_subst_exp_in_conts_notin :
 forall cs1 e1 x1 X1,
   X1 `notin` ftvar_in_conts cs1 ->
   X1 `notin` ftvar_in_exp e1 ->
-  X1 `notin` ftvar_in_conts (subst_var_in_conts e1 x1 cs1).
+  X1 `notin` ftvar_in_conts (subst_exp_in_conts e1 x1 cs1).
 Proof.
-pose proof ftvar_in_contd_subst_var_in_contd_notin_ftvar_in_conts_subst_var_in_conts_notin_mutual as H; intuition eauto.
+pose proof ftvar_in_contd_subst_exp_in_contd_notin_ftvar_in_conts_subst_exp_in_conts_notin_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve ftvar_in_conts_subst_var_in_conts_notin : lngen.
+#[export] Hint Resolve ftvar_in_conts_subst_exp_in_conts_notin : lngen.
 
 (* begin hide *)
 
-Lemma fvar_in_contd_subst_tvar_in_contd_notin_fvar_in_conts_subst_tvar_in_conts_notin_mutual :
+Lemma fvar_in_contd_subst_typ_in_contd_notin_fvar_in_conts_subst_typ_in_conts_notin_mutual :
 (forall cd1 A1 X1 x1,
   x1 `notin` fvar_in_contd cd1 ->
-  x1 `notin` fvar_in_contd (subst_tvar_in_contd A1 X1 cd1)) /\
+  x1 `notin` fvar_in_contd (subst_typ_in_contd A1 X1 cd1)) /\
 (forall cs1 A1 X1 x1,
   x1 `notin` fvar_in_conts cs1 ->
-  x1 `notin` fvar_in_conts (subst_tvar_in_conts A1 X1 cs1)).
+  x1 `notin` fvar_in_conts (subst_typ_in_conts A1 X1 cs1)).
 Proof.
 apply_mutual_ind contd_conts_mutind;
 default_simp; fsetdec.
@@ -11820,37 +11820,37 @@ Qed.
 
 (* end hide *)
 
-Lemma fvar_in_contd_subst_tvar_in_contd_notin :
+Lemma fvar_in_contd_subst_typ_in_contd_notin :
 forall cd1 A1 X1 x1,
   x1 `notin` fvar_in_contd cd1 ->
-  x1 `notin` fvar_in_contd (subst_tvar_in_contd A1 X1 cd1).
+  x1 `notin` fvar_in_contd (subst_typ_in_contd A1 X1 cd1).
 Proof.
-pose proof fvar_in_contd_subst_tvar_in_contd_notin_fvar_in_conts_subst_tvar_in_conts_notin_mutual as H; intuition eauto.
+pose proof fvar_in_contd_subst_typ_in_contd_notin_fvar_in_conts_subst_typ_in_conts_notin_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve fvar_in_contd_subst_tvar_in_contd_notin : lngen.
+#[export] Hint Resolve fvar_in_contd_subst_typ_in_contd_notin : lngen.
 
-Lemma fvar_in_conts_subst_tvar_in_conts_notin :
+Lemma fvar_in_conts_subst_typ_in_conts_notin :
 forall cs1 A1 X1 x1,
   x1 `notin` fvar_in_conts cs1 ->
-  x1 `notin` fvar_in_conts (subst_tvar_in_conts A1 X1 cs1).
+  x1 `notin` fvar_in_conts (subst_typ_in_conts A1 X1 cs1).
 Proof.
-pose proof fvar_in_contd_subst_tvar_in_contd_notin_fvar_in_conts_subst_tvar_in_conts_notin_mutual as H; intuition eauto.
+pose proof fvar_in_contd_subst_typ_in_contd_notin_fvar_in_conts_subst_typ_in_conts_notin_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve fvar_in_conts_subst_tvar_in_conts_notin : lngen.
+#[export] Hint Resolve fvar_in_conts_subst_typ_in_conts_notin : lngen.
 
 (* begin hide *)
 
-Lemma fvar_in_contd_subst_var_in_contd_notin_fvar_in_conts_subst_var_in_conts_notin_mutual :
+Lemma fvar_in_contd_subst_exp_in_contd_notin_fvar_in_conts_subst_exp_in_conts_notin_mutual :
 (forall cd1 e1 x1 x2,
   x2 `notin` fvar_in_contd cd1 ->
   x2 `notin` fvar_in_exp e1 ->
-  x2 `notin` fvar_in_contd (subst_var_in_contd e1 x1 cd1)) /\
+  x2 `notin` fvar_in_contd (subst_exp_in_contd e1 x1 cd1)) /\
 (forall cs1 e1 x1 x2,
   x2 `notin` fvar_in_conts cs1 ->
   x2 `notin` fvar_in_exp e1 ->
-  x2 `notin` fvar_in_conts (subst_var_in_conts e1 x1 cs1)).
+  x2 `notin` fvar_in_conts (subst_exp_in_conts e1 x1 cs1)).
 Proof.
 apply_mutual_ind contd_conts_mutind;
 default_simp; fsetdec.
@@ -11858,35 +11858,35 @@ Qed.
 
 (* end hide *)
 
-Lemma fvar_in_contd_subst_var_in_contd_notin :
+Lemma fvar_in_contd_subst_exp_in_contd_notin :
 forall cd1 e1 x1 x2,
   x2 `notin` fvar_in_contd cd1 ->
   x2 `notin` fvar_in_exp e1 ->
-  x2 `notin` fvar_in_contd (subst_var_in_contd e1 x1 cd1).
+  x2 `notin` fvar_in_contd (subst_exp_in_contd e1 x1 cd1).
 Proof.
-pose proof fvar_in_contd_subst_var_in_contd_notin_fvar_in_conts_subst_var_in_conts_notin_mutual as H; intuition eauto.
+pose proof fvar_in_contd_subst_exp_in_contd_notin_fvar_in_conts_subst_exp_in_conts_notin_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve fvar_in_contd_subst_var_in_contd_notin : lngen.
+#[export] Hint Resolve fvar_in_contd_subst_exp_in_contd_notin : lngen.
 
-Lemma fvar_in_conts_subst_var_in_conts_notin :
+Lemma fvar_in_conts_subst_exp_in_conts_notin :
 forall cs1 e1 x1 x2,
   x2 `notin` fvar_in_conts cs1 ->
   x2 `notin` fvar_in_exp e1 ->
-  x2 `notin` fvar_in_conts (subst_var_in_conts e1 x1 cs1).
+  x2 `notin` fvar_in_conts (subst_exp_in_conts e1 x1 cs1).
 Proof.
-pose proof fvar_in_contd_subst_var_in_contd_notin_fvar_in_conts_subst_var_in_conts_notin_mutual as H; intuition eauto.
+pose proof fvar_in_contd_subst_exp_in_contd_notin_fvar_in_conts_subst_exp_in_conts_notin_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve fvar_in_conts_subst_var_in_conts_notin : lngen.
+#[export] Hint Resolve fvar_in_conts_subst_exp_in_conts_notin : lngen.
 
 (* begin hide *)
 
-Lemma ftvar_in_dbind_subst_tvar_in_dbind_notin_mutual :
+Lemma ftvar_in_dbind_subst_typ_in_dbind_notin_mutual :
 (forall db1 A1 X1 X2,
   X2 `notin` ftvar_in_dbind db1 ->
   X2 `notin` ftvar_in_typ A1 ->
-  X2 `notin` ftvar_in_dbind (subst_tvar_in_dbind A1 X1 db1)).
+  X2 `notin` ftvar_in_dbind (subst_typ_in_dbind A1 X1 db1)).
 Proof.
 apply_mutual_ind dbind_mutind;
 default_simp; fsetdec.
@@ -11894,24 +11894,24 @@ Qed.
 
 (* end hide *)
 
-Lemma ftvar_in_dbind_subst_tvar_in_dbind_notin :
+Lemma ftvar_in_dbind_subst_typ_in_dbind_notin :
 forall db1 A1 X1 X2,
   X2 `notin` ftvar_in_dbind db1 ->
   X2 `notin` ftvar_in_typ A1 ->
-  X2 `notin` ftvar_in_dbind (subst_tvar_in_dbind A1 X1 db1).
+  X2 `notin` ftvar_in_dbind (subst_typ_in_dbind A1 X1 db1).
 Proof.
-pose proof ftvar_in_dbind_subst_tvar_in_dbind_notin_mutual as H; intuition eauto.
+pose proof ftvar_in_dbind_subst_typ_in_dbind_notin_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve ftvar_in_dbind_subst_tvar_in_dbind_notin : lngen.
+#[export] Hint Resolve ftvar_in_dbind_subst_typ_in_dbind_notin : lngen.
 
 (* begin hide *)
 
-Lemma ftvar_in_work_subst_tvar_in_work_notin_mutual :
+Lemma ftvar_in_work_subst_typ_in_work_notin_mutual :
 (forall w1 A1 X1 X2,
   X2 `notin` ftvar_in_work w1 ->
   X2 `notin` ftvar_in_typ A1 ->
-  X2 `notin` ftvar_in_work (subst_tvar_in_work A1 X1 w1)).
+  X2 `notin` ftvar_in_work (subst_typ_in_work A1 X1 w1)).
 Proof.
 apply_mutual_ind work_mutind;
 default_simp; fsetdec.
@@ -11919,24 +11919,24 @@ Qed.
 
 (* end hide *)
 
-Lemma ftvar_in_work_subst_tvar_in_work_notin :
+Lemma ftvar_in_work_subst_typ_in_work_notin :
 forall w1 A1 X1 X2,
   X2 `notin` ftvar_in_work w1 ->
   X2 `notin` ftvar_in_typ A1 ->
-  X2 `notin` ftvar_in_work (subst_tvar_in_work A1 X1 w1).
+  X2 `notin` ftvar_in_work (subst_typ_in_work A1 X1 w1).
 Proof.
-pose proof ftvar_in_work_subst_tvar_in_work_notin_mutual as H; intuition eauto.
+pose proof ftvar_in_work_subst_typ_in_work_notin_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve ftvar_in_work_subst_tvar_in_work_notin : lngen.
+#[export] Hint Resolve ftvar_in_work_subst_typ_in_work_notin : lngen.
 
 (* begin hide *)
 
-Lemma ftvar_in_work_subst_var_in_work_notin_mutual :
+Lemma ftvar_in_work_subst_exp_in_work_notin_mutual :
 (forall w1 e1 x1 X1,
   X1 `notin` ftvar_in_work w1 ->
   X1 `notin` ftvar_in_exp e1 ->
-  X1 `notin` ftvar_in_work (subst_var_in_work e1 x1 w1)).
+  X1 `notin` ftvar_in_work (subst_exp_in_work e1 x1 w1)).
 Proof.
 apply_mutual_ind work_mutind;
 default_simp; fsetdec.
@@ -11944,23 +11944,23 @@ Qed.
 
 (* end hide *)
 
-Lemma ftvar_in_work_subst_var_in_work_notin :
+Lemma ftvar_in_work_subst_exp_in_work_notin :
 forall w1 e1 x1 X1,
   X1 `notin` ftvar_in_work w1 ->
   X1 `notin` ftvar_in_exp e1 ->
-  X1 `notin` ftvar_in_work (subst_var_in_work e1 x1 w1).
+  X1 `notin` ftvar_in_work (subst_exp_in_work e1 x1 w1).
 Proof.
-pose proof ftvar_in_work_subst_var_in_work_notin_mutual as H; intuition eauto.
+pose proof ftvar_in_work_subst_exp_in_work_notin_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve ftvar_in_work_subst_var_in_work_notin : lngen.
+#[export] Hint Resolve ftvar_in_work_subst_exp_in_work_notin : lngen.
 
 (* begin hide *)
 
-Lemma fvar_in_work_subst_tvar_in_work_notin_mutual :
+Lemma fvar_in_work_subst_typ_in_work_notin_mutual :
 (forall w1 A1 X1 x1,
   x1 `notin` fvar_in_work w1 ->
-  x1 `notin` fvar_in_work (subst_tvar_in_work A1 X1 w1)).
+  x1 `notin` fvar_in_work (subst_typ_in_work A1 X1 w1)).
 Proof.
 apply_mutual_ind work_mutind;
 default_simp; fsetdec.
@@ -11968,23 +11968,23 @@ Qed.
 
 (* end hide *)
 
-Lemma fvar_in_work_subst_tvar_in_work_notin :
+Lemma fvar_in_work_subst_typ_in_work_notin :
 forall w1 A1 X1 x1,
   x1 `notin` fvar_in_work w1 ->
-  x1 `notin` fvar_in_work (subst_tvar_in_work A1 X1 w1).
+  x1 `notin` fvar_in_work (subst_typ_in_work A1 X1 w1).
 Proof.
-pose proof fvar_in_work_subst_tvar_in_work_notin_mutual as H; intuition eauto.
+pose proof fvar_in_work_subst_typ_in_work_notin_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve fvar_in_work_subst_tvar_in_work_notin : lngen.
+#[export] Hint Resolve fvar_in_work_subst_typ_in_work_notin : lngen.
 
 (* begin hide *)
 
-Lemma fvar_in_work_subst_var_in_work_notin_mutual :
+Lemma fvar_in_work_subst_exp_in_work_notin_mutual :
 (forall w1 e1 x1 x2,
   x2 `notin` fvar_in_work w1 ->
   x2 `notin` fvar_in_exp e1 ->
-  x2 `notin` fvar_in_work (subst_var_in_work e1 x1 w1)).
+  x2 `notin` fvar_in_work (subst_exp_in_work e1 x1 w1)).
 Proof.
 apply_mutual_ind work_mutind;
 default_simp; fsetdec.
@@ -11992,22 +11992,22 @@ Qed.
 
 (* end hide *)
 
-Lemma fvar_in_work_subst_var_in_work_notin :
+Lemma fvar_in_work_subst_exp_in_work_notin :
 forall w1 e1 x1 x2,
   x2 `notin` fvar_in_work w1 ->
   x2 `notin` fvar_in_exp e1 ->
-  x2 `notin` fvar_in_work (subst_var_in_work e1 x1 w1).
+  x2 `notin` fvar_in_work (subst_exp_in_work e1 x1 w1).
 Proof.
-pose proof fvar_in_work_subst_var_in_work_notin_mutual as H; intuition eauto.
+pose proof fvar_in_work_subst_exp_in_work_notin_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve fvar_in_work_subst_var_in_work_notin : lngen.
+#[export] Hint Resolve fvar_in_work_subst_exp_in_work_notin : lngen.
 
 (* begin hide *)
 
-Lemma ftvar_in_typ_subst_tvar_in_typ_upper_mutual :
+Lemma ftvar_in_typ_subst_typ_in_typ_upper_mutual :
 (forall A1 A2 X1,
-  ftvar_in_typ (subst_tvar_in_typ A2 X1 A1) [<=] ftvar_in_typ A2 `union` remove X1 (ftvar_in_typ A1)).
+  ftvar_in_typ (subst_typ_in_typ A2 X1 A1) [<=] ftvar_in_typ A2 `union` remove X1 (ftvar_in_typ A1)).
 Proof.
 apply_mutual_ind typ_mutind;
 default_simp; fsetdec.
@@ -12015,20 +12015,20 @@ Qed.
 
 (* end hide *)
 
-Lemma ftvar_in_typ_subst_tvar_in_typ_upper :
+Lemma ftvar_in_typ_subst_typ_in_typ_upper :
 forall A1 A2 X1,
-  ftvar_in_typ (subst_tvar_in_typ A2 X1 A1) [<=] ftvar_in_typ A2 `union` remove X1 (ftvar_in_typ A1).
+  ftvar_in_typ (subst_typ_in_typ A2 X1 A1) [<=] ftvar_in_typ A2 `union` remove X1 (ftvar_in_typ A1).
 Proof.
-pose proof ftvar_in_typ_subst_tvar_in_typ_upper_mutual as H; intuition eauto.
+pose proof ftvar_in_typ_subst_typ_in_typ_upper_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve ftvar_in_typ_subst_tvar_in_typ_upper : lngen.
+#[export] Hint Resolve ftvar_in_typ_subst_typ_in_typ_upper : lngen.
 
 (* begin hide *)
 
-Lemma ftvar_in_abind_subst_tvar_in_abind_upper_mutual :
+Lemma ftvar_in_abind_subst_typ_in_abind_upper_mutual :
 (forall ab1 A1 X1,
-  ftvar_in_abind (subst_tvar_in_abind A1 X1 ab1) [<=] ftvar_in_typ A1 `union` remove X1 (ftvar_in_abind ab1)).
+  ftvar_in_abind (subst_typ_in_abind A1 X1 ab1) [<=] ftvar_in_typ A1 `union` remove X1 (ftvar_in_abind ab1)).
 Proof.
 apply_mutual_ind abind_mutind;
 default_simp; fsetdec.
@@ -12036,20 +12036,20 @@ Qed.
 
 (* end hide *)
 
-Lemma ftvar_in_abind_subst_tvar_in_abind_upper :
+Lemma ftvar_in_abind_subst_typ_in_abind_upper :
 forall ab1 A1 X1,
-  ftvar_in_abind (subst_tvar_in_abind A1 X1 ab1) [<=] ftvar_in_typ A1 `union` remove X1 (ftvar_in_abind ab1).
+  ftvar_in_abind (subst_typ_in_abind A1 X1 ab1) [<=] ftvar_in_typ A1 `union` remove X1 (ftvar_in_abind ab1).
 Proof.
-pose proof ftvar_in_abind_subst_tvar_in_abind_upper_mutual as H; intuition eauto.
+pose proof ftvar_in_abind_subst_typ_in_abind_upper_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve ftvar_in_abind_subst_tvar_in_abind_upper : lngen.
+#[export] Hint Resolve ftvar_in_abind_subst_typ_in_abind_upper : lngen.
 
 (* begin hide *)
 
-Lemma ftvar_in_exp_subst_tvar_in_exp_upper_mutual :
+Lemma ftvar_in_exp_subst_typ_in_exp_upper_mutual :
 (forall e1 A1 X1,
-  ftvar_in_exp (subst_tvar_in_exp A1 X1 e1) [<=] ftvar_in_typ A1 `union` remove X1 (ftvar_in_exp e1)).
+  ftvar_in_exp (subst_typ_in_exp A1 X1 e1) [<=] ftvar_in_typ A1 `union` remove X1 (ftvar_in_exp e1)).
 Proof.
 apply_mutual_ind exp_mutind;
 default_simp; fsetdec.
@@ -12057,20 +12057,20 @@ Qed.
 
 (* end hide *)
 
-Lemma ftvar_in_exp_subst_tvar_in_exp_upper :
+Lemma ftvar_in_exp_subst_typ_in_exp_upper :
 forall e1 A1 X1,
-  ftvar_in_exp (subst_tvar_in_exp A1 X1 e1) [<=] ftvar_in_typ A1 `union` remove X1 (ftvar_in_exp e1).
+  ftvar_in_exp (subst_typ_in_exp A1 X1 e1) [<=] ftvar_in_typ A1 `union` remove X1 (ftvar_in_exp e1).
 Proof.
-pose proof ftvar_in_exp_subst_tvar_in_exp_upper_mutual as H; intuition eauto.
+pose proof ftvar_in_exp_subst_typ_in_exp_upper_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve ftvar_in_exp_subst_tvar_in_exp_upper : lngen.
+#[export] Hint Resolve ftvar_in_exp_subst_typ_in_exp_upper : lngen.
 
 (* begin hide *)
 
-Lemma ftvar_in_exp_subst_var_in_exp_upper_mutual :
+Lemma ftvar_in_exp_subst_exp_in_exp_upper_mutual :
 (forall e1 e2 x1,
-  ftvar_in_exp (subst_var_in_exp e2 x1 e1) [<=] ftvar_in_exp e2 `union` ftvar_in_exp e1).
+  ftvar_in_exp (subst_exp_in_exp e2 x1 e1) [<=] ftvar_in_exp e2 `union` ftvar_in_exp e1).
 Proof.
 apply_mutual_ind exp_mutind;
 default_simp; fsetdec.
@@ -12078,20 +12078,20 @@ Qed.
 
 (* end hide *)
 
-Lemma ftvar_in_exp_subst_var_in_exp_upper :
+Lemma ftvar_in_exp_subst_exp_in_exp_upper :
 forall e1 e2 x1,
-  ftvar_in_exp (subst_var_in_exp e2 x1 e1) [<=] ftvar_in_exp e2 `union` ftvar_in_exp e1.
+  ftvar_in_exp (subst_exp_in_exp e2 x1 e1) [<=] ftvar_in_exp e2 `union` ftvar_in_exp e1.
 Proof.
-pose proof ftvar_in_exp_subst_var_in_exp_upper_mutual as H; intuition eauto.
+pose proof ftvar_in_exp_subst_exp_in_exp_upper_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve ftvar_in_exp_subst_var_in_exp_upper : lngen.
+#[export] Hint Resolve ftvar_in_exp_subst_exp_in_exp_upper : lngen.
 
 (* begin hide *)
 
-Lemma fvar_in_exp_subst_tvar_in_exp_upper_mutual :
+Lemma fvar_in_exp_subst_typ_in_exp_upper_mutual :
 (forall e1 A1 X1,
-  fvar_in_exp (subst_tvar_in_exp A1 X1 e1) [<=] fvar_in_exp e1).
+  fvar_in_exp (subst_typ_in_exp A1 X1 e1) [<=] fvar_in_exp e1).
 Proof.
 apply_mutual_ind exp_mutind;
 default_simp; fsetdec.
@@ -12099,20 +12099,20 @@ Qed.
 
 (* end hide *)
 
-Lemma fvar_in_exp_subst_tvar_in_exp_upper :
+Lemma fvar_in_exp_subst_typ_in_exp_upper :
 forall e1 A1 X1,
-  fvar_in_exp (subst_tvar_in_exp A1 X1 e1) [<=] fvar_in_exp e1.
+  fvar_in_exp (subst_typ_in_exp A1 X1 e1) [<=] fvar_in_exp e1.
 Proof.
-pose proof fvar_in_exp_subst_tvar_in_exp_upper_mutual as H; intuition eauto.
+pose proof fvar_in_exp_subst_typ_in_exp_upper_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve fvar_in_exp_subst_tvar_in_exp_upper : lngen.
+#[export] Hint Resolve fvar_in_exp_subst_typ_in_exp_upper : lngen.
 
 (* begin hide *)
 
-Lemma fvar_in_exp_subst_var_in_exp_upper_mutual :
+Lemma fvar_in_exp_subst_exp_in_exp_upper_mutual :
 (forall e1 e2 x1,
-  fvar_in_exp (subst_var_in_exp e2 x1 e1) [<=] fvar_in_exp e2 `union` remove x1 (fvar_in_exp e1)).
+  fvar_in_exp (subst_exp_in_exp e2 x1 e1) [<=] fvar_in_exp e2 `union` remove x1 (fvar_in_exp e1)).
 Proof.
 apply_mutual_ind exp_mutind;
 default_simp; fsetdec.
@@ -12120,22 +12120,22 @@ Qed.
 
 (* end hide *)
 
-Lemma fvar_in_exp_subst_var_in_exp_upper :
+Lemma fvar_in_exp_subst_exp_in_exp_upper :
 forall e1 e2 x1,
-  fvar_in_exp (subst_var_in_exp e2 x1 e1) [<=] fvar_in_exp e2 `union` remove x1 (fvar_in_exp e1).
+  fvar_in_exp (subst_exp_in_exp e2 x1 e1) [<=] fvar_in_exp e2 `union` remove x1 (fvar_in_exp e1).
 Proof.
-pose proof fvar_in_exp_subst_var_in_exp_upper_mutual as H; intuition eauto.
+pose proof fvar_in_exp_subst_exp_in_exp_upper_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve fvar_in_exp_subst_var_in_exp_upper : lngen.
+#[export] Hint Resolve fvar_in_exp_subst_exp_in_exp_upper : lngen.
 
 (* begin hide *)
 
-Lemma ftvar_in_contd_subst_tvar_in_contd_upper_ftvar_in_conts_subst_tvar_in_conts_upper_mutual :
+Lemma ftvar_in_contd_subst_typ_in_contd_upper_ftvar_in_conts_subst_typ_in_conts_upper_mutual :
 (forall cd1 A1 X1,
-  ftvar_in_contd (subst_tvar_in_contd A1 X1 cd1) [<=] ftvar_in_typ A1 `union` remove X1 (ftvar_in_contd cd1)) /\
+  ftvar_in_contd (subst_typ_in_contd A1 X1 cd1) [<=] ftvar_in_typ A1 `union` remove X1 (ftvar_in_contd cd1)) /\
 (forall cs1 A1 X1,
-  ftvar_in_conts (subst_tvar_in_conts A1 X1 cs1) [<=] ftvar_in_typ A1 `union` remove X1 (ftvar_in_conts cs1)).
+  ftvar_in_conts (subst_typ_in_conts A1 X1 cs1) [<=] ftvar_in_typ A1 `union` remove X1 (ftvar_in_conts cs1)).
 Proof.
 apply_mutual_ind contd_conts_mutind;
 default_simp; fsetdec.
@@ -12143,31 +12143,31 @@ Qed.
 
 (* end hide *)
 
-Lemma ftvar_in_contd_subst_tvar_in_contd_upper :
+Lemma ftvar_in_contd_subst_typ_in_contd_upper :
 forall cd1 A1 X1,
-  ftvar_in_contd (subst_tvar_in_contd A1 X1 cd1) [<=] ftvar_in_typ A1 `union` remove X1 (ftvar_in_contd cd1).
+  ftvar_in_contd (subst_typ_in_contd A1 X1 cd1) [<=] ftvar_in_typ A1 `union` remove X1 (ftvar_in_contd cd1).
 Proof.
-pose proof ftvar_in_contd_subst_tvar_in_contd_upper_ftvar_in_conts_subst_tvar_in_conts_upper_mutual as H; intuition eauto.
+pose proof ftvar_in_contd_subst_typ_in_contd_upper_ftvar_in_conts_subst_typ_in_conts_upper_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve ftvar_in_contd_subst_tvar_in_contd_upper : lngen.
+#[export] Hint Resolve ftvar_in_contd_subst_typ_in_contd_upper : lngen.
 
-Lemma ftvar_in_conts_subst_tvar_in_conts_upper :
+Lemma ftvar_in_conts_subst_typ_in_conts_upper :
 forall cs1 A1 X1,
-  ftvar_in_conts (subst_tvar_in_conts A1 X1 cs1) [<=] ftvar_in_typ A1 `union` remove X1 (ftvar_in_conts cs1).
+  ftvar_in_conts (subst_typ_in_conts A1 X1 cs1) [<=] ftvar_in_typ A1 `union` remove X1 (ftvar_in_conts cs1).
 Proof.
-pose proof ftvar_in_contd_subst_tvar_in_contd_upper_ftvar_in_conts_subst_tvar_in_conts_upper_mutual as H; intuition eauto.
+pose proof ftvar_in_contd_subst_typ_in_contd_upper_ftvar_in_conts_subst_typ_in_conts_upper_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve ftvar_in_conts_subst_tvar_in_conts_upper : lngen.
+#[export] Hint Resolve ftvar_in_conts_subst_typ_in_conts_upper : lngen.
 
 (* begin hide *)
 
-Lemma ftvar_in_contd_subst_var_in_contd_upper_ftvar_in_conts_subst_var_in_conts_upper_mutual :
+Lemma ftvar_in_contd_subst_exp_in_contd_upper_ftvar_in_conts_subst_exp_in_conts_upper_mutual :
 (forall cd1 e1 x1,
-  ftvar_in_contd (subst_var_in_contd e1 x1 cd1) [<=] ftvar_in_exp e1 `union` ftvar_in_contd cd1) /\
+  ftvar_in_contd (subst_exp_in_contd e1 x1 cd1) [<=] ftvar_in_exp e1 `union` ftvar_in_contd cd1) /\
 (forall cs1 e1 x1,
-  ftvar_in_conts (subst_var_in_conts e1 x1 cs1) [<=] ftvar_in_exp e1 `union` ftvar_in_conts cs1).
+  ftvar_in_conts (subst_exp_in_conts e1 x1 cs1) [<=] ftvar_in_exp e1 `union` ftvar_in_conts cs1).
 Proof.
 apply_mutual_ind contd_conts_mutind;
 default_simp; fsetdec.
@@ -12175,31 +12175,31 @@ Qed.
 
 (* end hide *)
 
-Lemma ftvar_in_contd_subst_var_in_contd_upper :
+Lemma ftvar_in_contd_subst_exp_in_contd_upper :
 forall cd1 e1 x1,
-  ftvar_in_contd (subst_var_in_contd e1 x1 cd1) [<=] ftvar_in_exp e1 `union` ftvar_in_contd cd1.
+  ftvar_in_contd (subst_exp_in_contd e1 x1 cd1) [<=] ftvar_in_exp e1 `union` ftvar_in_contd cd1.
 Proof.
-pose proof ftvar_in_contd_subst_var_in_contd_upper_ftvar_in_conts_subst_var_in_conts_upper_mutual as H; intuition eauto.
+pose proof ftvar_in_contd_subst_exp_in_contd_upper_ftvar_in_conts_subst_exp_in_conts_upper_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve ftvar_in_contd_subst_var_in_contd_upper : lngen.
+#[export] Hint Resolve ftvar_in_contd_subst_exp_in_contd_upper : lngen.
 
-Lemma ftvar_in_conts_subst_var_in_conts_upper :
+Lemma ftvar_in_conts_subst_exp_in_conts_upper :
 forall cs1 e1 x1,
-  ftvar_in_conts (subst_var_in_conts e1 x1 cs1) [<=] ftvar_in_exp e1 `union` ftvar_in_conts cs1.
+  ftvar_in_conts (subst_exp_in_conts e1 x1 cs1) [<=] ftvar_in_exp e1 `union` ftvar_in_conts cs1.
 Proof.
-pose proof ftvar_in_contd_subst_var_in_contd_upper_ftvar_in_conts_subst_var_in_conts_upper_mutual as H; intuition eauto.
+pose proof ftvar_in_contd_subst_exp_in_contd_upper_ftvar_in_conts_subst_exp_in_conts_upper_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve ftvar_in_conts_subst_var_in_conts_upper : lngen.
+#[export] Hint Resolve ftvar_in_conts_subst_exp_in_conts_upper : lngen.
 
 (* begin hide *)
 
-Lemma fvar_in_contd_subst_tvar_in_contd_upper_fvar_in_conts_subst_tvar_in_conts_upper_mutual :
+Lemma fvar_in_contd_subst_typ_in_contd_upper_fvar_in_conts_subst_typ_in_conts_upper_mutual :
 (forall cd1 A1 X1,
-  fvar_in_contd (subst_tvar_in_contd A1 X1 cd1) [<=] fvar_in_contd cd1) /\
+  fvar_in_contd (subst_typ_in_contd A1 X1 cd1) [<=] fvar_in_contd cd1) /\
 (forall cs1 A1 X1,
-  fvar_in_conts (subst_tvar_in_conts A1 X1 cs1) [<=] fvar_in_conts cs1).
+  fvar_in_conts (subst_typ_in_conts A1 X1 cs1) [<=] fvar_in_conts cs1).
 Proof.
 apply_mutual_ind contd_conts_mutind;
 default_simp; fsetdec.
@@ -12207,31 +12207,31 @@ Qed.
 
 (* end hide *)
 
-Lemma fvar_in_contd_subst_tvar_in_contd_upper :
+Lemma fvar_in_contd_subst_typ_in_contd_upper :
 forall cd1 A1 X1,
-  fvar_in_contd (subst_tvar_in_contd A1 X1 cd1) [<=] fvar_in_contd cd1.
+  fvar_in_contd (subst_typ_in_contd A1 X1 cd1) [<=] fvar_in_contd cd1.
 Proof.
-pose proof fvar_in_contd_subst_tvar_in_contd_upper_fvar_in_conts_subst_tvar_in_conts_upper_mutual as H; intuition eauto.
+pose proof fvar_in_contd_subst_typ_in_contd_upper_fvar_in_conts_subst_typ_in_conts_upper_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve fvar_in_contd_subst_tvar_in_contd_upper : lngen.
+#[export] Hint Resolve fvar_in_contd_subst_typ_in_contd_upper : lngen.
 
-Lemma fvar_in_conts_subst_tvar_in_conts_upper :
+Lemma fvar_in_conts_subst_typ_in_conts_upper :
 forall cs1 A1 X1,
-  fvar_in_conts (subst_tvar_in_conts A1 X1 cs1) [<=] fvar_in_conts cs1.
+  fvar_in_conts (subst_typ_in_conts A1 X1 cs1) [<=] fvar_in_conts cs1.
 Proof.
-pose proof fvar_in_contd_subst_tvar_in_contd_upper_fvar_in_conts_subst_tvar_in_conts_upper_mutual as H; intuition eauto.
+pose proof fvar_in_contd_subst_typ_in_contd_upper_fvar_in_conts_subst_typ_in_conts_upper_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve fvar_in_conts_subst_tvar_in_conts_upper : lngen.
+#[export] Hint Resolve fvar_in_conts_subst_typ_in_conts_upper : lngen.
 
 (* begin hide *)
 
-Lemma fvar_in_contd_subst_var_in_contd_upper_fvar_in_conts_subst_var_in_conts_upper_mutual :
+Lemma fvar_in_contd_subst_exp_in_contd_upper_fvar_in_conts_subst_exp_in_conts_upper_mutual :
 (forall cd1 e1 x1,
-  fvar_in_contd (subst_var_in_contd e1 x1 cd1) [<=] fvar_in_exp e1 `union` remove x1 (fvar_in_contd cd1)) /\
+  fvar_in_contd (subst_exp_in_contd e1 x1 cd1) [<=] fvar_in_exp e1 `union` remove x1 (fvar_in_contd cd1)) /\
 (forall cs1 e1 x1,
-  fvar_in_conts (subst_var_in_conts e1 x1 cs1) [<=] fvar_in_exp e1 `union` remove x1 (fvar_in_conts cs1)).
+  fvar_in_conts (subst_exp_in_conts e1 x1 cs1) [<=] fvar_in_exp e1 `union` remove x1 (fvar_in_conts cs1)).
 Proof.
 apply_mutual_ind contd_conts_mutind;
 default_simp; fsetdec.
@@ -12239,29 +12239,29 @@ Qed.
 
 (* end hide *)
 
-Lemma fvar_in_contd_subst_var_in_contd_upper :
+Lemma fvar_in_contd_subst_exp_in_contd_upper :
 forall cd1 e1 x1,
-  fvar_in_contd (subst_var_in_contd e1 x1 cd1) [<=] fvar_in_exp e1 `union` remove x1 (fvar_in_contd cd1).
+  fvar_in_contd (subst_exp_in_contd e1 x1 cd1) [<=] fvar_in_exp e1 `union` remove x1 (fvar_in_contd cd1).
 Proof.
-pose proof fvar_in_contd_subst_var_in_contd_upper_fvar_in_conts_subst_var_in_conts_upper_mutual as H; intuition eauto.
+pose proof fvar_in_contd_subst_exp_in_contd_upper_fvar_in_conts_subst_exp_in_conts_upper_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve fvar_in_contd_subst_var_in_contd_upper : lngen.
+#[export] Hint Resolve fvar_in_contd_subst_exp_in_contd_upper : lngen.
 
-Lemma fvar_in_conts_subst_var_in_conts_upper :
+Lemma fvar_in_conts_subst_exp_in_conts_upper :
 forall cs1 e1 x1,
-  fvar_in_conts (subst_var_in_conts e1 x1 cs1) [<=] fvar_in_exp e1 `union` remove x1 (fvar_in_conts cs1).
+  fvar_in_conts (subst_exp_in_conts e1 x1 cs1) [<=] fvar_in_exp e1 `union` remove x1 (fvar_in_conts cs1).
 Proof.
-pose proof fvar_in_contd_subst_var_in_contd_upper_fvar_in_conts_subst_var_in_conts_upper_mutual as H; intuition eauto.
+pose proof fvar_in_contd_subst_exp_in_contd_upper_fvar_in_conts_subst_exp_in_conts_upper_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve fvar_in_conts_subst_var_in_conts_upper : lngen.
+#[export] Hint Resolve fvar_in_conts_subst_exp_in_conts_upper : lngen.
 
 (* begin hide *)
 
-Lemma ftvar_in_dbind_subst_tvar_in_dbind_upper_mutual :
+Lemma ftvar_in_dbind_subst_typ_in_dbind_upper_mutual :
 (forall db1 A1 X1,
-  ftvar_in_dbind (subst_tvar_in_dbind A1 X1 db1) [<=] ftvar_in_typ A1 `union` remove X1 (ftvar_in_dbind db1)).
+  ftvar_in_dbind (subst_typ_in_dbind A1 X1 db1) [<=] ftvar_in_typ A1 `union` remove X1 (ftvar_in_dbind db1)).
 Proof.
 apply_mutual_ind dbind_mutind;
 default_simp; fsetdec.
@@ -12269,20 +12269,20 @@ Qed.
 
 (* end hide *)
 
-Lemma ftvar_in_dbind_subst_tvar_in_dbind_upper :
+Lemma ftvar_in_dbind_subst_typ_in_dbind_upper :
 forall db1 A1 X1,
-  ftvar_in_dbind (subst_tvar_in_dbind A1 X1 db1) [<=] ftvar_in_typ A1 `union` remove X1 (ftvar_in_dbind db1).
+  ftvar_in_dbind (subst_typ_in_dbind A1 X1 db1) [<=] ftvar_in_typ A1 `union` remove X1 (ftvar_in_dbind db1).
 Proof.
-pose proof ftvar_in_dbind_subst_tvar_in_dbind_upper_mutual as H; intuition eauto.
+pose proof ftvar_in_dbind_subst_typ_in_dbind_upper_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve ftvar_in_dbind_subst_tvar_in_dbind_upper : lngen.
+#[export] Hint Resolve ftvar_in_dbind_subst_typ_in_dbind_upper : lngen.
 
 (* begin hide *)
 
-Lemma ftvar_in_work_subst_tvar_in_work_upper_mutual :
+Lemma ftvar_in_work_subst_typ_in_work_upper_mutual :
 (forall w1 A1 X1,
-  ftvar_in_work (subst_tvar_in_work A1 X1 w1) [<=] ftvar_in_typ A1 `union` remove X1 (ftvar_in_work w1)).
+  ftvar_in_work (subst_typ_in_work A1 X1 w1) [<=] ftvar_in_typ A1 `union` remove X1 (ftvar_in_work w1)).
 Proof.
 apply_mutual_ind work_mutind;
 default_simp; fsetdec.
@@ -12290,20 +12290,20 @@ Qed.
 
 (* end hide *)
 
-Lemma ftvar_in_work_subst_tvar_in_work_upper :
+Lemma ftvar_in_work_subst_typ_in_work_upper :
 forall w1 A1 X1,
-  ftvar_in_work (subst_tvar_in_work A1 X1 w1) [<=] ftvar_in_typ A1 `union` remove X1 (ftvar_in_work w1).
+  ftvar_in_work (subst_typ_in_work A1 X1 w1) [<=] ftvar_in_typ A1 `union` remove X1 (ftvar_in_work w1).
 Proof.
-pose proof ftvar_in_work_subst_tvar_in_work_upper_mutual as H; intuition eauto.
+pose proof ftvar_in_work_subst_typ_in_work_upper_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve ftvar_in_work_subst_tvar_in_work_upper : lngen.
+#[export] Hint Resolve ftvar_in_work_subst_typ_in_work_upper : lngen.
 
 (* begin hide *)
 
-Lemma ftvar_in_work_subst_var_in_work_upper_mutual :
+Lemma ftvar_in_work_subst_exp_in_work_upper_mutual :
 (forall w1 e1 x1,
-  ftvar_in_work (subst_var_in_work e1 x1 w1) [<=] ftvar_in_exp e1 `union` ftvar_in_work w1).
+  ftvar_in_work (subst_exp_in_work e1 x1 w1) [<=] ftvar_in_exp e1 `union` ftvar_in_work w1).
 Proof.
 apply_mutual_ind work_mutind;
 default_simp; fsetdec.
@@ -12311,20 +12311,20 @@ Qed.
 
 (* end hide *)
 
-Lemma ftvar_in_work_subst_var_in_work_upper :
+Lemma ftvar_in_work_subst_exp_in_work_upper :
 forall w1 e1 x1,
-  ftvar_in_work (subst_var_in_work e1 x1 w1) [<=] ftvar_in_exp e1 `union` ftvar_in_work w1.
+  ftvar_in_work (subst_exp_in_work e1 x1 w1) [<=] ftvar_in_exp e1 `union` ftvar_in_work w1.
 Proof.
-pose proof ftvar_in_work_subst_var_in_work_upper_mutual as H; intuition eauto.
+pose proof ftvar_in_work_subst_exp_in_work_upper_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve ftvar_in_work_subst_var_in_work_upper : lngen.
+#[export] Hint Resolve ftvar_in_work_subst_exp_in_work_upper : lngen.
 
 (* begin hide *)
 
-Lemma fvar_in_work_subst_tvar_in_work_upper_mutual :
+Lemma fvar_in_work_subst_typ_in_work_upper_mutual :
 (forall w1 A1 X1,
-  fvar_in_work (subst_tvar_in_work A1 X1 w1) [<=] fvar_in_work w1).
+  fvar_in_work (subst_typ_in_work A1 X1 w1) [<=] fvar_in_work w1).
 Proof.
 apply_mutual_ind work_mutind;
 default_simp; fsetdec.
@@ -12332,20 +12332,20 @@ Qed.
 
 (* end hide *)
 
-Lemma fvar_in_work_subst_tvar_in_work_upper :
+Lemma fvar_in_work_subst_typ_in_work_upper :
 forall w1 A1 X1,
-  fvar_in_work (subst_tvar_in_work A1 X1 w1) [<=] fvar_in_work w1.
+  fvar_in_work (subst_typ_in_work A1 X1 w1) [<=] fvar_in_work w1.
 Proof.
-pose proof fvar_in_work_subst_tvar_in_work_upper_mutual as H; intuition eauto.
+pose proof fvar_in_work_subst_typ_in_work_upper_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve fvar_in_work_subst_tvar_in_work_upper : lngen.
+#[export] Hint Resolve fvar_in_work_subst_typ_in_work_upper : lngen.
 
 (* begin hide *)
 
-Lemma fvar_in_work_subst_var_in_work_upper_mutual :
+Lemma fvar_in_work_subst_exp_in_work_upper_mutual :
 (forall w1 e1 x1,
-  fvar_in_work (subst_var_in_work e1 x1 w1) [<=] fvar_in_exp e1 `union` remove x1 (fvar_in_work w1)).
+  fvar_in_work (subst_exp_in_work e1 x1 w1) [<=] fvar_in_exp e1 `union` remove x1 (fvar_in_work w1)).
 Proof.
 apply_mutual_ind work_mutind;
 default_simp; fsetdec.
@@ -12353,14 +12353,14 @@ Qed.
 
 (* end hide *)
 
-Lemma fvar_in_work_subst_var_in_work_upper :
+Lemma fvar_in_work_subst_exp_in_work_upper :
 forall w1 e1 x1,
-  fvar_in_work (subst_var_in_work e1 x1 w1) [<=] fvar_in_exp e1 `union` remove x1 (fvar_in_work w1).
+  fvar_in_work (subst_exp_in_work e1 x1 w1) [<=] fvar_in_exp e1 `union` remove x1 (fvar_in_work w1).
 Proof.
-pose proof fvar_in_work_subst_var_in_work_upper_mutual as H; intuition eauto.
+pose proof fvar_in_work_subst_exp_in_work_upper_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve fvar_in_work_subst_var_in_work_upper : lngen.
+#[export] Hint Resolve fvar_in_work_subst_exp_in_work_upper : lngen.
 
 
 (* *********************************************************************** *)
@@ -12371,12 +12371,12 @@ Ltac default_autorewrite ::= autorewrite with lngen.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_typ_close_typ_wrt_typ_rec_mutual :
+Lemma subst_typ_in_typ_close_typ_wrt_typ_rec_mutual :
 (forall A2 A1 X1 X2 n1,
   degree_typ_wrt_typ n1 A1 ->
   X1 <> X2 ->
   X2 `notin` ftvar_in_typ A1 ->
-  subst_tvar_in_typ A1 X1 (close_typ_wrt_typ_rec n1 X2 A2) = close_typ_wrt_typ_rec n1 X2 (subst_tvar_in_typ A1 X1 A2)).
+  subst_typ_in_typ A1 X1 (close_typ_wrt_typ_rec n1 X2 A2) = close_typ_wrt_typ_rec n1 X2 (subst_typ_in_typ A1 X1 A2)).
 Proof.
 apply_mutual_ind typ_mutind;
 default_simp.
@@ -12384,26 +12384,26 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_tvar_in_typ_close_typ_wrt_typ_rec :
+Lemma subst_typ_in_typ_close_typ_wrt_typ_rec :
 forall A2 A1 X1 X2 n1,
   degree_typ_wrt_typ n1 A1 ->
   X1 <> X2 ->
   X2 `notin` ftvar_in_typ A1 ->
-  subst_tvar_in_typ A1 X1 (close_typ_wrt_typ_rec n1 X2 A2) = close_typ_wrt_typ_rec n1 X2 (subst_tvar_in_typ A1 X1 A2).
+  subst_typ_in_typ A1 X1 (close_typ_wrt_typ_rec n1 X2 A2) = close_typ_wrt_typ_rec n1 X2 (subst_typ_in_typ A1 X1 A2).
 Proof.
-pose proof subst_tvar_in_typ_close_typ_wrt_typ_rec_mutual as H; intuition eauto.
+pose proof subst_typ_in_typ_close_typ_wrt_typ_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_typ_close_typ_wrt_typ_rec : lngen.
+#[export] Hint Resolve subst_typ_in_typ_close_typ_wrt_typ_rec : lngen.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_abind_close_abind_wrt_typ_rec_mutual :
+Lemma subst_typ_in_abind_close_abind_wrt_typ_rec_mutual :
 (forall ab1 A1 X1 X2 n1,
   degree_typ_wrt_typ n1 A1 ->
   X1 <> X2 ->
   X2 `notin` ftvar_in_typ A1 ->
-  subst_tvar_in_abind A1 X1 (close_abind_wrt_typ_rec n1 X2 ab1) = close_abind_wrt_typ_rec n1 X2 (subst_tvar_in_abind A1 X1 ab1)).
+  subst_typ_in_abind A1 X1 (close_abind_wrt_typ_rec n1 X2 ab1) = close_abind_wrt_typ_rec n1 X2 (subst_typ_in_abind A1 X1 ab1)).
 Proof.
 apply_mutual_ind abind_mutind;
 default_simp.
@@ -12411,26 +12411,26 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_tvar_in_abind_close_abind_wrt_typ_rec :
+Lemma subst_typ_in_abind_close_abind_wrt_typ_rec :
 forall ab1 A1 X1 X2 n1,
   degree_typ_wrt_typ n1 A1 ->
   X1 <> X2 ->
   X2 `notin` ftvar_in_typ A1 ->
-  subst_tvar_in_abind A1 X1 (close_abind_wrt_typ_rec n1 X2 ab1) = close_abind_wrt_typ_rec n1 X2 (subst_tvar_in_abind A1 X1 ab1).
+  subst_typ_in_abind A1 X1 (close_abind_wrt_typ_rec n1 X2 ab1) = close_abind_wrt_typ_rec n1 X2 (subst_typ_in_abind A1 X1 ab1).
 Proof.
-pose proof subst_tvar_in_abind_close_abind_wrt_typ_rec_mutual as H; intuition eauto.
+pose proof subst_typ_in_abind_close_abind_wrt_typ_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_abind_close_abind_wrt_typ_rec : lngen.
+#[export] Hint Resolve subst_typ_in_abind_close_abind_wrt_typ_rec : lngen.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_exp_close_exp_wrt_typ_rec_mutual :
+Lemma subst_typ_in_exp_close_exp_wrt_typ_rec_mutual :
 (forall e1 A1 X1 X2 n1,
   degree_typ_wrt_typ n1 A1 ->
   X1 <> X2 ->
   X2 `notin` ftvar_in_typ A1 ->
-  subst_tvar_in_exp A1 X1 (close_exp_wrt_typ_rec n1 X2 e1) = close_exp_wrt_typ_rec n1 X2 (subst_tvar_in_exp A1 X1 e1)).
+  subst_typ_in_exp A1 X1 (close_exp_wrt_typ_rec n1 X2 e1) = close_exp_wrt_typ_rec n1 X2 (subst_typ_in_exp A1 X1 e1)).
 Proof.
 apply_mutual_ind exp_mutind;
 default_simp.
@@ -12438,23 +12438,23 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_tvar_in_exp_close_exp_wrt_typ_rec :
+Lemma subst_typ_in_exp_close_exp_wrt_typ_rec :
 forall e1 A1 X1 X2 n1,
   degree_typ_wrt_typ n1 A1 ->
   X1 <> X2 ->
   X2 `notin` ftvar_in_typ A1 ->
-  subst_tvar_in_exp A1 X1 (close_exp_wrt_typ_rec n1 X2 e1) = close_exp_wrt_typ_rec n1 X2 (subst_tvar_in_exp A1 X1 e1).
+  subst_typ_in_exp A1 X1 (close_exp_wrt_typ_rec n1 X2 e1) = close_exp_wrt_typ_rec n1 X2 (subst_typ_in_exp A1 X1 e1).
 Proof.
-pose proof subst_tvar_in_exp_close_exp_wrt_typ_rec_mutual as H; intuition eauto.
+pose proof subst_typ_in_exp_close_exp_wrt_typ_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_exp_close_exp_wrt_typ_rec : lngen.
+#[export] Hint Resolve subst_typ_in_exp_close_exp_wrt_typ_rec : lngen.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_exp_close_exp_wrt_exp_rec_mutual :
+Lemma subst_typ_in_exp_close_exp_wrt_exp_rec_mutual :
 (forall e1 A1 x1 X1 n1,
-  subst_tvar_in_exp A1 x1 (close_exp_wrt_exp_rec n1 X1 e1) = close_exp_wrt_exp_rec n1 X1 (subst_tvar_in_exp A1 x1 e1)).
+  subst_typ_in_exp A1 x1 (close_exp_wrt_exp_rec n1 X1 e1) = close_exp_wrt_exp_rec n1 X1 (subst_typ_in_exp A1 x1 e1)).
 Proof.
 apply_mutual_ind exp_mutind;
 default_simp.
@@ -12462,22 +12462,22 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_tvar_in_exp_close_exp_wrt_exp_rec :
+Lemma subst_typ_in_exp_close_exp_wrt_exp_rec :
 forall e1 A1 x1 X1 n1,
-  subst_tvar_in_exp A1 x1 (close_exp_wrt_exp_rec n1 X1 e1) = close_exp_wrt_exp_rec n1 X1 (subst_tvar_in_exp A1 x1 e1).
+  subst_typ_in_exp A1 x1 (close_exp_wrt_exp_rec n1 X1 e1) = close_exp_wrt_exp_rec n1 X1 (subst_typ_in_exp A1 x1 e1).
 Proof.
-pose proof subst_tvar_in_exp_close_exp_wrt_exp_rec_mutual as H; intuition eauto.
+pose proof subst_typ_in_exp_close_exp_wrt_exp_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_exp_close_exp_wrt_exp_rec : lngen.
+#[export] Hint Resolve subst_typ_in_exp_close_exp_wrt_exp_rec : lngen.
 
 (* begin hide *)
 
-Lemma subst_var_in_exp_close_exp_wrt_typ_rec_mutual :
+Lemma subst_exp_in_exp_close_exp_wrt_typ_rec_mutual :
 (forall e2 e1 X1 x1 n1,
   degree_exp_wrt_typ n1 e1 ->
   x1 `notin` ftvar_in_exp e1 ->
-  subst_var_in_exp e1 X1 (close_exp_wrt_typ_rec n1 x1 e2) = close_exp_wrt_typ_rec n1 x1 (subst_var_in_exp e1 X1 e2)).
+  subst_exp_in_exp e1 X1 (close_exp_wrt_typ_rec n1 x1 e2) = close_exp_wrt_typ_rec n1 x1 (subst_exp_in_exp e1 X1 e2)).
 Proof.
 apply_mutual_ind exp_mutind;
 default_simp.
@@ -12485,25 +12485,25 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_var_in_exp_close_exp_wrt_typ_rec :
+Lemma subst_exp_in_exp_close_exp_wrt_typ_rec :
 forall e2 e1 X1 x1 n1,
   degree_exp_wrt_typ n1 e1 ->
   x1 `notin` ftvar_in_exp e1 ->
-  subst_var_in_exp e1 X1 (close_exp_wrt_typ_rec n1 x1 e2) = close_exp_wrt_typ_rec n1 x1 (subst_var_in_exp e1 X1 e2).
+  subst_exp_in_exp e1 X1 (close_exp_wrt_typ_rec n1 x1 e2) = close_exp_wrt_typ_rec n1 x1 (subst_exp_in_exp e1 X1 e2).
 Proof.
-pose proof subst_var_in_exp_close_exp_wrt_typ_rec_mutual as H; intuition eauto.
+pose proof subst_exp_in_exp_close_exp_wrt_typ_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_var_in_exp_close_exp_wrt_typ_rec : lngen.
+#[export] Hint Resolve subst_exp_in_exp_close_exp_wrt_typ_rec : lngen.
 
 (* begin hide *)
 
-Lemma subst_var_in_exp_close_exp_wrt_exp_rec_mutual :
+Lemma subst_exp_in_exp_close_exp_wrt_exp_rec_mutual :
 (forall e2 e1 x1 x2 n1,
   degree_exp_wrt_exp n1 e1 ->
   x1 <> x2 ->
   x2 `notin` fvar_in_exp e1 ->
-  subst_var_in_exp e1 x1 (close_exp_wrt_exp_rec n1 x2 e2) = close_exp_wrt_exp_rec n1 x2 (subst_var_in_exp e1 x1 e2)).
+  subst_exp_in_exp e1 x1 (close_exp_wrt_exp_rec n1 x2 e2) = close_exp_wrt_exp_rec n1 x2 (subst_exp_in_exp e1 x1 e2)).
 Proof.
 apply_mutual_ind exp_mutind;
 default_simp.
@@ -12511,31 +12511,31 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_var_in_exp_close_exp_wrt_exp_rec :
+Lemma subst_exp_in_exp_close_exp_wrt_exp_rec :
 forall e2 e1 x1 x2 n1,
   degree_exp_wrt_exp n1 e1 ->
   x1 <> x2 ->
   x2 `notin` fvar_in_exp e1 ->
-  subst_var_in_exp e1 x1 (close_exp_wrt_exp_rec n1 x2 e2) = close_exp_wrt_exp_rec n1 x2 (subst_var_in_exp e1 x1 e2).
+  subst_exp_in_exp e1 x1 (close_exp_wrt_exp_rec n1 x2 e2) = close_exp_wrt_exp_rec n1 x2 (subst_exp_in_exp e1 x1 e2).
 Proof.
-pose proof subst_var_in_exp_close_exp_wrt_exp_rec_mutual as H; intuition eauto.
+pose proof subst_exp_in_exp_close_exp_wrt_exp_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_var_in_exp_close_exp_wrt_exp_rec : lngen.
+#[export] Hint Resolve subst_exp_in_exp_close_exp_wrt_exp_rec : lngen.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_contd_close_contd_wrt_typ_rec_subst_tvar_in_conts_close_conts_wrt_typ_rec_mutual :
+Lemma subst_typ_in_contd_close_contd_wrt_typ_rec_subst_typ_in_conts_close_conts_wrt_typ_rec_mutual :
 (forall cd1 A1 X1 X2 n1,
   degree_typ_wrt_typ n1 A1 ->
   X1 <> X2 ->
   X2 `notin` ftvar_in_typ A1 ->
-  subst_tvar_in_contd A1 X1 (close_contd_wrt_typ_rec n1 X2 cd1) = close_contd_wrt_typ_rec n1 X2 (subst_tvar_in_contd A1 X1 cd1)) /\
+  subst_typ_in_contd A1 X1 (close_contd_wrt_typ_rec n1 X2 cd1) = close_contd_wrt_typ_rec n1 X2 (subst_typ_in_contd A1 X1 cd1)) /\
 (forall cs1 A1 X1 X2 n1,
   degree_typ_wrt_typ n1 A1 ->
   X1 <> X2 ->
   X2 `notin` ftvar_in_typ A1 ->
-  subst_tvar_in_conts A1 X1 (close_conts_wrt_typ_rec n1 X2 cs1) = close_conts_wrt_typ_rec n1 X2 (subst_tvar_in_conts A1 X1 cs1)).
+  subst_typ_in_conts A1 X1 (close_conts_wrt_typ_rec n1 X2 cs1) = close_conts_wrt_typ_rec n1 X2 (subst_typ_in_conts A1 X1 cs1)).
 Proof.
 apply_mutual_ind contd_conts_mutind;
 default_simp.
@@ -12543,37 +12543,37 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_tvar_in_contd_close_contd_wrt_typ_rec :
+Lemma subst_typ_in_contd_close_contd_wrt_typ_rec :
 forall cd1 A1 X1 X2 n1,
   degree_typ_wrt_typ n1 A1 ->
   X1 <> X2 ->
   X2 `notin` ftvar_in_typ A1 ->
-  subst_tvar_in_contd A1 X1 (close_contd_wrt_typ_rec n1 X2 cd1) = close_contd_wrt_typ_rec n1 X2 (subst_tvar_in_contd A1 X1 cd1).
+  subst_typ_in_contd A1 X1 (close_contd_wrt_typ_rec n1 X2 cd1) = close_contd_wrt_typ_rec n1 X2 (subst_typ_in_contd A1 X1 cd1).
 Proof.
-pose proof subst_tvar_in_contd_close_contd_wrt_typ_rec_subst_tvar_in_conts_close_conts_wrt_typ_rec_mutual as H; intuition eauto.
+pose proof subst_typ_in_contd_close_contd_wrt_typ_rec_subst_typ_in_conts_close_conts_wrt_typ_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_contd_close_contd_wrt_typ_rec : lngen.
+#[export] Hint Resolve subst_typ_in_contd_close_contd_wrt_typ_rec : lngen.
 
-Lemma subst_tvar_in_conts_close_conts_wrt_typ_rec :
+Lemma subst_typ_in_conts_close_conts_wrt_typ_rec :
 forall cs1 A1 X1 X2 n1,
   degree_typ_wrt_typ n1 A1 ->
   X1 <> X2 ->
   X2 `notin` ftvar_in_typ A1 ->
-  subst_tvar_in_conts A1 X1 (close_conts_wrt_typ_rec n1 X2 cs1) = close_conts_wrt_typ_rec n1 X2 (subst_tvar_in_conts A1 X1 cs1).
+  subst_typ_in_conts A1 X1 (close_conts_wrt_typ_rec n1 X2 cs1) = close_conts_wrt_typ_rec n1 X2 (subst_typ_in_conts A1 X1 cs1).
 Proof.
-pose proof subst_tvar_in_contd_close_contd_wrt_typ_rec_subst_tvar_in_conts_close_conts_wrt_typ_rec_mutual as H; intuition eauto.
+pose proof subst_typ_in_contd_close_contd_wrt_typ_rec_subst_typ_in_conts_close_conts_wrt_typ_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_conts_close_conts_wrt_typ_rec : lngen.
+#[export] Hint Resolve subst_typ_in_conts_close_conts_wrt_typ_rec : lngen.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_contd_close_contd_wrt_exp_rec_subst_tvar_in_conts_close_conts_wrt_exp_rec_mutual :
+Lemma subst_typ_in_contd_close_contd_wrt_exp_rec_subst_typ_in_conts_close_conts_wrt_exp_rec_mutual :
 (forall cd1 A1 x1 X1 n1,
-  subst_tvar_in_contd A1 x1 (close_contd_wrt_exp_rec n1 X1 cd1) = close_contd_wrt_exp_rec n1 X1 (subst_tvar_in_contd A1 x1 cd1)) /\
+  subst_typ_in_contd A1 x1 (close_contd_wrt_exp_rec n1 X1 cd1) = close_contd_wrt_exp_rec n1 X1 (subst_typ_in_contd A1 x1 cd1)) /\
 (forall cs1 A1 x1 X1 n1,
-  subst_tvar_in_conts A1 x1 (close_conts_wrt_exp_rec n1 X1 cs1) = close_conts_wrt_exp_rec n1 X1 (subst_tvar_in_conts A1 x1 cs1)).
+  subst_typ_in_conts A1 x1 (close_conts_wrt_exp_rec n1 X1 cs1) = close_conts_wrt_exp_rec n1 X1 (subst_typ_in_conts A1 x1 cs1)).
 Proof.
 apply_mutual_ind contd_conts_mutind;
 default_simp.
@@ -12581,35 +12581,35 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_tvar_in_contd_close_contd_wrt_exp_rec :
+Lemma subst_typ_in_contd_close_contd_wrt_exp_rec :
 forall cd1 A1 x1 X1 n1,
-  subst_tvar_in_contd A1 x1 (close_contd_wrt_exp_rec n1 X1 cd1) = close_contd_wrt_exp_rec n1 X1 (subst_tvar_in_contd A1 x1 cd1).
+  subst_typ_in_contd A1 x1 (close_contd_wrt_exp_rec n1 X1 cd1) = close_contd_wrt_exp_rec n1 X1 (subst_typ_in_contd A1 x1 cd1).
 Proof.
-pose proof subst_tvar_in_contd_close_contd_wrt_exp_rec_subst_tvar_in_conts_close_conts_wrt_exp_rec_mutual as H; intuition eauto.
+pose proof subst_typ_in_contd_close_contd_wrt_exp_rec_subst_typ_in_conts_close_conts_wrt_exp_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_contd_close_contd_wrt_exp_rec : lngen.
+#[export] Hint Resolve subst_typ_in_contd_close_contd_wrt_exp_rec : lngen.
 
-Lemma subst_tvar_in_conts_close_conts_wrt_exp_rec :
+Lemma subst_typ_in_conts_close_conts_wrt_exp_rec :
 forall cs1 A1 x1 X1 n1,
-  subst_tvar_in_conts A1 x1 (close_conts_wrt_exp_rec n1 X1 cs1) = close_conts_wrt_exp_rec n1 X1 (subst_tvar_in_conts A1 x1 cs1).
+  subst_typ_in_conts A1 x1 (close_conts_wrt_exp_rec n1 X1 cs1) = close_conts_wrt_exp_rec n1 X1 (subst_typ_in_conts A1 x1 cs1).
 Proof.
-pose proof subst_tvar_in_contd_close_contd_wrt_exp_rec_subst_tvar_in_conts_close_conts_wrt_exp_rec_mutual as H; intuition eauto.
+pose proof subst_typ_in_contd_close_contd_wrt_exp_rec_subst_typ_in_conts_close_conts_wrt_exp_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_conts_close_conts_wrt_exp_rec : lngen.
+#[export] Hint Resolve subst_typ_in_conts_close_conts_wrt_exp_rec : lngen.
 
 (* begin hide *)
 
-Lemma subst_var_in_contd_close_contd_wrt_typ_rec_subst_var_in_conts_close_conts_wrt_typ_rec_mutual :
+Lemma subst_exp_in_contd_close_contd_wrt_typ_rec_subst_exp_in_conts_close_conts_wrt_typ_rec_mutual :
 (forall cd1 e1 X1 x1 n1,
   degree_exp_wrt_typ n1 e1 ->
   x1 `notin` ftvar_in_exp e1 ->
-  subst_var_in_contd e1 X1 (close_contd_wrt_typ_rec n1 x1 cd1) = close_contd_wrt_typ_rec n1 x1 (subst_var_in_contd e1 X1 cd1)) /\
+  subst_exp_in_contd e1 X1 (close_contd_wrt_typ_rec n1 x1 cd1) = close_contd_wrt_typ_rec n1 x1 (subst_exp_in_contd e1 X1 cd1)) /\
 (forall cs1 e1 X1 x1 n1,
   degree_exp_wrt_typ n1 e1 ->
   x1 `notin` ftvar_in_exp e1 ->
-  subst_var_in_conts e1 X1 (close_conts_wrt_typ_rec n1 x1 cs1) = close_conts_wrt_typ_rec n1 x1 (subst_var_in_conts e1 X1 cs1)).
+  subst_exp_in_conts e1 X1 (close_conts_wrt_typ_rec n1 x1 cs1) = close_conts_wrt_typ_rec n1 x1 (subst_exp_in_conts e1 X1 cs1)).
 Proof.
 apply_mutual_ind contd_conts_mutind;
 default_simp.
@@ -12617,41 +12617,41 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_var_in_contd_close_contd_wrt_typ_rec :
+Lemma subst_exp_in_contd_close_contd_wrt_typ_rec :
 forall cd1 e1 X1 x1 n1,
   degree_exp_wrt_typ n1 e1 ->
   x1 `notin` ftvar_in_exp e1 ->
-  subst_var_in_contd e1 X1 (close_contd_wrt_typ_rec n1 x1 cd1) = close_contd_wrt_typ_rec n1 x1 (subst_var_in_contd e1 X1 cd1).
+  subst_exp_in_contd e1 X1 (close_contd_wrt_typ_rec n1 x1 cd1) = close_contd_wrt_typ_rec n1 x1 (subst_exp_in_contd e1 X1 cd1).
 Proof.
-pose proof subst_var_in_contd_close_contd_wrt_typ_rec_subst_var_in_conts_close_conts_wrt_typ_rec_mutual as H; intuition eauto.
+pose proof subst_exp_in_contd_close_contd_wrt_typ_rec_subst_exp_in_conts_close_conts_wrt_typ_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_var_in_contd_close_contd_wrt_typ_rec : lngen.
+#[export] Hint Resolve subst_exp_in_contd_close_contd_wrt_typ_rec : lngen.
 
-Lemma subst_var_in_conts_close_conts_wrt_typ_rec :
+Lemma subst_exp_in_conts_close_conts_wrt_typ_rec :
 forall cs1 e1 X1 x1 n1,
   degree_exp_wrt_typ n1 e1 ->
   x1 `notin` ftvar_in_exp e1 ->
-  subst_var_in_conts e1 X1 (close_conts_wrt_typ_rec n1 x1 cs1) = close_conts_wrt_typ_rec n1 x1 (subst_var_in_conts e1 X1 cs1).
+  subst_exp_in_conts e1 X1 (close_conts_wrt_typ_rec n1 x1 cs1) = close_conts_wrt_typ_rec n1 x1 (subst_exp_in_conts e1 X1 cs1).
 Proof.
-pose proof subst_var_in_contd_close_contd_wrt_typ_rec_subst_var_in_conts_close_conts_wrt_typ_rec_mutual as H; intuition eauto.
+pose proof subst_exp_in_contd_close_contd_wrt_typ_rec_subst_exp_in_conts_close_conts_wrt_typ_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_var_in_conts_close_conts_wrt_typ_rec : lngen.
+#[export] Hint Resolve subst_exp_in_conts_close_conts_wrt_typ_rec : lngen.
 
 (* begin hide *)
 
-Lemma subst_var_in_contd_close_contd_wrt_exp_rec_subst_var_in_conts_close_conts_wrt_exp_rec_mutual :
+Lemma subst_exp_in_contd_close_contd_wrt_exp_rec_subst_exp_in_conts_close_conts_wrt_exp_rec_mutual :
 (forall cd1 e1 x1 x2 n1,
   degree_exp_wrt_exp n1 e1 ->
   x1 <> x2 ->
   x2 `notin` fvar_in_exp e1 ->
-  subst_var_in_contd e1 x1 (close_contd_wrt_exp_rec n1 x2 cd1) = close_contd_wrt_exp_rec n1 x2 (subst_var_in_contd e1 x1 cd1)) /\
+  subst_exp_in_contd e1 x1 (close_contd_wrt_exp_rec n1 x2 cd1) = close_contd_wrt_exp_rec n1 x2 (subst_exp_in_contd e1 x1 cd1)) /\
 (forall cs1 e1 x1 x2 n1,
   degree_exp_wrt_exp n1 e1 ->
   x1 <> x2 ->
   x2 `notin` fvar_in_exp e1 ->
-  subst_var_in_conts e1 x1 (close_conts_wrt_exp_rec n1 x2 cs1) = close_conts_wrt_exp_rec n1 x2 (subst_var_in_conts e1 x1 cs1)).
+  subst_exp_in_conts e1 x1 (close_conts_wrt_exp_rec n1 x2 cs1) = close_conts_wrt_exp_rec n1 x2 (subst_exp_in_conts e1 x1 cs1)).
 Proof.
 apply_mutual_ind contd_conts_mutind;
 default_simp.
@@ -12659,38 +12659,38 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_var_in_contd_close_contd_wrt_exp_rec :
+Lemma subst_exp_in_contd_close_contd_wrt_exp_rec :
 forall cd1 e1 x1 x2 n1,
   degree_exp_wrt_exp n1 e1 ->
   x1 <> x2 ->
   x2 `notin` fvar_in_exp e1 ->
-  subst_var_in_contd e1 x1 (close_contd_wrt_exp_rec n1 x2 cd1) = close_contd_wrt_exp_rec n1 x2 (subst_var_in_contd e1 x1 cd1).
+  subst_exp_in_contd e1 x1 (close_contd_wrt_exp_rec n1 x2 cd1) = close_contd_wrt_exp_rec n1 x2 (subst_exp_in_contd e1 x1 cd1).
 Proof.
-pose proof subst_var_in_contd_close_contd_wrt_exp_rec_subst_var_in_conts_close_conts_wrt_exp_rec_mutual as H; intuition eauto.
+pose proof subst_exp_in_contd_close_contd_wrt_exp_rec_subst_exp_in_conts_close_conts_wrt_exp_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_var_in_contd_close_contd_wrt_exp_rec : lngen.
+#[export] Hint Resolve subst_exp_in_contd_close_contd_wrt_exp_rec : lngen.
 
-Lemma subst_var_in_conts_close_conts_wrt_exp_rec :
+Lemma subst_exp_in_conts_close_conts_wrt_exp_rec :
 forall cs1 e1 x1 x2 n1,
   degree_exp_wrt_exp n1 e1 ->
   x1 <> x2 ->
   x2 `notin` fvar_in_exp e1 ->
-  subst_var_in_conts e1 x1 (close_conts_wrt_exp_rec n1 x2 cs1) = close_conts_wrt_exp_rec n1 x2 (subst_var_in_conts e1 x1 cs1).
+  subst_exp_in_conts e1 x1 (close_conts_wrt_exp_rec n1 x2 cs1) = close_conts_wrt_exp_rec n1 x2 (subst_exp_in_conts e1 x1 cs1).
 Proof.
-pose proof subst_var_in_contd_close_contd_wrt_exp_rec_subst_var_in_conts_close_conts_wrt_exp_rec_mutual as H; intuition eauto.
+pose proof subst_exp_in_contd_close_contd_wrt_exp_rec_subst_exp_in_conts_close_conts_wrt_exp_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_var_in_conts_close_conts_wrt_exp_rec : lngen.
+#[export] Hint Resolve subst_exp_in_conts_close_conts_wrt_exp_rec : lngen.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_dbind_close_dbind_wrt_typ_rec_mutual :
+Lemma subst_typ_in_dbind_close_dbind_wrt_typ_rec_mutual :
 (forall db1 A1 X1 X2 n1,
   degree_typ_wrt_typ n1 A1 ->
   X1 <> X2 ->
   X2 `notin` ftvar_in_typ A1 ->
-  subst_tvar_in_dbind A1 X1 (close_dbind_wrt_typ_rec n1 X2 db1) = close_dbind_wrt_typ_rec n1 X2 (subst_tvar_in_dbind A1 X1 db1)).
+  subst_typ_in_dbind A1 X1 (close_dbind_wrt_typ_rec n1 X2 db1) = close_dbind_wrt_typ_rec n1 X2 (subst_typ_in_dbind A1 X1 db1)).
 Proof.
 apply_mutual_ind dbind_mutind;
 default_simp.
@@ -12698,26 +12698,26 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_tvar_in_dbind_close_dbind_wrt_typ_rec :
+Lemma subst_typ_in_dbind_close_dbind_wrt_typ_rec :
 forall db1 A1 X1 X2 n1,
   degree_typ_wrt_typ n1 A1 ->
   X1 <> X2 ->
   X2 `notin` ftvar_in_typ A1 ->
-  subst_tvar_in_dbind A1 X1 (close_dbind_wrt_typ_rec n1 X2 db1) = close_dbind_wrt_typ_rec n1 X2 (subst_tvar_in_dbind A1 X1 db1).
+  subst_typ_in_dbind A1 X1 (close_dbind_wrt_typ_rec n1 X2 db1) = close_dbind_wrt_typ_rec n1 X2 (subst_typ_in_dbind A1 X1 db1).
 Proof.
-pose proof subst_tvar_in_dbind_close_dbind_wrt_typ_rec_mutual as H; intuition eauto.
+pose proof subst_typ_in_dbind_close_dbind_wrt_typ_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_dbind_close_dbind_wrt_typ_rec : lngen.
+#[export] Hint Resolve subst_typ_in_dbind_close_dbind_wrt_typ_rec : lngen.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_work_close_work_wrt_typ_rec_mutual :
+Lemma subst_typ_in_work_close_work_wrt_typ_rec_mutual :
 (forall w1 A1 X1 X2 n1,
   degree_typ_wrt_typ n1 A1 ->
   X1 <> X2 ->
   X2 `notin` ftvar_in_typ A1 ->
-  subst_tvar_in_work A1 X1 (close_work_wrt_typ_rec n1 X2 w1) = close_work_wrt_typ_rec n1 X2 (subst_tvar_in_work A1 X1 w1)).
+  subst_typ_in_work A1 X1 (close_work_wrt_typ_rec n1 X2 w1) = close_work_wrt_typ_rec n1 X2 (subst_typ_in_work A1 X1 w1)).
 Proof.
 apply_mutual_ind work_mutind;
 default_simp.
@@ -12725,23 +12725,23 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_tvar_in_work_close_work_wrt_typ_rec :
+Lemma subst_typ_in_work_close_work_wrt_typ_rec :
 forall w1 A1 X1 X2 n1,
   degree_typ_wrt_typ n1 A1 ->
   X1 <> X2 ->
   X2 `notin` ftvar_in_typ A1 ->
-  subst_tvar_in_work A1 X1 (close_work_wrt_typ_rec n1 X2 w1) = close_work_wrt_typ_rec n1 X2 (subst_tvar_in_work A1 X1 w1).
+  subst_typ_in_work A1 X1 (close_work_wrt_typ_rec n1 X2 w1) = close_work_wrt_typ_rec n1 X2 (subst_typ_in_work A1 X1 w1).
 Proof.
-pose proof subst_tvar_in_work_close_work_wrt_typ_rec_mutual as H; intuition eauto.
+pose proof subst_typ_in_work_close_work_wrt_typ_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_work_close_work_wrt_typ_rec : lngen.
+#[export] Hint Resolve subst_typ_in_work_close_work_wrt_typ_rec : lngen.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_work_close_work_wrt_exp_rec_mutual :
+Lemma subst_typ_in_work_close_work_wrt_exp_rec_mutual :
 (forall w1 A1 x1 X1 n1,
-  subst_tvar_in_work A1 x1 (close_work_wrt_exp_rec n1 X1 w1) = close_work_wrt_exp_rec n1 X1 (subst_tvar_in_work A1 x1 w1)).
+  subst_typ_in_work A1 x1 (close_work_wrt_exp_rec n1 X1 w1) = close_work_wrt_exp_rec n1 X1 (subst_typ_in_work A1 x1 w1)).
 Proof.
 apply_mutual_ind work_mutind;
 default_simp.
@@ -12749,22 +12749,22 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_tvar_in_work_close_work_wrt_exp_rec :
+Lemma subst_typ_in_work_close_work_wrt_exp_rec :
 forall w1 A1 x1 X1 n1,
-  subst_tvar_in_work A1 x1 (close_work_wrt_exp_rec n1 X1 w1) = close_work_wrt_exp_rec n1 X1 (subst_tvar_in_work A1 x1 w1).
+  subst_typ_in_work A1 x1 (close_work_wrt_exp_rec n1 X1 w1) = close_work_wrt_exp_rec n1 X1 (subst_typ_in_work A1 x1 w1).
 Proof.
-pose proof subst_tvar_in_work_close_work_wrt_exp_rec_mutual as H; intuition eauto.
+pose proof subst_typ_in_work_close_work_wrt_exp_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_work_close_work_wrt_exp_rec : lngen.
+#[export] Hint Resolve subst_typ_in_work_close_work_wrt_exp_rec : lngen.
 
 (* begin hide *)
 
-Lemma subst_var_in_work_close_work_wrt_typ_rec_mutual :
+Lemma subst_exp_in_work_close_work_wrt_typ_rec_mutual :
 (forall w1 e1 X1 x1 n1,
   degree_exp_wrt_typ n1 e1 ->
   x1 `notin` ftvar_in_exp e1 ->
-  subst_var_in_work e1 X1 (close_work_wrt_typ_rec n1 x1 w1) = close_work_wrt_typ_rec n1 x1 (subst_var_in_work e1 X1 w1)).
+  subst_exp_in_work e1 X1 (close_work_wrt_typ_rec n1 x1 w1) = close_work_wrt_typ_rec n1 x1 (subst_exp_in_work e1 X1 w1)).
 Proof.
 apply_mutual_ind work_mutind;
 default_simp.
@@ -12772,25 +12772,25 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_var_in_work_close_work_wrt_typ_rec :
+Lemma subst_exp_in_work_close_work_wrt_typ_rec :
 forall w1 e1 X1 x1 n1,
   degree_exp_wrt_typ n1 e1 ->
   x1 `notin` ftvar_in_exp e1 ->
-  subst_var_in_work e1 X1 (close_work_wrt_typ_rec n1 x1 w1) = close_work_wrt_typ_rec n1 x1 (subst_var_in_work e1 X1 w1).
+  subst_exp_in_work e1 X1 (close_work_wrt_typ_rec n1 x1 w1) = close_work_wrt_typ_rec n1 x1 (subst_exp_in_work e1 X1 w1).
 Proof.
-pose proof subst_var_in_work_close_work_wrt_typ_rec_mutual as H; intuition eauto.
+pose proof subst_exp_in_work_close_work_wrt_typ_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_var_in_work_close_work_wrt_typ_rec : lngen.
+#[export] Hint Resolve subst_exp_in_work_close_work_wrt_typ_rec : lngen.
 
 (* begin hide *)
 
-Lemma subst_var_in_work_close_work_wrt_exp_rec_mutual :
+Lemma subst_exp_in_work_close_work_wrt_exp_rec_mutual :
 (forall w1 e1 x1 x2 n1,
   degree_exp_wrt_exp n1 e1 ->
   x1 <> x2 ->
   x2 `notin` fvar_in_exp e1 ->
-  subst_var_in_work e1 x1 (close_work_wrt_exp_rec n1 x2 w1) = close_work_wrt_exp_rec n1 x2 (subst_var_in_work e1 x1 w1)).
+  subst_exp_in_work e1 x1 (close_work_wrt_exp_rec n1 x2 w1) = close_work_wrt_exp_rec n1 x2 (subst_exp_in_work e1 x1 w1)).
 Proof.
 apply_mutual_ind work_mutind;
 default_simp.
@@ -12798,222 +12798,222 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_var_in_work_close_work_wrt_exp_rec :
+Lemma subst_exp_in_work_close_work_wrt_exp_rec :
 forall w1 e1 x1 x2 n1,
   degree_exp_wrt_exp n1 e1 ->
   x1 <> x2 ->
   x2 `notin` fvar_in_exp e1 ->
-  subst_var_in_work e1 x1 (close_work_wrt_exp_rec n1 x2 w1) = close_work_wrt_exp_rec n1 x2 (subst_var_in_work e1 x1 w1).
+  subst_exp_in_work e1 x1 (close_work_wrt_exp_rec n1 x2 w1) = close_work_wrt_exp_rec n1 x2 (subst_exp_in_work e1 x1 w1).
 Proof.
-pose proof subst_var_in_work_close_work_wrt_exp_rec_mutual as H; intuition eauto.
+pose proof subst_exp_in_work_close_work_wrt_exp_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_var_in_work_close_work_wrt_exp_rec : lngen.
+#[export] Hint Resolve subst_exp_in_work_close_work_wrt_exp_rec : lngen.
 
-Lemma subst_tvar_in_typ_close_typ_wrt_typ :
+Lemma subst_typ_in_typ_close_typ_wrt_typ :
 forall A2 A1 X1 X2,
   lc_typ A1 ->  X1 <> X2 ->
   X2 `notin` ftvar_in_typ A1 ->
-  subst_tvar_in_typ A1 X1 (close_typ_wrt_typ X2 A2) = close_typ_wrt_typ X2 (subst_tvar_in_typ A1 X1 A2).
+  subst_typ_in_typ A1 X1 (close_typ_wrt_typ X2 A2) = close_typ_wrt_typ X2 (subst_typ_in_typ A1 X1 A2).
 Proof.
 unfold close_typ_wrt_typ; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_typ_close_typ_wrt_typ : lngen.
+#[export] Hint Resolve subst_typ_in_typ_close_typ_wrt_typ : lngen.
 
-Lemma subst_tvar_in_abind_close_abind_wrt_typ :
+Lemma subst_typ_in_abind_close_abind_wrt_typ :
 forall ab1 A1 X1 X2,
   lc_typ A1 ->  X1 <> X2 ->
   X2 `notin` ftvar_in_typ A1 ->
-  subst_tvar_in_abind A1 X1 (close_abind_wrt_typ X2 ab1) = close_abind_wrt_typ X2 (subst_tvar_in_abind A1 X1 ab1).
+  subst_typ_in_abind A1 X1 (close_abind_wrt_typ X2 ab1) = close_abind_wrt_typ X2 (subst_typ_in_abind A1 X1 ab1).
 Proof.
 unfold close_abind_wrt_typ; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_abind_close_abind_wrt_typ : lngen.
+#[export] Hint Resolve subst_typ_in_abind_close_abind_wrt_typ : lngen.
 
-Lemma subst_tvar_in_exp_close_exp_wrt_typ :
+Lemma subst_typ_in_exp_close_exp_wrt_typ :
 forall e1 A1 X1 X2,
   lc_typ A1 ->  X1 <> X2 ->
   X2 `notin` ftvar_in_typ A1 ->
-  subst_tvar_in_exp A1 X1 (close_exp_wrt_typ X2 e1) = close_exp_wrt_typ X2 (subst_tvar_in_exp A1 X1 e1).
+  subst_typ_in_exp A1 X1 (close_exp_wrt_typ X2 e1) = close_exp_wrt_typ X2 (subst_typ_in_exp A1 X1 e1).
 Proof.
 unfold close_exp_wrt_typ; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_exp_close_exp_wrt_typ : lngen.
+#[export] Hint Resolve subst_typ_in_exp_close_exp_wrt_typ : lngen.
 
-Lemma subst_tvar_in_exp_close_exp_wrt_exp :
+Lemma subst_typ_in_exp_close_exp_wrt_exp :
 forall e1 A1 x1 X1,
-  lc_typ A1 ->  subst_tvar_in_exp A1 x1 (close_exp_wrt_exp X1 e1) = close_exp_wrt_exp X1 (subst_tvar_in_exp A1 x1 e1).
+  lc_typ A1 ->  subst_typ_in_exp A1 x1 (close_exp_wrt_exp X1 e1) = close_exp_wrt_exp X1 (subst_typ_in_exp A1 x1 e1).
 Proof.
 unfold close_exp_wrt_exp; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_exp_close_exp_wrt_exp : lngen.
+#[export] Hint Resolve subst_typ_in_exp_close_exp_wrt_exp : lngen.
 
-Lemma subst_var_in_exp_close_exp_wrt_typ :
+Lemma subst_exp_in_exp_close_exp_wrt_typ :
 forall e2 e1 X1 x1,
   lc_exp e1 ->  x1 `notin` ftvar_in_exp e1 ->
-  subst_var_in_exp e1 X1 (close_exp_wrt_typ x1 e2) = close_exp_wrt_typ x1 (subst_var_in_exp e1 X1 e2).
+  subst_exp_in_exp e1 X1 (close_exp_wrt_typ x1 e2) = close_exp_wrt_typ x1 (subst_exp_in_exp e1 X1 e2).
 Proof.
 unfold close_exp_wrt_typ; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_var_in_exp_close_exp_wrt_typ : lngen.
+#[export] Hint Resolve subst_exp_in_exp_close_exp_wrt_typ : lngen.
 
-Lemma subst_var_in_exp_close_exp_wrt_exp :
+Lemma subst_exp_in_exp_close_exp_wrt_exp :
 forall e2 e1 x1 x2,
   lc_exp e1 ->  x1 <> x2 ->
   x2 `notin` fvar_in_exp e1 ->
-  subst_var_in_exp e1 x1 (close_exp_wrt_exp x2 e2) = close_exp_wrt_exp x2 (subst_var_in_exp e1 x1 e2).
+  subst_exp_in_exp e1 x1 (close_exp_wrt_exp x2 e2) = close_exp_wrt_exp x2 (subst_exp_in_exp e1 x1 e2).
 Proof.
 unfold close_exp_wrt_exp; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_var_in_exp_close_exp_wrt_exp : lngen.
+#[export] Hint Resolve subst_exp_in_exp_close_exp_wrt_exp : lngen.
 
-Lemma subst_tvar_in_contd_close_contd_wrt_typ :
+Lemma subst_typ_in_contd_close_contd_wrt_typ :
 forall cd1 A1 X1 X2,
   lc_typ A1 ->  X1 <> X2 ->
   X2 `notin` ftvar_in_typ A1 ->
-  subst_tvar_in_contd A1 X1 (close_contd_wrt_typ X2 cd1) = close_contd_wrt_typ X2 (subst_tvar_in_contd A1 X1 cd1).
+  subst_typ_in_contd A1 X1 (close_contd_wrt_typ X2 cd1) = close_contd_wrt_typ X2 (subst_typ_in_contd A1 X1 cd1).
 Proof.
 unfold close_contd_wrt_typ; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_contd_close_contd_wrt_typ : lngen.
+#[export] Hint Resolve subst_typ_in_contd_close_contd_wrt_typ : lngen.
 
-Lemma subst_tvar_in_conts_close_conts_wrt_typ :
+Lemma subst_typ_in_conts_close_conts_wrt_typ :
 forall cs1 A1 X1 X2,
   lc_typ A1 ->  X1 <> X2 ->
   X2 `notin` ftvar_in_typ A1 ->
-  subst_tvar_in_conts A1 X1 (close_conts_wrt_typ X2 cs1) = close_conts_wrt_typ X2 (subst_tvar_in_conts A1 X1 cs1).
+  subst_typ_in_conts A1 X1 (close_conts_wrt_typ X2 cs1) = close_conts_wrt_typ X2 (subst_typ_in_conts A1 X1 cs1).
 Proof.
 unfold close_conts_wrt_typ; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_conts_close_conts_wrt_typ : lngen.
+#[export] Hint Resolve subst_typ_in_conts_close_conts_wrt_typ : lngen.
 
-Lemma subst_tvar_in_contd_close_contd_wrt_exp :
+Lemma subst_typ_in_contd_close_contd_wrt_exp :
 forall cd1 A1 x1 X1,
-  lc_typ A1 ->  subst_tvar_in_contd A1 x1 (close_contd_wrt_exp X1 cd1) = close_contd_wrt_exp X1 (subst_tvar_in_contd A1 x1 cd1).
+  lc_typ A1 ->  subst_typ_in_contd A1 x1 (close_contd_wrt_exp X1 cd1) = close_contd_wrt_exp X1 (subst_typ_in_contd A1 x1 cd1).
 Proof.
 unfold close_contd_wrt_exp; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_contd_close_contd_wrt_exp : lngen.
+#[export] Hint Resolve subst_typ_in_contd_close_contd_wrt_exp : lngen.
 
-Lemma subst_tvar_in_conts_close_conts_wrt_exp :
+Lemma subst_typ_in_conts_close_conts_wrt_exp :
 forall cs1 A1 x1 X1,
-  lc_typ A1 ->  subst_tvar_in_conts A1 x1 (close_conts_wrt_exp X1 cs1) = close_conts_wrt_exp X1 (subst_tvar_in_conts A1 x1 cs1).
+  lc_typ A1 ->  subst_typ_in_conts A1 x1 (close_conts_wrt_exp X1 cs1) = close_conts_wrt_exp X1 (subst_typ_in_conts A1 x1 cs1).
 Proof.
 unfold close_conts_wrt_exp; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_conts_close_conts_wrt_exp : lngen.
+#[export] Hint Resolve subst_typ_in_conts_close_conts_wrt_exp : lngen.
 
-Lemma subst_var_in_contd_close_contd_wrt_typ :
+Lemma subst_exp_in_contd_close_contd_wrt_typ :
 forall cd1 e1 X1 x1,
   lc_exp e1 ->  x1 `notin` ftvar_in_exp e1 ->
-  subst_var_in_contd e1 X1 (close_contd_wrt_typ x1 cd1) = close_contd_wrt_typ x1 (subst_var_in_contd e1 X1 cd1).
+  subst_exp_in_contd e1 X1 (close_contd_wrt_typ x1 cd1) = close_contd_wrt_typ x1 (subst_exp_in_contd e1 X1 cd1).
 Proof.
 unfold close_contd_wrt_typ; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_var_in_contd_close_contd_wrt_typ : lngen.
+#[export] Hint Resolve subst_exp_in_contd_close_contd_wrt_typ : lngen.
 
-Lemma subst_var_in_conts_close_conts_wrt_typ :
+Lemma subst_exp_in_conts_close_conts_wrt_typ :
 forall cs1 e1 X1 x1,
   lc_exp e1 ->  x1 `notin` ftvar_in_exp e1 ->
-  subst_var_in_conts e1 X1 (close_conts_wrt_typ x1 cs1) = close_conts_wrt_typ x1 (subst_var_in_conts e1 X1 cs1).
+  subst_exp_in_conts e1 X1 (close_conts_wrt_typ x1 cs1) = close_conts_wrt_typ x1 (subst_exp_in_conts e1 X1 cs1).
 Proof.
 unfold close_conts_wrt_typ; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_var_in_conts_close_conts_wrt_typ : lngen.
+#[export] Hint Resolve subst_exp_in_conts_close_conts_wrt_typ : lngen.
 
-Lemma subst_var_in_contd_close_contd_wrt_exp :
+Lemma subst_exp_in_contd_close_contd_wrt_exp :
 forall cd1 e1 x1 x2,
   lc_exp e1 ->  x1 <> x2 ->
   x2 `notin` fvar_in_exp e1 ->
-  subst_var_in_contd e1 x1 (close_contd_wrt_exp x2 cd1) = close_contd_wrt_exp x2 (subst_var_in_contd e1 x1 cd1).
+  subst_exp_in_contd e1 x1 (close_contd_wrt_exp x2 cd1) = close_contd_wrt_exp x2 (subst_exp_in_contd e1 x1 cd1).
 Proof.
 unfold close_contd_wrt_exp; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_var_in_contd_close_contd_wrt_exp : lngen.
+#[export] Hint Resolve subst_exp_in_contd_close_contd_wrt_exp : lngen.
 
-Lemma subst_var_in_conts_close_conts_wrt_exp :
+Lemma subst_exp_in_conts_close_conts_wrt_exp :
 forall cs1 e1 x1 x2,
   lc_exp e1 ->  x1 <> x2 ->
   x2 `notin` fvar_in_exp e1 ->
-  subst_var_in_conts e1 x1 (close_conts_wrt_exp x2 cs1) = close_conts_wrt_exp x2 (subst_var_in_conts e1 x1 cs1).
+  subst_exp_in_conts e1 x1 (close_conts_wrt_exp x2 cs1) = close_conts_wrt_exp x2 (subst_exp_in_conts e1 x1 cs1).
 Proof.
 unfold close_conts_wrt_exp; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_var_in_conts_close_conts_wrt_exp : lngen.
+#[export] Hint Resolve subst_exp_in_conts_close_conts_wrt_exp : lngen.
 
-Lemma subst_tvar_in_dbind_close_dbind_wrt_typ :
+Lemma subst_typ_in_dbind_close_dbind_wrt_typ :
 forall db1 A1 X1 X2,
   lc_typ A1 ->  X1 <> X2 ->
   X2 `notin` ftvar_in_typ A1 ->
-  subst_tvar_in_dbind A1 X1 (close_dbind_wrt_typ X2 db1) = close_dbind_wrt_typ X2 (subst_tvar_in_dbind A1 X1 db1).
+  subst_typ_in_dbind A1 X1 (close_dbind_wrt_typ X2 db1) = close_dbind_wrt_typ X2 (subst_typ_in_dbind A1 X1 db1).
 Proof.
 unfold close_dbind_wrt_typ; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_dbind_close_dbind_wrt_typ : lngen.
+#[export] Hint Resolve subst_typ_in_dbind_close_dbind_wrt_typ : lngen.
 
-Lemma subst_tvar_in_work_close_work_wrt_typ :
+Lemma subst_typ_in_work_close_work_wrt_typ :
 forall w1 A1 X1 X2,
   lc_typ A1 ->  X1 <> X2 ->
   X2 `notin` ftvar_in_typ A1 ->
-  subst_tvar_in_work A1 X1 (close_work_wrt_typ X2 w1) = close_work_wrt_typ X2 (subst_tvar_in_work A1 X1 w1).
+  subst_typ_in_work A1 X1 (close_work_wrt_typ X2 w1) = close_work_wrt_typ X2 (subst_typ_in_work A1 X1 w1).
 Proof.
 unfold close_work_wrt_typ; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_work_close_work_wrt_typ : lngen.
+#[export] Hint Resolve subst_typ_in_work_close_work_wrt_typ : lngen.
 
-Lemma subst_tvar_in_work_close_work_wrt_exp :
+Lemma subst_typ_in_work_close_work_wrt_exp :
 forall w1 A1 x1 X1,
-  lc_typ A1 ->  subst_tvar_in_work A1 x1 (close_work_wrt_exp X1 w1) = close_work_wrt_exp X1 (subst_tvar_in_work A1 x1 w1).
+  lc_typ A1 ->  subst_typ_in_work A1 x1 (close_work_wrt_exp X1 w1) = close_work_wrt_exp X1 (subst_typ_in_work A1 x1 w1).
 Proof.
 unfold close_work_wrt_exp; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_work_close_work_wrt_exp : lngen.
+#[export] Hint Resolve subst_typ_in_work_close_work_wrt_exp : lngen.
 
-Lemma subst_var_in_work_close_work_wrt_typ :
+Lemma subst_exp_in_work_close_work_wrt_typ :
 forall w1 e1 X1 x1,
   lc_exp e1 ->  x1 `notin` ftvar_in_exp e1 ->
-  subst_var_in_work e1 X1 (close_work_wrt_typ x1 w1) = close_work_wrt_typ x1 (subst_var_in_work e1 X1 w1).
+  subst_exp_in_work e1 X1 (close_work_wrt_typ x1 w1) = close_work_wrt_typ x1 (subst_exp_in_work e1 X1 w1).
 Proof.
 unfold close_work_wrt_typ; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_var_in_work_close_work_wrt_typ : lngen.
+#[export] Hint Resolve subst_exp_in_work_close_work_wrt_typ : lngen.
 
-Lemma subst_var_in_work_close_work_wrt_exp :
+Lemma subst_exp_in_work_close_work_wrt_exp :
 forall w1 e1 x1 x2,
   lc_exp e1 ->  x1 <> x2 ->
   x2 `notin` fvar_in_exp e1 ->
-  subst_var_in_work e1 x1 (close_work_wrt_exp x2 w1) = close_work_wrt_exp x2 (subst_var_in_work e1 x1 w1).
+  subst_exp_in_work e1 x1 (close_work_wrt_exp x2 w1) = close_work_wrt_exp x2 (subst_exp_in_work e1 x1 w1).
 Proof.
 unfold close_work_wrt_exp; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_var_in_work_close_work_wrt_exp : lngen.
+#[export] Hint Resolve subst_exp_in_work_close_work_wrt_exp : lngen.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_typ_degree_typ_wrt_typ_mutual :
+Lemma subst_typ_in_typ_degree_typ_wrt_typ_mutual :
 (forall A1 A2 X1 n1,
   degree_typ_wrt_typ n1 A1 ->
   degree_typ_wrt_typ n1 A2 ->
-  degree_typ_wrt_typ n1 (subst_tvar_in_typ A2 X1 A1)).
+  degree_typ_wrt_typ n1 (subst_typ_in_typ A2 X1 A1)).
 Proof.
 apply_mutual_ind typ_mutind;
 default_simp.
@@ -13021,24 +13021,24 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_tvar_in_typ_degree_typ_wrt_typ :
+Lemma subst_typ_in_typ_degree_typ_wrt_typ :
 forall A1 A2 X1 n1,
   degree_typ_wrt_typ n1 A1 ->
   degree_typ_wrt_typ n1 A2 ->
-  degree_typ_wrt_typ n1 (subst_tvar_in_typ A2 X1 A1).
+  degree_typ_wrt_typ n1 (subst_typ_in_typ A2 X1 A1).
 Proof.
-pose proof subst_tvar_in_typ_degree_typ_wrt_typ_mutual as H; intuition eauto.
+pose proof subst_typ_in_typ_degree_typ_wrt_typ_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_typ_degree_typ_wrt_typ : lngen.
+#[export] Hint Resolve subst_typ_in_typ_degree_typ_wrt_typ : lngen.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_abind_degree_abind_wrt_typ_mutual :
+Lemma subst_typ_in_abind_degree_abind_wrt_typ_mutual :
 (forall ab1 A1 X1 n1,
   degree_abind_wrt_typ n1 ab1 ->
   degree_typ_wrt_typ n1 A1 ->
-  degree_abind_wrt_typ n1 (subst_tvar_in_abind A1 X1 ab1)).
+  degree_abind_wrt_typ n1 (subst_typ_in_abind A1 X1 ab1)).
 Proof.
 apply_mutual_ind abind_mutind;
 default_simp.
@@ -13046,24 +13046,24 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_tvar_in_abind_degree_abind_wrt_typ :
+Lemma subst_typ_in_abind_degree_abind_wrt_typ :
 forall ab1 A1 X1 n1,
   degree_abind_wrt_typ n1 ab1 ->
   degree_typ_wrt_typ n1 A1 ->
-  degree_abind_wrt_typ n1 (subst_tvar_in_abind A1 X1 ab1).
+  degree_abind_wrt_typ n1 (subst_typ_in_abind A1 X1 ab1).
 Proof.
-pose proof subst_tvar_in_abind_degree_abind_wrt_typ_mutual as H; intuition eauto.
+pose proof subst_typ_in_abind_degree_abind_wrt_typ_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_abind_degree_abind_wrt_typ : lngen.
+#[export] Hint Resolve subst_typ_in_abind_degree_abind_wrt_typ : lngen.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_exp_degree_exp_wrt_typ_mutual :
+Lemma subst_typ_in_exp_degree_exp_wrt_typ_mutual :
 (forall e1 A1 X1 n1,
   degree_exp_wrt_typ n1 e1 ->
   degree_typ_wrt_typ n1 A1 ->
-  degree_exp_wrt_typ n1 (subst_tvar_in_exp A1 X1 e1)).
+  degree_exp_wrt_typ n1 (subst_typ_in_exp A1 X1 e1)).
 Proof.
 apply_mutual_ind exp_mutind;
 default_simp.
@@ -13071,23 +13071,23 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_tvar_in_exp_degree_exp_wrt_typ :
+Lemma subst_typ_in_exp_degree_exp_wrt_typ :
 forall e1 A1 X1 n1,
   degree_exp_wrt_typ n1 e1 ->
   degree_typ_wrt_typ n1 A1 ->
-  degree_exp_wrt_typ n1 (subst_tvar_in_exp A1 X1 e1).
+  degree_exp_wrt_typ n1 (subst_typ_in_exp A1 X1 e1).
 Proof.
-pose proof subst_tvar_in_exp_degree_exp_wrt_typ_mutual as H; intuition eauto.
+pose proof subst_typ_in_exp_degree_exp_wrt_typ_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_exp_degree_exp_wrt_typ : lngen.
+#[export] Hint Resolve subst_typ_in_exp_degree_exp_wrt_typ : lngen.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_exp_degree_exp_wrt_exp_mutual :
+Lemma subst_typ_in_exp_degree_exp_wrt_exp_mutual :
 (forall e1 A1 X1 n1,
   degree_exp_wrt_exp n1 e1 ->
-  degree_exp_wrt_exp n1 (subst_tvar_in_exp A1 X1 e1)).
+  degree_exp_wrt_exp n1 (subst_typ_in_exp A1 X1 e1)).
 Proof.
 apply_mutual_ind exp_mutind;
 default_simp.
@@ -13095,23 +13095,23 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_tvar_in_exp_degree_exp_wrt_exp :
+Lemma subst_typ_in_exp_degree_exp_wrt_exp :
 forall e1 A1 X1 n1,
   degree_exp_wrt_exp n1 e1 ->
-  degree_exp_wrt_exp n1 (subst_tvar_in_exp A1 X1 e1).
+  degree_exp_wrt_exp n1 (subst_typ_in_exp A1 X1 e1).
 Proof.
-pose proof subst_tvar_in_exp_degree_exp_wrt_exp_mutual as H; intuition eauto.
+pose proof subst_typ_in_exp_degree_exp_wrt_exp_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_exp_degree_exp_wrt_exp : lngen.
+#[export] Hint Resolve subst_typ_in_exp_degree_exp_wrt_exp : lngen.
 
 (* begin hide *)
 
-Lemma subst_var_in_exp_degree_exp_wrt_typ_mutual :
+Lemma subst_exp_in_exp_degree_exp_wrt_typ_mutual :
 (forall e1 e2 x1 n1,
   degree_exp_wrt_typ n1 e1 ->
   degree_exp_wrt_typ n1 e2 ->
-  degree_exp_wrt_typ n1 (subst_var_in_exp e2 x1 e1)).
+  degree_exp_wrt_typ n1 (subst_exp_in_exp e2 x1 e1)).
 Proof.
 apply_mutual_ind exp_mutind;
 default_simp.
@@ -13119,24 +13119,24 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_var_in_exp_degree_exp_wrt_typ :
+Lemma subst_exp_in_exp_degree_exp_wrt_typ :
 forall e1 e2 x1 n1,
   degree_exp_wrt_typ n1 e1 ->
   degree_exp_wrt_typ n1 e2 ->
-  degree_exp_wrt_typ n1 (subst_var_in_exp e2 x1 e1).
+  degree_exp_wrt_typ n1 (subst_exp_in_exp e2 x1 e1).
 Proof.
-pose proof subst_var_in_exp_degree_exp_wrt_typ_mutual as H; intuition eauto.
+pose proof subst_exp_in_exp_degree_exp_wrt_typ_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_var_in_exp_degree_exp_wrt_typ : lngen.
+#[export] Hint Resolve subst_exp_in_exp_degree_exp_wrt_typ : lngen.
 
 (* begin hide *)
 
-Lemma subst_var_in_exp_degree_exp_wrt_exp_mutual :
+Lemma subst_exp_in_exp_degree_exp_wrt_exp_mutual :
 (forall e1 e2 x1 n1,
   degree_exp_wrt_exp n1 e1 ->
   degree_exp_wrt_exp n1 e2 ->
-  degree_exp_wrt_exp n1 (subst_var_in_exp e2 x1 e1)).
+  degree_exp_wrt_exp n1 (subst_exp_in_exp e2 x1 e1)).
 Proof.
 apply_mutual_ind exp_mutind;
 default_simp.
@@ -13144,28 +13144,28 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_var_in_exp_degree_exp_wrt_exp :
+Lemma subst_exp_in_exp_degree_exp_wrt_exp :
 forall e1 e2 x1 n1,
   degree_exp_wrt_exp n1 e1 ->
   degree_exp_wrt_exp n1 e2 ->
-  degree_exp_wrt_exp n1 (subst_var_in_exp e2 x1 e1).
+  degree_exp_wrt_exp n1 (subst_exp_in_exp e2 x1 e1).
 Proof.
-pose proof subst_var_in_exp_degree_exp_wrt_exp_mutual as H; intuition eauto.
+pose proof subst_exp_in_exp_degree_exp_wrt_exp_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_var_in_exp_degree_exp_wrt_exp : lngen.
+#[export] Hint Resolve subst_exp_in_exp_degree_exp_wrt_exp : lngen.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_contd_degree_contd_wrt_typ_subst_tvar_in_conts_degree_conts_wrt_typ_mutual :
+Lemma subst_typ_in_contd_degree_contd_wrt_typ_subst_typ_in_conts_degree_conts_wrt_typ_mutual :
 (forall cd1 A1 X1 n1,
   degree_contd_wrt_typ n1 cd1 ->
   degree_typ_wrt_typ n1 A1 ->
-  degree_contd_wrt_typ n1 (subst_tvar_in_contd A1 X1 cd1)) /\
+  degree_contd_wrt_typ n1 (subst_typ_in_contd A1 X1 cd1)) /\
 (forall cs1 A1 X1 n1,
   degree_conts_wrt_typ n1 cs1 ->
   degree_typ_wrt_typ n1 A1 ->
-  degree_conts_wrt_typ n1 (subst_tvar_in_conts A1 X1 cs1)).
+  degree_conts_wrt_typ n1 (subst_typ_in_conts A1 X1 cs1)).
 Proof.
 apply_mutual_ind contd_conts_mutind;
 default_simp.
@@ -13173,37 +13173,37 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_tvar_in_contd_degree_contd_wrt_typ :
+Lemma subst_typ_in_contd_degree_contd_wrt_typ :
 forall cd1 A1 X1 n1,
   degree_contd_wrt_typ n1 cd1 ->
   degree_typ_wrt_typ n1 A1 ->
-  degree_contd_wrt_typ n1 (subst_tvar_in_contd A1 X1 cd1).
+  degree_contd_wrt_typ n1 (subst_typ_in_contd A1 X1 cd1).
 Proof.
-pose proof subst_tvar_in_contd_degree_contd_wrt_typ_subst_tvar_in_conts_degree_conts_wrt_typ_mutual as H; intuition eauto.
+pose proof subst_typ_in_contd_degree_contd_wrt_typ_subst_typ_in_conts_degree_conts_wrt_typ_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_contd_degree_contd_wrt_typ : lngen.
+#[export] Hint Resolve subst_typ_in_contd_degree_contd_wrt_typ : lngen.
 
-Lemma subst_tvar_in_conts_degree_conts_wrt_typ :
+Lemma subst_typ_in_conts_degree_conts_wrt_typ :
 forall cs1 A1 X1 n1,
   degree_conts_wrt_typ n1 cs1 ->
   degree_typ_wrt_typ n1 A1 ->
-  degree_conts_wrt_typ n1 (subst_tvar_in_conts A1 X1 cs1).
+  degree_conts_wrt_typ n1 (subst_typ_in_conts A1 X1 cs1).
 Proof.
-pose proof subst_tvar_in_contd_degree_contd_wrt_typ_subst_tvar_in_conts_degree_conts_wrt_typ_mutual as H; intuition eauto.
+pose proof subst_typ_in_contd_degree_contd_wrt_typ_subst_typ_in_conts_degree_conts_wrt_typ_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_conts_degree_conts_wrt_typ : lngen.
+#[export] Hint Resolve subst_typ_in_conts_degree_conts_wrt_typ : lngen.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_contd_degree_contd_wrt_exp_subst_tvar_in_conts_degree_conts_wrt_exp_mutual :
+Lemma subst_typ_in_contd_degree_contd_wrt_exp_subst_typ_in_conts_degree_conts_wrt_exp_mutual :
 (forall cd1 A1 X1 n1,
   degree_contd_wrt_exp n1 cd1 ->
-  degree_contd_wrt_exp n1 (subst_tvar_in_contd A1 X1 cd1)) /\
+  degree_contd_wrt_exp n1 (subst_typ_in_contd A1 X1 cd1)) /\
 (forall cs1 A1 X1 n1,
   degree_conts_wrt_exp n1 cs1 ->
-  degree_conts_wrt_exp n1 (subst_tvar_in_conts A1 X1 cs1)).
+  degree_conts_wrt_exp n1 (subst_typ_in_conts A1 X1 cs1)).
 Proof.
 apply_mutual_ind contd_conts_mutind;
 default_simp.
@@ -13211,37 +13211,37 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_tvar_in_contd_degree_contd_wrt_exp :
+Lemma subst_typ_in_contd_degree_contd_wrt_exp :
 forall cd1 A1 X1 n1,
   degree_contd_wrt_exp n1 cd1 ->
-  degree_contd_wrt_exp n1 (subst_tvar_in_contd A1 X1 cd1).
+  degree_contd_wrt_exp n1 (subst_typ_in_contd A1 X1 cd1).
 Proof.
-pose proof subst_tvar_in_contd_degree_contd_wrt_exp_subst_tvar_in_conts_degree_conts_wrt_exp_mutual as H; intuition eauto.
+pose proof subst_typ_in_contd_degree_contd_wrt_exp_subst_typ_in_conts_degree_conts_wrt_exp_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_contd_degree_contd_wrt_exp : lngen.
+#[export] Hint Resolve subst_typ_in_contd_degree_contd_wrt_exp : lngen.
 
-Lemma subst_tvar_in_conts_degree_conts_wrt_exp :
+Lemma subst_typ_in_conts_degree_conts_wrt_exp :
 forall cs1 A1 X1 n1,
   degree_conts_wrt_exp n1 cs1 ->
-  degree_conts_wrt_exp n1 (subst_tvar_in_conts A1 X1 cs1).
+  degree_conts_wrt_exp n1 (subst_typ_in_conts A1 X1 cs1).
 Proof.
-pose proof subst_tvar_in_contd_degree_contd_wrt_exp_subst_tvar_in_conts_degree_conts_wrt_exp_mutual as H; intuition eauto.
+pose proof subst_typ_in_contd_degree_contd_wrt_exp_subst_typ_in_conts_degree_conts_wrt_exp_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_conts_degree_conts_wrt_exp : lngen.
+#[export] Hint Resolve subst_typ_in_conts_degree_conts_wrt_exp : lngen.
 
 (* begin hide *)
 
-Lemma subst_var_in_contd_degree_contd_wrt_typ_subst_var_in_conts_degree_conts_wrt_typ_mutual :
+Lemma subst_exp_in_contd_degree_contd_wrt_typ_subst_exp_in_conts_degree_conts_wrt_typ_mutual :
 (forall cd1 e1 x1 n1,
   degree_contd_wrt_typ n1 cd1 ->
   degree_exp_wrt_typ n1 e1 ->
-  degree_contd_wrt_typ n1 (subst_var_in_contd e1 x1 cd1)) /\
+  degree_contd_wrt_typ n1 (subst_exp_in_contd e1 x1 cd1)) /\
 (forall cs1 e1 x1 n1,
   degree_conts_wrt_typ n1 cs1 ->
   degree_exp_wrt_typ n1 e1 ->
-  degree_conts_wrt_typ n1 (subst_var_in_conts e1 x1 cs1)).
+  degree_conts_wrt_typ n1 (subst_exp_in_conts e1 x1 cs1)).
 Proof.
 apply_mutual_ind contd_conts_mutind;
 default_simp.
@@ -13249,39 +13249,39 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_var_in_contd_degree_contd_wrt_typ :
+Lemma subst_exp_in_contd_degree_contd_wrt_typ :
 forall cd1 e1 x1 n1,
   degree_contd_wrt_typ n1 cd1 ->
   degree_exp_wrt_typ n1 e1 ->
-  degree_contd_wrt_typ n1 (subst_var_in_contd e1 x1 cd1).
+  degree_contd_wrt_typ n1 (subst_exp_in_contd e1 x1 cd1).
 Proof.
-pose proof subst_var_in_contd_degree_contd_wrt_typ_subst_var_in_conts_degree_conts_wrt_typ_mutual as H; intuition eauto.
+pose proof subst_exp_in_contd_degree_contd_wrt_typ_subst_exp_in_conts_degree_conts_wrt_typ_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_var_in_contd_degree_contd_wrt_typ : lngen.
+#[export] Hint Resolve subst_exp_in_contd_degree_contd_wrt_typ : lngen.
 
-Lemma subst_var_in_conts_degree_conts_wrt_typ :
+Lemma subst_exp_in_conts_degree_conts_wrt_typ :
 forall cs1 e1 x1 n1,
   degree_conts_wrt_typ n1 cs1 ->
   degree_exp_wrt_typ n1 e1 ->
-  degree_conts_wrt_typ n1 (subst_var_in_conts e1 x1 cs1).
+  degree_conts_wrt_typ n1 (subst_exp_in_conts e1 x1 cs1).
 Proof.
-pose proof subst_var_in_contd_degree_contd_wrt_typ_subst_var_in_conts_degree_conts_wrt_typ_mutual as H; intuition eauto.
+pose proof subst_exp_in_contd_degree_contd_wrt_typ_subst_exp_in_conts_degree_conts_wrt_typ_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_var_in_conts_degree_conts_wrt_typ : lngen.
+#[export] Hint Resolve subst_exp_in_conts_degree_conts_wrt_typ : lngen.
 
 (* begin hide *)
 
-Lemma subst_var_in_contd_degree_contd_wrt_exp_subst_var_in_conts_degree_conts_wrt_exp_mutual :
+Lemma subst_exp_in_contd_degree_contd_wrt_exp_subst_exp_in_conts_degree_conts_wrt_exp_mutual :
 (forall cd1 e1 x1 n1,
   degree_contd_wrt_exp n1 cd1 ->
   degree_exp_wrt_exp n1 e1 ->
-  degree_contd_wrt_exp n1 (subst_var_in_contd e1 x1 cd1)) /\
+  degree_contd_wrt_exp n1 (subst_exp_in_contd e1 x1 cd1)) /\
 (forall cs1 e1 x1 n1,
   degree_conts_wrt_exp n1 cs1 ->
   degree_exp_wrt_exp n1 e1 ->
-  degree_conts_wrt_exp n1 (subst_var_in_conts e1 x1 cs1)).
+  degree_conts_wrt_exp n1 (subst_exp_in_conts e1 x1 cs1)).
 Proof.
 apply_mutual_ind contd_conts_mutind;
 default_simp.
@@ -13289,35 +13289,35 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_var_in_contd_degree_contd_wrt_exp :
+Lemma subst_exp_in_contd_degree_contd_wrt_exp :
 forall cd1 e1 x1 n1,
   degree_contd_wrt_exp n1 cd1 ->
   degree_exp_wrt_exp n1 e1 ->
-  degree_contd_wrt_exp n1 (subst_var_in_contd e1 x1 cd1).
+  degree_contd_wrt_exp n1 (subst_exp_in_contd e1 x1 cd1).
 Proof.
-pose proof subst_var_in_contd_degree_contd_wrt_exp_subst_var_in_conts_degree_conts_wrt_exp_mutual as H; intuition eauto.
+pose proof subst_exp_in_contd_degree_contd_wrt_exp_subst_exp_in_conts_degree_conts_wrt_exp_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_var_in_contd_degree_contd_wrt_exp : lngen.
+#[export] Hint Resolve subst_exp_in_contd_degree_contd_wrt_exp : lngen.
 
-Lemma subst_var_in_conts_degree_conts_wrt_exp :
+Lemma subst_exp_in_conts_degree_conts_wrt_exp :
 forall cs1 e1 x1 n1,
   degree_conts_wrt_exp n1 cs1 ->
   degree_exp_wrt_exp n1 e1 ->
-  degree_conts_wrt_exp n1 (subst_var_in_conts e1 x1 cs1).
+  degree_conts_wrt_exp n1 (subst_exp_in_conts e1 x1 cs1).
 Proof.
-pose proof subst_var_in_contd_degree_contd_wrt_exp_subst_var_in_conts_degree_conts_wrt_exp_mutual as H; intuition eauto.
+pose proof subst_exp_in_contd_degree_contd_wrt_exp_subst_exp_in_conts_degree_conts_wrt_exp_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_var_in_conts_degree_conts_wrt_exp : lngen.
+#[export] Hint Resolve subst_exp_in_conts_degree_conts_wrt_exp : lngen.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_dbind_degree_dbind_wrt_typ_mutual :
+Lemma subst_typ_in_dbind_degree_dbind_wrt_typ_mutual :
 (forall db1 A1 X1 n1,
   degree_dbind_wrt_typ n1 db1 ->
   degree_typ_wrt_typ n1 A1 ->
-  degree_dbind_wrt_typ n1 (subst_tvar_in_dbind A1 X1 db1)).
+  degree_dbind_wrt_typ n1 (subst_typ_in_dbind A1 X1 db1)).
 Proof.
 apply_mutual_ind dbind_mutind;
 default_simp.
@@ -13325,24 +13325,24 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_tvar_in_dbind_degree_dbind_wrt_typ :
+Lemma subst_typ_in_dbind_degree_dbind_wrt_typ :
 forall db1 A1 X1 n1,
   degree_dbind_wrt_typ n1 db1 ->
   degree_typ_wrt_typ n1 A1 ->
-  degree_dbind_wrt_typ n1 (subst_tvar_in_dbind A1 X1 db1).
+  degree_dbind_wrt_typ n1 (subst_typ_in_dbind A1 X1 db1).
 Proof.
-pose proof subst_tvar_in_dbind_degree_dbind_wrt_typ_mutual as H; intuition eauto.
+pose proof subst_typ_in_dbind_degree_dbind_wrt_typ_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_dbind_degree_dbind_wrt_typ : lngen.
+#[export] Hint Resolve subst_typ_in_dbind_degree_dbind_wrt_typ : lngen.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_work_degree_work_wrt_typ_mutual :
+Lemma subst_typ_in_work_degree_work_wrt_typ_mutual :
 (forall w1 A1 X1 n1,
   degree_work_wrt_typ n1 w1 ->
   degree_typ_wrt_typ n1 A1 ->
-  degree_work_wrt_typ n1 (subst_tvar_in_work A1 X1 w1)).
+  degree_work_wrt_typ n1 (subst_typ_in_work A1 X1 w1)).
 Proof.
 apply_mutual_ind work_mutind;
 default_simp.
@@ -13350,23 +13350,23 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_tvar_in_work_degree_work_wrt_typ :
+Lemma subst_typ_in_work_degree_work_wrt_typ :
 forall w1 A1 X1 n1,
   degree_work_wrt_typ n1 w1 ->
   degree_typ_wrt_typ n1 A1 ->
-  degree_work_wrt_typ n1 (subst_tvar_in_work A1 X1 w1).
+  degree_work_wrt_typ n1 (subst_typ_in_work A1 X1 w1).
 Proof.
-pose proof subst_tvar_in_work_degree_work_wrt_typ_mutual as H; intuition eauto.
+pose proof subst_typ_in_work_degree_work_wrt_typ_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_work_degree_work_wrt_typ : lngen.
+#[export] Hint Resolve subst_typ_in_work_degree_work_wrt_typ : lngen.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_work_degree_work_wrt_exp_mutual :
+Lemma subst_typ_in_work_degree_work_wrt_exp_mutual :
 (forall w1 A1 X1 n1,
   degree_work_wrt_exp n1 w1 ->
-  degree_work_wrt_exp n1 (subst_tvar_in_work A1 X1 w1)).
+  degree_work_wrt_exp n1 (subst_typ_in_work A1 X1 w1)).
 Proof.
 apply_mutual_ind work_mutind;
 default_simp.
@@ -13374,23 +13374,23 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_tvar_in_work_degree_work_wrt_exp :
+Lemma subst_typ_in_work_degree_work_wrt_exp :
 forall w1 A1 X1 n1,
   degree_work_wrt_exp n1 w1 ->
-  degree_work_wrt_exp n1 (subst_tvar_in_work A1 X1 w1).
+  degree_work_wrt_exp n1 (subst_typ_in_work A1 X1 w1).
 Proof.
-pose proof subst_tvar_in_work_degree_work_wrt_exp_mutual as H; intuition eauto.
+pose proof subst_typ_in_work_degree_work_wrt_exp_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_work_degree_work_wrt_exp : lngen.
+#[export] Hint Resolve subst_typ_in_work_degree_work_wrt_exp : lngen.
 
 (* begin hide *)
 
-Lemma subst_var_in_work_degree_work_wrt_typ_mutual :
+Lemma subst_exp_in_work_degree_work_wrt_typ_mutual :
 (forall w1 e1 x1 n1,
   degree_work_wrt_typ n1 w1 ->
   degree_exp_wrt_typ n1 e1 ->
-  degree_work_wrt_typ n1 (subst_var_in_work e1 x1 w1)).
+  degree_work_wrt_typ n1 (subst_exp_in_work e1 x1 w1)).
 Proof.
 apply_mutual_ind work_mutind;
 default_simp.
@@ -13398,24 +13398,24 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_var_in_work_degree_work_wrt_typ :
+Lemma subst_exp_in_work_degree_work_wrt_typ :
 forall w1 e1 x1 n1,
   degree_work_wrt_typ n1 w1 ->
   degree_exp_wrt_typ n1 e1 ->
-  degree_work_wrt_typ n1 (subst_var_in_work e1 x1 w1).
+  degree_work_wrt_typ n1 (subst_exp_in_work e1 x1 w1).
 Proof.
-pose proof subst_var_in_work_degree_work_wrt_typ_mutual as H; intuition eauto.
+pose proof subst_exp_in_work_degree_work_wrt_typ_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_var_in_work_degree_work_wrt_typ : lngen.
+#[export] Hint Resolve subst_exp_in_work_degree_work_wrt_typ : lngen.
 
 (* begin hide *)
 
-Lemma subst_var_in_work_degree_work_wrt_exp_mutual :
+Lemma subst_exp_in_work_degree_work_wrt_exp_mutual :
 (forall w1 e1 x1 n1,
   degree_work_wrt_exp n1 w1 ->
   degree_exp_wrt_exp n1 e1 ->
-  degree_work_wrt_exp n1 (subst_var_in_work e1 x1 w1)).
+  degree_work_wrt_exp n1 (subst_exp_in_work e1 x1 w1)).
 Proof.
 apply_mutual_ind work_mutind;
 default_simp.
@@ -13423,23 +13423,23 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_var_in_work_degree_work_wrt_exp :
+Lemma subst_exp_in_work_degree_work_wrt_exp :
 forall w1 e1 x1 n1,
   degree_work_wrt_exp n1 w1 ->
   degree_exp_wrt_exp n1 e1 ->
-  degree_work_wrt_exp n1 (subst_var_in_work e1 x1 w1).
+  degree_work_wrt_exp n1 (subst_exp_in_work e1 x1 w1).
 Proof.
-pose proof subst_var_in_work_degree_work_wrt_exp_mutual as H; intuition eauto.
+pose proof subst_exp_in_work_degree_work_wrt_exp_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_var_in_work_degree_work_wrt_exp : lngen.
+#[export] Hint Resolve subst_exp_in_work_degree_work_wrt_exp : lngen.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_typ_fresh_eq_mutual :
+Lemma subst_typ_in_typ_fresh_eq_mutual :
 (forall A2 A1 X1,
   X1 `notin` ftvar_in_typ A2 ->
-  subst_tvar_in_typ A1 X1 A2 = A2).
+  subst_typ_in_typ A1 X1 A2 = A2).
 Proof.
 apply_mutual_ind typ_mutind;
 default_simp.
@@ -13447,23 +13447,23 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_tvar_in_typ_fresh_eq :
+Lemma subst_typ_in_typ_fresh_eq :
 forall A2 A1 X1,
   X1 `notin` ftvar_in_typ A2 ->
-  subst_tvar_in_typ A1 X1 A2 = A2.
+  subst_typ_in_typ A1 X1 A2 = A2.
 Proof.
-pose proof subst_tvar_in_typ_fresh_eq_mutual as H; intuition eauto.
+pose proof subst_typ_in_typ_fresh_eq_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_typ_fresh_eq : lngen.
-#[export] Hint Rewrite subst_tvar_in_typ_fresh_eq using solve [auto] : lngen.
+#[export] Hint Resolve subst_typ_in_typ_fresh_eq : lngen.
+#[export] Hint Rewrite subst_typ_in_typ_fresh_eq using solve [auto] : lngen.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_abind_fresh_eq_mutual :
+Lemma subst_typ_in_abind_fresh_eq_mutual :
 (forall ab1 A1 X1,
   X1 `notin` ftvar_in_abind ab1 ->
-  subst_tvar_in_abind A1 X1 ab1 = ab1).
+  subst_typ_in_abind A1 X1 ab1 = ab1).
 Proof.
 apply_mutual_ind abind_mutind;
 default_simp.
@@ -13471,23 +13471,23 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_tvar_in_abind_fresh_eq :
+Lemma subst_typ_in_abind_fresh_eq :
 forall ab1 A1 X1,
   X1 `notin` ftvar_in_abind ab1 ->
-  subst_tvar_in_abind A1 X1 ab1 = ab1.
+  subst_typ_in_abind A1 X1 ab1 = ab1.
 Proof.
-pose proof subst_tvar_in_abind_fresh_eq_mutual as H; intuition eauto.
+pose proof subst_typ_in_abind_fresh_eq_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_abind_fresh_eq : lngen.
-#[export] Hint Rewrite subst_tvar_in_abind_fresh_eq using solve [auto] : lngen.
+#[export] Hint Resolve subst_typ_in_abind_fresh_eq : lngen.
+#[export] Hint Rewrite subst_typ_in_abind_fresh_eq using solve [auto] : lngen.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_exp_fresh_eq_mutual :
+Lemma subst_typ_in_exp_fresh_eq_mutual :
 (forall e1 A1 X1,
   X1 `notin` ftvar_in_exp e1 ->
-  subst_tvar_in_exp A1 X1 e1 = e1).
+  subst_typ_in_exp A1 X1 e1 = e1).
 Proof.
 apply_mutual_ind exp_mutind;
 default_simp.
@@ -13495,23 +13495,23 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_tvar_in_exp_fresh_eq :
+Lemma subst_typ_in_exp_fresh_eq :
 forall e1 A1 X1,
   X1 `notin` ftvar_in_exp e1 ->
-  subst_tvar_in_exp A1 X1 e1 = e1.
+  subst_typ_in_exp A1 X1 e1 = e1.
 Proof.
-pose proof subst_tvar_in_exp_fresh_eq_mutual as H; intuition eauto.
+pose proof subst_typ_in_exp_fresh_eq_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_exp_fresh_eq : lngen.
-#[export] Hint Rewrite subst_tvar_in_exp_fresh_eq using solve [auto] : lngen.
+#[export] Hint Resolve subst_typ_in_exp_fresh_eq : lngen.
+#[export] Hint Rewrite subst_typ_in_exp_fresh_eq using solve [auto] : lngen.
 
 (* begin hide *)
 
-Lemma subst_var_in_exp_fresh_eq_mutual :
+Lemma subst_exp_in_exp_fresh_eq_mutual :
 (forall e2 e1 x1,
   x1 `notin` fvar_in_exp e2 ->
-  subst_var_in_exp e1 x1 e2 = e2).
+  subst_exp_in_exp e1 x1 e2 = e2).
 Proof.
 apply_mutual_ind exp_mutind;
 default_simp.
@@ -13519,26 +13519,26 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_var_in_exp_fresh_eq :
+Lemma subst_exp_in_exp_fresh_eq :
 forall e2 e1 x1,
   x1 `notin` fvar_in_exp e2 ->
-  subst_var_in_exp e1 x1 e2 = e2.
+  subst_exp_in_exp e1 x1 e2 = e2.
 Proof.
-pose proof subst_var_in_exp_fresh_eq_mutual as H; intuition eauto.
+pose proof subst_exp_in_exp_fresh_eq_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_var_in_exp_fresh_eq : lngen.
-#[export] Hint Rewrite subst_var_in_exp_fresh_eq using solve [auto] : lngen.
+#[export] Hint Resolve subst_exp_in_exp_fresh_eq : lngen.
+#[export] Hint Rewrite subst_exp_in_exp_fresh_eq using solve [auto] : lngen.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_contd_fresh_eq_subst_tvar_in_conts_fresh_eq_mutual :
+Lemma subst_typ_in_contd_fresh_eq_subst_typ_in_conts_fresh_eq_mutual :
 (forall cd1 A1 X1,
   X1 `notin` ftvar_in_contd cd1 ->
-  subst_tvar_in_contd A1 X1 cd1 = cd1) /\
+  subst_typ_in_contd A1 X1 cd1 = cd1) /\
 (forall cs1 A1 X1,
   X1 `notin` ftvar_in_conts cs1 ->
-  subst_tvar_in_conts A1 X1 cs1 = cs1).
+  subst_typ_in_conts A1 X1 cs1 = cs1).
 Proof.
 apply_mutual_ind contd_conts_mutind;
 default_simp.
@@ -13546,37 +13546,37 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_tvar_in_contd_fresh_eq :
+Lemma subst_typ_in_contd_fresh_eq :
 forall cd1 A1 X1,
   X1 `notin` ftvar_in_contd cd1 ->
-  subst_tvar_in_contd A1 X1 cd1 = cd1.
+  subst_typ_in_contd A1 X1 cd1 = cd1.
 Proof.
-pose proof subst_tvar_in_contd_fresh_eq_subst_tvar_in_conts_fresh_eq_mutual as H; intuition eauto.
+pose proof subst_typ_in_contd_fresh_eq_subst_typ_in_conts_fresh_eq_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_contd_fresh_eq : lngen.
-#[export] Hint Rewrite subst_tvar_in_contd_fresh_eq using solve [auto] : lngen.
+#[export] Hint Resolve subst_typ_in_contd_fresh_eq : lngen.
+#[export] Hint Rewrite subst_typ_in_contd_fresh_eq using solve [auto] : lngen.
 
-Lemma subst_tvar_in_conts_fresh_eq :
+Lemma subst_typ_in_conts_fresh_eq :
 forall cs1 A1 X1,
   X1 `notin` ftvar_in_conts cs1 ->
-  subst_tvar_in_conts A1 X1 cs1 = cs1.
+  subst_typ_in_conts A1 X1 cs1 = cs1.
 Proof.
-pose proof subst_tvar_in_contd_fresh_eq_subst_tvar_in_conts_fresh_eq_mutual as H; intuition eauto.
+pose proof subst_typ_in_contd_fresh_eq_subst_typ_in_conts_fresh_eq_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_conts_fresh_eq : lngen.
-#[export] Hint Rewrite subst_tvar_in_conts_fresh_eq using solve [auto] : lngen.
+#[export] Hint Resolve subst_typ_in_conts_fresh_eq : lngen.
+#[export] Hint Rewrite subst_typ_in_conts_fresh_eq using solve [auto] : lngen.
 
 (* begin hide *)
 
-Lemma subst_var_in_contd_fresh_eq_subst_var_in_conts_fresh_eq_mutual :
+Lemma subst_exp_in_contd_fresh_eq_subst_exp_in_conts_fresh_eq_mutual :
 (forall cd1 e1 x1,
   x1 `notin` fvar_in_contd cd1 ->
-  subst_var_in_contd e1 x1 cd1 = cd1) /\
+  subst_exp_in_contd e1 x1 cd1 = cd1) /\
 (forall cs1 e1 x1,
   x1 `notin` fvar_in_conts cs1 ->
-  subst_var_in_conts e1 x1 cs1 = cs1).
+  subst_exp_in_conts e1 x1 cs1 = cs1).
 Proof.
 apply_mutual_ind contd_conts_mutind;
 default_simp.
@@ -13584,34 +13584,34 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_var_in_contd_fresh_eq :
+Lemma subst_exp_in_contd_fresh_eq :
 forall cd1 e1 x1,
   x1 `notin` fvar_in_contd cd1 ->
-  subst_var_in_contd e1 x1 cd1 = cd1.
+  subst_exp_in_contd e1 x1 cd1 = cd1.
 Proof.
-pose proof subst_var_in_contd_fresh_eq_subst_var_in_conts_fresh_eq_mutual as H; intuition eauto.
+pose proof subst_exp_in_contd_fresh_eq_subst_exp_in_conts_fresh_eq_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_var_in_contd_fresh_eq : lngen.
-#[export] Hint Rewrite subst_var_in_contd_fresh_eq using solve [auto] : lngen.
+#[export] Hint Resolve subst_exp_in_contd_fresh_eq : lngen.
+#[export] Hint Rewrite subst_exp_in_contd_fresh_eq using solve [auto] : lngen.
 
-Lemma subst_var_in_conts_fresh_eq :
+Lemma subst_exp_in_conts_fresh_eq :
 forall cs1 e1 x1,
   x1 `notin` fvar_in_conts cs1 ->
-  subst_var_in_conts e1 x1 cs1 = cs1.
+  subst_exp_in_conts e1 x1 cs1 = cs1.
 Proof.
-pose proof subst_var_in_contd_fresh_eq_subst_var_in_conts_fresh_eq_mutual as H; intuition eauto.
+pose proof subst_exp_in_contd_fresh_eq_subst_exp_in_conts_fresh_eq_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_var_in_conts_fresh_eq : lngen.
-#[export] Hint Rewrite subst_var_in_conts_fresh_eq using solve [auto] : lngen.
+#[export] Hint Resolve subst_exp_in_conts_fresh_eq : lngen.
+#[export] Hint Rewrite subst_exp_in_conts_fresh_eq using solve [auto] : lngen.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_dbind_fresh_eq_mutual :
+Lemma subst_typ_in_dbind_fresh_eq_mutual :
 (forall db1 A1 X1,
   X1 `notin` ftvar_in_dbind db1 ->
-  subst_tvar_in_dbind A1 X1 db1 = db1).
+  subst_typ_in_dbind A1 X1 db1 = db1).
 Proof.
 apply_mutual_ind dbind_mutind;
 default_simp.
@@ -13619,23 +13619,23 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_tvar_in_dbind_fresh_eq :
+Lemma subst_typ_in_dbind_fresh_eq :
 forall db1 A1 X1,
   X1 `notin` ftvar_in_dbind db1 ->
-  subst_tvar_in_dbind A1 X1 db1 = db1.
+  subst_typ_in_dbind A1 X1 db1 = db1.
 Proof.
-pose proof subst_tvar_in_dbind_fresh_eq_mutual as H; intuition eauto.
+pose proof subst_typ_in_dbind_fresh_eq_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_dbind_fresh_eq : lngen.
-#[export] Hint Rewrite subst_tvar_in_dbind_fresh_eq using solve [auto] : lngen.
+#[export] Hint Resolve subst_typ_in_dbind_fresh_eq : lngen.
+#[export] Hint Rewrite subst_typ_in_dbind_fresh_eq using solve [auto] : lngen.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_work_fresh_eq_mutual :
+Lemma subst_typ_in_work_fresh_eq_mutual :
 (forall w1 A1 X1,
   X1 `notin` ftvar_in_work w1 ->
-  subst_tvar_in_work A1 X1 w1 = w1).
+  subst_typ_in_work A1 X1 w1 = w1).
 Proof.
 apply_mutual_ind work_mutind;
 default_simp.
@@ -13643,23 +13643,23 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_tvar_in_work_fresh_eq :
+Lemma subst_typ_in_work_fresh_eq :
 forall w1 A1 X1,
   X1 `notin` ftvar_in_work w1 ->
-  subst_tvar_in_work A1 X1 w1 = w1.
+  subst_typ_in_work A1 X1 w1 = w1.
 Proof.
-pose proof subst_tvar_in_work_fresh_eq_mutual as H; intuition eauto.
+pose proof subst_typ_in_work_fresh_eq_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_work_fresh_eq : lngen.
-#[export] Hint Rewrite subst_tvar_in_work_fresh_eq using solve [auto] : lngen.
+#[export] Hint Resolve subst_typ_in_work_fresh_eq : lngen.
+#[export] Hint Rewrite subst_typ_in_work_fresh_eq using solve [auto] : lngen.
 
 (* begin hide *)
 
-Lemma subst_var_in_work_fresh_eq_mutual :
+Lemma subst_exp_in_work_fresh_eq_mutual :
 (forall w1 e1 x1,
   x1 `notin` fvar_in_work w1 ->
-  subst_var_in_work e1 x1 w1 = w1).
+  subst_exp_in_work e1 x1 w1 = w1).
 Proof.
 apply_mutual_ind work_mutind;
 default_simp.
@@ -13667,23 +13667,23 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_var_in_work_fresh_eq :
+Lemma subst_exp_in_work_fresh_eq :
 forall w1 e1 x1,
   x1 `notin` fvar_in_work w1 ->
-  subst_var_in_work e1 x1 w1 = w1.
+  subst_exp_in_work e1 x1 w1 = w1.
 Proof.
-pose proof subst_var_in_work_fresh_eq_mutual as H; intuition eauto.
+pose proof subst_exp_in_work_fresh_eq_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_var_in_work_fresh_eq : lngen.
-#[export] Hint Rewrite subst_var_in_work_fresh_eq using solve [auto] : lngen.
+#[export] Hint Resolve subst_exp_in_work_fresh_eq : lngen.
+#[export] Hint Rewrite subst_exp_in_work_fresh_eq using solve [auto] : lngen.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_typ_fresh_same_mutual :
+Lemma subst_typ_in_typ_fresh_same_mutual :
 (forall A2 A1 X1,
   X1 `notin` ftvar_in_typ A1 ->
-  X1 `notin` ftvar_in_typ (subst_tvar_in_typ A1 X1 A2)).
+  X1 `notin` ftvar_in_typ (subst_typ_in_typ A1 X1 A2)).
 Proof.
 apply_mutual_ind typ_mutind;
 default_simp.
@@ -13691,22 +13691,22 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_tvar_in_typ_fresh_same :
+Lemma subst_typ_in_typ_fresh_same :
 forall A2 A1 X1,
   X1 `notin` ftvar_in_typ A1 ->
-  X1 `notin` ftvar_in_typ (subst_tvar_in_typ A1 X1 A2).
+  X1 `notin` ftvar_in_typ (subst_typ_in_typ A1 X1 A2).
 Proof.
-pose proof subst_tvar_in_typ_fresh_same_mutual as H; intuition eauto.
+pose proof subst_typ_in_typ_fresh_same_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_typ_fresh_same : lngen.
+#[export] Hint Resolve subst_typ_in_typ_fresh_same : lngen.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_abind_fresh_same_mutual :
+Lemma subst_typ_in_abind_fresh_same_mutual :
 (forall ab1 A1 X1,
   X1 `notin` ftvar_in_typ A1 ->
-  X1 `notin` ftvar_in_abind (subst_tvar_in_abind A1 X1 ab1)).
+  X1 `notin` ftvar_in_abind (subst_typ_in_abind A1 X1 ab1)).
 Proof.
 apply_mutual_ind abind_mutind;
 default_simp.
@@ -13714,22 +13714,22 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_tvar_in_abind_fresh_same :
+Lemma subst_typ_in_abind_fresh_same :
 forall ab1 A1 X1,
   X1 `notin` ftvar_in_typ A1 ->
-  X1 `notin` ftvar_in_abind (subst_tvar_in_abind A1 X1 ab1).
+  X1 `notin` ftvar_in_abind (subst_typ_in_abind A1 X1 ab1).
 Proof.
-pose proof subst_tvar_in_abind_fresh_same_mutual as H; intuition eauto.
+pose proof subst_typ_in_abind_fresh_same_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_abind_fresh_same : lngen.
+#[export] Hint Resolve subst_typ_in_abind_fresh_same : lngen.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_exp_fresh_same_mutual :
+Lemma subst_typ_in_exp_fresh_same_mutual :
 (forall e1 A1 X1,
   X1 `notin` ftvar_in_typ A1 ->
-  X1 `notin` ftvar_in_exp (subst_tvar_in_exp A1 X1 e1)).
+  X1 `notin` ftvar_in_exp (subst_typ_in_exp A1 X1 e1)).
 Proof.
 apply_mutual_ind exp_mutind;
 default_simp.
@@ -13737,22 +13737,22 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_tvar_in_exp_fresh_same :
+Lemma subst_typ_in_exp_fresh_same :
 forall e1 A1 X1,
   X1 `notin` ftvar_in_typ A1 ->
-  X1 `notin` ftvar_in_exp (subst_tvar_in_exp A1 X1 e1).
+  X1 `notin` ftvar_in_exp (subst_typ_in_exp A1 X1 e1).
 Proof.
-pose proof subst_tvar_in_exp_fresh_same_mutual as H; intuition eauto.
+pose proof subst_typ_in_exp_fresh_same_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_exp_fresh_same : lngen.
+#[export] Hint Resolve subst_typ_in_exp_fresh_same : lngen.
 
 (* begin hide *)
 
-Lemma subst_var_in_exp_fresh_same_mutual :
+Lemma subst_exp_in_exp_fresh_same_mutual :
 (forall e2 e1 x1,
   x1 `notin` fvar_in_exp e1 ->
-  x1 `notin` fvar_in_exp (subst_var_in_exp e1 x1 e2)).
+  x1 `notin` fvar_in_exp (subst_exp_in_exp e1 x1 e2)).
 Proof.
 apply_mutual_ind exp_mutind;
 default_simp.
@@ -13760,25 +13760,25 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_var_in_exp_fresh_same :
+Lemma subst_exp_in_exp_fresh_same :
 forall e2 e1 x1,
   x1 `notin` fvar_in_exp e1 ->
-  x1 `notin` fvar_in_exp (subst_var_in_exp e1 x1 e2).
+  x1 `notin` fvar_in_exp (subst_exp_in_exp e1 x1 e2).
 Proof.
-pose proof subst_var_in_exp_fresh_same_mutual as H; intuition eauto.
+pose proof subst_exp_in_exp_fresh_same_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_var_in_exp_fresh_same : lngen.
+#[export] Hint Resolve subst_exp_in_exp_fresh_same : lngen.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_contd_fresh_same_subst_tvar_in_conts_fresh_same_mutual :
+Lemma subst_typ_in_contd_fresh_same_subst_typ_in_conts_fresh_same_mutual :
 (forall cd1 A1 X1,
   X1 `notin` ftvar_in_typ A1 ->
-  X1 `notin` ftvar_in_contd (subst_tvar_in_contd A1 X1 cd1)) /\
+  X1 `notin` ftvar_in_contd (subst_typ_in_contd A1 X1 cd1)) /\
 (forall cs1 A1 X1,
   X1 `notin` ftvar_in_typ A1 ->
-  X1 `notin` ftvar_in_conts (subst_tvar_in_conts A1 X1 cs1)).
+  X1 `notin` ftvar_in_conts (subst_typ_in_conts A1 X1 cs1)).
 Proof.
 apply_mutual_ind contd_conts_mutind;
 default_simp.
@@ -13786,35 +13786,35 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_tvar_in_contd_fresh_same :
+Lemma subst_typ_in_contd_fresh_same :
 forall cd1 A1 X1,
   X1 `notin` ftvar_in_typ A1 ->
-  X1 `notin` ftvar_in_contd (subst_tvar_in_contd A1 X1 cd1).
+  X1 `notin` ftvar_in_contd (subst_typ_in_contd A1 X1 cd1).
 Proof.
-pose proof subst_tvar_in_contd_fresh_same_subst_tvar_in_conts_fresh_same_mutual as H; intuition eauto.
+pose proof subst_typ_in_contd_fresh_same_subst_typ_in_conts_fresh_same_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_contd_fresh_same : lngen.
+#[export] Hint Resolve subst_typ_in_contd_fresh_same : lngen.
 
-Lemma subst_tvar_in_conts_fresh_same :
+Lemma subst_typ_in_conts_fresh_same :
 forall cs1 A1 X1,
   X1 `notin` ftvar_in_typ A1 ->
-  X1 `notin` ftvar_in_conts (subst_tvar_in_conts A1 X1 cs1).
+  X1 `notin` ftvar_in_conts (subst_typ_in_conts A1 X1 cs1).
 Proof.
-pose proof subst_tvar_in_contd_fresh_same_subst_tvar_in_conts_fresh_same_mutual as H; intuition eauto.
+pose proof subst_typ_in_contd_fresh_same_subst_typ_in_conts_fresh_same_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_conts_fresh_same : lngen.
+#[export] Hint Resolve subst_typ_in_conts_fresh_same : lngen.
 
 (* begin hide *)
 
-Lemma subst_var_in_contd_fresh_same_subst_var_in_conts_fresh_same_mutual :
+Lemma subst_exp_in_contd_fresh_same_subst_exp_in_conts_fresh_same_mutual :
 (forall cd1 e1 x1,
   x1 `notin` fvar_in_exp e1 ->
-  x1 `notin` fvar_in_contd (subst_var_in_contd e1 x1 cd1)) /\
+  x1 `notin` fvar_in_contd (subst_exp_in_contd e1 x1 cd1)) /\
 (forall cs1 e1 x1,
   x1 `notin` fvar_in_exp e1 ->
-  x1 `notin` fvar_in_conts (subst_var_in_conts e1 x1 cs1)).
+  x1 `notin` fvar_in_conts (subst_exp_in_conts e1 x1 cs1)).
 Proof.
 apply_mutual_ind contd_conts_mutind;
 default_simp.
@@ -13822,32 +13822,32 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_var_in_contd_fresh_same :
+Lemma subst_exp_in_contd_fresh_same :
 forall cd1 e1 x1,
   x1 `notin` fvar_in_exp e1 ->
-  x1 `notin` fvar_in_contd (subst_var_in_contd e1 x1 cd1).
+  x1 `notin` fvar_in_contd (subst_exp_in_contd e1 x1 cd1).
 Proof.
-pose proof subst_var_in_contd_fresh_same_subst_var_in_conts_fresh_same_mutual as H; intuition eauto.
+pose proof subst_exp_in_contd_fresh_same_subst_exp_in_conts_fresh_same_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_var_in_contd_fresh_same : lngen.
+#[export] Hint Resolve subst_exp_in_contd_fresh_same : lngen.
 
-Lemma subst_var_in_conts_fresh_same :
+Lemma subst_exp_in_conts_fresh_same :
 forall cs1 e1 x1,
   x1 `notin` fvar_in_exp e1 ->
-  x1 `notin` fvar_in_conts (subst_var_in_conts e1 x1 cs1).
+  x1 `notin` fvar_in_conts (subst_exp_in_conts e1 x1 cs1).
 Proof.
-pose proof subst_var_in_contd_fresh_same_subst_var_in_conts_fresh_same_mutual as H; intuition eauto.
+pose proof subst_exp_in_contd_fresh_same_subst_exp_in_conts_fresh_same_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_var_in_conts_fresh_same : lngen.
+#[export] Hint Resolve subst_exp_in_conts_fresh_same : lngen.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_dbind_fresh_same_mutual :
+Lemma subst_typ_in_dbind_fresh_same_mutual :
 (forall db1 A1 X1,
   X1 `notin` ftvar_in_typ A1 ->
-  X1 `notin` ftvar_in_dbind (subst_tvar_in_dbind A1 X1 db1)).
+  X1 `notin` ftvar_in_dbind (subst_typ_in_dbind A1 X1 db1)).
 Proof.
 apply_mutual_ind dbind_mutind;
 default_simp.
@@ -13855,22 +13855,22 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_tvar_in_dbind_fresh_same :
+Lemma subst_typ_in_dbind_fresh_same :
 forall db1 A1 X1,
   X1 `notin` ftvar_in_typ A1 ->
-  X1 `notin` ftvar_in_dbind (subst_tvar_in_dbind A1 X1 db1).
+  X1 `notin` ftvar_in_dbind (subst_typ_in_dbind A1 X1 db1).
 Proof.
-pose proof subst_tvar_in_dbind_fresh_same_mutual as H; intuition eauto.
+pose proof subst_typ_in_dbind_fresh_same_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_dbind_fresh_same : lngen.
+#[export] Hint Resolve subst_typ_in_dbind_fresh_same : lngen.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_work_fresh_same_mutual :
+Lemma subst_typ_in_work_fresh_same_mutual :
 (forall w1 A1 X1,
   X1 `notin` ftvar_in_typ A1 ->
-  X1 `notin` ftvar_in_work (subst_tvar_in_work A1 X1 w1)).
+  X1 `notin` ftvar_in_work (subst_typ_in_work A1 X1 w1)).
 Proof.
 apply_mutual_ind work_mutind;
 default_simp.
@@ -13878,22 +13878,22 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_tvar_in_work_fresh_same :
+Lemma subst_typ_in_work_fresh_same :
 forall w1 A1 X1,
   X1 `notin` ftvar_in_typ A1 ->
-  X1 `notin` ftvar_in_work (subst_tvar_in_work A1 X1 w1).
+  X1 `notin` ftvar_in_work (subst_typ_in_work A1 X1 w1).
 Proof.
-pose proof subst_tvar_in_work_fresh_same_mutual as H; intuition eauto.
+pose proof subst_typ_in_work_fresh_same_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_work_fresh_same : lngen.
+#[export] Hint Resolve subst_typ_in_work_fresh_same : lngen.
 
 (* begin hide *)
 
-Lemma subst_var_in_work_fresh_same_mutual :
+Lemma subst_exp_in_work_fresh_same_mutual :
 (forall w1 e1 x1,
   x1 `notin` fvar_in_exp e1 ->
-  x1 `notin` fvar_in_work (subst_var_in_work e1 x1 w1)).
+  x1 `notin` fvar_in_work (subst_exp_in_work e1 x1 w1)).
 Proof.
 apply_mutual_ind work_mutind;
 default_simp.
@@ -13901,23 +13901,23 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_var_in_work_fresh_same :
+Lemma subst_exp_in_work_fresh_same :
 forall w1 e1 x1,
   x1 `notin` fvar_in_exp e1 ->
-  x1 `notin` fvar_in_work (subst_var_in_work e1 x1 w1).
+  x1 `notin` fvar_in_work (subst_exp_in_work e1 x1 w1).
 Proof.
-pose proof subst_var_in_work_fresh_same_mutual as H; intuition eauto.
+pose proof subst_exp_in_work_fresh_same_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_var_in_work_fresh_same : lngen.
+#[export] Hint Resolve subst_exp_in_work_fresh_same : lngen.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_typ_fresh_mutual :
+Lemma subst_typ_in_typ_fresh_mutual :
 (forall A2 A1 X1 X2,
   X1 `notin` ftvar_in_typ A2 ->
   X1 `notin` ftvar_in_typ A1 ->
-  X1 `notin` ftvar_in_typ (subst_tvar_in_typ A1 X2 A2)).
+  X1 `notin` ftvar_in_typ (subst_typ_in_typ A1 X2 A2)).
 Proof.
 apply_mutual_ind typ_mutind;
 default_simp.
@@ -13925,24 +13925,24 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_tvar_in_typ_fresh :
+Lemma subst_typ_in_typ_fresh :
 forall A2 A1 X1 X2,
   X1 `notin` ftvar_in_typ A2 ->
   X1 `notin` ftvar_in_typ A1 ->
-  X1 `notin` ftvar_in_typ (subst_tvar_in_typ A1 X2 A2).
+  X1 `notin` ftvar_in_typ (subst_typ_in_typ A1 X2 A2).
 Proof.
-pose proof subst_tvar_in_typ_fresh_mutual as H; intuition eauto.
+pose proof subst_typ_in_typ_fresh_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_typ_fresh : lngen.
+#[export] Hint Resolve subst_typ_in_typ_fresh : lngen.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_abind_fresh_mutual :
+Lemma subst_typ_in_abind_fresh_mutual :
 (forall ab1 A1 X1 X2,
   X1 `notin` ftvar_in_abind ab1 ->
   X1 `notin` ftvar_in_typ A1 ->
-  X1 `notin` ftvar_in_abind (subst_tvar_in_abind A1 X2 ab1)).
+  X1 `notin` ftvar_in_abind (subst_typ_in_abind A1 X2 ab1)).
 Proof.
 apply_mutual_ind abind_mutind;
 default_simp.
@@ -13950,24 +13950,24 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_tvar_in_abind_fresh :
+Lemma subst_typ_in_abind_fresh :
 forall ab1 A1 X1 X2,
   X1 `notin` ftvar_in_abind ab1 ->
   X1 `notin` ftvar_in_typ A1 ->
-  X1 `notin` ftvar_in_abind (subst_tvar_in_abind A1 X2 ab1).
+  X1 `notin` ftvar_in_abind (subst_typ_in_abind A1 X2 ab1).
 Proof.
-pose proof subst_tvar_in_abind_fresh_mutual as H; intuition eauto.
+pose proof subst_typ_in_abind_fresh_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_abind_fresh : lngen.
+#[export] Hint Resolve subst_typ_in_abind_fresh : lngen.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_exp_fresh_mutual :
+Lemma subst_typ_in_exp_fresh_mutual :
 (forall e1 A1 X1 X2,
   X1 `notin` ftvar_in_exp e1 ->
   X1 `notin` ftvar_in_typ A1 ->
-  X1 `notin` ftvar_in_exp (subst_tvar_in_exp A1 X2 e1)).
+  X1 `notin` ftvar_in_exp (subst_typ_in_exp A1 X2 e1)).
 Proof.
 apply_mutual_ind exp_mutind;
 default_simp.
@@ -13975,24 +13975,24 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_tvar_in_exp_fresh :
+Lemma subst_typ_in_exp_fresh :
 forall e1 A1 X1 X2,
   X1 `notin` ftvar_in_exp e1 ->
   X1 `notin` ftvar_in_typ A1 ->
-  X1 `notin` ftvar_in_exp (subst_tvar_in_exp A1 X2 e1).
+  X1 `notin` ftvar_in_exp (subst_typ_in_exp A1 X2 e1).
 Proof.
-pose proof subst_tvar_in_exp_fresh_mutual as H; intuition eauto.
+pose proof subst_typ_in_exp_fresh_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_exp_fresh : lngen.
+#[export] Hint Resolve subst_typ_in_exp_fresh : lngen.
 
 (* begin hide *)
 
-Lemma subst_var_in_exp_fresh_mutual :
+Lemma subst_exp_in_exp_fresh_mutual :
 (forall e2 e1 x1 x2,
   x1 `notin` fvar_in_exp e2 ->
   x1 `notin` fvar_in_exp e1 ->
-  x1 `notin` fvar_in_exp (subst_var_in_exp e1 x2 e2)).
+  x1 `notin` fvar_in_exp (subst_exp_in_exp e1 x2 e2)).
 Proof.
 apply_mutual_ind exp_mutind;
 default_simp.
@@ -14000,28 +14000,28 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_var_in_exp_fresh :
+Lemma subst_exp_in_exp_fresh :
 forall e2 e1 x1 x2,
   x1 `notin` fvar_in_exp e2 ->
   x1 `notin` fvar_in_exp e1 ->
-  x1 `notin` fvar_in_exp (subst_var_in_exp e1 x2 e2).
+  x1 `notin` fvar_in_exp (subst_exp_in_exp e1 x2 e2).
 Proof.
-pose proof subst_var_in_exp_fresh_mutual as H; intuition eauto.
+pose proof subst_exp_in_exp_fresh_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_var_in_exp_fresh : lngen.
+#[export] Hint Resolve subst_exp_in_exp_fresh : lngen.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_contd_fresh_subst_tvar_in_conts_fresh_mutual :
+Lemma subst_typ_in_contd_fresh_subst_typ_in_conts_fresh_mutual :
 (forall cd1 A1 X1 X2,
   X1 `notin` ftvar_in_contd cd1 ->
   X1 `notin` ftvar_in_typ A1 ->
-  X1 `notin` ftvar_in_contd (subst_tvar_in_contd A1 X2 cd1)) /\
+  X1 `notin` ftvar_in_contd (subst_typ_in_contd A1 X2 cd1)) /\
 (forall cs1 A1 X1 X2,
   X1 `notin` ftvar_in_conts cs1 ->
   X1 `notin` ftvar_in_typ A1 ->
-  X1 `notin` ftvar_in_conts (subst_tvar_in_conts A1 X2 cs1)).
+  X1 `notin` ftvar_in_conts (subst_typ_in_conts A1 X2 cs1)).
 Proof.
 apply_mutual_ind contd_conts_mutind;
 default_simp.
@@ -14029,39 +14029,39 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_tvar_in_contd_fresh :
+Lemma subst_typ_in_contd_fresh :
 forall cd1 A1 X1 X2,
   X1 `notin` ftvar_in_contd cd1 ->
   X1 `notin` ftvar_in_typ A1 ->
-  X1 `notin` ftvar_in_contd (subst_tvar_in_contd A1 X2 cd1).
+  X1 `notin` ftvar_in_contd (subst_typ_in_contd A1 X2 cd1).
 Proof.
-pose proof subst_tvar_in_contd_fresh_subst_tvar_in_conts_fresh_mutual as H; intuition eauto.
+pose proof subst_typ_in_contd_fresh_subst_typ_in_conts_fresh_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_contd_fresh : lngen.
+#[export] Hint Resolve subst_typ_in_contd_fresh : lngen.
 
-Lemma subst_tvar_in_conts_fresh :
+Lemma subst_typ_in_conts_fresh :
 forall cs1 A1 X1 X2,
   X1 `notin` ftvar_in_conts cs1 ->
   X1 `notin` ftvar_in_typ A1 ->
-  X1 `notin` ftvar_in_conts (subst_tvar_in_conts A1 X2 cs1).
+  X1 `notin` ftvar_in_conts (subst_typ_in_conts A1 X2 cs1).
 Proof.
-pose proof subst_tvar_in_contd_fresh_subst_tvar_in_conts_fresh_mutual as H; intuition eauto.
+pose proof subst_typ_in_contd_fresh_subst_typ_in_conts_fresh_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_conts_fresh : lngen.
+#[export] Hint Resolve subst_typ_in_conts_fresh : lngen.
 
 (* begin hide *)
 
-Lemma subst_var_in_contd_fresh_subst_var_in_conts_fresh_mutual :
+Lemma subst_exp_in_contd_fresh_subst_exp_in_conts_fresh_mutual :
 (forall cd1 e1 x1 x2,
   x1 `notin` fvar_in_contd cd1 ->
   x1 `notin` fvar_in_exp e1 ->
-  x1 `notin` fvar_in_contd (subst_var_in_contd e1 x2 cd1)) /\
+  x1 `notin` fvar_in_contd (subst_exp_in_contd e1 x2 cd1)) /\
 (forall cs1 e1 x1 x2,
   x1 `notin` fvar_in_conts cs1 ->
   x1 `notin` fvar_in_exp e1 ->
-  x1 `notin` fvar_in_conts (subst_var_in_conts e1 x2 cs1)).
+  x1 `notin` fvar_in_conts (subst_exp_in_conts e1 x2 cs1)).
 Proof.
 apply_mutual_ind contd_conts_mutind;
 default_simp.
@@ -14069,35 +14069,35 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_var_in_contd_fresh :
+Lemma subst_exp_in_contd_fresh :
 forall cd1 e1 x1 x2,
   x1 `notin` fvar_in_contd cd1 ->
   x1 `notin` fvar_in_exp e1 ->
-  x1 `notin` fvar_in_contd (subst_var_in_contd e1 x2 cd1).
+  x1 `notin` fvar_in_contd (subst_exp_in_contd e1 x2 cd1).
 Proof.
-pose proof subst_var_in_contd_fresh_subst_var_in_conts_fresh_mutual as H; intuition eauto.
+pose proof subst_exp_in_contd_fresh_subst_exp_in_conts_fresh_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_var_in_contd_fresh : lngen.
+#[export] Hint Resolve subst_exp_in_contd_fresh : lngen.
 
-Lemma subst_var_in_conts_fresh :
+Lemma subst_exp_in_conts_fresh :
 forall cs1 e1 x1 x2,
   x1 `notin` fvar_in_conts cs1 ->
   x1 `notin` fvar_in_exp e1 ->
-  x1 `notin` fvar_in_conts (subst_var_in_conts e1 x2 cs1).
+  x1 `notin` fvar_in_conts (subst_exp_in_conts e1 x2 cs1).
 Proof.
-pose proof subst_var_in_contd_fresh_subst_var_in_conts_fresh_mutual as H; intuition eauto.
+pose proof subst_exp_in_contd_fresh_subst_exp_in_conts_fresh_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_var_in_conts_fresh : lngen.
+#[export] Hint Resolve subst_exp_in_conts_fresh : lngen.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_dbind_fresh_mutual :
+Lemma subst_typ_in_dbind_fresh_mutual :
 (forall db1 A1 X1 X2,
   X1 `notin` ftvar_in_dbind db1 ->
   X1 `notin` ftvar_in_typ A1 ->
-  X1 `notin` ftvar_in_dbind (subst_tvar_in_dbind A1 X2 db1)).
+  X1 `notin` ftvar_in_dbind (subst_typ_in_dbind A1 X2 db1)).
 Proof.
 apply_mutual_ind dbind_mutind;
 default_simp.
@@ -14105,24 +14105,24 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_tvar_in_dbind_fresh :
+Lemma subst_typ_in_dbind_fresh :
 forall db1 A1 X1 X2,
   X1 `notin` ftvar_in_dbind db1 ->
   X1 `notin` ftvar_in_typ A1 ->
-  X1 `notin` ftvar_in_dbind (subst_tvar_in_dbind A1 X2 db1).
+  X1 `notin` ftvar_in_dbind (subst_typ_in_dbind A1 X2 db1).
 Proof.
-pose proof subst_tvar_in_dbind_fresh_mutual as H; intuition eauto.
+pose proof subst_typ_in_dbind_fresh_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_dbind_fresh : lngen.
+#[export] Hint Resolve subst_typ_in_dbind_fresh : lngen.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_work_fresh_mutual :
+Lemma subst_typ_in_work_fresh_mutual :
 (forall w1 A1 X1 X2,
   X1 `notin` ftvar_in_work w1 ->
   X1 `notin` ftvar_in_typ A1 ->
-  X1 `notin` ftvar_in_work (subst_tvar_in_work A1 X2 w1)).
+  X1 `notin` ftvar_in_work (subst_typ_in_work A1 X2 w1)).
 Proof.
 apply_mutual_ind work_mutind;
 default_simp.
@@ -14130,24 +14130,24 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_tvar_in_work_fresh :
+Lemma subst_typ_in_work_fresh :
 forall w1 A1 X1 X2,
   X1 `notin` ftvar_in_work w1 ->
   X1 `notin` ftvar_in_typ A1 ->
-  X1 `notin` ftvar_in_work (subst_tvar_in_work A1 X2 w1).
+  X1 `notin` ftvar_in_work (subst_typ_in_work A1 X2 w1).
 Proof.
-pose proof subst_tvar_in_work_fresh_mutual as H; intuition eauto.
+pose proof subst_typ_in_work_fresh_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_work_fresh : lngen.
+#[export] Hint Resolve subst_typ_in_work_fresh : lngen.
 
 (* begin hide *)
 
-Lemma subst_var_in_work_fresh_mutual :
+Lemma subst_exp_in_work_fresh_mutual :
 (forall w1 e1 x1 x2,
   x1 `notin` fvar_in_work w1 ->
   x1 `notin` fvar_in_exp e1 ->
-  x1 `notin` fvar_in_work (subst_var_in_work e1 x2 w1)).
+  x1 `notin` fvar_in_work (subst_exp_in_work e1 x2 w1)).
 Proof.
 apply_mutual_ind work_mutind;
 default_simp.
@@ -14155,144 +14155,144 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_var_in_work_fresh :
+Lemma subst_exp_in_work_fresh :
 forall w1 e1 x1 x2,
   x1 `notin` fvar_in_work w1 ->
   x1 `notin` fvar_in_exp e1 ->
-  x1 `notin` fvar_in_work (subst_var_in_work e1 x2 w1).
+  x1 `notin` fvar_in_work (subst_exp_in_work e1 x2 w1).
 Proof.
-pose proof subst_var_in_work_fresh_mutual as H; intuition eauto.
+pose proof subst_exp_in_work_fresh_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_var_in_work_fresh : lngen.
+#[export] Hint Resolve subst_exp_in_work_fresh : lngen.
 
-Lemma subst_tvar_in_typ_lc_typ :
+Lemma subst_typ_in_typ_lc_typ :
 forall A1 A2 X1,
   lc_typ A1 ->
   lc_typ A2 ->
-  lc_typ (subst_tvar_in_typ A2 X1 A1).
+  lc_typ (subst_typ_in_typ A2 X1 A1).
 Proof.
 default_simp.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_typ_lc_typ : lngen.
+#[export] Hint Resolve subst_typ_in_typ_lc_typ : lngen.
 
-Lemma subst_tvar_in_abind_lc_abind :
+Lemma subst_typ_in_abind_lc_abind :
 forall ab1 A1 X1,
   lc_abind ab1 ->
   lc_typ A1 ->
-  lc_abind (subst_tvar_in_abind A1 X1 ab1).
+  lc_abind (subst_typ_in_abind A1 X1 ab1).
 Proof.
 default_simp.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_abind_lc_abind : lngen.
+#[export] Hint Resolve subst_typ_in_abind_lc_abind : lngen.
 
-Lemma subst_tvar_in_exp_lc_exp :
+Lemma subst_typ_in_exp_lc_exp :
 forall e1 A1 X1,
   lc_exp e1 ->
   lc_typ A1 ->
-  lc_exp (subst_tvar_in_exp A1 X1 e1).
+  lc_exp (subst_typ_in_exp A1 X1 e1).
 Proof.
 default_simp.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_exp_lc_exp : lngen.
+#[export] Hint Resolve subst_typ_in_exp_lc_exp : lngen.
 
-Lemma subst_var_in_exp_lc_exp :
+Lemma subst_exp_in_exp_lc_exp :
 forall e1 e2 x1,
   lc_exp e1 ->
   lc_exp e2 ->
-  lc_exp (subst_var_in_exp e2 x1 e1).
+  lc_exp (subst_exp_in_exp e2 x1 e1).
 Proof.
 default_simp.
 Qed.
 
-#[export] Hint Resolve subst_var_in_exp_lc_exp : lngen.
+#[export] Hint Resolve subst_exp_in_exp_lc_exp : lngen.
 
-Lemma subst_tvar_in_contd_lc_contd :
+Lemma subst_typ_in_contd_lc_contd :
 forall cd1 A1 X1,
   lc_contd cd1 ->
   lc_typ A1 ->
-  lc_contd (subst_tvar_in_contd A1 X1 cd1).
+  lc_contd (subst_typ_in_contd A1 X1 cd1).
 Proof.
 default_simp.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_contd_lc_contd : lngen.
+#[export] Hint Resolve subst_typ_in_contd_lc_contd : lngen.
 
-Lemma subst_tvar_in_conts_lc_conts :
+Lemma subst_typ_in_conts_lc_conts :
 forall cs1 A1 X1,
   lc_conts cs1 ->
   lc_typ A1 ->
-  lc_conts (subst_tvar_in_conts A1 X1 cs1).
+  lc_conts (subst_typ_in_conts A1 X1 cs1).
 Proof.
 default_simp.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_conts_lc_conts : lngen.
+#[export] Hint Resolve subst_typ_in_conts_lc_conts : lngen.
 
-Lemma subst_var_in_contd_lc_contd :
+Lemma subst_exp_in_contd_lc_contd :
 forall cd1 e1 x1,
   lc_contd cd1 ->
   lc_exp e1 ->
-  lc_contd (subst_var_in_contd e1 x1 cd1).
+  lc_contd (subst_exp_in_contd e1 x1 cd1).
 Proof.
 default_simp.
 Qed.
 
-#[export] Hint Resolve subst_var_in_contd_lc_contd : lngen.
+#[export] Hint Resolve subst_exp_in_contd_lc_contd : lngen.
 
-Lemma subst_var_in_conts_lc_conts :
+Lemma subst_exp_in_conts_lc_conts :
 forall cs1 e1 x1,
   lc_conts cs1 ->
   lc_exp e1 ->
-  lc_conts (subst_var_in_conts e1 x1 cs1).
+  lc_conts (subst_exp_in_conts e1 x1 cs1).
 Proof.
 default_simp.
 Qed.
 
-#[export] Hint Resolve subst_var_in_conts_lc_conts : lngen.
+#[export] Hint Resolve subst_exp_in_conts_lc_conts : lngen.
 
-Lemma subst_tvar_in_dbind_lc_dbind :
+Lemma subst_typ_in_dbind_lc_dbind :
 forall db1 A1 X1,
   lc_dbind db1 ->
   lc_typ A1 ->
-  lc_dbind (subst_tvar_in_dbind A1 X1 db1).
+  lc_dbind (subst_typ_in_dbind A1 X1 db1).
 Proof.
 default_simp.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_dbind_lc_dbind : lngen.
+#[export] Hint Resolve subst_typ_in_dbind_lc_dbind : lngen.
 
-Lemma subst_tvar_in_work_lc_work :
+Lemma subst_typ_in_work_lc_work :
 forall w1 A1 X1,
   lc_work w1 ->
   lc_typ A1 ->
-  lc_work (subst_tvar_in_work A1 X1 w1).
+  lc_work (subst_typ_in_work A1 X1 w1).
 Proof.
 default_simp.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_work_lc_work : lngen.
+#[export] Hint Resolve subst_typ_in_work_lc_work : lngen.
 
-Lemma subst_var_in_work_lc_work :
+Lemma subst_exp_in_work_lc_work :
 forall w1 e1 x1,
   lc_work w1 ->
   lc_exp e1 ->
-  lc_work (subst_var_in_work e1 x1 w1).
+  lc_work (subst_exp_in_work e1 x1 w1).
 Proof.
 default_simp.
 Qed.
 
-#[export] Hint Resolve subst_var_in_work_lc_work : lngen.
+#[export] Hint Resolve subst_exp_in_work_lc_work : lngen.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_typ_open_typ_wrt_typ_rec_mutual :
+Lemma subst_typ_in_typ_open_typ_wrt_typ_rec_mutual :
 (forall A3 A1 A2 X1 n1,
   lc_typ A1 ->
-  subst_tvar_in_typ A1 X1 (open_typ_wrt_typ_rec n1 A2 A3) = open_typ_wrt_typ_rec n1 (subst_tvar_in_typ A1 X1 A2) (subst_tvar_in_typ A1 X1 A3)).
+  subst_typ_in_typ A1 X1 (open_typ_wrt_typ_rec n1 A2 A3) = open_typ_wrt_typ_rec n1 (subst_typ_in_typ A1 X1 A2) (subst_typ_in_typ A1 X1 A3)).
 Proof.
 apply_mutual_ind typ_mutind;
 default_simp.
@@ -14302,24 +14302,24 @@ Qed.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_typ_open_typ_wrt_typ_rec :
+Lemma subst_typ_in_typ_open_typ_wrt_typ_rec :
 forall A3 A1 A2 X1 n1,
   lc_typ A1 ->
-  subst_tvar_in_typ A1 X1 (open_typ_wrt_typ_rec n1 A2 A3) = open_typ_wrt_typ_rec n1 (subst_tvar_in_typ A1 X1 A2) (subst_tvar_in_typ A1 X1 A3).
+  subst_typ_in_typ A1 X1 (open_typ_wrt_typ_rec n1 A2 A3) = open_typ_wrt_typ_rec n1 (subst_typ_in_typ A1 X1 A2) (subst_typ_in_typ A1 X1 A3).
 Proof.
-pose proof subst_tvar_in_typ_open_typ_wrt_typ_rec_mutual as H; intuition eauto.
+pose proof subst_typ_in_typ_open_typ_wrt_typ_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_typ_open_typ_wrt_typ_rec : lngen.
+#[export] Hint Resolve subst_typ_in_typ_open_typ_wrt_typ_rec : lngen.
 
 (* end hide *)
 
 (* begin hide *)
 
-Lemma subst_tvar_in_abind_open_abind_wrt_typ_rec_mutual :
+Lemma subst_typ_in_abind_open_abind_wrt_typ_rec_mutual :
 (forall ab1 A1 A2 X1 n1,
   lc_typ A1 ->
-  subst_tvar_in_abind A1 X1 (open_abind_wrt_typ_rec n1 A2 ab1) = open_abind_wrt_typ_rec n1 (subst_tvar_in_typ A1 X1 A2) (subst_tvar_in_abind A1 X1 ab1)).
+  subst_typ_in_abind A1 X1 (open_abind_wrt_typ_rec n1 A2 ab1) = open_abind_wrt_typ_rec n1 (subst_typ_in_typ A1 X1 A2) (subst_typ_in_abind A1 X1 ab1)).
 Proof.
 apply_mutual_ind abind_mutind;
 default_simp.
@@ -14329,24 +14329,24 @@ Qed.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_abind_open_abind_wrt_typ_rec :
+Lemma subst_typ_in_abind_open_abind_wrt_typ_rec :
 forall ab1 A1 A2 X1 n1,
   lc_typ A1 ->
-  subst_tvar_in_abind A1 X1 (open_abind_wrt_typ_rec n1 A2 ab1) = open_abind_wrt_typ_rec n1 (subst_tvar_in_typ A1 X1 A2) (subst_tvar_in_abind A1 X1 ab1).
+  subst_typ_in_abind A1 X1 (open_abind_wrt_typ_rec n1 A2 ab1) = open_abind_wrt_typ_rec n1 (subst_typ_in_typ A1 X1 A2) (subst_typ_in_abind A1 X1 ab1).
 Proof.
-pose proof subst_tvar_in_abind_open_abind_wrt_typ_rec_mutual as H; intuition eauto.
+pose proof subst_typ_in_abind_open_abind_wrt_typ_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_abind_open_abind_wrt_typ_rec : lngen.
+#[export] Hint Resolve subst_typ_in_abind_open_abind_wrt_typ_rec : lngen.
 
 (* end hide *)
 
 (* begin hide *)
 
-Lemma subst_tvar_in_exp_open_exp_wrt_typ_rec_mutual :
+Lemma subst_typ_in_exp_open_exp_wrt_typ_rec_mutual :
 (forall e1 A1 A2 X1 n1,
   lc_typ A1 ->
-  subst_tvar_in_exp A1 X1 (open_exp_wrt_typ_rec n1 A2 e1) = open_exp_wrt_typ_rec n1 (subst_tvar_in_typ A1 X1 A2) (subst_tvar_in_exp A1 X1 e1)).
+  subst_typ_in_exp A1 X1 (open_exp_wrt_typ_rec n1 A2 e1) = open_exp_wrt_typ_rec n1 (subst_typ_in_typ A1 X1 A2) (subst_typ_in_exp A1 X1 e1)).
 Proof.
 apply_mutual_ind exp_mutind;
 default_simp.
@@ -14356,23 +14356,23 @@ Qed.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_exp_open_exp_wrt_typ_rec :
+Lemma subst_typ_in_exp_open_exp_wrt_typ_rec :
 forall e1 A1 A2 X1 n1,
   lc_typ A1 ->
-  subst_tvar_in_exp A1 X1 (open_exp_wrt_typ_rec n1 A2 e1) = open_exp_wrt_typ_rec n1 (subst_tvar_in_typ A1 X1 A2) (subst_tvar_in_exp A1 X1 e1).
+  subst_typ_in_exp A1 X1 (open_exp_wrt_typ_rec n1 A2 e1) = open_exp_wrt_typ_rec n1 (subst_typ_in_typ A1 X1 A2) (subst_typ_in_exp A1 X1 e1).
 Proof.
-pose proof subst_tvar_in_exp_open_exp_wrt_typ_rec_mutual as H; intuition eauto.
+pose proof subst_typ_in_exp_open_exp_wrt_typ_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_exp_open_exp_wrt_typ_rec : lngen.
+#[export] Hint Resolve subst_typ_in_exp_open_exp_wrt_typ_rec : lngen.
 
 (* end hide *)
 
 (* begin hide *)
 
-Lemma subst_tvar_in_exp_open_exp_wrt_exp_rec_mutual :
+Lemma subst_typ_in_exp_open_exp_wrt_exp_rec_mutual :
 (forall e2 A1 e1 X1 n1,
-  subst_tvar_in_exp A1 X1 (open_exp_wrt_exp_rec n1 e1 e2) = open_exp_wrt_exp_rec n1 (subst_tvar_in_exp A1 X1 e1) (subst_tvar_in_exp A1 X1 e2)).
+  subst_typ_in_exp A1 X1 (open_exp_wrt_exp_rec n1 e1 e2) = open_exp_wrt_exp_rec n1 (subst_typ_in_exp A1 X1 e1) (subst_typ_in_exp A1 X1 e2)).
 Proof.
 apply_mutual_ind exp_mutind;
 default_simp.
@@ -14382,23 +14382,23 @@ Qed.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_exp_open_exp_wrt_exp_rec :
+Lemma subst_typ_in_exp_open_exp_wrt_exp_rec :
 forall e2 A1 e1 X1 n1,
-  subst_tvar_in_exp A1 X1 (open_exp_wrt_exp_rec n1 e1 e2) = open_exp_wrt_exp_rec n1 (subst_tvar_in_exp A1 X1 e1) (subst_tvar_in_exp A1 X1 e2).
+  subst_typ_in_exp A1 X1 (open_exp_wrt_exp_rec n1 e1 e2) = open_exp_wrt_exp_rec n1 (subst_typ_in_exp A1 X1 e1) (subst_typ_in_exp A1 X1 e2).
 Proof.
-pose proof subst_tvar_in_exp_open_exp_wrt_exp_rec_mutual as H; intuition eauto.
+pose proof subst_typ_in_exp_open_exp_wrt_exp_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_exp_open_exp_wrt_exp_rec : lngen.
+#[export] Hint Resolve subst_typ_in_exp_open_exp_wrt_exp_rec : lngen.
 
 (* end hide *)
 
 (* begin hide *)
 
-Lemma subst_var_in_exp_open_exp_wrt_typ_rec_mutual :
+Lemma subst_exp_in_exp_open_exp_wrt_typ_rec_mutual :
 (forall e2 e1 A1 x1 n1,
   lc_exp e1 ->
-  subst_var_in_exp e1 x1 (open_exp_wrt_typ_rec n1 A1 e2) = open_exp_wrt_typ_rec n1 A1 (subst_var_in_exp e1 x1 e2)).
+  subst_exp_in_exp e1 x1 (open_exp_wrt_typ_rec n1 A1 e2) = open_exp_wrt_typ_rec n1 A1 (subst_exp_in_exp e1 x1 e2)).
 Proof.
 apply_mutual_ind exp_mutind;
 default_simp.
@@ -14408,24 +14408,24 @@ Qed.
 
 (* begin hide *)
 
-Lemma subst_var_in_exp_open_exp_wrt_typ_rec :
+Lemma subst_exp_in_exp_open_exp_wrt_typ_rec :
 forall e2 e1 A1 x1 n1,
   lc_exp e1 ->
-  subst_var_in_exp e1 x1 (open_exp_wrt_typ_rec n1 A1 e2) = open_exp_wrt_typ_rec n1 A1 (subst_var_in_exp e1 x1 e2).
+  subst_exp_in_exp e1 x1 (open_exp_wrt_typ_rec n1 A1 e2) = open_exp_wrt_typ_rec n1 A1 (subst_exp_in_exp e1 x1 e2).
 Proof.
-pose proof subst_var_in_exp_open_exp_wrt_typ_rec_mutual as H; intuition eauto.
+pose proof subst_exp_in_exp_open_exp_wrt_typ_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_var_in_exp_open_exp_wrt_typ_rec : lngen.
+#[export] Hint Resolve subst_exp_in_exp_open_exp_wrt_typ_rec : lngen.
 
 (* end hide *)
 
 (* begin hide *)
 
-Lemma subst_var_in_exp_open_exp_wrt_exp_rec_mutual :
+Lemma subst_exp_in_exp_open_exp_wrt_exp_rec_mutual :
 (forall e3 e1 e2 x1 n1,
   lc_exp e1 ->
-  subst_var_in_exp e1 x1 (open_exp_wrt_exp_rec n1 e2 e3) = open_exp_wrt_exp_rec n1 (subst_var_in_exp e1 x1 e2) (subst_var_in_exp e1 x1 e3)).
+  subst_exp_in_exp e1 x1 (open_exp_wrt_exp_rec n1 e2 e3) = open_exp_wrt_exp_rec n1 (subst_exp_in_exp e1 x1 e2) (subst_exp_in_exp e1 x1 e3)).
 Proof.
 apply_mutual_ind exp_mutind;
 default_simp.
@@ -14435,27 +14435,27 @@ Qed.
 
 (* begin hide *)
 
-Lemma subst_var_in_exp_open_exp_wrt_exp_rec :
+Lemma subst_exp_in_exp_open_exp_wrt_exp_rec :
 forall e3 e1 e2 x1 n1,
   lc_exp e1 ->
-  subst_var_in_exp e1 x1 (open_exp_wrt_exp_rec n1 e2 e3) = open_exp_wrt_exp_rec n1 (subst_var_in_exp e1 x1 e2) (subst_var_in_exp e1 x1 e3).
+  subst_exp_in_exp e1 x1 (open_exp_wrt_exp_rec n1 e2 e3) = open_exp_wrt_exp_rec n1 (subst_exp_in_exp e1 x1 e2) (subst_exp_in_exp e1 x1 e3).
 Proof.
-pose proof subst_var_in_exp_open_exp_wrt_exp_rec_mutual as H; intuition eauto.
+pose proof subst_exp_in_exp_open_exp_wrt_exp_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_var_in_exp_open_exp_wrt_exp_rec : lngen.
+#[export] Hint Resolve subst_exp_in_exp_open_exp_wrt_exp_rec : lngen.
 
 (* end hide *)
 
 (* begin hide *)
 
-Lemma subst_tvar_in_contd_open_contd_wrt_typ_rec_subst_tvar_in_conts_open_conts_wrt_typ_rec_mutual :
+Lemma subst_typ_in_contd_open_contd_wrt_typ_rec_subst_typ_in_conts_open_conts_wrt_typ_rec_mutual :
 (forall cd1 A1 A2 X1 n1,
   lc_typ A1 ->
-  subst_tvar_in_contd A1 X1 (open_contd_wrt_typ_rec n1 A2 cd1) = open_contd_wrt_typ_rec n1 (subst_tvar_in_typ A1 X1 A2) (subst_tvar_in_contd A1 X1 cd1)) /\
+  subst_typ_in_contd A1 X1 (open_contd_wrt_typ_rec n1 A2 cd1) = open_contd_wrt_typ_rec n1 (subst_typ_in_typ A1 X1 A2) (subst_typ_in_contd A1 X1 cd1)) /\
 (forall cs1 A1 A2 X1 n1,
   lc_typ A1 ->
-  subst_tvar_in_conts A1 X1 (open_conts_wrt_typ_rec n1 A2 cs1) = open_conts_wrt_typ_rec n1 (subst_tvar_in_typ A1 X1 A2) (subst_tvar_in_conts A1 X1 cs1)).
+  subst_typ_in_conts A1 X1 (open_conts_wrt_typ_rec n1 A2 cs1) = open_conts_wrt_typ_rec n1 (subst_typ_in_typ A1 X1 A2) (subst_typ_in_conts A1 X1 cs1)).
 Proof.
 apply_mutual_ind contd_conts_mutind;
 default_simp.
@@ -14465,39 +14465,39 @@ Qed.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_contd_open_contd_wrt_typ_rec :
+Lemma subst_typ_in_contd_open_contd_wrt_typ_rec :
 forall cd1 A1 A2 X1 n1,
   lc_typ A1 ->
-  subst_tvar_in_contd A1 X1 (open_contd_wrt_typ_rec n1 A2 cd1) = open_contd_wrt_typ_rec n1 (subst_tvar_in_typ A1 X1 A2) (subst_tvar_in_contd A1 X1 cd1).
+  subst_typ_in_contd A1 X1 (open_contd_wrt_typ_rec n1 A2 cd1) = open_contd_wrt_typ_rec n1 (subst_typ_in_typ A1 X1 A2) (subst_typ_in_contd A1 X1 cd1).
 Proof.
-pose proof subst_tvar_in_contd_open_contd_wrt_typ_rec_subst_tvar_in_conts_open_conts_wrt_typ_rec_mutual as H; intuition eauto.
+pose proof subst_typ_in_contd_open_contd_wrt_typ_rec_subst_typ_in_conts_open_conts_wrt_typ_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_contd_open_contd_wrt_typ_rec : lngen.
+#[export] Hint Resolve subst_typ_in_contd_open_contd_wrt_typ_rec : lngen.
 
 (* end hide *)
 
 (* begin hide *)
 
-Lemma subst_tvar_in_conts_open_conts_wrt_typ_rec :
+Lemma subst_typ_in_conts_open_conts_wrt_typ_rec :
 forall cs1 A1 A2 X1 n1,
   lc_typ A1 ->
-  subst_tvar_in_conts A1 X1 (open_conts_wrt_typ_rec n1 A2 cs1) = open_conts_wrt_typ_rec n1 (subst_tvar_in_typ A1 X1 A2) (subst_tvar_in_conts A1 X1 cs1).
+  subst_typ_in_conts A1 X1 (open_conts_wrt_typ_rec n1 A2 cs1) = open_conts_wrt_typ_rec n1 (subst_typ_in_typ A1 X1 A2) (subst_typ_in_conts A1 X1 cs1).
 Proof.
-pose proof subst_tvar_in_contd_open_contd_wrt_typ_rec_subst_tvar_in_conts_open_conts_wrt_typ_rec_mutual as H; intuition eauto.
+pose proof subst_typ_in_contd_open_contd_wrt_typ_rec_subst_typ_in_conts_open_conts_wrt_typ_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_conts_open_conts_wrt_typ_rec : lngen.
+#[export] Hint Resolve subst_typ_in_conts_open_conts_wrt_typ_rec : lngen.
 
 (* end hide *)
 
 (* begin hide *)
 
-Lemma subst_tvar_in_contd_open_contd_wrt_exp_rec_subst_tvar_in_conts_open_conts_wrt_exp_rec_mutual :
+Lemma subst_typ_in_contd_open_contd_wrt_exp_rec_subst_typ_in_conts_open_conts_wrt_exp_rec_mutual :
 (forall cd1 A1 e1 X1 n1,
-  subst_tvar_in_contd A1 X1 (open_contd_wrt_exp_rec n1 e1 cd1) = open_contd_wrt_exp_rec n1 (subst_tvar_in_exp A1 X1 e1) (subst_tvar_in_contd A1 X1 cd1)) /\
+  subst_typ_in_contd A1 X1 (open_contd_wrt_exp_rec n1 e1 cd1) = open_contd_wrt_exp_rec n1 (subst_typ_in_exp A1 X1 e1) (subst_typ_in_contd A1 X1 cd1)) /\
 (forall cs1 A1 e1 X1 n1,
-  subst_tvar_in_conts A1 X1 (open_conts_wrt_exp_rec n1 e1 cs1) = open_conts_wrt_exp_rec n1 (subst_tvar_in_exp A1 X1 e1) (subst_tvar_in_conts A1 X1 cs1)).
+  subst_typ_in_conts A1 X1 (open_conts_wrt_exp_rec n1 e1 cs1) = open_conts_wrt_exp_rec n1 (subst_typ_in_exp A1 X1 e1) (subst_typ_in_conts A1 X1 cs1)).
 Proof.
 apply_mutual_ind contd_conts_mutind;
 default_simp.
@@ -14507,39 +14507,39 @@ Qed.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_contd_open_contd_wrt_exp_rec :
+Lemma subst_typ_in_contd_open_contd_wrt_exp_rec :
 forall cd1 A1 e1 X1 n1,
-  subst_tvar_in_contd A1 X1 (open_contd_wrt_exp_rec n1 e1 cd1) = open_contd_wrt_exp_rec n1 (subst_tvar_in_exp A1 X1 e1) (subst_tvar_in_contd A1 X1 cd1).
+  subst_typ_in_contd A1 X1 (open_contd_wrt_exp_rec n1 e1 cd1) = open_contd_wrt_exp_rec n1 (subst_typ_in_exp A1 X1 e1) (subst_typ_in_contd A1 X1 cd1).
 Proof.
-pose proof subst_tvar_in_contd_open_contd_wrt_exp_rec_subst_tvar_in_conts_open_conts_wrt_exp_rec_mutual as H; intuition eauto.
+pose proof subst_typ_in_contd_open_contd_wrt_exp_rec_subst_typ_in_conts_open_conts_wrt_exp_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_contd_open_contd_wrt_exp_rec : lngen.
+#[export] Hint Resolve subst_typ_in_contd_open_contd_wrt_exp_rec : lngen.
 
 (* end hide *)
 
 (* begin hide *)
 
-Lemma subst_tvar_in_conts_open_conts_wrt_exp_rec :
+Lemma subst_typ_in_conts_open_conts_wrt_exp_rec :
 forall cs1 A1 e1 X1 n1,
-  subst_tvar_in_conts A1 X1 (open_conts_wrt_exp_rec n1 e1 cs1) = open_conts_wrt_exp_rec n1 (subst_tvar_in_exp A1 X1 e1) (subst_tvar_in_conts A1 X1 cs1).
+  subst_typ_in_conts A1 X1 (open_conts_wrt_exp_rec n1 e1 cs1) = open_conts_wrt_exp_rec n1 (subst_typ_in_exp A1 X1 e1) (subst_typ_in_conts A1 X1 cs1).
 Proof.
-pose proof subst_tvar_in_contd_open_contd_wrt_exp_rec_subst_tvar_in_conts_open_conts_wrt_exp_rec_mutual as H; intuition eauto.
+pose proof subst_typ_in_contd_open_contd_wrt_exp_rec_subst_typ_in_conts_open_conts_wrt_exp_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_conts_open_conts_wrt_exp_rec : lngen.
+#[export] Hint Resolve subst_typ_in_conts_open_conts_wrt_exp_rec : lngen.
 
 (* end hide *)
 
 (* begin hide *)
 
-Lemma subst_var_in_contd_open_contd_wrt_typ_rec_subst_var_in_conts_open_conts_wrt_typ_rec_mutual :
+Lemma subst_exp_in_contd_open_contd_wrt_typ_rec_subst_exp_in_conts_open_conts_wrt_typ_rec_mutual :
 (forall cd1 e1 A1 x1 n1,
   lc_exp e1 ->
-  subst_var_in_contd e1 x1 (open_contd_wrt_typ_rec n1 A1 cd1) = open_contd_wrt_typ_rec n1 A1 (subst_var_in_contd e1 x1 cd1)) /\
+  subst_exp_in_contd e1 x1 (open_contd_wrt_typ_rec n1 A1 cd1) = open_contd_wrt_typ_rec n1 A1 (subst_exp_in_contd e1 x1 cd1)) /\
 (forall cs1 e1 A1 x1 n1,
   lc_exp e1 ->
-  subst_var_in_conts e1 x1 (open_conts_wrt_typ_rec n1 A1 cs1) = open_conts_wrt_typ_rec n1 A1 (subst_var_in_conts e1 x1 cs1)).
+  subst_exp_in_conts e1 x1 (open_conts_wrt_typ_rec n1 A1 cs1) = open_conts_wrt_typ_rec n1 A1 (subst_exp_in_conts e1 x1 cs1)).
 Proof.
 apply_mutual_ind contd_conts_mutind;
 default_simp.
@@ -14549,41 +14549,41 @@ Qed.
 
 (* begin hide *)
 
-Lemma subst_var_in_contd_open_contd_wrt_typ_rec :
+Lemma subst_exp_in_contd_open_contd_wrt_typ_rec :
 forall cd1 e1 A1 x1 n1,
   lc_exp e1 ->
-  subst_var_in_contd e1 x1 (open_contd_wrt_typ_rec n1 A1 cd1) = open_contd_wrt_typ_rec n1 A1 (subst_var_in_contd e1 x1 cd1).
+  subst_exp_in_contd e1 x1 (open_contd_wrt_typ_rec n1 A1 cd1) = open_contd_wrt_typ_rec n1 A1 (subst_exp_in_contd e1 x1 cd1).
 Proof.
-pose proof subst_var_in_contd_open_contd_wrt_typ_rec_subst_var_in_conts_open_conts_wrt_typ_rec_mutual as H; intuition eauto.
+pose proof subst_exp_in_contd_open_contd_wrt_typ_rec_subst_exp_in_conts_open_conts_wrt_typ_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_var_in_contd_open_contd_wrt_typ_rec : lngen.
+#[export] Hint Resolve subst_exp_in_contd_open_contd_wrt_typ_rec : lngen.
 
 (* end hide *)
 
 (* begin hide *)
 
-Lemma subst_var_in_conts_open_conts_wrt_typ_rec :
+Lemma subst_exp_in_conts_open_conts_wrt_typ_rec :
 forall cs1 e1 A1 x1 n1,
   lc_exp e1 ->
-  subst_var_in_conts e1 x1 (open_conts_wrt_typ_rec n1 A1 cs1) = open_conts_wrt_typ_rec n1 A1 (subst_var_in_conts e1 x1 cs1).
+  subst_exp_in_conts e1 x1 (open_conts_wrt_typ_rec n1 A1 cs1) = open_conts_wrt_typ_rec n1 A1 (subst_exp_in_conts e1 x1 cs1).
 Proof.
-pose proof subst_var_in_contd_open_contd_wrt_typ_rec_subst_var_in_conts_open_conts_wrt_typ_rec_mutual as H; intuition eauto.
+pose proof subst_exp_in_contd_open_contd_wrt_typ_rec_subst_exp_in_conts_open_conts_wrt_typ_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_var_in_conts_open_conts_wrt_typ_rec : lngen.
+#[export] Hint Resolve subst_exp_in_conts_open_conts_wrt_typ_rec : lngen.
 
 (* end hide *)
 
 (* begin hide *)
 
-Lemma subst_var_in_contd_open_contd_wrt_exp_rec_subst_var_in_conts_open_conts_wrt_exp_rec_mutual :
+Lemma subst_exp_in_contd_open_contd_wrt_exp_rec_subst_exp_in_conts_open_conts_wrt_exp_rec_mutual :
 (forall cd1 e1 e2 x1 n1,
   lc_exp e1 ->
-  subst_var_in_contd e1 x1 (open_contd_wrt_exp_rec n1 e2 cd1) = open_contd_wrt_exp_rec n1 (subst_var_in_exp e1 x1 e2) (subst_var_in_contd e1 x1 cd1)) /\
+  subst_exp_in_contd e1 x1 (open_contd_wrt_exp_rec n1 e2 cd1) = open_contd_wrt_exp_rec n1 (subst_exp_in_exp e1 x1 e2) (subst_exp_in_contd e1 x1 cd1)) /\
 (forall cs1 e1 e2 x1 n1,
   lc_exp e1 ->
-  subst_var_in_conts e1 x1 (open_conts_wrt_exp_rec n1 e2 cs1) = open_conts_wrt_exp_rec n1 (subst_var_in_exp e1 x1 e2) (subst_var_in_conts e1 x1 cs1)).
+  subst_exp_in_conts e1 x1 (open_conts_wrt_exp_rec n1 e2 cs1) = open_conts_wrt_exp_rec n1 (subst_exp_in_exp e1 x1 e2) (subst_exp_in_conts e1 x1 cs1)).
 Proof.
 apply_mutual_ind contd_conts_mutind;
 default_simp.
@@ -14593,38 +14593,38 @@ Qed.
 
 (* begin hide *)
 
-Lemma subst_var_in_contd_open_contd_wrt_exp_rec :
+Lemma subst_exp_in_contd_open_contd_wrt_exp_rec :
 forall cd1 e1 e2 x1 n1,
   lc_exp e1 ->
-  subst_var_in_contd e1 x1 (open_contd_wrt_exp_rec n1 e2 cd1) = open_contd_wrt_exp_rec n1 (subst_var_in_exp e1 x1 e2) (subst_var_in_contd e1 x1 cd1).
+  subst_exp_in_contd e1 x1 (open_contd_wrt_exp_rec n1 e2 cd1) = open_contd_wrt_exp_rec n1 (subst_exp_in_exp e1 x1 e2) (subst_exp_in_contd e1 x1 cd1).
 Proof.
-pose proof subst_var_in_contd_open_contd_wrt_exp_rec_subst_var_in_conts_open_conts_wrt_exp_rec_mutual as H; intuition eauto.
+pose proof subst_exp_in_contd_open_contd_wrt_exp_rec_subst_exp_in_conts_open_conts_wrt_exp_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_var_in_contd_open_contd_wrt_exp_rec : lngen.
+#[export] Hint Resolve subst_exp_in_contd_open_contd_wrt_exp_rec : lngen.
 
 (* end hide *)
 
 (* begin hide *)
 
-Lemma subst_var_in_conts_open_conts_wrt_exp_rec :
+Lemma subst_exp_in_conts_open_conts_wrt_exp_rec :
 forall cs1 e1 e2 x1 n1,
   lc_exp e1 ->
-  subst_var_in_conts e1 x1 (open_conts_wrt_exp_rec n1 e2 cs1) = open_conts_wrt_exp_rec n1 (subst_var_in_exp e1 x1 e2) (subst_var_in_conts e1 x1 cs1).
+  subst_exp_in_conts e1 x1 (open_conts_wrt_exp_rec n1 e2 cs1) = open_conts_wrt_exp_rec n1 (subst_exp_in_exp e1 x1 e2) (subst_exp_in_conts e1 x1 cs1).
 Proof.
-pose proof subst_var_in_contd_open_contd_wrt_exp_rec_subst_var_in_conts_open_conts_wrt_exp_rec_mutual as H; intuition eauto.
+pose proof subst_exp_in_contd_open_contd_wrt_exp_rec_subst_exp_in_conts_open_conts_wrt_exp_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_var_in_conts_open_conts_wrt_exp_rec : lngen.
+#[export] Hint Resolve subst_exp_in_conts_open_conts_wrt_exp_rec : lngen.
 
 (* end hide *)
 
 (* begin hide *)
 
-Lemma subst_tvar_in_dbind_open_dbind_wrt_typ_rec_mutual :
+Lemma subst_typ_in_dbind_open_dbind_wrt_typ_rec_mutual :
 (forall db1 A1 A2 X1 n1,
   lc_typ A1 ->
-  subst_tvar_in_dbind A1 X1 (open_dbind_wrt_typ_rec n1 A2 db1) = open_dbind_wrt_typ_rec n1 (subst_tvar_in_typ A1 X1 A2) (subst_tvar_in_dbind A1 X1 db1)).
+  subst_typ_in_dbind A1 X1 (open_dbind_wrt_typ_rec n1 A2 db1) = open_dbind_wrt_typ_rec n1 (subst_typ_in_typ A1 X1 A2) (subst_typ_in_dbind A1 X1 db1)).
 Proof.
 apply_mutual_ind dbind_mutind;
 default_simp.
@@ -14634,24 +14634,24 @@ Qed.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_dbind_open_dbind_wrt_typ_rec :
+Lemma subst_typ_in_dbind_open_dbind_wrt_typ_rec :
 forall db1 A1 A2 X1 n1,
   lc_typ A1 ->
-  subst_tvar_in_dbind A1 X1 (open_dbind_wrt_typ_rec n1 A2 db1) = open_dbind_wrt_typ_rec n1 (subst_tvar_in_typ A1 X1 A2) (subst_tvar_in_dbind A1 X1 db1).
+  subst_typ_in_dbind A1 X1 (open_dbind_wrt_typ_rec n1 A2 db1) = open_dbind_wrt_typ_rec n1 (subst_typ_in_typ A1 X1 A2) (subst_typ_in_dbind A1 X1 db1).
 Proof.
-pose proof subst_tvar_in_dbind_open_dbind_wrt_typ_rec_mutual as H; intuition eauto.
+pose proof subst_typ_in_dbind_open_dbind_wrt_typ_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_dbind_open_dbind_wrt_typ_rec : lngen.
+#[export] Hint Resolve subst_typ_in_dbind_open_dbind_wrt_typ_rec : lngen.
 
 (* end hide *)
 
 (* begin hide *)
 
-Lemma subst_tvar_in_work_open_work_wrt_typ_rec_mutual :
+Lemma subst_typ_in_work_open_work_wrt_typ_rec_mutual :
 (forall w1 A1 A2 X1 n1,
   lc_typ A1 ->
-  subst_tvar_in_work A1 X1 (open_work_wrt_typ_rec n1 A2 w1) = open_work_wrt_typ_rec n1 (subst_tvar_in_typ A1 X1 A2) (subst_tvar_in_work A1 X1 w1)).
+  subst_typ_in_work A1 X1 (open_work_wrt_typ_rec n1 A2 w1) = open_work_wrt_typ_rec n1 (subst_typ_in_typ A1 X1 A2) (subst_typ_in_work A1 X1 w1)).
 Proof.
 apply_mutual_ind work_mutind;
 default_simp.
@@ -14661,23 +14661,23 @@ Qed.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_work_open_work_wrt_typ_rec :
+Lemma subst_typ_in_work_open_work_wrt_typ_rec :
 forall w1 A1 A2 X1 n1,
   lc_typ A1 ->
-  subst_tvar_in_work A1 X1 (open_work_wrt_typ_rec n1 A2 w1) = open_work_wrt_typ_rec n1 (subst_tvar_in_typ A1 X1 A2) (subst_tvar_in_work A1 X1 w1).
+  subst_typ_in_work A1 X1 (open_work_wrt_typ_rec n1 A2 w1) = open_work_wrt_typ_rec n1 (subst_typ_in_typ A1 X1 A2) (subst_typ_in_work A1 X1 w1).
 Proof.
-pose proof subst_tvar_in_work_open_work_wrt_typ_rec_mutual as H; intuition eauto.
+pose proof subst_typ_in_work_open_work_wrt_typ_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_work_open_work_wrt_typ_rec : lngen.
+#[export] Hint Resolve subst_typ_in_work_open_work_wrt_typ_rec : lngen.
 
 (* end hide *)
 
 (* begin hide *)
 
-Lemma subst_tvar_in_work_open_work_wrt_exp_rec_mutual :
+Lemma subst_typ_in_work_open_work_wrt_exp_rec_mutual :
 (forall w1 A1 e1 X1 n1,
-  subst_tvar_in_work A1 X1 (open_work_wrt_exp_rec n1 e1 w1) = open_work_wrt_exp_rec n1 (subst_tvar_in_exp A1 X1 e1) (subst_tvar_in_work A1 X1 w1)).
+  subst_typ_in_work A1 X1 (open_work_wrt_exp_rec n1 e1 w1) = open_work_wrt_exp_rec n1 (subst_typ_in_exp A1 X1 e1) (subst_typ_in_work A1 X1 w1)).
 Proof.
 apply_mutual_ind work_mutind;
 default_simp.
@@ -14687,23 +14687,23 @@ Qed.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_work_open_work_wrt_exp_rec :
+Lemma subst_typ_in_work_open_work_wrt_exp_rec :
 forall w1 A1 e1 X1 n1,
-  subst_tvar_in_work A1 X1 (open_work_wrt_exp_rec n1 e1 w1) = open_work_wrt_exp_rec n1 (subst_tvar_in_exp A1 X1 e1) (subst_tvar_in_work A1 X1 w1).
+  subst_typ_in_work A1 X1 (open_work_wrt_exp_rec n1 e1 w1) = open_work_wrt_exp_rec n1 (subst_typ_in_exp A1 X1 e1) (subst_typ_in_work A1 X1 w1).
 Proof.
-pose proof subst_tvar_in_work_open_work_wrt_exp_rec_mutual as H; intuition eauto.
+pose proof subst_typ_in_work_open_work_wrt_exp_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_work_open_work_wrt_exp_rec : lngen.
+#[export] Hint Resolve subst_typ_in_work_open_work_wrt_exp_rec : lngen.
 
 (* end hide *)
 
 (* begin hide *)
 
-Lemma subst_var_in_work_open_work_wrt_typ_rec_mutual :
+Lemma subst_exp_in_work_open_work_wrt_typ_rec_mutual :
 (forall w1 e1 A1 x1 n1,
   lc_exp e1 ->
-  subst_var_in_work e1 x1 (open_work_wrt_typ_rec n1 A1 w1) = open_work_wrt_typ_rec n1 A1 (subst_var_in_work e1 x1 w1)).
+  subst_exp_in_work e1 x1 (open_work_wrt_typ_rec n1 A1 w1) = open_work_wrt_typ_rec n1 A1 (subst_exp_in_work e1 x1 w1)).
 Proof.
 apply_mutual_ind work_mutind;
 default_simp.
@@ -14713,24 +14713,24 @@ Qed.
 
 (* begin hide *)
 
-Lemma subst_var_in_work_open_work_wrt_typ_rec :
+Lemma subst_exp_in_work_open_work_wrt_typ_rec :
 forall w1 e1 A1 x1 n1,
   lc_exp e1 ->
-  subst_var_in_work e1 x1 (open_work_wrt_typ_rec n1 A1 w1) = open_work_wrt_typ_rec n1 A1 (subst_var_in_work e1 x1 w1).
+  subst_exp_in_work e1 x1 (open_work_wrt_typ_rec n1 A1 w1) = open_work_wrt_typ_rec n1 A1 (subst_exp_in_work e1 x1 w1).
 Proof.
-pose proof subst_var_in_work_open_work_wrt_typ_rec_mutual as H; intuition eauto.
+pose proof subst_exp_in_work_open_work_wrt_typ_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_var_in_work_open_work_wrt_typ_rec : lngen.
+#[export] Hint Resolve subst_exp_in_work_open_work_wrt_typ_rec : lngen.
 
 (* end hide *)
 
 (* begin hide *)
 
-Lemma subst_var_in_work_open_work_wrt_exp_rec_mutual :
+Lemma subst_exp_in_work_open_work_wrt_exp_rec_mutual :
 (forall w1 e1 e2 x1 n1,
   lc_exp e1 ->
-  subst_var_in_work e1 x1 (open_work_wrt_exp_rec n1 e2 w1) = open_work_wrt_exp_rec n1 (subst_var_in_exp e1 x1 e2) (subst_var_in_work e1 x1 w1)).
+  subst_exp_in_work e1 x1 (open_work_wrt_exp_rec n1 e2 w1) = open_work_wrt_exp_rec n1 (subst_exp_in_exp e1 x1 e2) (subst_exp_in_work e1 x1 w1)).
 Proof.
 apply_mutual_ind work_mutind;
 default_simp.
@@ -14740,406 +14740,406 @@ Qed.
 
 (* begin hide *)
 
-Lemma subst_var_in_work_open_work_wrt_exp_rec :
+Lemma subst_exp_in_work_open_work_wrt_exp_rec :
 forall w1 e1 e2 x1 n1,
   lc_exp e1 ->
-  subst_var_in_work e1 x1 (open_work_wrt_exp_rec n1 e2 w1) = open_work_wrt_exp_rec n1 (subst_var_in_exp e1 x1 e2) (subst_var_in_work e1 x1 w1).
+  subst_exp_in_work e1 x1 (open_work_wrt_exp_rec n1 e2 w1) = open_work_wrt_exp_rec n1 (subst_exp_in_exp e1 x1 e2) (subst_exp_in_work e1 x1 w1).
 Proof.
-pose proof subst_var_in_work_open_work_wrt_exp_rec_mutual as H; intuition eauto.
+pose proof subst_exp_in_work_open_work_wrt_exp_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_var_in_work_open_work_wrt_exp_rec : lngen.
+#[export] Hint Resolve subst_exp_in_work_open_work_wrt_exp_rec : lngen.
 
 (* end hide *)
 
-Lemma subst_tvar_in_typ_open_typ_wrt_typ :
+Lemma subst_typ_in_typ_open_typ_wrt_typ :
 forall A3 A1 A2 X1,
   lc_typ A1 ->
-  subst_tvar_in_typ A1 X1 (open_typ_wrt_typ A3 A2) = open_typ_wrt_typ (subst_tvar_in_typ A1 X1 A3) (subst_tvar_in_typ A1 X1 A2).
+  subst_typ_in_typ A1 X1 (open_typ_wrt_typ A3 A2) = open_typ_wrt_typ (subst_typ_in_typ A1 X1 A3) (subst_typ_in_typ A1 X1 A2).
 Proof.
 unfold open_typ_wrt_typ; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_typ_open_typ_wrt_typ : lngen.
+#[export] Hint Resolve subst_typ_in_typ_open_typ_wrt_typ : lngen.
 
-Lemma subst_tvar_in_abind_open_abind_wrt_typ :
+Lemma subst_typ_in_abind_open_abind_wrt_typ :
 forall ab1 A1 A2 X1,
   lc_typ A1 ->
-  subst_tvar_in_abind A1 X1 (open_abind_wrt_typ ab1 A2) = open_abind_wrt_typ (subst_tvar_in_abind A1 X1 ab1) (subst_tvar_in_typ A1 X1 A2).
+  subst_typ_in_abind A1 X1 (open_abind_wrt_typ ab1 A2) = open_abind_wrt_typ (subst_typ_in_abind A1 X1 ab1) (subst_typ_in_typ A1 X1 A2).
 Proof.
 unfold open_abind_wrt_typ; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_abind_open_abind_wrt_typ : lngen.
+#[export] Hint Resolve subst_typ_in_abind_open_abind_wrt_typ : lngen.
 
-Lemma subst_tvar_in_exp_open_exp_wrt_typ :
+Lemma subst_typ_in_exp_open_exp_wrt_typ :
 forall e1 A1 A2 X1,
   lc_typ A1 ->
-  subst_tvar_in_exp A1 X1 (open_exp_wrt_typ e1 A2) = open_exp_wrt_typ (subst_tvar_in_exp A1 X1 e1) (subst_tvar_in_typ A1 X1 A2).
+  subst_typ_in_exp A1 X1 (open_exp_wrt_typ e1 A2) = open_exp_wrt_typ (subst_typ_in_exp A1 X1 e1) (subst_typ_in_typ A1 X1 A2).
 Proof.
 unfold open_exp_wrt_typ; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_exp_open_exp_wrt_typ : lngen.
+#[export] Hint Resolve subst_typ_in_exp_open_exp_wrt_typ : lngen.
 
-Lemma subst_tvar_in_exp_open_exp_wrt_exp :
+Lemma subst_typ_in_exp_open_exp_wrt_exp :
 forall e2 A1 e1 X1,
-  subst_tvar_in_exp A1 X1 (open_exp_wrt_exp e2 e1) = open_exp_wrt_exp (subst_tvar_in_exp A1 X1 e2) (subst_tvar_in_exp A1 X1 e1).
+  subst_typ_in_exp A1 X1 (open_exp_wrt_exp e2 e1) = open_exp_wrt_exp (subst_typ_in_exp A1 X1 e2) (subst_typ_in_exp A1 X1 e1).
 Proof.
 unfold open_exp_wrt_exp; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_exp_open_exp_wrt_exp : lngen.
+#[export] Hint Resolve subst_typ_in_exp_open_exp_wrt_exp : lngen.
 
-Lemma subst_var_in_exp_open_exp_wrt_typ :
+Lemma subst_exp_in_exp_open_exp_wrt_typ :
 forall e2 e1 A1 x1,
   lc_exp e1 ->
-  subst_var_in_exp e1 x1 (open_exp_wrt_typ e2 A1) = open_exp_wrt_typ (subst_var_in_exp e1 x1 e2) A1.
+  subst_exp_in_exp e1 x1 (open_exp_wrt_typ e2 A1) = open_exp_wrt_typ (subst_exp_in_exp e1 x1 e2) A1.
 Proof.
 unfold open_exp_wrt_typ; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_var_in_exp_open_exp_wrt_typ : lngen.
+#[export] Hint Resolve subst_exp_in_exp_open_exp_wrt_typ : lngen.
 
-Lemma subst_var_in_exp_open_exp_wrt_exp :
+Lemma subst_exp_in_exp_open_exp_wrt_exp :
 forall e3 e1 e2 x1,
   lc_exp e1 ->
-  subst_var_in_exp e1 x1 (open_exp_wrt_exp e3 e2) = open_exp_wrt_exp (subst_var_in_exp e1 x1 e3) (subst_var_in_exp e1 x1 e2).
+  subst_exp_in_exp e1 x1 (open_exp_wrt_exp e3 e2) = open_exp_wrt_exp (subst_exp_in_exp e1 x1 e3) (subst_exp_in_exp e1 x1 e2).
 Proof.
 unfold open_exp_wrt_exp; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_var_in_exp_open_exp_wrt_exp : lngen.
+#[export] Hint Resolve subst_exp_in_exp_open_exp_wrt_exp : lngen.
 
-Lemma subst_tvar_in_contd_open_contd_wrt_typ :
+Lemma subst_typ_in_contd_open_contd_wrt_typ :
 forall cd1 A1 A2 X1,
   lc_typ A1 ->
-  subst_tvar_in_contd A1 X1 (open_contd_wrt_typ cd1 A2) = open_contd_wrt_typ (subst_tvar_in_contd A1 X1 cd1) (subst_tvar_in_typ A1 X1 A2).
+  subst_typ_in_contd A1 X1 (open_contd_wrt_typ cd1 A2) = open_contd_wrt_typ (subst_typ_in_contd A1 X1 cd1) (subst_typ_in_typ A1 X1 A2).
 Proof.
 unfold open_contd_wrt_typ; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_contd_open_contd_wrt_typ : lngen.
+#[export] Hint Resolve subst_typ_in_contd_open_contd_wrt_typ : lngen.
 
-Lemma subst_tvar_in_conts_open_conts_wrt_typ :
+Lemma subst_typ_in_conts_open_conts_wrt_typ :
 forall cs1 A1 A2 X1,
   lc_typ A1 ->
-  subst_tvar_in_conts A1 X1 (open_conts_wrt_typ cs1 A2) = open_conts_wrt_typ (subst_tvar_in_conts A1 X1 cs1) (subst_tvar_in_typ A1 X1 A2).
+  subst_typ_in_conts A1 X1 (open_conts_wrt_typ cs1 A2) = open_conts_wrt_typ (subst_typ_in_conts A1 X1 cs1) (subst_typ_in_typ A1 X1 A2).
 Proof.
 unfold open_conts_wrt_typ; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_conts_open_conts_wrt_typ : lngen.
+#[export] Hint Resolve subst_typ_in_conts_open_conts_wrt_typ : lngen.
 
-Lemma subst_tvar_in_contd_open_contd_wrt_exp :
+Lemma subst_typ_in_contd_open_contd_wrt_exp :
 forall cd1 A1 e1 X1,
-  subst_tvar_in_contd A1 X1 (open_contd_wrt_exp cd1 e1) = open_contd_wrt_exp (subst_tvar_in_contd A1 X1 cd1) (subst_tvar_in_exp A1 X1 e1).
+  subst_typ_in_contd A1 X1 (open_contd_wrt_exp cd1 e1) = open_contd_wrt_exp (subst_typ_in_contd A1 X1 cd1) (subst_typ_in_exp A1 X1 e1).
 Proof.
 unfold open_contd_wrt_exp; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_contd_open_contd_wrt_exp : lngen.
+#[export] Hint Resolve subst_typ_in_contd_open_contd_wrt_exp : lngen.
 
-Lemma subst_tvar_in_conts_open_conts_wrt_exp :
+Lemma subst_typ_in_conts_open_conts_wrt_exp :
 forall cs1 A1 e1 X1,
-  subst_tvar_in_conts A1 X1 (open_conts_wrt_exp cs1 e1) = open_conts_wrt_exp (subst_tvar_in_conts A1 X1 cs1) (subst_tvar_in_exp A1 X1 e1).
+  subst_typ_in_conts A1 X1 (open_conts_wrt_exp cs1 e1) = open_conts_wrt_exp (subst_typ_in_conts A1 X1 cs1) (subst_typ_in_exp A1 X1 e1).
 Proof.
 unfold open_conts_wrt_exp; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_conts_open_conts_wrt_exp : lngen.
+#[export] Hint Resolve subst_typ_in_conts_open_conts_wrt_exp : lngen.
 
-Lemma subst_var_in_contd_open_contd_wrt_typ :
+Lemma subst_exp_in_contd_open_contd_wrt_typ :
 forall cd1 e1 A1 x1,
   lc_exp e1 ->
-  subst_var_in_contd e1 x1 (open_contd_wrt_typ cd1 A1) = open_contd_wrt_typ (subst_var_in_contd e1 x1 cd1) A1.
+  subst_exp_in_contd e1 x1 (open_contd_wrt_typ cd1 A1) = open_contd_wrt_typ (subst_exp_in_contd e1 x1 cd1) A1.
 Proof.
 unfold open_contd_wrt_typ; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_var_in_contd_open_contd_wrt_typ : lngen.
+#[export] Hint Resolve subst_exp_in_contd_open_contd_wrt_typ : lngen.
 
-Lemma subst_var_in_conts_open_conts_wrt_typ :
+Lemma subst_exp_in_conts_open_conts_wrt_typ :
 forall cs1 e1 A1 x1,
   lc_exp e1 ->
-  subst_var_in_conts e1 x1 (open_conts_wrt_typ cs1 A1) = open_conts_wrt_typ (subst_var_in_conts e1 x1 cs1) A1.
+  subst_exp_in_conts e1 x1 (open_conts_wrt_typ cs1 A1) = open_conts_wrt_typ (subst_exp_in_conts e1 x1 cs1) A1.
 Proof.
 unfold open_conts_wrt_typ; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_var_in_conts_open_conts_wrt_typ : lngen.
+#[export] Hint Resolve subst_exp_in_conts_open_conts_wrt_typ : lngen.
 
-Lemma subst_var_in_contd_open_contd_wrt_exp :
+Lemma subst_exp_in_contd_open_contd_wrt_exp :
 forall cd1 e1 e2 x1,
   lc_exp e1 ->
-  subst_var_in_contd e1 x1 (open_contd_wrt_exp cd1 e2) = open_contd_wrt_exp (subst_var_in_contd e1 x1 cd1) (subst_var_in_exp e1 x1 e2).
+  subst_exp_in_contd e1 x1 (open_contd_wrt_exp cd1 e2) = open_contd_wrt_exp (subst_exp_in_contd e1 x1 cd1) (subst_exp_in_exp e1 x1 e2).
 Proof.
 unfold open_contd_wrt_exp; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_var_in_contd_open_contd_wrt_exp : lngen.
+#[export] Hint Resolve subst_exp_in_contd_open_contd_wrt_exp : lngen.
 
-Lemma subst_var_in_conts_open_conts_wrt_exp :
+Lemma subst_exp_in_conts_open_conts_wrt_exp :
 forall cs1 e1 e2 x1,
   lc_exp e1 ->
-  subst_var_in_conts e1 x1 (open_conts_wrt_exp cs1 e2) = open_conts_wrt_exp (subst_var_in_conts e1 x1 cs1) (subst_var_in_exp e1 x1 e2).
+  subst_exp_in_conts e1 x1 (open_conts_wrt_exp cs1 e2) = open_conts_wrt_exp (subst_exp_in_conts e1 x1 cs1) (subst_exp_in_exp e1 x1 e2).
 Proof.
 unfold open_conts_wrt_exp; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_var_in_conts_open_conts_wrt_exp : lngen.
+#[export] Hint Resolve subst_exp_in_conts_open_conts_wrt_exp : lngen.
 
-Lemma subst_tvar_in_dbind_open_dbind_wrt_typ :
+Lemma subst_typ_in_dbind_open_dbind_wrt_typ :
 forall db1 A1 A2 X1,
   lc_typ A1 ->
-  subst_tvar_in_dbind A1 X1 (open_dbind_wrt_typ db1 A2) = open_dbind_wrt_typ (subst_tvar_in_dbind A1 X1 db1) (subst_tvar_in_typ A1 X1 A2).
+  subst_typ_in_dbind A1 X1 (open_dbind_wrt_typ db1 A2) = open_dbind_wrt_typ (subst_typ_in_dbind A1 X1 db1) (subst_typ_in_typ A1 X1 A2).
 Proof.
 unfold open_dbind_wrt_typ; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_dbind_open_dbind_wrt_typ : lngen.
+#[export] Hint Resolve subst_typ_in_dbind_open_dbind_wrt_typ : lngen.
 
-Lemma subst_tvar_in_work_open_work_wrt_typ :
+Lemma subst_typ_in_work_open_work_wrt_typ :
 forall w1 A1 A2 X1,
   lc_typ A1 ->
-  subst_tvar_in_work A1 X1 (open_work_wrt_typ w1 A2) = open_work_wrt_typ (subst_tvar_in_work A1 X1 w1) (subst_tvar_in_typ A1 X1 A2).
+  subst_typ_in_work A1 X1 (open_work_wrt_typ w1 A2) = open_work_wrt_typ (subst_typ_in_work A1 X1 w1) (subst_typ_in_typ A1 X1 A2).
 Proof.
 unfold open_work_wrt_typ; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_work_open_work_wrt_typ : lngen.
+#[export] Hint Resolve subst_typ_in_work_open_work_wrt_typ : lngen.
 
-Lemma subst_tvar_in_work_open_work_wrt_exp :
+Lemma subst_typ_in_work_open_work_wrt_exp :
 forall w1 A1 e1 X1,
-  subst_tvar_in_work A1 X1 (open_work_wrt_exp w1 e1) = open_work_wrt_exp (subst_tvar_in_work A1 X1 w1) (subst_tvar_in_exp A1 X1 e1).
+  subst_typ_in_work A1 X1 (open_work_wrt_exp w1 e1) = open_work_wrt_exp (subst_typ_in_work A1 X1 w1) (subst_typ_in_exp A1 X1 e1).
 Proof.
 unfold open_work_wrt_exp; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_work_open_work_wrt_exp : lngen.
+#[export] Hint Resolve subst_typ_in_work_open_work_wrt_exp : lngen.
 
-Lemma subst_var_in_work_open_work_wrt_typ :
+Lemma subst_exp_in_work_open_work_wrt_typ :
 forall w1 e1 A1 x1,
   lc_exp e1 ->
-  subst_var_in_work e1 x1 (open_work_wrt_typ w1 A1) = open_work_wrt_typ (subst_var_in_work e1 x1 w1) A1.
+  subst_exp_in_work e1 x1 (open_work_wrt_typ w1 A1) = open_work_wrt_typ (subst_exp_in_work e1 x1 w1) A1.
 Proof.
 unfold open_work_wrt_typ; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_var_in_work_open_work_wrt_typ : lngen.
+#[export] Hint Resolve subst_exp_in_work_open_work_wrt_typ : lngen.
 
-Lemma subst_var_in_work_open_work_wrt_exp :
+Lemma subst_exp_in_work_open_work_wrt_exp :
 forall w1 e1 e2 x1,
   lc_exp e1 ->
-  subst_var_in_work e1 x1 (open_work_wrt_exp w1 e2) = open_work_wrt_exp (subst_var_in_work e1 x1 w1) (subst_var_in_exp e1 x1 e2).
+  subst_exp_in_work e1 x1 (open_work_wrt_exp w1 e2) = open_work_wrt_exp (subst_exp_in_work e1 x1 w1) (subst_exp_in_exp e1 x1 e2).
 Proof.
 unfold open_work_wrt_exp; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_var_in_work_open_work_wrt_exp : lngen.
+#[export] Hint Resolve subst_exp_in_work_open_work_wrt_exp : lngen.
 
-Lemma subst_tvar_in_typ_open_typ_wrt_typ_var :
+Lemma subst_typ_in_typ_open_typ_wrt_typ_var :
 forall A2 A1 X1 X2,
   X1 <> X2 ->
   lc_typ A1 ->
-  open_typ_wrt_typ (subst_tvar_in_typ A1 X1 A2) (typ_var_f X2) = subst_tvar_in_typ A1 X1 (open_typ_wrt_typ A2 (typ_var_f X2)).
+  open_typ_wrt_typ (subst_typ_in_typ A1 X1 A2) (typ_var_f X2) = subst_typ_in_typ A1 X1 (open_typ_wrt_typ A2 (typ_var_f X2)).
 Proof.
-intros; rewrite subst_tvar_in_typ_open_typ_wrt_typ; default_simp.
+intros; rewrite subst_typ_in_typ_open_typ_wrt_typ; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_typ_open_typ_wrt_typ_var : lngen.
+#[export] Hint Resolve subst_typ_in_typ_open_typ_wrt_typ_var : lngen.
 
-Lemma subst_tvar_in_abind_open_abind_wrt_typ_var :
+Lemma subst_typ_in_abind_open_abind_wrt_typ_var :
 forall ab1 A1 X1 X2,
   X1 <> X2 ->
   lc_typ A1 ->
-  open_abind_wrt_typ (subst_tvar_in_abind A1 X1 ab1) (typ_var_f X2) = subst_tvar_in_abind A1 X1 (open_abind_wrt_typ ab1 (typ_var_f X2)).
+  open_abind_wrt_typ (subst_typ_in_abind A1 X1 ab1) (typ_var_f X2) = subst_typ_in_abind A1 X1 (open_abind_wrt_typ ab1 (typ_var_f X2)).
 Proof.
-intros; rewrite subst_tvar_in_abind_open_abind_wrt_typ; default_simp.
+intros; rewrite subst_typ_in_abind_open_abind_wrt_typ; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_abind_open_abind_wrt_typ_var : lngen.
+#[export] Hint Resolve subst_typ_in_abind_open_abind_wrt_typ_var : lngen.
 
-Lemma subst_tvar_in_exp_open_exp_wrt_typ_var :
+Lemma subst_typ_in_exp_open_exp_wrt_typ_var :
 forall e1 A1 X1 X2,
   X1 <> X2 ->
   lc_typ A1 ->
-  open_exp_wrt_typ (subst_tvar_in_exp A1 X1 e1) (typ_var_f X2) = subst_tvar_in_exp A1 X1 (open_exp_wrt_typ e1 (typ_var_f X2)).
+  open_exp_wrt_typ (subst_typ_in_exp A1 X1 e1) (typ_var_f X2) = subst_typ_in_exp A1 X1 (open_exp_wrt_typ e1 (typ_var_f X2)).
 Proof.
-intros; rewrite subst_tvar_in_exp_open_exp_wrt_typ; default_simp.
+intros; rewrite subst_typ_in_exp_open_exp_wrt_typ; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_exp_open_exp_wrt_typ_var : lngen.
+#[export] Hint Resolve subst_typ_in_exp_open_exp_wrt_typ_var : lngen.
 
-Lemma subst_tvar_in_exp_open_exp_wrt_exp_var :
+Lemma subst_typ_in_exp_open_exp_wrt_exp_var :
 forall e1 A1 X1 x1,
-  open_exp_wrt_exp (subst_tvar_in_exp A1 X1 e1) (exp_var_f x1) = subst_tvar_in_exp A1 X1 (open_exp_wrt_exp e1 (exp_var_f x1)).
+  open_exp_wrt_exp (subst_typ_in_exp A1 X1 e1) (exp_var_f x1) = subst_typ_in_exp A1 X1 (open_exp_wrt_exp e1 (exp_var_f x1)).
 Proof.
-intros; rewrite subst_tvar_in_exp_open_exp_wrt_exp; default_simp.
+intros; rewrite subst_typ_in_exp_open_exp_wrt_exp; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_exp_open_exp_wrt_exp_var : lngen.
+#[export] Hint Resolve subst_typ_in_exp_open_exp_wrt_exp_var : lngen.
 
-Lemma subst_var_in_exp_open_exp_wrt_typ_var :
+Lemma subst_exp_in_exp_open_exp_wrt_typ_var :
 forall e2 e1 x1 X1,
   lc_exp e1 ->
-  open_exp_wrt_typ (subst_var_in_exp e1 x1 e2) (typ_var_f X1) = subst_var_in_exp e1 x1 (open_exp_wrt_typ e2 (typ_var_f X1)).
+  open_exp_wrt_typ (subst_exp_in_exp e1 x1 e2) (typ_var_f X1) = subst_exp_in_exp e1 x1 (open_exp_wrt_typ e2 (typ_var_f X1)).
 Proof.
-intros; rewrite subst_var_in_exp_open_exp_wrt_typ; default_simp.
+intros; rewrite subst_exp_in_exp_open_exp_wrt_typ; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_var_in_exp_open_exp_wrt_typ_var : lngen.
+#[export] Hint Resolve subst_exp_in_exp_open_exp_wrt_typ_var : lngen.
 
-Lemma subst_var_in_exp_open_exp_wrt_exp_var :
+Lemma subst_exp_in_exp_open_exp_wrt_exp_var :
 forall e2 e1 x1 x2,
   x1 <> x2 ->
   lc_exp e1 ->
-  open_exp_wrt_exp (subst_var_in_exp e1 x1 e2) (exp_var_f x2) = subst_var_in_exp e1 x1 (open_exp_wrt_exp e2 (exp_var_f x2)).
+  open_exp_wrt_exp (subst_exp_in_exp e1 x1 e2) (exp_var_f x2) = subst_exp_in_exp e1 x1 (open_exp_wrt_exp e2 (exp_var_f x2)).
 Proof.
-intros; rewrite subst_var_in_exp_open_exp_wrt_exp; default_simp.
+intros; rewrite subst_exp_in_exp_open_exp_wrt_exp; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_var_in_exp_open_exp_wrt_exp_var : lngen.
+#[export] Hint Resolve subst_exp_in_exp_open_exp_wrt_exp_var : lngen.
 
-Lemma subst_tvar_in_contd_open_contd_wrt_typ_var :
+Lemma subst_typ_in_contd_open_contd_wrt_typ_var :
 forall cd1 A1 X1 X2,
   X1 <> X2 ->
   lc_typ A1 ->
-  open_contd_wrt_typ (subst_tvar_in_contd A1 X1 cd1) (typ_var_f X2) = subst_tvar_in_contd A1 X1 (open_contd_wrt_typ cd1 (typ_var_f X2)).
+  open_contd_wrt_typ (subst_typ_in_contd A1 X1 cd1) (typ_var_f X2) = subst_typ_in_contd A1 X1 (open_contd_wrt_typ cd1 (typ_var_f X2)).
 Proof.
-intros; rewrite subst_tvar_in_contd_open_contd_wrt_typ; default_simp.
+intros; rewrite subst_typ_in_contd_open_contd_wrt_typ; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_contd_open_contd_wrt_typ_var : lngen.
+#[export] Hint Resolve subst_typ_in_contd_open_contd_wrt_typ_var : lngen.
 
-Lemma subst_tvar_in_conts_open_conts_wrt_typ_var :
+Lemma subst_typ_in_conts_open_conts_wrt_typ_var :
 forall cs1 A1 X1 X2,
   X1 <> X2 ->
   lc_typ A1 ->
-  open_conts_wrt_typ (subst_tvar_in_conts A1 X1 cs1) (typ_var_f X2) = subst_tvar_in_conts A1 X1 (open_conts_wrt_typ cs1 (typ_var_f X2)).
+  open_conts_wrt_typ (subst_typ_in_conts A1 X1 cs1) (typ_var_f X2) = subst_typ_in_conts A1 X1 (open_conts_wrt_typ cs1 (typ_var_f X2)).
 Proof.
-intros; rewrite subst_tvar_in_conts_open_conts_wrt_typ; default_simp.
+intros; rewrite subst_typ_in_conts_open_conts_wrt_typ; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_conts_open_conts_wrt_typ_var : lngen.
+#[export] Hint Resolve subst_typ_in_conts_open_conts_wrt_typ_var : lngen.
 
-Lemma subst_tvar_in_contd_open_contd_wrt_exp_var :
+Lemma subst_typ_in_contd_open_contd_wrt_exp_var :
 forall cd1 A1 X1 x1,
-  open_contd_wrt_exp (subst_tvar_in_contd A1 X1 cd1) (exp_var_f x1) = subst_tvar_in_contd A1 X1 (open_contd_wrt_exp cd1 (exp_var_f x1)).
+  open_contd_wrt_exp (subst_typ_in_contd A1 X1 cd1) (exp_var_f x1) = subst_typ_in_contd A1 X1 (open_contd_wrt_exp cd1 (exp_var_f x1)).
 Proof.
-intros; rewrite subst_tvar_in_contd_open_contd_wrt_exp; default_simp.
+intros; rewrite subst_typ_in_contd_open_contd_wrt_exp; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_contd_open_contd_wrt_exp_var : lngen.
+#[export] Hint Resolve subst_typ_in_contd_open_contd_wrt_exp_var : lngen.
 
-Lemma subst_tvar_in_conts_open_conts_wrt_exp_var :
+Lemma subst_typ_in_conts_open_conts_wrt_exp_var :
 forall cs1 A1 X1 x1,
-  open_conts_wrt_exp (subst_tvar_in_conts A1 X1 cs1) (exp_var_f x1) = subst_tvar_in_conts A1 X1 (open_conts_wrt_exp cs1 (exp_var_f x1)).
+  open_conts_wrt_exp (subst_typ_in_conts A1 X1 cs1) (exp_var_f x1) = subst_typ_in_conts A1 X1 (open_conts_wrt_exp cs1 (exp_var_f x1)).
 Proof.
-intros; rewrite subst_tvar_in_conts_open_conts_wrt_exp; default_simp.
+intros; rewrite subst_typ_in_conts_open_conts_wrt_exp; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_conts_open_conts_wrt_exp_var : lngen.
+#[export] Hint Resolve subst_typ_in_conts_open_conts_wrt_exp_var : lngen.
 
-Lemma subst_var_in_contd_open_contd_wrt_typ_var :
+Lemma subst_exp_in_contd_open_contd_wrt_typ_var :
 forall cd1 e1 x1 X1,
   lc_exp e1 ->
-  open_contd_wrt_typ (subst_var_in_contd e1 x1 cd1) (typ_var_f X1) = subst_var_in_contd e1 x1 (open_contd_wrt_typ cd1 (typ_var_f X1)).
+  open_contd_wrt_typ (subst_exp_in_contd e1 x1 cd1) (typ_var_f X1) = subst_exp_in_contd e1 x1 (open_contd_wrt_typ cd1 (typ_var_f X1)).
 Proof.
-intros; rewrite subst_var_in_contd_open_contd_wrt_typ; default_simp.
+intros; rewrite subst_exp_in_contd_open_contd_wrt_typ; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_var_in_contd_open_contd_wrt_typ_var : lngen.
+#[export] Hint Resolve subst_exp_in_contd_open_contd_wrt_typ_var : lngen.
 
-Lemma subst_var_in_conts_open_conts_wrt_typ_var :
+Lemma subst_exp_in_conts_open_conts_wrt_typ_var :
 forall cs1 e1 x1 X1,
   lc_exp e1 ->
-  open_conts_wrt_typ (subst_var_in_conts e1 x1 cs1) (typ_var_f X1) = subst_var_in_conts e1 x1 (open_conts_wrt_typ cs1 (typ_var_f X1)).
+  open_conts_wrt_typ (subst_exp_in_conts e1 x1 cs1) (typ_var_f X1) = subst_exp_in_conts e1 x1 (open_conts_wrt_typ cs1 (typ_var_f X1)).
 Proof.
-intros; rewrite subst_var_in_conts_open_conts_wrt_typ; default_simp.
+intros; rewrite subst_exp_in_conts_open_conts_wrt_typ; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_var_in_conts_open_conts_wrt_typ_var : lngen.
+#[export] Hint Resolve subst_exp_in_conts_open_conts_wrt_typ_var : lngen.
 
-Lemma subst_var_in_contd_open_contd_wrt_exp_var :
+Lemma subst_exp_in_contd_open_contd_wrt_exp_var :
 forall cd1 e1 x1 x2,
   x1 <> x2 ->
   lc_exp e1 ->
-  open_contd_wrt_exp (subst_var_in_contd e1 x1 cd1) (exp_var_f x2) = subst_var_in_contd e1 x1 (open_contd_wrt_exp cd1 (exp_var_f x2)).
+  open_contd_wrt_exp (subst_exp_in_contd e1 x1 cd1) (exp_var_f x2) = subst_exp_in_contd e1 x1 (open_contd_wrt_exp cd1 (exp_var_f x2)).
 Proof.
-intros; rewrite subst_var_in_contd_open_contd_wrt_exp; default_simp.
+intros; rewrite subst_exp_in_contd_open_contd_wrt_exp; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_var_in_contd_open_contd_wrt_exp_var : lngen.
+#[export] Hint Resolve subst_exp_in_contd_open_contd_wrt_exp_var : lngen.
 
-Lemma subst_var_in_conts_open_conts_wrt_exp_var :
+Lemma subst_exp_in_conts_open_conts_wrt_exp_var :
 forall cs1 e1 x1 x2,
   x1 <> x2 ->
   lc_exp e1 ->
-  open_conts_wrt_exp (subst_var_in_conts e1 x1 cs1) (exp_var_f x2) = subst_var_in_conts e1 x1 (open_conts_wrt_exp cs1 (exp_var_f x2)).
+  open_conts_wrt_exp (subst_exp_in_conts e1 x1 cs1) (exp_var_f x2) = subst_exp_in_conts e1 x1 (open_conts_wrt_exp cs1 (exp_var_f x2)).
 Proof.
-intros; rewrite subst_var_in_conts_open_conts_wrt_exp; default_simp.
+intros; rewrite subst_exp_in_conts_open_conts_wrt_exp; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_var_in_conts_open_conts_wrt_exp_var : lngen.
+#[export] Hint Resolve subst_exp_in_conts_open_conts_wrt_exp_var : lngen.
 
-Lemma subst_tvar_in_dbind_open_dbind_wrt_typ_var :
+Lemma subst_typ_in_dbind_open_dbind_wrt_typ_var :
 forall db1 A1 X1 X2,
   X1 <> X2 ->
   lc_typ A1 ->
-  open_dbind_wrt_typ (subst_tvar_in_dbind A1 X1 db1) (typ_var_f X2) = subst_tvar_in_dbind A1 X1 (open_dbind_wrt_typ db1 (typ_var_f X2)).
+  open_dbind_wrt_typ (subst_typ_in_dbind A1 X1 db1) (typ_var_f X2) = subst_typ_in_dbind A1 X1 (open_dbind_wrt_typ db1 (typ_var_f X2)).
 Proof.
-intros; rewrite subst_tvar_in_dbind_open_dbind_wrt_typ; default_simp.
+intros; rewrite subst_typ_in_dbind_open_dbind_wrt_typ; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_dbind_open_dbind_wrt_typ_var : lngen.
+#[export] Hint Resolve subst_typ_in_dbind_open_dbind_wrt_typ_var : lngen.
 
-Lemma subst_tvar_in_work_open_work_wrt_typ_var :
+Lemma subst_typ_in_work_open_work_wrt_typ_var :
 forall w1 A1 X1 X2,
   X1 <> X2 ->
   lc_typ A1 ->
-  open_work_wrt_typ (subst_tvar_in_work A1 X1 w1) (typ_var_f X2) = subst_tvar_in_work A1 X1 (open_work_wrt_typ w1 (typ_var_f X2)).
+  open_work_wrt_typ (subst_typ_in_work A1 X1 w1) (typ_var_f X2) = subst_typ_in_work A1 X1 (open_work_wrt_typ w1 (typ_var_f X2)).
 Proof.
-intros; rewrite subst_tvar_in_work_open_work_wrt_typ; default_simp.
+intros; rewrite subst_typ_in_work_open_work_wrt_typ; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_work_open_work_wrt_typ_var : lngen.
+#[export] Hint Resolve subst_typ_in_work_open_work_wrt_typ_var : lngen.
 
-Lemma subst_tvar_in_work_open_work_wrt_exp_var :
+Lemma subst_typ_in_work_open_work_wrt_exp_var :
 forall w1 A1 X1 x1,
-  open_work_wrt_exp (subst_tvar_in_work A1 X1 w1) (exp_var_f x1) = subst_tvar_in_work A1 X1 (open_work_wrt_exp w1 (exp_var_f x1)).
+  open_work_wrt_exp (subst_typ_in_work A1 X1 w1) (exp_var_f x1) = subst_typ_in_work A1 X1 (open_work_wrt_exp w1 (exp_var_f x1)).
 Proof.
-intros; rewrite subst_tvar_in_work_open_work_wrt_exp; default_simp.
+intros; rewrite subst_typ_in_work_open_work_wrt_exp; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_work_open_work_wrt_exp_var : lngen.
+#[export] Hint Resolve subst_typ_in_work_open_work_wrt_exp_var : lngen.
 
-Lemma subst_var_in_work_open_work_wrt_typ_var :
+Lemma subst_exp_in_work_open_work_wrt_typ_var :
 forall w1 e1 x1 X1,
   lc_exp e1 ->
-  open_work_wrt_typ (subst_var_in_work e1 x1 w1) (typ_var_f X1) = subst_var_in_work e1 x1 (open_work_wrt_typ w1 (typ_var_f X1)).
+  open_work_wrt_typ (subst_exp_in_work e1 x1 w1) (typ_var_f X1) = subst_exp_in_work e1 x1 (open_work_wrt_typ w1 (typ_var_f X1)).
 Proof.
-intros; rewrite subst_var_in_work_open_work_wrt_typ; default_simp.
+intros; rewrite subst_exp_in_work_open_work_wrt_typ; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_var_in_work_open_work_wrt_typ_var : lngen.
+#[export] Hint Resolve subst_exp_in_work_open_work_wrt_typ_var : lngen.
 
-Lemma subst_var_in_work_open_work_wrt_exp_var :
+Lemma subst_exp_in_work_open_work_wrt_exp_var :
 forall w1 e1 x1 x2,
   x1 <> x2 ->
   lc_exp e1 ->
-  open_work_wrt_exp (subst_var_in_work e1 x1 w1) (exp_var_f x2) = subst_var_in_work e1 x1 (open_work_wrt_exp w1 (exp_var_f x2)).
+  open_work_wrt_exp (subst_exp_in_work e1 x1 w1) (exp_var_f x2) = subst_exp_in_work e1 x1 (open_work_wrt_exp w1 (exp_var_f x2)).
 Proof.
-intros; rewrite subst_var_in_work_open_work_wrt_exp; default_simp.
+intros; rewrite subst_exp_in_work_open_work_wrt_exp; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_var_in_work_open_work_wrt_exp_var : lngen.
+#[export] Hint Resolve subst_exp_in_work_open_work_wrt_exp_var : lngen.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_typ_spec_rec_mutual :
+Lemma subst_typ_in_typ_spec_rec_mutual :
 (forall A1 A2 X1 n1,
-  subst_tvar_in_typ A2 X1 A1 = open_typ_wrt_typ_rec n1 A2 (close_typ_wrt_typ_rec n1 X1 A1)).
+  subst_typ_in_typ A2 X1 A1 = open_typ_wrt_typ_rec n1 A2 (close_typ_wrt_typ_rec n1 X1 A1)).
 Proof.
 apply_mutual_ind typ_mutind;
 default_simp.
@@ -15149,22 +15149,22 @@ Qed.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_typ_spec_rec :
+Lemma subst_typ_in_typ_spec_rec :
 forall A1 A2 X1 n1,
-  subst_tvar_in_typ A2 X1 A1 = open_typ_wrt_typ_rec n1 A2 (close_typ_wrt_typ_rec n1 X1 A1).
+  subst_typ_in_typ A2 X1 A1 = open_typ_wrt_typ_rec n1 A2 (close_typ_wrt_typ_rec n1 X1 A1).
 Proof.
-pose proof subst_tvar_in_typ_spec_rec_mutual as H; intuition eauto.
+pose proof subst_typ_in_typ_spec_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_typ_spec_rec : lngen.
+#[export] Hint Resolve subst_typ_in_typ_spec_rec : lngen.
 
 (* end hide *)
 
 (* begin hide *)
 
-Lemma subst_tvar_in_abind_spec_rec_mutual :
+Lemma subst_typ_in_abind_spec_rec_mutual :
 (forall ab1 A1 X1 n1,
-  subst_tvar_in_abind A1 X1 ab1 = open_abind_wrt_typ_rec n1 A1 (close_abind_wrt_typ_rec n1 X1 ab1)).
+  subst_typ_in_abind A1 X1 ab1 = open_abind_wrt_typ_rec n1 A1 (close_abind_wrt_typ_rec n1 X1 ab1)).
 Proof.
 apply_mutual_ind abind_mutind;
 default_simp.
@@ -15174,22 +15174,22 @@ Qed.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_abind_spec_rec :
+Lemma subst_typ_in_abind_spec_rec :
 forall ab1 A1 X1 n1,
-  subst_tvar_in_abind A1 X1 ab1 = open_abind_wrt_typ_rec n1 A1 (close_abind_wrt_typ_rec n1 X1 ab1).
+  subst_typ_in_abind A1 X1 ab1 = open_abind_wrt_typ_rec n1 A1 (close_abind_wrt_typ_rec n1 X1 ab1).
 Proof.
-pose proof subst_tvar_in_abind_spec_rec_mutual as H; intuition eauto.
+pose proof subst_typ_in_abind_spec_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_abind_spec_rec : lngen.
+#[export] Hint Resolve subst_typ_in_abind_spec_rec : lngen.
 
 (* end hide *)
 
 (* begin hide *)
 
-Lemma subst_tvar_in_exp_spec_rec_mutual :
+Lemma subst_typ_in_exp_spec_rec_mutual :
 (forall e1 A1 X1 n1,
-  subst_tvar_in_exp A1 X1 e1 = open_exp_wrt_typ_rec n1 A1 (close_exp_wrt_typ_rec n1 X1 e1)).
+  subst_typ_in_exp A1 X1 e1 = open_exp_wrt_typ_rec n1 A1 (close_exp_wrt_typ_rec n1 X1 e1)).
 Proof.
 apply_mutual_ind exp_mutind;
 default_simp.
@@ -15199,22 +15199,22 @@ Qed.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_exp_spec_rec :
+Lemma subst_typ_in_exp_spec_rec :
 forall e1 A1 X1 n1,
-  subst_tvar_in_exp A1 X1 e1 = open_exp_wrt_typ_rec n1 A1 (close_exp_wrt_typ_rec n1 X1 e1).
+  subst_typ_in_exp A1 X1 e1 = open_exp_wrt_typ_rec n1 A1 (close_exp_wrt_typ_rec n1 X1 e1).
 Proof.
-pose proof subst_tvar_in_exp_spec_rec_mutual as H; intuition eauto.
+pose proof subst_typ_in_exp_spec_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_exp_spec_rec : lngen.
+#[export] Hint Resolve subst_typ_in_exp_spec_rec : lngen.
 
 (* end hide *)
 
 (* begin hide *)
 
-Lemma subst_var_in_exp_spec_rec_mutual :
+Lemma subst_exp_in_exp_spec_rec_mutual :
 (forall e1 e2 x1 n1,
-  subst_var_in_exp e2 x1 e1 = open_exp_wrt_exp_rec n1 e2 (close_exp_wrt_exp_rec n1 x1 e1)).
+  subst_exp_in_exp e2 x1 e1 = open_exp_wrt_exp_rec n1 e2 (close_exp_wrt_exp_rec n1 x1 e1)).
 Proof.
 apply_mutual_ind exp_mutind;
 default_simp.
@@ -15224,24 +15224,24 @@ Qed.
 
 (* begin hide *)
 
-Lemma subst_var_in_exp_spec_rec :
+Lemma subst_exp_in_exp_spec_rec :
 forall e1 e2 x1 n1,
-  subst_var_in_exp e2 x1 e1 = open_exp_wrt_exp_rec n1 e2 (close_exp_wrt_exp_rec n1 x1 e1).
+  subst_exp_in_exp e2 x1 e1 = open_exp_wrt_exp_rec n1 e2 (close_exp_wrt_exp_rec n1 x1 e1).
 Proof.
-pose proof subst_var_in_exp_spec_rec_mutual as H; intuition eauto.
+pose proof subst_exp_in_exp_spec_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_var_in_exp_spec_rec : lngen.
+#[export] Hint Resolve subst_exp_in_exp_spec_rec : lngen.
 
 (* end hide *)
 
 (* begin hide *)
 
-Lemma subst_tvar_in_contd_spec_rec_subst_tvar_in_conts_spec_rec_mutual :
+Lemma subst_typ_in_contd_spec_rec_subst_typ_in_conts_spec_rec_mutual :
 (forall cd1 A1 X1 n1,
-  subst_tvar_in_contd A1 X1 cd1 = open_contd_wrt_typ_rec n1 A1 (close_contd_wrt_typ_rec n1 X1 cd1)) /\
+  subst_typ_in_contd A1 X1 cd1 = open_contd_wrt_typ_rec n1 A1 (close_contd_wrt_typ_rec n1 X1 cd1)) /\
 (forall cs1 A1 X1 n1,
-  subst_tvar_in_conts A1 X1 cs1 = open_conts_wrt_typ_rec n1 A1 (close_conts_wrt_typ_rec n1 X1 cs1)).
+  subst_typ_in_conts A1 X1 cs1 = open_conts_wrt_typ_rec n1 A1 (close_conts_wrt_typ_rec n1 X1 cs1)).
 Proof.
 apply_mutual_ind contd_conts_mutind;
 default_simp.
@@ -15251,37 +15251,37 @@ Qed.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_contd_spec_rec :
+Lemma subst_typ_in_contd_spec_rec :
 forall cd1 A1 X1 n1,
-  subst_tvar_in_contd A1 X1 cd1 = open_contd_wrt_typ_rec n1 A1 (close_contd_wrt_typ_rec n1 X1 cd1).
+  subst_typ_in_contd A1 X1 cd1 = open_contd_wrt_typ_rec n1 A1 (close_contd_wrt_typ_rec n1 X1 cd1).
 Proof.
-pose proof subst_tvar_in_contd_spec_rec_subst_tvar_in_conts_spec_rec_mutual as H; intuition eauto.
+pose proof subst_typ_in_contd_spec_rec_subst_typ_in_conts_spec_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_contd_spec_rec : lngen.
+#[export] Hint Resolve subst_typ_in_contd_spec_rec : lngen.
 
 (* end hide *)
 
 (* begin hide *)
 
-Lemma subst_tvar_in_conts_spec_rec :
+Lemma subst_typ_in_conts_spec_rec :
 forall cs1 A1 X1 n1,
-  subst_tvar_in_conts A1 X1 cs1 = open_conts_wrt_typ_rec n1 A1 (close_conts_wrt_typ_rec n1 X1 cs1).
+  subst_typ_in_conts A1 X1 cs1 = open_conts_wrt_typ_rec n1 A1 (close_conts_wrt_typ_rec n1 X1 cs1).
 Proof.
-pose proof subst_tvar_in_contd_spec_rec_subst_tvar_in_conts_spec_rec_mutual as H; intuition eauto.
+pose proof subst_typ_in_contd_spec_rec_subst_typ_in_conts_spec_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_conts_spec_rec : lngen.
+#[export] Hint Resolve subst_typ_in_conts_spec_rec : lngen.
 
 (* end hide *)
 
 (* begin hide *)
 
-Lemma subst_var_in_contd_spec_rec_subst_var_in_conts_spec_rec_mutual :
+Lemma subst_exp_in_contd_spec_rec_subst_exp_in_conts_spec_rec_mutual :
 (forall cd1 e1 x1 n1,
-  subst_var_in_contd e1 x1 cd1 = open_contd_wrt_exp_rec n1 e1 (close_contd_wrt_exp_rec n1 x1 cd1)) /\
+  subst_exp_in_contd e1 x1 cd1 = open_contd_wrt_exp_rec n1 e1 (close_contd_wrt_exp_rec n1 x1 cd1)) /\
 (forall cs1 e1 x1 n1,
-  subst_var_in_conts e1 x1 cs1 = open_conts_wrt_exp_rec n1 e1 (close_conts_wrt_exp_rec n1 x1 cs1)).
+  subst_exp_in_conts e1 x1 cs1 = open_conts_wrt_exp_rec n1 e1 (close_conts_wrt_exp_rec n1 x1 cs1)).
 Proof.
 apply_mutual_ind contd_conts_mutind;
 default_simp.
@@ -15291,35 +15291,35 @@ Qed.
 
 (* begin hide *)
 
-Lemma subst_var_in_contd_spec_rec :
+Lemma subst_exp_in_contd_spec_rec :
 forall cd1 e1 x1 n1,
-  subst_var_in_contd e1 x1 cd1 = open_contd_wrt_exp_rec n1 e1 (close_contd_wrt_exp_rec n1 x1 cd1).
+  subst_exp_in_contd e1 x1 cd1 = open_contd_wrt_exp_rec n1 e1 (close_contd_wrt_exp_rec n1 x1 cd1).
 Proof.
-pose proof subst_var_in_contd_spec_rec_subst_var_in_conts_spec_rec_mutual as H; intuition eauto.
+pose proof subst_exp_in_contd_spec_rec_subst_exp_in_conts_spec_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_var_in_contd_spec_rec : lngen.
+#[export] Hint Resolve subst_exp_in_contd_spec_rec : lngen.
 
 (* end hide *)
 
 (* begin hide *)
 
-Lemma subst_var_in_conts_spec_rec :
+Lemma subst_exp_in_conts_spec_rec :
 forall cs1 e1 x1 n1,
-  subst_var_in_conts e1 x1 cs1 = open_conts_wrt_exp_rec n1 e1 (close_conts_wrt_exp_rec n1 x1 cs1).
+  subst_exp_in_conts e1 x1 cs1 = open_conts_wrt_exp_rec n1 e1 (close_conts_wrt_exp_rec n1 x1 cs1).
 Proof.
-pose proof subst_var_in_contd_spec_rec_subst_var_in_conts_spec_rec_mutual as H; intuition eauto.
+pose proof subst_exp_in_contd_spec_rec_subst_exp_in_conts_spec_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_var_in_conts_spec_rec : lngen.
+#[export] Hint Resolve subst_exp_in_conts_spec_rec : lngen.
 
 (* end hide *)
 
 (* begin hide *)
 
-Lemma subst_tvar_in_dbind_spec_rec_mutual :
+Lemma subst_typ_in_dbind_spec_rec_mutual :
 (forall db1 A1 X1 n1,
-  subst_tvar_in_dbind A1 X1 db1 = open_dbind_wrt_typ_rec n1 A1 (close_dbind_wrt_typ_rec n1 X1 db1)).
+  subst_typ_in_dbind A1 X1 db1 = open_dbind_wrt_typ_rec n1 A1 (close_dbind_wrt_typ_rec n1 X1 db1)).
 Proof.
 apply_mutual_ind dbind_mutind;
 default_simp.
@@ -15329,22 +15329,22 @@ Qed.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_dbind_spec_rec :
+Lemma subst_typ_in_dbind_spec_rec :
 forall db1 A1 X1 n1,
-  subst_tvar_in_dbind A1 X1 db1 = open_dbind_wrt_typ_rec n1 A1 (close_dbind_wrt_typ_rec n1 X1 db1).
+  subst_typ_in_dbind A1 X1 db1 = open_dbind_wrt_typ_rec n1 A1 (close_dbind_wrt_typ_rec n1 X1 db1).
 Proof.
-pose proof subst_tvar_in_dbind_spec_rec_mutual as H; intuition eauto.
+pose proof subst_typ_in_dbind_spec_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_dbind_spec_rec : lngen.
+#[export] Hint Resolve subst_typ_in_dbind_spec_rec : lngen.
 
 (* end hide *)
 
 (* begin hide *)
 
-Lemma subst_tvar_in_work_spec_rec_mutual :
+Lemma subst_typ_in_work_spec_rec_mutual :
 (forall w1 A1 X1 n1,
-  subst_tvar_in_work A1 X1 w1 = open_work_wrt_typ_rec n1 A1 (close_work_wrt_typ_rec n1 X1 w1)).
+  subst_typ_in_work A1 X1 w1 = open_work_wrt_typ_rec n1 A1 (close_work_wrt_typ_rec n1 X1 w1)).
 Proof.
 apply_mutual_ind work_mutind;
 default_simp.
@@ -15354,22 +15354,22 @@ Qed.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_work_spec_rec :
+Lemma subst_typ_in_work_spec_rec :
 forall w1 A1 X1 n1,
-  subst_tvar_in_work A1 X1 w1 = open_work_wrt_typ_rec n1 A1 (close_work_wrt_typ_rec n1 X1 w1).
+  subst_typ_in_work A1 X1 w1 = open_work_wrt_typ_rec n1 A1 (close_work_wrt_typ_rec n1 X1 w1).
 Proof.
-pose proof subst_tvar_in_work_spec_rec_mutual as H; intuition eauto.
+pose proof subst_typ_in_work_spec_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_work_spec_rec : lngen.
+#[export] Hint Resolve subst_typ_in_work_spec_rec : lngen.
 
 (* end hide *)
 
 (* begin hide *)
 
-Lemma subst_var_in_work_spec_rec_mutual :
+Lemma subst_exp_in_work_spec_rec_mutual :
 (forall w1 e1 x1 n1,
-  subst_var_in_work e1 x1 w1 = open_work_wrt_exp_rec n1 e1 (close_work_wrt_exp_rec n1 x1 w1)).
+  subst_exp_in_work e1 x1 w1 = open_work_wrt_exp_rec n1 e1 (close_work_wrt_exp_rec n1 x1 w1)).
 Proof.
 apply_mutual_ind work_mutind;
 default_simp.
@@ -15379,123 +15379,123 @@ Qed.
 
 (* begin hide *)
 
-Lemma subst_var_in_work_spec_rec :
+Lemma subst_exp_in_work_spec_rec :
 forall w1 e1 x1 n1,
-  subst_var_in_work e1 x1 w1 = open_work_wrt_exp_rec n1 e1 (close_work_wrt_exp_rec n1 x1 w1).
+  subst_exp_in_work e1 x1 w1 = open_work_wrt_exp_rec n1 e1 (close_work_wrt_exp_rec n1 x1 w1).
 Proof.
-pose proof subst_var_in_work_spec_rec_mutual as H; intuition eauto.
+pose proof subst_exp_in_work_spec_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_var_in_work_spec_rec : lngen.
+#[export] Hint Resolve subst_exp_in_work_spec_rec : lngen.
 
 (* end hide *)
 
-Lemma subst_tvar_in_typ_spec :
+Lemma subst_typ_in_typ_spec :
 forall A1 A2 X1,
-  subst_tvar_in_typ A2 X1 A1 = open_typ_wrt_typ (close_typ_wrt_typ X1 A1) A2.
+  subst_typ_in_typ A2 X1 A1 = open_typ_wrt_typ (close_typ_wrt_typ X1 A1) A2.
 Proof.
 unfold close_typ_wrt_typ; unfold open_typ_wrt_typ; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_typ_spec : lngen.
+#[export] Hint Resolve subst_typ_in_typ_spec : lngen.
 
-Lemma subst_tvar_in_abind_spec :
+Lemma subst_typ_in_abind_spec :
 forall ab1 A1 X1,
-  subst_tvar_in_abind A1 X1 ab1 = open_abind_wrt_typ (close_abind_wrt_typ X1 ab1) A1.
+  subst_typ_in_abind A1 X1 ab1 = open_abind_wrt_typ (close_abind_wrt_typ X1 ab1) A1.
 Proof.
 unfold close_abind_wrt_typ; unfold open_abind_wrt_typ; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_abind_spec : lngen.
+#[export] Hint Resolve subst_typ_in_abind_spec : lngen.
 
-Lemma subst_tvar_in_exp_spec :
+Lemma subst_typ_in_exp_spec :
 forall e1 A1 X1,
-  subst_tvar_in_exp A1 X1 e1 = open_exp_wrt_typ (close_exp_wrt_typ X1 e1) A1.
+  subst_typ_in_exp A1 X1 e1 = open_exp_wrt_typ (close_exp_wrt_typ X1 e1) A1.
 Proof.
 unfold close_exp_wrt_typ; unfold open_exp_wrt_typ; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_exp_spec : lngen.
+#[export] Hint Resolve subst_typ_in_exp_spec : lngen.
 
-Lemma subst_var_in_exp_spec :
+Lemma subst_exp_in_exp_spec :
 forall e1 e2 x1,
-  subst_var_in_exp e2 x1 e1 = open_exp_wrt_exp (close_exp_wrt_exp x1 e1) e2.
+  subst_exp_in_exp e2 x1 e1 = open_exp_wrt_exp (close_exp_wrt_exp x1 e1) e2.
 Proof.
 unfold close_exp_wrt_exp; unfold open_exp_wrt_exp; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_var_in_exp_spec : lngen.
+#[export] Hint Resolve subst_exp_in_exp_spec : lngen.
 
-Lemma subst_tvar_in_contd_spec :
+Lemma subst_typ_in_contd_spec :
 forall cd1 A1 X1,
-  subst_tvar_in_contd A1 X1 cd1 = open_contd_wrt_typ (close_contd_wrt_typ X1 cd1) A1.
+  subst_typ_in_contd A1 X1 cd1 = open_contd_wrt_typ (close_contd_wrt_typ X1 cd1) A1.
 Proof.
 unfold close_contd_wrt_typ; unfold open_contd_wrt_typ; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_contd_spec : lngen.
+#[export] Hint Resolve subst_typ_in_contd_spec : lngen.
 
-Lemma subst_tvar_in_conts_spec :
+Lemma subst_typ_in_conts_spec :
 forall cs1 A1 X1,
-  subst_tvar_in_conts A1 X1 cs1 = open_conts_wrt_typ (close_conts_wrt_typ X1 cs1) A1.
+  subst_typ_in_conts A1 X1 cs1 = open_conts_wrt_typ (close_conts_wrt_typ X1 cs1) A1.
 Proof.
 unfold close_conts_wrt_typ; unfold open_conts_wrt_typ; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_conts_spec : lngen.
+#[export] Hint Resolve subst_typ_in_conts_spec : lngen.
 
-Lemma subst_var_in_contd_spec :
+Lemma subst_exp_in_contd_spec :
 forall cd1 e1 x1,
-  subst_var_in_contd e1 x1 cd1 = open_contd_wrt_exp (close_contd_wrt_exp x1 cd1) e1.
+  subst_exp_in_contd e1 x1 cd1 = open_contd_wrt_exp (close_contd_wrt_exp x1 cd1) e1.
 Proof.
 unfold close_contd_wrt_exp; unfold open_contd_wrt_exp; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_var_in_contd_spec : lngen.
+#[export] Hint Resolve subst_exp_in_contd_spec : lngen.
 
-Lemma subst_var_in_conts_spec :
+Lemma subst_exp_in_conts_spec :
 forall cs1 e1 x1,
-  subst_var_in_conts e1 x1 cs1 = open_conts_wrt_exp (close_conts_wrt_exp x1 cs1) e1.
+  subst_exp_in_conts e1 x1 cs1 = open_conts_wrt_exp (close_conts_wrt_exp x1 cs1) e1.
 Proof.
 unfold close_conts_wrt_exp; unfold open_conts_wrt_exp; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_var_in_conts_spec : lngen.
+#[export] Hint Resolve subst_exp_in_conts_spec : lngen.
 
-Lemma subst_tvar_in_dbind_spec :
+Lemma subst_typ_in_dbind_spec :
 forall db1 A1 X1,
-  subst_tvar_in_dbind A1 X1 db1 = open_dbind_wrt_typ (close_dbind_wrt_typ X1 db1) A1.
+  subst_typ_in_dbind A1 X1 db1 = open_dbind_wrt_typ (close_dbind_wrt_typ X1 db1) A1.
 Proof.
 unfold close_dbind_wrt_typ; unfold open_dbind_wrt_typ; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_dbind_spec : lngen.
+#[export] Hint Resolve subst_typ_in_dbind_spec : lngen.
 
-Lemma subst_tvar_in_work_spec :
+Lemma subst_typ_in_work_spec :
 forall w1 A1 X1,
-  subst_tvar_in_work A1 X1 w1 = open_work_wrt_typ (close_work_wrt_typ X1 w1) A1.
+  subst_typ_in_work A1 X1 w1 = open_work_wrt_typ (close_work_wrt_typ X1 w1) A1.
 Proof.
 unfold close_work_wrt_typ; unfold open_work_wrt_typ; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_work_spec : lngen.
+#[export] Hint Resolve subst_typ_in_work_spec : lngen.
 
-Lemma subst_var_in_work_spec :
+Lemma subst_exp_in_work_spec :
 forall w1 e1 x1,
-  subst_var_in_work e1 x1 w1 = open_work_wrt_exp (close_work_wrt_exp x1 w1) e1.
+  subst_exp_in_work e1 x1 w1 = open_work_wrt_exp (close_work_wrt_exp x1 w1) e1.
 Proof.
 unfold close_work_wrt_exp; unfold open_work_wrt_exp; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_var_in_work_spec : lngen.
+#[export] Hint Resolve subst_exp_in_work_spec : lngen.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_typ_subst_tvar_in_typ_mutual :
+Lemma subst_typ_in_typ_subst_typ_in_typ_mutual :
 (forall A1 A2 A3 X2 X1,
   X2 `notin` ftvar_in_typ A2 ->
   X2 <> X1 ->
-  subst_tvar_in_typ A2 X1 (subst_tvar_in_typ A3 X2 A1) = subst_tvar_in_typ (subst_tvar_in_typ A2 X1 A3) X2 (subst_tvar_in_typ A2 X1 A1)).
+  subst_typ_in_typ A2 X1 (subst_typ_in_typ A3 X2 A1) = subst_typ_in_typ (subst_typ_in_typ A2 X1 A3) X2 (subst_typ_in_typ A2 X1 A1)).
 Proof.
 apply_mutual_ind typ_mutind;
 default_simp.
@@ -15503,24 +15503,24 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_tvar_in_typ_subst_tvar_in_typ :
+Lemma subst_typ_in_typ_subst_typ_in_typ :
 forall A1 A2 A3 X2 X1,
   X2 `notin` ftvar_in_typ A2 ->
   X2 <> X1 ->
-  subst_tvar_in_typ A2 X1 (subst_tvar_in_typ A3 X2 A1) = subst_tvar_in_typ (subst_tvar_in_typ A2 X1 A3) X2 (subst_tvar_in_typ A2 X1 A1).
+  subst_typ_in_typ A2 X1 (subst_typ_in_typ A3 X2 A1) = subst_typ_in_typ (subst_typ_in_typ A2 X1 A3) X2 (subst_typ_in_typ A2 X1 A1).
 Proof.
-pose proof subst_tvar_in_typ_subst_tvar_in_typ_mutual as H; intuition eauto.
+pose proof subst_typ_in_typ_subst_typ_in_typ_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_typ_subst_tvar_in_typ : lngen.
+#[export] Hint Resolve subst_typ_in_typ_subst_typ_in_typ : lngen.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_abind_subst_tvar_in_abind_mutual :
+Lemma subst_typ_in_abind_subst_typ_in_abind_mutual :
 (forall ab1 A1 A2 X2 X1,
   X2 `notin` ftvar_in_typ A1 ->
   X2 <> X1 ->
-  subst_tvar_in_abind A1 X1 (subst_tvar_in_abind A2 X2 ab1) = subst_tvar_in_abind (subst_tvar_in_typ A1 X1 A2) X2 (subst_tvar_in_abind A1 X1 ab1)).
+  subst_typ_in_abind A1 X1 (subst_typ_in_abind A2 X2 ab1) = subst_typ_in_abind (subst_typ_in_typ A1 X1 A2) X2 (subst_typ_in_abind A1 X1 ab1)).
 Proof.
 apply_mutual_ind abind_mutind;
 default_simp.
@@ -15528,24 +15528,24 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_tvar_in_abind_subst_tvar_in_abind :
+Lemma subst_typ_in_abind_subst_typ_in_abind :
 forall ab1 A1 A2 X2 X1,
   X2 `notin` ftvar_in_typ A1 ->
   X2 <> X1 ->
-  subst_tvar_in_abind A1 X1 (subst_tvar_in_abind A2 X2 ab1) = subst_tvar_in_abind (subst_tvar_in_typ A1 X1 A2) X2 (subst_tvar_in_abind A1 X1 ab1).
+  subst_typ_in_abind A1 X1 (subst_typ_in_abind A2 X2 ab1) = subst_typ_in_abind (subst_typ_in_typ A1 X1 A2) X2 (subst_typ_in_abind A1 X1 ab1).
 Proof.
-pose proof subst_tvar_in_abind_subst_tvar_in_abind_mutual as H; intuition eauto.
+pose proof subst_typ_in_abind_subst_typ_in_abind_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_abind_subst_tvar_in_abind : lngen.
+#[export] Hint Resolve subst_typ_in_abind_subst_typ_in_abind : lngen.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_exp_subst_tvar_in_exp_mutual :
+Lemma subst_typ_in_exp_subst_typ_in_exp_mutual :
 (forall e1 A1 A2 X2 X1,
   X2 `notin` ftvar_in_typ A1 ->
   X2 <> X1 ->
-  subst_tvar_in_exp A1 X1 (subst_tvar_in_exp A2 X2 e1) = subst_tvar_in_exp (subst_tvar_in_typ A1 X1 A2) X2 (subst_tvar_in_exp A1 X1 e1)).
+  subst_typ_in_exp A1 X1 (subst_typ_in_exp A2 X2 e1) = subst_typ_in_exp (subst_typ_in_typ A1 X1 A2) X2 (subst_typ_in_exp A1 X1 e1)).
 Proof.
 apply_mutual_ind exp_mutind;
 default_simp.
@@ -15553,22 +15553,22 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_tvar_in_exp_subst_tvar_in_exp :
+Lemma subst_typ_in_exp_subst_typ_in_exp :
 forall e1 A1 A2 X2 X1,
   X2 `notin` ftvar_in_typ A1 ->
   X2 <> X1 ->
-  subst_tvar_in_exp A1 X1 (subst_tvar_in_exp A2 X2 e1) = subst_tvar_in_exp (subst_tvar_in_typ A1 X1 A2) X2 (subst_tvar_in_exp A1 X1 e1).
+  subst_typ_in_exp A1 X1 (subst_typ_in_exp A2 X2 e1) = subst_typ_in_exp (subst_typ_in_typ A1 X1 A2) X2 (subst_typ_in_exp A1 X1 e1).
 Proof.
-pose proof subst_tvar_in_exp_subst_tvar_in_exp_mutual as H; intuition eauto.
+pose proof subst_typ_in_exp_subst_typ_in_exp_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_exp_subst_tvar_in_exp : lngen.
+#[export] Hint Resolve subst_typ_in_exp_subst_typ_in_exp : lngen.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_exp_subst_var_in_exp_mutual :
+Lemma subst_typ_in_exp_subst_exp_in_exp_mutual :
 (forall e1 A1 e2 x1 X1,
-  subst_tvar_in_exp A1 X1 (subst_var_in_exp e2 x1 e1) = subst_var_in_exp (subst_tvar_in_exp A1 X1 e2) x1 (subst_tvar_in_exp A1 X1 e1)).
+  subst_typ_in_exp A1 X1 (subst_exp_in_exp e2 x1 e1) = subst_exp_in_exp (subst_typ_in_exp A1 X1 e2) x1 (subst_typ_in_exp A1 X1 e1)).
 Proof.
 apply_mutual_ind exp_mutind;
 default_simp.
@@ -15576,21 +15576,21 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_tvar_in_exp_subst_var_in_exp :
+Lemma subst_typ_in_exp_subst_exp_in_exp :
 forall e1 A1 e2 x1 X1,
-  subst_tvar_in_exp A1 X1 (subst_var_in_exp e2 x1 e1) = subst_var_in_exp (subst_tvar_in_exp A1 X1 e2) x1 (subst_tvar_in_exp A1 X1 e1).
+  subst_typ_in_exp A1 X1 (subst_exp_in_exp e2 x1 e1) = subst_exp_in_exp (subst_typ_in_exp A1 X1 e2) x1 (subst_typ_in_exp A1 X1 e1).
 Proof.
-pose proof subst_tvar_in_exp_subst_var_in_exp_mutual as H; intuition eauto.
+pose proof subst_typ_in_exp_subst_exp_in_exp_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_exp_subst_var_in_exp : lngen.
+#[export] Hint Resolve subst_typ_in_exp_subst_exp_in_exp : lngen.
 
 (* begin hide *)
 
-Lemma subst_var_in_exp_subst_tvar_in_exp_mutual :
+Lemma subst_exp_in_exp_subst_typ_in_exp_mutual :
 (forall e1 e2 A1 X1 x1,
   X1 `notin` ftvar_in_exp e2 ->
-  subst_var_in_exp e2 x1 (subst_tvar_in_exp A1 X1 e1) = subst_tvar_in_exp A1 X1 (subst_var_in_exp e2 x1 e1)).
+  subst_exp_in_exp e2 x1 (subst_typ_in_exp A1 X1 e1) = subst_typ_in_exp A1 X1 (subst_exp_in_exp e2 x1 e1)).
 Proof.
 apply_mutual_ind exp_mutind;
 default_simp.
@@ -15598,23 +15598,23 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_var_in_exp_subst_tvar_in_exp :
+Lemma subst_exp_in_exp_subst_typ_in_exp :
 forall e1 e2 A1 X1 x1,
   X1 `notin` ftvar_in_exp e2 ->
-  subst_var_in_exp e2 x1 (subst_tvar_in_exp A1 X1 e1) = subst_tvar_in_exp A1 X1 (subst_var_in_exp e2 x1 e1).
+  subst_exp_in_exp e2 x1 (subst_typ_in_exp A1 X1 e1) = subst_typ_in_exp A1 X1 (subst_exp_in_exp e2 x1 e1).
 Proof.
-pose proof subst_var_in_exp_subst_tvar_in_exp_mutual as H; intuition eauto.
+pose proof subst_exp_in_exp_subst_typ_in_exp_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_var_in_exp_subst_tvar_in_exp : lngen.
+#[export] Hint Resolve subst_exp_in_exp_subst_typ_in_exp : lngen.
 
 (* begin hide *)
 
-Lemma subst_var_in_exp_subst_var_in_exp_mutual :
+Lemma subst_exp_in_exp_subst_exp_in_exp_mutual :
 (forall e1 e2 e3 x2 x1,
   x2 `notin` fvar_in_exp e2 ->
   x2 <> x1 ->
-  subst_var_in_exp e2 x1 (subst_var_in_exp e3 x2 e1) = subst_var_in_exp (subst_var_in_exp e2 x1 e3) x2 (subst_var_in_exp e2 x1 e1)).
+  subst_exp_in_exp e2 x1 (subst_exp_in_exp e3 x2 e1) = subst_exp_in_exp (subst_exp_in_exp e2 x1 e3) x2 (subst_exp_in_exp e2 x1 e1)).
 Proof.
 apply_mutual_ind exp_mutind;
 default_simp.
@@ -15622,28 +15622,28 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_var_in_exp_subst_var_in_exp :
+Lemma subst_exp_in_exp_subst_exp_in_exp :
 forall e1 e2 e3 x2 x1,
   x2 `notin` fvar_in_exp e2 ->
   x2 <> x1 ->
-  subst_var_in_exp e2 x1 (subst_var_in_exp e3 x2 e1) = subst_var_in_exp (subst_var_in_exp e2 x1 e3) x2 (subst_var_in_exp e2 x1 e1).
+  subst_exp_in_exp e2 x1 (subst_exp_in_exp e3 x2 e1) = subst_exp_in_exp (subst_exp_in_exp e2 x1 e3) x2 (subst_exp_in_exp e2 x1 e1).
 Proof.
-pose proof subst_var_in_exp_subst_var_in_exp_mutual as H; intuition eauto.
+pose proof subst_exp_in_exp_subst_exp_in_exp_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_var_in_exp_subst_var_in_exp : lngen.
+#[export] Hint Resolve subst_exp_in_exp_subst_exp_in_exp : lngen.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_contd_subst_tvar_in_contd_subst_tvar_in_conts_subst_tvar_in_conts_mutual :
+Lemma subst_typ_in_contd_subst_typ_in_contd_subst_typ_in_conts_subst_typ_in_conts_mutual :
 (forall cd1 A1 A2 X2 X1,
   X2 `notin` ftvar_in_typ A1 ->
   X2 <> X1 ->
-  subst_tvar_in_contd A1 X1 (subst_tvar_in_contd A2 X2 cd1) = subst_tvar_in_contd (subst_tvar_in_typ A1 X1 A2) X2 (subst_tvar_in_contd A1 X1 cd1)) /\
+  subst_typ_in_contd A1 X1 (subst_typ_in_contd A2 X2 cd1) = subst_typ_in_contd (subst_typ_in_typ A1 X1 A2) X2 (subst_typ_in_contd A1 X1 cd1)) /\
 (forall cs1 A1 A2 X2 X1,
   X2 `notin` ftvar_in_typ A1 ->
   X2 <> X1 ->
-  subst_tvar_in_conts A1 X1 (subst_tvar_in_conts A2 X2 cs1) = subst_tvar_in_conts (subst_tvar_in_typ A1 X1 A2) X2 (subst_tvar_in_conts A1 X1 cs1)).
+  subst_typ_in_conts A1 X1 (subst_typ_in_conts A2 X2 cs1) = subst_typ_in_conts (subst_typ_in_typ A1 X1 A2) X2 (subst_typ_in_conts A1 X1 cs1)).
 Proof.
 apply_mutual_ind contd_conts_mutind;
 default_simp.
@@ -15651,35 +15651,35 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_tvar_in_contd_subst_tvar_in_contd :
+Lemma subst_typ_in_contd_subst_typ_in_contd :
 forall cd1 A1 A2 X2 X1,
   X2 `notin` ftvar_in_typ A1 ->
   X2 <> X1 ->
-  subst_tvar_in_contd A1 X1 (subst_tvar_in_contd A2 X2 cd1) = subst_tvar_in_contd (subst_tvar_in_typ A1 X1 A2) X2 (subst_tvar_in_contd A1 X1 cd1).
+  subst_typ_in_contd A1 X1 (subst_typ_in_contd A2 X2 cd1) = subst_typ_in_contd (subst_typ_in_typ A1 X1 A2) X2 (subst_typ_in_contd A1 X1 cd1).
 Proof.
-pose proof subst_tvar_in_contd_subst_tvar_in_contd_subst_tvar_in_conts_subst_tvar_in_conts_mutual as H; intuition eauto.
+pose proof subst_typ_in_contd_subst_typ_in_contd_subst_typ_in_conts_subst_typ_in_conts_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_contd_subst_tvar_in_contd : lngen.
+#[export] Hint Resolve subst_typ_in_contd_subst_typ_in_contd : lngen.
 
-Lemma subst_tvar_in_conts_subst_tvar_in_conts :
+Lemma subst_typ_in_conts_subst_typ_in_conts :
 forall cs1 A1 A2 X2 X1,
   X2 `notin` ftvar_in_typ A1 ->
   X2 <> X1 ->
-  subst_tvar_in_conts A1 X1 (subst_tvar_in_conts A2 X2 cs1) = subst_tvar_in_conts (subst_tvar_in_typ A1 X1 A2) X2 (subst_tvar_in_conts A1 X1 cs1).
+  subst_typ_in_conts A1 X1 (subst_typ_in_conts A2 X2 cs1) = subst_typ_in_conts (subst_typ_in_typ A1 X1 A2) X2 (subst_typ_in_conts A1 X1 cs1).
 Proof.
-pose proof subst_tvar_in_contd_subst_tvar_in_contd_subst_tvar_in_conts_subst_tvar_in_conts_mutual as H; intuition eauto.
+pose proof subst_typ_in_contd_subst_typ_in_contd_subst_typ_in_conts_subst_typ_in_conts_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_conts_subst_tvar_in_conts : lngen.
+#[export] Hint Resolve subst_typ_in_conts_subst_typ_in_conts : lngen.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_contd_subst_var_in_contd_subst_tvar_in_conts_subst_var_in_conts_mutual :
+Lemma subst_typ_in_contd_subst_exp_in_contd_subst_typ_in_conts_subst_exp_in_conts_mutual :
 (forall cd1 A1 e1 x1 X1,
-  subst_tvar_in_contd A1 X1 (subst_var_in_contd e1 x1 cd1) = subst_var_in_contd (subst_tvar_in_exp A1 X1 e1) x1 (subst_tvar_in_contd A1 X1 cd1)) /\
+  subst_typ_in_contd A1 X1 (subst_exp_in_contd e1 x1 cd1) = subst_exp_in_contd (subst_typ_in_exp A1 X1 e1) x1 (subst_typ_in_contd A1 X1 cd1)) /\
 (forall cs1 A1 e1 x1 X1,
-  subst_tvar_in_conts A1 X1 (subst_var_in_conts e1 x1 cs1) = subst_var_in_conts (subst_tvar_in_exp A1 X1 e1) x1 (subst_tvar_in_conts A1 X1 cs1)).
+  subst_typ_in_conts A1 X1 (subst_exp_in_conts e1 x1 cs1) = subst_exp_in_conts (subst_typ_in_exp A1 X1 e1) x1 (subst_typ_in_conts A1 X1 cs1)).
 Proof.
 apply_mutual_ind contd_conts_mutind;
 default_simp.
@@ -15687,33 +15687,33 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_tvar_in_contd_subst_var_in_contd :
+Lemma subst_typ_in_contd_subst_exp_in_contd :
 forall cd1 A1 e1 x1 X1,
-  subst_tvar_in_contd A1 X1 (subst_var_in_contd e1 x1 cd1) = subst_var_in_contd (subst_tvar_in_exp A1 X1 e1) x1 (subst_tvar_in_contd A1 X1 cd1).
+  subst_typ_in_contd A1 X1 (subst_exp_in_contd e1 x1 cd1) = subst_exp_in_contd (subst_typ_in_exp A1 X1 e1) x1 (subst_typ_in_contd A1 X1 cd1).
 Proof.
-pose proof subst_tvar_in_contd_subst_var_in_contd_subst_tvar_in_conts_subst_var_in_conts_mutual as H; intuition eauto.
+pose proof subst_typ_in_contd_subst_exp_in_contd_subst_typ_in_conts_subst_exp_in_conts_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_contd_subst_var_in_contd : lngen.
+#[export] Hint Resolve subst_typ_in_contd_subst_exp_in_contd : lngen.
 
-Lemma subst_tvar_in_conts_subst_var_in_conts :
+Lemma subst_typ_in_conts_subst_exp_in_conts :
 forall cs1 A1 e1 x1 X1,
-  subst_tvar_in_conts A1 X1 (subst_var_in_conts e1 x1 cs1) = subst_var_in_conts (subst_tvar_in_exp A1 X1 e1) x1 (subst_tvar_in_conts A1 X1 cs1).
+  subst_typ_in_conts A1 X1 (subst_exp_in_conts e1 x1 cs1) = subst_exp_in_conts (subst_typ_in_exp A1 X1 e1) x1 (subst_typ_in_conts A1 X1 cs1).
 Proof.
-pose proof subst_tvar_in_contd_subst_var_in_contd_subst_tvar_in_conts_subst_var_in_conts_mutual as H; intuition eauto.
+pose proof subst_typ_in_contd_subst_exp_in_contd_subst_typ_in_conts_subst_exp_in_conts_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_conts_subst_var_in_conts : lngen.
+#[export] Hint Resolve subst_typ_in_conts_subst_exp_in_conts : lngen.
 
 (* begin hide *)
 
-Lemma subst_var_in_contd_subst_tvar_in_contd_subst_var_in_conts_subst_tvar_in_conts_mutual :
+Lemma subst_exp_in_contd_subst_typ_in_contd_subst_exp_in_conts_subst_typ_in_conts_mutual :
 (forall cd1 e1 A1 X1 x1,
   X1 `notin` ftvar_in_exp e1 ->
-  subst_var_in_contd e1 x1 (subst_tvar_in_contd A1 X1 cd1) = subst_tvar_in_contd A1 X1 (subst_var_in_contd e1 x1 cd1)) /\
+  subst_exp_in_contd e1 x1 (subst_typ_in_contd A1 X1 cd1) = subst_typ_in_contd A1 X1 (subst_exp_in_contd e1 x1 cd1)) /\
 (forall cs1 e1 A1 X1 x1,
   X1 `notin` ftvar_in_exp e1 ->
-  subst_var_in_conts e1 x1 (subst_tvar_in_conts A1 X1 cs1) = subst_tvar_in_conts A1 X1 (subst_var_in_conts e1 x1 cs1)).
+  subst_exp_in_conts e1 x1 (subst_typ_in_conts A1 X1 cs1) = subst_typ_in_conts A1 X1 (subst_exp_in_conts e1 x1 cs1)).
 Proof.
 apply_mutual_ind contd_conts_mutind;
 default_simp.
@@ -15721,37 +15721,37 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_var_in_contd_subst_tvar_in_contd :
+Lemma subst_exp_in_contd_subst_typ_in_contd :
 forall cd1 e1 A1 X1 x1,
   X1 `notin` ftvar_in_exp e1 ->
-  subst_var_in_contd e1 x1 (subst_tvar_in_contd A1 X1 cd1) = subst_tvar_in_contd A1 X1 (subst_var_in_contd e1 x1 cd1).
+  subst_exp_in_contd e1 x1 (subst_typ_in_contd A1 X1 cd1) = subst_typ_in_contd A1 X1 (subst_exp_in_contd e1 x1 cd1).
 Proof.
-pose proof subst_var_in_contd_subst_tvar_in_contd_subst_var_in_conts_subst_tvar_in_conts_mutual as H; intuition eauto.
+pose proof subst_exp_in_contd_subst_typ_in_contd_subst_exp_in_conts_subst_typ_in_conts_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_var_in_contd_subst_tvar_in_contd : lngen.
+#[export] Hint Resolve subst_exp_in_contd_subst_typ_in_contd : lngen.
 
-Lemma subst_var_in_conts_subst_tvar_in_conts :
+Lemma subst_exp_in_conts_subst_typ_in_conts :
 forall cs1 e1 A1 X1 x1,
   X1 `notin` ftvar_in_exp e1 ->
-  subst_var_in_conts e1 x1 (subst_tvar_in_conts A1 X1 cs1) = subst_tvar_in_conts A1 X1 (subst_var_in_conts e1 x1 cs1).
+  subst_exp_in_conts e1 x1 (subst_typ_in_conts A1 X1 cs1) = subst_typ_in_conts A1 X1 (subst_exp_in_conts e1 x1 cs1).
 Proof.
-pose proof subst_var_in_contd_subst_tvar_in_contd_subst_var_in_conts_subst_tvar_in_conts_mutual as H; intuition eauto.
+pose proof subst_exp_in_contd_subst_typ_in_contd_subst_exp_in_conts_subst_typ_in_conts_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_var_in_conts_subst_tvar_in_conts : lngen.
+#[export] Hint Resolve subst_exp_in_conts_subst_typ_in_conts : lngen.
 
 (* begin hide *)
 
-Lemma subst_var_in_contd_subst_var_in_contd_subst_var_in_conts_subst_var_in_conts_mutual :
+Lemma subst_exp_in_contd_subst_exp_in_contd_subst_exp_in_conts_subst_exp_in_conts_mutual :
 (forall cd1 e1 e2 x2 x1,
   x2 `notin` fvar_in_exp e1 ->
   x2 <> x1 ->
-  subst_var_in_contd e1 x1 (subst_var_in_contd e2 x2 cd1) = subst_var_in_contd (subst_var_in_exp e1 x1 e2) x2 (subst_var_in_contd e1 x1 cd1)) /\
+  subst_exp_in_contd e1 x1 (subst_exp_in_contd e2 x2 cd1) = subst_exp_in_contd (subst_exp_in_exp e1 x1 e2) x2 (subst_exp_in_contd e1 x1 cd1)) /\
 (forall cs1 e1 e2 x2 x1,
   x2 `notin` fvar_in_exp e1 ->
   x2 <> x1 ->
-  subst_var_in_conts e1 x1 (subst_var_in_conts e2 x2 cs1) = subst_var_in_conts (subst_var_in_exp e1 x1 e2) x2 (subst_var_in_conts e1 x1 cs1)).
+  subst_exp_in_conts e1 x1 (subst_exp_in_conts e2 x2 cs1) = subst_exp_in_conts (subst_exp_in_exp e1 x1 e2) x2 (subst_exp_in_conts e1 x1 cs1)).
 Proof.
 apply_mutual_ind contd_conts_mutind;
 default_simp.
@@ -15759,35 +15759,35 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_var_in_contd_subst_var_in_contd :
+Lemma subst_exp_in_contd_subst_exp_in_contd :
 forall cd1 e1 e2 x2 x1,
   x2 `notin` fvar_in_exp e1 ->
   x2 <> x1 ->
-  subst_var_in_contd e1 x1 (subst_var_in_contd e2 x2 cd1) = subst_var_in_contd (subst_var_in_exp e1 x1 e2) x2 (subst_var_in_contd e1 x1 cd1).
+  subst_exp_in_contd e1 x1 (subst_exp_in_contd e2 x2 cd1) = subst_exp_in_contd (subst_exp_in_exp e1 x1 e2) x2 (subst_exp_in_contd e1 x1 cd1).
 Proof.
-pose proof subst_var_in_contd_subst_var_in_contd_subst_var_in_conts_subst_var_in_conts_mutual as H; intuition eauto.
+pose proof subst_exp_in_contd_subst_exp_in_contd_subst_exp_in_conts_subst_exp_in_conts_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_var_in_contd_subst_var_in_contd : lngen.
+#[export] Hint Resolve subst_exp_in_contd_subst_exp_in_contd : lngen.
 
-Lemma subst_var_in_conts_subst_var_in_conts :
+Lemma subst_exp_in_conts_subst_exp_in_conts :
 forall cs1 e1 e2 x2 x1,
   x2 `notin` fvar_in_exp e1 ->
   x2 <> x1 ->
-  subst_var_in_conts e1 x1 (subst_var_in_conts e2 x2 cs1) = subst_var_in_conts (subst_var_in_exp e1 x1 e2) x2 (subst_var_in_conts e1 x1 cs1).
+  subst_exp_in_conts e1 x1 (subst_exp_in_conts e2 x2 cs1) = subst_exp_in_conts (subst_exp_in_exp e1 x1 e2) x2 (subst_exp_in_conts e1 x1 cs1).
 Proof.
-pose proof subst_var_in_contd_subst_var_in_contd_subst_var_in_conts_subst_var_in_conts_mutual as H; intuition eauto.
+pose proof subst_exp_in_contd_subst_exp_in_contd_subst_exp_in_conts_subst_exp_in_conts_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_var_in_conts_subst_var_in_conts : lngen.
+#[export] Hint Resolve subst_exp_in_conts_subst_exp_in_conts : lngen.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_dbind_subst_tvar_in_dbind_mutual :
+Lemma subst_typ_in_dbind_subst_typ_in_dbind_mutual :
 (forall db1 A1 A2 X2 X1,
   X2 `notin` ftvar_in_typ A1 ->
   X2 <> X1 ->
-  subst_tvar_in_dbind A1 X1 (subst_tvar_in_dbind A2 X2 db1) = subst_tvar_in_dbind (subst_tvar_in_typ A1 X1 A2) X2 (subst_tvar_in_dbind A1 X1 db1)).
+  subst_typ_in_dbind A1 X1 (subst_typ_in_dbind A2 X2 db1) = subst_typ_in_dbind (subst_typ_in_typ A1 X1 A2) X2 (subst_typ_in_dbind A1 X1 db1)).
 Proof.
 apply_mutual_ind dbind_mutind;
 default_simp.
@@ -15795,24 +15795,24 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_tvar_in_dbind_subst_tvar_in_dbind :
+Lemma subst_typ_in_dbind_subst_typ_in_dbind :
 forall db1 A1 A2 X2 X1,
   X2 `notin` ftvar_in_typ A1 ->
   X2 <> X1 ->
-  subst_tvar_in_dbind A1 X1 (subst_tvar_in_dbind A2 X2 db1) = subst_tvar_in_dbind (subst_tvar_in_typ A1 X1 A2) X2 (subst_tvar_in_dbind A1 X1 db1).
+  subst_typ_in_dbind A1 X1 (subst_typ_in_dbind A2 X2 db1) = subst_typ_in_dbind (subst_typ_in_typ A1 X1 A2) X2 (subst_typ_in_dbind A1 X1 db1).
 Proof.
-pose proof subst_tvar_in_dbind_subst_tvar_in_dbind_mutual as H; intuition eauto.
+pose proof subst_typ_in_dbind_subst_typ_in_dbind_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_dbind_subst_tvar_in_dbind : lngen.
+#[export] Hint Resolve subst_typ_in_dbind_subst_typ_in_dbind : lngen.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_work_subst_tvar_in_work_mutual :
+Lemma subst_typ_in_work_subst_typ_in_work_mutual :
 (forall w1 A1 A2 X2 X1,
   X2 `notin` ftvar_in_typ A1 ->
   X2 <> X1 ->
-  subst_tvar_in_work A1 X1 (subst_tvar_in_work A2 X2 w1) = subst_tvar_in_work (subst_tvar_in_typ A1 X1 A2) X2 (subst_tvar_in_work A1 X1 w1)).
+  subst_typ_in_work A1 X1 (subst_typ_in_work A2 X2 w1) = subst_typ_in_work (subst_typ_in_typ A1 X1 A2) X2 (subst_typ_in_work A1 X1 w1)).
 Proof.
 apply_mutual_ind work_mutind;
 default_simp.
@@ -15820,22 +15820,22 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_tvar_in_work_subst_tvar_in_work :
+Lemma subst_typ_in_work_subst_typ_in_work :
 forall w1 A1 A2 X2 X1,
   X2 `notin` ftvar_in_typ A1 ->
   X2 <> X1 ->
-  subst_tvar_in_work A1 X1 (subst_tvar_in_work A2 X2 w1) = subst_tvar_in_work (subst_tvar_in_typ A1 X1 A2) X2 (subst_tvar_in_work A1 X1 w1).
+  subst_typ_in_work A1 X1 (subst_typ_in_work A2 X2 w1) = subst_typ_in_work (subst_typ_in_typ A1 X1 A2) X2 (subst_typ_in_work A1 X1 w1).
 Proof.
-pose proof subst_tvar_in_work_subst_tvar_in_work_mutual as H; intuition eauto.
+pose proof subst_typ_in_work_subst_typ_in_work_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_work_subst_tvar_in_work : lngen.
+#[export] Hint Resolve subst_typ_in_work_subst_typ_in_work : lngen.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_work_subst_var_in_work_mutual :
+Lemma subst_typ_in_work_subst_exp_in_work_mutual :
 (forall w1 A1 e1 x1 X1,
-  subst_tvar_in_work A1 X1 (subst_var_in_work e1 x1 w1) = subst_var_in_work (subst_tvar_in_exp A1 X1 e1) x1 (subst_tvar_in_work A1 X1 w1)).
+  subst_typ_in_work A1 X1 (subst_exp_in_work e1 x1 w1) = subst_exp_in_work (subst_typ_in_exp A1 X1 e1) x1 (subst_typ_in_work A1 X1 w1)).
 Proof.
 apply_mutual_ind work_mutind;
 default_simp.
@@ -15843,21 +15843,21 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_tvar_in_work_subst_var_in_work :
+Lemma subst_typ_in_work_subst_exp_in_work :
 forall w1 A1 e1 x1 X1,
-  subst_tvar_in_work A1 X1 (subst_var_in_work e1 x1 w1) = subst_var_in_work (subst_tvar_in_exp A1 X1 e1) x1 (subst_tvar_in_work A1 X1 w1).
+  subst_typ_in_work A1 X1 (subst_exp_in_work e1 x1 w1) = subst_exp_in_work (subst_typ_in_exp A1 X1 e1) x1 (subst_typ_in_work A1 X1 w1).
 Proof.
-pose proof subst_tvar_in_work_subst_var_in_work_mutual as H; intuition eauto.
+pose proof subst_typ_in_work_subst_exp_in_work_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_work_subst_var_in_work : lngen.
+#[export] Hint Resolve subst_typ_in_work_subst_exp_in_work : lngen.
 
 (* begin hide *)
 
-Lemma subst_var_in_work_subst_tvar_in_work_mutual :
+Lemma subst_exp_in_work_subst_typ_in_work_mutual :
 (forall w1 e1 A1 X1 x1,
   X1 `notin` ftvar_in_exp e1 ->
-  subst_var_in_work e1 x1 (subst_tvar_in_work A1 X1 w1) = subst_tvar_in_work A1 X1 (subst_var_in_work e1 x1 w1)).
+  subst_exp_in_work e1 x1 (subst_typ_in_work A1 X1 w1) = subst_typ_in_work A1 X1 (subst_exp_in_work e1 x1 w1)).
 Proof.
 apply_mutual_ind work_mutind;
 default_simp.
@@ -15865,23 +15865,23 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_var_in_work_subst_tvar_in_work :
+Lemma subst_exp_in_work_subst_typ_in_work :
 forall w1 e1 A1 X1 x1,
   X1 `notin` ftvar_in_exp e1 ->
-  subst_var_in_work e1 x1 (subst_tvar_in_work A1 X1 w1) = subst_tvar_in_work A1 X1 (subst_var_in_work e1 x1 w1).
+  subst_exp_in_work e1 x1 (subst_typ_in_work A1 X1 w1) = subst_typ_in_work A1 X1 (subst_exp_in_work e1 x1 w1).
 Proof.
-pose proof subst_var_in_work_subst_tvar_in_work_mutual as H; intuition eauto.
+pose proof subst_exp_in_work_subst_typ_in_work_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_var_in_work_subst_tvar_in_work : lngen.
+#[export] Hint Resolve subst_exp_in_work_subst_typ_in_work : lngen.
 
 (* begin hide *)
 
-Lemma subst_var_in_work_subst_var_in_work_mutual :
+Lemma subst_exp_in_work_subst_exp_in_work_mutual :
 (forall w1 e1 e2 x2 x1,
   x2 `notin` fvar_in_exp e1 ->
   x2 <> x1 ->
-  subst_var_in_work e1 x1 (subst_var_in_work e2 x2 w1) = subst_var_in_work (subst_var_in_exp e1 x1 e2) x2 (subst_var_in_work e1 x1 w1)).
+  subst_exp_in_work e1 x1 (subst_exp_in_work e2 x2 w1) = subst_exp_in_work (subst_exp_in_exp e1 x1 e2) x2 (subst_exp_in_work e1 x1 w1)).
 Proof.
 apply_mutual_ind work_mutind;
 default_simp.
@@ -15889,26 +15889,26 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_var_in_work_subst_var_in_work :
+Lemma subst_exp_in_work_subst_exp_in_work :
 forall w1 e1 e2 x2 x1,
   x2 `notin` fvar_in_exp e1 ->
   x2 <> x1 ->
-  subst_var_in_work e1 x1 (subst_var_in_work e2 x2 w1) = subst_var_in_work (subst_var_in_exp e1 x1 e2) x2 (subst_var_in_work e1 x1 w1).
+  subst_exp_in_work e1 x1 (subst_exp_in_work e2 x2 w1) = subst_exp_in_work (subst_exp_in_exp e1 x1 e2) x2 (subst_exp_in_work e1 x1 w1).
 Proof.
-pose proof subst_var_in_work_subst_var_in_work_mutual as H; intuition eauto.
+pose proof subst_exp_in_work_subst_exp_in_work_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_var_in_work_subst_var_in_work : lngen.
+#[export] Hint Resolve subst_exp_in_work_subst_exp_in_work : lngen.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_typ_close_typ_wrt_typ_rec_open_typ_wrt_typ_rec_mutual :
+Lemma subst_typ_in_typ_close_typ_wrt_typ_rec_open_typ_wrt_typ_rec_mutual :
 (forall A2 A1 X1 X2 n1,
   X2 `notin` ftvar_in_typ A2 ->
   X2 `notin` ftvar_in_typ A1 ->
   X2 <> X1 ->
   degree_typ_wrt_typ n1 A1 ->
-  subst_tvar_in_typ A1 X1 A2 = close_typ_wrt_typ_rec n1 X2 (subst_tvar_in_typ A1 X1 (open_typ_wrt_typ_rec n1 (typ_var_f X2) A2))).
+  subst_typ_in_typ A1 X1 A2 = close_typ_wrt_typ_rec n1 X2 (subst_typ_in_typ A1 X1 (open_typ_wrt_typ_rec n1 (typ_var_f X2) A2))).
 Proof.
 apply_mutual_ind typ_mutrec;
 default_simp.
@@ -15918,30 +15918,30 @@ Qed.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_typ_close_typ_wrt_typ_rec_open_typ_wrt_typ_rec :
+Lemma subst_typ_in_typ_close_typ_wrt_typ_rec_open_typ_wrt_typ_rec :
 forall A2 A1 X1 X2 n1,
   X2 `notin` ftvar_in_typ A2 ->
   X2 `notin` ftvar_in_typ A1 ->
   X2 <> X1 ->
   degree_typ_wrt_typ n1 A1 ->
-  subst_tvar_in_typ A1 X1 A2 = close_typ_wrt_typ_rec n1 X2 (subst_tvar_in_typ A1 X1 (open_typ_wrt_typ_rec n1 (typ_var_f X2) A2)).
+  subst_typ_in_typ A1 X1 A2 = close_typ_wrt_typ_rec n1 X2 (subst_typ_in_typ A1 X1 (open_typ_wrt_typ_rec n1 (typ_var_f X2) A2)).
 Proof.
-pose proof subst_tvar_in_typ_close_typ_wrt_typ_rec_open_typ_wrt_typ_rec_mutual as H; intuition eauto.
+pose proof subst_typ_in_typ_close_typ_wrt_typ_rec_open_typ_wrt_typ_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_typ_close_typ_wrt_typ_rec_open_typ_wrt_typ_rec : lngen.
+#[export] Hint Resolve subst_typ_in_typ_close_typ_wrt_typ_rec_open_typ_wrt_typ_rec : lngen.
 
 (* end hide *)
 
 (* begin hide *)
 
-Lemma subst_tvar_in_abind_close_abind_wrt_typ_rec_open_abind_wrt_typ_rec_mutual :
+Lemma subst_typ_in_abind_close_abind_wrt_typ_rec_open_abind_wrt_typ_rec_mutual :
 (forall ab1 A1 X1 X2 n1,
   X2 `notin` ftvar_in_abind ab1 ->
   X2 `notin` ftvar_in_typ A1 ->
   X2 <> X1 ->
   degree_typ_wrt_typ n1 A1 ->
-  subst_tvar_in_abind A1 X1 ab1 = close_abind_wrt_typ_rec n1 X2 (subst_tvar_in_abind A1 X1 (open_abind_wrt_typ_rec n1 (typ_var_f X2) ab1))).
+  subst_typ_in_abind A1 X1 ab1 = close_abind_wrt_typ_rec n1 X2 (subst_typ_in_abind A1 X1 (open_abind_wrt_typ_rec n1 (typ_var_f X2) ab1))).
 Proof.
 apply_mutual_ind abind_mutrec;
 default_simp.
@@ -15951,30 +15951,30 @@ Qed.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_abind_close_abind_wrt_typ_rec_open_abind_wrt_typ_rec :
+Lemma subst_typ_in_abind_close_abind_wrt_typ_rec_open_abind_wrt_typ_rec :
 forall ab1 A1 X1 X2 n1,
   X2 `notin` ftvar_in_abind ab1 ->
   X2 `notin` ftvar_in_typ A1 ->
   X2 <> X1 ->
   degree_typ_wrt_typ n1 A1 ->
-  subst_tvar_in_abind A1 X1 ab1 = close_abind_wrt_typ_rec n1 X2 (subst_tvar_in_abind A1 X1 (open_abind_wrt_typ_rec n1 (typ_var_f X2) ab1)).
+  subst_typ_in_abind A1 X1 ab1 = close_abind_wrt_typ_rec n1 X2 (subst_typ_in_abind A1 X1 (open_abind_wrt_typ_rec n1 (typ_var_f X2) ab1)).
 Proof.
-pose proof subst_tvar_in_abind_close_abind_wrt_typ_rec_open_abind_wrt_typ_rec_mutual as H; intuition eauto.
+pose proof subst_typ_in_abind_close_abind_wrt_typ_rec_open_abind_wrt_typ_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_abind_close_abind_wrt_typ_rec_open_abind_wrt_typ_rec : lngen.
+#[export] Hint Resolve subst_typ_in_abind_close_abind_wrt_typ_rec_open_abind_wrt_typ_rec : lngen.
 
 (* end hide *)
 
 (* begin hide *)
 
-Lemma subst_tvar_in_exp_close_exp_wrt_typ_rec_open_exp_wrt_typ_rec_mutual :
+Lemma subst_typ_in_exp_close_exp_wrt_typ_rec_open_exp_wrt_typ_rec_mutual :
 (forall e1 A1 X1 X2 n1,
   X2 `notin` ftvar_in_exp e1 ->
   X2 `notin` ftvar_in_typ A1 ->
   X2 <> X1 ->
   degree_typ_wrt_typ n1 A1 ->
-  subst_tvar_in_exp A1 X1 e1 = close_exp_wrt_typ_rec n1 X2 (subst_tvar_in_exp A1 X1 (open_exp_wrt_typ_rec n1 (typ_var_f X2) e1))).
+  subst_typ_in_exp A1 X1 e1 = close_exp_wrt_typ_rec n1 X2 (subst_typ_in_exp A1 X1 (open_exp_wrt_typ_rec n1 (typ_var_f X2) e1))).
 Proof.
 apply_mutual_ind exp_mutrec;
 default_simp.
@@ -15984,27 +15984,27 @@ Qed.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_exp_close_exp_wrt_typ_rec_open_exp_wrt_typ_rec :
+Lemma subst_typ_in_exp_close_exp_wrt_typ_rec_open_exp_wrt_typ_rec :
 forall e1 A1 X1 X2 n1,
   X2 `notin` ftvar_in_exp e1 ->
   X2 `notin` ftvar_in_typ A1 ->
   X2 <> X1 ->
   degree_typ_wrt_typ n1 A1 ->
-  subst_tvar_in_exp A1 X1 e1 = close_exp_wrt_typ_rec n1 X2 (subst_tvar_in_exp A1 X1 (open_exp_wrt_typ_rec n1 (typ_var_f X2) e1)).
+  subst_typ_in_exp A1 X1 e1 = close_exp_wrt_typ_rec n1 X2 (subst_typ_in_exp A1 X1 (open_exp_wrt_typ_rec n1 (typ_var_f X2) e1)).
 Proof.
-pose proof subst_tvar_in_exp_close_exp_wrt_typ_rec_open_exp_wrt_typ_rec_mutual as H; intuition eauto.
+pose proof subst_typ_in_exp_close_exp_wrt_typ_rec_open_exp_wrt_typ_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_exp_close_exp_wrt_typ_rec_open_exp_wrt_typ_rec : lngen.
+#[export] Hint Resolve subst_typ_in_exp_close_exp_wrt_typ_rec_open_exp_wrt_typ_rec : lngen.
 
 (* end hide *)
 
 (* begin hide *)
 
-Lemma subst_tvar_in_exp_close_exp_wrt_exp_rec_open_exp_wrt_exp_rec_mutual :
+Lemma subst_typ_in_exp_close_exp_wrt_exp_rec_open_exp_wrt_exp_rec_mutual :
 (forall e1 A1 X1 x1 n1,
   x1 `notin` fvar_in_exp e1 ->
-  subst_tvar_in_exp A1 X1 e1 = close_exp_wrt_exp_rec n1 x1 (subst_tvar_in_exp A1 X1 (open_exp_wrt_exp_rec n1 (exp_var_f x1) e1))).
+  subst_typ_in_exp A1 X1 e1 = close_exp_wrt_exp_rec n1 x1 (subst_typ_in_exp A1 X1 (open_exp_wrt_exp_rec n1 (exp_var_f x1) e1))).
 Proof.
 apply_mutual_ind exp_mutrec;
 default_simp.
@@ -16014,26 +16014,26 @@ Qed.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_exp_close_exp_wrt_exp_rec_open_exp_wrt_exp_rec :
+Lemma subst_typ_in_exp_close_exp_wrt_exp_rec_open_exp_wrt_exp_rec :
 forall e1 A1 X1 x1 n1,
   x1 `notin` fvar_in_exp e1 ->
-  subst_tvar_in_exp A1 X1 e1 = close_exp_wrt_exp_rec n1 x1 (subst_tvar_in_exp A1 X1 (open_exp_wrt_exp_rec n1 (exp_var_f x1) e1)).
+  subst_typ_in_exp A1 X1 e1 = close_exp_wrt_exp_rec n1 x1 (subst_typ_in_exp A1 X1 (open_exp_wrt_exp_rec n1 (exp_var_f x1) e1)).
 Proof.
-pose proof subst_tvar_in_exp_close_exp_wrt_exp_rec_open_exp_wrt_exp_rec_mutual as H; intuition eauto.
+pose proof subst_typ_in_exp_close_exp_wrt_exp_rec_open_exp_wrt_exp_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_exp_close_exp_wrt_exp_rec_open_exp_wrt_exp_rec : lngen.
+#[export] Hint Resolve subst_typ_in_exp_close_exp_wrt_exp_rec_open_exp_wrt_exp_rec : lngen.
 
 (* end hide *)
 
 (* begin hide *)
 
-Lemma subst_var_in_exp_close_exp_wrt_typ_rec_open_exp_wrt_typ_rec_mutual :
+Lemma subst_exp_in_exp_close_exp_wrt_typ_rec_open_exp_wrt_typ_rec_mutual :
 (forall e2 e1 x1 X1 n1,
   X1 `notin` ftvar_in_exp e2 ->
   X1 `notin` ftvar_in_exp e1 ->
   degree_exp_wrt_typ n1 e1 ->
-  subst_var_in_exp e1 x1 e2 = close_exp_wrt_typ_rec n1 X1 (subst_var_in_exp e1 x1 (open_exp_wrt_typ_rec n1 (typ_var_f X1) e2))).
+  subst_exp_in_exp e1 x1 e2 = close_exp_wrt_typ_rec n1 X1 (subst_exp_in_exp e1 x1 (open_exp_wrt_typ_rec n1 (typ_var_f X1) e2))).
 Proof.
 apply_mutual_ind exp_mutrec;
 default_simp.
@@ -16043,29 +16043,29 @@ Qed.
 
 (* begin hide *)
 
-Lemma subst_var_in_exp_close_exp_wrt_typ_rec_open_exp_wrt_typ_rec :
+Lemma subst_exp_in_exp_close_exp_wrt_typ_rec_open_exp_wrt_typ_rec :
 forall e2 e1 x1 X1 n1,
   X1 `notin` ftvar_in_exp e2 ->
   X1 `notin` ftvar_in_exp e1 ->
   degree_exp_wrt_typ n1 e1 ->
-  subst_var_in_exp e1 x1 e2 = close_exp_wrt_typ_rec n1 X1 (subst_var_in_exp e1 x1 (open_exp_wrt_typ_rec n1 (typ_var_f X1) e2)).
+  subst_exp_in_exp e1 x1 e2 = close_exp_wrt_typ_rec n1 X1 (subst_exp_in_exp e1 x1 (open_exp_wrt_typ_rec n1 (typ_var_f X1) e2)).
 Proof.
-pose proof subst_var_in_exp_close_exp_wrt_typ_rec_open_exp_wrt_typ_rec_mutual as H; intuition eauto.
+pose proof subst_exp_in_exp_close_exp_wrt_typ_rec_open_exp_wrt_typ_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_var_in_exp_close_exp_wrt_typ_rec_open_exp_wrt_typ_rec : lngen.
+#[export] Hint Resolve subst_exp_in_exp_close_exp_wrt_typ_rec_open_exp_wrt_typ_rec : lngen.
 
 (* end hide *)
 
 (* begin hide *)
 
-Lemma subst_var_in_exp_close_exp_wrt_exp_rec_open_exp_wrt_exp_rec_mutual :
+Lemma subst_exp_in_exp_close_exp_wrt_exp_rec_open_exp_wrt_exp_rec_mutual :
 (forall e2 e1 x1 x2 n1,
   x2 `notin` fvar_in_exp e2 ->
   x2 `notin` fvar_in_exp e1 ->
   x2 <> x1 ->
   degree_exp_wrt_exp n1 e1 ->
-  subst_var_in_exp e1 x1 e2 = close_exp_wrt_exp_rec n1 x2 (subst_var_in_exp e1 x1 (open_exp_wrt_exp_rec n1 (exp_var_f x2) e2))).
+  subst_exp_in_exp e1 x1 e2 = close_exp_wrt_exp_rec n1 x2 (subst_exp_in_exp e1 x1 (open_exp_wrt_exp_rec n1 (exp_var_f x2) e2))).
 Proof.
 apply_mutual_ind exp_mutrec;
 default_simp.
@@ -16075,36 +16075,36 @@ Qed.
 
 (* begin hide *)
 
-Lemma subst_var_in_exp_close_exp_wrt_exp_rec_open_exp_wrt_exp_rec :
+Lemma subst_exp_in_exp_close_exp_wrt_exp_rec_open_exp_wrt_exp_rec :
 forall e2 e1 x1 x2 n1,
   x2 `notin` fvar_in_exp e2 ->
   x2 `notin` fvar_in_exp e1 ->
   x2 <> x1 ->
   degree_exp_wrt_exp n1 e1 ->
-  subst_var_in_exp e1 x1 e2 = close_exp_wrt_exp_rec n1 x2 (subst_var_in_exp e1 x1 (open_exp_wrt_exp_rec n1 (exp_var_f x2) e2)).
+  subst_exp_in_exp e1 x1 e2 = close_exp_wrt_exp_rec n1 x2 (subst_exp_in_exp e1 x1 (open_exp_wrt_exp_rec n1 (exp_var_f x2) e2)).
 Proof.
-pose proof subst_var_in_exp_close_exp_wrt_exp_rec_open_exp_wrt_exp_rec_mutual as H; intuition eauto.
+pose proof subst_exp_in_exp_close_exp_wrt_exp_rec_open_exp_wrt_exp_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_var_in_exp_close_exp_wrt_exp_rec_open_exp_wrt_exp_rec : lngen.
+#[export] Hint Resolve subst_exp_in_exp_close_exp_wrt_exp_rec_open_exp_wrt_exp_rec : lngen.
 
 (* end hide *)
 
 (* begin hide *)
 
-Lemma subst_tvar_in_contd_close_contd_wrt_typ_rec_open_contd_wrt_typ_rec_subst_tvar_in_conts_close_conts_wrt_typ_rec_open_conts_wrt_typ_rec_mutual :
+Lemma subst_typ_in_contd_close_contd_wrt_typ_rec_open_contd_wrt_typ_rec_subst_typ_in_conts_close_conts_wrt_typ_rec_open_conts_wrt_typ_rec_mutual :
 (forall cd1 A1 X1 X2 n1,
   X2 `notin` ftvar_in_contd cd1 ->
   X2 `notin` ftvar_in_typ A1 ->
   X2 <> X1 ->
   degree_typ_wrt_typ n1 A1 ->
-  subst_tvar_in_contd A1 X1 cd1 = close_contd_wrt_typ_rec n1 X2 (subst_tvar_in_contd A1 X1 (open_contd_wrt_typ_rec n1 (typ_var_f X2) cd1))) *
+  subst_typ_in_contd A1 X1 cd1 = close_contd_wrt_typ_rec n1 X2 (subst_typ_in_contd A1 X1 (open_contd_wrt_typ_rec n1 (typ_var_f X2) cd1))) *
 (forall cs1 A1 X1 X2 n1,
   X2 `notin` ftvar_in_conts cs1 ->
   X2 `notin` ftvar_in_typ A1 ->
   X2 <> X1 ->
   degree_typ_wrt_typ n1 A1 ->
-  subst_tvar_in_conts A1 X1 cs1 = close_conts_wrt_typ_rec n1 X2 (subst_tvar_in_conts A1 X1 (open_conts_wrt_typ_rec n1 (typ_var_f X2) cs1))).
+  subst_typ_in_conts A1 X1 cs1 = close_conts_wrt_typ_rec n1 X2 (subst_typ_in_conts A1 X1 (open_conts_wrt_typ_rec n1 (typ_var_f X2) cs1))).
 Proof.
 apply_mutual_ind contd_conts_mutrec;
 default_simp.
@@ -16114,47 +16114,47 @@ Qed.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_contd_close_contd_wrt_typ_rec_open_contd_wrt_typ_rec :
+Lemma subst_typ_in_contd_close_contd_wrt_typ_rec_open_contd_wrt_typ_rec :
 forall cd1 A1 X1 X2 n1,
   X2 `notin` ftvar_in_contd cd1 ->
   X2 `notin` ftvar_in_typ A1 ->
   X2 <> X1 ->
   degree_typ_wrt_typ n1 A1 ->
-  subst_tvar_in_contd A1 X1 cd1 = close_contd_wrt_typ_rec n1 X2 (subst_tvar_in_contd A1 X1 (open_contd_wrt_typ_rec n1 (typ_var_f X2) cd1)).
+  subst_typ_in_contd A1 X1 cd1 = close_contd_wrt_typ_rec n1 X2 (subst_typ_in_contd A1 X1 (open_contd_wrt_typ_rec n1 (typ_var_f X2) cd1)).
 Proof.
-pose proof subst_tvar_in_contd_close_contd_wrt_typ_rec_open_contd_wrt_typ_rec_subst_tvar_in_conts_close_conts_wrt_typ_rec_open_conts_wrt_typ_rec_mutual as H; intuition eauto.
+pose proof subst_typ_in_contd_close_contd_wrt_typ_rec_open_contd_wrt_typ_rec_subst_typ_in_conts_close_conts_wrt_typ_rec_open_conts_wrt_typ_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_contd_close_contd_wrt_typ_rec_open_contd_wrt_typ_rec : lngen.
+#[export] Hint Resolve subst_typ_in_contd_close_contd_wrt_typ_rec_open_contd_wrt_typ_rec : lngen.
 
 (* end hide *)
 
 (* begin hide *)
 
-Lemma subst_tvar_in_conts_close_conts_wrt_typ_rec_open_conts_wrt_typ_rec :
+Lemma subst_typ_in_conts_close_conts_wrt_typ_rec_open_conts_wrt_typ_rec :
 forall cs1 A1 X1 X2 n1,
   X2 `notin` ftvar_in_conts cs1 ->
   X2 `notin` ftvar_in_typ A1 ->
   X2 <> X1 ->
   degree_typ_wrt_typ n1 A1 ->
-  subst_tvar_in_conts A1 X1 cs1 = close_conts_wrt_typ_rec n1 X2 (subst_tvar_in_conts A1 X1 (open_conts_wrt_typ_rec n1 (typ_var_f X2) cs1)).
+  subst_typ_in_conts A1 X1 cs1 = close_conts_wrt_typ_rec n1 X2 (subst_typ_in_conts A1 X1 (open_conts_wrt_typ_rec n1 (typ_var_f X2) cs1)).
 Proof.
-pose proof subst_tvar_in_contd_close_contd_wrt_typ_rec_open_contd_wrt_typ_rec_subst_tvar_in_conts_close_conts_wrt_typ_rec_open_conts_wrt_typ_rec_mutual as H; intuition eauto.
+pose proof subst_typ_in_contd_close_contd_wrt_typ_rec_open_contd_wrt_typ_rec_subst_typ_in_conts_close_conts_wrt_typ_rec_open_conts_wrt_typ_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_conts_close_conts_wrt_typ_rec_open_conts_wrt_typ_rec : lngen.
+#[export] Hint Resolve subst_typ_in_conts_close_conts_wrt_typ_rec_open_conts_wrt_typ_rec : lngen.
 
 (* end hide *)
 
 (* begin hide *)
 
-Lemma subst_tvar_in_contd_close_contd_wrt_exp_rec_open_contd_wrt_exp_rec_subst_tvar_in_conts_close_conts_wrt_exp_rec_open_conts_wrt_exp_rec_mutual :
+Lemma subst_typ_in_contd_close_contd_wrt_exp_rec_open_contd_wrt_exp_rec_subst_typ_in_conts_close_conts_wrt_exp_rec_open_conts_wrt_exp_rec_mutual :
 (forall cd1 A1 X1 x1 n1,
   x1 `notin` fvar_in_contd cd1 ->
-  subst_tvar_in_contd A1 X1 cd1 = close_contd_wrt_exp_rec n1 x1 (subst_tvar_in_contd A1 X1 (open_contd_wrt_exp_rec n1 (exp_var_f x1) cd1))) *
+  subst_typ_in_contd A1 X1 cd1 = close_contd_wrt_exp_rec n1 x1 (subst_typ_in_contd A1 X1 (open_contd_wrt_exp_rec n1 (exp_var_f x1) cd1))) *
 (forall cs1 A1 X1 x1 n1,
   x1 `notin` fvar_in_conts cs1 ->
-  subst_tvar_in_conts A1 X1 cs1 = close_conts_wrt_exp_rec n1 x1 (subst_tvar_in_conts A1 X1 (open_conts_wrt_exp_rec n1 (exp_var_f x1) cs1))).
+  subst_typ_in_conts A1 X1 cs1 = close_conts_wrt_exp_rec n1 x1 (subst_typ_in_conts A1 X1 (open_conts_wrt_exp_rec n1 (exp_var_f x1) cs1))).
 Proof.
 apply_mutual_ind contd_conts_mutrec;
 default_simp.
@@ -16164,45 +16164,45 @@ Qed.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_contd_close_contd_wrt_exp_rec_open_contd_wrt_exp_rec :
+Lemma subst_typ_in_contd_close_contd_wrt_exp_rec_open_contd_wrt_exp_rec :
 forall cd1 A1 X1 x1 n1,
   x1 `notin` fvar_in_contd cd1 ->
-  subst_tvar_in_contd A1 X1 cd1 = close_contd_wrt_exp_rec n1 x1 (subst_tvar_in_contd A1 X1 (open_contd_wrt_exp_rec n1 (exp_var_f x1) cd1)).
+  subst_typ_in_contd A1 X1 cd1 = close_contd_wrt_exp_rec n1 x1 (subst_typ_in_contd A1 X1 (open_contd_wrt_exp_rec n1 (exp_var_f x1) cd1)).
 Proof.
-pose proof subst_tvar_in_contd_close_contd_wrt_exp_rec_open_contd_wrt_exp_rec_subst_tvar_in_conts_close_conts_wrt_exp_rec_open_conts_wrt_exp_rec_mutual as H; intuition eauto.
+pose proof subst_typ_in_contd_close_contd_wrt_exp_rec_open_contd_wrt_exp_rec_subst_typ_in_conts_close_conts_wrt_exp_rec_open_conts_wrt_exp_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_contd_close_contd_wrt_exp_rec_open_contd_wrt_exp_rec : lngen.
+#[export] Hint Resolve subst_typ_in_contd_close_contd_wrt_exp_rec_open_contd_wrt_exp_rec : lngen.
 
 (* end hide *)
 
 (* begin hide *)
 
-Lemma subst_tvar_in_conts_close_conts_wrt_exp_rec_open_conts_wrt_exp_rec :
+Lemma subst_typ_in_conts_close_conts_wrt_exp_rec_open_conts_wrt_exp_rec :
 forall cs1 A1 X1 x1 n1,
   x1 `notin` fvar_in_conts cs1 ->
-  subst_tvar_in_conts A1 X1 cs1 = close_conts_wrt_exp_rec n1 x1 (subst_tvar_in_conts A1 X1 (open_conts_wrt_exp_rec n1 (exp_var_f x1) cs1)).
+  subst_typ_in_conts A1 X1 cs1 = close_conts_wrt_exp_rec n1 x1 (subst_typ_in_conts A1 X1 (open_conts_wrt_exp_rec n1 (exp_var_f x1) cs1)).
 Proof.
-pose proof subst_tvar_in_contd_close_contd_wrt_exp_rec_open_contd_wrt_exp_rec_subst_tvar_in_conts_close_conts_wrt_exp_rec_open_conts_wrt_exp_rec_mutual as H; intuition eauto.
+pose proof subst_typ_in_contd_close_contd_wrt_exp_rec_open_contd_wrt_exp_rec_subst_typ_in_conts_close_conts_wrt_exp_rec_open_conts_wrt_exp_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_conts_close_conts_wrt_exp_rec_open_conts_wrt_exp_rec : lngen.
+#[export] Hint Resolve subst_typ_in_conts_close_conts_wrt_exp_rec_open_conts_wrt_exp_rec : lngen.
 
 (* end hide *)
 
 (* begin hide *)
 
-Lemma subst_var_in_contd_close_contd_wrt_typ_rec_open_contd_wrt_typ_rec_subst_var_in_conts_close_conts_wrt_typ_rec_open_conts_wrt_typ_rec_mutual :
+Lemma subst_exp_in_contd_close_contd_wrt_typ_rec_open_contd_wrt_typ_rec_subst_exp_in_conts_close_conts_wrt_typ_rec_open_conts_wrt_typ_rec_mutual :
 (forall cd1 e1 x1 X1 n1,
   X1 `notin` ftvar_in_contd cd1 ->
   X1 `notin` ftvar_in_exp e1 ->
   degree_exp_wrt_typ n1 e1 ->
-  subst_var_in_contd e1 x1 cd1 = close_contd_wrt_typ_rec n1 X1 (subst_var_in_contd e1 x1 (open_contd_wrt_typ_rec n1 (typ_var_f X1) cd1))) *
+  subst_exp_in_contd e1 x1 cd1 = close_contd_wrt_typ_rec n1 X1 (subst_exp_in_contd e1 x1 (open_contd_wrt_typ_rec n1 (typ_var_f X1) cd1))) *
 (forall cs1 e1 x1 X1 n1,
   X1 `notin` ftvar_in_conts cs1 ->
   X1 `notin` ftvar_in_exp e1 ->
   degree_exp_wrt_typ n1 e1 ->
-  subst_var_in_conts e1 x1 cs1 = close_conts_wrt_typ_rec n1 X1 (subst_var_in_conts e1 x1 (open_conts_wrt_typ_rec n1 (typ_var_f X1) cs1))).
+  subst_exp_in_conts e1 x1 cs1 = close_conts_wrt_typ_rec n1 X1 (subst_exp_in_conts e1 x1 (open_conts_wrt_typ_rec n1 (typ_var_f X1) cs1))).
 Proof.
 apply_mutual_ind contd_conts_mutrec;
 default_simp.
@@ -16212,51 +16212,51 @@ Qed.
 
 (* begin hide *)
 
-Lemma subst_var_in_contd_close_contd_wrt_typ_rec_open_contd_wrt_typ_rec :
+Lemma subst_exp_in_contd_close_contd_wrt_typ_rec_open_contd_wrt_typ_rec :
 forall cd1 e1 x1 X1 n1,
   X1 `notin` ftvar_in_contd cd1 ->
   X1 `notin` ftvar_in_exp e1 ->
   degree_exp_wrt_typ n1 e1 ->
-  subst_var_in_contd e1 x1 cd1 = close_contd_wrt_typ_rec n1 X1 (subst_var_in_contd e1 x1 (open_contd_wrt_typ_rec n1 (typ_var_f X1) cd1)).
+  subst_exp_in_contd e1 x1 cd1 = close_contd_wrt_typ_rec n1 X1 (subst_exp_in_contd e1 x1 (open_contd_wrt_typ_rec n1 (typ_var_f X1) cd1)).
 Proof.
-pose proof subst_var_in_contd_close_contd_wrt_typ_rec_open_contd_wrt_typ_rec_subst_var_in_conts_close_conts_wrt_typ_rec_open_conts_wrt_typ_rec_mutual as H; intuition eauto.
+pose proof subst_exp_in_contd_close_contd_wrt_typ_rec_open_contd_wrt_typ_rec_subst_exp_in_conts_close_conts_wrt_typ_rec_open_conts_wrt_typ_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_var_in_contd_close_contd_wrt_typ_rec_open_contd_wrt_typ_rec : lngen.
+#[export] Hint Resolve subst_exp_in_contd_close_contd_wrt_typ_rec_open_contd_wrt_typ_rec : lngen.
 
 (* end hide *)
 
 (* begin hide *)
 
-Lemma subst_var_in_conts_close_conts_wrt_typ_rec_open_conts_wrt_typ_rec :
+Lemma subst_exp_in_conts_close_conts_wrt_typ_rec_open_conts_wrt_typ_rec :
 forall cs1 e1 x1 X1 n1,
   X1 `notin` ftvar_in_conts cs1 ->
   X1 `notin` ftvar_in_exp e1 ->
   degree_exp_wrt_typ n1 e1 ->
-  subst_var_in_conts e1 x1 cs1 = close_conts_wrt_typ_rec n1 X1 (subst_var_in_conts e1 x1 (open_conts_wrt_typ_rec n1 (typ_var_f X1) cs1)).
+  subst_exp_in_conts e1 x1 cs1 = close_conts_wrt_typ_rec n1 X1 (subst_exp_in_conts e1 x1 (open_conts_wrt_typ_rec n1 (typ_var_f X1) cs1)).
 Proof.
-pose proof subst_var_in_contd_close_contd_wrt_typ_rec_open_contd_wrt_typ_rec_subst_var_in_conts_close_conts_wrt_typ_rec_open_conts_wrt_typ_rec_mutual as H; intuition eauto.
+pose proof subst_exp_in_contd_close_contd_wrt_typ_rec_open_contd_wrt_typ_rec_subst_exp_in_conts_close_conts_wrt_typ_rec_open_conts_wrt_typ_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_var_in_conts_close_conts_wrt_typ_rec_open_conts_wrt_typ_rec : lngen.
+#[export] Hint Resolve subst_exp_in_conts_close_conts_wrt_typ_rec_open_conts_wrt_typ_rec : lngen.
 
 (* end hide *)
 
 (* begin hide *)
 
-Lemma subst_var_in_contd_close_contd_wrt_exp_rec_open_contd_wrt_exp_rec_subst_var_in_conts_close_conts_wrt_exp_rec_open_conts_wrt_exp_rec_mutual :
+Lemma subst_exp_in_contd_close_contd_wrt_exp_rec_open_contd_wrt_exp_rec_subst_exp_in_conts_close_conts_wrt_exp_rec_open_conts_wrt_exp_rec_mutual :
 (forall cd1 e1 x1 x2 n1,
   x2 `notin` fvar_in_contd cd1 ->
   x2 `notin` fvar_in_exp e1 ->
   x2 <> x1 ->
   degree_exp_wrt_exp n1 e1 ->
-  subst_var_in_contd e1 x1 cd1 = close_contd_wrt_exp_rec n1 x2 (subst_var_in_contd e1 x1 (open_contd_wrt_exp_rec n1 (exp_var_f x2) cd1))) *
+  subst_exp_in_contd e1 x1 cd1 = close_contd_wrt_exp_rec n1 x2 (subst_exp_in_contd e1 x1 (open_contd_wrt_exp_rec n1 (exp_var_f x2) cd1))) *
 (forall cs1 e1 x1 x2 n1,
   x2 `notin` fvar_in_conts cs1 ->
   x2 `notin` fvar_in_exp e1 ->
   x2 <> x1 ->
   degree_exp_wrt_exp n1 e1 ->
-  subst_var_in_conts e1 x1 cs1 = close_conts_wrt_exp_rec n1 x2 (subst_var_in_conts e1 x1 (open_conts_wrt_exp_rec n1 (exp_var_f x2) cs1))).
+  subst_exp_in_conts e1 x1 cs1 = close_conts_wrt_exp_rec n1 x2 (subst_exp_in_conts e1 x1 (open_conts_wrt_exp_rec n1 (exp_var_f x2) cs1))).
 Proof.
 apply_mutual_ind contd_conts_mutrec;
 default_simp.
@@ -16266,47 +16266,47 @@ Qed.
 
 (* begin hide *)
 
-Lemma subst_var_in_contd_close_contd_wrt_exp_rec_open_contd_wrt_exp_rec :
+Lemma subst_exp_in_contd_close_contd_wrt_exp_rec_open_contd_wrt_exp_rec :
 forall cd1 e1 x1 x2 n1,
   x2 `notin` fvar_in_contd cd1 ->
   x2 `notin` fvar_in_exp e1 ->
   x2 <> x1 ->
   degree_exp_wrt_exp n1 e1 ->
-  subst_var_in_contd e1 x1 cd1 = close_contd_wrt_exp_rec n1 x2 (subst_var_in_contd e1 x1 (open_contd_wrt_exp_rec n1 (exp_var_f x2) cd1)).
+  subst_exp_in_contd e1 x1 cd1 = close_contd_wrt_exp_rec n1 x2 (subst_exp_in_contd e1 x1 (open_contd_wrt_exp_rec n1 (exp_var_f x2) cd1)).
 Proof.
-pose proof subst_var_in_contd_close_contd_wrt_exp_rec_open_contd_wrt_exp_rec_subst_var_in_conts_close_conts_wrt_exp_rec_open_conts_wrt_exp_rec_mutual as H; intuition eauto.
+pose proof subst_exp_in_contd_close_contd_wrt_exp_rec_open_contd_wrt_exp_rec_subst_exp_in_conts_close_conts_wrt_exp_rec_open_conts_wrt_exp_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_var_in_contd_close_contd_wrt_exp_rec_open_contd_wrt_exp_rec : lngen.
+#[export] Hint Resolve subst_exp_in_contd_close_contd_wrt_exp_rec_open_contd_wrt_exp_rec : lngen.
 
 (* end hide *)
 
 (* begin hide *)
 
-Lemma subst_var_in_conts_close_conts_wrt_exp_rec_open_conts_wrt_exp_rec :
+Lemma subst_exp_in_conts_close_conts_wrt_exp_rec_open_conts_wrt_exp_rec :
 forall cs1 e1 x1 x2 n1,
   x2 `notin` fvar_in_conts cs1 ->
   x2 `notin` fvar_in_exp e1 ->
   x2 <> x1 ->
   degree_exp_wrt_exp n1 e1 ->
-  subst_var_in_conts e1 x1 cs1 = close_conts_wrt_exp_rec n1 x2 (subst_var_in_conts e1 x1 (open_conts_wrt_exp_rec n1 (exp_var_f x2) cs1)).
+  subst_exp_in_conts e1 x1 cs1 = close_conts_wrt_exp_rec n1 x2 (subst_exp_in_conts e1 x1 (open_conts_wrt_exp_rec n1 (exp_var_f x2) cs1)).
 Proof.
-pose proof subst_var_in_contd_close_contd_wrt_exp_rec_open_contd_wrt_exp_rec_subst_var_in_conts_close_conts_wrt_exp_rec_open_conts_wrt_exp_rec_mutual as H; intuition eauto.
+pose proof subst_exp_in_contd_close_contd_wrt_exp_rec_open_contd_wrt_exp_rec_subst_exp_in_conts_close_conts_wrt_exp_rec_open_conts_wrt_exp_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_var_in_conts_close_conts_wrt_exp_rec_open_conts_wrt_exp_rec : lngen.
+#[export] Hint Resolve subst_exp_in_conts_close_conts_wrt_exp_rec_open_conts_wrt_exp_rec : lngen.
 
 (* end hide *)
 
 (* begin hide *)
 
-Lemma subst_tvar_in_dbind_close_dbind_wrt_typ_rec_open_dbind_wrt_typ_rec_mutual :
+Lemma subst_typ_in_dbind_close_dbind_wrt_typ_rec_open_dbind_wrt_typ_rec_mutual :
 (forall db1 A1 X1 X2 n1,
   X2 `notin` ftvar_in_dbind db1 ->
   X2 `notin` ftvar_in_typ A1 ->
   X2 <> X1 ->
   degree_typ_wrt_typ n1 A1 ->
-  subst_tvar_in_dbind A1 X1 db1 = close_dbind_wrt_typ_rec n1 X2 (subst_tvar_in_dbind A1 X1 (open_dbind_wrt_typ_rec n1 (typ_var_f X2) db1))).
+  subst_typ_in_dbind A1 X1 db1 = close_dbind_wrt_typ_rec n1 X2 (subst_typ_in_dbind A1 X1 (open_dbind_wrt_typ_rec n1 (typ_var_f X2) db1))).
 Proof.
 apply_mutual_ind dbind_mutrec;
 default_simp.
@@ -16316,30 +16316,30 @@ Qed.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_dbind_close_dbind_wrt_typ_rec_open_dbind_wrt_typ_rec :
+Lemma subst_typ_in_dbind_close_dbind_wrt_typ_rec_open_dbind_wrt_typ_rec :
 forall db1 A1 X1 X2 n1,
   X2 `notin` ftvar_in_dbind db1 ->
   X2 `notin` ftvar_in_typ A1 ->
   X2 <> X1 ->
   degree_typ_wrt_typ n1 A1 ->
-  subst_tvar_in_dbind A1 X1 db1 = close_dbind_wrt_typ_rec n1 X2 (subst_tvar_in_dbind A1 X1 (open_dbind_wrt_typ_rec n1 (typ_var_f X2) db1)).
+  subst_typ_in_dbind A1 X1 db1 = close_dbind_wrt_typ_rec n1 X2 (subst_typ_in_dbind A1 X1 (open_dbind_wrt_typ_rec n1 (typ_var_f X2) db1)).
 Proof.
-pose proof subst_tvar_in_dbind_close_dbind_wrt_typ_rec_open_dbind_wrt_typ_rec_mutual as H; intuition eauto.
+pose proof subst_typ_in_dbind_close_dbind_wrt_typ_rec_open_dbind_wrt_typ_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_dbind_close_dbind_wrt_typ_rec_open_dbind_wrt_typ_rec : lngen.
+#[export] Hint Resolve subst_typ_in_dbind_close_dbind_wrt_typ_rec_open_dbind_wrt_typ_rec : lngen.
 
 (* end hide *)
 
 (* begin hide *)
 
-Lemma subst_tvar_in_work_close_work_wrt_typ_rec_open_work_wrt_typ_rec_mutual :
+Lemma subst_typ_in_work_close_work_wrt_typ_rec_open_work_wrt_typ_rec_mutual :
 (forall w1 A1 X1 X2 n1,
   X2 `notin` ftvar_in_work w1 ->
   X2 `notin` ftvar_in_typ A1 ->
   X2 <> X1 ->
   degree_typ_wrt_typ n1 A1 ->
-  subst_tvar_in_work A1 X1 w1 = close_work_wrt_typ_rec n1 X2 (subst_tvar_in_work A1 X1 (open_work_wrt_typ_rec n1 (typ_var_f X2) w1))).
+  subst_typ_in_work A1 X1 w1 = close_work_wrt_typ_rec n1 X2 (subst_typ_in_work A1 X1 (open_work_wrt_typ_rec n1 (typ_var_f X2) w1))).
 Proof.
 apply_mutual_ind work_mutrec;
 default_simp.
@@ -16349,27 +16349,27 @@ Qed.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_work_close_work_wrt_typ_rec_open_work_wrt_typ_rec :
+Lemma subst_typ_in_work_close_work_wrt_typ_rec_open_work_wrt_typ_rec :
 forall w1 A1 X1 X2 n1,
   X2 `notin` ftvar_in_work w1 ->
   X2 `notin` ftvar_in_typ A1 ->
   X2 <> X1 ->
   degree_typ_wrt_typ n1 A1 ->
-  subst_tvar_in_work A1 X1 w1 = close_work_wrt_typ_rec n1 X2 (subst_tvar_in_work A1 X1 (open_work_wrt_typ_rec n1 (typ_var_f X2) w1)).
+  subst_typ_in_work A1 X1 w1 = close_work_wrt_typ_rec n1 X2 (subst_typ_in_work A1 X1 (open_work_wrt_typ_rec n1 (typ_var_f X2) w1)).
 Proof.
-pose proof subst_tvar_in_work_close_work_wrt_typ_rec_open_work_wrt_typ_rec_mutual as H; intuition eauto.
+pose proof subst_typ_in_work_close_work_wrt_typ_rec_open_work_wrt_typ_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_work_close_work_wrt_typ_rec_open_work_wrt_typ_rec : lngen.
+#[export] Hint Resolve subst_typ_in_work_close_work_wrt_typ_rec_open_work_wrt_typ_rec : lngen.
 
 (* end hide *)
 
 (* begin hide *)
 
-Lemma subst_tvar_in_work_close_work_wrt_exp_rec_open_work_wrt_exp_rec_mutual :
+Lemma subst_typ_in_work_close_work_wrt_exp_rec_open_work_wrt_exp_rec_mutual :
 (forall w1 A1 X1 x1 n1,
   x1 `notin` fvar_in_work w1 ->
-  subst_tvar_in_work A1 X1 w1 = close_work_wrt_exp_rec n1 x1 (subst_tvar_in_work A1 X1 (open_work_wrt_exp_rec n1 (exp_var_f x1) w1))).
+  subst_typ_in_work A1 X1 w1 = close_work_wrt_exp_rec n1 x1 (subst_typ_in_work A1 X1 (open_work_wrt_exp_rec n1 (exp_var_f x1) w1))).
 Proof.
 apply_mutual_ind work_mutrec;
 default_simp.
@@ -16379,26 +16379,26 @@ Qed.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_work_close_work_wrt_exp_rec_open_work_wrt_exp_rec :
+Lemma subst_typ_in_work_close_work_wrt_exp_rec_open_work_wrt_exp_rec :
 forall w1 A1 X1 x1 n1,
   x1 `notin` fvar_in_work w1 ->
-  subst_tvar_in_work A1 X1 w1 = close_work_wrt_exp_rec n1 x1 (subst_tvar_in_work A1 X1 (open_work_wrt_exp_rec n1 (exp_var_f x1) w1)).
+  subst_typ_in_work A1 X1 w1 = close_work_wrt_exp_rec n1 x1 (subst_typ_in_work A1 X1 (open_work_wrt_exp_rec n1 (exp_var_f x1) w1)).
 Proof.
-pose proof subst_tvar_in_work_close_work_wrt_exp_rec_open_work_wrt_exp_rec_mutual as H; intuition eauto.
+pose proof subst_typ_in_work_close_work_wrt_exp_rec_open_work_wrt_exp_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_work_close_work_wrt_exp_rec_open_work_wrt_exp_rec : lngen.
+#[export] Hint Resolve subst_typ_in_work_close_work_wrt_exp_rec_open_work_wrt_exp_rec : lngen.
 
 (* end hide *)
 
 (* begin hide *)
 
-Lemma subst_var_in_work_close_work_wrt_typ_rec_open_work_wrt_typ_rec_mutual :
+Lemma subst_exp_in_work_close_work_wrt_typ_rec_open_work_wrt_typ_rec_mutual :
 (forall w1 e1 x1 X1 n1,
   X1 `notin` ftvar_in_work w1 ->
   X1 `notin` ftvar_in_exp e1 ->
   degree_exp_wrt_typ n1 e1 ->
-  subst_var_in_work e1 x1 w1 = close_work_wrt_typ_rec n1 X1 (subst_var_in_work e1 x1 (open_work_wrt_typ_rec n1 (typ_var_f X1) w1))).
+  subst_exp_in_work e1 x1 w1 = close_work_wrt_typ_rec n1 X1 (subst_exp_in_work e1 x1 (open_work_wrt_typ_rec n1 (typ_var_f X1) w1))).
 Proof.
 apply_mutual_ind work_mutrec;
 default_simp.
@@ -16408,29 +16408,29 @@ Qed.
 
 (* begin hide *)
 
-Lemma subst_var_in_work_close_work_wrt_typ_rec_open_work_wrt_typ_rec :
+Lemma subst_exp_in_work_close_work_wrt_typ_rec_open_work_wrt_typ_rec :
 forall w1 e1 x1 X1 n1,
   X1 `notin` ftvar_in_work w1 ->
   X1 `notin` ftvar_in_exp e1 ->
   degree_exp_wrt_typ n1 e1 ->
-  subst_var_in_work e1 x1 w1 = close_work_wrt_typ_rec n1 X1 (subst_var_in_work e1 x1 (open_work_wrt_typ_rec n1 (typ_var_f X1) w1)).
+  subst_exp_in_work e1 x1 w1 = close_work_wrt_typ_rec n1 X1 (subst_exp_in_work e1 x1 (open_work_wrt_typ_rec n1 (typ_var_f X1) w1)).
 Proof.
-pose proof subst_var_in_work_close_work_wrt_typ_rec_open_work_wrt_typ_rec_mutual as H; intuition eauto.
+pose proof subst_exp_in_work_close_work_wrt_typ_rec_open_work_wrt_typ_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_var_in_work_close_work_wrt_typ_rec_open_work_wrt_typ_rec : lngen.
+#[export] Hint Resolve subst_exp_in_work_close_work_wrt_typ_rec_open_work_wrt_typ_rec : lngen.
 
 (* end hide *)
 
 (* begin hide *)
 
-Lemma subst_var_in_work_close_work_wrt_exp_rec_open_work_wrt_exp_rec_mutual :
+Lemma subst_exp_in_work_close_work_wrt_exp_rec_open_work_wrt_exp_rec_mutual :
 (forall w1 e1 x1 x2 n1,
   x2 `notin` fvar_in_work w1 ->
   x2 `notin` fvar_in_exp e1 ->
   x2 <> x1 ->
   degree_exp_wrt_exp n1 e1 ->
-  subst_var_in_work e1 x1 w1 = close_work_wrt_exp_rec n1 x2 (subst_var_in_work e1 x1 (open_work_wrt_exp_rec n1 (exp_var_f x2) w1))).
+  subst_exp_in_work e1 x1 w1 = close_work_wrt_exp_rec n1 x2 (subst_exp_in_work e1 x1 (open_work_wrt_exp_rec n1 (exp_var_f x2) w1))).
 Proof.
 apply_mutual_ind work_mutrec;
 default_simp.
@@ -16440,317 +16440,317 @@ Qed.
 
 (* begin hide *)
 
-Lemma subst_var_in_work_close_work_wrt_exp_rec_open_work_wrt_exp_rec :
+Lemma subst_exp_in_work_close_work_wrt_exp_rec_open_work_wrt_exp_rec :
 forall w1 e1 x1 x2 n1,
   x2 `notin` fvar_in_work w1 ->
   x2 `notin` fvar_in_exp e1 ->
   x2 <> x1 ->
   degree_exp_wrt_exp n1 e1 ->
-  subst_var_in_work e1 x1 w1 = close_work_wrt_exp_rec n1 x2 (subst_var_in_work e1 x1 (open_work_wrt_exp_rec n1 (exp_var_f x2) w1)).
+  subst_exp_in_work e1 x1 w1 = close_work_wrt_exp_rec n1 x2 (subst_exp_in_work e1 x1 (open_work_wrt_exp_rec n1 (exp_var_f x2) w1)).
 Proof.
-pose proof subst_var_in_work_close_work_wrt_exp_rec_open_work_wrt_exp_rec_mutual as H; intuition eauto.
+pose proof subst_exp_in_work_close_work_wrt_exp_rec_open_work_wrt_exp_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_var_in_work_close_work_wrt_exp_rec_open_work_wrt_exp_rec : lngen.
+#[export] Hint Resolve subst_exp_in_work_close_work_wrt_exp_rec_open_work_wrt_exp_rec : lngen.
 
 (* end hide *)
 
-Lemma subst_tvar_in_typ_close_typ_wrt_typ_open_typ_wrt_typ :
+Lemma subst_typ_in_typ_close_typ_wrt_typ_open_typ_wrt_typ :
 forall A2 A1 X1 X2,
   X2 `notin` ftvar_in_typ A2 ->
   X2 `notin` ftvar_in_typ A1 ->
   X2 <> X1 ->
   lc_typ A1 ->
-  subst_tvar_in_typ A1 X1 A2 = close_typ_wrt_typ X2 (subst_tvar_in_typ A1 X1 (open_typ_wrt_typ A2 (typ_var_f X2))).
+  subst_typ_in_typ A1 X1 A2 = close_typ_wrt_typ X2 (subst_typ_in_typ A1 X1 (open_typ_wrt_typ A2 (typ_var_f X2))).
 Proof.
 unfold close_typ_wrt_typ; unfold open_typ_wrt_typ; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_typ_close_typ_wrt_typ_open_typ_wrt_typ : lngen.
+#[export] Hint Resolve subst_typ_in_typ_close_typ_wrt_typ_open_typ_wrt_typ : lngen.
 
-Lemma subst_tvar_in_abind_close_abind_wrt_typ_open_abind_wrt_typ :
+Lemma subst_typ_in_abind_close_abind_wrt_typ_open_abind_wrt_typ :
 forall ab1 A1 X1 X2,
   X2 `notin` ftvar_in_abind ab1 ->
   X2 `notin` ftvar_in_typ A1 ->
   X2 <> X1 ->
   lc_typ A1 ->
-  subst_tvar_in_abind A1 X1 ab1 = close_abind_wrt_typ X2 (subst_tvar_in_abind A1 X1 (open_abind_wrt_typ ab1 (typ_var_f X2))).
+  subst_typ_in_abind A1 X1 ab1 = close_abind_wrt_typ X2 (subst_typ_in_abind A1 X1 (open_abind_wrt_typ ab1 (typ_var_f X2))).
 Proof.
 unfold close_abind_wrt_typ; unfold open_abind_wrt_typ; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_abind_close_abind_wrt_typ_open_abind_wrt_typ : lngen.
+#[export] Hint Resolve subst_typ_in_abind_close_abind_wrt_typ_open_abind_wrt_typ : lngen.
 
-Lemma subst_tvar_in_exp_close_exp_wrt_typ_open_exp_wrt_typ :
+Lemma subst_typ_in_exp_close_exp_wrt_typ_open_exp_wrt_typ :
 forall e1 A1 X1 X2,
   X2 `notin` ftvar_in_exp e1 ->
   X2 `notin` ftvar_in_typ A1 ->
   X2 <> X1 ->
   lc_typ A1 ->
-  subst_tvar_in_exp A1 X1 e1 = close_exp_wrt_typ X2 (subst_tvar_in_exp A1 X1 (open_exp_wrt_typ e1 (typ_var_f X2))).
+  subst_typ_in_exp A1 X1 e1 = close_exp_wrt_typ X2 (subst_typ_in_exp A1 X1 (open_exp_wrt_typ e1 (typ_var_f X2))).
 Proof.
 unfold close_exp_wrt_typ; unfold open_exp_wrt_typ; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_exp_close_exp_wrt_typ_open_exp_wrt_typ : lngen.
+#[export] Hint Resolve subst_typ_in_exp_close_exp_wrt_typ_open_exp_wrt_typ : lngen.
 
-Lemma subst_tvar_in_exp_close_exp_wrt_exp_open_exp_wrt_exp :
+Lemma subst_typ_in_exp_close_exp_wrt_exp_open_exp_wrt_exp :
 forall e1 A1 X1 x1,
   x1 `notin` fvar_in_exp e1 ->
   lc_typ A1 ->
-  subst_tvar_in_exp A1 X1 e1 = close_exp_wrt_exp x1 (subst_tvar_in_exp A1 X1 (open_exp_wrt_exp e1 (exp_var_f x1))).
+  subst_typ_in_exp A1 X1 e1 = close_exp_wrt_exp x1 (subst_typ_in_exp A1 X1 (open_exp_wrt_exp e1 (exp_var_f x1))).
 Proof.
 unfold close_exp_wrt_exp; unfold open_exp_wrt_exp; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_exp_close_exp_wrt_exp_open_exp_wrt_exp : lngen.
+#[export] Hint Resolve subst_typ_in_exp_close_exp_wrt_exp_open_exp_wrt_exp : lngen.
 
-Lemma subst_var_in_exp_close_exp_wrt_typ_open_exp_wrt_typ :
+Lemma subst_exp_in_exp_close_exp_wrt_typ_open_exp_wrt_typ :
 forall e2 e1 x1 X1,
   X1 `notin` ftvar_in_exp e2 ->
   X1 `notin` ftvar_in_exp e1 ->
   lc_exp e1 ->
-  subst_var_in_exp e1 x1 e2 = close_exp_wrt_typ X1 (subst_var_in_exp e1 x1 (open_exp_wrt_typ e2 (typ_var_f X1))).
+  subst_exp_in_exp e1 x1 e2 = close_exp_wrt_typ X1 (subst_exp_in_exp e1 x1 (open_exp_wrt_typ e2 (typ_var_f X1))).
 Proof.
 unfold close_exp_wrt_typ; unfold open_exp_wrt_typ; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_var_in_exp_close_exp_wrt_typ_open_exp_wrt_typ : lngen.
+#[export] Hint Resolve subst_exp_in_exp_close_exp_wrt_typ_open_exp_wrt_typ : lngen.
 
-Lemma subst_var_in_exp_close_exp_wrt_exp_open_exp_wrt_exp :
+Lemma subst_exp_in_exp_close_exp_wrt_exp_open_exp_wrt_exp :
 forall e2 e1 x1 x2,
   x2 `notin` fvar_in_exp e2 ->
   x2 `notin` fvar_in_exp e1 ->
   x2 <> x1 ->
   lc_exp e1 ->
-  subst_var_in_exp e1 x1 e2 = close_exp_wrt_exp x2 (subst_var_in_exp e1 x1 (open_exp_wrt_exp e2 (exp_var_f x2))).
+  subst_exp_in_exp e1 x1 e2 = close_exp_wrt_exp x2 (subst_exp_in_exp e1 x1 (open_exp_wrt_exp e2 (exp_var_f x2))).
 Proof.
 unfold close_exp_wrt_exp; unfold open_exp_wrt_exp; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_var_in_exp_close_exp_wrt_exp_open_exp_wrt_exp : lngen.
+#[export] Hint Resolve subst_exp_in_exp_close_exp_wrt_exp_open_exp_wrt_exp : lngen.
 
-Lemma subst_tvar_in_contd_close_contd_wrt_typ_open_contd_wrt_typ :
+Lemma subst_typ_in_contd_close_contd_wrt_typ_open_contd_wrt_typ :
 forall cd1 A1 X1 X2,
   X2 `notin` ftvar_in_contd cd1 ->
   X2 `notin` ftvar_in_typ A1 ->
   X2 <> X1 ->
   lc_typ A1 ->
-  subst_tvar_in_contd A1 X1 cd1 = close_contd_wrt_typ X2 (subst_tvar_in_contd A1 X1 (open_contd_wrt_typ cd1 (typ_var_f X2))).
+  subst_typ_in_contd A1 X1 cd1 = close_contd_wrt_typ X2 (subst_typ_in_contd A1 X1 (open_contd_wrt_typ cd1 (typ_var_f X2))).
 Proof.
 unfold close_contd_wrt_typ; unfold open_contd_wrt_typ; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_contd_close_contd_wrt_typ_open_contd_wrt_typ : lngen.
+#[export] Hint Resolve subst_typ_in_contd_close_contd_wrt_typ_open_contd_wrt_typ : lngen.
 
-Lemma subst_tvar_in_conts_close_conts_wrt_typ_open_conts_wrt_typ :
+Lemma subst_typ_in_conts_close_conts_wrt_typ_open_conts_wrt_typ :
 forall cs1 A1 X1 X2,
   X2 `notin` ftvar_in_conts cs1 ->
   X2 `notin` ftvar_in_typ A1 ->
   X2 <> X1 ->
   lc_typ A1 ->
-  subst_tvar_in_conts A1 X1 cs1 = close_conts_wrt_typ X2 (subst_tvar_in_conts A1 X1 (open_conts_wrt_typ cs1 (typ_var_f X2))).
+  subst_typ_in_conts A1 X1 cs1 = close_conts_wrt_typ X2 (subst_typ_in_conts A1 X1 (open_conts_wrt_typ cs1 (typ_var_f X2))).
 Proof.
 unfold close_conts_wrt_typ; unfold open_conts_wrt_typ; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_conts_close_conts_wrt_typ_open_conts_wrt_typ : lngen.
+#[export] Hint Resolve subst_typ_in_conts_close_conts_wrt_typ_open_conts_wrt_typ : lngen.
 
-Lemma subst_tvar_in_contd_close_contd_wrt_exp_open_contd_wrt_exp :
+Lemma subst_typ_in_contd_close_contd_wrt_exp_open_contd_wrt_exp :
 forall cd1 A1 X1 x1,
   x1 `notin` fvar_in_contd cd1 ->
   lc_typ A1 ->
-  subst_tvar_in_contd A1 X1 cd1 = close_contd_wrt_exp x1 (subst_tvar_in_contd A1 X1 (open_contd_wrt_exp cd1 (exp_var_f x1))).
+  subst_typ_in_contd A1 X1 cd1 = close_contd_wrt_exp x1 (subst_typ_in_contd A1 X1 (open_contd_wrt_exp cd1 (exp_var_f x1))).
 Proof.
 unfold close_contd_wrt_exp; unfold open_contd_wrt_exp; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_contd_close_contd_wrt_exp_open_contd_wrt_exp : lngen.
+#[export] Hint Resolve subst_typ_in_contd_close_contd_wrt_exp_open_contd_wrt_exp : lngen.
 
-Lemma subst_tvar_in_conts_close_conts_wrt_exp_open_conts_wrt_exp :
+Lemma subst_typ_in_conts_close_conts_wrt_exp_open_conts_wrt_exp :
 forall cs1 A1 X1 x1,
   x1 `notin` fvar_in_conts cs1 ->
   lc_typ A1 ->
-  subst_tvar_in_conts A1 X1 cs1 = close_conts_wrt_exp x1 (subst_tvar_in_conts A1 X1 (open_conts_wrt_exp cs1 (exp_var_f x1))).
+  subst_typ_in_conts A1 X1 cs1 = close_conts_wrt_exp x1 (subst_typ_in_conts A1 X1 (open_conts_wrt_exp cs1 (exp_var_f x1))).
 Proof.
 unfold close_conts_wrt_exp; unfold open_conts_wrt_exp; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_conts_close_conts_wrt_exp_open_conts_wrt_exp : lngen.
+#[export] Hint Resolve subst_typ_in_conts_close_conts_wrt_exp_open_conts_wrt_exp : lngen.
 
-Lemma subst_var_in_contd_close_contd_wrt_typ_open_contd_wrt_typ :
+Lemma subst_exp_in_contd_close_contd_wrt_typ_open_contd_wrt_typ :
 forall cd1 e1 x1 X1,
   X1 `notin` ftvar_in_contd cd1 ->
   X1 `notin` ftvar_in_exp e1 ->
   lc_exp e1 ->
-  subst_var_in_contd e1 x1 cd1 = close_contd_wrt_typ X1 (subst_var_in_contd e1 x1 (open_contd_wrt_typ cd1 (typ_var_f X1))).
+  subst_exp_in_contd e1 x1 cd1 = close_contd_wrt_typ X1 (subst_exp_in_contd e1 x1 (open_contd_wrt_typ cd1 (typ_var_f X1))).
 Proof.
 unfold close_contd_wrt_typ; unfold open_contd_wrt_typ; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_var_in_contd_close_contd_wrt_typ_open_contd_wrt_typ : lngen.
+#[export] Hint Resolve subst_exp_in_contd_close_contd_wrt_typ_open_contd_wrt_typ : lngen.
 
-Lemma subst_var_in_conts_close_conts_wrt_typ_open_conts_wrt_typ :
+Lemma subst_exp_in_conts_close_conts_wrt_typ_open_conts_wrt_typ :
 forall cs1 e1 x1 X1,
   X1 `notin` ftvar_in_conts cs1 ->
   X1 `notin` ftvar_in_exp e1 ->
   lc_exp e1 ->
-  subst_var_in_conts e1 x1 cs1 = close_conts_wrt_typ X1 (subst_var_in_conts e1 x1 (open_conts_wrt_typ cs1 (typ_var_f X1))).
+  subst_exp_in_conts e1 x1 cs1 = close_conts_wrt_typ X1 (subst_exp_in_conts e1 x1 (open_conts_wrt_typ cs1 (typ_var_f X1))).
 Proof.
 unfold close_conts_wrt_typ; unfold open_conts_wrt_typ; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_var_in_conts_close_conts_wrt_typ_open_conts_wrt_typ : lngen.
+#[export] Hint Resolve subst_exp_in_conts_close_conts_wrt_typ_open_conts_wrt_typ : lngen.
 
-Lemma subst_var_in_contd_close_contd_wrt_exp_open_contd_wrt_exp :
+Lemma subst_exp_in_contd_close_contd_wrt_exp_open_contd_wrt_exp :
 forall cd1 e1 x1 x2,
   x2 `notin` fvar_in_contd cd1 ->
   x2 `notin` fvar_in_exp e1 ->
   x2 <> x1 ->
   lc_exp e1 ->
-  subst_var_in_contd e1 x1 cd1 = close_contd_wrt_exp x2 (subst_var_in_contd e1 x1 (open_contd_wrt_exp cd1 (exp_var_f x2))).
+  subst_exp_in_contd e1 x1 cd1 = close_contd_wrt_exp x2 (subst_exp_in_contd e1 x1 (open_contd_wrt_exp cd1 (exp_var_f x2))).
 Proof.
 unfold close_contd_wrt_exp; unfold open_contd_wrt_exp; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_var_in_contd_close_contd_wrt_exp_open_contd_wrt_exp : lngen.
+#[export] Hint Resolve subst_exp_in_contd_close_contd_wrt_exp_open_contd_wrt_exp : lngen.
 
-Lemma subst_var_in_conts_close_conts_wrt_exp_open_conts_wrt_exp :
+Lemma subst_exp_in_conts_close_conts_wrt_exp_open_conts_wrt_exp :
 forall cs1 e1 x1 x2,
   x2 `notin` fvar_in_conts cs1 ->
   x2 `notin` fvar_in_exp e1 ->
   x2 <> x1 ->
   lc_exp e1 ->
-  subst_var_in_conts e1 x1 cs1 = close_conts_wrt_exp x2 (subst_var_in_conts e1 x1 (open_conts_wrt_exp cs1 (exp_var_f x2))).
+  subst_exp_in_conts e1 x1 cs1 = close_conts_wrt_exp x2 (subst_exp_in_conts e1 x1 (open_conts_wrt_exp cs1 (exp_var_f x2))).
 Proof.
 unfold close_conts_wrt_exp; unfold open_conts_wrt_exp; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_var_in_conts_close_conts_wrt_exp_open_conts_wrt_exp : lngen.
+#[export] Hint Resolve subst_exp_in_conts_close_conts_wrt_exp_open_conts_wrt_exp : lngen.
 
-Lemma subst_tvar_in_dbind_close_dbind_wrt_typ_open_dbind_wrt_typ :
+Lemma subst_typ_in_dbind_close_dbind_wrt_typ_open_dbind_wrt_typ :
 forall db1 A1 X1 X2,
   X2 `notin` ftvar_in_dbind db1 ->
   X2 `notin` ftvar_in_typ A1 ->
   X2 <> X1 ->
   lc_typ A1 ->
-  subst_tvar_in_dbind A1 X1 db1 = close_dbind_wrt_typ X2 (subst_tvar_in_dbind A1 X1 (open_dbind_wrt_typ db1 (typ_var_f X2))).
+  subst_typ_in_dbind A1 X1 db1 = close_dbind_wrt_typ X2 (subst_typ_in_dbind A1 X1 (open_dbind_wrt_typ db1 (typ_var_f X2))).
 Proof.
 unfold close_dbind_wrt_typ; unfold open_dbind_wrt_typ; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_dbind_close_dbind_wrt_typ_open_dbind_wrt_typ : lngen.
+#[export] Hint Resolve subst_typ_in_dbind_close_dbind_wrt_typ_open_dbind_wrt_typ : lngen.
 
-Lemma subst_tvar_in_work_close_work_wrt_typ_open_work_wrt_typ :
+Lemma subst_typ_in_work_close_work_wrt_typ_open_work_wrt_typ :
 forall w1 A1 X1 X2,
   X2 `notin` ftvar_in_work w1 ->
   X2 `notin` ftvar_in_typ A1 ->
   X2 <> X1 ->
   lc_typ A1 ->
-  subst_tvar_in_work A1 X1 w1 = close_work_wrt_typ X2 (subst_tvar_in_work A1 X1 (open_work_wrt_typ w1 (typ_var_f X2))).
+  subst_typ_in_work A1 X1 w1 = close_work_wrt_typ X2 (subst_typ_in_work A1 X1 (open_work_wrt_typ w1 (typ_var_f X2))).
 Proof.
 unfold close_work_wrt_typ; unfold open_work_wrt_typ; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_work_close_work_wrt_typ_open_work_wrt_typ : lngen.
+#[export] Hint Resolve subst_typ_in_work_close_work_wrt_typ_open_work_wrt_typ : lngen.
 
-Lemma subst_tvar_in_work_close_work_wrt_exp_open_work_wrt_exp :
+Lemma subst_typ_in_work_close_work_wrt_exp_open_work_wrt_exp :
 forall w1 A1 X1 x1,
   x1 `notin` fvar_in_work w1 ->
   lc_typ A1 ->
-  subst_tvar_in_work A1 X1 w1 = close_work_wrt_exp x1 (subst_tvar_in_work A1 X1 (open_work_wrt_exp w1 (exp_var_f x1))).
+  subst_typ_in_work A1 X1 w1 = close_work_wrt_exp x1 (subst_typ_in_work A1 X1 (open_work_wrt_exp w1 (exp_var_f x1))).
 Proof.
 unfold close_work_wrt_exp; unfold open_work_wrt_exp; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_work_close_work_wrt_exp_open_work_wrt_exp : lngen.
+#[export] Hint Resolve subst_typ_in_work_close_work_wrt_exp_open_work_wrt_exp : lngen.
 
-Lemma subst_var_in_work_close_work_wrt_typ_open_work_wrt_typ :
+Lemma subst_exp_in_work_close_work_wrt_typ_open_work_wrt_typ :
 forall w1 e1 x1 X1,
   X1 `notin` ftvar_in_work w1 ->
   X1 `notin` ftvar_in_exp e1 ->
   lc_exp e1 ->
-  subst_var_in_work e1 x1 w1 = close_work_wrt_typ X1 (subst_var_in_work e1 x1 (open_work_wrt_typ w1 (typ_var_f X1))).
+  subst_exp_in_work e1 x1 w1 = close_work_wrt_typ X1 (subst_exp_in_work e1 x1 (open_work_wrt_typ w1 (typ_var_f X1))).
 Proof.
 unfold close_work_wrt_typ; unfold open_work_wrt_typ; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_var_in_work_close_work_wrt_typ_open_work_wrt_typ : lngen.
+#[export] Hint Resolve subst_exp_in_work_close_work_wrt_typ_open_work_wrt_typ : lngen.
 
-Lemma subst_var_in_work_close_work_wrt_exp_open_work_wrt_exp :
+Lemma subst_exp_in_work_close_work_wrt_exp_open_work_wrt_exp :
 forall w1 e1 x1 x2,
   x2 `notin` fvar_in_work w1 ->
   x2 `notin` fvar_in_exp e1 ->
   x2 <> x1 ->
   lc_exp e1 ->
-  subst_var_in_work e1 x1 w1 = close_work_wrt_exp x2 (subst_var_in_work e1 x1 (open_work_wrt_exp w1 (exp_var_f x2))).
+  subst_exp_in_work e1 x1 w1 = close_work_wrt_exp x2 (subst_exp_in_work e1 x1 (open_work_wrt_exp w1 (exp_var_f x2))).
 Proof.
 unfold close_work_wrt_exp; unfold open_work_wrt_exp; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_var_in_work_close_work_wrt_exp_open_work_wrt_exp : lngen.
+#[export] Hint Resolve subst_exp_in_work_close_work_wrt_exp_open_work_wrt_exp : lngen.
 
-Lemma subst_tvar_in_typ_typ_all :
+Lemma subst_typ_in_typ_typ_all :
 forall X2 A2 A1 X1,
   lc_typ A1 ->
   X2 `notin` ftvar_in_typ A1 `union` ftvar_in_typ A2 `union` singleton X1 ->
-  subst_tvar_in_typ A1 X1 (typ_all A2) = typ_all (close_typ_wrt_typ X2 (subst_tvar_in_typ A1 X1 (open_typ_wrt_typ A2 (typ_var_f X2)))).
+  subst_typ_in_typ A1 X1 (typ_all A2) = typ_all (close_typ_wrt_typ X2 (subst_typ_in_typ A1 X1 (open_typ_wrt_typ A2 (typ_var_f X2)))).
 Proof.
 default_simp.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_typ_typ_all : lngen.
+#[export] Hint Resolve subst_typ_in_typ_typ_all : lngen.
 
-Lemma subst_tvar_in_exp_exp_abs :
+Lemma subst_typ_in_exp_exp_abs :
 forall x1 e1 A1 X1,
   lc_typ A1 ->
   x1 `notin` fvar_in_exp e1 ->
-  subst_tvar_in_exp A1 X1 (exp_abs e1) = exp_abs (close_exp_wrt_exp x1 (subst_tvar_in_exp A1 X1 (open_exp_wrt_exp e1 (exp_var_f x1)))).
+  subst_typ_in_exp A1 X1 (exp_abs e1) = exp_abs (close_exp_wrt_exp x1 (subst_typ_in_exp A1 X1 (open_exp_wrt_exp e1 (exp_var_f x1)))).
 Proof.
 default_simp.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_exp_exp_abs : lngen.
+#[export] Hint Resolve subst_typ_in_exp_exp_abs : lngen.
 
-Lemma subst_tvar_in_exp_exp_tabs :
+Lemma subst_typ_in_exp_exp_tabs :
 forall X2 e1 A1 X1,
   lc_typ A1 ->
   X2 `notin` ftvar_in_typ A1 `union` ftvar_in_exp e1 `union` singleton X1 ->
-  subst_tvar_in_exp A1 X1 (exp_tabs e1) = exp_tabs (close_exp_wrt_typ X2 (subst_tvar_in_exp A1 X1 (open_exp_wrt_typ e1 (typ_var_f X2)))).
+  subst_typ_in_exp A1 X1 (exp_tabs e1) = exp_tabs (close_exp_wrt_typ X2 (subst_typ_in_exp A1 X1 (open_exp_wrt_typ e1 (typ_var_f X2)))).
 Proof.
 default_simp.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_exp_exp_tabs : lngen.
+#[export] Hint Resolve subst_typ_in_exp_exp_tabs : lngen.
 
-Lemma subst_var_in_exp_exp_abs :
+Lemma subst_exp_in_exp_exp_abs :
 forall x2 e2 e1 x1,
   lc_exp e1 ->
   x2 `notin` fvar_in_exp e1 `union` fvar_in_exp e2 `union` singleton x1 ->
-  subst_var_in_exp e1 x1 (exp_abs e2) = exp_abs (close_exp_wrt_exp x2 (subst_var_in_exp e1 x1 (open_exp_wrt_exp e2 (exp_var_f x2)))).
+  subst_exp_in_exp e1 x1 (exp_abs e2) = exp_abs (close_exp_wrt_exp x2 (subst_exp_in_exp e1 x1 (open_exp_wrt_exp e2 (exp_var_f x2)))).
 Proof.
 default_simp.
 Qed.
 
-#[export] Hint Resolve subst_var_in_exp_exp_abs : lngen.
+#[export] Hint Resolve subst_exp_in_exp_exp_abs : lngen.
 
-Lemma subst_var_in_exp_exp_tabs :
+Lemma subst_exp_in_exp_exp_tabs :
 forall X1 e2 e1 x1,
   lc_exp e1 ->
   X1 `notin` ftvar_in_exp e1 `union` ftvar_in_exp e2 ->
-  subst_var_in_exp e1 x1 (exp_tabs e2) = exp_tabs (close_exp_wrt_typ X1 (subst_var_in_exp e1 x1 (open_exp_wrt_typ e2 (typ_var_f X1)))).
+  subst_exp_in_exp e1 x1 (exp_tabs e2) = exp_tabs (close_exp_wrt_typ X1 (subst_exp_in_exp e1 x1 (open_exp_wrt_typ e2 (typ_var_f X1)))).
 Proof.
 default_simp.
 Qed.
 
-#[export] Hint Resolve subst_var_in_exp_exp_tabs : lngen.
+#[export] Hint Resolve subst_exp_in_exp_exp_tabs : lngen.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_typ_intro_rec_mutual :
+Lemma subst_typ_in_typ_intro_rec_mutual :
 (forall A1 X1 A2 n1,
   X1 `notin` ftvar_in_typ A1 ->
-  open_typ_wrt_typ_rec n1 A2 A1 = subst_tvar_in_typ A2 X1 (open_typ_wrt_typ_rec n1 (typ_var_f X1) A1)).
+  open_typ_wrt_typ_rec n1 A2 A1 = subst_typ_in_typ A2 X1 (open_typ_wrt_typ_rec n1 (typ_var_f X1) A1)).
 Proof.
 apply_mutual_ind typ_mutind;
 default_simp.
@@ -16758,23 +16758,23 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_tvar_in_typ_intro_rec :
+Lemma subst_typ_in_typ_intro_rec :
 forall A1 X1 A2 n1,
   X1 `notin` ftvar_in_typ A1 ->
-  open_typ_wrt_typ_rec n1 A2 A1 = subst_tvar_in_typ A2 X1 (open_typ_wrt_typ_rec n1 (typ_var_f X1) A1).
+  open_typ_wrt_typ_rec n1 A2 A1 = subst_typ_in_typ A2 X1 (open_typ_wrt_typ_rec n1 (typ_var_f X1) A1).
 Proof.
-pose proof subst_tvar_in_typ_intro_rec_mutual as H; intuition eauto.
+pose proof subst_typ_in_typ_intro_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_typ_intro_rec : lngen.
-#[export] Hint Rewrite subst_tvar_in_typ_intro_rec using solve [auto] : lngen.
+#[export] Hint Resolve subst_typ_in_typ_intro_rec : lngen.
+#[export] Hint Rewrite subst_typ_in_typ_intro_rec using solve [auto] : lngen.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_abind_intro_rec_mutual :
+Lemma subst_typ_in_abind_intro_rec_mutual :
 (forall ab1 X1 A1 n1,
   X1 `notin` ftvar_in_abind ab1 ->
-  open_abind_wrt_typ_rec n1 A1 ab1 = subst_tvar_in_abind A1 X1 (open_abind_wrt_typ_rec n1 (typ_var_f X1) ab1)).
+  open_abind_wrt_typ_rec n1 A1 ab1 = subst_typ_in_abind A1 X1 (open_abind_wrt_typ_rec n1 (typ_var_f X1) ab1)).
 Proof.
 apply_mutual_ind abind_mutind;
 default_simp.
@@ -16782,23 +16782,23 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_tvar_in_abind_intro_rec :
+Lemma subst_typ_in_abind_intro_rec :
 forall ab1 X1 A1 n1,
   X1 `notin` ftvar_in_abind ab1 ->
-  open_abind_wrt_typ_rec n1 A1 ab1 = subst_tvar_in_abind A1 X1 (open_abind_wrt_typ_rec n1 (typ_var_f X1) ab1).
+  open_abind_wrt_typ_rec n1 A1 ab1 = subst_typ_in_abind A1 X1 (open_abind_wrt_typ_rec n1 (typ_var_f X1) ab1).
 Proof.
-pose proof subst_tvar_in_abind_intro_rec_mutual as H; intuition eauto.
+pose proof subst_typ_in_abind_intro_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_abind_intro_rec : lngen.
-#[export] Hint Rewrite subst_tvar_in_abind_intro_rec using solve [auto] : lngen.
+#[export] Hint Resolve subst_typ_in_abind_intro_rec : lngen.
+#[export] Hint Rewrite subst_typ_in_abind_intro_rec using solve [auto] : lngen.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_exp_intro_rec_mutual :
+Lemma subst_typ_in_exp_intro_rec_mutual :
 (forall e1 X1 A1 n1,
   X1 `notin` ftvar_in_exp e1 ->
-  open_exp_wrt_typ_rec n1 A1 e1 = subst_tvar_in_exp A1 X1 (open_exp_wrt_typ_rec n1 (typ_var_f X1) e1)).
+  open_exp_wrt_typ_rec n1 A1 e1 = subst_typ_in_exp A1 X1 (open_exp_wrt_typ_rec n1 (typ_var_f X1) e1)).
 Proof.
 apply_mutual_ind exp_mutind;
 default_simp.
@@ -16806,23 +16806,23 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_tvar_in_exp_intro_rec :
+Lemma subst_typ_in_exp_intro_rec :
 forall e1 X1 A1 n1,
   X1 `notin` ftvar_in_exp e1 ->
-  open_exp_wrt_typ_rec n1 A1 e1 = subst_tvar_in_exp A1 X1 (open_exp_wrt_typ_rec n1 (typ_var_f X1) e1).
+  open_exp_wrt_typ_rec n1 A1 e1 = subst_typ_in_exp A1 X1 (open_exp_wrt_typ_rec n1 (typ_var_f X1) e1).
 Proof.
-pose proof subst_tvar_in_exp_intro_rec_mutual as H; intuition eauto.
+pose proof subst_typ_in_exp_intro_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_exp_intro_rec : lngen.
-#[export] Hint Rewrite subst_tvar_in_exp_intro_rec using solve [auto] : lngen.
+#[export] Hint Resolve subst_typ_in_exp_intro_rec : lngen.
+#[export] Hint Rewrite subst_typ_in_exp_intro_rec using solve [auto] : lngen.
 
 (* begin hide *)
 
-Lemma subst_var_in_exp_intro_rec_mutual :
+Lemma subst_exp_in_exp_intro_rec_mutual :
 (forall e1 x1 e2 n1,
   x1 `notin` fvar_in_exp e1 ->
-  open_exp_wrt_exp_rec n1 e2 e1 = subst_var_in_exp e2 x1 (open_exp_wrt_exp_rec n1 (exp_var_f x1) e1)).
+  open_exp_wrt_exp_rec n1 e2 e1 = subst_exp_in_exp e2 x1 (open_exp_wrt_exp_rec n1 (exp_var_f x1) e1)).
 Proof.
 apply_mutual_ind exp_mutind;
 default_simp.
@@ -16830,26 +16830,26 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_var_in_exp_intro_rec :
+Lemma subst_exp_in_exp_intro_rec :
 forall e1 x1 e2 n1,
   x1 `notin` fvar_in_exp e1 ->
-  open_exp_wrt_exp_rec n1 e2 e1 = subst_var_in_exp e2 x1 (open_exp_wrt_exp_rec n1 (exp_var_f x1) e1).
+  open_exp_wrt_exp_rec n1 e2 e1 = subst_exp_in_exp e2 x1 (open_exp_wrt_exp_rec n1 (exp_var_f x1) e1).
 Proof.
-pose proof subst_var_in_exp_intro_rec_mutual as H; intuition eauto.
+pose proof subst_exp_in_exp_intro_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_var_in_exp_intro_rec : lngen.
-#[export] Hint Rewrite subst_var_in_exp_intro_rec using solve [auto] : lngen.
+#[export] Hint Resolve subst_exp_in_exp_intro_rec : lngen.
+#[export] Hint Rewrite subst_exp_in_exp_intro_rec using solve [auto] : lngen.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_contd_intro_rec_subst_tvar_in_conts_intro_rec_mutual :
+Lemma subst_typ_in_contd_intro_rec_subst_typ_in_conts_intro_rec_mutual :
 (forall cd1 X1 A1 n1,
   X1 `notin` ftvar_in_contd cd1 ->
-  open_contd_wrt_typ_rec n1 A1 cd1 = subst_tvar_in_contd A1 X1 (open_contd_wrt_typ_rec n1 (typ_var_f X1) cd1)) /\
+  open_contd_wrt_typ_rec n1 A1 cd1 = subst_typ_in_contd A1 X1 (open_contd_wrt_typ_rec n1 (typ_var_f X1) cd1)) /\
 (forall cs1 X1 A1 n1,
   X1 `notin` ftvar_in_conts cs1 ->
-  open_conts_wrt_typ_rec n1 A1 cs1 = subst_tvar_in_conts A1 X1 (open_conts_wrt_typ_rec n1 (typ_var_f X1) cs1)).
+  open_conts_wrt_typ_rec n1 A1 cs1 = subst_typ_in_conts A1 X1 (open_conts_wrt_typ_rec n1 (typ_var_f X1) cs1)).
 Proof.
 apply_mutual_ind contd_conts_mutind;
 default_simp.
@@ -16857,37 +16857,37 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_tvar_in_contd_intro_rec :
+Lemma subst_typ_in_contd_intro_rec :
 forall cd1 X1 A1 n1,
   X1 `notin` ftvar_in_contd cd1 ->
-  open_contd_wrt_typ_rec n1 A1 cd1 = subst_tvar_in_contd A1 X1 (open_contd_wrt_typ_rec n1 (typ_var_f X1) cd1).
+  open_contd_wrt_typ_rec n1 A1 cd1 = subst_typ_in_contd A1 X1 (open_contd_wrt_typ_rec n1 (typ_var_f X1) cd1).
 Proof.
-pose proof subst_tvar_in_contd_intro_rec_subst_tvar_in_conts_intro_rec_mutual as H; intuition eauto.
+pose proof subst_typ_in_contd_intro_rec_subst_typ_in_conts_intro_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_contd_intro_rec : lngen.
-#[export] Hint Rewrite subst_tvar_in_contd_intro_rec using solve [auto] : lngen.
+#[export] Hint Resolve subst_typ_in_contd_intro_rec : lngen.
+#[export] Hint Rewrite subst_typ_in_contd_intro_rec using solve [auto] : lngen.
 
-Lemma subst_tvar_in_conts_intro_rec :
+Lemma subst_typ_in_conts_intro_rec :
 forall cs1 X1 A1 n1,
   X1 `notin` ftvar_in_conts cs1 ->
-  open_conts_wrt_typ_rec n1 A1 cs1 = subst_tvar_in_conts A1 X1 (open_conts_wrt_typ_rec n1 (typ_var_f X1) cs1).
+  open_conts_wrt_typ_rec n1 A1 cs1 = subst_typ_in_conts A1 X1 (open_conts_wrt_typ_rec n1 (typ_var_f X1) cs1).
 Proof.
-pose proof subst_tvar_in_contd_intro_rec_subst_tvar_in_conts_intro_rec_mutual as H; intuition eauto.
+pose proof subst_typ_in_contd_intro_rec_subst_typ_in_conts_intro_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_conts_intro_rec : lngen.
-#[export] Hint Rewrite subst_tvar_in_conts_intro_rec using solve [auto] : lngen.
+#[export] Hint Resolve subst_typ_in_conts_intro_rec : lngen.
+#[export] Hint Rewrite subst_typ_in_conts_intro_rec using solve [auto] : lngen.
 
 (* begin hide *)
 
-Lemma subst_var_in_contd_intro_rec_subst_var_in_conts_intro_rec_mutual :
+Lemma subst_exp_in_contd_intro_rec_subst_exp_in_conts_intro_rec_mutual :
 (forall cd1 x1 e1 n1,
   x1 `notin` fvar_in_contd cd1 ->
-  open_contd_wrt_exp_rec n1 e1 cd1 = subst_var_in_contd e1 x1 (open_contd_wrt_exp_rec n1 (exp_var_f x1) cd1)) /\
+  open_contd_wrt_exp_rec n1 e1 cd1 = subst_exp_in_contd e1 x1 (open_contd_wrt_exp_rec n1 (exp_var_f x1) cd1)) /\
 (forall cs1 x1 e1 n1,
   x1 `notin` fvar_in_conts cs1 ->
-  open_conts_wrt_exp_rec n1 e1 cs1 = subst_var_in_conts e1 x1 (open_conts_wrt_exp_rec n1 (exp_var_f x1) cs1)).
+  open_conts_wrt_exp_rec n1 e1 cs1 = subst_exp_in_conts e1 x1 (open_conts_wrt_exp_rec n1 (exp_var_f x1) cs1)).
 Proof.
 apply_mutual_ind contd_conts_mutind;
 default_simp.
@@ -16895,34 +16895,34 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_var_in_contd_intro_rec :
+Lemma subst_exp_in_contd_intro_rec :
 forall cd1 x1 e1 n1,
   x1 `notin` fvar_in_contd cd1 ->
-  open_contd_wrt_exp_rec n1 e1 cd1 = subst_var_in_contd e1 x1 (open_contd_wrt_exp_rec n1 (exp_var_f x1) cd1).
+  open_contd_wrt_exp_rec n1 e1 cd1 = subst_exp_in_contd e1 x1 (open_contd_wrt_exp_rec n1 (exp_var_f x1) cd1).
 Proof.
-pose proof subst_var_in_contd_intro_rec_subst_var_in_conts_intro_rec_mutual as H; intuition eauto.
+pose proof subst_exp_in_contd_intro_rec_subst_exp_in_conts_intro_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_var_in_contd_intro_rec : lngen.
-#[export] Hint Rewrite subst_var_in_contd_intro_rec using solve [auto] : lngen.
+#[export] Hint Resolve subst_exp_in_contd_intro_rec : lngen.
+#[export] Hint Rewrite subst_exp_in_contd_intro_rec using solve [auto] : lngen.
 
-Lemma subst_var_in_conts_intro_rec :
+Lemma subst_exp_in_conts_intro_rec :
 forall cs1 x1 e1 n1,
   x1 `notin` fvar_in_conts cs1 ->
-  open_conts_wrt_exp_rec n1 e1 cs1 = subst_var_in_conts e1 x1 (open_conts_wrt_exp_rec n1 (exp_var_f x1) cs1).
+  open_conts_wrt_exp_rec n1 e1 cs1 = subst_exp_in_conts e1 x1 (open_conts_wrt_exp_rec n1 (exp_var_f x1) cs1).
 Proof.
-pose proof subst_var_in_contd_intro_rec_subst_var_in_conts_intro_rec_mutual as H; intuition eauto.
+pose proof subst_exp_in_contd_intro_rec_subst_exp_in_conts_intro_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_var_in_conts_intro_rec : lngen.
-#[export] Hint Rewrite subst_var_in_conts_intro_rec using solve [auto] : lngen.
+#[export] Hint Resolve subst_exp_in_conts_intro_rec : lngen.
+#[export] Hint Rewrite subst_exp_in_conts_intro_rec using solve [auto] : lngen.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_dbind_intro_rec_mutual :
+Lemma subst_typ_in_dbind_intro_rec_mutual :
 (forall db1 X1 A1 n1,
   X1 `notin` ftvar_in_dbind db1 ->
-  open_dbind_wrt_typ_rec n1 A1 db1 = subst_tvar_in_dbind A1 X1 (open_dbind_wrt_typ_rec n1 (typ_var_f X1) db1)).
+  open_dbind_wrt_typ_rec n1 A1 db1 = subst_typ_in_dbind A1 X1 (open_dbind_wrt_typ_rec n1 (typ_var_f X1) db1)).
 Proof.
 apply_mutual_ind dbind_mutind;
 default_simp.
@@ -16930,23 +16930,23 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_tvar_in_dbind_intro_rec :
+Lemma subst_typ_in_dbind_intro_rec :
 forall db1 X1 A1 n1,
   X1 `notin` ftvar_in_dbind db1 ->
-  open_dbind_wrt_typ_rec n1 A1 db1 = subst_tvar_in_dbind A1 X1 (open_dbind_wrt_typ_rec n1 (typ_var_f X1) db1).
+  open_dbind_wrt_typ_rec n1 A1 db1 = subst_typ_in_dbind A1 X1 (open_dbind_wrt_typ_rec n1 (typ_var_f X1) db1).
 Proof.
-pose proof subst_tvar_in_dbind_intro_rec_mutual as H; intuition eauto.
+pose proof subst_typ_in_dbind_intro_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_dbind_intro_rec : lngen.
-#[export] Hint Rewrite subst_tvar_in_dbind_intro_rec using solve [auto] : lngen.
+#[export] Hint Resolve subst_typ_in_dbind_intro_rec : lngen.
+#[export] Hint Rewrite subst_typ_in_dbind_intro_rec using solve [auto] : lngen.
 
 (* begin hide *)
 
-Lemma subst_tvar_in_work_intro_rec_mutual :
+Lemma subst_typ_in_work_intro_rec_mutual :
 (forall w1 X1 A1 n1,
   X1 `notin` ftvar_in_work w1 ->
-  open_work_wrt_typ_rec n1 A1 w1 = subst_tvar_in_work A1 X1 (open_work_wrt_typ_rec n1 (typ_var_f X1) w1)).
+  open_work_wrt_typ_rec n1 A1 w1 = subst_typ_in_work A1 X1 (open_work_wrt_typ_rec n1 (typ_var_f X1) w1)).
 Proof.
 apply_mutual_ind work_mutind;
 default_simp.
@@ -16954,23 +16954,23 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_tvar_in_work_intro_rec :
+Lemma subst_typ_in_work_intro_rec :
 forall w1 X1 A1 n1,
   X1 `notin` ftvar_in_work w1 ->
-  open_work_wrt_typ_rec n1 A1 w1 = subst_tvar_in_work A1 X1 (open_work_wrt_typ_rec n1 (typ_var_f X1) w1).
+  open_work_wrt_typ_rec n1 A1 w1 = subst_typ_in_work A1 X1 (open_work_wrt_typ_rec n1 (typ_var_f X1) w1).
 Proof.
-pose proof subst_tvar_in_work_intro_rec_mutual as H; intuition eauto.
+pose proof subst_typ_in_work_intro_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_work_intro_rec : lngen.
-#[export] Hint Rewrite subst_tvar_in_work_intro_rec using solve [auto] : lngen.
+#[export] Hint Resolve subst_typ_in_work_intro_rec : lngen.
+#[export] Hint Rewrite subst_typ_in_work_intro_rec using solve [auto] : lngen.
 
 (* begin hide *)
 
-Lemma subst_var_in_work_intro_rec_mutual :
+Lemma subst_exp_in_work_intro_rec_mutual :
 (forall w1 x1 e1 n1,
   x1 `notin` fvar_in_work w1 ->
-  open_work_wrt_exp_rec n1 e1 w1 = subst_var_in_work e1 x1 (open_work_wrt_exp_rec n1 (exp_var_f x1) w1)).
+  open_work_wrt_exp_rec n1 e1 w1 = subst_exp_in_work e1 x1 (open_work_wrt_exp_rec n1 (exp_var_f x1) w1)).
 Proof.
 apply_mutual_ind work_mutind;
 default_simp.
@@ -16978,126 +16978,126 @@ Qed.
 
 (* end hide *)
 
-Lemma subst_var_in_work_intro_rec :
+Lemma subst_exp_in_work_intro_rec :
 forall w1 x1 e1 n1,
   x1 `notin` fvar_in_work w1 ->
-  open_work_wrt_exp_rec n1 e1 w1 = subst_var_in_work e1 x1 (open_work_wrt_exp_rec n1 (exp_var_f x1) w1).
+  open_work_wrt_exp_rec n1 e1 w1 = subst_exp_in_work e1 x1 (open_work_wrt_exp_rec n1 (exp_var_f x1) w1).
 Proof.
-pose proof subst_var_in_work_intro_rec_mutual as H; intuition eauto.
+pose proof subst_exp_in_work_intro_rec_mutual as H; intuition eauto.
 Qed.
 
-#[export] Hint Resolve subst_var_in_work_intro_rec : lngen.
-#[export] Hint Rewrite subst_var_in_work_intro_rec using solve [auto] : lngen.
+#[export] Hint Resolve subst_exp_in_work_intro_rec : lngen.
+#[export] Hint Rewrite subst_exp_in_work_intro_rec using solve [auto] : lngen.
 
-Lemma subst_tvar_in_typ_intro :
+Lemma subst_typ_in_typ_intro :
 forall X1 A1 A2,
   X1 `notin` ftvar_in_typ A1 ->
-  open_typ_wrt_typ A1 A2 = subst_tvar_in_typ A2 X1 (open_typ_wrt_typ A1 (typ_var_f X1)).
+  open_typ_wrt_typ A1 A2 = subst_typ_in_typ A2 X1 (open_typ_wrt_typ A1 (typ_var_f X1)).
 Proof.
 unfold open_typ_wrt_typ; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_typ_intro : lngen.
+#[export] Hint Resolve subst_typ_in_typ_intro : lngen.
 
-Lemma subst_tvar_in_abind_intro :
+Lemma subst_typ_in_abind_intro :
 forall X1 ab1 A1,
   X1 `notin` ftvar_in_abind ab1 ->
-  open_abind_wrt_typ ab1 A1 = subst_tvar_in_abind A1 X1 (open_abind_wrt_typ ab1 (typ_var_f X1)).
+  open_abind_wrt_typ ab1 A1 = subst_typ_in_abind A1 X1 (open_abind_wrt_typ ab1 (typ_var_f X1)).
 Proof.
 unfold open_abind_wrt_typ; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_abind_intro : lngen.
+#[export] Hint Resolve subst_typ_in_abind_intro : lngen.
 
-Lemma subst_tvar_in_exp_intro :
+Lemma subst_typ_in_exp_intro :
 forall X1 e1 A1,
   X1 `notin` ftvar_in_exp e1 ->
-  open_exp_wrt_typ e1 A1 = subst_tvar_in_exp A1 X1 (open_exp_wrt_typ e1 (typ_var_f X1)).
+  open_exp_wrt_typ e1 A1 = subst_typ_in_exp A1 X1 (open_exp_wrt_typ e1 (typ_var_f X1)).
 Proof.
 unfold open_exp_wrt_typ; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_exp_intro : lngen.
+#[export] Hint Resolve subst_typ_in_exp_intro : lngen.
 
-Lemma subst_var_in_exp_intro :
+Lemma subst_exp_in_exp_intro :
 forall x1 e1 e2,
   x1 `notin` fvar_in_exp e1 ->
-  open_exp_wrt_exp e1 e2 = subst_var_in_exp e2 x1 (open_exp_wrt_exp e1 (exp_var_f x1)).
+  open_exp_wrt_exp e1 e2 = subst_exp_in_exp e2 x1 (open_exp_wrt_exp e1 (exp_var_f x1)).
 Proof.
 unfold open_exp_wrt_exp; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_var_in_exp_intro : lngen.
+#[export] Hint Resolve subst_exp_in_exp_intro : lngen.
 
-Lemma subst_tvar_in_contd_intro :
+Lemma subst_typ_in_contd_intro :
 forall X1 cd1 A1,
   X1 `notin` ftvar_in_contd cd1 ->
-  open_contd_wrt_typ cd1 A1 = subst_tvar_in_contd A1 X1 (open_contd_wrt_typ cd1 (typ_var_f X1)).
+  open_contd_wrt_typ cd1 A1 = subst_typ_in_contd A1 X1 (open_contd_wrt_typ cd1 (typ_var_f X1)).
 Proof.
 unfold open_contd_wrt_typ; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_contd_intro : lngen.
+#[export] Hint Resolve subst_typ_in_contd_intro : lngen.
 
-Lemma subst_tvar_in_conts_intro :
+Lemma subst_typ_in_conts_intro :
 forall X1 cs1 A1,
   X1 `notin` ftvar_in_conts cs1 ->
-  open_conts_wrt_typ cs1 A1 = subst_tvar_in_conts A1 X1 (open_conts_wrt_typ cs1 (typ_var_f X1)).
+  open_conts_wrt_typ cs1 A1 = subst_typ_in_conts A1 X1 (open_conts_wrt_typ cs1 (typ_var_f X1)).
 Proof.
 unfold open_conts_wrt_typ; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_conts_intro : lngen.
+#[export] Hint Resolve subst_typ_in_conts_intro : lngen.
 
-Lemma subst_var_in_contd_intro :
+Lemma subst_exp_in_contd_intro :
 forall x1 cd1 e1,
   x1 `notin` fvar_in_contd cd1 ->
-  open_contd_wrt_exp cd1 e1 = subst_var_in_contd e1 x1 (open_contd_wrt_exp cd1 (exp_var_f x1)).
+  open_contd_wrt_exp cd1 e1 = subst_exp_in_contd e1 x1 (open_contd_wrt_exp cd1 (exp_var_f x1)).
 Proof.
 unfold open_contd_wrt_exp; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_var_in_contd_intro : lngen.
+#[export] Hint Resolve subst_exp_in_contd_intro : lngen.
 
-Lemma subst_var_in_conts_intro :
+Lemma subst_exp_in_conts_intro :
 forall x1 cs1 e1,
   x1 `notin` fvar_in_conts cs1 ->
-  open_conts_wrt_exp cs1 e1 = subst_var_in_conts e1 x1 (open_conts_wrt_exp cs1 (exp_var_f x1)).
+  open_conts_wrt_exp cs1 e1 = subst_exp_in_conts e1 x1 (open_conts_wrt_exp cs1 (exp_var_f x1)).
 Proof.
 unfold open_conts_wrt_exp; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_var_in_conts_intro : lngen.
+#[export] Hint Resolve subst_exp_in_conts_intro : lngen.
 
-Lemma subst_tvar_in_dbind_intro :
+Lemma subst_typ_in_dbind_intro :
 forall X1 db1 A1,
   X1 `notin` ftvar_in_dbind db1 ->
-  open_dbind_wrt_typ db1 A1 = subst_tvar_in_dbind A1 X1 (open_dbind_wrt_typ db1 (typ_var_f X1)).
+  open_dbind_wrt_typ db1 A1 = subst_typ_in_dbind A1 X1 (open_dbind_wrt_typ db1 (typ_var_f X1)).
 Proof.
 unfold open_dbind_wrt_typ; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_dbind_intro : lngen.
+#[export] Hint Resolve subst_typ_in_dbind_intro : lngen.
 
-Lemma subst_tvar_in_work_intro :
+Lemma subst_typ_in_work_intro :
 forall X1 w1 A1,
   X1 `notin` ftvar_in_work w1 ->
-  open_work_wrt_typ w1 A1 = subst_tvar_in_work A1 X1 (open_work_wrt_typ w1 (typ_var_f X1)).
+  open_work_wrt_typ w1 A1 = subst_typ_in_work A1 X1 (open_work_wrt_typ w1 (typ_var_f X1)).
 Proof.
 unfold open_work_wrt_typ; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_tvar_in_work_intro : lngen.
+#[export] Hint Resolve subst_typ_in_work_intro : lngen.
 
-Lemma subst_var_in_work_intro :
+Lemma subst_exp_in_work_intro :
 forall x1 w1 e1,
   x1 `notin` fvar_in_work w1 ->
-  open_work_wrt_exp w1 e1 = subst_var_in_work e1 x1 (open_work_wrt_exp w1 (exp_var_f x1)).
+  open_work_wrt_exp w1 e1 = subst_exp_in_work e1 x1 (open_work_wrt_exp w1 (exp_var_f x1)).
 Proof.
 unfold open_work_wrt_exp; default_simp.
 Qed.
 
-#[export] Hint Resolve subst_var_in_work_intro : lngen.
+#[export] Hint Resolve subst_exp_in_work_intro : lngen.
 
 
 (* *********************************************************************** *)

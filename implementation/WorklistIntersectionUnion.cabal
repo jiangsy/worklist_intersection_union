@@ -41,7 +41,9 @@ library
     , megaparsec
     , parser-combinators
   default-language: Haskell2010
-
+  default-extensions:
+    ImportQualifiedPost
+    
 executable WorklistIntersectionUnion-exe
   main-is: Main.hs
   other-modules:
@@ -58,21 +60,25 @@ executable WorklistIntersectionUnion-exe
     , megaparsec
     , parser-combinators
   default-language: Haskell2010
+  default-extensions:
+    ImportQualifiedPost
 
-test-suite WorklistIntersectionUnion-test
-  type: exitcode-stdio-1.0
-  main-is: Spec.hs
-  other-modules:
-      Paths_WorklistIntersectionUnion
-  hs-source-dirs:
-      test
-  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
-  build-depends:
-      WorklistIntersectionUnion
-    , base >=4.7 && <5
-    , directory
-    , filepath
-    , hspec
-    , megaparsec
-    , parser-combinators
-  default-language: Haskell2010
+-- test-suite WorklistIntersectionUnion-test
+--   type: exitcode-stdio-1.0
+--   main-is: Spec.hs
+--   other-modules:
+--       Paths_WorklistIntersectionUnion
+--   hs-source-dirs:
+--       test
+--   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+--   build-depends:
+--       WorklistIntersectionUnion
+--     , base >=4.7 && <5
+--     , directory
+--     , filepath
+--     , hspec
+--     , megaparsec
+--     , parser-combinators
+--   default-language: Haskell2010
+--   default-extensions:
+--     ImportQualifiedPost

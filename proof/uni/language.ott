@@ -69,10 +69,10 @@ work, w :: 'work_' ::=
   | cd $ A $ B                             ::   :: applyd
 
 substitutions
-  single A X  :: subst_tvar_in
-  single w X  :: subst_tvar_in
-  single e x  :: subst_var_in
-  single w x  :: subst_var_in
+  single A X  :: subst_typ_in
+  single w X  :: subst_typ_in
+  single e x  :: subst_exp_in
+  single w x  :: subst_exp_in
 
 freevars
   A X  :: ftvar_in

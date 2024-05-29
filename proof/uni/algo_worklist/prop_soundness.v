@@ -60,7 +60,7 @@ Ltac destruct_trans' :=
   lazymatch goal with
     | H : trans_worklist ?θ (aworklist_cons_work ?Γ ?w) ?Ω ?θ' |- _ => dependent destruction H
     | H : trans_worklist ?θ (aworklist_cons_var ?Γ ?x ?b) ?Ω ?θ' |- _ => dependent destruction H
-    | H : trans_work ?θ (subst_tvar_in_work _ _ _) ?wᵈ |- _ => fail
+    | H : trans_work ?θ (subst_typ_in_work _ _ _) ?wᵈ |- _ => fail
     | H : trans_work ?θ (?wᵃ _) ?wᵈ |- _ => dependent destruction H
     | H : trans_work ?θ (?wᵃ _ _) ?wᵈ |- _ => dependent destruction H
     | H : trans_work ?θ (?wᵃ _ _ _) ?wᵈ |- _ => dependent destruction H
@@ -73,7 +73,7 @@ Ltac destruct_trans' :=
     | H : trans_typ ?θ typ_bot ?Aᵈ |- _ => dependent destruction H
     | H : trans_typ ?θ typ_top ?Aᵈ |- _ => dependent destruction H
     | H : trans_typ ?θ (open_typ_wrt_typ _ _) ?Aᵈ |- _ => fail
-    | H : trans_typ ?θ (subst_tvar_in_typ _ _ _) ?Aᵈ |- _ => fail
+    | H : trans_typ ?θ (subst_typ_in_typ _ _ _) ?Aᵈ |- _ => fail
     | H : trans_typ ?θ (?C_T _ _) ?Aᵈ |- _ => dependent destruction H
     end;
   try unify_trans_typ;
@@ -165,7 +165,7 @@ Proof with eauto.
       * constructor; auto. 
     + exists A'ᵈ. split.
       rewrite <- ftvar_in_trans_dtyp_upper in Hfv; eauto.
-      * apply subst_tvar_in_typ_fresh_eq...
+      * apply subst_typ_in_typ_fresh_eq...
       * rewrite_env (θ2 ++ (X0 ~ □) ++ θ1). apply trans_typ_weaken... 
         apply wf_ss_weaken_tvar...
   - dependent destruction Hinst.
@@ -175,20 +175,20 @@ Proof with eauto.
     intuition... subst...
   - dependent destruction Hinst.  
     pick fresh X0. inst_cofinites_with X0.
-    rewrite subst_tvar_in_typ_open_typ_wrt_typ_fresh2 in *...
+    rewrite subst_typ_in_typ_open_typ_wrt_typ_fresh2 in *...
     rewrite_env (((X0, dbind_tvar_empty) :: θ2) ++ θ1) in H2.
     apply H0 in H2; simpl...
     destruct H2 as [Aᵈ].
     exists (typ_all (close_typ_wrt_typ X0 Aᵈ)). simpl.
-    rewrite subst_tvar_in_typ_close_typ_wrt_typ... 
+    rewrite subst_typ_in_typ_close_typ_wrt_typ... 
     split...
     + apply f_equal. erewrite typ_open_r_close_l... intuition.
     + eapply trans_typ__all with (L:=L `union` dom (θ2 ++ (X, □) :: θ1)); intros.
       * eapply s_in_subst in H1... apply s_in_rename with (Y:=X1) in H1.
-        rewrite subst_tvar_in_typ_open_typ_wrt_typ_tvar2 in *...
+        rewrite subst_typ_in_typ_open_typ_wrt_typ_tvar2 in *...
       * intuition.
-      erewrite subst_tvar_in_typ_intro by auto.
-      erewrite (subst_tvar_in_typ_intro X0 (close_typ_wrt_typ X0 Aᵈ)) by apply close_typ_wrt_typ_notin.
+      erewrite subst_typ_in_typ_intro by auto.
+      erewrite (subst_typ_in_typ_intro X0 (close_typ_wrt_typ X0 Aᵈ)) by apply close_typ_wrt_typ_notin.
       apply trans_typ_rename_tvar_cons...
       rewrite open_typ_wrt_typ_close_typ_wrt_typ...
   - dependent destruction Hinst.
@@ -262,7 +262,7 @@ Proof.
   - simpl in Hinsta. 
     dependent destruction Hinsta. 
     inst_cofinites_for trans_typ__all; intros;
-    inst_cofinites_with X0. rewrite subst_tvar_in_typ_open_typ_wrt_typ_fresh2 in *; eauto.
+    inst_cofinites_with X0. rewrite subst_typ_in_typ_open_typ_wrt_typ_fresh2 in *; eauto.
     + apply s_in_subst in H1; eauto. 
     + rewrite_env (((X0, □) :: θ2) ++ (X, dbind_typ Tᵈ) :: θ1).
       apply H0; auto.
@@ -270,7 +270,7 @@ Proof.
       * simpl. rewrite_env (nil ++ (X0 ~ □) ++ (θ2 ++ θ1)). 
         apply trans_typ_weaken; auto.
         constructor; auto.
-      * rewrite subst_tvar_in_typ_open_typ_wrt_typ.
+      * rewrite subst_typ_in_typ_open_typ_wrt_typ.
         -- simpl. destruct_eq_atom. auto.
         -- eapply trans_typ_lc_atyp; eauto.
   - simpl in Hinsta.
@@ -294,14 +294,14 @@ Proof.
   apply trans_typ_strengthen_etvar in H2; auto.
   apply trans_typ_strengthen_etvar in H3; auto.
   eapply trans_typ_subst_etvar; eauto.
-  - apply lc_typ_subst_inv with (T:=Tᵃ) (X:=X).
+  - apply lc_typ_subst_inv with (B:=Tᵃ) (X:=X).
     eapply trans_typ_lc_atyp; eauto.
     eapply trans_typ_lc_atyp; eauto.
   - eapply wf_ss_notin_remaining; eauto. 
   - clear H0 H1 H2 H3. induction θ2; simpl in *. 
     + inversion H; auto.
     + inversion H; apply IHθ2; eauto.
-  - apply subst_tvar_in_typ_fresh_same; auto.
+  - apply subst_typ_in_typ_fresh_same; auto.
 Qed.
 
 Lemma trans_exp_subst_etvar_same_ss' : forall θ Tᵃ Tᵈ X eᵃ eᵈ,
@@ -310,7 +310,7 @@ Lemma trans_exp_subst_etvar_same_ss' : forall θ Tᵃ Tᵈ X eᵃ eᵈ,
   binds X (dbind_typ Tᵈ) θ ->
   X ∉ ftvar_in_typ Tᵃ ->
   θ ᵗ⊩ Tᵃ ⇝ Tᵈ ->
-  θ ᵉ⊩ (subst_tvar_in_exp Tᵃ X eᵃ) ⇝ eᵈ -> 
+  θ ᵉ⊩ (subst_typ_in_exp Tᵃ X eᵃ) ⇝ eᵈ -> 
   θ ᵉ⊩ eᵃ ⇝ eᵈ.
 Proof.
   intros * Hlc.
@@ -321,24 +321,24 @@ Proof.
   - dependent destruction H5.
     inst_cofinites_for trans_exp__abs. intros.
     apply H0; auto.
-    rewrite subst_tvar_in_exp_open_exp_wrt_exp.
+    rewrite subst_typ_in_exp_open_exp_wrt_exp.
     simpl. auto.
   - dependent destruction H3; eauto.
   - dependent destruction H5; eauto.
     destruct e; simpl in x; try solve [inversion x].
     inst_cofinites_for trans_exp__tabs; intros; inst_cofinites_with X0.
     + dependent destruction x. 
-      assert (Htrans: (X0, □) :: θ ᵉ⊩ {Tᵃ ᵉ/ₜ X} exp_anno e A ᵉ^ₜ ` X0 ⇝ exp_anno (eᵈ ᵉ^ₜ ` X0) (Aᵈ ᵗ^ₜ X0)). {
-        simpl. constructor. rewrite subst_tvar_in_exp_open_exp_wrt_typ_fresh2 in H5; eauto.
-        rewrite subst_tvar_in_typ_open_typ_wrt_typ_fresh2 in H6; eauto.
+      assert (Htrans: (X0, □) :: θ ᵉ⊩ {Tᵃ ᵉ/ₜ X} exp_anno e A ᵉ^^ₜ ` X0 ⇝ exp_anno (eᵈ ᵉ^^ₜ ` X0) (Aᵈ ᵗ^ₜ X0)). {
+        simpl. constructor. rewrite subst_typ_in_exp_open_exp_wrt_typ_fresh2 in H5; eauto.
+        rewrite subst_typ_in_typ_open_typ_wrt_typ_fresh2 in H6; eauto.
       }
       apply H0 in Htrans; eauto.
       * dependent destruction Htrans; eauto.
       * apply trans_typ_weaken_cons; eauto.
     + dependent destruction x.
-      assert (Htrans: (X0, □) :: θ ᵉ⊩ {Tᵃ ᵉ/ₜ X} exp_anno e A ᵉ^ₜ ` X0 ⇝ exp_anno (eᵈ ᵉ^ₜ ` X0) (Aᵈ ᵗ^ₜ X0)). {
-        simpl. constructor. rewrite subst_tvar_in_exp_open_exp_wrt_typ_fresh2 in H5; eauto.
-        rewrite subst_tvar_in_typ_open_typ_wrt_typ_fresh2 in H6; eauto.
+      assert (Htrans: (X0, □) :: θ ᵉ⊩ {Tᵃ ᵉ/ₜ X} exp_anno e A ᵉ^^ₜ ` X0 ⇝ exp_anno (eᵈ ᵉ^^ₜ ` X0) (Aᵈ ᵗ^ₜ X0)). {
+        simpl. constructor. rewrite subst_typ_in_exp_open_exp_wrt_typ_fresh2 in H5; eauto.
+        rewrite subst_typ_in_typ_open_typ_wrt_typ_fresh2 in H6; eauto.
       }
       apply H0 in Htrans; eauto.
       * dependent destruction Htrans; eauto.
@@ -359,13 +359,13 @@ Lemma trans_exp_subst_etvar_same_ss : forall θ Tᵃ Tᵈ X eᵃ eᵈ,
   binds X (dbind_typ Tᵈ) θ ->
   X ∉ ftvar_in_typ Tᵃ ->
   θ ᵗ⊩ Tᵃ ⇝ Tᵈ ->
-  θ ᵉ⊩ (subst_tvar_in_exp Tᵃ X eᵃ) ⇝ eᵈ -> 
+  θ ᵉ⊩ (subst_typ_in_exp Tᵃ X eᵃ) ⇝ eᵈ -> 
   θ ᵉ⊩ eᵃ ⇝ eᵈ.
 Proof.
   intros.
   apply trans_exp_lc_aexp in H3 as Hlce.
   apply trans_typ_lc_atyp in H2 as Hlct.
-  apply lc_exp_subst_tvar_in_exp_inv in Hlce; auto.
+  apply lc_exp_subst_typ_in_exp_inv in Hlce; auto.
   eapply trans_exp_subst_etvar_same_ss'; eauto. 
 Qed.
 
@@ -453,7 +453,7 @@ Proof with eauto.
         rewrite_env (θ2 ++ (X0 ~  □) ++ θ1).
         eapply binds_weaken...
       * exists A1. split.
-        -- rewrite subst_tvar_in_typ_fresh_eq...
+        -- rewrite subst_typ_in_typ_fresh_eq...
            eapply etvar_bind_no_etvar...
         -- econstructor...
            apply binds_remove_mid in H0...
@@ -470,14 +470,14 @@ Proof with eauto.
     apply H0 in H2...
     destruct H2 as [Aᵈ].
     exists (typ_all (close_typ_wrt_typ X0 Aᵈ)). simpl. 
-    rewrite subst_tvar_in_typ_close_typ_wrt_typ... 
+    rewrite subst_typ_in_typ_close_typ_wrt_typ... 
     split.
     + apply f_equal. erewrite typ_open_r_close_l... intuition.
     + eapply trans_typ__all with (L:=L `union` (dom (θ2 ++ (X, □) :: θ1))); intros.
-      * apply s_in_rename with (Y:=X1) in H1. rewrite subst_tvar_in_typ_open_typ_wrt_typ_tvar2 in H1...
+      * apply s_in_rename with (Y:=X1) in H1. rewrite subst_typ_in_typ_open_typ_wrt_typ_tvar2 in H1...
       * intuition.
-        erewrite subst_tvar_in_typ_intro by auto.
-        erewrite (subst_tvar_in_typ_intro X0 (close_typ_wrt_typ X0 Aᵈ)) by apply close_typ_wrt_typ_notin.
+        erewrite subst_typ_in_typ_intro by auto.
+        erewrite (subst_typ_in_typ_intro X0 (close_typ_wrt_typ X0 Aᵈ)) by apply close_typ_wrt_typ_notin.
         apply trans_typ_rename_tvar_cons...
         rewrite open_typ_wrt_typ_close_typ_wrt_typ...
   - dependent destruction Hinst.
@@ -601,7 +601,7 @@ Proof with auto.
       eapply trans_typ_reorder_ss with (θ:=θ'); eauto.
       intros. apply Hbinds... 
       unfold not. intros. subst.
-      apply subst_tvar_in_typ_fresh_same in H6...
+      apply subst_typ_in_typ_fresh_same in H6...
     + simpl in *. dependent destruction H... 
     + simpl in *. eapply a_mono_typ_strengthen_var; eauto. 
     + destruct_binds... 
@@ -660,7 +660,7 @@ Proof with auto.
       apply trans_work_reorder_ss with (θ:=θ'); eauto.
       * intros. apply Hbinds; auto.
         unfold not. intros. subst.
-        apply subst_tvar_in_work_fresh_same in H6; auto.
+        apply subst_typ_in_work_fresh_same in H6; auto.
     + dependent destruction H... 
     + simpl in H0...
     + auto.
@@ -1147,7 +1147,7 @@ Proof with eauto.
   - destruct_a_wf_wl.
     remember (fvar_in_exp e).
     pick fresh x. 
-    assert (⊢ᵃʷₛ (work_check (e ᵉ^ₑ exp_var_f x) A2 ⫤ᵃ x ~ᵃ A1;ᵃ Γ)). {
+    assert (⊢ᵃʷₛ (work_check (e ᵉ^^ₑ exp_var_f x) A2 ⫤ᵃ x ~ᵃ A1;ᵃ Γ)). {
       repeat (constructor; simpl; auto).
       eapply a_wf_exp_var_binds_another_cons...
       apply a_wf_typ_weaken_cons...
@@ -1162,8 +1162,8 @@ Proof with eauto.
       eapply trans_exp__abs with (L:=fvar_in_exp e). intros.
       rewrite_close_open_subst.
       apply trans_exp_rename_var with (x:=x) (x':=x0) in H7...
-      rewrite subst_var_in_exp_open_exp_wrt_exp in H7. simpl in H7. destruct_eq_atom.
-      subst. rewrite subst_var_in_exp_fresh_eq in H7... constructor.
+      rewrite subst_exp_in_exp_open_exp_wrt_exp in H7. simpl in H7. destruct_eq_atom.
+      subst. rewrite subst_exp_in_exp_fresh_eq in H7... constructor.
     + destruct_d_wl_del_red.
       econstructor; auto.
       inst_cofinites_for d_chk_inf__chk_abs; auto.
@@ -1175,11 +1175,11 @@ Proof with eauto.
     pick fresh x. pick fresh X1. pick fresh X2.
     inst_cofinites_with x. inst_cofinites_with X1. inst_cofinites_with X2.  
     assert (Hws: exists Γ1 Γ2, aworklist_subst 
-       (work_check (e ᵉ^ₑ exp_var_f x) ` X2  ⫤ᵃ x ~ᵃ ` X1;ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ) X
+       (work_check (e ᵉ^^ₑ exp_var_f x) ` X2  ⫤ᵃ x ~ᵃ ` X1;ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ) X
        (typ_arrow ` X1 ` X2) Γ1 Γ2). {
        eapply worklist_subst_fresh_etvar_total' with (X1:=X1) (X2:=X2) in H4 as Hws; auto.
        destruct Hws as [Γ1 [Γ2 Hws]].
-       exists Γ1, (work_check (e ᵉ^ₑ exp_var_f x) ` X2  ⫤ᵃ x ~ᵃ ` X1 ;ᵃ Γ2)...
+       exists Γ1, (work_check (e ᵉ^^ₑ exp_var_f x) ` X2  ⫤ᵃ x ~ᵃ ` X1 ;ᵃ Γ2)...
     }
     destruct Hws as [Γ1 [Γ2 Hsubst]].
     apply H6 in Hsubst as Hwsred.
@@ -1215,7 +1215,7 @@ Proof with eauto.
       * simpl. constructor... 
       * simpl...  
     + eapply aworklist_subst_wf_wl with 
-        (Γ:=(work_check (e ᵉ^ₑ exp_var_f x) ` X2  ⫤ᵃ x ~ᵃ ` X1;ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ)); eauto. 
+        (Γ:=(work_check (e ᵉ^^ₑ exp_var_f x) ` X2  ⫤ᵃ x ~ᵃ ` X1;ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ)); eauto. 
       * repeat (constructor; simpl; auto).
         apply a_wf_exp_var_binds_another_cons with (A1:=T)...
         rewrite_env ((x ~ abind_var_typ T) ++ ((X2, ⬒) :: (X1 ~ ⬒)) ++ ⌊ Γ ⌋ᵃ).
@@ -1223,7 +1223,7 @@ Proof with eauto.
       * simpl... constructor...
   (* \ x. e <= ⊤ *)
   - destruct_a_wf_wl. pick fresh x. inst_cofinites_with x. 
-    assert ( ⊢ᵃʷₛ (work_check (e ᵉ^ₑ exp_var_f x) typ_top ⫤ᵃ x ~ᵃ typ_bot;ᵃ Γ)). 
+    assert ( ⊢ᵃʷₛ (work_check (e ᵉ^^ₑ exp_var_f x) typ_top ⫤ᵃ x ~ᵃ typ_bot;ᵃ Γ)). 
     { repeat (constructor; simpl; auto). 
       eapply a_wf_exp_var_binds_another_cons; eauto.
     }
@@ -1268,7 +1268,7 @@ Proof with eauto.
   (* /\ a. e : A => _ *)
   - destruct_a_wf_wl. 
     pick fresh X. inst_cofinites_with X.
-    assert (Hwf: ⊢ᵃʷₛ (work_check (e ᵉ^ₜ ` X) (A ᵗ^ₜ X) ⫤ᵃ X ~ᵃ □ ;ᵃ work_applys cs (typ_all A) ⫤ᵃ Γ)). {
+    assert (Hwf: ⊢ᵃʷₛ (work_check (e ᵉ^^ₜ ` X) (A ᵗ^ₜ X) ⫤ᵃ X ~ᵃ □ ;ᵃ work_applys cs (typ_all A) ⫤ᵃ Γ)). {
       dependent destruction H0.
       repeat (constructor; simpl; auto).
       inst_cofinites_for a_wf_typ__all; intros.
@@ -1287,9 +1287,9 @@ Proof with eauto.
       inst_cofinites_for trans_exp__tabs; intros; simpl.
       -- rewrite_close_open_subst.
          apply trans_exp_rename_tvar_cons with (X':=X0) in H10; eauto. 
-         rewrite subst_tvar_in_exp_open_exp_wrt_typ in H10...
+         rewrite subst_typ_in_exp_open_exp_wrt_typ in H10...
          simpl in *. destruct_eq_atom.
-         rewrite subst_tvar_in_exp_fresh_eq in H10; eauto.
+         rewrite subst_typ_in_exp_fresh_eq in H10; eauto.
       -- solve_trans_typ_open_close.
     + assert (θ ᵗ⊩ typ_all A ⇝ typ_all A1ᵈ). {
         inst_cofinites_for trans_typ__all; intros;
@@ -1314,7 +1314,7 @@ Proof with eauto.
   - destruct_a_wf_wl.
     pick fresh x. pick fresh X1. pick fresh X2.
     inst_cofinites_with x. inst_cofinites_with X1. inst_cofinites_with X2.
-    assert (Hwf: ⊢ᵃʷₛ (work_check (e ᵉ^ₑ exp_var_f x) ` X2  ⫤ᵃ x ~ᵃ ` X1;ᵃ work_applys cs (typ_arrow ` X1 ` X2)
+    assert (Hwf: ⊢ᵃʷₛ (work_check (e ᵉ^^ₑ exp_var_f x) ` X2  ⫤ᵃ x ~ᵃ ` X1;ᵃ work_applys cs (typ_arrow ` X1 ` X2)
             ⫤ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ)). {
       repeat (constructor; simpl; auto).
       apply a_wf_exp_var_binds_another_cons with (A1:=T)...
@@ -1475,7 +1475,7 @@ Proof with eauto.
     trans_all_typ.
     dependent destruction H.
     pick fresh X. inst_cofinites_with X.
-    erewrite <- subst_tvar_in_typ_open_typ_wrt_typ_tvar2 in H6; eauto.
+    erewrite <- subst_typ_in_typ_open_typ_wrt_typ_tvar2 in H6; eauto.
     eapply trans_typ_subst_tvar_cons in H6...
     destruct H6 as [Axᵈ [Hsubst Htransa]].
     exists (work_inftapp (typ_all (close_typ_wrt_typ X Axᵈ)) Bᵈ csᵈ ⫤ᵈ Ω).

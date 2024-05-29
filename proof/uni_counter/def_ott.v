@@ -789,146 +789,146 @@ Fixpoint fvar_in_aworklist (Γ_5:aworklist) : vars :=
 end.
 
 (** substitutions *)
-Fixpoint subst_tvar_in_typ (A_5:typ) (X5:typvar) (A__6:typ) {struct A__6} : typ :=
+Fixpoint subst_typ_in_typ (A_5:typ) (X5:typvar) (A__6:typ) {struct A__6} : typ :=
   match A__6 with
   | typ_unit => typ_unit 
   | typ_top => typ_top 
   | typ_bot => typ_bot 
   | (typ_var_b nat) => typ_var_b nat
   | (typ_var_f X) => (if eq_var X X5 then A_5 else (typ_var_f X))
-  | (typ_arrow A1 A2) => typ_arrow (subst_tvar_in_typ A_5 X5 A1) (subst_tvar_in_typ A_5 X5 A2)
-  | (typ_all A) => typ_all (subst_tvar_in_typ A_5 X5 A)
-  | (typ_union A1 A2) => typ_union (subst_tvar_in_typ A_5 X5 A1) (subst_tvar_in_typ A_5 X5 A2)
-  | (typ_intersection A1 A2) => typ_intersection (subst_tvar_in_typ A_5 X5 A1) (subst_tvar_in_typ A_5 X5 A2)
+  | (typ_arrow A1 A2) => typ_arrow (subst_typ_in_typ A_5 X5 A1) (subst_typ_in_typ A_5 X5 A2)
+  | (typ_all A) => typ_all (subst_typ_in_typ A_5 X5 A)
+  | (typ_union A1 A2) => typ_union (subst_typ_in_typ A_5 X5 A1) (subst_typ_in_typ A_5 X5 A2)
+  | (typ_intersection A1 A2) => typ_intersection (subst_typ_in_typ A_5 X5 A1) (subst_typ_in_typ A_5 X5 A2)
 end.
 
-Fixpoint subst_tvar_in_exp (A_5:typ) (X5:typvar) (e_5:exp) {struct e_5} : exp :=
+Fixpoint subst_typ_in_exp (A_5:typ) (X5:typvar) (e_5:exp) {struct e_5} : exp :=
   match e_5 with
   | exp_unit => exp_unit 
   | (exp_var_b nat) => exp_var_b nat
   | (exp_var_f x) => exp_var_f x
-  | (exp_abs e) => exp_abs (subst_tvar_in_exp A_5 X5 e)
-  | (exp_app e1 e2) => exp_app (subst_tvar_in_exp A_5 X5 e1) (subst_tvar_in_exp A_5 X5 e2)
-  | (exp_tabs e) => exp_tabs (subst_tvar_in_exp A_5 X5 e)
-  | (exp_tapp e A) => exp_tapp (subst_tvar_in_exp A_5 X5 e) (subst_tvar_in_typ A_5 X5 A)
-  | (exp_anno e A) => exp_anno (subst_tvar_in_exp A_5 X5 e) (subst_tvar_in_typ A_5 X5 A)
+  | (exp_abs e) => exp_abs (subst_typ_in_exp A_5 X5 e)
+  | (exp_app e1 e2) => exp_app (subst_typ_in_exp A_5 X5 e1) (subst_typ_in_exp A_5 X5 e2)
+  | (exp_tabs e) => exp_tabs (subst_typ_in_exp A_5 X5 e)
+  | (exp_tapp e A) => exp_tapp (subst_typ_in_exp A_5 X5 e) (subst_typ_in_typ A_5 X5 A)
+  | (exp_anno e A) => exp_anno (subst_typ_in_exp A_5 X5 e) (subst_typ_in_typ A_5 X5 A)
 end.
 
-Fixpoint subst_var_in_exp (e_5:exp) (x5:expvar) (e__6:exp) {struct e__6} : exp :=
+Fixpoint subst_exp_in_exp (e_5:exp) (x5:expvar) (e__6:exp) {struct e__6} : exp :=
   match e__6 with
   | exp_unit => exp_unit 
   | (exp_var_b nat) => exp_var_b nat
   | (exp_var_f x) => (if eq_var x x5 then e_5 else (exp_var_f x))
-  | (exp_abs e) => exp_abs (subst_var_in_exp e_5 x5 e)
-  | (exp_app e1 e2) => exp_app (subst_var_in_exp e_5 x5 e1) (subst_var_in_exp e_5 x5 e2)
-  | (exp_tabs e) => exp_tabs (subst_var_in_exp e_5 x5 e)
-  | (exp_tapp e A) => exp_tapp (subst_var_in_exp e_5 x5 e) A
-  | (exp_anno e A) => exp_anno (subst_var_in_exp e_5 x5 e) A
+  | (exp_abs e) => exp_abs (subst_exp_in_exp e_5 x5 e)
+  | (exp_app e1 e2) => exp_app (subst_exp_in_exp e_5 x5 e1) (subst_exp_in_exp e_5 x5 e2)
+  | (exp_tabs e) => exp_tabs (subst_exp_in_exp e_5 x5 e)
+  | (exp_tapp e A) => exp_tapp (subst_exp_in_exp e_5 x5 e) A
+  | (exp_anno e A) => exp_anno (subst_exp_in_exp e_5 x5 e) A
 end.
 
-Fixpoint subst_tvar_in_contd (A5:typ) (X5:typvar) (cd5:contd) {struct cd5} : contd :=
+Fixpoint subst_typ_in_contd (A5:typ) (X5:typvar) (cd5:contd) {struct cd5} : contd :=
   match cd5 with
-  | (contd_infabsunion A cd) => contd_infabsunion (subst_tvar_in_typ A5 X5 A) (subst_tvar_in_contd A5 X5 cd)
-  | (contd_infapp n e cs) => contd_infapp n (subst_tvar_in_exp A5 X5 e) (subst_tvar_in_conts A5 X5 cs)
-  | (contd_unioninfabs A B cd) => contd_unioninfabs (subst_tvar_in_typ A5 X5 A) (subst_tvar_in_typ A5 X5 B) (subst_tvar_in_contd A5 X5 cd)
+  | (contd_infabsunion A cd) => contd_infabsunion (subst_typ_in_typ A5 X5 A) (subst_typ_in_contd A5 X5 cd)
+  | (contd_infapp n e cs) => contd_infapp n (subst_typ_in_exp A5 X5 e) (subst_typ_in_conts A5 X5 cs)
+  | (contd_unioninfabs A B cd) => contd_unioninfabs (subst_typ_in_typ A5 X5 A) (subst_typ_in_typ A5 X5 B) (subst_typ_in_contd A5 X5 cd)
 end
-with subst_tvar_in_conts (A_5:typ) (X5:typvar) (cs5:conts) {struct cs5} : conts :=
+with subst_typ_in_conts (A_5:typ) (X5:typvar) (cs5:conts) {struct cs5} : conts :=
   match cs5 with
-  | (conts_infabs cd) => conts_infabs (subst_tvar_in_contd A_5 X5 cd)
-  | (conts_inftapp A cs) => conts_inftapp (subst_tvar_in_typ A_5 X5 A) (subst_tvar_in_conts A_5 X5 cs)
-  | (conts_inftappunion A1 A2 cs) => conts_inftappunion (subst_tvar_in_typ A_5 X5 A1) (subst_tvar_in_typ A_5 X5 A2) (subst_tvar_in_conts A_5 X5 cs)
-  | (conts_unioninftapp A2 cs) => conts_unioninftapp (subst_tvar_in_typ A_5 X5 A2) (subst_tvar_in_conts A_5 X5 cs)
-  | (conts_sub A) => conts_sub (subst_tvar_in_typ A_5 X5 A)
+  | (conts_infabs cd) => conts_infabs (subst_typ_in_contd A_5 X5 cd)
+  | (conts_inftapp A cs) => conts_inftapp (subst_typ_in_typ A_5 X5 A) (subst_typ_in_conts A_5 X5 cs)
+  | (conts_inftappunion A1 A2 cs) => conts_inftappunion (subst_typ_in_typ A_5 X5 A1) (subst_typ_in_typ A_5 X5 A2) (subst_typ_in_conts A_5 X5 cs)
+  | (conts_unioninftapp A2 cs) => conts_unioninftapp (subst_typ_in_typ A_5 X5 A2) (subst_typ_in_conts A_5 X5 cs)
+  | (conts_sub A) => conts_sub (subst_typ_in_typ A_5 X5 A)
 end.
 
-Fixpoint subst_var_in_contd (e5:exp) (x5:expvar) (cd5:contd) {struct cd5} : contd :=
+Fixpoint subst_exp_in_contd (e5:exp) (x5:expvar) (cd5:contd) {struct cd5} : contd :=
   match cd5 with
-  | (contd_infabsunion A cd) => contd_infabsunion A (subst_var_in_contd e5 x5 cd)
-  | (contd_infapp n e cs) => contd_infapp n (subst_var_in_exp e5 x5 e) (subst_var_in_conts e5 x5 cs)
-  | (contd_unioninfabs A B cd) => contd_unioninfabs A B (subst_var_in_contd e5 x5 cd)
+  | (contd_infabsunion A cd) => contd_infabsunion A (subst_exp_in_contd e5 x5 cd)
+  | (contd_infapp n e cs) => contd_infapp n (subst_exp_in_exp e5 x5 e) (subst_exp_in_conts e5 x5 cs)
+  | (contd_unioninfabs A B cd) => contd_unioninfabs A B (subst_exp_in_contd e5 x5 cd)
 end
-with subst_var_in_conts (e5:exp) (x5:expvar) (cs5:conts) {struct cs5} : conts :=
+with subst_exp_in_conts (e5:exp) (x5:expvar) (cs5:conts) {struct cs5} : conts :=
   match cs5 with
-  | (conts_infabs cd) => conts_infabs (subst_var_in_contd e5 x5 cd)
-  | (conts_inftapp A cs) => conts_inftapp A (subst_var_in_conts e5 x5 cs)
-  | (conts_inftappunion A1 A2 cs) => conts_inftappunion A1 A2 (subst_var_in_conts e5 x5 cs)
-  | (conts_unioninftapp A2 cs) => conts_unioninftapp A2 (subst_var_in_conts e5 x5 cs)
+  | (conts_infabs cd) => conts_infabs (subst_exp_in_contd e5 x5 cd)
+  | (conts_inftapp A cs) => conts_inftapp A (subst_exp_in_conts e5 x5 cs)
+  | (conts_inftappunion A1 A2 cs) => conts_inftappunion A1 A2 (subst_exp_in_conts e5 x5 cs)
+  | (conts_unioninftapp A2 cs) => conts_unioninftapp A2 (subst_exp_in_conts e5 x5 cs)
   | (conts_sub A) => conts_sub A
 end.
 
-Definition subst_tvar_in_work (A_5:typ) (X5:typvar) (w5:work) : work :=
+Definition subst_typ_in_work (A_5:typ) (X5:typvar) (w5:work) : work :=
   match w5 with
-  | (work_infer e cs) => work_infer (subst_tvar_in_exp A_5 X5 e) (subst_tvar_in_conts A_5 X5 cs)
-  | (work_check e A) => work_check (subst_tvar_in_exp A_5 X5 e) (subst_tvar_in_typ A_5 X5 A)
-  | (work_infabs A cd) => work_infabs (subst_tvar_in_typ A_5 X5 A) (subst_tvar_in_contd A_5 X5 cd)
-  | (work_infabsunion A1 B1 A2 cd) => work_infabsunion (subst_tvar_in_typ A_5 X5 A1) (subst_tvar_in_typ A_5 X5 B1) (subst_tvar_in_typ A_5 X5 A2) (subst_tvar_in_contd A_5 X5 cd)
-  | (work_infapp A B e cs) => work_infapp (subst_tvar_in_typ A_5 X5 A) (subst_tvar_in_typ A_5 X5 B) (subst_tvar_in_exp A_5 X5 e) (subst_tvar_in_conts A_5 X5 cs)
-  | (work_inftapp A1 A2 cs) => work_inftapp (subst_tvar_in_typ A_5 X5 A1) (subst_tvar_in_typ A_5 X5 A2) (subst_tvar_in_conts A_5 X5 cs)
-  | (work_sub A1 A2) => work_sub (subst_tvar_in_typ A_5 X5 A1) (subst_tvar_in_typ A_5 X5 A2)
-  | (work_inftappunion A1 A2 B cs) => work_inftappunion (subst_tvar_in_typ A_5 X5 A1) (subst_tvar_in_typ A_5 X5 A2) (subst_tvar_in_typ A_5 X5 B) (subst_tvar_in_conts A_5 X5 cs)
-  | (work_unioninftapp A1 A2 cs) => work_unioninftapp (subst_tvar_in_typ A_5 X5 A1) (subst_tvar_in_typ A_5 X5 A2) (subst_tvar_in_conts A_5 X5 cs)
-  | (work_unioninfabs A1 B1 A2 B2 cd) => work_unioninfabs (subst_tvar_in_typ A_5 X5 A1) (subst_tvar_in_typ A_5 X5 B1) (subst_tvar_in_typ A_5 X5 A2) (subst_tvar_in_typ A_5 X5 B2) (subst_tvar_in_contd A_5 X5 cd)
-  | (work_applys cs A) => work_applys (subst_tvar_in_conts A_5 X5 cs) (subst_tvar_in_typ A_5 X5 A)
-  | (work_applyd cd A B) => work_applyd (subst_tvar_in_contd A_5 X5 cd) (subst_tvar_in_typ A_5 X5 A) (subst_tvar_in_typ A_5 X5 B)
+  | (work_infer e cs) => work_infer (subst_typ_in_exp A_5 X5 e) (subst_typ_in_conts A_5 X5 cs)
+  | (work_check e A) => work_check (subst_typ_in_exp A_5 X5 e) (subst_typ_in_typ A_5 X5 A)
+  | (work_infabs A cd) => work_infabs (subst_typ_in_typ A_5 X5 A) (subst_typ_in_contd A_5 X5 cd)
+  | (work_infabsunion A1 B1 A2 cd) => work_infabsunion (subst_typ_in_typ A_5 X5 A1) (subst_typ_in_typ A_5 X5 B1) (subst_typ_in_typ A_5 X5 A2) (subst_typ_in_contd A_5 X5 cd)
+  | (work_infapp A B e cs) => work_infapp (subst_typ_in_typ A_5 X5 A) (subst_typ_in_typ A_5 X5 B) (subst_typ_in_exp A_5 X5 e) (subst_typ_in_conts A_5 X5 cs)
+  | (work_inftapp A1 A2 cs) => work_inftapp (subst_typ_in_typ A_5 X5 A1) (subst_typ_in_typ A_5 X5 A2) (subst_typ_in_conts A_5 X5 cs)
+  | (work_sub A1 A2) => work_sub (subst_typ_in_typ A_5 X5 A1) (subst_typ_in_typ A_5 X5 A2)
+  | (work_inftappunion A1 A2 B cs) => work_inftappunion (subst_typ_in_typ A_5 X5 A1) (subst_typ_in_typ A_5 X5 A2) (subst_typ_in_typ A_5 X5 B) (subst_typ_in_conts A_5 X5 cs)
+  | (work_unioninftapp A1 A2 cs) => work_unioninftapp (subst_typ_in_typ A_5 X5 A1) (subst_typ_in_typ A_5 X5 A2) (subst_typ_in_conts A_5 X5 cs)
+  | (work_unioninfabs A1 B1 A2 B2 cd) => work_unioninfabs (subst_typ_in_typ A_5 X5 A1) (subst_typ_in_typ A_5 X5 B1) (subst_typ_in_typ A_5 X5 A2) (subst_typ_in_typ A_5 X5 B2) (subst_typ_in_contd A_5 X5 cd)
+  | (work_applys cs A) => work_applys (subst_typ_in_conts A_5 X5 cs) (subst_typ_in_typ A_5 X5 A)
+  | (work_applyd cd A B) => work_applyd (subst_typ_in_contd A_5 X5 cd) (subst_typ_in_typ A_5 X5 A) (subst_typ_in_typ A_5 X5 B)
 end.
 
-Definition subst_tvar_in_abind (A5:typ) (X5:typvar) (ab5:abind) : abind :=
+Definition subst_typ_in_abind (A5:typ) (X5:typvar) (ab5:abind) : abind :=
   match ab5 with
   | abind_tvar_empty => abind_tvar_empty 
   | abind_stvar_empty => abind_stvar_empty 
   | abind_etvar_empty => abind_etvar_empty 
-  | (abind_var_typ A) => abind_var_typ (subst_tvar_in_typ A5 X5 A)
+  | (abind_var_typ A) => abind_var_typ (subst_typ_in_typ A5 X5 A)
 end.
 
-Definition subst_tvar_in_dbind (A5:typ) (X5:typvar) (db5:dbind) : dbind :=
+Definition subst_typ_in_dbind (A5:typ) (X5:typvar) (db5:dbind) : dbind :=
   match db5 with
   | dbind_tvar_empty => dbind_tvar_empty 
   | dbind_stvar_empty => dbind_stvar_empty 
-  | (dbind_typ A) => dbind_typ (subst_tvar_in_typ A5 X5 A)
+  | (dbind_typ A) => dbind_typ (subst_typ_in_typ A5 X5 A)
 end.
 
-Definition subst_var_in_work (e5:exp) (x5:expvar) (w5:work) : work :=
+Definition subst_exp_in_work (e5:exp) (x5:expvar) (w5:work) : work :=
   match w5 with
-  | (work_infer e cs) => work_infer (subst_var_in_exp e5 x5 e) (subst_var_in_conts e5 x5 cs)
-  | (work_check e A) => work_check (subst_var_in_exp e5 x5 e) A
-  | (work_infabs A cd) => work_infabs A (subst_var_in_contd e5 x5 cd)
-  | (work_infabsunion A1 B1 A2 cd) => work_infabsunion A1 B1 A2 (subst_var_in_contd e5 x5 cd)
-  | (work_infapp A B e cs) => work_infapp A B (subst_var_in_exp e5 x5 e) (subst_var_in_conts e5 x5 cs)
-  | (work_inftapp A1 A2 cs) => work_inftapp A1 A2 (subst_var_in_conts e5 x5 cs)
+  | (work_infer e cs) => work_infer (subst_exp_in_exp e5 x5 e) (subst_exp_in_conts e5 x5 cs)
+  | (work_check e A) => work_check (subst_exp_in_exp e5 x5 e) A
+  | (work_infabs A cd) => work_infabs A (subst_exp_in_contd e5 x5 cd)
+  | (work_infabsunion A1 B1 A2 cd) => work_infabsunion A1 B1 A2 (subst_exp_in_contd e5 x5 cd)
+  | (work_infapp A B e cs) => work_infapp A B (subst_exp_in_exp e5 x5 e) (subst_exp_in_conts e5 x5 cs)
+  | (work_inftapp A1 A2 cs) => work_inftapp A1 A2 (subst_exp_in_conts e5 x5 cs)
   | (work_sub A1 A2) => work_sub A1 A2
-  | (work_inftappunion A1 A2 B cs) => work_inftappunion A1 A2 B (subst_var_in_conts e5 x5 cs)
-  | (work_unioninftapp A1 A2 cs) => work_unioninftapp A1 A2 (subst_var_in_conts e5 x5 cs)
-  | (work_unioninfabs A1 B1 A2 B2 cd) => work_unioninfabs A1 B1 A2 B2 (subst_var_in_contd e5 x5 cd)
-  | (work_applys cs A) => work_applys (subst_var_in_conts e5 x5 cs) A
-  | (work_applyd cd A B) => work_applyd (subst_var_in_contd e5 x5 cd) A B
+  | (work_inftappunion A1 A2 B cs) => work_inftappunion A1 A2 B (subst_exp_in_conts e5 x5 cs)
+  | (work_unioninftapp A1 A2 cs) => work_unioninftapp A1 A2 (subst_exp_in_conts e5 x5 cs)
+  | (work_unioninfabs A1 B1 A2 B2 cd) => work_unioninfabs A1 B1 A2 B2 (subst_exp_in_contd e5 x5 cd)
+  | (work_applys cs A) => work_applys (subst_exp_in_conts e5 x5 cs) A
+  | (work_applyd cd A B) => work_applyd (subst_exp_in_contd e5 x5 cd) A B
 end.
 
-Fixpoint subst_tvar_in_aworklist (A5:typ) (X5:typvar) (Γ_5:aworklist) {struct Γ_5} : aworklist :=
+Fixpoint subst_typ_in_aworklist (A5:typ) (X5:typvar) (Γ_5:aworklist) {struct Γ_5} : aworklist :=
   match Γ_5 with
   | aworklist_empty => aworklist_empty 
-  | (aworklist_cons_var Γ X ab) => aworklist_cons_var (subst_tvar_in_aworklist A5 X5 Γ) X (subst_tvar_in_abind A5 X5 ab)
-  | (aworklist_cons_work Γ w) => aworklist_cons_work (subst_tvar_in_aworklist A5 X5 Γ) (subst_tvar_in_work A5 X5 w)
+  | (aworklist_cons_var Γ X ab) => aworklist_cons_var (subst_typ_in_aworklist A5 X5 Γ) X (subst_typ_in_abind A5 X5 ab)
+  | (aworklist_cons_work Γ w) => aworklist_cons_work (subst_typ_in_aworklist A5 X5 Γ) (subst_typ_in_work A5 X5 w)
 end.
 
-Fixpoint subst_tvar_in_dworklist (A5:typ) (X5:typvar) (Ω5:dworklist) {struct Ω5} : dworklist :=
+Fixpoint subst_typ_in_dworklist (A5:typ) (X5:typvar) (Ω5:dworklist) {struct Ω5} : dworklist :=
   match Ω5 with
   | dworklist_empty => dworklist_empty 
-  | (dworklist_cons_var Ω X db) => dworklist_cons_var (subst_tvar_in_dworklist A5 X5 Ω) X (subst_tvar_in_dbind A5 X5 db)
-  | (dworklist_cons_work Ω w) => dworklist_cons_work (subst_tvar_in_dworklist A5 X5 Ω) (subst_tvar_in_work A5 X5 w)
+  | (dworklist_cons_var Ω X db) => dworklist_cons_var (subst_typ_in_dworklist A5 X5 Ω) X (subst_typ_in_dbind A5 X5 db)
+  | (dworklist_cons_work Ω w) => dworklist_cons_work (subst_typ_in_dworklist A5 X5 Ω) (subst_typ_in_work A5 X5 w)
 end.
 
-Fixpoint subst_var_in_dworklist (e5:exp) (x5:expvar) (Ω5:dworklist) {struct Ω5} : dworklist :=
+Fixpoint subst_exp_in_dworklist (e5:exp) (x5:expvar) (Ω5:dworklist) {struct Ω5} : dworklist :=
   match Ω5 with
   | dworklist_empty => dworklist_empty 
-  | (dworklist_cons_var Ω X db) => dworklist_cons_var (subst_var_in_dworklist e5 x5 Ω) X db
-  | (dworklist_cons_work Ω w) => dworklist_cons_work (subst_var_in_dworklist e5 x5 Ω) (subst_var_in_work e5 x5 w)
+  | (dworklist_cons_var Ω X db) => dworklist_cons_var (subst_exp_in_dworklist e5 x5 Ω) X db
+  | (dworklist_cons_work Ω w) => dworklist_cons_work (subst_exp_in_dworklist e5 x5 Ω) (subst_exp_in_work e5 x5 w)
 end.
 
-Fixpoint subst_var_in_aworklist (e5:exp) (x5:expvar) (Γ_5:aworklist) {struct Γ_5} : aworklist :=
+Fixpoint subst_exp_in_aworklist (e5:exp) (x5:expvar) (Γ_5:aworklist) {struct Γ_5} : aworklist :=
   match Γ_5 with
   | aworklist_empty => aworklist_empty 
-  | (aworklist_cons_var Γ X ab) => aworklist_cons_var (subst_var_in_aworklist e5 x5 Γ) X ab
-  | (aworklist_cons_work Γ w) => aworklist_cons_work (subst_var_in_aworklist e5 x5 Γ) (subst_var_in_work e5 x5 w)
+  | (aworklist_cons_var Γ X ab) => aworklist_cons_var (subst_exp_in_aworklist e5 x5 Γ) X ab
+  | (aworklist_cons_work Γ w) => aworklist_cons_work (subst_exp_in_aworklist e5 x5 Γ) (subst_exp_in_work e5 x5 w)
 end.
 
 

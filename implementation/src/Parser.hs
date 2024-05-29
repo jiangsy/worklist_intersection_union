@@ -1,3 +1,5 @@
+{-# LANGUAGE ImportQualifiedPost #-}
+
 module Parser where
 
 import Control.Monad (void)
@@ -67,13 +69,13 @@ annOperator = do
 atom :: Parser Exp
 atom =
   choice
-    [ pLambda,
+    [ try pRcdCons,
+      pLambda,
       pTAbs,
       pCase,
       pFix,
       try pLet,
       pLetAnn,
-      pRcdCons,
       Var <$> identifier,
       ILit <$> signedInt,
       BLit <$> bool,

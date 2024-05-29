@@ -23,7 +23,7 @@ Ltac solve_by_inverts n :=
 Ltac solve_by_invert :=
   solve_by_inverts 1.
 
-Lemma subst_tvar_in_typ_refl_eq : forall A X,
+Lemma subst_typ_in_typ_refl_eq : forall A X,
   A = {` X ᵗ/ₜ X} A.
 Proof.
   intros.
@@ -35,36 +35,36 @@ Proof.
   - simpl. rewrite <- IHA1. rewrite <- IHA2. auto.
 Qed.
 
-Lemma subst_tvar_in_typ_open_typ_wrt_typ_fresh2 : forall X A T B,
+Lemma subst_typ_in_typ_open_typ_wrt_typ_fresh2 : forall X A T B,
   lc_typ T ->
   X `notin` ftvar_in_typ B ->
   ({T ᵗ/ₜ X} A) ᵗ^^ₜ B = {T ᵗ/ₜ X} A ᵗ^^ₜ B.
 Proof.
   intros.
-  rewrite subst_tvar_in_typ_open_typ_wrt_typ; auto.
-  rewrite (subst_tvar_in_typ_fresh_eq B); auto.
+  rewrite subst_typ_in_typ_open_typ_wrt_typ; auto.
+  rewrite (subst_typ_in_typ_fresh_eq B); auto.
 Qed.
 
 
-Lemma subst_tvar_in_exp_open_exp_wrt_exp_fresh2: forall X e1 e2 A,
+Lemma subst_typ_in_exp_open_exp_wrt_exp_fresh2: forall X e1 e2 A,
   lc_typ A ->
   X `notin` ftvar_in_exp e2 ->
-  (subst_tvar_in_exp A X e1) ᵉ^ₑ e2 = subst_tvar_in_exp A X (e1 ᵉ^ₑ e2).
+  (subst_typ_in_exp A X e1) ᵉ^^ₑ e2 = subst_typ_in_exp A X (e1 ᵉ^^ₑ e2).
 Proof.
   intros. 
-  rewrite subst_tvar_in_exp_open_exp_wrt_exp; auto.
-  rewrite (subst_tvar_in_exp_fresh_eq e2); auto.
+  rewrite subst_typ_in_exp_open_exp_wrt_exp; auto.
+  rewrite (subst_typ_in_exp_fresh_eq e2); auto.
 Qed.
 
 
-Lemma subst_tvar_in_exp_open_exp_wrt_typ_fresh2: forall X e A B,
+Lemma subst_typ_in_exp_open_exp_wrt_typ_fresh2: forall X e A B,
   lc_typ A ->
   X `notin` ftvar_in_typ B ->
-  (subst_tvar_in_exp A X e) ᵉ^ₜ B = subst_tvar_in_exp A X (e ᵉ^ₜ B).
+  (subst_typ_in_exp A X e) ᵉ^^ₜ B = subst_typ_in_exp A X (e ᵉ^^ₜ B).
 Proof.
   intros. 
-  rewrite subst_tvar_in_exp_open_exp_wrt_typ; auto.
-  rewrite (subst_tvar_in_typ_fresh_eq B); auto.
+  rewrite subst_typ_in_exp_open_exp_wrt_typ; auto.
+  rewrite (subst_typ_in_typ_fresh_eq B); auto.
 Qed.
 
 Lemma ls_binds_split {A : Type} : forall (ls : list (atom * A)) X b,
@@ -171,14 +171,14 @@ Proof.
   apply binds_weaken. auto.
 Qed.
 
-Lemma subst_tvar_in_typ_open_typ_wrt_typ_tvar2 : forall X A T,
+Lemma subst_typ_in_typ_open_typ_wrt_typ_tvar2 : forall X A T,
   lc_typ T ->
   X `notin` ftvar_in_typ A ->
   {T ᵗ/ₜ X} A ᵗ^ₜ X = A ᵗ^^ₜ T.
 Proof.
   intros.
-  rewrite subst_tvar_in_typ_open_typ_wrt_typ; auto.
-  rewrite (subst_tvar_in_typ_fresh_eq A); auto.
+  rewrite subst_typ_in_typ_open_typ_wrt_typ; auto.
+  rewrite (subst_typ_in_typ_fresh_eq A); auto.
   simpl. unfold eq_dec.
   - destruct (EqDec_eq_of_X X X); auto.
     contradiction.
@@ -209,13 +209,13 @@ Proof with subst; simpl in *; eauto; try lia.
 Qed.
 
 
-
-Lemma typ_open_r_close_l : forall T1 T2 X
-  , X `notin` ftvar_in_typ T2
-  -> T1 = open_typ_wrt_typ T2 ` X -> close_typ_wrt_typ X T1 = T2.
+Lemma typ_open_r_close_l : forall A B X, 
+  X `notin` ftvar_in_typ B -> 
+  A = open_typ_wrt_typ B ` X -> 
+  close_typ_wrt_typ X A = B.
 Proof.
   intros * Fr H.
-  assert (close_typ_wrt_typ X T1 = close_typ_wrt_typ X (open_typ_wrt_typ T2 ` X)) by now rewrite H.
+  assert (close_typ_wrt_typ X A = close_typ_wrt_typ X (open_typ_wrt_typ B ` X)) by now rewrite H.
   now rewrite close_typ_wrt_typ_open_typ_wrt_typ in H0.
 Qed.
 
@@ -300,7 +300,7 @@ Proof.
     inst_cofinites_by (singleton X).
     eapply lc_typ_all_exists with (X1:=x0). intros.
     specialize (H0 x0 (A ᵗ^ₜ x0) X T). apply H0.
-    subst. rewrite <- subst_tvar_in_typ_open_typ_wrt_typ_fresh2; auto.
+    subst. rewrite <- subst_typ_in_typ_open_typ_wrt_typ_fresh2; auto.
     auto.
   - destruct A; try solve [inversion x]; auto.
     inversion x; eauto.
@@ -318,24 +318,24 @@ Proof.
   - destruct (X0 == X); auto.
   - inst_cofinites_by (singleton X) using_name X. eapply lc_typ_all_exists with (X1:=X0).
     replace (({T ᵗ/ₜ X} A) ᵗ^ₜ X0) with ({T ᵗ/ₜ X} A ᵗ^ₜ X0); eauto.
-    rewrite subst_tvar_in_typ_open_typ_wrt_typ_fresh2; auto.
+    rewrite subst_typ_in_typ_open_typ_wrt_typ_fresh2; auto.
 Qed.
 
 
-Lemma lc_exp_subst_tvar_in_exp : forall e A X,
+Lemma lc_exp_subst_typ_in_exp : forall e A X,
   lc_exp e ->
   lc_typ A ->
   lc_exp ({A ᵉ/ₜ X} e).
 Proof with eauto using lc_typ_subst.
   intros. induction H; simpl...
   - pick fresh x0. apply lc_exp_abs_exists with (x1:=x0). 
-    rewrite subst_tvar_in_exp_open_exp_wrt_exp_fresh2...
+    rewrite subst_typ_in_exp_open_exp_wrt_exp_fresh2...
   - pick fresh X0. apply lc_exp_tabs_exists with (X1:=X0).
-    rewrite subst_tvar_in_exp_open_exp_wrt_typ_fresh2...
+    rewrite subst_typ_in_exp_open_exp_wrt_typ_fresh2...
 Qed.
 
 
-Lemma lc_exp_subst_var_in_exp : forall e1 e2 x,
+Lemma lc_exp_subst_exp_in_exp : forall e1 e2 x,
   lc_exp e1 ->
   lc_exp e2 ->
   lc_exp ({e2 ᵉ/ₑ x} e1).
@@ -343,14 +343,14 @@ Proof with eauto using lc_typ_subst.
   intros. induction H; simpl...
   - destruct_eq_atom; auto.
   - pick fresh x0. apply lc_exp_abs_exists with (x1:=x0). 
-    replace (({e2 ᵉ/ₑ x} e) ᵉ^ₑ exp_var_f x0) with ({e2 ᵉ/ₑ x} (e ᵉ^ₑ exp_var_f x0))...
-    rewrite subst_var_in_exp_open_exp_wrt_exp... simpl; destruct_eq_atom...
+    replace (({e2 ᵉ/ₑ x} e) ᵉ^^ₑ exp_var_f x0) with ({e2 ᵉ/ₑ x} (e ᵉ^^ₑ exp_var_f x0))...
+    rewrite subst_exp_in_exp_open_exp_wrt_exp... simpl; destruct_eq_atom...
   - pick fresh X0. apply lc_exp_tabs_exists with (X1:=X0).
-    rewrite <- subst_var_in_exp_open_exp_wrt_typ...
+    rewrite <- subst_exp_in_exp_open_exp_wrt_typ...
 Qed.
 
 
-Lemma lc_exp_subst_tvar_in_exp_inv : forall e A X,
+Lemma lc_exp_subst_typ_in_exp_inv : forall e A X,
   lc_exp ({A ᵉ/ₜ X} e) ->
   lc_typ A ->
   lc_exp e.
@@ -361,7 +361,7 @@ Proof.
       inst_cofinites_by (singleton X) using_name x.
       apply lc_exp_abs_exists with (x1:=x0).
       eapply H0 with (x:=x0) (X:=X); eauto.
-      rewrite subst_tvar_in_exp_open_exp_wrt_exp; simpl; auto.
+      rewrite subst_typ_in_exp_open_exp_wrt_exp; simpl; auto.
     + destruct e; try solve [inversion x]; auto.
       inversion x. subst.
       constructor; eauto.
@@ -370,7 +370,7 @@ Proof.
       inst_cofinites_by (singleton X) using_name X.
       apply lc_exp_tabs_exists with (X1:=X0).
       eapply H0; eauto.
-      rewrite subst_tvar_in_exp_open_exp_wrt_typ_fresh2; eauto.
+      rewrite subst_typ_in_exp_open_exp_wrt_typ_fresh2; eauto.
     + destruct e; try solve [inversion x]; auto.
       inversion x. subst.
       constructor; eauto. 
@@ -424,7 +424,7 @@ Proof.
     + inversion x.
     + apply s_in__all with (L:=L `union` singleton Y); intros; inst_cofinites_with Y0. auto.
      inversion x. rewrite H6 in H3.
-    eapply H2; eauto. subst. rewrite subst_tvar_in_typ_open_typ_wrt_typ_fresh2; auto.
+    eapply H2; eauto. subst. rewrite subst_typ_in_typ_open_typ_wrt_typ_fresh2; auto.
   - destruct A; simpl; try solve [inversion x].
     simpl in *. destruct (X0 == Y); subst.
     + assert (s_in X (typ_union A1 A2)) by auto.
@@ -456,12 +456,12 @@ Proof.
     + subst. contradiction.
     + auto.
   - simpl. apply s_in__arrow1; auto.
-    apply subst_tvar_in_typ_lc_typ; auto.
+    apply subst_typ_in_typ_lc_typ; auto.
   - simpl. apply s_in__arrow2; auto.
-    apply subst_tvar_in_typ_lc_typ; auto.
+    apply subst_typ_in_typ_lc_typ; auto.
   - simpl. eapply s_in__all with (L:=L `union` singleton Y).
     intros. inst_cofinites_with Y0.
-    rewrite subst_tvar_in_typ_open_typ_wrt_typ_fresh2; auto.
+    rewrite subst_typ_in_typ_open_typ_wrt_typ_fresh2; auto.
 Qed.
 
 
@@ -482,7 +482,7 @@ Proof.
   - apply s_in__arrow1; auto. apply lc_typ_subst; auto.
   - apply s_in__arrow2; auto. apply lc_typ_subst; auto.
   - apply s_in__all with (L:=L `union` singleton X). intros. inst_cofinites_with Y0. 
-    rewrite subst_tvar_in_typ_open_typ_wrt_typ_fresh2; auto...
+    rewrite subst_typ_in_typ_open_typ_wrt_typ_fresh2; auto...
 Qed.
 
 Lemma neq_all_rename: forall A X Y,
