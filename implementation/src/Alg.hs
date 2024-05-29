@@ -599,7 +599,7 @@ bigStep n info ws@(WJug (Inf (TAbs a (Ann e t)) b c) : w)
     a1 = pickNewTVar ws []
     e' = etsubst a (TVar a1) e
     t' = ttsubst a (TVar a1) t
-    ws' = WJug (Chk e' t') : WTVar b TVarBind : WJug (ctsubst b (TAll a1 t') c) : w
+    ws' = WJug (Chk e' t') : WTVar a1 TVarBind : WJug (ctsubst b (TAll a1 t') c) : w
 -- \*** new rules
 bigStep n info ws@(WJug (Inf (TAbs a e) b c) : w)
   | useRule "⇒Λ" = bigStep (n - 1) (info ++ curInfo ws "⇒Λ") ws'
@@ -768,7 +768,7 @@ run s = do
       where
         b = pickNewTVar [] (tvarInExp e)
         ws = [WJug (Inf e b End)]
-        (flag, message) = bigStep 100 "" ws
+        (flag, message) = bigStep 40 "" ws
 
 ex_ws1 :: [Work]
 ex_ws1 = [WJug (Sub (TAll "a" (TArr (TVar "a") (TVar "a"))) (TAll "a" (TArr (TVar "a") (TVar "a"))))]
