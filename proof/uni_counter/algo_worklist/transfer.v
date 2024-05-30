@@ -2,6 +2,7 @@ Require Import Coq.Program.Equality.
 Require Import Program.Tactics.
 Require Import Metalib.Metatheory.
 Require Import List.
+Require Import Lia.
 
 Require Import uni_counter.notations.
 Require Import uni_counter.decl.prop_basic.
@@ -2684,4 +2685,47 @@ Proof with eauto.
     try eapply trans_contd_reorder with (θ:=θ); eauto.
     intros. apply H1; auto.
     intros. apply H1; eauto.
+Qed.
+
+Lemma iu_size_d_mono : forall Σ A,
+  d_mono_typ Σ A -> iu_size A = 0.
+Proof.
+  intros Σ A Hmono.
+  induction Hmono; simpl; eauto; try lia.
+Qed.
+
+Lemma iu_size_a_mono : forall Σ A,
+  a_mono_typ Σ A -> iu_size A = 0.
+Proof.
+  intros Σ A Hmono.
+  induction Hmono; simpl; eauto; try lia.
+Qed.
+
+Lemma iu_size_open_typ_wrt_typ_rec : forall Σ A T n,
+  a_mono_typ Σ T -> 
+  iu_size (open_typ_wrt_typ_rec n T A) = iu_size A.
+Proof.
+  intros. generalize dependent n. induction A; simpl; intros; eauto.
+  destruct (lt_eq_lt_dec n n0).
+  - destruct s; simpl; eauto. eapply iu_size_a_mono; eauto.
+  - simpl; eauto; lia.
+Qed.
+
+Lemma iu_size_open_typ_wrt_typ : forall A X,
+  iu_size (A ᵗ^ₜ X) = iu_size A.
+Proof.
+  intros. unfold open_typ_wrt_typ.
+  eapply iu_size_open_typ_wrt_typ_rec with (Σ := (X ~ abind_tvar_empty ++ nil)); eauto.
+Qed.
+
+Lemma trans_typ_iu_size : forall θ Aᵃ Aᵈ,
+  θ ᵗ⊩ Aᵃ ⇝ Aᵈ ->
+  iu_size Aᵃ = iu_size Aᵈ.
+Proof.
+  intros. induction H; simpl; eauto; try lia.
+  apply wf_ss_binds_mono_typ in H0; auto.
+  erewrite iu_size_d_mono; eauto.
+  pick fresh X. inst_cofinites_with X.
+  rewrite iu_size_open_typ_wrt_typ in H1.
+  rewrite iu_size_open_typ_wrt_typ in H1. auto.
 Qed.

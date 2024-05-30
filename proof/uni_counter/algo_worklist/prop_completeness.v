@@ -12,8 +12,8 @@ Require Import uni_counter.decl.prop_subtyping.
 Require Import uni_counter.decl_worklist.prop_equiv.
 Require Import uni_counter.algo_worklist.def_extra.
 Require Import uni_counter.algo_worklist.prop_basic.
-Require Import uni_counter.algo_worklist.transfer.
 Require Import uni_counter.algo_worklist.prop_rename.
+Require Import uni_counter.algo_worklist.transfer.
 Require Import uni_counter.ltac_utils.
 
 Ltac destruct_trans_wl :=
@@ -273,48 +273,42 @@ Lemma trans_exp_etvar_subst_same_ss' : forall θ Tᵃ Tᵈ X eᵃ eᵈ,
   X ∉ ftvar_in_typ Tᵃ ->
   θ ᵗ⊩ Tᵃ ⇝ Tᵈ ->
   θ ᵉ⊩ eᵃ ⇝ eᵈ ->
-  θ ᵉ⊩ {Tᵃ ᵉ/ₜ X} eᵃ ⇝ eᵈ
-with trans_body_etvar_subst_same_ss' : forall θ Tᵃ Tᵈ X bᵃ bᵈ,
-  lc_body bᵃ ->
-  wf_ss θ ->
-  X ~ Tᵈ ∈ᵈ θ ->
-  X ∉ ftvar_in_typ Tᵃ ->
-  θ ᵗ⊩ Tᵃ ⇝ Tᵈ ->
-  θ ᵇ⊩ bᵃ ⇝ bᵈ ->
-  θ ᵇ⊩ {Tᵃ ᵇ/ₜ X} bᵃ ⇝ bᵈ.
+  θ ᵉ⊩ {Tᵃ ᵉ/ₜ X} eᵃ ⇝ eᵈ.
 Proof.
-  - intros * Hlc.
-    generalize dependent θ. generalize dependent eᵈ.
-    induction Hlc; simpl in *; intros.
-    + dependent destruction H3; constructor; auto.
-    + dependent destruction H3; constructor; auto.
-    + dependent destruction H5.
-      inst_cofinites_for trans_exp__abs. intros.
-      inst_cofinites_with x.
-      apply H0 in H5; auto.
-      rewrite subst_typ_in_exp_open_exp_wrt_exp in H5...
-      simpl in *. auto.
-    + dependent destruction H3; eauto.
-    + dependent destruction H4; eauto.
-      inst_cofinites_for trans_exp__tabs.
-      intros. inst_cofinites_with X0.
-      eapply trans_body_etvar_subst_same_ss' in H4; eauto.
-      * rewrite subst_typ_in_body_open_body_wrt_typ in H4; simpl in *.
-        destruct_eq_atom; auto.
-        eapply trans_typ_lc_atyp; eauto.
-      * rewrite_env (nil ++ (X0 ~ □) ++ θ)%dbind. apply trans_typ_weaken; eauto.
-        constructor; auto.
-    + dependent destruction H4.
-      constructor.
-      * apply IHHlc; eauto.
-      * eapply trans_typ_etvar_subst_same_ss; eauto.
-    + dependent destruction H4.
-      constructor.
-      * apply IHHlc; eauto.
-      * eapply trans_typ_etvar_subst_same_ss; eauto.
-  - intros * Hlc. dependent destruction Hlc; intros; simpl in *.
-    dependent destruction H5. constructor.
-    + eapply trans_exp_etvar_subst_same_ss'; eauto.
+  intros * Hlc.
+  generalize dependent θ. generalize dependent eᵈ.
+  induction Hlc; simpl in *; intros.
+  - dependent destruction H3; constructor; auto.
+  - dependent destruction H3; constructor; auto.
+  - dependent destruction H5.
+    inst_cofinites_for trans_exp__abs. intros.
+    inst_cofinites_with x.
+    apply H0 in H5; auto.
+    rewrite subst_typ_in_exp_open_exp_wrt_exp in H5...
+    simpl in *. auto.
+  - dependent destruction H3; eauto.
+  - dependent destruction H5; eauto. simpl.
+    inst_cofinites_for trans_exp__tabs;
+    intros; inst_cofinites_with X0.
+    + assert (Htrans :  (X0, □) :: θ ᵉ⊩ exp_anno eᵃ Aᵃ ᵉ^^ₜ ` X0 ⇝ exp_anno (eᵈ ᵉ^^ₜ ` X0) ( Aᵈ ᵗ^ₜ X0)). {
+        constructor; eauto.
+      }
+      apply H0 in Htrans; eauto.
+      simpl in Htrans. dependent destruction Htrans. rewrite subst_typ_in_exp_open_exp_wrt_typ_fresh2; eauto.
+      apply trans_typ_weaken_cons; eauto.
+    + assert (Htrans :  (X0, □) :: θ ᵉ⊩ exp_anno eᵃ Aᵃ ᵉ^^ₜ ` X0 ⇝ exp_anno (eᵈ ᵉ^^ₜ ` X0) ( Aᵈ ᵗ^ₜ X0)). {
+        constructor; eauto.
+      }
+      apply H0 in Htrans; eauto.
+      simpl in Htrans. dependent destruction Htrans. rewrite subst_typ_in_typ_open_typ_wrt_typ_fresh2; eauto.
+      apply trans_typ_weaken_cons; eauto.
+  - dependent destruction H4.
+    constructor.
+    + apply IHHlc; eauto.
+    + eapply trans_typ_etvar_subst_same_ss; eauto.
+  - dependent destruction H4.
+    constructor.
+    + apply IHHlc; eauto.
     + eapply trans_typ_etvar_subst_same_ss; eauto.
 Qed.
 
@@ -325,23 +319,12 @@ Lemma trans_exp_etvar_subst_same_ss : forall θ Tᵃ Tᵈ X eᵃ eᵈ,
   X ∉ ftvar_in_typ Tᵃ ->
   θ ᵗ⊩ Tᵃ ⇝ Tᵈ ->
   θ ᵉ⊩ eᵃ ⇝ eᵈ ->
-  θ ᵉ⊩ {Tᵃ ᵉ/ₜ X} eᵃ ⇝ eᵈ
-with trans_body_etvar_subst_same_ss : forall θ Tᵃ Tᵈ X bᵃ bᵈ,
-  wf_ss θ ->
-  X ~ Tᵈ ∈ᵈ θ ->
-  X ∉ ftvar_in_typ Tᵃ ->
-  θ ᵗ⊩ Tᵃ ⇝ Tᵈ ->
-  θ ᵇ⊩ bᵃ ⇝ bᵈ ->
-  θ ᵇ⊩ {Tᵃ ᵇ/ₜ X} bᵃ ⇝ bᵈ.
+  θ ᵉ⊩ {Tᵃ ᵉ/ₜ X} eᵃ ⇝ eᵈ.
 Proof.
-  - intros. clear trans_exp_etvar_subst_same_ss. clear  trans_body_etvar_subst_same_ss.
-    apply trans_exp_lc_aexp in H3 as Hlce.
-    apply trans_typ_lc_atyp in H2 as Hlct.
-    eapply trans_exp_etvar_subst_same_ss'; eauto. 
-  - intros. clear trans_exp_etvar_subst_same_ss. clear trans_body_etvar_subst_same_ss.
-    apply trans_body_lc_abody in H3 as Hlcb.
-    apply trans_typ_lc_atyp in H2 as Hlct.
-    eapply trans_body_etvar_subst_same_ss'; eauto. 
+  intros.
+  apply trans_exp_lc_aexp in H3 as Hlce.
+  apply trans_typ_lc_atyp in H2 as Hlct.
+  eapply trans_exp_etvar_subst_same_ss'; eauto. 
 Qed.
 
 
@@ -727,9 +710,6 @@ Proof.
   - inversion H2.
   - inversion H0.
 Qed.
-  
-
-
 
 Lemma trans_apply_conts : forall θ csᵃ csᵈ Aᵃ Aᵈ wᵈ,
   θ ᶜˢ⊩ csᵃ ⇝ csᵈ ->
@@ -1188,60 +1168,92 @@ Ltac solve_awl_trailing_etvar :=
     end
   end.
 
-  Lemma iuv_size_d_mono : forall Ψ A,
-  d_mono_typ Ψ A -> iuv_size A = 0.
+Lemma d_iuv_size_mono : forall Ψ A,
+  Ψ ᵗ⊢ᵈₘ A -> d_iuv_size Ψ A 0.
 Proof.
-  intros Ψ A Hmono.
-  induction Hmono; simpl; eauto; try lia.
+  intros. induction H; simpl; eauto using d_iuv_size.
+  replace 0 with (0 + 0); eauto using d_iuv_size.
 Qed.
 
-Lemma iuv_size_a_mono : forall Σ A,
-  a_mono_typ Σ A -> iuv_size A = 0.
+Lemma a_iuv_size_mono : forall Σ A,
+  Σ ᵗ⊢ᵃₘ A -> a_iuv_size Σ A 0.
 Proof.
-  intros Σ A Hmono.
-  induction Hmono; simpl; eauto; try lia.
+  intros. induction H; simpl; eauto using a_iuv_size.
+  replace 0 with (0 + 0); eauto using a_iuv_size.
 Qed.
 
-(* TODO @cu1ch3n: refactor iuv_size & exp_split_size using relations *)
-
-Lemma trans_typ_iuv_size : forall n θ Aᵃ Aᵈ,
-  size_typ Aᵃ < n ->
-  θ ᵗ⊩ Aᵃ ⇝ Aᵈ ->
-  iuv_size Aᵃ = iuv_size Aᵈ.
+Lemma num_occurs_in_typ_not_in_a_wf : forall Σ X A,
+  a_wf_typ Σ A ->
+  X `notin` ftvar_in_typ A -> num_occurs_in_typ X A 0.
 Proof.
-  intro n. induction n; try lia.
-  intros * Hwf Htrans2.
-  destruct Aᵃ; simpl in *; dependent destruction Htrans2; simpl; auto.
-  - apply wf_ss_binds_mono_typ in H0; auto.
-    erewrite iuv_size_d_mono; eauto.
-  - erewrite IHn with (Aᵃ := Aᵃ1); eauto; try lia.
-    erewrite IHn with (Aᵃ := Aᵃ2); eauto; try lia.
-  - admit.
-  - erewrite IHn with (Aᵃ := Aᵃ1); eauto; try lia.
-    erewrite IHn with (Aᵃ := Aᵃ2); eauto; try lia.
-  - erewrite IHn with (Aᵃ := Aᵃ1); eauto; try lia.
-    erewrite IHn with (Aᵃ := Aᵃ2); eauto; try lia.
+  intros * Hwf Hnotin.
+  induction Hwf; simpl in *; 
+    try solve [replace 0 with (0 + 0); eauto using num_occurs_in_typ; try lia].
+  inst_cofinites_for num_occurs_in_typ__all. intros.
+  eapply H1; eauto.
+  admit.
 Admitted.
 
-Lemma trans_exp_exp_split_size : forall n Γ Ω θ eᵃ eᵈ,
-  size_exp eᵃ < n ->
-  ⊢ᵃʷₛ Γ ->
+
+Lemma trans_typ_num_occurs_in_typ : forall Γ Ω θ X Aᵃ Aᵈ n,
+  ⊢ᵃʷ Γ ->
+  nil ⊩ Γ ⇝ Ω ⫣ θ ->
+  θ ᵗ⊩ Aᵃ ⇝ Aᵈ ->
+  X `notin` dom θ ->
+  num_occurs_in_typ X Aᵈ n ->
+  num_occurs_in_typ X Aᵃ n.
+Proof.
+  intros * Hwf Htranswl Htranst Hnotin Hoccurs.
+  generalize dependent n. generalize dependent Ω. generalize dependent Γ.
+  induction Htranst; intros; try solve [dependent destruction Hoccurs; eauto using num_occurs_in_typ]. 
+Admitted.
+
+Lemma trans_typ_iuv_size : forall Γ Ω θ Aᵃ Aᵈ n,
+  ⊢ᵃʷ Γ ->
+  nil ⊩ Γ ⇝ Ω ⫣ θ ->
+  θ ᵗ⊩ Aᵃ ⇝ Aᵈ ->
+  d_iuv_size (⌊ Ω ⌋ᵈ) Aᵈ n ->
+  a_iuv_size (⌊ Γ ⌋ᵃ) Aᵃ n.
+Proof.
+  intros * Hwf Htranswl Htranst Hsize.
+  generalize dependent n. generalize dependent Ω. generalize dependent Γ.
+  induction Htranst; intros; try solve [dependent destruction Hsize; eauto using a_iuv_size].
+  - eapply trans_wl_ss_binds_etvar_a_wl in H0 as He; eauto.
+    apply wf_ss_binds_mono_typ in H0; auto.
+    eapply trans_wl_ss_mono_typ_d_wl_mono_typ in H0; eauto.
+    eapply d_iuv_size_mono in H0; eauto.
+    eapply d_iuv_size_det with (n2 := n) in H0; eauto.
+    subst. eauto using a_iuv_size.
+  - dependent destruction Hsize.
+    pick fresh X. inst_cofinites_with X.
+    replace (X ~ □ ++ ⌊ Ω ⌋ᵈ) with (⌊ X ~ᵈ □;ᵈ Ω ⌋ᵈ) in H2; auto.
+    apply H1 with (Γ := X ~ᵃ □;ᵃ Γ) in H2; simpl; auto.
+    admit.
+Admitted.
+
+Lemma trans_exp_exp_split_size : forall Γ Ω θ eᵃ eᵈ n,
+  ⊢ᵃʷ Γ ->
   nil ⊩ Γ ⇝ Ω ⫣ θ ->
   θ ᵉ⊩ eᵃ ⇝ eᵈ ->
-  exp_split_size (⌊ Γ ⌋ᵃ) eᵃ = exp_split_size (dwl_to_aenv Ω) eᵈ.
+  d_exp_split_size (⌊ Ω ⌋ᵈ) eᵈ n -> 
+  a_exp_split_size (⌊ Γ ⌋ᵃ) eᵃ n.
 Proof.
-  intro n. induction n; try lia.
-  intros * Hlt Hwf Htrans1 Htrans2.
-  destruct eᵃ; simpl in *; dependent destruction Htrans2; simpl; auto.
+  intros * Hwf Htranswl Htranse Hsize.
+  generalize dependent n. generalize dependent Ω. generalize dependent Γ.
+  induction Htranse; intros; dependent destruction Hsize; eauto using a_exp_split_size.
   - admit.
+  - pick fresh x. inst_cofinites_with x.
+    replace (x ~ dbind_typ typ_bot ++ ⌊ Ω ⌋ᵈ) with (⌊ x ~ᵈ typ_bot;ᵈ Ω ⌋ᵈ) in H1.
+    apply H0 with (Γ := x ~ᵃ typ_bot;ᵃ Γ) in H1; eauto.
+    eapply a_exp_split_size__abs; eauto. admit.
+    simpl. auto.
   - admit.
-  - erewrite IHn; eauto; try lia.
-    erewrite IHn; eauto; try lia.
-  - admit.
-  - erewrite IHn; eauto; try lia.
-    erewrite trans_typ_iuv_size; eauto.
-  - erewrite IHn; eauto; try lia.
-    erewrite trans_typ_iuv_size; eauto.
+  - apply IHHtranse with (Γ := Γ) in Hsize; auto.
+    eapply trans_typ_iuv_size in H0; eauto.
+    eauto using a_exp_split_size.
+  - apply IHHtranse with (Γ := Γ) in Hsize; auto.
+    eapply trans_typ_iuv_size in H0; eauto.
+    eauto using a_exp_split_size.
 Admitted.
 
 Theorem a_wl_red_completeness: forall Ω Γ,
@@ -1705,29 +1717,15 @@ Proof with eauto.
   (* Λ a. e : A => _ *)
   - solve_awl_trailing_etvar.
     destruct_trans. destruct_a_wf_wl.
-    destruct bᵃ.
     pick fresh X and apply a_wl_red__inf_tabs.
-    inst_cofinites_with X.
-    repeat rewrite open_body_wrt_typ_anno in H1.
-    dependent destruction H1.
-    apply H0.
-    + rewrite open_body_wrt_typ_anno in *. dependent destruction H4. 
-      dependent destruction H6.
-      repeat (constructor; simpl; auto).
-      inst_cofinites_for a_wf_typ__all. intros... 
-      * apply s_in_rename with (Y:=X0) in H5. 
-        rewrite subst_typ_in_typ_open_typ_wrt_typ_tvar2 in H5...
-      * intros. apply a_wf_typ_rename_tvar_cons with (Y:=X0) in H6.
-        rewrite subst_typ_in_typ_open_typ_wrt_typ_tvar2 in H6...
+    inst_cofinites_with_keep X.
+    apply H1...
+    + dependent destruction H9. repeat (constructor; simpl; auto).
+      inst_cofinites_for a_wf_typ__all; intros; inst_cofinites_with X0...
+      dependent destruction H15... 
     + exists ((X, dbind_tvar_empty) :: θ0). 
       repeat constructor...
-      * inst_cofinites_for trans_typ__all; intros.
-        -- rewrite open_body_wrt_typ_anno in *. dependent destruction H4...
-           apply s_in_rename with (Y:=X0) in H5. 
-           rewrite subst_typ_in_typ_open_typ_wrt_typ_tvar2 in H5...
-        -- apply trans_typ_rename_tvar_cons with (X':=X0) in H2...
-           rewrite subst_typ_in_typ_open_typ_wrt_typ_tvar2 in H2...
-           rewrite subst_typ_in_typ_open_typ_wrt_typ_tvar2 in H2...
+      * inst_cofinites_for trans_typ__all; intros; inst_cofinites_with X0...
   - solve_awl_trailing_etvar.
     destruct_trans...
     destruct_a_wf_wl.
@@ -1754,10 +1752,11 @@ Proof with eauto.
   - solve_awl_trailing_etvar.
     destruct_trans.
     destruct_a_wf_wl.
-    constructor...
-    apply IHd_wl_red... constructor...
+    eapply trans_exp_exp_split_size with (Γ := Γ0) (Ω := Ω) (n := n) in H1_ as Hesize; eauto.
+    eapply a_wl_red__inf_app; eauto.
+    apply IHd_wl_red...
+    repeat (constructor; simpl; eauto).
     exists θ0...
-    erewrite trans_exp_exp_split_size; eauto.
   - solve_awl_trailing_etvar.
     destruct_trans.
     destruct_a_wf_wl.
