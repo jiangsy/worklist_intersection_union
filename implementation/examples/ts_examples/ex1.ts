@@ -1,45 +1,69 @@
-function poly<A>(x: A, y: A): A { return x }
-var r1 = { m: 1, n: true }
-var r2 = { m: 2 }
+// Basic Matching
 
-// This example shows that, for uncurried functions, subtyping constraints 
-// are being used. I.e. the approach is probably based on local type inference.
-var test1 = poly(r1, r2)
-var test2 = poly(r2, r1)
+function f1(x: number & Boolean): number { return (x + 1) };
 
-// TypeScript supports checking a lambda with a forall
-var id: (<A>(x: A) => A) = x => { return x }
-var fun: (f: <A>(x: A) => A) => number = f => f(1)
+function f2(o: { m: number, n: boolean }): number { return o.m }
 
-var testfun = fun(x => x)
+// TypeScript checks for well-formed records (cannot have duplicated labels)
+// function f2a(o : {m : number, m : string}) : number{return o.m}
 
-// TypeScript supports explicit type applications
-var testid = id(3)
-var testid2 = id<number>(3)
+function f3(o: { m: number, n: boolean } & { k: string }): number { return o.m }
 
-var poly2: <A>(x: A) => (y: A) => A = x => y => { return y }
+function f4(o: { m: number, n: boolean } & { k: string }): number { return o.m }
 
-// Instantiation for curried functions is greedy
-// The first example fails.
+// Rejected
+// function f5(o : {m : number, n : Boolean} | {k : string}) : number {return o.m}
 
-// var test3 = poly2(r1)(r2)
-var test4 = poly2(r2)(r1)
+// function f5(o : {m : number, n : Boolean} | {k : string}) : number {return o.m}
 
-// Examples from the Elementary Type Inference Paper
-var hpoly = (f: <A>(x: A) => A) => [f(1), f(true)]
+function f5(o: { m: number, n: boolean } | { k: string, m: number }): number { return o.m }
 
-// var foo : (f : <A>A) => number = 
+// Overloading
 
-// Typescript has the same problem that was identified in 
-// Elementary Type Inference for GHC 8
-//
-// TypeScript does not have the subsumption property!
+function f6(f: ((i: number) => number) & ((b: boolean) => boolean)): boolean { return f(true) }
 
-var f: (k: <A>(x: number) => (y: A) => number) => (b: boolean) => number = k => k(3)
-var h: (k: <A, B>(x: B) => (y: A) => B) => (b: boolean) => number = k => f(k)
-var g: (k: <A>(x: number) => (y: A) => number) => (b: boolean) => number = k => k<boolean>(3)
+// Picks the first match in the overload: the following works
+function f7(f: ((i1: number) => (i2: number) => number) & ((i: number) => (b: boolean) => boolean)) { return f(1)(2) }
 
-var h2: (k: <A, B>(x: B) => (y: A) => B) => (b: boolean) => number = k => g(k)
+// Picks the first match in the overload: the following does not work
+// function f8(f : ((i1 :number) => (i2 : number) => number) & ((i : number) => (b : boolean) => boolean))  {return f(1)(true)}
 
-// The following is rejected, exactly the same issue detected in the Elementary type inference paper
-// var h3 : (k : <A,B>(x : B) => (y:A) => B) => (b : boolean) => number = k => k<boolean>(3)
+// function f9(f : ((i1 :number) => (i2 : number) => number) & ((i : number) => (b : boolean) => boolean)) : (b : boolean) => boolean {return f(1)}
+
+// Return type overloading: chooses the 2nd overload, I guess, here
+
+function f10(f: ((i: number) => number) & ((i: number) => boolean)) { return true && f(1) }
+
+// Generics and instantiation
+
+function f11<R>(o: { m: number } & R): R { return o }
+
+var testf11a = f11({ m: 1 })  // infers unknown instead of any (Top) for the instantiation for some reason
+
+var testf11b = f11({ m: 1, n: true })
+
+function f12<R>(o: ({ m: number } & R) | R): R { return o }
+
+var testf12a = f12({ m: 1 })  // infers unknown instead of any (Top) for the instantiation for some reason
+
+var testf12b = f12({ m: 1, n: true })
+
+function inc(i: number): number { return i + 1 }
+
+function f13a(f: (b: boolean) => boolean) { return f(true) }
+
+function f13(f: ((i: number) => number) & ((b: boolean | number) => boolean & number)): boolean { return f13a(f) }
+
+// Higher-Ranked Polymorphism
+function f14(f: <A>(x: A) => A) { return f(1) }
+
+function f15(f: (<A>(x: A) => A) & ((i: number) => number)) { return f(1) }
+
+function f16(f: (<A>(x: A) => A)): (i: number) => number { return f }
+
+// Scala Example from the Bounded Quantification paper
+
+function k(f: (i: number) => number) { return 1 }
+function g(f: (h: <A>(x: A) => A) => number) { return 2 }
+
+var testg = g(k)
