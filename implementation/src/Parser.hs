@@ -156,7 +156,7 @@ tOperators = [[InfixR (TArr <$ symbol "->"), InfixR (TIntersection <$ symbol "/\
 atype :: Parser Typ
 atype =
   choice
-    [pForall, TVar <$> identifier, tconst, listType, parens pType]
+    [pForall, TVar <$> identifier, tconst, listType, labelType, parens pType]
 
 pForall :: Parser Typ
 pForall = do
@@ -181,12 +181,20 @@ listType = do
   symbol "]"
   return $ TList t
 
+labelType :: Parser Typ
+labelType = do
+  rword "Label"
+  TLabel <$> identifier
+
 ------------------------------------------------------------------------
 -- Misc
 ------------------------------------------------------------------------
 
 sc :: Parser ()
-sc = L.space space1 empty empty
+sc = L.space space1 lineCmnt blockCmnt
+  where
+    lineCmnt  = L.skipLineComment "--"
+    blockCmnt = L.skipBlockComment "{-" "-}"
 
 lexeme :: Parser a -> Parser a
 lexeme = L.lexeme sc

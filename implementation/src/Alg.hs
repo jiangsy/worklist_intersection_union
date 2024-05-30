@@ -246,7 +246,7 @@ varInExp (Lam x b) = x : varInExp b
 varInExp (App e1 e2) = varInExp e1 `union` varInExp e2
 varInExp (Ann e _) = varInExp e
 varInExp (TApp e _) = varInExp e
-varInExp (TAbs x e) = varInExp e
+varInExp (TAbs _ e) = varInExp e
 varInExp Nil = []
 varInExp (Cons e1 e2) = varInExp e1 `union` varInExp e2
 varInExp (Case e1 e2 e3) = varInExp e1 `union` varInExp e2 `union` varInExp e3
@@ -599,17 +599,18 @@ bigStep n info ws@(WJug (Inf (TAbs a (Ann e t)) b c) : w)
     a1 = pickNewTVar ws []
     e' = etsubst a (TVar a1) e
     t' = ttsubst a (TVar a1) t
-    ws' = WJug (Chk e' t') : WTVar b TVarBind : WJug (ctsubst b (TAll a1 t') c) : w
+    ws' = WJug (Chk e' t') : WTVar a1 TVarBind : WJug (ctsubst b (TAll a1 t') c) : w
 -- \*** new rules
 bigStep n info ws@(WJug (Inf (TAbs a e) b c) : w)
   | useRule "⇒Λ" = bigStep (n - 1) (info ++ curInfo ws "⇒Λ") ws'
   where
     -- \*** also tvars in e
     a1 = pickNewTVar ws []
-    a2 = pickNewTVar ws [a1]
-    b1 = pickNewTVar ws [a1, a2]
+    b1 = pickNewTVar ws [a1]
     e' = etsubst a (TVar a1) e
-    ws' = WJug (Inf e' b1 (ctsubst b (TAll a2 (TVar b1)) c)) : WTVar a1 TVarBind : w
+    -- have to exploit the name clash here
+    -- some scoping issue here, but should not cause problem in the impl
+    ws' = WJug (Inf e' b1 (ctsubst b (TAll a1 (TVar b1)) c)) : WTVar a1 TVarBind : w
 bigStep n info ws@(WJug (Inf (App e1 e2) a c) : w)
   | useRule "⇒App" = bigStep (n - 1) (info ++ curInfo ws "⇒App") ws'
   where
@@ -767,7 +768,7 @@ run s = do
       where
         b = pickNewTVar [] (tvarInExp e)
         ws = [WJug (Inf e b End)]
-        (flag, message) = bigStep 100 "" ws
+        (flag, message) = bigStep 40 "" ws
 
 ex_ws1 :: [Work]
 ex_ws1 = [WJug (Sub (TAll "a" (TArr (TVar "a") (TVar "a"))) (TAll "a" (TArr (TVar "a") (TVar "a"))))]
@@ -780,3 +781,6 @@ ws1 = [WJug (Inf (Ann (Lam "x" (App (App (Var "plus") (Var "x")) (ILit 1))) (TAr
 
 res1 :: (Bool, String)
 res1 = bigStep 40 "" ws1
+
+res0 :: (Bool, String)
+res0 = bigStep 40 "" ws0

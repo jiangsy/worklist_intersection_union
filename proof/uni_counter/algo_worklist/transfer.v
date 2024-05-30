@@ -865,6 +865,7 @@ Proof.
     exists ((X, dbind_typ T):: θ''). rewrite H2. auto.
 Qed.
 
+
 Lemma trans_wl_split : forall Γ1 Γ2 Ω θ θ',
   θ ⊩ (Γ2 ⧺ Γ1) ⇝ Ω ⫣ θ' ->
   exists Ω1 Ω2 θ'', 
@@ -946,8 +947,8 @@ Qed.
 
 Lemma trans_wl_ss_binds_tvar_a_wl : forall θ Γ Ω X,
   nil ⊩ Γ ⇝ Ω ⫣ θ ->
-  X ~ □ ∈ᵈ  θ ->
-  binds X abind_tvar_empty (awl_to_aenv Γ).
+  X ~ □ ∈ᵈ θ ->
+  X ~ □ ∈ᵃ ⌊ Γ ⌋ᵃ.
 Proof.
   intros. dependent induction H; destruct_binds; auto.
 Qed. 
@@ -955,7 +956,7 @@ Qed.
 Lemma trans_wl_ss_binds_stvar_a_wl : forall θ Γ Ω X,
   nil ⊩ Γ ⇝ Ω ⫣ θ ->
   X ~ ■ ∈ᵈ θ ->
-  binds X abind_stvar_empty (awl_to_aenv Γ).
+  X ~ ■ ∈ᵃ ⌊ Γ ⌋ᵃ.
 Proof.
   intros. dependent induction H; destruct_binds; auto.
 Qed. 
@@ -964,7 +965,7 @@ Qed.
 Lemma trans_wl_ss_binds_etvar_a_wl : forall θ Γ Ω X T,
   nil ⊩ Γ ⇝ Ω ⫣ θ ->
   X ~ T ∈ᵈ θ ->
-  binds X abind_etvar_empty (awl_to_aenv Γ).
+  X ~ ⬒ ∈ᵃ ⌊ Γ ⌋ᵃ.
 Proof.
   intros. dependent induction H; eauto.
   - inversion H1; simpl in *.
@@ -982,7 +983,7 @@ Qed.
 
 Lemma trans_wl_a_wl_binds_stvar_ss : forall Γ X Ω θ,
   nil ⊩ Γ ⇝ Ω ⫣ θ ->
-  binds X abind_stvar_empty (awl_to_aenv Γ) ->
+  X ~ ■ ∈ᵃ ⌊ Γ ⌋ᵃ ->
   X ~ ■ ∈ᵈ θ.
 Proof with eauto.
   intros. dependent induction H; destruct_binds...
@@ -990,8 +991,8 @@ Qed.
 
 Lemma trans_wl_a_wl_binds_stvar_d_wl : forall Γ X Ω θ,
   nil ⊩ Γ ⇝ Ω ⫣ θ ->
-  binds X abind_stvar_empty (awl_to_aenv Γ) ->
-  binds X dbind_stvar_empty (dwl_to_denv Ω).
+  X ~ ■ ∈ᵃ ⌊ Γ ⌋ᵃ ->
+  X ~ ■ ∈ᵈ ⌊ Ω ⌋ᵈ.
 Proof with eauto.
   intros. dependent induction H; destruct_binds...
 Qed.
@@ -1008,8 +1009,8 @@ Qed.
 
 Lemma trans_wl_d_wl_binds_stvar_ss : forall Γ X Ω θ θ',
   θ ⊩ Γ ⇝ Ω ⫣ θ' ->
-  binds X dbind_stvar_empty (dwl_to_denv Ω) ->
-  binds X dbind_stvar_empty (ss_to_denv θ').
+  X ~ ■ ∈ᵈ ⌊ Ω ⌋ᵈ -> 
+  X ~ ■ ∈ᵈ ⌈ θ' ⌉ᵈ.
 Proof with eauto.
   intros. dependent induction H; destruct_binds...
   - inversion H0.
@@ -1018,8 +1019,8 @@ Qed.
 
 Lemma trans_wl_d_wl_mono_typ_ss_mono_typ : forall θ θ' Γ Ω T,
   θ ⊩ Γ ⇝ Ω ⫣ θ' ->
-  d_mono_typ (dwl_to_denv Ω) T -> 
-  d_mono_typ (ss_to_denv θ') T.
+  ⌊ Ω ⌋ᵈ ᵗ⊢ᵈₘ T -> 
+  ⌈ θ' ⌉ᵈ ᵗ⊢ᵈₘ T.
 Proof.
   intros. dependent induction H0; eauto.
   - constructor. eapply trans_wl_d_wl_binds_tvar_ss; eauto.
@@ -1027,8 +1028,8 @@ Qed.
 
 Lemma trans_wl_ss_mono_typ_d_wl_mono_typ : forall θ Γ Ω T,
   nil ⊩ Γ ⇝ Ω ⫣ θ ->
-  d_mono_typ (ss_to_denv θ) T ->
-  d_mono_typ (dwl_to_denv Ω) T.
+  ⌈ θ ⌉ᵈ ᵗ⊢ᵈₘ T -> 
+  ⌊ Ω ⌋ᵈ ᵗ⊢ᵈₘ T.
 Proof.
   intros. dependent induction H0; eauto.
   - constructor. eapply trans_wl_a_wl_binds_tvar_d_wl; eauto.

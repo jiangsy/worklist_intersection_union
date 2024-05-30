@@ -71,8 +71,8 @@ Qed.
 Ltac rewrite_dwl_app :=
   repeat
     match goal with
-    | _ : _ |- context [dworklist_cons_var  (dwl_app ?Ω2 ?Ω1) ?X ?b] => rewrite dwl_app_cons_var
-    | _ : _ |- context [dworklist_cons_work (dwl_app ?Ω2 ?Ω1) ?w] => rewrite dwl_app_cons_work
+      | _ : _ |- context [dworklist_cons_var  (dwl_app ?Ω2 ?Ω1) ?X ?b] => rewrite dwl_app_cons_var
+      | _ : _ |- context [dworklist_cons_work (dwl_app ?Ω2 ?Ω1) ?w] => rewrite dwl_app_cons_work
     end.
 
 Lemma d_wl_app_cons_work_same_env : forall Ω1 Ω2 w,
@@ -84,13 +84,13 @@ Qed.
 
 Ltac inv_all_work := 
   match goal with
-  | H : d_all_work (dworklist_cons_var ?Ω ?x ?b) |- _ => inversion H
-  | H : d_all_work (dworklist_cons_var ?Ω ?X ?b) |- _ => inversion H
+    | H : d_all_work (dworklist_cons_var ?Ω ?x ?b) |- _ => inversion H
+    | H : d_all_work (dworklist_cons_var ?Ω ?X ?b) |- _ => inversion H
   end.
 
 Ltac destruct_all_work := 
   match goal with
-  | H : d_all_work (dworklist_cons_work ?Ω ?w) |- _ => dependent destruction H
+    | H : d_all_work (dworklist_cons_work ?Ω ?w) |- _ => dependent destruction H
   end.
 
 #[local] Hint Constructors d_all_work : core.
@@ -106,9 +106,9 @@ Qed.
 
 Ltac solve_Ω1 IH :=
   match goal with 
-  | H : ?Ω1 = ?Ω2 |- d_wl_del_red ?Ω => 
-      dependent destruction H; replace Ω with (dwl_app dworklist_empty Ω) by auto; eapply IH;
-      simpl; rewrite_dwl_app; eauto
+    | H : ?Ω1 = ?Ω2 |- d_wl_del_red ?Ω => 
+        dependent destruction H; replace Ω with (dwl_app dworklist_empty Ω) by auto; eapply IH;
+        simpl; rewrite_dwl_app; eauto
   end.
 
 Lemma d_wl_red_weaken_works : forall Ω1 Ω2 Ω3,
@@ -219,20 +219,20 @@ Qed.
 
 Ltac destruct_d_wl_del_red' := 
   match goal with
-  | H : d_wl_del_red (dworklist_cons_work ?Ω ?w) |- _ => 
-    lazymatch w with 
-    | work_applys (?c ?B) ?A => dependent destruction H
-    | work_applys ?c ?A => fail
-    | ?w1 _ _ => dependent destruction H
-    | ?w1 _ _ _ => dependent destruction H
-    end
-  | H : d_wl_del_red (dworklist_cons_var ?Ω ?x ?A) |- _ => 
-    dependent destruction H
-  | H : d_wl_del_red (dworklist_cons_var ?Ω ?x ?b) |- _ => 
-    dependent destruction H
-  | H : apply_conts ?c ?A ?w |- _ => dependent destruction H
-  | H : apply_contd (?cc _) ?A ?B ?w |- _ => dependent destruction H
-  | H : apply_contd (?cc _ _) ?A ?B ?w |- _ => dependent destruction H
+    | H : d_wl_del_red (dworklist_cons_work ?Ω ?w) |- _ => 
+      lazymatch w with 
+      | work_applys (?c ?B) ?A => dependent destruction H
+      | work_applys ?c ?A => fail
+      | ?w1 _ _ => dependent destruction H
+      | ?w1 _ _ _ => dependent destruction H
+      end
+    | H : d_wl_del_red (dworklist_cons_var ?Ω ?x ?A) |- _ => 
+      dependent destruction H
+    | H : d_wl_del_red (dworklist_cons_var ?Ω ?x ?b) |- _ => 
+      dependent destruction H
+    | H : apply_conts ?c ?A ?w |- _ => dependent destruction H
+    | H : apply_contd (?cc _) ?A ?B ?w |- _ => dependent destruction H
+    | H : apply_contd (?cc _ _) ?A ?B ?w |- _ => dependent destruction H
   end.
 
 Ltac destruct_d_wl_del_red := repeat destruct_d_wl_del_red'.
@@ -525,41 +525,6 @@ Proof with auto.
 Qed.
 
 
-Ltac destruct_binds_eq :=
-  repeat
-    lazymatch goal with
-    | H1 : (?X1, ?b1) = (?X2, ?b2) |- _ =>
-      dependent destruction H1
-    end.
-
-Ltac destruct_binds :=
-  simpl in *;
-  repeat
-  match goal with
-  | H1 : binds ?X ?b ((?X', ?b') :: ?θ) |- _ =>
-    let H_1 := fresh "H" in
-    let H_2 := fresh "H" in
-    inversion H1 as [H_1 | H_2];
-    clear H1;
-    try destruct_binds_eq;
-    try solve [solve_notin_eq X];
-    try solve [solve_notin_eq X']
-  end.
-
-
-Ltac destruct_in :=
-  simpl in *;
-  match goal with
-  | H1 : ((?X, ?b) = (?X', ?b')) \/  In ?b'' ?θ |- _ =>
-    let H1_1 := fresh "H" in
-    let H1_2 := fresh "H" in
-    inversion H1 as [H1_1 | H1_2];
-    clear H1;
-    try destruct_binds_eq;
-    try solve [solve_notin_eq X];
-    try solve [solve_notin_eq X']
-  end.
-
 Lemma num_occurs_in_typ_det : forall X A n1 n2,
   num_occurs_in_typ X A n1 -> num_occurs_in_typ X A n2 -> n1 = n2.
 Proof.
@@ -627,14 +592,17 @@ Proof.
   replace 0 with (0 + 0) by auto. eauto using d_iuv_size.
 Qed.
 
-Lemma d_iuv_size_subst_mono_cons : forall Ψ A X B n,
-  d_mono_typ Ψ B ->
+Lemma d_iuv_size_subst_mono_cons : forall Ψ A X T n,
+  d_mono_typ Ψ T ->
   d_iuv_size (X ~ □ ++ Ψ) (A ᵗ^ₜ X) n ->
-  d_iuv_size Ψ (A ᵗ^^ₜ B) n.
+  d_iuv_size Ψ (A ᵗ^^ₜ T) n.
 Admitted.
 
 Lemma infabs_d_iuv_size_B : forall Ψ A B C n m,
-  Ψ ⊢ A ▹ B → C -> d_iuv_size Ψ A n -> d_iuv_size Ψ B m -> m <= n.
+  Ψ ⊢ A ▹ B → C -> 
+  d_iuv_size Ψ A n -> 
+  d_iuv_size Ψ B m -> 
+  m <= n.
 Proof.
   intros * Hinf. generalize dependent m. generalize dependent n.
   dependent induction Hinf; intros * HiuvA HiuvB.
@@ -643,7 +611,7 @@ Proof.
     erewrite d_iuv_size_det with (n1 := n1); eauto. lia.
   - dependent destruction HiuvA.
     pick fresh X. inst_cofinites_with X.
-    eapply d_iuv_size_subst_mono_cons with (B := T) in H2; eauto.
+    eapply d_iuv_size_subst_mono_cons with (T := T) in H2; eauto.
     eapply IHHinf in H2; eauto. lia.
   - dependent destruction HiuvA.
     eapply IHHinf in HiuvA1; eauto. lia.
@@ -655,7 +623,10 @@ Proof.
 Qed. 
 
 Lemma infabs_d_iuv_size_C : forall Ψ A B C n m,
-  Ψ ⊢ A ▹ B → C -> d_iuv_size Ψ A n -> d_iuv_size Ψ C m -> m <= n.
+  Ψ ⊢ A ▹ B → C -> 
+  d_iuv_size Ψ A n -> 
+  d_iuv_size Ψ C m -> 
+  m <= n.
 Proof.
   intros * Hinf. generalize dependent m. generalize dependent n.
   dependent induction Hinf; intros * HiuvA HiuvC.
@@ -664,7 +635,7 @@ Proof.
     erewrite d_iuv_size_det with (n1 := n2); eauto. lia.
   - dependent destruction HiuvA.
     pick fresh X. inst_cofinites_with X.
-    eapply d_iuv_size_subst_mono_cons with (B := T) in H2; eauto.
+    eapply d_iuv_size_subst_mono_cons with (T := T) in H2; eauto.
     eapply IHHinf in H2; eauto. lia.
   - dependent destruction HiuvA.
     eapply IHHinf in HiuvA1; eauto. lia.
@@ -704,7 +675,10 @@ Proof.
 Qed.  *)
 
 Lemma d_exp_split_size_det : forall Ψ e n1 n2,
-  ⊢ᵈₜ Ψ -> d_exp_split_size Ψ e n1 -> d_exp_split_size Ψ e n2 -> n1 = n2.
+  ⊢ᵈₜ Ψ -> 
+  d_exp_split_size Ψ e n1 -> 
+  d_exp_split_size Ψ e n2 ->
+  n1 = n2.
 Proof.
   intros * Hwf H1. generalize dependent n2.
   dependent induction H1; intros * H2; dependent destruction H2; auto;
@@ -821,10 +795,10 @@ Proof.
   - admit.
 Admitted.
 
-Lemma d_iuv_size_rename_cons : forall Ψ X X0 A n,
+Lemma d_iuv_size_rename_cons : forall Ψ X Y A n,
   (* some additional conditions *)
   d_iuv_size (X ~ □ ++ Ψ) (A ᵗ^ₜ X) n ->
-  d_iuv_size (X0 ~ □ ++ Ψ) (A ᵗ^ₜ X0) n.
+  d_iuv_size (Y ~ □ ++ Ψ) (A ᵗ^ₜ Y) n.
 Admitted.
 
 Lemma num_occurs_in_typ_rename_cons : forall X X0 A n,
