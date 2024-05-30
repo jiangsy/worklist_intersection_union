@@ -544,6 +544,7 @@ Proof.
     eapply a_wf_wwl_tvar_notin_remaining in Hwf; eauto.
 Qed.
 
+
 Lemma aworklist_subst_det : forall Γ X T Γ1 Γ2 Γ3 Γ4,
   ⊢ᵃʷₛ Γ ->
   aworklist_subst Γ X T Γ1 Γ2 ->
@@ -555,6 +556,7 @@ Proof.
 Qed.
 
 #[local] Hint Resolve a_wf_wl_a_wf_wwl : core.
+
 
 Corollary aworklist_subst_transfer_same_dworklist_rev_exist: forall Γ Ω θ X T Tᵈ,
   ⊢ᵃʷₛ Γ ->
@@ -574,6 +576,7 @@ Proof.
   destruct H0 as [Γ' [Γ'' Heq]]. rewrite <- Heq in *. clear Heq.
   eapply aworklist_subst_transfer_same_dworklist_rev_exist'; eauto.
 Qed.
+
 
 Corollary aworklist_subst_transfer_same_dworklist_rev: forall Γ Ω θ X T Tᵈ Γ1 Γ2,
   ⊢ᵃʷₛ Γ ->
@@ -596,6 +599,7 @@ Proof.
   eapply aworklist_subst_target_is_etvar; eauto.
 Qed.
 
+
 Inductive aworklist_ord : aworklist -> Prop :=
   | awl_t_o__empty : aworklist_ord aworklist_empty
   | awl_t_o__work : forall Γ w, aworklist_ord (w ⫤ᵃ Γ)
@@ -603,13 +607,16 @@ Inductive aworklist_ord : aworklist -> Prop :=
   | awl_t_o__tvar : forall Γ X, aworklist_ord (X ~ᵃ □ ;ᵃ Γ)
   | awl_t_o__stvar : forall Γ X, aworklist_ord (X ~ᵃ ■ ;ᵃ Γ).
 
+
 Inductive aworklist_trailing_etvar : aworklist -> aworklist -> Prop :=
   | awl_t_e__base : forall Γ0, aworklist_ord Γ0 -> aworklist_trailing_etvar Γ0 Γ0
   | awl_t_e__etvar : forall Γ0 Γ X, aworklist_trailing_etvar Γ0 Γ -> aworklist_trailing_etvar Γ0 
     (aworklist_cons_var Γ X abind_etvar_empty).
 
+
 #[local] Hint Constructors aworklist_ord : core.
 #[local] Hint Constructors aworklist_trailing_etvar : core.
+
 
 Lemma a_wf_twl_aworklist_trailing_etvar_total : forall Γ,
   ⊢ᵃʷₜ Γ -> exists Γ0, aworklist_trailing_etvar Γ0 Γ.
@@ -618,6 +625,7 @@ Proof.
   - destruct IHa_wf_twl as [Γ0].
     exists Γ0; eauto.
 Qed.
+
 
 Lemma a_wf_wl_aworklist_trailing_etvar_total : forall Γ,
   ⊢ᵃʷₛ Γ -> exists Γ0, aworklist_trailing_etvar Γ0 Γ.
@@ -628,11 +636,13 @@ Proof.
     exists Γ0; eauto.
 Qed.
 
+
 Lemma aworklist_trailing_etvar_reduce_ord : forall Γ0 Γ,
   aworklist_trailing_etvar Γ0 Γ -> Γ0 ⟶ᵃʷ⁎⋅ -> Γ ⟶ᵃʷ⁎⋅.
 Proof.
   intros. induction H; auto.
 Qed.
+
 
 Lemma aworklist_trailing_etvar_trans : forall Γ0 Γ Ω θ θ',
   aworklist_trailing_etvar Γ0 Γ -> 
@@ -646,6 +656,7 @@ Proof.
     destruct H0 as [Θ'']; eauto.
 Qed.
 
+
 Lemma aworklist_trailing_base_ord : forall Γ0 Γ,
   aworklist_trailing_etvar Γ0 Γ -> 
   aworklist_ord Γ0.
@@ -653,6 +664,7 @@ Proof.
   intros. 
   induction H; eauto; intros.
 Qed.
+
 
 Lemma a_wf_twl_rm_trailing_etvar : forall Γ0 Γ,
   aworklist_trailing_etvar Γ0 Γ -> 
@@ -663,6 +675,7 @@ Proof.
   - dependent destruction H0; eauto.
 Qed.
 
+
 Lemma a_wf_wl_rm_trailing_etvar : forall Γ0 Γ,
   aworklist_trailing_etvar Γ0 Γ -> 
   ⊢ᵃʷₛ Γ ->
@@ -671,6 +684,7 @@ Proof.
   intros. induction H; eauto.
   - apply a_wf_wl_weaken_cons in H0; eauto.
 Qed.
+
 
 Inductive aworklist_trailing_sub : aworklist -> aworklist -> Prop :=
   | awl_t_s__base : forall Γ0, aworklist_trailing_sub Γ0 Γ0
@@ -683,6 +697,7 @@ Inductive aworklist_trailing_sub : aworklist -> aworklist -> Prop :=
       aworklist_trailing_sub Γ0 (aworklist_cons_work Γ (work_sub T1 T2)).
 
 #[local] Hint Constructors aworklist_trailing_sub : core.
+
 
 Lemma a_wl_red_aworklist_trailing_sub_weaken : forall Γ0 Γ,
   aworklist_trailing_sub Γ0 Γ ->
@@ -711,6 +726,7 @@ Proof.
   - inversion H0.
 Qed.
 
+
 Lemma trans_apply_conts : forall θ csᵃ csᵈ Aᵃ Aᵈ wᵈ,
   θ ᶜˢ⊩ csᵃ ⇝ csᵈ ->
   θ ᵗ⊩ Aᵃ ⇝ Aᵈ ->
@@ -719,6 +735,7 @@ Lemma trans_apply_conts : forall θ csᵃ csᵈ Aᵃ Aᵈ wᵈ,
 Proof.
   intros. induction H1; try dependent destruction H; eauto.
 Qed.
+
 
 Lemma trans_apply_contd : forall θ cdᵃ cdᵈ Aᵃ Aᵈ Bᵃ Bᵈ wᵈ,
   θ ᶜᵈ⊩ cdᵃ ⇝ cdᵈ ->
@@ -730,6 +747,7 @@ Proof.
   intros. induction H2; try dependent destruction H; eauto 6.
   erewrite <- trans_typ_iu_size in H3; eauto.
 Qed.
+
 
 Lemma trans_typ_subst : forall θ1 θ2 Aᵃ Aᵈ Bᵃ Bᵈ X b,
   b = □ \/ b = ■ ->
@@ -1015,7 +1033,6 @@ Proof with auto.
 Qed.
 
 
-
 Lemma trans_wl_aworklist_trailing_sub_arrow : forall Γ Ω θ A1 A2 B1 B2,
   ⊢ᵃʷ Γ ->
   nil ⊩ Γ ⇝ Ω ⫣ θ ->
@@ -1168,45 +1185,59 @@ Ltac solve_awl_trailing_etvar :=
     end
   end.
 
+
 Lemma d_iuv_size_mono : forall Ψ A,
-  Ψ ᵗ⊢ᵈₘ A -> d_iuv_size Ψ A 0.
+  Ψ ᵗ⊢ᵈₘ A -> 
+  d_iuv_size Ψ A 0.
 Proof.
   intros. induction H; simpl; eauto using d_iuv_size.
   replace 0 with (0 + 0); eauto using d_iuv_size.
 Qed.
 
+
 Lemma a_iuv_size_mono : forall Σ A,
-  Σ ᵗ⊢ᵃₘ A -> a_iuv_size Σ A 0.
+  Σ ᵗ⊢ᵃₘ A -> 
+  a_iuv_size Σ A 0.
 Proof.
   intros. induction H; simpl; eauto using a_iuv_size.
   replace 0 with (0 + 0); eauto using a_iuv_size.
 Qed.
 
-Lemma num_occurs_in_typ_not_in_a_wf : forall Σ X A,
-  a_wf_typ Σ A ->
-  X `notin` ftvar_in_typ A -> num_occurs_in_typ X A 0.
+
+Lemma num_occurs_in_typ_not_in_a_wf : forall X A,
+  lc_typ A ->
+  X `notin` ftvar_in_typ A -> 
+  num_occurs_in_typ X A 0.
 Proof.
-  intros * Hwf Hnotin.
-  induction Hwf; simpl in *; 
+  intros * Hlc Hnotin.
+  induction Hlc; simpl in *; 
     try solve [replace 0 with (0 + 0); eauto using num_occurs_in_typ; try lia].
   inst_cofinites_for num_occurs_in_typ__all. intros.
-  eapply H1; eauto.
-  admit.
-Admitted.
+  eapply H0. rewrite ftvar_in_typ_open_typ_wrt_typ_upper; eauto.
+Qed.
 
 
 Lemma trans_typ_num_occurs_in_typ : forall Γ Ω θ X Aᵃ Aᵈ n,
   ⊢ᵃʷ Γ ->
   nil ⊩ Γ ⇝ Ω ⫣ θ ->
   θ ᵗ⊩ Aᵃ ⇝ Aᵈ ->
-  X `notin` dom θ ->
+  X ~ □ ∈ᵈ θ ->
+  (forall Y T, binds Y (dbind_typ T) θ -> X `in` ftvar_in_typ T -> False) ->
   num_occurs_in_typ X Aᵈ n ->
   num_occurs_in_typ X Aᵃ n.
 Proof.
-  intros * Hwf Htranswl Htranst Hnotin Hoccurs.
+  intros * Hwf Htranswl Htranst Hbinds Hnotin Hoccurs.
   generalize dependent n. generalize dependent Ω. generalize dependent Γ.
-  induction Htranst; intros; try solve [dependent destruction Hoccurs; eauto using num_occurs_in_typ]. 
-Admitted.
+  induction Htranst; intros; try solve [simpl in *; dependent destruction Hoccurs; econstructor; eauto 4].
+  - assert (X ∉ ftvar_in_typ A1) by eauto.
+    apply num_occurs_in_typ_not_in_a_wf in H1; eauto.
+    eapply num_occurs_in_typ_det in Hoccurs; eauto. subst.
+    econstructor; eauto. unfold not. intros. subst. unify_binds.
+  - dependent destruction Hoccurs. inst_cofinites_for num_occurs_in_typ__all; intros. inst_cofinites_with Y. 
+    eapply H1 with (Γ := Y ~ᵃ □ ;ᵃ Γ); eauto.
+    intros. destruct_binds; eauto.
+Qed.
+
 
 Lemma trans_typ_iuv_size : forall Γ Ω θ Aᵃ Aᵈ n,
   ⊢ᵃʷ Γ ->
@@ -1225,11 +1256,14 @@ Proof.
     eapply d_iuv_size_det with (n2 := n) in H0; eauto.
     subst. eauto using a_iuv_size.
   - dependent destruction Hsize.
-    pick fresh X. inst_cofinites_with X.
-    replace (X ~ □ ++ ⌊ Ω ⌋ᵈ) with (⌊ X ~ᵈ □;ᵈ Ω ⌋ᵈ) in H2; auto.
-    apply H1 with (Γ := X ~ᵃ □;ᵃ Γ) in H2; simpl; auto.
-    admit.
-Admitted.
+    inst_cofinites_for a_iuv_size__all; intros; inst_cofinites_with X...
+    + rewrite_env (⌊ X ~ᵃ □ ;ᵃ Γ ⌋ᵃ)... eapply H1; eauto.
+    + eapply trans_typ_num_occurs_in_typ with (θ:=(X, □) :: θ) (Γ:=X ~ᵃ □ ;ᵃ Γ); eauto.
+      intros. destruct_binds.
+      apply trans_wl_wf_ss in Htranswl.
+      apply wf_ss_ftvar_in_typ_upper in H8; auto. fsetdec.
+Qed.
+
 
 Lemma trans_exp_exp_split_size : forall Γ Ω θ eᵃ eᵈ n,
   ⊢ᵃʷ Γ ->
@@ -1241,20 +1275,33 @@ Proof.
   intros * Hwf Htranswl Htranse Hsize.
   generalize dependent n. generalize dependent Ω. generalize dependent Γ.
   induction Htranse; intros; dependent destruction Hsize; eauto using a_exp_split_size.
-  - admit.
-  - pick fresh x. inst_cofinites_with x.
-    replace (x ~ dbind_typ typ_bot ++ ⌊ Ω ⌋ᵈ) with (⌊ x ~ᵈ typ_bot;ᵈ Ω ⌋ᵈ) in H1.
-    apply H0 with (Γ := x ~ᵃ typ_bot;ᵃ Γ) in H1; eauto.
-    eapply a_exp_split_size__abs; eauto. admit.
-    simpl. auto.
-  - admit.
+  - eapply trans_wl_a_wl_binds_var_binds_a_wl_and_trans in H0; eauto.
+    destruct H0 as [Aᵃ [Hbind Htrans]].
+    econstructor; eauto. eapply trans_typ_iuv_size; eauto.
+  - inst_cofinites_for a_exp_split_size__abs. intros. inst_cofinites_with x.
+    rewrite_env (⌊ x ~ᵃ typ_bot;ᵃ Γ ⌋ᵃ ).
+    eapply H0; eauto.
+  - dependent destruction H3. inst_cofinites_for a_exp_split_size__tabs; intros. 
+    + inst_cofinites_with X.
+      rewrite_env (⌊ X ~ᵃ □ ;ᵃ Γ ⌋ᵃ).
+      eapply H0; eauto.
+    + inst_cofinites_for a_iuv_size__all; intros; inst_cofinites_with X; eauto.
+      * rewrite_env (⌊ X ~ᵃ □ ;ᵃ Γ ⌋ᵃ). eapply trans_typ_iuv_size with (Ω:=X ~ᵈ □ ;ᵈ Ω); eauto.
+        econstructor; eauto.
+      * eapply trans_typ_num_occurs_in_typ with (Γ:=X ~ᵃ □ ;ᵃ Γ)(θ:=(X, □) :: θ); eauto.
+        intros. destruct_binds.
+        apply trans_wl_wf_ss in Htranswl.
+        apply wf_ss_ftvar_in_typ_upper in H9; auto.
+        (* otherwise too slow *)
+        assert (X `notin` dom θ) by auto. clear H5. fsetdec.
   - apply IHHtranse with (Γ := Γ) in Hsize; auto.
     eapply trans_typ_iuv_size in H0; eauto.
     eauto using a_exp_split_size.
   - apply IHHtranse with (Γ := Γ) in Hsize; auto.
     eapply trans_typ_iuv_size in H0; eauto.
     eauto using a_exp_split_size.
-Admitted.
+Qed.
+
 
 Theorem a_wl_red_completeness: forall Ω Γ,
    Ω ⟶ᵈʷ⁎⋅ -> ⊢ᵃʷₛ Γ -> transfer Γ Ω  -> Γ ⟶ᵃʷ⁎⋅.
