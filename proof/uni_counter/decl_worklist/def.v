@@ -90,11 +90,11 @@ Inductive num_occurs_in_typ : atom -> typ -> nat -> Prop :=
   | num_occurs_in_typ__union : forall X A1 A2 n1 n2,
       num_occurs_in_typ X A1 n1 ->
       num_occurs_in_typ X A2 n2 ->
-      num_occurs_in_typ X (typ_union A1 A2) (2 + n1 + n2)
+      num_occurs_in_typ X (typ_union A1 A2) (n1 + n2)
   | num_occurs_in_typ__intersection : forall X A1 A2 n1 n2,
       num_occurs_in_typ X A1 n1 ->
       num_occurs_in_typ X A2 n2 ->
-      num_occurs_in_typ X (typ_intersection A1 A2) (2 + n1 + n2).
+      num_occurs_in_typ X (typ_intersection A1 A2) (n1 + n2).
 
 
 Inductive d_iuv_size : denv -> typ -> nat -> Prop :=
