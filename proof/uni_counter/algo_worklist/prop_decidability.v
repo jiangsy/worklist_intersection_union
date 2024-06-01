@@ -15,21 +15,54 @@ Require Import uni_counter.algo_worklist.prop_completeness.
 Require Import uni_counter.algo_worklist.transfer.
 Require Import uni_counter.ltac_utils.
 
-Fixpoint exp_size (Γ : aworklist) (e : exp) : nat :=
-  match e with
-  | exp_unit => 1
-  | exp_var_b _ => 1
-  | exp_var_f _ => 1
-  | exp_abs e => 1 + exp_size Γ e
-  | exp_app e1 e2 => 1 + exp_size Γ e1 + exp_size Γ e2 * (1 + exp_split_size (awl_to_aenv Γ) e1)
-  | exp_tabs b => 1 + body_size Γ b
-  | exp_tapp e _ => 1 + exp_size Γ e
-  | exp_anno e A => 1 + exp_size Γ e * (1 + iu_size A)
-  end
-with body_size (Γ : aworklist) (b : body) : nat :=
-  match b with 
-  | body_anno e A => exp_size Γ e * (1 + iu_size A)
-  end.
+Inductive exp_size : aenv -> exp -> nat -> Prop :=
+  | exp_size__unit : forall Σ,
+      exp_size Σ exp_unit 1
+  | exp_size__var_f : forall Σ x,
+      exp_size Σ (exp_var_f x) 1
+  | exp_size__abs : forall L Σ e n,
+      (forall x, x \notin  L ->
+        exp_size (x ~ (abind_var_typ typ_bot) ++ Σ)
+                      (open_exp_wrt_exp e (exp_var_f x)) n) ->
+      exp_size Σ (exp_abs e) (1 + n)
+  | exp_size__app : forall Σ e1 e2 n1 n2 m,
+      exp_size Σ e1 n1 ->
+      exp_size Σ e2 n2 ->
+      a_exp_split_size Σ e1 m ->
+      exp_size Σ (exp_app e1 e2) (1 + n1 + n2 * m)
+  | exp_size__tabs : forall L Σ e A n,
+      (forall X, X \notin  L ->
+        exp_size (X ~ abind_tvar_empty ++ Σ) (open_exp_wrt_typ e (typ_var_f X)) n) ->
+      exp_size Σ (exp_tabs (exp_anno e A)) (2 + n * (1 + iu_size A))
+  | exp_size__tapp : forall Σ e A n,
+      exp_size Σ e n ->
+      exp_size Σ (exp_tapp e A) (1 + n)
+  | exp_size__anno : forall Σ e A n,
+      exp_size Σ e n ->
+      exp_size Σ (exp_anno e A) (1 + n * (1 + iu_size A)).
+
+Hint Constructors exp_size : core.
+
+(* Lemma a_exp_split_size_total : forall Σ e,
+  Σ ᵉ⊢ᵃ e -> exists n, a_exp_split_size Σ e n. *)
+
+Lemma exp_size_total : forall Σ e,
+  Σ ᵉ⊢ᵃ e -> exists n, exp_size Σ e n.
+Proof.
+  intros * Hwf.
+  induction Hwf; eauto.
+  - pick fresh x. inst_cofinites_with x.
+    destruct H1 as [n]. exists (1 + n).
+    eapply exp_size__abs. intros.
+    admit. (* exp_size rename *)
+  - destruct IHHwf1 as [n1]. destruct IHHwf2 as [n2].
+    eapply a_exp_split_size_total in Hwf1.
+    exists (1 + n1 + n2 * m). eauto.
+  - destruct IHa as [n]. exists (2 + n * (1 + iu_size A)). eauto.
+  - destruct IHa as [n]. exists (1 + n). eauto.
+  - destruct IHa as [n]. exists (1 + n * (1 + iu_size A)). eauto.
+Qed.
+
 
 Lemma exp_size_gt_0 : forall Γ e,
   exp_size Γ e > 0.
