@@ -27,10 +27,9 @@ Inductive d_inftapp : denv -> typ -> typ -> typ -> Prop :=
   | d_inftapp__union : forall (Ψ:denv) (A1 A2 B C1 C2:typ),
       d_inftapp Ψ A1 B C1 ->
       d_inftapp Ψ A2 B C2 ->
-      d_inftapp Ψ (typ_union A1 A2) B (typ_union C1 C2)
-.
+      d_inftapp Ψ (typ_union A1 A2) B (typ_union C1 C2).
 
-
+ 
 Inductive d_infabs : denv -> typ -> typ -> typ -> Prop := 
   | d_infabs__bot : forall (Ψ:denv),
       d_wf_tenv Ψ ->
@@ -42,7 +41,6 @@ Inductive d_infabs : denv -> typ -> typ -> typ -> Prop :=
       d_infabs Ψ (typ_arrow A B) A B
   | d_infabs__all : forall (Ψ:denv) (A B C T:typ),
       d_mono_typ Ψ T -> 
-      d_wf_typ Ψ T ->
       d_wf_typ Ψ (typ_all A) ->
       d_infabs Ψ  (open_typ_wrt_typ  A  T ) B C ->
       d_infabs Ψ (typ_all A) B C
@@ -57,12 +55,13 @@ Inductive d_infabs : denv -> typ -> typ -> typ -> Prop :=
   | d_infabs__union : forall (Ψ:denv) (A1 A2 B1 B2 C1 C2:typ),
       d_infabs Ψ A1 B1 C1 ->
       d_infabs Ψ A2 B2 C2 ->
-      d_infabs Ψ (typ_union A1 A2) (typ_intersection B1 B2) (typ_union C1 C2)
-.
+      d_infabs Ψ (typ_union A1 A2) (typ_intersection B1 B2) (typ_union C1 C2).
+
 
 Inductive typing_mode :=
   | typingmode__inf 
   | typingmode__chk.
+
 
 Inductive d_chk_inf : denv -> exp -> typing_mode -> typ -> Prop :=
   | d_chk_inf__inf_var : forall (Ψ:denv) (x:expvar) (A:typ),
@@ -120,8 +119,8 @@ Inductive d_chk_inf : denv -> exp -> typing_mode -> typ -> Prop :=
   | d_chk_inf__chk_union2 : forall (Ψ:denv) (e:exp) (A1 A2:typ),
       d_chk_inf Ψ e typingmode__chk A2 ->
       d_wf_typ Ψ A1 ->
-      d_chk_inf Ψ e typingmode__chk (typ_union A1 A2)
-.
+      d_chk_inf Ψ e typingmode__chk (typ_union A1 A2).
+
 
 #[export] Hint Constructors neq_union neq_intersection neq_all : core.
 #[export] Hint Constructors d_sub d_infabs d_inftapp d_chk_inf : core.

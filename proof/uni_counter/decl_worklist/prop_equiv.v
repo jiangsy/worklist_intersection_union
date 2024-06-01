@@ -611,8 +611,8 @@ Proof.
     erewrite d_iuv_size_det with (n1 := n1); eauto. lia.
   - dependent destruction HiuvA.
     pick fresh X. inst_cofinites_with X.
-    eapply d_iuv_size_subst_mono_cons with (T := T) in H2; eauto.
-    eapply IHHinf in H2; eauto. lia.
+    eapply d_iuv_size_subst_mono_cons with (T := T) in H1; eauto.
+    eapply IHHinf in H1; eauto. lia.
   - dependent destruction HiuvA.
     eapply IHHinf in HiuvA1; eauto. lia.
   - dependent destruction HiuvA.
@@ -635,8 +635,8 @@ Proof.
     erewrite d_iuv_size_det with (n1 := n2); eauto. lia.
   - dependent destruction HiuvA.
     pick fresh X. inst_cofinites_with X.
-    eapply d_iuv_size_subst_mono_cons with (T := T) in H2; eauto.
-    eapply IHHinf in H2; eauto. lia.
+    eapply d_iuv_size_subst_mono_cons with (T := T) in H1; eauto.
+    eapply IHHinf in H1; eauto. lia.
   - dependent destruction HiuvA.
     eapply IHHinf in HiuvA1; eauto. lia.
   - dependent destruction HiuvA.

@@ -711,8 +711,6 @@ Proof.
 Qed.
   
 
-
-
 Lemma trans_apply_conts : forall θ csᵃ csᵈ Aᵃ Aᵈ wᵈ,
   θ ᶜˢ⊩ csᵃ ⇝ csᵈ ->
   θ ᵗ⊩ Aᵃ ⇝ Aᵈ ->
@@ -721,6 +719,7 @@ Lemma trans_apply_conts : forall θ csᵃ csᵈ Aᵃ Aᵈ wᵈ,
 Proof.
   intros. induction H1; try dependent destruction H; eauto.
 Qed.
+
 
 Lemma trans_apply_contd : forall θ cdᵃ cdᵈ Aᵃ Aᵈ Bᵃ Bᵈ wᵈ,
   θ ᶜᵈ⊩ cdᵃ ⇝ cdᵈ ->
@@ -731,6 +730,7 @@ Lemma trans_apply_contd : forall θ cdᵃ cdᵈ Aᵃ Aᵈ Bᵃ Bᵈ wᵈ,
 Proof.
   intros. induction H2; try dependent destruction H; eauto 6.
 Qed.
+
 
 Lemma trans_typ_subst : forall θ1 θ2 Aᵃ Aᵈ Bᵃ Bᵈ X b,
   b = □ \/ b = ■ ->
@@ -762,6 +762,7 @@ Proof with eauto.
       * simpl... apply trans_typ_weaken_cons...
 Qed.
 
+
 Fixpoint num_arrow_in_typ (A : typ) : nat :=
   match A with
   | typ_arrow A1 A2 => 1 + num_arrow_in_typ A1 + num_arrow_in_typ A2
@@ -781,11 +782,13 @@ Proof.
   - specialize (IHA1 n). specialize (IHA2 n). lia.
 Qed.
 
+
 Lemma d_more_num_arr_open_typ : forall A B,
   num_arrow_in_typ (A ᵗ^^ₜ B) >= num_arrow_in_typ A.
 Proof.
   intros. unfold open_typ_wrt_typ. eapply d_more_num_arr_open_typ_rec.
 Qed.
+
 
 Lemma d_same_num_arr_open_typ_rec_tvar : forall A X n,
   num_arrow_in_typ (open_typ_wrt_typ_rec n `X A) = num_arrow_in_typ A.
@@ -799,6 +802,7 @@ Proof.
   - specialize (IHA1 n). specialize (IHA2 n). lia.
   - specialize (IHA1 n). specialize (IHA2 n). lia.
 Qed.
+
 
 Lemma d_same_num_arr_open_typ_tvar : forall A X,
   num_arrow_in_typ (A ᵗ^ₜ X) = num_arrow_in_typ A.
@@ -1149,26 +1153,27 @@ Qed.
 (* reduce Γ with multiple trailing exsitential vars to the base case *)
 Ltac solve_awl_trailing_etvar :=
   match goal with
-  | H_1 : ⊢ᵃʷₛ ?Γ, H_2: ?θ ⊩ ?Γ ⇝ ?Ω ⫣ ?θ' |- _ =>
-    let Htr := fresh "Htr" in
-    let Γ0 := fresh "Γ0" in
-    let Htrans_et := fresh "Htrans_et" in
-    let θ' := fresh "θ'" in
-    let Hwf := fresh "Hwf" in
-    apply a_wf_wl_aworklist_trailing_etvar_total in H_1 as Htr;
-    destruct Htr as [Γ0 Htr];
-    eapply aworklist_trailing_etvar_reduce_ord; eauto;
-    apply aworklist_trailing_etvar_trans with (Γ0:=Γ0) in H_2 as Htrans_et ; auto;
-    destruct Htrans_et as [θ' Htrans_et];
-    dependent destruction Htrans_et;
-    apply a_wf_wl_rm_trailing_etvar in Htr as Hwf; auto;
-    match goal with
-    | H_3 : aworklist_trailing_etvar (aworklist_cons_var ?Γ0 ?X abind_etvar_empty) ?Γ |- _ =>
-      apply aworklist_trailing_base_ord in H_3; inversion H_3
-    | _ => idtac
-    end
+    | H_1 : ⊢ᵃʷₛ ?Γ, H_2: ?θ ⊩ ?Γ ⇝ ?Ω ⫣ ?θ' |- _ =>
+        let Htr := fresh "Htr" in
+        let Γ0 := fresh "Γ0" in
+        let Htrans_et := fresh "Htrans_et" in
+        let θ' := fresh "θ'" in
+        let Hwf := fresh "Hwf" in
+        apply a_wf_wl_aworklist_trailing_etvar_total in H_1 as Htr;
+        destruct Htr as [Γ0 Htr];
+        eapply aworklist_trailing_etvar_reduce_ord; eauto;
+        apply aworklist_trailing_etvar_trans with (Γ0:=Γ0) in H_2 as Htrans_et ; auto;
+        destruct Htrans_et as [θ' Htrans_et];
+        dependent destruction Htrans_et;
+        apply a_wf_wl_rm_trailing_etvar in Htr as Hwf; auto;
+        match goal with
+          | H_3 : aworklist_trailing_etvar (aworklist_cons_var ?Γ0 ?X abind_etvar_empty) ?Γ |- _ =>
+            apply aworklist_trailing_base_ord in H_3; inversion H_3
+          | _ => idtac
+        end
   end.
 
+  
 Theorem a_wl_red_completeness: forall Ω Γ,
    Ω ⟶ᵈʷ⁎⋅ -> ⊢ᵃʷₛ Γ -> transfer Γ Ω  -> Γ ⟶ᵃʷ⁎⋅.
 Proof with eauto.

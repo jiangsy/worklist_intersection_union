@@ -25,8 +25,8 @@ Inductive d_subtenv : denv -> denv -> Prop :=
       d_subtenv Ψ' Ψ ->
       d_sub Ψ A A' ->
       d_subtenv (x ~ dbind_typ A ++ Ψ')
-          (x ~ dbind_typ A' ++ Ψ)
-.
+          (x ~ dbind_typ A' ++ Ψ).
+
 
 Inductive d_subenv : denv -> denv -> Prop :=
   | d_subenv__empty: d_subenv nil nil
@@ -42,16 +42,18 @@ Inductive d_subenv : denv -> denv -> Prop :=
       d_subenv Ψ' Ψ ->
       d_sub Ψ A A' ->
       d_subenv (x ~ dbind_typ A ++ Ψ')
-          (x ~ dbind_typ A' ++ Ψ)
-.
+          (x ~ dbind_typ A' ++ Ψ).
+
 
 #[local] Hint Constructors d_subtenv d_subenv: core.
+
 
 Lemma d_wf_tenv_d_wf_env : forall Ψ,
   ⊢ᵈₜ Ψ -> ⊢ᵈ Ψ.
 Proof.
   intros. induction H; auto.
 Qed.
+
 
 Lemma d_subenv_refl: forall Ψ,
   ⊢ᵈₜ Ψ -> d_subtenv Ψ Ψ.
@@ -61,6 +63,7 @@ Proof with auto.
   apply d_sub_refl; auto. 
 Qed.
 
+
 Lemma d_subtenv_same_dom : forall Ψ Ψ',
   d_subtenv Ψ' Ψ ->
   dom Ψ = dom Ψ'.
@@ -68,12 +71,14 @@ Proof.
   intros. induction H; simpl; auto; rewrite IHd_subtenv; auto.
 Qed.
 
+
 Lemma d_subenv_same_dom : forall Ψ Ψ',
   d_subenv Ψ' Ψ ->
   dom Ψ = dom Ψ'.
 Proof.
   intros. induction H; simpl; auto; rewrite IHd_subenv; auto.
 Qed.
+
 
 Lemma d_subtenv_same_tvar : forall Ψ Ψ' X,
   d_subtenv Ψ' Ψ ->
@@ -86,6 +91,7 @@ Proof.
   - inversion H0; auto.
     inversion H2.
 Qed.
+
 
 Lemma d_subenv_same_dtvar : forall Ψ Ψ' X b,
   b = □ \/ b = ■ ->
@@ -102,6 +108,7 @@ Proof.
     + dependent destruction H3. inversion H; inversion H3.
     + auto.
 Qed.
+
 
 Lemma d_subtenv_same_var : forall Ψ Ψ' A x,
   ⊢ᵈ Ψ ->
@@ -128,6 +135,7 @@ Proof.
       exists A''; intuition.
       eapply d_sub_weaken_cons; eauto.
 Qed.
+
 
 Lemma d_subtenv_stvar_false : forall Ψ Ψ' X,
   d_subtenv Ψ' Ψ ->
@@ -157,6 +165,7 @@ Proof.
       econstructor. auto.
 Qed.
 
+
 Lemma d_subenv_wf_typ : forall Ψ Ψ' A,
   Ψ ᵗ⊢ᵈ A -> 
   d_subenv Ψ' Ψ -> 
@@ -173,7 +182,6 @@ Proof.
       econstructor. auto.
 Qed.
 
-(* #[local] Hint Resolve d_subenv_wf_typ : core. *)
 
 Lemma d_subtenv_wf_env : forall Ψ,
   ⊢ᵈₜ Ψ ->
@@ -192,6 +200,7 @@ Proof.
       eapply d_subtenv_wf_typ; eauto. auto. intuition.
     + erewrite <- d_subtenv_same_dom; auto.
 Qed.
+
 
 Lemma d_subtenv_wf_tenv_inv : forall Ψ',
   ⊢ᵈₜ Ψ' ->
@@ -212,17 +221,23 @@ Ltac solve_wf_subenv := match goal with
   | H : d_subtenv ?Ψ' ?Ψ |- ⊢ᵈₜ ?Ψ' => eapply d_subtenv_wf_env; eauto
 end.
 
+
 Lemma binds_subtenv: forall Ψ X Ψ',
-    X ~ □ ∈ᵈ Ψ -> d_subtenv Ψ' Ψ -> X ~ □ ∈ᵈ Ψ'.
+  X ~ □ ∈ᵈ Ψ -> 
+  d_subtenv Ψ' Ψ -> 
+  X ~ □ ∈ᵈ Ψ'.
 Proof with try solve_by_invert.
   intros* HD HS. induction* HS.
   - forwards* [?|?]: binds_app_1 HD.
   - forwards* [(?&?)|?]: binds_cons_1 HD...
 Qed.
 
+
 Lemma binds_subenv: forall Ψ X Ψ' b,
   b = □ \/ b = ■ ->
-  binds X b Ψ -> d_subenv Ψ' Ψ -> binds X b Ψ'.
+  binds X b Ψ ->
+  d_subenv Ψ' Ψ -> 
+  binds X b Ψ'.
 Proof with try solve_by_invert.
   intros* HB HD HS. induction* HS.
   - forwards* [?|?]: binds_app_1 HD.
@@ -231,12 +246,16 @@ Proof with try solve_by_invert.
     subst. inversion HB. inversion H0. inversion H0.
 Qed.
 
+
 Lemma d_mono_typ_subtenv: forall Ψ A Ψ',
-  d_mono_typ Ψ A -> d_subtenv Ψ' Ψ -> d_mono_typ Ψ' A.
+  d_mono_typ Ψ A -> 
+  d_subtenv Ψ' Ψ -> 
+  d_mono_typ Ψ' A.
 Proof with eauto using binds_subtenv.
   intros* HD HS. gen HS.
   induction HD; intros...
 Qed.
+
 
 Lemma d_mono_typ_subenv: forall Ψ A Ψ',
   Ψ ᵗ⊢ᵈₘ A -> 
@@ -250,6 +269,7 @@ Qed.
 
 #[local] Hint Immediate d_wf_tenv_d_wf_env  : core.
 
+
 Lemma d_wf_tenv_subenv : forall Ψ Ψ',
   ⊢ᵈₜ Ψ -> 
   d_subenv Ψ' Ψ -> 
@@ -262,6 +282,7 @@ Proof.
     erewrite <- d_subenv_same_dom; eauto.
 Qed.
 
+
 Lemma d_wf_env_subenv : forall Ψ Ψ',
   ⊢ᵈ Ψ -> 
   d_subenv Ψ' Ψ -> 
@@ -272,6 +293,7 @@ Proof.
   - dependent destruction H0. apply d_wf_env__stvar; eauto.
     erewrite <- d_subenv_same_dom; eauto.
 Qed.
+
 
 Lemma d_sub_subenv: forall Ψ A B,
   Ψ ⊢ A <: B -> 
@@ -285,6 +307,7 @@ Proof with eauto using d_mono_typ_subenv, d_wf_env_subenv, d_subenv_wf_typ.
   - inst_cofinites_for d_sub__alll T:=T...
 Qed.
 
+
 Lemma d_subtenv_subenv: forall Ψ Ψ',
   d_subtenv Ψ' Ψ -> 
   d_subenv Ψ' Ψ.
@@ -292,11 +315,13 @@ Proof.
   intros. dependent induction H; auto.
 Qed.
 
+
 Lemma d_sub_subtenv : forall Ψ A B,
   Ψ ⊢ A <: B -> forall Ψ', d_subtenv Ψ' Ψ -> Ψ' ⊢ A <: B.
 Proof.
   intros. apply d_subtenv_subenv in H0. eapply d_sub_subenv; eauto.
 Qed.
+
 
 #[local] Hint Resolve d_wf_typ_subst_tvar d_wf_env_subst_tvar bind_typ_subst d_wf_typ_lc_typ : core.
 
@@ -306,6 +331,7 @@ Definition dmode_size (mode : typing_mode) : nat :=
   | typingmode__inf => 0
   | typingmode__chk => 1
   end.
+
 
 Fixpoint exp_size (e:exp) : nat :=
   match e with
@@ -318,6 +344,7 @@ Fixpoint exp_size (e:exp) : nat :=
     | exp_tapp e1 _ => 1 + exp_size e1
     | exp_tabs e => 1 + exp_size e
   end.
+
 
 Fixpoint typ_size (A:typ) : nat :=
   match A with
@@ -436,6 +463,7 @@ Qed.
 
 
 #[export] Hint Immediate d_infabs_d_wf_env d_infabs_d_wf_typ1 d_infabs_d_wf_typ2 d_infabs_d_wf_typ3 : core.
+
 
 Theorem d_infabs_subsumption_same_env : forall Ψ A A' B C,
   Ψ ⊢ A ▹ B → C ->
@@ -576,6 +604,7 @@ Proof with eauto using d_subtenv_wf_env, d_subtenv_wf_typ.
   eapply d_infabs__all with (T:=T); eauto using d_mono_typ_subtenv...
 Qed.
 
+
 Corollary d_infabs_subsumption: forall Ψ Ψ' A A' B C,
   Ψ ⊢ A ▹ B → C ->
   Ψ ⊢ A' <: A ->
@@ -588,8 +617,8 @@ Proof with eauto.
   exists*.
 Qed.
 
+
 #[local] Hint Extern 1 (_ < _) => lia : core.
-(* #[local] Hint Extern 1 (_ ᵗ⊢ᵈ _) => eapply d_subenv_wf_typ; eauto : core. *)
 
 
 Lemma exp_size_open_var_rec : forall e x n,
@@ -797,6 +826,7 @@ Proof with auto.
         refine (IHn3 _ _ _ _ _ _ _ _ Hty _ _ _); eauto...
         apply d_sub_union_inv in H0. intros. intuition.
 Qed.
+
 
 Corollary d_chk_subsumption : forall Ψ e A A',
   ⊢ᵈₜ Ψ ->

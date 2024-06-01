@@ -492,46 +492,44 @@ Proof with auto using d_mono_typ_d_wf_typ.
       split; intuition...
       dependent destruction H2. dependent destruction H4.
       eauto...
-  - dependent induction H3.
+  - dependent induction H2.
     + exists typ_top typ_bot.
       econstructor; eauto...
     + assert (Ψ ⊢ A0 ᵗ^^ₜ T <: A ᵗ^^ₜ T). {
         pick fresh SZ. forwards*: H5 SZ.
-        rewrite_env (nil++ (SZ, ■) :: Ψ ) in H7.
-        forwards*: d_sub_subst_stvar T H7.
-        simpl in H8.
-        rewrite subst_typ_in_typ_open_typ_wrt_typ in H8...
-        simpl in H8. case_if in H8.
-        rewrite subst_typ_in_typ_fresh_eq in H8...
-        rewrite subst_typ_in_typ_open_typ_wrt_typ in H8...
-        simpl in H8. case_if in H8...
-        rewrite subst_typ_in_typ_fresh_eq in H8...
-        all: eauto.
+        rewrite_env (nil++ (SZ, ■) :: Ψ ) in H6.
+        forwards*: d_sub_subst_stvar T H6.
+        apply d_mono_typ_d_wf_typ; eauto.
+        rewrite subst_typ_in_typ_open_typ_wrt_typ in H7; eauto.
+        rewrite subst_typ_in_typ_open_typ_wrt_typ in H7; eauto.
+        simpl in H7; destruct_eq_atom; eauto.
+        rewrite subst_typ_in_typ_fresh_eq in H7...
+        rewrite subst_typ_in_typ_fresh_eq in H7...
       }
-      specialize (IHd_infabs _ H7).
+      specialize (IHd_infabs _ H6).
       destruct IHd_infabs as [B2 [C2]].
       exists B2 C2. intuition...
-      eapply d_infabs__all with (T:=T). eauto. eauto.
+      eapply d_infabs__all with (T:=T). eauto.
       pick fresh Y and apply d_wf_typ__all.
       ** forwards: H3 Y...
-      ** forwards: d_sub_d_wf_typ1 H7.
-         rewrite_env (nil++Ψ) in H8.
-         forwards*: d_wf_typ_open_mono_inv Y H8 H.
+      ** forwards: d_sub_d_wf_typ1 H6.
+         rewrite_env (nil++Ψ) in H7.
+         forwards*: d_wf_typ_open_mono_inv Y H7 H.
       ** eauto...
     + inversion H5.
-    + specialize (IHd_sub _ H H0 H1 H2 IHd_infabs (eq_refl _)).
+    + specialize (IHd_sub _ H H0 H1 IHd_infabs (eq_refl _)).
       destruct IHd_sub as [B2 [C2]].
       exists B2 C2. intuition.
-    + specialize (IHd_sub _ H H0 H1 H2 IHd_infabs (eq_refl _)).
+    + specialize (IHd_sub _ H H0 H1 IHd_infabs (eq_refl _)).
       destruct IHd_sub as [B2 [C2]].
       exists B2 C2. intuition.
-    + specialize (IHd_sub1 _ H H0 H1 H2 IHd_infabs (eq_refl _)).
-      specialize (IHd_sub2 _ H H0 H1 H2 IHd_infabs (eq_refl _)).
+    + specialize (IHd_sub1 _ H H0 H1 IHd_infabs (eq_refl _)).
+      specialize (IHd_sub2 _ H H0 H1 IHd_infabs (eq_refl _)).
       destruct IHd_sub1 as [B2 [C2]].
       destruct IHd_sub2 as [B3 [C3]].
       exists (typ_intersection B2 B3) (typ_union C2 C3).
       intuition...
-      dependent destruction H5. dependent destruction H3.
+      dependent destruction H4. dependent destruction H2.
       eauto...
   - apply d_sub_intersection_inv in H1.
     intuition.
