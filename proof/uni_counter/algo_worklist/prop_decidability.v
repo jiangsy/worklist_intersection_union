@@ -129,6 +129,18 @@ Lemma a_exp_split_size_det : forall Σ e n n',
   a_exp_split_size Σ e n -> a_exp_split_size Σ e n' -> n = n'.
 Admitted.
 
+Lemma exp_size_det : forall Σ e n n',
+  exp_size Σ e n -> exp_size Σ e n' -> n = n'.
+Proof.
+  intros Σ e n n' Hsize. generalize dependent n'.
+  induction Hsize; intros n' Hsize'; dependent destruction Hsize'; eauto.
+  - pick fresh x. inst_cofinites_with x. eauto.
+  - erewrite IHHsize1; eauto.
+    erewrite IHHsize2; eauto.
+    erewrite a_exp_split_size_det with (n := m); eauto.
+  - pick fresh X. inst_cofinites_with X. eauto.
+Qed.
+
 Lemma exp_size_total : forall Σ e,
   Σ ᵉ⊢ᵃ e -> exists n, exp_size Σ e n.
 Proof.
@@ -151,6 +163,17 @@ Proof.
     destruct a_exp_split_size_total with (Σ := Σ) (e := e) as [m Hsplit]; eauto.
 Admitted.
 
+Lemma exp_size_conts_det : forall Σ cs n n',
+  exp_size_conts Σ cs n -> exp_size_conts Σ cs n' -> n = n'
+with exp_size_contd_det : forall Σ cd n n',
+  exp_size_contd Σ cd n -> exp_size_contd Σ cd n' -> n = n'.
+Proof.
+  - intros Σ cs n n' Hsize. generalize dependent n'.
+    induction Hsize; intros n' Hsize'; dependent destruction Hsize'; eauto.
+  - intros Σ cd n n' Hsize. generalize dependent n'.
+    induction Hsize; intros n' Hsize'; dependent destruction Hsize'; eauto.
+Admitted. (* help me check this @jiangsy *)
+
 Lemma exp_size_conts_total : forall Σ cs,
   Σ ᶜˢ⊢ᵃ cs -> exists n, exp_size_conts Σ cs n
 with exp_size_contd_total : forall Σ cd,
@@ -159,6 +182,21 @@ Proof.
   intros; induction H; eauto.
   intros; induction H; eauto.
 Admitted. (* help me check this @jiangsy *)
+
+Lemma exp_size_work_det : forall Σ w n n',
+  exp_size_work Σ w n -> exp_size_work Σ w n' -> n = n'.
+Proof.
+  intros Σ w n n' Hsize Hsize'.
+  dependent destruction Hsize; dependent destruction Hsize'; auto;
+    try solve [erewrite exp_size_conts_det with (n := n); eauto];
+    try solve [erewrite exp_size_contd_det with (n := n); eauto].
+  - erewrite exp_size_det with (n := m); eauto.
+    erewrite exp_size_conts_det with (n := n); eauto.
+  - erewrite exp_size_det with (n := n); eauto.
+  - erewrite exp_size_det with (n := m); eauto.
+    erewrite exp_size_conts_det with (n := n); eauto.
+  Unshelve. all: eauto.
+Qed.
 
 Lemma exp_size_work_total : forall Σ w,
   Σ ʷ⊢ᵃ w -> exists n, exp_size_work Σ w n.
@@ -634,21 +672,31 @@ Proof.
     try erewrite judge_size_work_subst_typ_in_work; eauto.
 Qed. 
 
-(* Lemma apply_conts_exp_size : forall Γ c A w,
-  apply_conts c A w -> exp_size_work Γ w = exp_size_conts Γ c.
+Lemma apply_conts_exp_size : forall Σ c A w n m,
+  apply_conts c A w -> exp_size_conts Σ c n -> exp_size_work Σ w m -> n = m.
 Proof.
-  intros Γ c A w Happly.
-  induction Happly; simpl; eauto.
+  intros Σ c A w n m Happly Hsize1 Hsize2.
+  induction Happly; dependent destruction Hsize1; dependent destruction Hsize2;
+    try solve [ eapply exp_size_contd_det in H; eauto];
+    try solve [ eapply exp_size_conts_det in H; eauto]; eauto.
 Qed.
 
-Lemma apply_contd_exp_size : forall Γ c A B w,
-  apply_contd c A B w -> exp_size_work Γ w <= exp_size_contd Γ c.
+Lemma apply_contd_exp_size : forall Σ c A B w n m,
+  apply_contd c A B w -> exp_size_work Σ w n -> exp_size_contd Σ c m -> n <= m.
 Proof.
-  intros Γ c A B w Happly.
-  induction Happly; simpl; eauto; try lia.
-  assert (exp_size Γ e * S (iu_size A) <= exp_size Γ e * S n).
-  { eapply mult_le_compat; eauto. lia. } lia.
-Qed. *)
+  intros Σ c A B w n m Happly Hsize1 Hsize2. induction Happly.
+  - dependent destruction Hsize1. dependent destruction Hsize2.
+    eapply exp_size_conts_det in H1; eauto; subst; eauto. 
+    eapply exp_size_det in H0; eauto; subst; eauto.
+    assert (m0 * (1 + iu_size A) <= m0 * (1 + n0)).
+    { eapply mult_le_compat; eauto. lia. } lia.
+  - dependent destruction Hsize1.
+    dependent destruction Hsize2.
+    eapply exp_size_contd_det in H; eauto; subst; eauto.
+  - dependent destruction Hsize1.
+    dependent destruction Hsize2.
+    eapply exp_size_contd_det in H; eauto; subst; eauto.
+Qed.
 
 Lemma apply_conts_judge_size : forall c A w,
   apply_conts c A w -> judge_size_work w = judge_size_conts c.
@@ -1545,9 +1593,11 @@ Proof.
             try solve [right; intro Hcontra; dependent destruction Hcontra; dependent destruction Hcontra;
                       eapply Happly; eauto].
           assert (Jg: (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ ~ (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
-          { eapply IHmaj; eauto; simpl in *; try lia.
-            eapply a_wf_wl_apply_contd; eauto.
-            eapply apply_contd_exp_size with (Γ := Γ) in Happly; lia.
+          { eapply a_wf_wl_apply_contd in Happly as Hwf'; eauto.
+            eapply a_wf_work_apply_contd in Happly as Hwf''; eauto.
+            edestruct exp_size_work_total as [n' He'] in Hwf''; eauto.
+            eapply IHmaj; eauto; simpl in *; try lia.
+            eapply apply_contd_exp_size with (n := n') in Happly; eauto; lia.
             eapply apply_contd_judge_size in Happly; lia.
             eapply apply_contd_inftapp_depth in Happly; lia.
             eapply apply_contd_inftapp_judge_size in Happly; lia.
@@ -1560,253 +1610,274 @@ Proof.
           eapply apply_contd_det in Happly; eauto.
           subst. eauto.
         -- pick fresh X. inst_cofinites_with X.
-          assert (Jg: (work_infabs (A ᵗ^ₜ X) cd ⫤ᵃ X ~ᵃ ⬒ ;ᵃ Γ) ⟶ᵃʷ⁎⋅ \/
-                    ~ (work_infabs (A ᵗ^ₜ X) cd ⫤ᵃ X ~ᵃ ⬒ ;ᵃ Γ) ⟶ᵃʷ⁎⋅).
-          { assert (Heq: infabs_depth (open_typ_wrt_typ A (typ_var_f X)) = infabs_depth A) by admit. (* should be fine *)
-            eapply IHna; eauto; simpl in *; try lia.
-            constructor; simpl; auto. constructor; simpl; auto. constructor; simpl; auto.
-            eapply a_wf_typ_tvar_etvar with (Σ2 := nil). simpl. auto.
-            eapply a_wf_contd_weaken_cons; auto.
-            admit. (* TODO *) }
-          destruct Jg as [Jg | Jg]; eauto.
-          ++ left. inst_cofinites_for a_wl_red__infabs_all.
+           assert (Jg: (work_infabs (A ᵗ^ₜ X) cd ⫤ᵃ X ~ᵃ ⬒ ;ᵃ Γ) ⟶ᵃʷ⁎⋅ \/
+                     ~ (work_infabs (A ᵗ^ₜ X) cd ⫤ᵃ X ~ᵃ ⬒ ;ᵃ Γ) ⟶ᵃʷ⁎⋅).
+           { assert (Heq: infabs_depth (open_typ_wrt_typ A (typ_var_f X)) = infabs_depth A) by admit. (* should be fine *)
+             eapply IHma; eauto; simpl in *; try lia.
+             constructor; simpl; auto. constructor; simpl; auto. constructor; simpl; auto.
+             eapply a_wf_typ_tvar_etvar with (Σ2 := nil). simpl. auto.
+             eapply a_wf_contd_weaken_cons; auto.
+             eapply exp_size_wl__cons_work; eauto.
+             eapply exp_size_work__infabs; eauto.
+             admit. (* exp_size weaken *) }
+           destruct Jg as [Jg | Jg]; eauto.
+           ++ left. inst_cofinites_for a_wl_red__infabs_all.
               intros X' Hnin.
               apply rename_tvar_in_a_wf_wwl_a_wl_red with (X:=X) (Y:=X') in Jg.
               ** simpl in Jg. destruct_eq_atom.
-                rewrite rename_tvar_in_aworklist_fresh_eq in Jg; auto.
-                rewrite subst_typ_in_contd_fresh_eq in Jg; auto.
-                rewrite subst_typ_in_typ_open_typ_wrt_typ_tvar2 in Jg; auto.
+                 rewrite rename_tvar_in_aworklist_fresh_eq in Jg; auto.
+                 rewrite subst_typ_in_contd_fresh_eq in Jg; auto.
+                 rewrite subst_typ_in_typ_open_typ_wrt_typ_tvar2 in Jg; auto.
               ** unfold not. intros. subst. solve_notin_eq X'.
               ** eapply a_wf_wl_a_wf_wwl.
-                constructor; simpl; auto. constructor; simpl; auto. constructor; simpl; auto.
-                eapply a_wf_typ_tvar_etvar with (Σ2 := nil). simpl. auto.
-                eapply a_wf_contd_weaken_cons; auto.
+                 constructor; simpl; auto. constructor; simpl; auto. constructor; simpl; auto.
+                 eapply a_wf_typ_tvar_etvar with (Σ2 := nil). simpl. auto.
+                 eapply a_wf_contd_weaken_cons; auto.
               ** simpl. auto.
           ++ right. intro Hcontra.
-              dependent destruction Hcontra.
-              pick fresh X1. inst_cofinites_with X1.
-              apply rename_tvar_in_a_wf_wwl_a_wl_red with (X:=X1) (Y:=X) in H3; auto.
-              ** simpl in H3. destruct_eq_atom.
-                rewrite rename_tvar_in_aworklist_fresh_eq in H3; auto.
-                rewrite subst_typ_in_contd_fresh_eq in H3; auto.
-                rewrite subst_typ_in_typ_open_typ_wrt_typ_tvar2 in H3; auto.
-              ** eapply a_wf_wl_a_wf_wwl.
-                constructor; simpl; auto. constructor; auto. admit.
+             dependent destruction Hcontra.
+             pick fresh X1. inst_cofinites_with X1.
+             apply rename_tvar_in_a_wf_wwl_a_wl_red with (X:=X1) (Y:=X) in H4; auto.
+             ** simpl in H4. destruct_eq_atom.
+                rewrite rename_tvar_in_aworklist_fresh_eq in H4; auto.
+                rewrite subst_typ_in_contd_fresh_eq in H4; auto.
+                rewrite subst_typ_in_typ_open_typ_wrt_typ_tvar2 in H4; auto.
+             ** eapply a_wf_wl_a_wf_wwl.
+                constructor; simpl; auto. constructor; auto.
+                admit. (* wf *)
         -- assert (Jg: (work_infabs A1 (contd_infabsunion A2 cd) ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/
-                    ~ (work_infabs A1 (contd_infabsunion A2 cd) ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
-          { eapply IHna; eauto; simpl in *; try lia. }
-          destruct Jg as [Jg | Jg]; eauto.
-          right. intro Hcontra.
-          dependent destruction Hcontra.
-          apply Jg; auto.
+                     ~ (work_infabs A1 (contd_infabsunion A2 cd) ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
+           { eapply IHma; eauto; simpl in *; try lia. }
+           destruct Jg as [Jg | Jg]; eauto.
+           right. intro Hcontra.
+           dependent destruction Hcontra.
+           apply Jg; auto.
         -- assert (Jg1: (work_infabs A1 cd ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/
                       ~ (work_infabs A1 cd ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
-          { eapply IHna; eauto; simpl in *; try lia. }
-          assert (Jg2: (work_infabs A2 cd ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/
+           { eapply IHma; eauto; simpl in *; try lia. }
+           assert (Jg2: (work_infabs A2 cd ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/
                       ~ (work_infabs A2 cd ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
-          { eapply IHna; eauto; simpl in *; try lia. }
-          destruct Jg1 as [Jg1 | Jg1]; eauto.
-          destruct Jg2 as [Jg2 | Jg2]; eauto.
-          right. intro Hcontra.
-          dependent destruction Hcontra.
-          apply Jg1; auto. apply Jg2; auto.
-    * simpl in *. dependent destruction H;
-      try solve [right; intro Hcontra; dependent destruction Hcontra].
-      assert (Jg:  (work_infabs A2 (contd_unioninfabs A1 B1 cd) ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/
-                 ~ (work_infabs A2 (contd_unioninfabs A1 B1 cd) ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
-      { eapply IHmaj; eauto; simpl in *; try lia. constructor; auto. }
-      destruct Jg as [Jg | Jg]; eauto.
-      right. intro Hcontra. 
-      dependent destruction Hcontra. eauto.
-    * dependent destruction H; try solve [right; intro Hcontra; dependent destruction Hcontra].
-      assert (Jg:  (work_applys cs B ⫤ᵃ work_check e A ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/
-                 ~ (work_applys cs B ⫤ᵃ work_check e A ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
-      { eapply IHmj; eauto; simpl in *; try lia. constructor; auto. admit. }
-      destruct Jg as [Jg | Jg]; eauto.
-      right. intro Hcontra.
-      dependent destruction Hcontra. eauto.
-    * simpl in *. dependent destruction H;
+           { eapply IHma; eauto; simpl in *; try lia. }
+           destruct Jg1 as [Jg1 | Jg1]; eauto.
+           destruct Jg2 as [Jg2 | Jg2]; eauto.
+           right. intro Hcontra.
+           dependent destruction Hcontra.
+           apply Jg1; auto. apply Jg2; auto.
+      * dependent destruction H3. simpl in *. dependent destruction H;
         try solve [right; intro Hcontra; dependent destruction Hcontra].
-      -- destruct (apply_conts_dec cs typ_bot) as [[w Happly] | Happly];
-         try solve [right; intro Hcontra; dependent destruction Hcontra; dependent destruction Hcontra;
-           eapply Happly; eauto].
-         assert (Jg: a_wl_red (aworklist_cons_work Γ w) \/
-                   ~ a_wl_red (aworklist_cons_work Γ w)).
-         { eapply IHntj; eauto; simpl in *; try lia.
-           eapply a_wf_wl_apply_conts; eauto.
-           eapply apply_conts_exp_size with (Γ := Γ) in Happly; lia.
-           eapply apply_conts_judge_size in Happly; lia.
-           admit. (* TODO *)
-           eapply apply_conts_inftapp_judge_size in Happly; lia. }
-         destruct Jg as [Jg | Jg]; eauto.
-         right. intro Hcontra.
-         dependent destruction Hcontra.
-         dependent destruction Hcontra.
-         eapply apply_conts_det in Happly; eauto.
-         subst. eauto.
-      -- destruct (apply_conts_dec cs (open_typ_wrt_typ A A2)) as [[w Happly] | Happly];
-         try solve [right; intro Hcontra; dependent destruction Hcontra; dependent destruction Hcontra;
-           eapply Happly; eauto].
-         assert (Jg: (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ ~ (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
-         { eapply IHntj; eauto; simpl in *; try lia.
-           eapply a_wf_wl_apply_conts; eauto.
-           constructor; auto. constructor; auto.
-           eapply a_wf_typ_all_open; eauto.
-           eapply apply_conts_exp_size with (Γ := Γ) in Happly; lia.
-           eapply apply_conts_judge_size in Happly; lia.
-           eapply apply_conts_inftapp_depth in Happly.
-           assert (Hfact: inftapp_depth (open_typ_wrt_typ A A2) < (1 + inftapp_depth A) * (1 + inftapp_depth A2))
-             by eapply inftapp_depth_open_typ_wrt_typ.
-           assert (Hfact': inftapp_depth_work w <= inftapp_depth_conts_tail_rec cs ((1 + inftapp_depth A) * (1 + inftapp_depth A2))).
-           { eapply le_trans; eauto. eapply inftapp_depth_conts_tail_rec_le. lia. }
-           assert (Hfact'': inftapp_depth_conts_tail_rec cs ((1 + inftapp_depth A) * (1 + inftapp_depth A2)) <= inftapp_depth_conts_tail_rec cs (S (inftapp_depth A + S (inftapp_depth A + inftapp_depth A2 * S (inftapp_depth A))))).
-           { eapply inftapp_depth_conts_tail_rec_le; eauto; lia. }
-           lia.
-           eapply apply_conts_inftapp_judge_size in Happly; lia. }
-         destruct Jg as [Jg | Jg]; eauto.
-         right. intro Hcontra.
-         dependent destruction Hcontra.
-         dependent destruction Hcontra.
-         eapply apply_conts_det in Happly; eauto.
-         subst. eauto.
-      -- assert (Jg: (work_inftapp A1 A2 (conts_inftappunion A0 A2 cs) ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/
-                   ~ (work_inftapp A1 A2 (conts_inftappunion A0 A2 cs) ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
-         { eapply IHnt; eauto; simpl in *; try lia.
-           assert (inftapp_depth_conts_tail_rec cs
-                    (inftapp_depth A0 * S (S (inftapp_depth A2)) + 1 +
-                      (inftapp_depth A1 + (inftapp_depth A1 + inftapp_depth A2 * inftapp_depth A1)))
-                  < inftapp_depth_conts_tail_rec cs
-                    (S (inftapp_depth A1 + inftapp_depth A0 +
-                       S (inftapp_depth A1 + inftapp_depth A0 +
-                         inftapp_depth A2 * S (inftapp_depth A1 + inftapp_depth A0))))).
-           { eapply inftapp_depth_conts_tail_rec_lt; eauto; try lia. }
-           lia. }
-         destruct Jg as [Jg | Jg]; eauto.
-         right. intro Hcontra.
-         dependent destruction Hcontra.
-         apply Jg; auto.
-      -- assert (Jg1: (work_inftapp A1 A2 cs ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ ~ (work_inftapp A1 A2 cs ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
-         { eapply IHnt; eauto; simpl in *; try lia.
-           assert (inftapp_depth_conts_tail_rec cs
-                    (inftapp_depth A1 +
-                      (inftapp_depth A1 + inftapp_depth A2 * inftapp_depth A1))
-                  < inftapp_depth_conts_tail_rec cs
-                    (S (inftapp_depth A1 + inftapp_depth A0 +
+        assert (Jg:  (work_infabs A2 (contd_unioninfabs A1 B1 cd) ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/
+                   ~ (work_infabs A2 (contd_unioninfabs A1 B1 cd) ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
+        { eapply IHmaj; eauto; simpl in *; try lia. constructor; auto. }
+        destruct Jg as [Jg | Jg]; eauto.
+        right. intro Hcontra. 
+        dependent destruction Hcontra. eauto.
+      * dependent destruction H3. simpl in *.
+        dependent destruction H; try solve [right; intro Hcontra; dependent destruction Hcontra].
+        assert (Jg:  (work_applys cs B ⫤ᵃ work_check e A ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/
+                  ~ (work_applys cs B ⫤ᵃ work_check e A ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
+        { eapply IHmj; eauto; simpl in *; try lia. constructor; auto. }
+        destruct Jg as [Jg | Jg]; eauto.
+        right. intro Hcontra.
+        dependent destruction Hcontra. eauto.
+      * dependent destruction H3. simpl in *. dependent destruction H;
+          try solve [right; intro Hcontra; dependent destruction Hcontra].
+        -- destruct (apply_conts_dec cs typ_bot) as [[w Happly] | Happly];
+           try solve [right; intro Hcontra; dependent destruction Hcontra; dependent destruction Hcontra;
+             eapply Happly; eauto].
+           assert (Jg: a_wl_red (aworklist_cons_work Γ w) \/
+                     ~ a_wl_red (aworklist_cons_work Γ w)).
+           { eapply a_wf_work_apply_conts in Happly as Hwf'; eauto.
+             edestruct exp_size_work_total as [n' He'] in Hwf'; eauto.
+             eapply IHmtj; eauto; simpl in *; try lia.
+             eapply a_wf_wl_apply_conts; eauto.
+             eapply apply_conts_exp_size with (n := n0) in Happly; eauto. lia.
+             eapply apply_conts_judge_size in Happly; lia.
+             replace (inftapp_depth A2 * 0) with 0 in Ht by lia.
+             eapply apply_conts_inftapp_depth_bot in Happly; lia.
+             eapply apply_conts_inftapp_judge_size in Happly; lia. }
+           destruct Jg as [Jg | Jg]; eauto.
+           right. intro Hcontra.
+           dependent destruction Hcontra.
+           dependent destruction Hcontra.
+           eapply apply_conts_det in Happly; eauto.
+           subst. eauto.
+        -- destruct (apply_conts_dec cs (open_typ_wrt_typ A A2)) as [[w Happly] | Happly];
+           try solve [right; intro Hcontra; dependent destruction Hcontra; dependent destruction Hcontra;
+             eapply Happly; eauto].
+           assert (Jg: (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ ~ (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
+           { eapply a_wf_work_apply_conts in Happly as Hwf'; eauto.
+             edestruct exp_size_work_total as [n' He'] in Hwf'; eauto.
+             eapply IHmtj; eauto; simpl in *; try lia.
+             eapply a_wf_wl_apply_conts; eauto.
+             constructor; auto. constructor; auto.
+             eapply a_wf_typ_all_open; eauto.
+             eapply apply_conts_exp_size with (n := n0) in Happly; eauto. lia.
+             eapply apply_conts_judge_size in Happly; lia.
+             eapply apply_conts_inftapp_depth in Happly.
+             assert (Hfact: inftapp_depth (open_typ_wrt_typ A A2) < (1 + inftapp_depth A) * (1 + inftapp_depth A2))
+               by eapply inftapp_depth_open_typ_wrt_typ.
+             assert (Hfact': inftapp_depth_work w <= inftapp_depth_conts_tail_rec cs ((1 + inftapp_depth A) * (1 + inftapp_depth A2))).
+             { eapply le_trans; eauto. eapply inftapp_depth_conts_tail_rec_le. lia. }
+             assert (Hfact'': inftapp_depth_conts_tail_rec cs ((1 + inftapp_depth A) * (1 + inftapp_depth A2)) <= inftapp_depth_conts_tail_rec cs (S (inftapp_depth A + S (inftapp_depth A + inftapp_depth A2 * S (inftapp_depth A))))).
+             { eapply inftapp_depth_conts_tail_rec_le; eauto; lia. }
+             lia.
+             eapply apply_conts_inftapp_judge_size in Happly; lia.
+             eapply a_wf_typ_all_open; eauto. }
+           destruct Jg as [Jg | Jg]; eauto.
+           right. intro Hcontra.
+           dependent destruction Hcontra.
+           dependent destruction Hcontra.
+           eapply apply_conts_det in Happly; eauto.
+           subst. eauto.
+        -- assert (Jg: (work_inftapp A1 A2 (conts_inftappunion A0 A2 cs) ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/
+                     ~ (work_inftapp A1 A2 (conts_inftappunion A0 A2 cs) ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
+           { eapply IHmt; eauto; simpl in *; try lia.
+             assert (inftapp_depth_conts_tail_rec cs
+                       (inftapp_depth A0 * S (S (inftapp_depth A2)) + 1 +
+                       (inftapp_depth A1 + (inftapp_depth A1 + inftapp_depth A2 * inftapp_depth A1)))
+                     < inftapp_depth_conts_tail_rec cs
+                       (S (inftapp_depth A1 + inftapp_depth A0 +
                         S (inftapp_depth A1 + inftapp_depth A0 +
-                           inftapp_depth A2 * S (inftapp_depth A1 + inftapp_depth A0))))).
-           { eapply inftapp_depth_conts_tail_rec_lt; eauto; try lia. }
-           lia. }
-         assert (Jg2: (work_inftapp A0 A2 cs ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ ~ (work_inftapp A0 A2 cs ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
-         { eapply IHnt; eauto; simpl in *; try lia.
-           assert (inftapp_depth_conts_tail_rec cs
-                    (inftapp_depth A0 +
-                      (inftapp_depth A0 + inftapp_depth A2 * inftapp_depth A0))
-                  < inftapp_depth_conts_tail_rec cs
-                    (S (inftapp_depth A1 + inftapp_depth A0 +
-                        S (inftapp_depth A1 + inftapp_depth A0 +
-                           inftapp_depth A2 * S (inftapp_depth A1 + inftapp_depth A0))))).
-           { eapply inftapp_depth_conts_tail_rec_lt; eauto; try lia. }
-           lia. }
-         destruct Jg1 as [Jg1 | Jg1]; eauto.
-         destruct Jg2 as [Jg2 | Jg2]; eauto.
-         right. intro Hcontra.
-         dependent destruction Hcontra.
-         apply Jg1; auto. apply Jg2; auto.
-    * simpl in *.
-      assert (Jg:  (work_inftapp A2 B (conts_unioninftapp A1 cs) ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ 
-                 ~ (work_inftapp A2 B (conts_unioninftapp A1 cs) ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
-      { eapply IHntj; eauto; simpl; try lia.
-        assert (inftapp_depth_conts_tail_rec cs
-                 (S (inftapp_depth A1 + (inftapp_depth A2 + (inftapp_depth A2 + inftapp_depth B * inftapp_depth A2))))
-            <= inftapp_depth_conts_tail_rec cs
-                 (inftapp_depth A1 + inftapp_depth A2 * S (S (inftapp_depth B)) + 1)).
-        { eapply inftapp_depth_conts_tail_rec_le; eauto; try lia. }
-        lia. }
-      destruct Jg as [Jg | Jg]; eauto.
-      right. intro Hcontra.
-      dependent destruction Hcontra.
-      apply Jg; auto.
-    * simpl in *.
-      destruct (apply_conts_dec cs (typ_union A1 A2)) as [[w Happly] | Happly];
-      try solve [right; intro Hcontra; dependent destruction Hcontra; dependent destruction Hcontra;
-        eapply Happly; eauto].
-      assert (Jg: (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ ~ (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
-      { eapply IHntj; eauto; simpl in *; try lia.
-        eapply a_wf_wl_apply_conts; eauto.
-        eapply apply_conts_exp_size with (Γ := Γ) in Happly; lia.
-        eapply apply_conts_judge_size in Happly; lia.
-        eapply apply_conts_inftapp_depth in Happly.
-        assert (inftapp_depth_conts_tail_rec cs (inftapp_depth (typ_union A1 A2))
-             <= inftapp_depth_conts_tail_rec cs (S (inftapp_depth A1 + inftapp_depth A2))). 
-        { eapply inftapp_depth_conts_tail_rec_le; eauto; lia. }
-        lia.
-        eapply apply_conts_inftapp_judge_size in Happly; lia. }
-      destruct Jg as [Jg | Jg]; eauto.
-      right. intro Hcontra.
-      dependent destruction Hcontra.
-      dependent destruction Hcontra.
-      eapply apply_conts_det in Happly; eauto.
-      subst. eauto.
-    * simpl in *. dependent destruction H;
-        try solve [right; intro Hcontra; dependent destruction Hcontra];
-      dependent destruction H1;
-        try solve [right; intro Hcontra; dependent destruction Hcontra].
-      destruct (apply_contd_dec cd ( (typ_intersection A1 A2) )   ( (typ_union B1 B2) ) ) as [[w Happly] | Happly];
-      try solve [right; intro Hcontra; dependent destruction Hcontra; dependent destruction Hcontra;
-        eapply Happly; eauto].
-      assert (Jg: (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ ~ (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
-      { eapply IHmaj; eauto; simpl in *; try lia.
-        eapply a_wf_wl_apply_contd; eauto. constructor; auto.
-        eapply apply_contd_exp_size with (Γ := Γ) in Happly; lia.
-        eapply apply_contd_judge_size in Happly; lia.
-        eapply apply_contd_inftapp_depth in Happly; lia.
-        eapply apply_contd_inftapp_judge_size in Happly; lia.
-        eapply apply_contd_infabs_depth in Happly; lia.
-        eapply apply_contd_infabs_judge_size in Happly; lia. }
-      destruct Jg as [Jg | Jg]; eauto.
-      right. intro Hcontra.
-      dependent destruction Hcontra.
-      dependent destruction Hcontra.
-      eapply apply_contd_det in Happly; eauto.
-      subst. eauto.
-    * exfalso. apply H1. eauto.
-    * simpl in *. edestruct (apply_conts_dec cs A) as [[w Happly] | Happly].
-      -- eapply apply_conts_exp_size with (Γ := Γ) in Happly as Hes.
-         eapply apply_conts_judge_size in Happly as Hjs.
-         assert (JgApply: (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ ~ (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
-         { eapply IHmj; simpl; eauto; try lia.
-           eapply a_wf_wl_apply_conts; eauto. }
-         destruct JgApply as [JgApply | JgApply]; eauto.
-         right. intro Hcontra. dependent destruction Hcontra.
-         eapply apply_conts_det in Happly; eauto. subst. eapply JgApply; eauto.
-      -- right; intro Hcontra; dependent destruction Hcontra;
-         eapply Happly; eauto.
-    * simpl in *. edestruct (apply_contd_dec cd A B) as [[w Happly] | Happly].
-      -- eapply apply_contd_exp_size with (Γ := Γ) in Happly as Hes.
-         eapply apply_contd_judge_size in Happly as Hjs.
-         assert (JgApply: (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ ~ (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
-         { eapply IHmj; simpl; eauto; try lia.
-           eapply a_wf_wl_apply_contd; eauto. }
-         destruct JgApply as [JgApply | JgApply]; eauto.
-         right. intro Hcontra. dependent destruction Hcontra.
-         eapply apply_contd_det in Happly; eauto. subst. eapply JgApply; eauto.
-      -- right; intro Hcontra; dependent destruction Hcontra;
-         eapply Happly; eauto.
-  - simpl in *.
+                          inftapp_depth A2 * S (inftapp_depth A1 + inftapp_depth A0))))).
+             { eapply inftapp_depth_conts_tail_rec_lt; eauto; try lia. }
+             lia. }
+           destruct Jg as [Jg | Jg]; eauto.
+           right. intro Hcontra.
+           dependent destruction Hcontra.
+           apply Jg; auto.
+        -- assert (Jg1: (work_inftapp A1 A2 cs ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ ~ (work_inftapp A1 A2 cs ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
+           { eapply IHmt; eauto; simpl in *; try lia.
+             assert (inftapp_depth_conts_tail_rec cs
+                       (inftapp_depth A1 +
+                        (inftapp_depth A1 + inftapp_depth A2 * inftapp_depth A1))
+                     < inftapp_depth_conts_tail_rec cs
+                       (S (inftapp_depth A1 + inftapp_depth A0 +
+                         S (inftapp_depth A1 + inftapp_depth A0 +
+                          inftapp_depth A2 * S (inftapp_depth A1 + inftapp_depth A0))))).
+             { eapply inftapp_depth_conts_tail_rec_lt; eauto; try lia. }
+             lia. }
+           assert (Jg2: (work_inftapp A0 A2 cs ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ ~ (work_inftapp A0 A2 cs ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
+           { eapply IHmt; eauto; simpl in *; try lia.
+             assert (inftapp_depth_conts_tail_rec cs
+                      (inftapp_depth A0 +
+                        (inftapp_depth A0 + inftapp_depth A2 * inftapp_depth A0))
+                     < inftapp_depth_conts_tail_rec cs
+                       (S (inftapp_depth A1 + inftapp_depth A0 +
+                          S (inftapp_depth A1 + inftapp_depth A0 +
+                            inftapp_depth A2 * S (inftapp_depth A1 + inftapp_depth A0))))).
+             { eapply inftapp_depth_conts_tail_rec_lt; eauto; try lia. }
+             lia. }
+           destruct Jg1 as [Jg1 | Jg1]; eauto.
+           destruct Jg2 as [Jg2 | Jg2]; eauto.
+           right. intro Hcontra.
+           dependent destruction Hcontra.
+           apply Jg1; auto. apply Jg2; auto.
+      * dependent destruction H4. simpl in *.
+        assert (Jg:  (work_inftapp A2 B (conts_unioninftapp A1 cs) ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ 
+                   ~ (work_inftapp A2 B (conts_unioninftapp A1 cs) ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
+        { eapply IHmtj; eauto; simpl; try lia.
+          assert (inftapp_depth_conts_tail_rec cs
+                  (S (inftapp_depth A1 + (inftapp_depth A2 + (inftapp_depth A2 + inftapp_depth B * inftapp_depth A2))))
+                 <= inftapp_depth_conts_tail_rec cs
+                   (inftapp_depth A1 + inftapp_depth A2 * S (S (inftapp_depth B)) + 1)).
+          { eapply inftapp_depth_conts_tail_rec_le; eauto; try lia. }
+          lia. }
+        destruct Jg as [Jg | Jg]; eauto.
+        right. intro Hcontra.
+        dependent destruction Hcontra.
+        apply Jg; auto.
+      * dependent destruction H3. simpl in *.
+        destruct (apply_conts_dec cs (typ_union A1 A2)) as [[w Happly] | Happly];
+        try solve [right; intro Hcontra; dependent destruction Hcontra; dependent destruction Hcontra;
+          eapply Happly; eauto].
+        assert (Jg: (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ ~ (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
+        { eapply a_wf_work_apply_conts in Happly as Hwf'; eauto.
+          edestruct exp_size_work_total as [n' He'] in Hwf'; eauto.
+          eapply IHmtj; eauto; simpl in *; try lia.
+          eapply a_wf_wl_apply_conts; eauto.
+          eapply apply_conts_exp_size with (n := n0) in Happly; eauto; lia.
+          eapply apply_conts_judge_size in Happly; lia.
+          eapply apply_conts_inftapp_depth in Happly.
+          assert (inftapp_depth_conts_tail_rec cs (inftapp_depth (typ_union A1 A2))
+                 <= inftapp_depth_conts_tail_rec cs (S (inftapp_depth A1 + inftapp_depth A2))). 
+          { eapply inftapp_depth_conts_tail_rec_le; eauto; lia. }
+          lia.
+          eapply apply_conts_inftapp_judge_size in Happly; lia. }
+        destruct Jg as [Jg | Jg]; eauto.
+        right. intro Hcontra.
+        dependent destruction Hcontra.
+        dependent destruction Hcontra.
+        eapply apply_conts_det in Happly; eauto.
+        subst. eauto.
+      * dependent destruction H3. simpl in *. dependent destruction H;
+          try solve [right; intro Hcontra; dependent destruction Hcontra];
+        dependent destruction H1;
+          try solve [right; intro Hcontra; dependent destruction Hcontra].
+        destruct (apply_contd_dec cd ( (typ_intersection A1 A2) )   ( (typ_union B1 B2) ) ) as [[w Happly] | Happly];
+        try solve [right; intro Hcontra; dependent destruction Hcontra; dependent destruction Hcontra;
+          eapply Happly; eauto].
+        assert (Jg: (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ ~ (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
+        { eapply a_wf_wl_apply_contd with (Γ := Γ) in Happly as Hwf'; eauto.
+          2: { constructor; auto. }
+          eapply a_wf_work_apply_contd in Happly as Hwf''; eauto.
+          edestruct exp_size_work_total with (Σ := ⌊ Γ ⌋ᵃ) (w := w) as [n' He'] in Hwf''; eauto.
+          eapply IHmaj; eauto; simpl in *; try lia.
+          eapply apply_contd_exp_size with (n := n') in Happly; eauto; lia.
+          eapply apply_contd_judge_size in Happly; lia.
+          eapply apply_contd_inftapp_depth in Happly; lia.
+          eapply apply_contd_inftapp_judge_size in Happly; lia.
+          eapply apply_contd_infabs_depth in Happly; lia.
+          eapply apply_contd_infabs_judge_size in Happly; lia. }
+        destruct Jg as [Jg | Jg]; eauto.
+        right. intro Hcontra.
+        dependent destruction Hcontra.
+        dependent destruction Hcontra.
+        eapply apply_contd_det in Happly; eauto.
+        subst. eauto.
+      * exfalso. apply H1. eauto.
+      * dependent destruction H2. simpl in *.
+        edestruct (apply_conts_dec cs A) as [[w Happly] | Happly].
+        -- eapply a_wf_wl_apply_conts in Happly as Hwf'; eauto.
+           eapply a_wf_work_apply_conts in Happly as Hwf''; eauto.
+           edestruct exp_size_work_total as [n' He'] in Hwf''; eauto.
+           assert (JgApply: (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ ~ (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
+           { eapply IHmj; eauto; simpl in *; try lia.
+             eapply apply_conts_exp_size with (n := n0) in Happly; eauto; lia.
+             eapply apply_conts_judge_size in Happly; lia. }
+           destruct JgApply as [JgApply | JgApply]; eauto.
+           right. intro Hcontra. dependent destruction Hcontra.
+           eapply apply_conts_det in Happly; eauto. subst. eapply JgApply; eauto.
+        -- right; intro Hcontra; dependent destruction Hcontra;
+           eapply Happly; eauto.
+      * dependent destruction H3. simpl in *.
+        simpl in *. edestruct (apply_contd_dec cd A B) as [[w Happly] | Happly].
+        -- eapply a_wf_wl_apply_contd with (Γ := Γ) in Happly as Hwf'; eauto.
+           eapply a_wf_work_apply_contd in Happly as Hwf''; eauto.
+           edestruct exp_size_work_total as [n' He'] in Hwf''; eauto.
+           assert (JgApply: (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ ~ (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
+           { eapply IHmj; eauto; simpl in *; try lia.
+             eapply apply_contd_exp_size with (n := n') in Happly; eauto; lia.
+             eapply apply_contd_judge_size in Happly; lia. }
+           destruct JgApply as [JgApply | JgApply]; eauto.
+           right. intro Hcontra. dependent destruction Hcontra.
+           eapply apply_contd_det in Happly; eauto. subst. eapply JgApply; eauto.
+        -- right; intro Hcontra; dependent destruction Hcontra;
+           eapply Happly; eauto.
+  - dependent destruction He. simpl in *.
     assert (Jg: a_wl_red Γ \/ ~ a_wl_red Γ).
     { eapply IHmw; eauto. lia. }
     destruct Jg as [Jg | Jg]; auto.
     right. intro Hcontra.
     dependent destruction Hcontra.
     apply Jg; auto.
-  - simpl in *.
+  - dependent destruction He. simpl in *.
     assert (Jg: a_wl_red Γ \/ ~ a_wl_red Γ).
     { eapply IHmw; eauto. lia. }
     destruct Jg as [Jg | Jg]; auto.
     right. intro Hcontra.
     dependent destruction Hcontra.
     apply Jg; auto.
-  - simpl in *.
+  - dependent destruction He. simpl in *.
     assert (HwA: weight A >= 1) by apply weight_gt_0.
     assert (HwB: weight B >= 1) by apply weight_gt_0.
     assert (Jg: Γ ⟶ᵃʷ⁎⋅ \/ ~ Γ ⟶ᵃʷ⁎⋅).
@@ -1849,7 +1920,7 @@ Proof.
               (work_sub (A1 ᵗ^ₜ X) B ⫤ᵃ X ~ᵃ ⬒ ;ᵃ Γ) ⟶ᵃʷ⁎⋅ \/
             ~ (work_sub (A1 ᵗ^ₜ X) B ⫤ᵃ X ~ᵃ ⬒ ;ᵃ Γ) ⟶ᵃʷ⁎⋅).
     { intros A1 X L Heq HneqAll HneqInter HneqUnion Hnin. subst.
-      eapply IHnm; eauto; simpl in *; try lia.
+      eapply IHms; eauto; simpl in *; try lia.
       apply a_wf_wl__conswork_sub; auto.
       apply a_wf_typ_all_open; auto.
       apply a_wf_typ_weaken_cons; auto. simpl. auto.
@@ -1913,7 +1984,7 @@ Proof.
       - admit.
       - admit.
     } *)
-    dependent destruction H.
+    dependent destruction H1. dependent destruction H.
     * dependent destruction H0;
         try solve [right; intro Hcontra;
           dependent destruction Hcontra];
@@ -2074,7 +2145,7 @@ Proof.
             { eapply a_ws1__work_stay. eapply worklist_subst_fresh_etvar_total with (Γ1 := Γ1) (Γ2 := Γ2); eauto. }
             assert (JgArr1: (work_sub ` X2 (subst_typ_in_typ (typ_arrow ` X1 ` X2) X A2) ⫤ᵃ work_sub (subst_typ_in_typ (typ_arrow ` X1 ` X2) X A1) ` X1 ⫤ᵃ subst_typ_in_aworklist (typ_arrow ` X1 ` X2) X Γ2 ⧺ X1 ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1) ⟶ᵃʷ⁎⋅ \/
                           ~ (work_sub ` X2 (subst_typ_in_typ (typ_arrow ` X1 ` X2) X A2) ⫤ᵃ work_sub (subst_typ_in_typ (typ_arrow ` X1 ` X2) X A1) ` X1 ⫤ᵃ subst_typ_in_aworklist (typ_arrow ` X1 ` X2) X Γ2 ⧺ X1 ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1) ⟶ᵃʷ⁎⋅).
-            { eapply IHnm; simpl in *; eauto.
+            { eapply IHms; simpl in *; eauto.
               admit. admit. admit. admit. admit. admit. admit. admit.
             }          
             admit. (* TODO: renaming stuff *)
