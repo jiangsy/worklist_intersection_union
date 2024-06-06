@@ -1,0 +1,141 @@
+-- function f1(x: number & Boolean): number { return (x + 1) };
+
+let plus = \x -> \y -> 1
+    in 
+        let f :: (Int /\ Bool) -> Int = \x0 -> plus x0 1 in f
+
+-- Accepted!
+--    ⋅ ⊩ let plus = λx. λy. 1 in let f :: Int ∩ Bool → Int = λx0. (plus x0) 1 in f ⇒a End
+-- -->{ Rule: ⇒Let            }
+--    ⋅ ⊩ (λplus. (let f :: Int ∩ Bool → Int = λx0. (plus x0) 1 in f)) (fix λplus. λx. λy. 1) ⇒a End
+-- -->{ Rule: ⇒App            }
+--    ⋅ ⊩ λplus. (let f :: Int ∩ Bool → Int = λx0. (plus x0) 1 in f) ⇒b b ▹c,a0 c → a0 ⊙ fix λplus. λx. λy. 1 ➤a End
+-- -->{ Rule: ⇒→Mono          }
+--    ⋅, b0 : ⬒, c0 : ⬒ ⊩ b0 → c0 ▹c,a0 c → a0 ⊙ fix λplus. λx. λy. 1 ➤a End, y0 : b0 ⊩ let f :: Int ∩ Bool → Int = λx0. (y0 x0) 1 in f ⇐ c0
+-- -->{ Rule: ⇐LetA           }
+--    ⋅, b0 : ⬒, c0 : ⬒ ⊩ b0 → c0 ▹c,a0 c → a0 ⊙ fix λplus. λx. λy. 1 ➤a End, y0 : b0 ⊩ (λf. f :: (Int ∩ Bool → Int) → c0) (fix λf. λx0. (y0 x0) 1 :: Int ∩ Bool → Int) ⇐ c0
+-- -->{ Rule: ⇐Sub            }
+--    ⋅, b0 : ⬒, c0 : ⬒ ⊩ b0 → c0 ▹c,a0 c → a0 ⊙ fix λplus. λx. λy. 1 ➤a End, y0 : b0 ⊩ (λf. f :: (Int ∩ Bool → Int) → c0) (fix λf. λx0. (y0 x0) 1 :: Int ∩ Bool → Int) ⇒b b ≤ c0
+-- -->{ Rule: ⇒App            }
+--    ⋅, b0 : ⬒, c0 : ⬒ ⊩ b0 → c0 ▹c,a0 c → a0 ⊙ fix λplus. λx. λy. 1 ➤a End, y0 : b0 ⊩ λf. f :: (Int ∩ Bool → Int) → c0 ⇒a1 a1 ▹b1,c1 b1 → c1 ⊙ fix λf. λx0. (y0 x0) 1 :: Int ∩ Bool → Int ➤b b ≤ c0
+-- -->{ Rule: ⇒Anno           }
+--    ⋅, b0 : ⬒, c0 : ⬒ ⊩ b0 → c0 ▹c,a0 c → a0 ⊙ fix λplus. λx. λy. 1 ➤a End, y0 : b0 ⊩ (Int ∩ Bool → Int) → c0 ▹b1,c1 b1 → c1 ⊙ fix λf. λx0. (y0 x0) 1 :: Int ∩ Bool → Int ➤b b ≤ c0 ⊩ λf. f ⇐ (Int ∩ Bool → Int) → c0
+-- -->{ Rule: ⇐λ              }
+--    ⋅, b0 : ⬒, c0 : ⬒ ⊩ b0 → c0 ▹c,a0 c → a0 ⊙ fix λplus. λx. λy. 1 ➤a End, y0 : b0 ⊩ (Int ∩ Bool → Int) → c0 ▹b1,c1 b1 → c1 ⊙ fix λf. λx0. (y0 x0) 1 :: Int ∩ Bool → Int ➤b b ≤ c0, x1 : Int ∩ Bool → Int ⊩ x1 ⇐ c0
+-- -->{ Rule: ⇐Sub            }
+--    ⋅, b0 : ⬒, c0 : ⬒ ⊩ b0 → c0 ▹c,a0 c → a0 ⊙ fix λplus. λx. λy. 1 ➤a End, y0 : b0 ⊩ (Int ∩ Bool → Int) → c0 ▹b1,c1 b1 → c1 ⊙ fix λf. λx0. (y0 x0) 1 :: Int ∩ Bool → Int ➤b b ≤ c0, x1 : Int ∩ Bool → Int ⊩ x1 ⇒a1 a1 ≤ c0
+-- -->{ Rule: ⇒Var            }
+--    ⋅, b0 : ⬒, c0 : ⬒ ⊩ b0 → c0 ▹c,a0 c → a0 ⊙ fix λplus. λx. λy. 1 ➤a End, y0 : b0 ⊩ (Int ∩ Bool → Int) → c0 ▹b1,c1 b1 → c1 ⊙ fix λf. λx0. (y0 x0) 1 :: Int ∩ Bool → Int ➤b b ≤ c0, x1 : Int ∩ Bool → Int ⊩ Int ∩ Bool → Int ≤ c0
+-- -->{ Rule: ≤SplitR         }
+--    ⋅, b0 : ⬒, a2 : ⬒, a1 : ⬒ ⊩ b0 → a1 → a2 ▹c,a0 c → a0 ⊙ fix λplus. λx. λy. 1 ➤a End, y0 : b0 ⊩ (Int ∩ Bool → Int) → a1 → a2 ▹b1,c1 b1 → c1 ⊙ fix λf. λx0. (y0 x0) 1 :: Int ∩ Bool → Int ➤b b ≤ a1 → a2, x1 : Int ∩ Bool → Int ⊩ a1 → a2 ≤ Int ∩ Bool → Int
+-- -->{ Rule: ≤→              }
+--    ⋅, b0 : ⬒, a2 : ⬒, a1 : ⬒ ⊩ b0 → a1 → a2 ▹c,a0 c → a0 ⊙ fix λplus. λx. λy. 1 ➤a End, y0 : b0 ⊩ (Int ∩ Bool → Int) → a1 → a2 ▹b1,c1 b1 → c1 ⊙ fix λf. λx0. (y0 x0) 1 :: Int ∩ Bool → Int ➤b b ≤ a1 → a2, x1 : Int ∩ Bool → Int ⊩ Int ∩ Bool ≤ a1 ⊩ a2 ≤ Int
+-- -->{ Rule: ≤MonoL          }
+--    ⋅, b0 : ⬒, a1 : ⬒ ⊩ b0 → a1 → Int ▹c,a0 c → a0 ⊙ fix λplus. λx. λy. 1 ➤a End, y0 : b0 ⊩ (Int ∩ Bool → Int) → a1 → Int ▹b1,c1 b1 → c1 ⊙ fix λf. λx0. (y0 x0) 1 :: Int ∩ Bool → Int ➤b b ≤ a1 → Int, x1 : Int ∩ Bool → Int ⊩ Int ∩ Bool ≤ a1
+-- -->{ Rule: ≤∩L1            }
+--    ⋅, b0 : ⬒, a1 : ⬒ ⊩ b0 → a1 → Int ▹c,a0 c → a0 ⊙ fix λplus. λx. λy. 1 ➤a End, y0 : b0 ⊩ (Int ∩ Bool → Int) → a1 → Int ▹b1,c1 b1 → c1 ⊙ fix λf. λx0. (y0 x0) 1 :: Int ∩ Bool → Int ➤b b ≤ a1 → Int, x1 : Int ∩ Bool → Int ⊩ Int ≤ a1
+-- -->{ Rule: ≤MonoR          }
+--    ⋅, b0 : ⬒ ⊩ b0 → Int → Int ▹c,a0 c → a0 ⊙ fix λplus. λx. λy. 1 ➤a End, y0 : b0 ⊩ (Int ∩ Bool → Int) → Int → Int ▹b1,c1 b1 → c1 ⊙ fix λf. λx0. (y0 x0) 1 :: Int ∩ Bool → Int ➤b b ≤ Int → Int, x1 : Int ∩ Bool → Int
+-- -->{ Rule: GCVar           }
+--    ⋅, b0 : ⬒ ⊩ b0 → Int → Int ▹c,a0 c → a0 ⊙ fix λplus. λx. λy. 1 ➤a End, y0 : b0 ⊩ (Int ∩ Bool → Int) → Int → Int ▹b1,c1 b1 → c1 ⊙ fix λf. λx0. (y0 x0) 1 :: Int ∩ Bool → Int ➤b b ≤ Int → Int
+-- -->{ Rule: ▹→              }
+--    ⋅, b0 : ⬒ ⊩ b0 → Int → Int ▹c,a0 c → a0 ⊙ fix λplus. λx. λy. 1 ➤a End, y0 : b0 ⊩ Int ∩ Bool → Int → Int → Int ⊙ fix λf. λx0. (y0 x0) 1 :: Int ∩ Bool → Int ➤b b ≤ Int → Int
+-- -->{ Rule: ⊙➤              }
+--    ⋅, b0 : ⬒ ⊩ b0 → Int → Int ▹c,a0 c → a0 ⊙ fix λplus. λx. λy. 1 ➤a End, y0 : b0 ⊩ Int → Int ≤ Int → Int ⊩ fix λf. λx0. (y0 x0) 1 :: Int ∩ Bool → Int ⇐ Int ∩ Bool → Int
+-- -->{ Rule: ⇐Sub            }
+--    ⋅, b0 : ⬒ ⊩ b0 → Int → Int ▹c,a0 c → a0 ⊙ fix λplus. λx. λy. 1 ➤a End, y0 : b0 ⊩ Int → Int ≤ Int → Int ⊩ fix λf. λx0. (y0 x0) 1 :: Int ∩ Bool → Int ⇒b b ≤ Int ∩ Bool → Int
+-- -->{ Rule: ⇒Anno           }
+--    ⋅, b0 : ⬒ ⊩ b0 → Int → Int ▹c,a0 c → a0 ⊙ fix λplus. λx. λy. 1 ➤a End, y0 : b0 ⊩ Int → Int ≤ Int → Int ⊩ Int ∩ Bool → Int ≤ Int ∩ Bool → Int ⊩ fix λf. λx0. (y0 x0) 1 ⇐ Int ∩ Bool → Int
+-- -->{ Rule: ⇐Fix            }
+--    ⋅, b0 : ⬒ ⊩ b0 → Int → Int ▹c,a0 c → a0 ⊙ fix λplus. λx. λy. 1 ➤a End, y0 : b0 ⊩ Int → Int ≤ Int → Int ⊩ Int ∩ Bool → Int ≤ Int ∩ Bool → Int ⊩ λf. λx0. (y0 x0) 1 ⇐ (Int ∩ Bool → Int) → Int ∩ Bool → Int
+-- -->{ Rule: ⇐λ              }
+--    ⋅, b0 : ⬒ ⊩ b0 → Int → Int ▹c,a0 c → a0 ⊙ fix λplus. λx. λy. 1 ➤a End, y0 : b0 ⊩ Int → Int ≤ Int → Int ⊩ Int ∩ Bool → Int ≤ Int ∩ Bool → Int, x1 : Int ∩ Bool → Int ⊩ λx0. (y0 x0) 1 ⇐ Int ∩ Bool → Int
+-- -->{ Rule: ⇐λ              }
+--    ⋅, b0 : ⬒ ⊩ b0 → Int → Int ▹c,a0 c → a0 ⊙ fix λplus. λx. λy. 1 ➤a End, y0 : b0 ⊩ Int → Int ≤ Int → Int ⊩ Int ∩ Bool → Int ≤ Int ∩ Bool → Int, x1 : Int ∩ Bool → Int, y1 : Int ∩ Bool ⊩ (y0 y1) 1 ⇐ Int
+-- -->{ Rule: ⇐Sub            }
+--    ⋅, b0 : ⬒ ⊩ b0 → Int → Int ▹c,a0 c → a0 ⊙ fix λplus. λx. λy. 1 ➤a End, y0 : b0 ⊩ Int → Int ≤ Int → Int ⊩ Int ∩ Bool → Int ≤ Int ∩ Bool → Int, x1 : Int ∩ Bool → Int, y1 : Int ∩ Bool ⊩ (y0 y1) 1 ⇒b b ≤ Int
+-- -->{ Rule: ⇒App            }
+--    ⋅, b0 : ⬒ ⊩ b0 → Int → Int ▹c,a0 c → a0 ⊙ fix λplus. λx. λy. 1 ➤a End, y0 : b0 ⊩ Int → Int ≤ Int → Int ⊩ Int ∩ Bool → Int ≤ Int ∩ Bool → Int, x1 : Int ∩ Bool → Int, y1 : Int ∩ Bool ⊩ y0 y1 ⇒c0 c0 ▹a1,b1 a1 → b1 ⊙ 1 ➤b b ≤ Int
+-- -->{ Rule: ⇒App            }
+--    ⋅, b0 : ⬒ ⊩ b0 → Int → Int ▹c,a0 c → a0 ⊙ fix λplus. λx. λy. 1 ➤a End, y0 : b0 ⊩ Int → Int ≤ Int → Int ⊩ Int ∩ Bool → Int ≤ Int ∩ Bool → Int, x1 : Int ∩ Bool → Int, y1 : Int ∩ Bool ⊩ y0 ⇒c1 c1 ▹a2,b2 a2 → b2 ⊙ y1 ➤c0 c0 ▹a1,b1 a1 → b1 ⊙ 1 ➤b b ≤ Int
+-- -->{ Rule: ⇒Var            }
+--    ⋅, b0 : ⬒ ⊩ b0 → Int → Int ▹c,a0 c → a0 ⊙ fix λplus. λx. λy. 1 ➤a End, y0 : b0 ⊩ Int → Int ≤ Int → Int ⊩ Int ∩ Bool → Int ≤ Int ∩ Bool → Int, x1 : Int ∩ Bool → Int, y1 : Int ∩ Bool ⊩ b0 ▹a2,b2 a2 → b2 ⊙ y1 ➤c0 c0 ▹a1,b1 a1 → b1 ⊙ 1 ➤b b ≤ Int
+-- -->{ Rule: ▹α              }
+--    ⋅, c2 : ⬒, c1 : ⬒ ⊩ (c1 → c2) → Int → Int ▹c,a0 c → a0 ⊙ fix λplus. λx. λy. 1 ➤a End, y0 : c1 → c2 ⊩ Int → Int ≤ Int → Int ⊩ Int ∩ Bool → Int ≤ Int ∩ Bool → Int, x1 : Int ∩ Bool → Int, y1 : Int ∩ Bool ⊩ c1 → c2 ▹a2,b2 a2 → b2 ⊙ y1 ➤c0 c0 ▹a1,b1 a1 → b1 ⊙ 1 ➤b b ≤ Int
+-- -->{ Rule: ▹→              }
+--    ⋅, c2 : ⬒, c1 : ⬒ ⊩ (c1 → c2) → Int → Int ▹c,a0 c → a0 ⊙ fix λplus. λx. λy. 1 ➤a End, y0 : c1 → c2 ⊩ Int → Int ≤ Int → Int ⊩ Int ∩ Bool → Int ≤ Int ∩ Bool → Int, x1 : Int ∩ Bool → Int, y1 : Int ∩ Bool ⊩ c1 → c2 ⊙ y1 ➤c0 c0 ▹a1,b1 a1 → b1 ⊙ 1 ➤b b ≤ Int
+-- -->{ Rule: ⊙➤              }
+--    ⋅, c2 : ⬒, c1 : ⬒ ⊩ (c1 → c2) → Int → Int ▹c,a0 c → a0 ⊙ fix λplus. λx. λy. 1 ➤a End, y0 : c1 → c2 ⊩ Int → Int ≤ Int → Int ⊩ Int ∩ Bool → Int ≤ Int ∩ Bool → Int, x1 : Int ∩ Bool → Int, y1 : Int ∩ Bool ⊩ c2 ▹a1,b1 a1 → b1 ⊙ 1 ➤b b ≤ Int ⊩ y1 ⇐ c1
+-- -->{ Rule: ⇐Sub            }
+--    ⋅, c2 : ⬒, c1 : ⬒ ⊩ (c1 → c2) → Int → Int ▹c,a0 c → a0 ⊙ fix λplus. λx. λy. 1 ➤a End, y0 : c1 → c2 ⊩ Int → Int ≤ Int → Int ⊩ Int ∩ Bool → Int ≤ Int ∩ Bool → Int, x1 : Int ∩ Bool → Int, y1 : Int ∩ Bool ⊩ c2 ▹a1,b1 a1 → b1 ⊙ 1 ➤b b ≤ Int ⊩ y1 ⇒b0 b0 ≤ c1
+-- -->{ Rule: ⇒Var            }
+--    ⋅, c2 : ⬒, c1 : ⬒ ⊩ (c1 → c2) → Int → Int ▹c,a0 c → a0 ⊙ fix λplus. λx. λy. 1 ➤a End, y0 : c1 → c2 ⊩ Int → Int ≤ Int → Int ⊩ Int ∩ Bool → Int ≤ Int ∩ Bool → Int, x1 : Int ∩ Bool → Int, y1 : Int ∩ Bool ⊩ c2 ▹a1,b1 a1 → b1 ⊙ 1 ➤b b ≤ Int ⊩ Int ∩ Bool ≤ c1
+-- -->{ Rule: ≤∩L1            }
+--    ⋅, c2 : ⬒, c1 : ⬒ ⊩ (c1 → c2) → Int → Int ▹c,a0 c → a0 ⊙ fix λplus. λx. λy. 1 ➤a End, y0 : c1 → c2 ⊩ Int → Int ≤ Int → Int ⊩ Int ∩ Bool → Int ≤ Int ∩ Bool → Int, x1 : Int ∩ Bool → Int, y1 : Int ∩ Bool ⊩ c2 ▹a1,b1 a1 → b1 ⊙ 1 ➤b b ≤ Int ⊩ Int ≤ c1
+-- -->{ Rule: ≤MonoR          }
+--    ⋅, c2 : ⬒ ⊩ (Int → c2) → Int → Int ▹c,a0 c → a0 ⊙ fix λplus. λx. λy. 1 ➤a End, y0 : Int → c2 ⊩ Int → Int ≤ Int → Int ⊩ Int ∩ Bool → Int ≤ Int ∩ Bool → Int, x1 : Int ∩ Bool → Int, y1 : Int ∩ Bool ⊩ c2 ▹a1,b1 a1 → b1 ⊙ 1 ➤b b ≤ Int
+-- -->{ Rule: ▹α              }
+--    ⋅, c0 : ⬒, b0 : ⬒ ⊩ (Int → b0 → c0) → Int → Int ▹c,a0 c → a0 ⊙ fix λplus. λx. λy. 1 ➤a End, y0 : Int → b0 → c0 ⊩ Int → Int ≤ Int → Int ⊩ Int ∩ Bool → Int ≤ Int ∩ Bool → Int, x1 : Int ∩ Bool → Int, y1 : Int ∩ Bool ⊩ b0 → c0 ▹a1,b1 a1 → b1 ⊙ 1 ➤b b ≤ Int
+-- -->{ Rule: ▹→              }
+--    ⋅, c0 : ⬒, b0 : ⬒ ⊩ (Int → b0 → c0) → Int → Int ▹c,a0 c → a0 ⊙ fix λplus. λx. λy. 1 ➤a End, y0 : Int → b0 → c0 ⊩ Int → Int ≤ Int → Int ⊩ Int ∩ Bool → Int ≤ Int ∩ Bool → Int, x1 : Int ∩ Bool → Int, y1 : Int ∩ Bool ⊩ b0 → c0 ⊙ 1 ➤b b ≤ Int
+-- -->{ Rule: ⊙➤              }
+--    ⋅, c0 : ⬒, b0 : ⬒ ⊩ (Int → b0 → c0) → Int → Int ▹c,a0 c → a0 ⊙ fix λplus. λx. λy. 1 ➤a End, y0 : Int → b0 → c0 ⊩ Int → Int ≤ Int → Int ⊩ Int ∩ Bool → Int ≤ Int ∩ Bool → Int, x1 : Int ∩ Bool → Int, y1 : Int ∩ Bool ⊩ c0 ≤ Int ⊩ 1 ⇐ b0
+-- -->{ Rule: ⇐Sub            }
+--    ⋅, c0 : ⬒, b0 : ⬒ ⊩ (Int → b0 → c0) → Int → Int ▹c,a0 c → a0 ⊙ fix λplus. λx. λy. 1 ➤a End, y0 : Int → b0 → c0 ⊩ Int → Int ≤ Int → Int ⊩ Int ∩ Bool → Int ≤ Int ∩ Bool → Int, x1 : Int ∩ Bool → Int, y1 : Int ∩ Bool ⊩ c0 ≤ Int ⊩ 1 ⇒b b ≤ b0
+-- -->{ Rule: ⇒Int            }
+--    ⋅, c0 : ⬒, b0 : ⬒ ⊩ (Int → b0 → c0) → Int → Int ▹c,a0 c → a0 ⊙ fix λplus. λx. λy. 1 ➤a End, y0 : Int → b0 → c0 ⊩ Int → Int ≤ Int → Int ⊩ Int ∩ Bool → Int ≤ Int ∩ Bool → Int, x1 : Int ∩ Bool → Int, y1 : Int ∩ Bool ⊩ c0 ≤ Int ⊩ Int ≤ b0
+-- -->{ Rule: ≤MonoR          }
+--    ⋅, c0 : ⬒ ⊩ (Int → Int → c0) → Int → Int ▹c,a0 c → a0 ⊙ fix λplus. λx. λy. 1 ➤a End, y0 : Int → Int → c0 ⊩ Int → Int ≤ Int → Int ⊩ Int ∩ Bool → Int ≤ Int ∩ Bool → Int, x1 : Int ∩ Bool → Int, y1 : Int ∩ Bool ⊩ c0 ≤ Int
+-- -->{ Rule: ≤MonoL          }
+--    ⋅ ⊩ (Int → Int → Int) → Int → Int ▹c,a0 c → a0 ⊙ fix λplus. λx. λy. 1 ➤a End, y0 : Int → Int → Int ⊩ Int → Int ≤ Int → Int ⊩ Int ∩ Bool → Int ≤ Int ∩ Bool → Int, x1 : Int ∩ Bool → Int, y1 : Int ∩ Bool
+-- -->{ Rule: GCVar           }
+--    ⋅ ⊩ (Int → Int → Int) → Int → Int ▹c,a0 c → a0 ⊙ fix λplus. λx. λy. 1 ➤a End, y0 : Int → Int → Int ⊩ Int → Int ≤ Int → Int ⊩ Int ∩ Bool → Int ≤ Int ∩ Bool → Int, x1 : Int ∩ Bool → Int
+-- -->{ Rule: GCVar           }
+--    ⋅ ⊩ (Int → Int → Int) → Int → Int ▹c,a0 c → a0 ⊙ fix λplus. λx. λy. 1 ➤a End, y0 : Int → Int → Int ⊩ Int → Int ≤ Int → Int ⊩ Int ∩ Bool → Int ≤ Int ∩ Bool → Int
+-- -->{ Rule: ≤→              }
+--    ⋅ ⊩ (Int → Int → Int) → Int → Int ▹c,a0 c → a0 ⊙ fix λplus. λx. λy. 1 ➤a End, y0 : Int → Int → Int ⊩ Int → Int ≤ Int → Int ⊩ Int ∩ Bool ≤ Int ∩ Bool ⊩ Int ≤ Int
+-- -->{ Rule: ≤Int            }
+--    ⋅ ⊩ (Int → Int → Int) → Int → Int ▹c,a0 c → a0 ⊙ fix λplus. λx. λy. 1 ➤a End, y0 : Int → Int → Int ⊩ Int → Int ≤ Int → Int ⊩ Int ∩ Bool ≤ Int ∩ Bool
+-- -->{ Rule: ≤∩R             }
+--    ⋅ ⊩ (Int → Int → Int) → Int → Int ▹c,a0 c → a0 ⊙ fix λplus. λx. λy. 1 ➤a End, y0 : Int → Int → Int ⊩ Int → Int ≤ Int → Int ⊩ Int ∩ Bool ≤ Int ⊩ Int ∩ Bool ≤ Bool
+-- -->{ Rule: ≤∩L2            }
+--    ⋅ ⊩ (Int → Int → Int) → Int → Int ▹c,a0 c → a0 ⊙ fix λplus. λx. λy. 1 ➤a End, y0 : Int → Int → Int ⊩ Int → Int ≤ Int → Int ⊩ Int ∩ Bool ≤ Int ⊩ Bool ≤ Bool
+-- -->{ Rule: ≤Bool           }
+--    ⋅ ⊩ (Int → Int → Int) → Int → Int ▹c,a0 c → a0 ⊙ fix λplus. λx. λy. 1 ➤a End, y0 : Int → Int → Int ⊩ Int → Int ≤ Int → Int ⊩ Int ∩ Bool ≤ Int
+-- -->{ Rule: ≤∩L1            }
+--    ⋅ ⊩ (Int → Int → Int) → Int → Int ▹c,a0 c → a0 ⊙ fix λplus. λx. λy. 1 ➤a End, y0 : Int → Int → Int ⊩ Int → Int ≤ Int → Int ⊩ Int ≤ Int
+-- -->{ Rule: ≤Int            }
+--    ⋅ ⊩ (Int → Int → Int) → Int → Int ▹c,a0 c → a0 ⊙ fix λplus. λx. λy. 1 ➤a End, y0 : Int → Int → Int ⊩ Int → Int ≤ Int → Int
+-- -->{ Rule: ≤→              }
+--    ⋅ ⊩ (Int → Int → Int) → Int → Int ▹c,a0 c → a0 ⊙ fix λplus. λx. λy. 1 ➤a End, y0 : Int → Int → Int ⊩ Int ≤ Int ⊩ Int ≤ Int
+-- -->{ Rule: ≤Int            }
+--    ⋅ ⊩ (Int → Int → Int) → Int → Int ▹c,a0 c → a0 ⊙ fix λplus. λx. λy. 1 ➤a End, y0 : Int → Int → Int ⊩ Int ≤ Int
+-- -->{ Rule: ≤Int            }
+--    ⋅ ⊩ (Int → Int → Int) → Int → Int ▹c,a0 c → a0 ⊙ fix λplus. λx. λy. 1 ➤a End, y0 : Int → Int → Int
+-- -->{ Rule: GCVar           }
+--    ⋅ ⊩ (Int → Int → Int) → Int → Int ▹c,a0 c → a0 ⊙ fix λplus. λx. λy. 1 ➤a End
+-- -->{ Rule: ▹→              }
+--    ⋅ ⊩ Int → Int → Int → Int → Int ⊙ fix λplus. λx. λy. 1 ➤a End
+-- -->{ Rule: ⊙➤              }
+--    ⋅ ⊩ End ⊩ fix λplus. λx. λy. 1 ⇐ Int → Int → Int
+-- -->{ Rule: ⇐Fix            }
+--    ⋅ ⊩ End ⊩ λplus. λx. λy. 1 ⇐ (Int → Int → Int) → Int → Int → Int
+-- -->{ Rule: ⇐λ              }
+--    ⋅ ⊩ End, x0 : Int → Int → Int ⊩ λx. λy. 1 ⇐ Int → Int → Int
+-- -->{ Rule: ⇐λ              }
+--    ⋅ ⊩ End, x0 : Int → Int → Int, y0 : Int ⊩ λy. 1 ⇐ Int → Int
+-- -->{ Rule: ⇐λ              }
+--    ⋅ ⊩ End, x0 : Int → Int → Int, y0 : Int, x : Int ⊩ 1 ⇐ Int
+-- -->{ Rule: ⇐Sub            }
+--    ⋅ ⊩ End, x0 : Int → Int → Int, y0 : Int, x : Int ⊩ 1 ⇒a a ≤ Int
+-- -->{ Rule: ⇒Int            }
+--    ⋅ ⊩ End, x0 : Int → Int → Int, y0 : Int, x : Int ⊩ Int ≤ Int
+-- -->{ Rule: ≤Int            }
+--    ⋅ ⊩ End, x0 : Int → Int → Int, y0 : Int, x : Int
+-- -->{ Rule: GCVar           }
+--    ⋅ ⊩ End, x0 : Int → Int → Int, y0 : Int
+-- -->{ Rule: GCVar           }
+--    ⋅ ⊩ End, x0 : Int → Int → Int
+-- -->{ Rule: GCVar           }
+--    ⋅ ⊩ End
+-- -->{ Rule: Dummy           }

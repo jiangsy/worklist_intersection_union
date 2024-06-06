@@ -1,0 +1,61 @@
+let k :: (Int -> Int) -> Int = \f -> 1
+in
+    let g :: ((forall a. a -> a) -> Int) -> Int = \f -> 1
+    in g k
+
+
+-- Accepted!
+--    ⋅ ⊩ let k :: (Int → Int) → Int = λf. 1 in let g :: ((∀a. a → a) → Int) → Int = λf. 1 in g k ⇒b End
+-- -->{ Rule: ⇒LetA           }
+--    ⋅, k : (Int → Int) → Int ⊩ λf. 1 ⇐ (Int → Int) → Int ⊩ let g :: ((∀a. a → a) → Int) → Int = λf. 1 in g k ⇒b End
+-- -->{ Rule: ⇒LetA           }
+--    ⋅, k : (Int → Int) → Int ⊩ λf. 1 ⇐ (Int → Int) → Int, g : ((∀a. a → a) → Int) → Int ⊩ λf. 1 ⇐ ((∀a. a → a) → Int) → Int ⊩ g k ⇒b End
+-- -->{ Rule: ⇒App            }
+--    ⋅, k : (Int → Int) → Int ⊩ λf. 1 ⇐ (Int → Int) → Int, g : ((∀a. a → a) → Int) → Int ⊩ λf. 1 ⇐ ((∀a. a → a) → Int) → Int ⊩ g ⇒c c ▹a0,b0 a0 → b0 ⊙ k ➤b End
+-- -->{ Rule: ⇒Var            }
+--    ⋅, k : (Int → Int) → Int ⊩ λf. 1 ⇐ (Int → Int) → Int, g : ((∀a. a → a) → Int) → Int ⊩ λf. 1 ⇐ ((∀a. a → a) → Int) → Int ⊩ ((∀a. a → a) → Int) → Int ▹a0,b0 a0 → b0 ⊙ k ➤b End
+-- -->{ Rule: ▹→              }
+--    ⋅, k : (Int → Int) → Int ⊩ λf. 1 ⇐ (Int → Int) → Int, g : ((∀a. a → a) → Int) → Int ⊩ λf. 1 ⇐ ((∀a. a → a) → Int) → Int ⊩ (∀a. a → a) → Int → Int ⊙ k ➤b End
+-- -->{ Rule: ⊙➤              }
+--    ⋅, k : (Int → Int) → Int ⊩ λf. 1 ⇐ (Int → Int) → Int, g : ((∀a. a → a) → Int) → Int ⊩ λf. 1 ⇐ ((∀a. a → a) → Int) → Int ⊩ End ⊩ k ⇐ (∀a. a → a) → Int
+-- -->{ Rule: ⇐Sub            }
+--    ⋅, k : (Int → Int) → Int ⊩ λf. 1 ⇐ (Int → Int) → Int, g : ((∀a. a → a) → Int) → Int ⊩ λf. 1 ⇐ ((∀a. a → a) → Int) → Int ⊩ End ⊩ k ⇒b b ≤ (∀a. a → a) → Int
+-- -->{ Rule: ⇒Var            }
+--    ⋅, k : (Int → Int) → Int ⊩ λf. 1 ⇐ (Int → Int) → Int, g : ((∀a. a → a) → Int) → Int ⊩ λf. 1 ⇐ ((∀a. a → a) → Int) → Int ⊩ End ⊩ (Int → Int) → Int ≤ (∀a. a → a) → Int
+-- -->{ Rule: ≤→              }
+--    ⋅, k : (Int → Int) → Int ⊩ λf. 1 ⇐ (Int → Int) → Int, g : ((∀a. a → a) → Int) → Int ⊩ λf. 1 ⇐ ((∀a. a → a) → Int) → Int ⊩ End ⊩ ∀a. a → a ≤ Int → Int ⊩ Int ≤ Int
+-- -->{ Rule: ≤Int            }
+--    ⋅, k : (Int → Int) → Int ⊩ λf. 1 ⇐ (Int → Int) → Int, g : ((∀a. a → a) → Int) → Int ⊩ λf. 1 ⇐ ((∀a. a → a) → Int) → Int ⊩ End ⊩ ∀a. a → a ≤ Int → Int
+-- -->{ Rule: ≤∀L             }
+--    ⋅, k : (Int → Int) → Int ⊩ λf. 1 ⇐ (Int → Int) → Int, g : ((∀a. a → a) → Int) → Int ⊩ λf. 1 ⇐ ((∀a. a → a) → Int) → Int ⊩ End, b : ⬒ ⊩ b → b ≤ Int → Int
+-- -->{ Rule: ≤→              }
+--    ⋅, k : (Int → Int) → Int ⊩ λf. 1 ⇐ (Int → Int) → Int, g : ((∀a. a → a) → Int) → Int ⊩ λf. 1 ⇐ ((∀a. a → a) → Int) → Int ⊩ End, b : ⬒ ⊩ Int ≤ b ⊩ b ≤ Int
+-- -->{ Rule: ≤MonoL          }
+--    ⋅, k : (Int → Int) → Int ⊩ λf. 1 ⇐ (Int → Int) → Int, g : ((∀a. a → a) → Int) → Int ⊩ λf. 1 ⇐ ((∀a. a → a) → Int) → Int ⊩ End ⊩ Int ≤ Int
+-- -->{ Rule: ≤Int            }
+--    ⋅, k : (Int → Int) → Int ⊩ λf. 1 ⇐ (Int → Int) → Int, g : ((∀a. a → a) → Int) → Int ⊩ λf. 1 ⇐ ((∀a. a → a) → Int) → Int ⊩ End
+-- -->{ Rule: Dummy           }
+--    ⋅, k : (Int → Int) → Int ⊩ λf. 1 ⇐ (Int → Int) → Int, g : ((∀a. a → a) → Int) → Int ⊩ λf. 1 ⇐ ((∀a. a → a) → Int) → Int
+-- -->{ Rule: ⇐λ              }
+--    ⋅, k : (Int → Int) → Int ⊩ λf. 1 ⇐ (Int → Int) → Int, g : ((∀a. a → a) → Int) → Int, x : (∀a. a → a) → Int ⊩ 1 ⇐ Int
+-- -->{ Rule: ⇐Sub            }
+--    ⋅, k : (Int → Int) → Int ⊩ λf. 1 ⇐ (Int → Int) → Int, g : ((∀a. a → a) → Int) → Int, x : (∀a. a → a) → Int ⊩ 1 ⇒b b ≤ Int
+-- -->{ Rule: ⇒Int            }
+--    ⋅, k : (Int → Int) → Int ⊩ λf. 1 ⇐ (Int → Int) → Int, g : ((∀a. a → a) → Int) → Int, x : (∀a. a → a) → Int ⊩ Int ≤ Int
+-- -->{ Rule: ≤Int            }
+--    ⋅, k : (Int → Int) → Int ⊩ λf. 1 ⇐ (Int → Int) → Int, g : ((∀a. a → a) → Int) → Int, x : (∀a. a → a) → Int
+-- -->{ Rule: GCVar           }
+--    ⋅, k : (Int → Int) → Int ⊩ λf. 1 ⇐ (Int → Int) → Int, g : ((∀a. a → a) → Int) → Int
+-- -->{ Rule: GCVar           }
+--    ⋅, k : (Int → Int) → Int ⊩ λf. 1 ⇐ (Int → Int) → Int
+-- -->{ Rule: ⇐λ              }
+--    ⋅, k : (Int → Int) → Int, x : Int → Int ⊩ 1 ⇐ Int
+-- -->{ Rule: ⇐Sub            }
+--    ⋅, k : (Int → Int) → Int, x : Int → Int ⊩ 1 ⇒a a ≤ Int
+-- -->{ Rule: ⇒Int            }
+--    ⋅, k : (Int → Int) → Int, x : Int → Int ⊩ Int ≤ Int
+-- -->{ Rule: ≤Int            }
+--    ⋅, k : (Int → Int) → Int, x : Int → Int
+-- -->{ Rule: GCVar           }
+--    ⋅, k : (Int → Int) → Int
+-- -->{ Rule: GCVar           }

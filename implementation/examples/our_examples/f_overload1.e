@@ -1,0 +1,51 @@
+((\x -> \y -> x) :: (Int -> Int -> Int) /\ (Bool -> Bool -> Bool)) 1
+
+-- Accepted!
+--    ⋅ ⊩ (λx. λy. x :: (Int → Int → Int) ∩ (Bool → Bool → Bool)) 1 ⇒a End
+-- -->{ Rule: ⇒App            }
+--    ⋅ ⊩ λx. λy. x :: (Int → Int → Int) ∩ (Bool → Bool → Bool) ⇒b b ▹c,a0 c → a0 ⊙ 1 ➤a End
+-- -->{ Rule: ⇒Anno           }
+--    ⋅ ⊩ (Int → Int → Int) ∩ (Bool → Bool → Bool) ▹c,a0 c → a0 ⊙ 1 ➤a End ⊩ λx. λy. x ⇐ (Int → Int → Int) ∩ (Bool → Bool → Bool)
+-- -->{ Rule: ⇐∩              }
+--    ⋅ ⊩ (Int → Int → Int) ∩ (Bool → Bool → Bool) ▹c,a0 c → a0 ⊙ 1 ➤a End ⊩ λx. λy. x ⇐ Int → Int → Int ⊩ λx. λy. x ⇐ Bool → Bool → Bool
+-- -->{ Rule: ⇐λ              }
+--    ⋅ ⊩ (Int → Int → Int) ∩ (Bool → Bool → Bool) ▹c,a0 c → a0 ⊙ 1 ➤a End ⊩ λx. λy. x ⇐ Int → Int → Int, x0 : Bool ⊩ λy. x0 ⇐ Bool → Bool
+-- -->{ Rule: ⇐λ              }
+--    ⋅ ⊩ (Int → Int → Int) ∩ (Bool → Bool → Bool) ▹c,a0 c → a0 ⊙ 1 ➤a End ⊩ λx. λy. x ⇐ Int → Int → Int, x0 : Bool, y0 : Bool ⊩ x0 ⇐ Bool
+-- -->{ Rule: ⇐Sub            }
+--    ⋅ ⊩ (Int → Int → Int) ∩ (Bool → Bool → Bool) ▹c,a0 c → a0 ⊙ 1 ➤a End ⊩ λx. λy. x ⇐ Int → Int → Int, x0 : Bool, y0 : Bool ⊩ x0 ⇒b b ≤ Bool
+-- -->{ Rule: ⇒Var            }
+--    ⋅ ⊩ (Int → Int → Int) ∩ (Bool → Bool → Bool) ▹c,a0 c → a0 ⊙ 1 ➤a End ⊩ λx. λy. x ⇐ Int → Int → Int, x0 : Bool, y0 : Bool ⊩ Bool ≤ Bool
+-- -->{ Rule: ≤Bool           }
+--    ⋅ ⊩ (Int → Int → Int) ∩ (Bool → Bool → Bool) ▹c,a0 c → a0 ⊙ 1 ➤a End ⊩ λx. λy. x ⇐ Int → Int → Int, x0 : Bool, y0 : Bool
+-- -->{ Rule: GCVar           }
+--    ⋅ ⊩ (Int → Int → Int) ∩ (Bool → Bool → Bool) ▹c,a0 c → a0 ⊙ 1 ➤a End ⊩ λx. λy. x ⇐ Int → Int → Int, x0 : Bool
+-- -->{ Rule: GCVar           }
+--    ⋅ ⊩ (Int → Int → Int) ∩ (Bool → Bool → Bool) ▹c,a0 c → a0 ⊙ 1 ➤a End ⊩ λx. λy. x ⇐ Int → Int → Int
+-- -->{ Rule: ⇐λ              }
+--    ⋅ ⊩ (Int → Int → Int) ∩ (Bool → Bool → Bool) ▹c,a0 c → a0 ⊙ 1 ➤a End, x0 : Int ⊩ λy. x0 ⇐ Int → Int
+-- -->{ Rule: ⇐λ              }
+--    ⋅ ⊩ (Int → Int → Int) ∩ (Bool → Bool → Bool) ▹c,a0 c → a0 ⊙ 1 ➤a End, x0 : Int, x : Int ⊩ x0 ⇐ Int
+-- -->{ Rule: ⇐Sub            }
+--    ⋅ ⊩ (Int → Int → Int) ∩ (Bool → Bool → Bool) ▹c,a0 c → a0 ⊙ 1 ➤a End, x0 : Int, x : Int ⊩ x0 ⇒b b ≤ Int
+-- -->{ Rule: ⇒Var            }
+--    ⋅ ⊩ (Int → Int → Int) ∩ (Bool → Bool → Bool) ▹c,a0 c → a0 ⊙ 1 ➤a End, x0 : Int, x : Int ⊩ Int ≤ Int
+-- -->{ Rule: ≤Int            }
+--    ⋅ ⊩ (Int → Int → Int) ∩ (Bool → Bool → Bool) ▹c,a0 c → a0 ⊙ 1 ➤a End, x0 : Int, x : Int
+-- -->{ Rule: GCVar           }
+--    ⋅ ⊩ (Int → Int → Int) ∩ (Bool → Bool → Bool) ▹c,a0 c → a0 ⊙ 1 ➤a End, x0 : Int
+-- -->{ Rule: GCVar           }
+--    ⋅ ⊩ (Int → Int → Int) ∩ (Bool → Bool → Bool) ▹c,a0 c → a0 ⊙ 1 ➤a End
+-- -->{ Rule: ▹∩1             }
+--    ⋅ ⊩ Int → Int → Int ▹c,a0 c → a0 ⊙ 1 ➤a End
+-- -->{ Rule: ▹→              }
+--    ⋅ ⊩ Int → Int → Int ⊙ 1 ➤a End
+-- -->{ Rule: ⊙➤              }
+--    ⋅ ⊩ End ⊩ 1 ⇐ Int
+-- -->{ Rule: ⇐Sub            }
+--    ⋅ ⊩ End ⊩ 1 ⇒a a ≤ Int
+-- -->{ Rule: ⇒Int            }
+--    ⋅ ⊩ End ⊩ Int ≤ Int
+-- -->{ Rule: ≤Int            }
+--    ⋅ ⊩ End
+-- -->{ Rule: Dummy           }

@@ -1,0 +1,622 @@
+let map :: forall a. forall b. (a -> b) -> [a] -> [b] =
+    /\a. (/\b. (\f -> \xs -> case xs of
+                                [] -> [];
+                                (y : ys) -> f y : map f ys) :: (a -> b) -> [a] -> [b])
+    in map @(Int \/ Bool) ((\x -> 1) :: (Int \/ Bool) -> Int) ((False : 1 : []) :: [Int \/ Bool])
+
+
+-- Accepted!
+--    ⋅ ⊩ let map :: ∀a. ∀b. (a → b) → [a] → [b] = Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) in ((map @Int ∪ Bool) (λx. 1 :: Int ∪ Bool → Int)) (False : (1 : []) :: [Int ∪ Bool]) ⇒c End
+-- -->{ Rule: ⇒LetA           }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ ((map @Int ∪ Bool) (λx. 1 :: Int ∪ Bool → Int)) (False : (1 : []) :: [Int ∪ Bool]) ⇒c End
+-- -->{ Rule: ⇒App            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ (map @Int ∪ Bool) (λx. 1 :: Int ∪ Bool → Int) ⇒a0 a0 ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End
+-- -->{ Rule: ⇒App            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ map @Int ∪ Bool ⇒a1 a1 ▹b1,c1 b1 → c1 ⊙ λx. 1 :: Int ∪ Bool → Int ➤a0 a0 ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End
+-- -->{ Rule: ⇒TApp           }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ map ⇒a2 a2 o Int ∪ Bool ➤a1 a1 ▹b1,c1 b1 → c1 ⊙ λx. 1 :: Int ∪ Bool → Int ➤a0 a0 ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End
+-- -->{ Rule: ⇒Var            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ ∀a. ∀b. (a → b) → [a] → [b] o Int ∪ Bool ➤a1 a1 ▹b1,c1 b1 → c1 ⊙ λx. 1 :: Int ∪ Bool → Int ➤a0 a0 ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End
+-- -->{ Rule: ∘∀              }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ ∀b. (Int ∪ Bool → b) → [Int ∪ Bool] → [b] ▹b1,c1 b1 → c1 ⊙ λx. 1 :: Int ∪ Bool → Int ➤a0 a0 ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End
+-- -->{ Rule: ▹∀              }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ (Int ∪ Bool → a1) → [Int ∪ Bool] → [a1] ▹b1,c1 b1 → c1 ⊙ λx. 1 :: Int ∪ Bool → Int ➤a0 a0 ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End
+-- -->{ Rule: ▹→              }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ Int ∪ Bool → a1 → [Int ∪ Bool] → [a1] ⊙ λx. 1 :: Int ∪ Bool → Int ➤a0 a0 ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End
+-- -->{ Rule: ⊙➤              }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ [Int ∪ Bool] → [a1] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ λx. 1 :: Int ∪ Bool → Int ⇐ Int ∪ Bool → a1
+-- -->{ Rule: ⇐Sub            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ [Int ∪ Bool] → [a1] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ λx. 1 :: Int ∪ Bool → Int ⇒a0 a0 ≤ Int ∪ Bool → a1
+-- -->{ Rule: ⇒Anno           }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ [Int ∪ Bool] → [a1] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Int ∪ Bool → Int ≤ Int ∪ Bool → a1 ⊩ λx. 1 ⇐ Int ∪ Bool → Int
+-- -->{ Rule: ⇐λ              }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ [Int ∪ Bool] → [a1] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Int ∪ Bool → Int ≤ Int ∪ Bool → a1, x0 : Int ∪ Bool ⊩ 1 ⇐ Int
+-- -->{ Rule: ⇐Sub            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ [Int ∪ Bool] → [a1] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Int ∪ Bool → Int ≤ Int ∪ Bool → a1, x0 : Int ∪ Bool ⊩ 1 ⇒a0 a0 ≤ Int
+-- -->{ Rule: ⇒Int            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ [Int ∪ Bool] → [a1] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Int ∪ Bool → Int ≤ Int ∪ Bool → a1, x0 : Int ∪ Bool ⊩ Int ≤ Int
+-- -->{ Rule: ≤Int            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ [Int ∪ Bool] → [a1] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Int ∪ Bool → Int ≤ Int ∪ Bool → a1, x0 : Int ∪ Bool
+-- -->{ Rule: GCVar           }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ [Int ∪ Bool] → [a1] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Int ∪ Bool → Int ≤ Int ∪ Bool → a1
+-- -->{ Rule: ≤→              }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ [Int ∪ Bool] → [a1] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Int ∪ Bool ≤ Int ∪ Bool ⊩ Int ≤ a1
+-- -->{ Rule: ≤MonoR          }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ [Int ∪ Bool] → [Int] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Int ∪ Bool ≤ Int ∪ Bool
+-- -->{ Rule: ≤∪L             }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ [Int ∪ Bool] → [Int] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Bool ≤ Int ∪ Bool ⊩ Int ≤ Int ∪ Bool
+-- -->{ Rule: ≤∪R1            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ [Int ∪ Bool] → [Int] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Bool ≤ Int ∪ Bool ⊩ Int ≤ Int
+-- -->{ Rule: ≤Int            }
+--    ⋅ ⊩ let map :: ∀a. ∀b. (a → b) → [a] → [b] = Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) in ((map @Int ∪ Bool) (λx. 1 :: Int ∪ Bool → Int)) (False : (1 : []) :: [Int ∪ Bool]) ⇒c End
+-- -->{ Rule: ⇒LetA           }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ ((map @Int ∪ Bool) (λx. 1 :: Int ∪ Bool → Int)) (False : (1 : []) :: [Int ∪ Bool]) ⇒c End
+-- -->{ Rule: ⇒App            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ (map @Int ∪ Bool) (λx. 1 :: Int ∪ Bool → Int) ⇒a0 a0 ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End
+-- -->{ Rule: ⇒App            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ map @Int ∪ Bool ⇒a1 a1 ▹b1,c1 b1 → c1 ⊙ λx. 1 :: Int ∪ Bool → Int ➤a0 a0 ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End
+-- -->{ Rule: ⇒TApp           }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ map ⇒a2 a2 o Int ∪ Bool ➤a1 a1 ▹b1,c1 b1 → c1 ⊙ λx. 1 :: Int ∪ Bool → Int ➤a0 a0 ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End
+-- -->{ Rule: ⇒Var            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ ∀a. ∀b. (a → b) → [a] → [b] o Int ∪ Bool ➤a1 a1 ▹b1,c1 b1 → c1 ⊙ λx. 1 :: Int ∪ Bool → Int ➤a0 a0 ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End
+-- -->{ Rule: ∘∀              }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ ∀b. (Int ∪ Bool → b) → [Int ∪ Bool] → [b] ▹b1,c1 b1 → c1 ⊙ λx. 1 :: Int ∪ Bool → Int ➤a0 a0 ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End
+-- -->{ Rule: ▹∀              }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ (Int ∪ Bool → a1) → [Int ∪ Bool] → [a1] ▹b1,c1 b1 → c1 ⊙ λx. 1 :: Int ∪ Bool → Int ➤a0 a0 ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End
+-- -->{ Rule: ▹→              }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ Int ∪ Bool → a1 → [Int ∪ Bool] → [a1] ⊙ λx. 1 :: Int ∪ Bool → Int ➤a0 a0 ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End
+-- -->{ Rule: ⊙➤              }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ [Int ∪ Bool] → [a1] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ λx. 1 :: Int ∪ Bool → Int ⇐ Int ∪ Bool → a1
+-- -->{ Rule: ⇐Sub            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ [Int ∪ Bool] → [a1] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ λx. 1 :: Int ∪ Bool → Int ⇒a0 a0 ≤ Int ∪ Bool → a1
+-- -->{ Rule: ⇒Anno           }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ [Int ∪ Bool] → [a1] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Int ∪ Bool → Int ≤ Int ∪ Bool → a1 ⊩ λx. 1 ⇐ Int ∪ Bool → Int
+-- -->{ Rule: ⇐λ              }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ [Int ∪ Bool] → [a1] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Int ∪ Bool → Int ≤ Int ∪ Bool → a1, x0 : Int ∪ Bool ⊩ 1 ⇐ Int
+-- -->{ Rule: ⇐Sub            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ [Int ∪ Bool] → [a1] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Int ∪ Bool → Int ≤ Int ∪ Bool → a1, x0 : Int ∪ Bool ⊩ 1 ⇒a0 a0 ≤ Int
+-- -->{ Rule: ⇒Int            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ [Int ∪ Bool] → [a1] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Int ∪ Bool → Int ≤ Int ∪ Bool → a1, x0 : Int ∪ Bool ⊩ Int ≤ Int
+-- -->{ Rule: ≤Int            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ [Int ∪ Bool] → [a1] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Int ∪ Bool → Int ≤ Int ∪ Bool → a1, x0 : Int ∪ Bool
+-- -->{ Rule: GCVar           }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ [Int ∪ Bool] → [a1] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Int ∪ Bool → Int ≤ Int ∪ Bool → a1
+-- -->{ Rule: ≤→              }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ [Int ∪ Bool] → [a1] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Int ∪ Bool ≤ Int ∪ Bool ⊩ Int ≤ a1
+-- -->{ Rule: ≤MonoR          }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ [Int ∪ Bool] → [Int] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Int ∪ Bool ≤ Int ∪ Bool
+-- -->{ Rule: ≤∪L             }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ [Int ∪ Bool] → [Int] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Bool ≤ Int ∪ Bool ⊩ Int ≤ Int ∪ Bool
+-- -->{ Rule: ≤∪R1            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ [Int ∪ Bool] → [Int] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Bool ≤ Int ∪ Bool ⊩ Int ≤ Int
+-- -->{ Rule: ≤Int            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ [Int ∪ Bool] → [Int] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Bool ≤ Int ∪ Bool
+-- -->{ Rule: ≤∪R1            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ [Int ∪ Bool] → [Int] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Bool ≤ Int
+-- -->{ Rule: Stuck           }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ [Int ∪ Bool] → [Int] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Bool ≤ Int ∪ Bool
+-- -->{ Rule: ≤∪R2            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ [Int ∪ Bool] → [Int] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Bool ≤ Bool
+-- -->{ Rule: ≤Bool           }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ [Int ∪ Bool] → [Int] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End
+-- -->{ Rule: ▹→              }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ [Int ∪ Bool] → [Int] ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End
+-- -->{ Rule: ⊙➤              }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ End ⊩ False : (1 : []) :: [Int ∪ Bool] ⇐ [Int ∪ Bool]
+-- -->{ Rule: ⇐Sub            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ End ⊩ False : (1 : []) :: [Int ∪ Bool] ⇒c c ≤ [Int ∪ Bool]
+-- -->{ Rule: ⇒Anno           }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ End ⊩ [Int ∪ Bool] ≤ [Int ∪ Bool] ⊩ False : (1 : []) ⇐ [Int ∪ Bool]
+-- -->{ Rule: ⇐[]Cons         }
+--    ⋅ ⊩ let map :: ∀a. ∀b. (a → b) → [a] → [b] = Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) in ((map @Int ∪ Bool) (λx. 1 :: Int ∪ Bool → Int)) (False : (1 : []) :: [Int ∪ Bool]) ⇒c End
+-- -->{ Rule: ⇒LetA           }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ ((map @Int ∪ Bool) (λx. 1 :: Int ∪ Bool → Int)) (False : (1 : []) :: [Int ∪ Bool]) ⇒c End
+-- -->{ Rule: ⇒App            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ (map @Int ∪ Bool) (λx. 1 :: Int ∪ Bool → Int) ⇒a0 a0 ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End
+-- -->{ Rule: ⇒App            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ map @Int ∪ Bool ⇒a1 a1 ▹b1,c1 b1 → c1 ⊙ λx. 1 :: Int ∪ Bool → Int ➤a0 a0 ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End
+-- -->{ Rule: ⇒TApp           }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ map ⇒a2 a2 o Int ∪ Bool ➤a1 a1 ▹b1,c1 b1 → c1 ⊙ λx. 1 :: Int ∪ Bool → Int ➤a0 a0 ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End
+-- -->{ Rule: ⇒Var            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ ∀a. ∀b. (a → b) → [a] → [b] o Int ∪ Bool ➤a1 a1 ▹b1,c1 b1 → c1 ⊙ λx. 1 :: Int ∪ Bool → Int ➤a0 a0 ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End
+-- -->{ Rule: ∘∀              }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ ∀b. (Int ∪ Bool → b) → [Int ∪ Bool] → [b] ▹b1,c1 b1 → c1 ⊙ λx. 1 :: Int ∪ Bool → Int ➤a0 a0 ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End
+-- -->{ Rule: ▹∀              }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ (Int ∪ Bool → a1) → [Int ∪ Bool] → [a1] ▹b1,c1 b1 → c1 ⊙ λx. 1 :: Int ∪ Bool → Int ➤a0 a0 ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End
+-- -->{ Rule: ▹→              }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ Int ∪ Bool → a1 → [Int ∪ Bool] → [a1] ⊙ λx. 1 :: Int ∪ Bool → Int ➤a0 a0 ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End
+-- -->{ Rule: ⊙➤              }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ [Int ∪ Bool] → [a1] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ λx. 1 :: Int ∪ Bool → Int ⇐ Int ∪ Bool → a1
+-- -->{ Rule: ⇐Sub            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ [Int ∪ Bool] → [a1] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ λx. 1 :: Int ∪ Bool → Int ⇒a0 a0 ≤ Int ∪ Bool → a1
+-- -->{ Rule: ⇒Anno           }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ [Int ∪ Bool] → [a1] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Int ∪ Bool → Int ≤ Int ∪ Bool → a1 ⊩ λx. 1 ⇐ Int ∪ Bool → Int
+-- -->{ Rule: ⇐λ              }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ [Int ∪ Bool] → [a1] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Int ∪ Bool → Int ≤ Int ∪ Bool → a1, x0 : Int ∪ Bool ⊩ 1 ⇐ Int
+-- -->{ Rule: ⇐Sub            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ [Int ∪ Bool] → [a1] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Int ∪ Bool → Int ≤ Int ∪ Bool → a1, x0 : Int ∪ Bool ⊩ 1 ⇒a0 a0 ≤ Int
+-- -->{ Rule: ⇒Int            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ [Int ∪ Bool] → [a1] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Int ∪ Bool → Int ≤ Int ∪ Bool → a1, x0 : Int ∪ Bool ⊩ Int ≤ Int
+-- -->{ Rule: ≤Int            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ [Int ∪ Bool] → [a1] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Int ∪ Bool → Int ≤ Int ∪ Bool → a1, x0 : Int ∪ Bool
+-- -->{ Rule: GCVar           }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ [Int ∪ Bool] → [a1] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Int ∪ Bool → Int ≤ Int ∪ Bool → a1
+-- -->{ Rule: ≤→              }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ [Int ∪ Bool] → [a1] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Int ∪ Bool ≤ Int ∪ Bool ⊩ Int ≤ a1
+-- -->{ Rule: ≤MonoR          }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ [Int ∪ Bool] → [Int] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Int ∪ Bool ≤ Int ∪ Bool
+-- -->{ Rule: ≤∪L             }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ [Int ∪ Bool] → [Int] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Bool ≤ Int ∪ Bool ⊩ Int ≤ Int ∪ Bool
+-- -->{ Rule: ≤∪R1            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ [Int ∪ Bool] → [Int] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Bool ≤ Int ∪ Bool ⊩ Int ≤ Int
+-- -->{ Rule: ≤Int            }
+--    ⋅ ⊩ let map :: ∀a. ∀b. (a → b) → [a] → [b] = Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) in ((map @Int ∪ Bool) (λx. 1 :: Int ∪ Bool → Int)) (False : (1 : []) :: [Int ∪ Bool]) ⇒c End
+-- -->{ Rule: ⇒LetA           }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ ((map @Int ∪ Bool) (λx. 1 :: Int ∪ Bool → Int)) (False : (1 : []) :: [Int ∪ Bool]) ⇒c End
+-- -->{ Rule: ⇒App            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ (map @Int ∪ Bool) (λx. 1 :: Int ∪ Bool → Int) ⇒a0 a0 ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End
+-- -->{ Rule: ⇒App            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ map @Int ∪ Bool ⇒a1 a1 ▹b1,c1 b1 → c1 ⊙ λx. 1 :: Int ∪ Bool → Int ➤a0 a0 ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End
+-- -->{ Rule: ⇒TApp           }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ map ⇒a2 a2 o Int ∪ Bool ➤a1 a1 ▹b1,c1 b1 → c1 ⊙ λx. 1 :: Int ∪ Bool → Int ➤a0 a0 ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End
+-- -->{ Rule: ⇒Var            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ ∀a. ∀b. (a → b) → [a] → [b] o Int ∪ Bool ➤a1 a1 ▹b1,c1 b1 → c1 ⊙ λx. 1 :: Int ∪ Bool → Int ➤a0 a0 ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End
+-- -->{ Rule: ∘∀              }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ ∀b. (Int ∪ Bool → b) → [Int ∪ Bool] → [b] ▹b1,c1 b1 → c1 ⊙ λx. 1 :: Int ∪ Bool → Int ➤a0 a0 ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End
+-- -->{ Rule: ▹∀              }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ (Int ∪ Bool → a1) → [Int ∪ Bool] → [a1] ▹b1,c1 b1 → c1 ⊙ λx. 1 :: Int ∪ Bool → Int ➤a0 a0 ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End
+-- -->{ Rule: ▹→              }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ Int ∪ Bool → a1 → [Int ∪ Bool] → [a1] ⊙ λx. 1 :: Int ∪ Bool → Int ➤a0 a0 ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End
+-- -->{ Rule: ⊙➤              }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ [Int ∪ Bool] → [a1] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ λx. 1 :: Int ∪ Bool → Int ⇐ Int ∪ Bool → a1
+-- -->{ Rule: ⇐Sub            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ [Int ∪ Bool] → [a1] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ λx. 1 :: Int ∪ Bool → Int ⇒a0 a0 ≤ Int ∪ Bool → a1
+-- -->{ Rule: ⇒Anno           }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ [Int ∪ Bool] → [a1] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Int ∪ Bool → Int ≤ Int ∪ Bool → a1 ⊩ λx. 1 ⇐ Int ∪ Bool → Int
+-- -->{ Rule: ⇐λ              }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ [Int ∪ Bool] → [a1] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Int ∪ Bool → Int ≤ Int ∪ Bool → a1, x0 : Int ∪ Bool ⊩ 1 ⇐ Int
+-- -->{ Rule: ⇐Sub            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ [Int ∪ Bool] → [a1] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Int ∪ Bool → Int ≤ Int ∪ Bool → a1, x0 : Int ∪ Bool ⊩ 1 ⇒a0 a0 ≤ Int
+-- -->{ Rule: ⇒Int            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ [Int ∪ Bool] → [a1] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Int ∪ Bool → Int ≤ Int ∪ Bool → a1, x0 : Int ∪ Bool ⊩ Int ≤ Int
+-- -->{ Rule: ≤Int            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ [Int ∪ Bool] → [a1] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Int ∪ Bool → Int ≤ Int ∪ Bool → a1, x0 : Int ∪ Bool
+-- -->{ Rule: GCVar           }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ [Int ∪ Bool] → [a1] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Int ∪ Bool → Int ≤ Int ∪ Bool → a1
+-- -->{ Rule: ≤→              }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ [Int ∪ Bool] → [a1] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Int ∪ Bool ≤ Int ∪ Bool ⊩ Int ≤ a1
+-- -->{ Rule: ≤MonoR          }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ [Int ∪ Bool] → [Int] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Int ∪ Bool ≤ Int ∪ Bool
+-- -->{ Rule: ≤∪L             }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ [Int ∪ Bool] → [Int] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Bool ≤ Int ∪ Bool ⊩ Int ≤ Int ∪ Bool
+-- -->{ Rule: ≤∪R1            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ [Int ∪ Bool] → [Int] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Bool ≤ Int ∪ Bool ⊩ Int ≤ Int
+-- -->{ Rule: ≤Int            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ [Int ∪ Bool] → [Int] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Bool ≤ Int ∪ Bool
+-- -->{ Rule: ≤∪R1            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ [Int ∪ Bool] → [Int] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Bool ≤ Int
+-- -->{ Rule: Stuck           }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ [Int ∪ Bool] → [Int] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Bool ≤ Int ∪ Bool
+-- -->{ Rule: ≤∪R2            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ [Int ∪ Bool] → [Int] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Bool ≤ Bool
+-- -->{ Rule: ≤Bool           }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ [Int ∪ Bool] → [Int] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End
+-- -->{ Rule: ▹→              }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ [Int ∪ Bool] → [Int] ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End
+-- -->{ Rule: ⊙➤              }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ End ⊩ False : (1 : []) :: [Int ∪ Bool] ⇐ [Int ∪ Bool]
+-- -->{ Rule: ⇐Sub            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ End ⊩ False : (1 : []) :: [Int ∪ Bool] ⇒c c ≤ [Int ∪ Bool]
+-- -->{ Rule: ⇒Anno           }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ End ⊩ [Int ∪ Bool] ≤ [Int ∪ Bool] ⊩ False : (1 : []) ⇐ [Int ∪ Bool]
+-- -->{ Rule: ⇐[]Cons         }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ End ⊩ [Int ∪ Bool] ≤ [Int ∪ Bool] ⊩ 1 : [] ⇐ [Int ∪ Bool] ⊩ False ⇐ Int ∪ Bool
+-- -->{ Rule: ⇐∪1             }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ End ⊩ [Int ∪ Bool] ≤ [Int ∪ Bool] ⊩ 1 : [] ⇐ [Int ∪ Bool] ⊩ False ⇐ Int
+-- -->{ Rule: ⇐Sub            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ End ⊩ [Int ∪ Bool] ≤ [Int ∪ Bool] ⊩ 1 : [] ⇐ [Int ∪ Bool] ⊩ False ⇒c c ≤ Int
+-- -->{ Rule: ⇒Bool           }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ End ⊩ [Int ∪ Bool] ≤ [Int ∪ Bool] ⊩ 1 : [] ⇐ [Int ∪ Bool] ⊩ Bool ≤ Int
+-- -->{ Rule: Stuck           }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ End ⊩ [Int ∪ Bool] ≤ [Int ∪ Bool] ⊩ 1 : [] ⇐ [Int ∪ Bool] ⊩ False ⇐ Int ∪ Bool
+-- -->{ Rule: ⇐∪2             }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ End ⊩ [Int ∪ Bool] ≤ [Int ∪ Bool] ⊩ 1 : [] ⇐ [Int ∪ Bool] ⊩ False ⇐ Bool
+-- -->{ Rule: ⇐Sub            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ End ⊩ [Int ∪ Bool] ≤ [Int ∪ Bool] ⊩ 1 : [] ⇐ [Int ∪ Bool] ⊩ False ⇒c c ≤ Bool
+-- -->{ Rule: ⇒Bool           }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ End ⊩ [Int ∪ Bool] ≤ [Int ∪ Bool] ⊩ 1 : [] ⇐ [Int ∪ Bool] ⊩ Bool ≤ Bool
+-- -->{ Rule: ≤Bool           }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ End ⊩ [Int ∪ Bool] ≤ [Int ∪ Bool] ⊩ 1 : [] ⇐ [Int ∪ Bool]
+-- -->{ Rule: ⇐[]Cons         }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ End ⊩ [Int ∪ Bool] ≤ [Int ∪ Bool] ⊩ [] ⇐ [Int ∪ Bool] ⊩ 1 ⇐ Int ∪ Bool
+-- -->{ Rule: ⇐∪1             }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ End ⊩ [Int ∪ Bool] ≤ [Int ∪ Bool] ⊩ [] ⇐ [Int ∪ Bool] ⊩ 1 ⇐ Int
+-- -->{ Rule: ⇐Sub            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ End ⊩ [Int ∪ Bool] ≤ [Int ∪ Bool] ⊩ [] ⇐ [Int ∪ Bool] ⊩ 1 ⇒c c ≤ Int
+-- -->{ Rule: ⇒Int            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ End ⊩ [Int ∪ Bool] ≤ [Int ∪ Bool] ⊩ [] ⇐ [Int ∪ Bool] ⊩ Int ≤ Int
+-- -->{ Rule: ≤Int            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ End ⊩ [Int ∪ Bool] ≤ [Int ∪ Bool] ⊩ [] ⇐ [Int ∪ Bool]
+-- -->{ Rule: ⇐[]Nil          }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ End ⊩ [Int ∪ Bool] ≤ [Int ∪ Bool]
+-- -->{ Rule: ≤[]             }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ End ⊩ Int ∪ Bool ≤ Int ∪ Bool
+-- -->{ Rule: ≤∪L             }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ End ⊩ Bool ≤ Int ∪ Bool ⊩ Int ≤ Int ∪ Bool
+-- -->{ Rule: ≤∪R1            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ End ⊩ Bool ≤ Int ∪ Bool ⊩ Int ≤ Int
+-- -->{ Rule: ≤Int            }
+--    ⋅ ⊩ let map :: ∀a. ∀b. (a → b) → [a] → [b] = Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) in ((map @Int ∪ Bool) (λx. 1 :: Int ∪ Bool → Int)) (False : (1 : []) :: [Int ∪ Bool]) ⇒c End
+-- -->{ Rule: ⇒LetA           }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ ((map @Int ∪ Bool) (λx. 1 :: Int ∪ Bool → Int)) (False : (1 : []) :: [Int ∪ Bool]) ⇒c End
+-- -->{ Rule: ⇒App            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ (map @Int ∪ Bool) (λx. 1 :: Int ∪ Bool → Int) ⇒a0 a0 ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End
+-- -->{ Rule: ⇒App            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ map @Int ∪ Bool ⇒a1 a1 ▹b1,c1 b1 → c1 ⊙ λx. 1 :: Int ∪ Bool → Int ➤a0 a0 ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End
+-- -->{ Rule: ⇒TApp           }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ map ⇒a2 a2 o Int ∪ Bool ➤a1 a1 ▹b1,c1 b1 → c1 ⊙ λx. 1 :: Int ∪ Bool → Int ➤a0 a0 ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End
+-- -->{ Rule: ⇒Var            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ ∀a. ∀b. (a → b) → [a] → [b] o Int ∪ Bool ➤a1 a1 ▹b1,c1 b1 → c1 ⊙ λx. 1 :: Int ∪ Bool → Int ➤a0 a0 ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End
+-- -->{ Rule: ∘∀              }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ ∀b. (Int ∪ Bool → b) → [Int ∪ Bool] → [b] ▹b1,c1 b1 → c1 ⊙ λx. 1 :: Int ∪ Bool → Int ➤a0 a0 ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End
+-- -->{ Rule: ▹∀              }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ (Int ∪ Bool → a1) → [Int ∪ Bool] → [a1] ▹b1,c1 b1 → c1 ⊙ λx. 1 :: Int ∪ Bool → Int ➤a0 a0 ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End
+-- -->{ Rule: ▹→              }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ Int ∪ Bool → a1 → [Int ∪ Bool] → [a1] ⊙ λx. 1 :: Int ∪ Bool → Int ➤a0 a0 ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End
+-- -->{ Rule: ⊙➤              }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ [Int ∪ Bool] → [a1] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ λx. 1 :: Int ∪ Bool → Int ⇐ Int ∪ Bool → a1
+-- -->{ Rule: ⇐Sub            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ [Int ∪ Bool] → [a1] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ λx. 1 :: Int ∪ Bool → Int ⇒a0 a0 ≤ Int ∪ Bool → a1
+-- -->{ Rule: ⇒Anno           }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ [Int ∪ Bool] → [a1] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Int ∪ Bool → Int ≤ Int ∪ Bool → a1 ⊩ λx. 1 ⇐ Int ∪ Bool → Int
+-- -->{ Rule: ⇐λ              }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ [Int ∪ Bool] → [a1] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Int ∪ Bool → Int ≤ Int ∪ Bool → a1, x0 : Int ∪ Bool ⊩ 1 ⇐ Int
+-- -->{ Rule: ⇐Sub            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ [Int ∪ Bool] → [a1] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Int ∪ Bool → Int ≤ Int ∪ Bool → a1, x0 : Int ∪ Bool ⊩ 1 ⇒a0 a0 ≤ Int
+-- -->{ Rule: ⇒Int            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ [Int ∪ Bool] → [a1] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Int ∪ Bool → Int ≤ Int ∪ Bool → a1, x0 : Int ∪ Bool ⊩ Int ≤ Int
+-- -->{ Rule: ≤Int            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ [Int ∪ Bool] → [a1] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Int ∪ Bool → Int ≤ Int ∪ Bool → a1, x0 : Int ∪ Bool
+-- -->{ Rule: GCVar           }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ [Int ∪ Bool] → [a1] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Int ∪ Bool → Int ≤ Int ∪ Bool → a1
+-- -->{ Rule: ≤→              }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ [Int ∪ Bool] → [a1] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Int ∪ Bool ≤ Int ∪ Bool ⊩ Int ≤ a1
+-- -->{ Rule: ≤MonoR          }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ [Int ∪ Bool] → [Int] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Int ∪ Bool ≤ Int ∪ Bool
+-- -->{ Rule: ≤∪L             }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ [Int ∪ Bool] → [Int] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Bool ≤ Int ∪ Bool ⊩ Int ≤ Int ∪ Bool
+-- -->{ Rule: ≤∪R1            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ [Int ∪ Bool] → [Int] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Bool ≤ Int ∪ Bool ⊩ Int ≤ Int
+-- -->{ Rule: ≤Int            }
+--    ⋅ ⊩ let map :: ∀a. ∀b. (a → b) → [a] → [b] = Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) in ((map @Int ∪ Bool) (λx. 1 :: Int ∪ Bool → Int)) (False : (1 : []) :: [Int ∪ Bool]) ⇒c End
+-- -->{ Rule: ⇒LetA           }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ ((map @Int ∪ Bool) (λx. 1 :: Int ∪ Bool → Int)) (False : (1 : []) :: [Int ∪ Bool]) ⇒c End
+-- -->{ Rule: ⇒App            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ (map @Int ∪ Bool) (λx. 1 :: Int ∪ Bool → Int) ⇒a0 a0 ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End
+-- -->{ Rule: ⇒App            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ map @Int ∪ Bool ⇒a1 a1 ▹b1,c1 b1 → c1 ⊙ λx. 1 :: Int ∪ Bool → Int ➤a0 a0 ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End
+-- -->{ Rule: ⇒TApp           }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ map ⇒a2 a2 o Int ∪ Bool ➤a1 a1 ▹b1,c1 b1 → c1 ⊙ λx. 1 :: Int ∪ Bool → Int ➤a0 a0 ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End
+-- -->{ Rule: ⇒Var            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ ∀a. ∀b. (a → b) → [a] → [b] o Int ∪ Bool ➤a1 a1 ▹b1,c1 b1 → c1 ⊙ λx. 1 :: Int ∪ Bool → Int ➤a0 a0 ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End
+-- -->{ Rule: ∘∀              }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ ∀b. (Int ∪ Bool → b) → [Int ∪ Bool] → [b] ▹b1,c1 b1 → c1 ⊙ λx. 1 :: Int ∪ Bool → Int ➤a0 a0 ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End
+-- -->{ Rule: ▹∀              }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ (Int ∪ Bool → a1) → [Int ∪ Bool] → [a1] ▹b1,c1 b1 → c1 ⊙ λx. 1 :: Int ∪ Bool → Int ➤a0 a0 ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End
+-- -->{ Rule: ▹→              }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ Int ∪ Bool → a1 → [Int ∪ Bool] → [a1] ⊙ λx. 1 :: Int ∪ Bool → Int ➤a0 a0 ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End
+-- -->{ Rule: ⊙➤              }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ [Int ∪ Bool] → [a1] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ λx. 1 :: Int ∪ Bool → Int ⇐ Int ∪ Bool → a1
+-- -->{ Rule: ⇐Sub            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ [Int ∪ Bool] → [a1] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ λx. 1 :: Int ∪ Bool → Int ⇒a0 a0 ≤ Int ∪ Bool → a1
+-- -->{ Rule: ⇒Anno           }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ [Int ∪ Bool] → [a1] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Int ∪ Bool → Int ≤ Int ∪ Bool → a1 ⊩ λx. 1 ⇐ Int ∪ Bool → Int
+-- -->{ Rule: ⇐λ              }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ [Int ∪ Bool] → [a1] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Int ∪ Bool → Int ≤ Int ∪ Bool → a1, x0 : Int ∪ Bool ⊩ 1 ⇐ Int
+-- -->{ Rule: ⇐Sub            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ [Int ∪ Bool] → [a1] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Int ∪ Bool → Int ≤ Int ∪ Bool → a1, x0 : Int ∪ Bool ⊩ 1 ⇒a0 a0 ≤ Int
+-- -->{ Rule: ⇒Int            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ [Int ∪ Bool] → [a1] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Int ∪ Bool → Int ≤ Int ∪ Bool → a1, x0 : Int ∪ Bool ⊩ Int ≤ Int
+-- -->{ Rule: ≤Int            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ [Int ∪ Bool] → [a1] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Int ∪ Bool → Int ≤ Int ∪ Bool → a1, x0 : Int ∪ Bool
+-- -->{ Rule: GCVar           }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ [Int ∪ Bool] → [a1] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Int ∪ Bool → Int ≤ Int ∪ Bool → a1
+-- -->{ Rule: ≤→              }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ [Int ∪ Bool] → [a1] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Int ∪ Bool ≤ Int ∪ Bool ⊩ Int ≤ a1
+-- -->{ Rule: ≤MonoR          }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ [Int ∪ Bool] → [Int] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Int ∪ Bool ≤ Int ∪ Bool
+-- -->{ Rule: ≤∪L             }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ [Int ∪ Bool] → [Int] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Bool ≤ Int ∪ Bool ⊩ Int ≤ Int ∪ Bool
+-- -->{ Rule: ≤∪R1            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ [Int ∪ Bool] → [Int] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Bool ≤ Int ∪ Bool ⊩ Int ≤ Int
+-- -->{ Rule: ≤Int            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ [Int ∪ Bool] → [Int] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Bool ≤ Int ∪ Bool
+-- -->{ Rule: ≤∪R1            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ [Int ∪ Bool] → [Int] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Bool ≤ Int
+-- -->{ Rule: Stuck           }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ [Int ∪ Bool] → [Int] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Bool ≤ Int ∪ Bool
+-- -->{ Rule: ≤∪R2            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ [Int ∪ Bool] → [Int] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Bool ≤ Bool
+-- -->{ Rule: ≤Bool           }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ [Int ∪ Bool] → [Int] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End
+-- -->{ Rule: ▹→              }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ [Int ∪ Bool] → [Int] ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End
+-- -->{ Rule: ⊙➤              }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ End ⊩ False : (1 : []) :: [Int ∪ Bool] ⇐ [Int ∪ Bool]
+-- -->{ Rule: ⇐Sub            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ End ⊩ False : (1 : []) :: [Int ∪ Bool] ⇒c c ≤ [Int ∪ Bool]
+-- -->{ Rule: ⇒Anno           }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ End ⊩ [Int ∪ Bool] ≤ [Int ∪ Bool] ⊩ False : (1 : []) ⇐ [Int ∪ Bool]
+-- -->{ Rule: ⇐[]Cons         }
+--    ⋅ ⊩ let map :: ∀a. ∀b. (a → b) → [a] → [b] = Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) in ((map @Int ∪ Bool) (λx. 1 :: Int ∪ Bool → Int)) (False : (1 : []) :: [Int ∪ Bool]) ⇒c End
+-- -->{ Rule: ⇒LetA           }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ ((map @Int ∪ Bool) (λx. 1 :: Int ∪ Bool → Int)) (False : (1 : []) :: [Int ∪ Bool]) ⇒c End
+-- -->{ Rule: ⇒App            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ (map @Int ∪ Bool) (λx. 1 :: Int ∪ Bool → Int) ⇒a0 a0 ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End
+-- -->{ Rule: ⇒App            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ map @Int ∪ Bool ⇒a1 a1 ▹b1,c1 b1 → c1 ⊙ λx. 1 :: Int ∪ Bool → Int ➤a0 a0 ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End
+-- -->{ Rule: ⇒TApp           }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ map ⇒a2 a2 o Int ∪ Bool ➤a1 a1 ▹b1,c1 b1 → c1 ⊙ λx. 1 :: Int ∪ Bool → Int ➤a0 a0 ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End
+-- -->{ Rule: ⇒Var            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ ∀a. ∀b. (a → b) → [a] → [b] o Int ∪ Bool ➤a1 a1 ▹b1,c1 b1 → c1 ⊙ λx. 1 :: Int ∪ Bool → Int ➤a0 a0 ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End
+-- -->{ Rule: ∘∀              }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ ∀b. (Int ∪ Bool → b) → [Int ∪ Bool] → [b] ▹b1,c1 b1 → c1 ⊙ λx. 1 :: Int ∪ Bool → Int ➤a0 a0 ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End
+-- -->{ Rule: ▹∀              }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ (Int ∪ Bool → a1) → [Int ∪ Bool] → [a1] ▹b1,c1 b1 → c1 ⊙ λx. 1 :: Int ∪ Bool → Int ➤a0 a0 ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End
+-- -->{ Rule: ▹→              }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ Int ∪ Bool → a1 → [Int ∪ Bool] → [a1] ⊙ λx. 1 :: Int ∪ Bool → Int ➤a0 a0 ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End
+-- -->{ Rule: ⊙➤              }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ [Int ∪ Bool] → [a1] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ λx. 1 :: Int ∪ Bool → Int ⇐ Int ∪ Bool → a1
+-- -->{ Rule: ⇐Sub            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ [Int ∪ Bool] → [a1] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ λx. 1 :: Int ∪ Bool → Int ⇒a0 a0 ≤ Int ∪ Bool → a1
+-- -->{ Rule: ⇒Anno           }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ [Int ∪ Bool] → [a1] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Int ∪ Bool → Int ≤ Int ∪ Bool → a1 ⊩ λx. 1 ⇐ Int ∪ Bool → Int
+-- -->{ Rule: ⇐λ              }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ [Int ∪ Bool] → [a1] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Int ∪ Bool → Int ≤ Int ∪ Bool → a1, x0 : Int ∪ Bool ⊩ 1 ⇐ Int
+-- -->{ Rule: ⇐Sub            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ [Int ∪ Bool] → [a1] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Int ∪ Bool → Int ≤ Int ∪ Bool → a1, x0 : Int ∪ Bool ⊩ 1 ⇒a0 a0 ≤ Int
+-- -->{ Rule: ⇒Int            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ [Int ∪ Bool] → [a1] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Int ∪ Bool → Int ≤ Int ∪ Bool → a1, x0 : Int ∪ Bool ⊩ Int ≤ Int
+-- -->{ Rule: ≤Int            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ [Int ∪ Bool] → [a1] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Int ∪ Bool → Int ≤ Int ∪ Bool → a1, x0 : Int ∪ Bool
+-- -->{ Rule: GCVar           }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ [Int ∪ Bool] → [a1] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Int ∪ Bool → Int ≤ Int ∪ Bool → a1
+-- -->{ Rule: ≤→              }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ [Int ∪ Bool] → [a1] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Int ∪ Bool ≤ Int ∪ Bool ⊩ Int ≤ a1
+-- -->{ Rule: ≤MonoR          }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ [Int ∪ Bool] → [Int] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Int ∪ Bool ≤ Int ∪ Bool
+-- -->{ Rule: ≤∪L             }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ [Int ∪ Bool] → [Int] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Bool ≤ Int ∪ Bool ⊩ Int ≤ Int ∪ Bool
+-- -->{ Rule: ≤∪R1            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ [Int ∪ Bool] → [Int] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Bool ≤ Int ∪ Bool ⊩ Int ≤ Int
+-- -->{ Rule: ≤Int            }
+--    ⋅ ⊩ let map :: ∀a. ∀b. (a → b) → [a] → [b] = Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) in ((map @Int ∪ Bool) (λx. 1 :: Int ∪ Bool → Int)) (False : (1 : []) :: [Int ∪ Bool]) ⇒c End
+-- -->{ Rule: ⇒LetA           }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ ((map @Int ∪ Bool) (λx. 1 :: Int ∪ Bool → Int)) (False : (1 : []) :: [Int ∪ Bool]) ⇒c End
+-- -->{ Rule: ⇒App            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ (map @Int ∪ Bool) (λx. 1 :: Int ∪ Bool → Int) ⇒a0 a0 ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End
+-- -->{ Rule: ⇒App            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ map @Int ∪ Bool ⇒a1 a1 ▹b1,c1 b1 → c1 ⊙ λx. 1 :: Int ∪ Bool → Int ➤a0 a0 ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End
+-- -->{ Rule: ⇒TApp           }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ map ⇒a2 a2 o Int ∪ Bool ➤a1 a1 ▹b1,c1 b1 → c1 ⊙ λx. 1 :: Int ∪ Bool → Int ➤a0 a0 ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End
+-- -->{ Rule: ⇒Var            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ ∀a. ∀b. (a → b) → [a] → [b] o Int ∪ Bool ➤a1 a1 ▹b1,c1 b1 → c1 ⊙ λx. 1 :: Int ∪ Bool → Int ➤a0 a0 ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End
+-- -->{ Rule: ∘∀              }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ ∀b. (Int ∪ Bool → b) → [Int ∪ Bool] → [b] ▹b1,c1 b1 → c1 ⊙ λx. 1 :: Int ∪ Bool → Int ➤a0 a0 ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End
+-- -->{ Rule: ▹∀              }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ (Int ∪ Bool → a1) → [Int ∪ Bool] → [a1] ▹b1,c1 b1 → c1 ⊙ λx. 1 :: Int ∪ Bool → Int ➤a0 a0 ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End
+-- -->{ Rule: ▹→              }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ Int ∪ Bool → a1 → [Int ∪ Bool] → [a1] ⊙ λx. 1 :: Int ∪ Bool → Int ➤a0 a0 ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End
+-- -->{ Rule: ⊙➤              }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ [Int ∪ Bool] → [a1] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ λx. 1 :: Int ∪ Bool → Int ⇐ Int ∪ Bool → a1
+-- -->{ Rule: ⇐Sub            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ [Int ∪ Bool] → [a1] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ λx. 1 :: Int ∪ Bool → Int ⇒a0 a0 ≤ Int ∪ Bool → a1
+-- -->{ Rule: ⇒Anno           }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ [Int ∪ Bool] → [a1] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Int ∪ Bool → Int ≤ Int ∪ Bool → a1 ⊩ λx. 1 ⇐ Int ∪ Bool → Int
+-- -->{ Rule: ⇐λ              }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ [Int ∪ Bool] → [a1] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Int ∪ Bool → Int ≤ Int ∪ Bool → a1, x0 : Int ∪ Bool ⊩ 1 ⇐ Int
+-- -->{ Rule: ⇐Sub            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ [Int ∪ Bool] → [a1] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Int ∪ Bool → Int ≤ Int ∪ Bool → a1, x0 : Int ∪ Bool ⊩ 1 ⇒a0 a0 ≤ Int
+-- -->{ Rule: ⇒Int            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ [Int ∪ Bool] → [a1] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Int ∪ Bool → Int ≤ Int ∪ Bool → a1, x0 : Int ∪ Bool ⊩ Int ≤ Int
+-- -->{ Rule: ≤Int            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ [Int ∪ Bool] → [a1] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Int ∪ Bool → Int ≤ Int ∪ Bool → a1, x0 : Int ∪ Bool
+-- -->{ Rule: GCVar           }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ [Int ∪ Bool] → [a1] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Int ∪ Bool → Int ≤ Int ∪ Bool → a1
+-- -->{ Rule: ≤→              }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b], a1 : ⬒ ⊩ [Int ∪ Bool] → [a1] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Int ∪ Bool ≤ Int ∪ Bool ⊩ Int ≤ a1
+-- -->{ Rule: ≤MonoR          }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ [Int ∪ Bool] → [Int] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Int ∪ Bool ≤ Int ∪ Bool
+-- -->{ Rule: ≤∪L             }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ [Int ∪ Bool] → [Int] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Bool ≤ Int ∪ Bool ⊩ Int ≤ Int ∪ Bool
+-- -->{ Rule: ≤∪R1            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ [Int ∪ Bool] → [Int] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Bool ≤ Int ∪ Bool ⊩ Int ≤ Int
+-- -->{ Rule: ≤Int            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ [Int ∪ Bool] → [Int] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Bool ≤ Int ∪ Bool
+-- -->{ Rule: ≤∪R1            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ [Int ∪ Bool] → [Int] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Bool ≤ Int
+-- -->{ Rule: Stuck           }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ [Int ∪ Bool] → [Int] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Bool ≤ Int ∪ Bool
+-- -->{ Rule: ≤∪R2            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ [Int ∪ Bool] → [Int] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End ⊩ Bool ≤ Bool
+-- -->{ Rule: ≤Bool           }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ [Int ∪ Bool] → [Int] ▹b0,c0 b0 → c0 ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End
+-- -->{ Rule: ▹→              }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ [Int ∪ Bool] → [Int] ⊙ False : (1 : []) :: [Int ∪ Bool] ➤c End
+-- -->{ Rule: ⊙➤              }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ End ⊩ False : (1 : []) :: [Int ∪ Bool] ⇐ [Int ∪ Bool]
+-- -->{ Rule: ⇐Sub            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ End ⊩ False : (1 : []) :: [Int ∪ Bool] ⇒c c ≤ [Int ∪ Bool]
+-- -->{ Rule: ⇒Anno           }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ End ⊩ [Int ∪ Bool] ≤ [Int ∪ Bool] ⊩ False : (1 : []) ⇐ [Int ∪ Bool]
+-- -->{ Rule: ⇐[]Cons         }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ End ⊩ [Int ∪ Bool] ≤ [Int ∪ Bool] ⊩ 1 : [] ⇐ [Int ∪ Bool] ⊩ False ⇐ Int ∪ Bool
+-- -->{ Rule: ⇐∪1             }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ End ⊩ [Int ∪ Bool] ≤ [Int ∪ Bool] ⊩ 1 : [] ⇐ [Int ∪ Bool] ⊩ False ⇐ Int
+-- -->{ Rule: ⇐Sub            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ End ⊩ [Int ∪ Bool] ≤ [Int ∪ Bool] ⊩ 1 : [] ⇐ [Int ∪ Bool] ⊩ False ⇒c c ≤ Int
+-- -->{ Rule: ⇒Bool           }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ End ⊩ [Int ∪ Bool] ≤ [Int ∪ Bool] ⊩ 1 : [] ⇐ [Int ∪ Bool] ⊩ Bool ≤ Int
+-- -->{ Rule: Stuck           }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ End ⊩ [Int ∪ Bool] ≤ [Int ∪ Bool] ⊩ 1 : [] ⇐ [Int ∪ Bool] ⊩ False ⇐ Int ∪ Bool
+-- -->{ Rule: ⇐∪2             }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ End ⊩ [Int ∪ Bool] ≤ [Int ∪ Bool] ⊩ 1 : [] ⇐ [Int ∪ Bool] ⊩ False ⇐ Bool
+-- -->{ Rule: ⇐Sub            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ End ⊩ [Int ∪ Bool] ≤ [Int ∪ Bool] ⊩ 1 : [] ⇐ [Int ∪ Bool] ⊩ False ⇒c c ≤ Bool
+-- -->{ Rule: ⇒Bool           }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ End ⊩ [Int ∪ Bool] ≤ [Int ∪ Bool] ⊩ 1 : [] ⇐ [Int ∪ Bool] ⊩ Bool ≤ Bool
+-- -->{ Rule: ≤Bool           }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ End ⊩ [Int ∪ Bool] ≤ [Int ∪ Bool] ⊩ 1 : [] ⇐ [Int ∪ Bool]
+-- -->{ Rule: ⇐[]Cons         }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ End ⊩ [Int ∪ Bool] ≤ [Int ∪ Bool] ⊩ [] ⇐ [Int ∪ Bool] ⊩ 1 ⇐ Int ∪ Bool
+-- -->{ Rule: ⇐∪1             }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ End ⊩ [Int ∪ Bool] ≤ [Int ∪ Bool] ⊩ [] ⇐ [Int ∪ Bool] ⊩ 1 ⇐ Int
+-- -->{ Rule: ⇐Sub            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ End ⊩ [Int ∪ Bool] ≤ [Int ∪ Bool] ⊩ [] ⇐ [Int ∪ Bool] ⊩ 1 ⇒c c ≤ Int
+-- -->{ Rule: ⇒Int            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ End ⊩ [Int ∪ Bool] ≤ [Int ∪ Bool] ⊩ [] ⇐ [Int ∪ Bool] ⊩ Int ≤ Int
+-- -->{ Rule: ≤Int            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ End ⊩ [Int ∪ Bool] ≤ [Int ∪ Bool] ⊩ [] ⇐ [Int ∪ Bool]
+-- -->{ Rule: ⇐[]Nil          }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ End ⊩ [Int ∪ Bool] ≤ [Int ∪ Bool]
+-- -->{ Rule: ≤[]             }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ End ⊩ Int ∪ Bool ≤ Int ∪ Bool
+-- -->{ Rule: ≤∪L             }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ End ⊩ Bool ≤ Int ∪ Bool ⊩ Int ≤ Int ∪ Bool
+-- -->{ Rule: ≤∪R1            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ End ⊩ Bool ≤ Int ∪ Bool ⊩ Int ≤ Int
+-- -->{ Rule: ≤Int            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ End ⊩ Bool ≤ Int ∪ Bool
+-- -->{ Rule: ≤∪R1            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ End ⊩ Bool ≤ Int
+-- -->{ Rule: Stuck           }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ End ⊩ Bool ≤ Int ∪ Bool
+-- -->{ Rule: ≤∪R2            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ End ⊩ Bool ≤ Bool
+-- -->{ Rule: ≤Bool           }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b] ⊩ End
+-- -->{ Rule: Dummy           }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇐ ∀a. ∀b. (a → b) → [a] → [b]
+-- -->{ Rule: ⇐Sub            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b] ⊩ Λa. Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a → b) → [a] → [b]) ⇒c c ≤ ∀a. ∀b. (a → b) → [a] → [b]
+-- -->{ Rule: ⇒Λ              }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b], a0 : □ ⊩ Λb. (λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) :: (a0 → b) → [a0] → [b]) ⇒b0 ∀a0. b0 ≤ ∀a. ∀b. (a → b) → [a] → [b]
+-- -->{ Rule: ⇒ΛAnno          }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b], a0 : □ ⊩ ∀a0. ∀c. (a0 → c) → [a0] → [c] ≤ ∀a. ∀b. (a → b) → [a] → [b], c : □ ⊩ λf. λxs. (case xs of [] -> []; λy. λys. (f y : (map f) ys)) ⇐ (a0 → c) → [a0] → [c]
+-- -->{ Rule: ⇐λ              }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b], a0 : □ ⊩ ∀a0. ∀c. (a0 → c) → [a0] → [c] ≤ ∀a. ∀b. (a → b) → [a] → [b], c : □, x : a0 → c ⊩ λxs. (case xs of [] -> []; λy. λys. (x y : (map x) ys)) ⇐ [a0] → [c]
+-- -->{ Rule: ⇐λ              }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b], a0 : □ ⊩ ∀a0. ∀c. (a0 → c) → [a0] → [c] ≤ ∀a. ∀b. (a → b) → [a] → [b], c : □, x : a0 → c, x0 : [a0] ⊩ case x0 of [] -> []; λy. λys. (x y : (map x) ys) ⇐ [c]
+-- -->{ Rule: ⇐Case           }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b], a0 : □ ⊩ ∀a0. ∀c. (a0 → c) → [a0] → [c] ≤ ∀a. ∀b. (a → b) → [a] → [b], c : □, x : a0 → c, x0 : [a0] ⊩ x0 ⇒b0 λy. λys. (x y : (map x) ys) ⇐{b0 :: List} [c] ⊩ [] ⇐ [c]
+-- -->{ Rule: ⇐[]Nil          }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b], a0 : □ ⊩ ∀a0. ∀c. (a0 → c) → [a0] → [c] ≤ ∀a. ∀b. (a → b) → [a] → [b], c : □, x : a0 → c, x0 : [a0] ⊩ x0 ⇒b0 λy. λys. (x y : (map x) ys) ⇐{b0 :: List} [c]
+-- -->{ Rule: ⇒Var            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b], a0 : □ ⊩ ∀a0. ∀c. (a0 → c) → [a0] → [c] ≤ ∀a. ∀b. (a → b) → [a] → [b], c : □, x : a0 → c, x0 : [a0] ⊩ λy. λys. (x y : (map x) ys) ⇐{[a0] :: List} [c]
+-- -->{ Rule: Case⇐           }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b], a0 : □ ⊩ ∀a0. ∀c. (a0 → c) → [a0] → [c] ≤ ∀a. ∀b. (a → b) → [a] → [b], c : □, x : a0 → c, x0 : [a0] ⊩ λy. λys. (x y : (map x) ys) ⇐ a0 → [a0] → [c]
+-- -->{ Rule: ⇐λ              }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b], a0 : □ ⊩ ∀a0. ∀c. (a0 → c) → [a0] → [c] ≤ ∀a. ∀b. (a → b) → [a] → [b], c : □, x : a0 → c, x0 : [a0], y0 : a0 ⊩ λys. (x y0 : (map x) ys) ⇐ [a0] → [c]
+-- -->{ Rule: ⇐λ              }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b], a0 : □ ⊩ ∀a0. ∀c. (a0 → c) → [a0] → [c] ≤ ∀a. ∀b. (a → b) → [a] → [b], c : □, x : a0 → c, x0 : [a0], y0 : a0, y : [a0] ⊩ x y0 : (map x) y ⇐ [c]
+-- -->{ Rule: ⇐[]Cons         }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b], a0 : □ ⊩ ∀a0. ∀c. (a0 → c) → [a0] → [c] ≤ ∀a. ∀b. (a → b) → [a] → [b], c : □, x : a0 → c, x0 : [a0], y0 : a0, y : [a0] ⊩ (map x) y ⇐ [c] ⊩ x y0 ⇐ c
+-- -->{ Rule: ⇐Sub            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b], a0 : □ ⊩ ∀a0. ∀c. (a0 → c) → [a0] → [c] ≤ ∀a. ∀b. (a → b) → [a] → [b], c : □, x : a0 → c, x0 : [a0], y0 : a0, y : [a0] ⊩ (map x) y ⇐ [c] ⊩ x y0 ⇒b0 b0 ≤ c
+-- -->{ Rule: ⇒App            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b], a0 : □ ⊩ ∀a0. ∀c. (a0 → c) → [a0] → [c] ≤ ∀a. ∀b. (a → b) → [a] → [b], c : □, x : a0 → c, x0 : [a0], y0 : a0, y : [a0] ⊩ (map x) y ⇐ [c] ⊩ x ⇒c0 c0 ▹a1,b1 a1 → b1 ⊙ y0 ➤b0 b0 ≤ c
+-- -->{ Rule: ⇒Var            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b], a0 : □ ⊩ ∀a0. ∀c. (a0 → c) → [a0] → [c] ≤ ∀a. ∀b. (a → b) → [a] → [b], c : □, x : a0 → c, x0 : [a0], y0 : a0, y : [a0] ⊩ (map x) y ⇐ [c] ⊩ a0 → c ▹a1,b1 a1 → b1 ⊙ y0 ➤b0 b0 ≤ c
+-- -->{ Rule: ▹→              }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b], a0 : □ ⊩ ∀a0. ∀c. (a0 → c) → [a0] → [c] ≤ ∀a. ∀b. (a → b) → [a] → [b], c : □, x : a0 → c, x0 : [a0], y0 : a0, y : [a0] ⊩ (map x) y ⇐ [c] ⊩ a0 → c ⊙ y0 ➤b0 b0 ≤ c
+-- -->{ Rule: ⊙➤              }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b], a0 : □ ⊩ ∀a0. ∀c. (a0 → c) → [a0] → [c] ≤ ∀a. ∀b. (a → b) → [a] → [b], c : □, x : a0 → c, x0 : [a0], y0 : a0, y : [a0] ⊩ (map x) y ⇐ [c] ⊩ c ≤ c ⊩ y0 ⇐ a0
+-- -->{ Rule: ⇐Sub            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b], a0 : □ ⊩ ∀a0. ∀c. (a0 → c) → [a0] → [c] ≤ ∀a. ∀b. (a → b) → [a] → [b], c : □, x : a0 → c, x0 : [a0], y0 : a0, y : [a0] ⊩ (map x) y ⇐ [c] ⊩ c ≤ c ⊩ y0 ⇒b0 b0 ≤ a0
+-- -->{ Rule: ⇒Var            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b], a0 : □ ⊩ ∀a0. ∀c. (a0 → c) → [a0] → [c] ≤ ∀a. ∀b. (a → b) → [a] → [b], c : □, x : a0 → c, x0 : [a0], y0 : a0, y : [a0] ⊩ (map x) y ⇐ [c] ⊩ c ≤ c ⊩ a0 ≤ a0
+-- -->{ Rule: ≤TVar           }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b], a0 : □ ⊩ ∀a0. ∀c. (a0 → c) → [a0] → [c] ≤ ∀a. ∀b. (a → b) → [a] → [b], c : □, x : a0 → c, x0 : [a0], y0 : a0, y : [a0] ⊩ (map x) y ⇐ [c] ⊩ c ≤ c
+-- -->{ Rule: ≤TVar           }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b], a0 : □ ⊩ ∀a0. ∀c. (a0 → c) → [a0] → [c] ≤ ∀a. ∀b. (a → b) → [a] → [b], c : □, x : a0 → c, x0 : [a0], y0 : a0, y : [a0] ⊩ (map x) y ⇐ [c]
+-- -->{ Rule: ⇐Sub            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b], a0 : □ ⊩ ∀a0. ∀c. (a0 → c) → [a0] → [c] ≤ ∀a. ∀b. (a → b) → [a] → [b], c : □, x : a0 → c, x0 : [a0], y0 : a0, y : [a0] ⊩ (map x) y ⇒b0 b0 ≤ [c]
+-- -->{ Rule: ⇒App            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b], a0 : □ ⊩ ∀a0. ∀c. (a0 → c) → [a0] → [c] ≤ ∀a. ∀b. (a → b) → [a] → [b], c : □, x : a0 → c, x0 : [a0], y0 : a0, y : [a0] ⊩ map x ⇒c0 c0 ▹a1,b1 a1 → b1 ⊙ y ➤b0 b0 ≤ [c]
+-- -->{ Rule: ⇒App            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b], a0 : □ ⊩ ∀a0. ∀c. (a0 → c) → [a0] → [c] ≤ ∀a. ∀b. (a → b) → [a] → [b], c : □, x : a0 → c, x0 : [a0], y0 : a0, y : [a0] ⊩ map ⇒c1 c1 ▹a2,b2 a2 → b2 ⊙ x ➤c0 c0 ▹a1,b1 a1 → b1 ⊙ y ➤b0 b0 ≤ [c]
+-- -->{ Rule: ⇒Var            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b], a0 : □ ⊩ ∀a0. ∀c. (a0 → c) → [a0] → [c] ≤ ∀a. ∀b. (a → b) → [a] → [b], c : □, x : a0 → c, x0 : [a0], y0 : a0, y : [a0] ⊩ ∀a. ∀b. (a → b) → [a] → [b] ▹a2,b2 a2 → b2 ⊙ x ➤c0 c0 ▹a1,b1 a1 → b1 ⊙ y ➤b0 b0 ≤ [c]
+-- -->{ Rule: ▹∀              }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b], a0 : □ ⊩ ∀a0. ∀c. (a0 → c) → [a0] → [c] ≤ ∀a. ∀b. (a → b) → [a] → [b], c : □, x : a0 → c, x0 : [a0], y0 : a0, y : [a0], c1 : ⬒ ⊩ ∀b. (c1 → b) → [c1] → [b] ▹a2,b2 a2 → b2 ⊙ x ➤c0 c0 ▹a1,b1 a1 → b1 ⊙ y ➤b0 b0 ≤ [c]
+-- -->{ Rule: ▹∀              }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b], a0 : □ ⊩ ∀a0. ∀c. (a0 → c) → [a0] → [c] ≤ ∀a. ∀b. (a → b) → [a] → [b], c : □, x : a0 → c, x0 : [a0], y0 : a0, y : [a0], c1 : ⬒, c2 : ⬒ ⊩ (c1 → c2) → [c1] → [c2] ▹a2,b2 a2 → b2 ⊙ x ➤c0 c0 ▹a1,b1 a1 → b1 ⊙ y ➤b0 b0 ≤ [c]
+-- -->{ Rule: ▹→              }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b], a0 : □ ⊩ ∀a0. ∀c. (a0 → c) → [a0] → [c] ≤ ∀a. ∀b. (a → b) → [a] → [b], c : □, x : a0 → c, x0 : [a0], y0 : a0, y : [a0], c1 : ⬒, c2 : ⬒ ⊩ c1 → c2 → [c1] → [c2] ⊙ x ➤c0 c0 ▹a1,b1 a1 → b1 ⊙ y ➤b0 b0 ≤ [c]
+-- -->{ Rule: ⊙➤              }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b], a0 : □ ⊩ ∀a0. ∀c. (a0 → c) → [a0] → [c] ≤ ∀a. ∀b. (a → b) → [a] → [b], c : □, x : a0 → c, x0 : [a0], y0 : a0, y : [a0], c1 : ⬒, c2 : ⬒ ⊩ [c1] → [c2] ▹a1,b1 a1 → b1 ⊙ y ➤b0 b0 ≤ [c] ⊩ x ⇐ c1 → c2
+-- -->{ Rule: ⇐Sub            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b], a0 : □ ⊩ ∀a0. ∀c. (a0 → c) → [a0] → [c] ≤ ∀a. ∀b. (a → b) → [a] → [b], c : □, x : a0 → c, x0 : [a0], y0 : a0, y : [a0], c1 : ⬒, c2 : ⬒ ⊩ [c1] → [c2] ▹a1,b1 a1 → b1 ⊙ y ➤b0 b0 ≤ [c] ⊩ x ⇒c0 c0 ≤ c1 → c2
+-- -->{ Rule: ⇒Var            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b], a0 : □ ⊩ ∀a0. ∀c. (a0 → c) → [a0] → [c] ≤ ∀a. ∀b. (a → b) → [a] → [b], c : □, x : a0 → c, x0 : [a0], y0 : a0, y : [a0], c1 : ⬒, c2 : ⬒ ⊩ [c1] → [c2] ▹a1,b1 a1 → b1 ⊙ y ➤b0 b0 ≤ [c] ⊩ a0 → c ≤ c1 → c2
+-- -->{ Rule: ≤→              }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b], a0 : □ ⊩ ∀a0. ∀c. (a0 → c) → [a0] → [c] ≤ ∀a. ∀b. (a → b) → [a] → [b], c : □, x : a0 → c, x0 : [a0], y0 : a0, y : [a0], c1 : ⬒, c2 : ⬒ ⊩ [c1] → [c2] ▹a1,b1 a1 → b1 ⊙ y ➤b0 b0 ≤ [c] ⊩ c1 ≤ a0 ⊩ c ≤ c2
+-- -->{ Rule: ≤MonoR          }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b], a0 : □ ⊩ ∀a0. ∀c. (a0 → c) → [a0] → [c] ≤ ∀a. ∀b. (a → b) → [a] → [b], c : □, x : a0 → c, x0 : [a0], y0 : a0, y : [a0], c1 : ⬒ ⊩ [c1] → [c] ▹a1,b1 a1 → b1 ⊙ y ➤b0 b0 ≤ [c] ⊩ c1 ≤ a0
+-- -->{ Rule: ≤MonoL          }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b], a0 : □ ⊩ ∀a0. ∀c. (a0 → c) → [a0] → [c] ≤ ∀a. ∀b. (a → b) → [a] → [b], c : □, x : a0 → c, x0 : [a0], y0 : a0, y : [a0] ⊩ [a0] → [c] ▹a1,b1 a1 → b1 ⊙ y ➤b0 b0 ≤ [c]
+-- -->{ Rule: ▹→              }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b], a0 : □ ⊩ ∀a0. ∀c. (a0 → c) → [a0] → [c] ≤ ∀a. ∀b. (a → b) → [a] → [b], c : □, x : a0 → c, x0 : [a0], y0 : a0, y : [a0] ⊩ [a0] → [c] ⊙ y ➤b0 b0 ≤ [c]
+-- -->{ Rule: ⊙➤              }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b], a0 : □ ⊩ ∀a0. ∀c. (a0 → c) → [a0] → [c] ≤ ∀a. ∀b. (a → b) → [a] → [b], c : □, x : a0 → c, x0 : [a0], y0 : a0, y : [a0] ⊩ [c] ≤ [c] ⊩ y ⇐ [a0]
+-- -->{ Rule: ⇐Sub            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b], a0 : □ ⊩ ∀a0. ∀c. (a0 → c) → [a0] → [c] ≤ ∀a. ∀b. (a → b) → [a] → [b], c : □, x : a0 → c, x0 : [a0], y0 : a0, y : [a0] ⊩ [c] ≤ [c] ⊩ y ⇒b0 b0 ≤ [a0]
+-- -->{ Rule: ⇒Var            }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b], a0 : □ ⊩ ∀a0. ∀c. (a0 → c) → [a0] → [c] ≤ ∀a. ∀b. (a → b) → [a] → [b], c : □, x : a0 → c, x0 : [a0], y0 : a0, y : [a0] ⊩ [c] ≤ [c] ⊩ [a0] ≤ [a0]
+-- -->{ Rule: ≤[]             }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b], a0 : □ ⊩ ∀a0. ∀c. (a0 → c) → [a0] → [c] ≤ ∀a. ∀b. (a → b) → [a] → [b], c : □, x : a0 → c, x0 : [a0], y0 : a0, y : [a0] ⊩ [c] ≤ [c] ⊩ a0 ≤ a0
+-- -->{ Rule: ≤TVar           }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b], a0 : □ ⊩ ∀a0. ∀c. (a0 → c) → [a0] → [c] ≤ ∀a. ∀b. (a → b) → [a] → [b], c : □, x : a0 → c, x0 : [a0], y0 : a0, y : [a0] ⊩ [c] ≤ [c]
+-- -->{ Rule: ≤[]             }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b], a0 : □ ⊩ ∀a0. ∀c. (a0 → c) → [a0] → [c] ≤ ∀a. ∀b. (a → b) → [a] → [b], c : □, x : a0 → c, x0 : [a0], y0 : a0, y : [a0] ⊩ c ≤ c
+-- -->{ Rule: ≤TVar           }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b], a0 : □ ⊩ ∀a0. ∀c. (a0 → c) → [a0] → [c] ≤ ∀a. ∀b. (a → b) → [a] → [b], c : □, x : a0 → c, x0 : [a0], y0 : a0, y : [a0]
+-- -->{ Rule: GCVar           }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b], a0 : □ ⊩ ∀a0. ∀c. (a0 → c) → [a0] → [c] ≤ ∀a. ∀b. (a → b) → [a] → [b], c : □, x : a0 → c, x0 : [a0], y0 : a0
+-- -->{ Rule: GCVar           }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b], a0 : □ ⊩ ∀a0. ∀c. (a0 → c) → [a0] → [c] ≤ ∀a. ∀b. (a → b) → [a] → [b], c : □, x : a0 → c, x0 : [a0]
+-- -->{ Rule: GCVar           }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b], a0 : □ ⊩ ∀a0. ∀c. (a0 → c) → [a0] → [c] ≤ ∀a. ∀b. (a → b) → [a] → [b], c : □, x : a0 → c
+-- -->{ Rule: GCVar           }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b], a0 : □ ⊩ ∀a0. ∀c. (a0 → c) → [a0] → [c] ≤ ∀a. ∀b. (a → b) → [a] → [b], c : □
+-- -->{ Rule: GCTVar          }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b], a0 : □ ⊩ ∀a0. ∀c. (a0 → c) → [a0] → [c] ≤ ∀a. ∀b. (a → b) → [a] → [b]
+-- -->{ Rule: ≤∀              }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b], a0 : □, b0 : ■ ⊩ ∀c. (b0 → c) → [b0] → [c] ≤ ∀b. (b0 → b) → [b0] → [b]
+-- -->{ Rule: ≤∀              }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b], a0 : □, b0 : ■, c0 : ■ ⊩ (b0 → c0) → [b0] → [c0] ≤ (b0 → c0) → [b0] → [c0]
+-- -->{ Rule: ≤→              }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b], a0 : □, b0 : ■, c0 : ■ ⊩ b0 → c0 ≤ b0 → c0 ⊩ [b0] → [c0] ≤ [b0] → [c0]
+-- -->{ Rule: ≤→              }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b], a0 : □, b0 : ■, c0 : ■ ⊩ b0 → c0 ≤ b0 → c0 ⊩ [b0] ≤ [b0] ⊩ [c0] ≤ [c0]
+-- -->{ Rule: ≤[]             }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b], a0 : □, b0 : ■, c0 : ■ ⊩ b0 → c0 ≤ b0 → c0 ⊩ [b0] ≤ [b0] ⊩ c0 ≤ c0
+-- -->{ Rule: ≤TVar           }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b], a0 : □, b0 : ■, c0 : ■ ⊩ b0 → c0 ≤ b0 → c0 ⊩ [b0] ≤ [b0]
+-- -->{ Rule: ≤[]             }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b], a0 : □, b0 : ■, c0 : ■ ⊩ b0 → c0 ≤ b0 → c0 ⊩ b0 ≤ b0
+-- -->{ Rule: ≤TVar           }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b], a0 : □, b0 : ■, c0 : ■ ⊩ b0 → c0 ≤ b0 → c0
+-- -->{ Rule: ≤→              }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b], a0 : □, b0 : ■, c0 : ■ ⊩ b0 ≤ b0 ⊩ c0 ≤ c0
+-- -->{ Rule: ≤TVar           }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b], a0 : □, b0 : ■, c0 : ■ ⊩ b0 ≤ b0
+-- -->{ Rule: ≤TVar           }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b], a0 : □, b0 : ■, c0 : ■
+-- -->{ Rule: GCTVar          }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b], a0 : □, b0 : ■
+-- -->{ Rule: GCTVar          }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b], a0 : □
+-- -->{ Rule: GCTVar          }
+--    ⋅, map : ∀a. ∀b. (a → b) → [a] → [b]
+-- -->{ Rule: GCVar           }
