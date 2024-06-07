@@ -34,7 +34,7 @@ Inductive d_sub : denv -> typ -> typ -> Prop :=    (* defn d_sub *)
       ( forall X , X \notin  L  -> d_sub  ( X ~ dbind_stvar_empty  ++  Ψ )   ( open_typ_wrt_typ A (typ_var_f X) )   ( open_typ_wrt_typ B (typ_var_f X) )  )  ->
       d_sub Ψ (typ_all A) (typ_all B)
   | d_sub__alll : forall (L:vars) (Ψ:denv) (A B T:typ),
-      sneq_all B ->
+      wneq_all B ->
       ( forall X , X \notin  L  -> s_in X  ( open_typ_wrt_typ A (typ_var_f X) )  )  ->
       d_mono_typ Ψ T ->
       d_sub Ψ  (open_typ_wrt_typ  A   T )  B ->

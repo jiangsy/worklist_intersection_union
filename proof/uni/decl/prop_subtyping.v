@@ -95,25 +95,25 @@ Qed.
 #[local] Hint Resolve d_sub_refl d_wf_typ_subst_tvar d_wf_typ_subst_stvar d_wf_env_subst_tvar : core.
 
 
-Fixpoint d_typ_order (A : typ) : nat :=
+Fixpoint typ_order (A : typ) : nat :=
   match A with
-    | typ_all A1 => S ( d_typ_order A1 )
-    | typ_arrow A1 A2 => d_typ_order A1 + d_typ_order A2
-    | typ_intersection A1 A2 => d_typ_order A1 + d_typ_order A2
-    | typ_union A1 A2 => d_typ_order A1 + d_typ_order A2
+    | typ_all A1 => S ( typ_order A1 )
+    | typ_arrow A1 A2 => typ_order A1 + typ_order A2
+    | typ_intersection A1 A2 => typ_order A1 + typ_order A2
+    | typ_union A1 A2 => typ_order A1 + typ_order A2
     | _ => 0
   end.
 
-Fixpoint d_typ_size (A : typ) :=
+Fixpoint typ_size (A : typ) :=
   match A with
-    | typ_intersection A1 A2 => 1 + d_typ_size A1 + d_typ_size A2
-    | typ_union A1 A2 => 1 + d_typ_size A1 + d_typ_size A2
+    | typ_intersection A1 A2 => 1 + typ_size A1 + typ_size A2
+    | typ_union A1 A2 => 1 + typ_size A1 + typ_size A2
     | _ => 0
   end.
 
 
 Lemma d_mono_type_order_0 : forall Ψ A,
-  d_mono_typ Ψ A -> d_typ_order A = 0.
+  d_mono_typ Ψ A -> typ_order A = 0.
 Proof.
   intros; induction H; simpl; auto.
   - rewrite IHd_mono_typ1. rewrite IHd_mono_typ2. auto.
@@ -122,7 +122,7 @@ Qed.
 
 Lemma d_open_rec_mono_same_order : forall Ψ A T n,
   d_mono_typ Ψ T ->
-  d_typ_order (open_typ_wrt_typ_rec n T A) = d_typ_order A.
+  typ_order (open_typ_wrt_typ_rec n T A) = typ_order A.
 Proof.
   induction A; simpl; intros; auto.
   - destruct (lt_eq_lt_dec n n0).
@@ -132,7 +132,7 @@ Qed.
 
 
 Lemma d_open_rec_tvar_same_order : forall A X n,
-  d_typ_order (open_typ_wrt_typ_rec n (typ_var_f X) A) = d_typ_order A.
+  typ_order (open_typ_wrt_typ_rec n (typ_var_f X) A) = typ_order A.
 Proof.
   induction A; simpl; intros; auto.
   - destruct (lt_eq_lt_dec n n0).
@@ -143,14 +143,14 @@ Qed.
 
 Lemma d_open_mono_same_order : forall Ψ A T,
   d_mono_typ Ψ T ->
-  d_typ_order (A ᵗ^^ₜ T) = d_typ_order A.
+  typ_order (A ᵗ^^ₜ T) = typ_order A.
 Proof.
   intros. unfold open_typ_wrt_typ. eapply d_open_rec_mono_same_order; eauto.
 Qed.
 
 
 Lemma d_open_svar_same_order : forall A X,
-  d_typ_order (A ᵗ^ₜ X) = d_typ_order A.
+  typ_order (A ᵗ^ₜ X) = typ_order A.
 Proof.
   intros. unfold open_typ_wrt_typ. apply d_open_rec_tvar_same_order; auto.
 Qed.
@@ -314,9 +314,24 @@ Proof.
 Qed.
 
 
+
+Inductive weq_stvar : typvar -> typ -> Prop :=
+  | weq_stvar__refl : forall X, weq_stvar X (typ_var_f X)
+  | weq_stvar__union : forall X A1 A2,
+      weq_stvar X A1 ->
+      weq_stvar X A2 ->
+      weq_stvar X (typ_union A1 A2)
+  | weq_stvar__intersection1 : forall X A1 A2,
+      weq_stvar X A1 ->
+      weq_stvar X (typ_intersection A1 A2)
+  | weq_stvar__intersection2 : forall X A1 A2,
+      weq_stvar X A2 ->
+      weq_stvar X (typ_intersection A1 A2).
+
+
 Theorem d_sub_open_mono_stvar_false: forall n1 n2 Ψ A T X L,
-  d_typ_order (A ᵗ^^ₜ T) < n1 ->
-  d_typ_size (A ᵗ^^ₜ T) < n2 ->
+  typ_order (A ᵗ^^ₜ T) < n1 ->
+  typ_size (A ᵗ^^ₜ T) < n2 ->
   X ~ ■ ∈ᵈ Ψ ->
   Ψ ⊢ A ᵗ^^ₜ T <: typ_var_f X ->
   (forall X, X ∉ L -> s_in X (A ᵗ^ₜ X)) ->
@@ -394,6 +409,22 @@ Proof.
 Qed.
 
 
+Lemma d_sub_wneqall_trans : forall Ψ A B,
+  wneq_all A ->
+  Ψ ⊢ A <: B ->
+  wneq_all B.
+Proof.
+  intros. dependent induction H0; try dependent induction H; eauto. 
+  - constructor...
+    eapply d_wf_typ_lc_typ; eauto. eapply d_sub_d_wf_typ1; eauto.
+    eapply d_wf_typ_lc_typ; eauto. eapply d_sub_d_wf_typ2; eauto.
+  - econstructor; eauto.
+  - econstructor; eauto.
+  - econstructor; eauto.
+  - econstructor; eauto.
+Qed.
+
+
 Theorem d_sub_subst_stvar : forall Ψ1 X Ψ2 A B C,
   Ψ2 ++ (X ~ ■) ++ Ψ1 ⊢ A <: B ->
   Ψ1 ᵗ⊢ᵈ C ->
@@ -458,7 +489,7 @@ Inductive d_sub_size : denv -> typ -> typ -> nat -> Prop :=    (* defn d_sub *)
       ( forall X , X \notin  L  -> d_sub_size  ( X ~ dbind_stvar_empty  ++  Ψ )   ( open_typ_wrt_typ A1 (typ_var_f X) )   ( open_typ_wrt_typ B1 (typ_var_f X) )  n )  ->
       d_sub_size Ψ (typ_all A1) (typ_all B1) (S n)
  | d_subs__alll : forall (L:vars) (Ψ:denv) (A1 B1 T1:typ) (n:nat),
-     sneq_all B1 ->
+     wneq_all B1 ->
       ( forall X , X \notin  L  -> s_in X  ( open_typ_wrt_typ A1 (typ_var_f X) )  )  ->
      d_mono_typ Ψ T1 ->
      d_sub_size Ψ  (open_typ_wrt_typ  A1   T1 )  B1 n ->
@@ -795,8 +826,8 @@ Qed.
 
 
 Theorem d_sub_open_mono_bot_false: forall n1 n2 Ψ A T L,
-  d_typ_order (A ᵗ^^ₜ T) < n1 ->
-  d_typ_size (A ᵗ^^ₜ T) < n2 ->
+  typ_order (A ᵗ^^ₜ T) < n1 ->
+  typ_size (A ᵗ^^ₜ T) < n2 ->
   Ψ ⊢ A ᵗ^^ₜ T <: typ_bot ->
   (forall X, X ∉ L -> s_in X (A ᵗ^ₜ X)) ->
   Ψ ᵗ⊢ᵈₘ T ->
@@ -908,14 +939,14 @@ Ltac ord_inv :=
   end.
 
 
-Lemma d_sub_size_transitivity : forall n_d_typ_order n_d_sub_size Ψ A B C n1 n2 ,
-  d_typ_order B < n_d_typ_order ->
+Lemma d_sub_size_transitivity : forall n_typ_order n_d_sub_size Ψ A B C n1 n2 ,
+  typ_order B < n_typ_order ->
   n1 + n2 < n_d_sub_size ->
   Ψ ⊢ A <: B | n1 -> 
   Ψ ⊢ B <: C | n2 -> 
   Ψ ⊢ A <: C.
 Proof with auto.
-  induction n_d_typ_order; induction n_d_sub_size; intros * Horder Hsize Hsub1 Hsub2.
+  induction n_typ_order; induction n_d_sub_size; intros * Horder Hsize Hsub1 Hsub2.
   - inversion Horder.
   - inversion Horder.
   - inversion Hsize.
@@ -980,7 +1011,7 @@ Proof with auto.
            simpl in H6. auto.
       * eapply d_sub__all with (L:=L `union` L0 `union` dom Ψ); auto.
         intros. inst_cofinites_with X.
-        eapply IHn_d_typ_order with (B:= B1 ᵗ^ₜ X); eauto...
+        eapply IHn_typ_order with (B:= B1 ᵗ^ₜ X); eauto...
         -- simpl in *. rewrite d_open_svar_same_order...
       * inst_cofinites_for d_sub__alll T:=T1... 
         -- pick fresh X. inst_cofinites_with X.
@@ -988,7 +1019,7 @@ Proof with auto.
           rewrite_env  (nil ++ (X, ■) :: Ψ) in H1.
           eapply d_sub_size_subst_stvar with (C:=T1) in H1; simpl; eauto.
           destruct H1 as [n' Hsub].
-          eapply IHn_d_typ_order with (B:=B1 ᵗ^^ₜ T1) (n1:=n'); eauto...
+          eapply IHn_typ_order with (B:=B1 ᵗ^^ₜ T1) (n1:=n'); eauto...
           erewrite d_open_mono_same_order; eauto. 
           rewrite 2 subst_typ_in_typ_open_typ_wrt_typ in Hsub... simpl in Hsub.
           unfold eq_dec in Hsub. destruct (EqDec_eq_of_X X X) in Hsub.
@@ -1053,8 +1084,21 @@ Proof with auto.
           eapply d_sub__alll with (T:=T1); eauto...
           eapply IHn_d_sub_size with (B:=typ_arrow A0 A2) (n2:=S(n1+n2)); eauto...
       * inversion H.
-      * admit.
-      * admit. 
+      * apply d_sub_size_union_inv in Hsub2 as Hinv. dependent destruction Hinv. 
+        dependent destruction H.
+        -- inst_cofinites_for d_sub__alll T:=T1...
+           eapply d_sub_wneqall_trans; eauto.
+           eapply d_sub_size_sound; eauto.
+           eapply IHn_d_sub_size with (B:=typ_union A0 A2 ); eauto. lia.
+        -- inst_cofinites_for d_sub__alll T:=T1...
+           eapply d_sub_wneqall_trans; eauto.
+           eapply d_sub_size_sound; eauto.
+           eapply IHn_d_sub_size with (B:=typ_union A0 A2 ); eauto. lia.
+      * inst_cofinites_for d_sub__alll T:=T1...
+        eapply d_sub_wneqall_trans; eauto.
+        eapply d_sub_size_sound; eauto.
+        eapply IHn_d_sub_size with (B:=typ_intersection A0 A2); eauto.
+        lia.
     + simpl in *. dependent destruction Hsub2...
       * econstructor... apply d_sub_size_sound in Hsub1_1. apply d_sub_d_wf in Hsub1_1.
         intuition.
@@ -1078,7 +1122,7 @@ Proof with auto.
     + simpl in Horder. econstructor...
       * eapply IHn_d_sub_size with (B:=B1) (n1:=n1); eauto...
       * eapply IHn_d_sub_size with (B:=B1) (n1:=n0); eauto...
-Admitted.
+Qed.
 
 
 Theorem sub_transitivity : forall Ψ A B C,

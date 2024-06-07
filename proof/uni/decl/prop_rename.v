@@ -163,6 +163,7 @@ Proof with eauto.
     eapply d_chk_inf_rename_var'...
 Qed.
 
+
 Theorem d_chk_inf_rename_var_cons : forall Ψ x y e A B mode, 
   d_chk_inf ((x ,dbind_typ B) :: Ψ) e mode A ->
   y ∉ (dom Ψ) ->
