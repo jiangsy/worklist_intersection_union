@@ -195,6 +195,7 @@ Proof with auto.
     rewrite_env (map (subst_typ_in_dbind ` Y X) (X0 ~ □ ++ Ψ2) ++ (Y, b) :: Ψ1)...
 Qed.
 
+
 Lemma d_mono_typ_rename_tvar : forall Ψ1 Ψ2 X Y T b,
   b = □ \/ b = ■  ->
   uniq (Ψ2 ++ (X, b) :: Ψ1) ->
@@ -307,6 +308,7 @@ Proof.
     fsetdec.
 Qed.
 
+
 Theorem d_binds_var_typ_rename_tvar: forall Ψ1 Ψ2 X Y x A,
   ⊢ᵈₜ (Ψ2 ++ (X, □) :: Ψ1) ->
   Y ∉ dom (Ψ2 ++ (X, □) :: Ψ1) ->
@@ -363,6 +365,7 @@ Proof with eauto 6 using d_wf_typ_rename_dtvar, d_mono_typ_rename_dtvar, d_wf_te
     rewrite <- subst_typ_in_exp_open_exp_wrt_exp...
     rewrite_env (map (subst_typ_in_dbind ` Y X) (x ~ dbind_typ A1 ++ Ψ2) ++ (Y, □) :: Ψ1)...
 Qed.
+
 
 Theorem d_chk_inf_rename_tvar_cons : forall Ψ X Y e A mode, 
   d_chk_inf ((X, □) :: Ψ) e mode A ->
