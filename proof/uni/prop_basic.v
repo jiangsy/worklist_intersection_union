@@ -508,23 +508,6 @@ Proof.
     rewrite subst_typ_in_typ_open_typ_wrt_typ_fresh2; auto...
 Qed.
 
-Lemma sneq_all_rename: forall A X Y,
-  sneq_all A ->
-  sneq_all ({typ_var_f Y ᵗ/ₜ X} A).
-Proof with  simpl; eauto using lc_typ_subst; try solve_by_invert.
-  intros. induction H...
-  - case_if; subst*.
-Qed.
-
-
-Lemma wneq_all_rename: forall A X Y,
-  wneq_all A ->
-  wneq_all ({typ_var_f Y ᵗ/ₜ X} A).
-Proof with  simpl; eauto using lc_typ_subst; try solve_by_invert.
-  intros. induction H...
-  - case_if; subst*.
-Qed.
-
 
 Lemma neq_all_rename: forall A X Y,
   neq_all A ->
@@ -590,5 +573,5 @@ Proof.
 Qed.
 
 
-#[export] Hint Resolve sneq_all_rename wneq_all_rename neq_all_rename neq_intersection_rename neq_union_rename : core.
+#[export] Hint Resolve neq_all_rename neq_intersection_rename neq_union_rename : core.
 #[export] Hint Immediate neq_all_lc_typ neq_intersection_lc_typ neq_union_lc_typ : core.
