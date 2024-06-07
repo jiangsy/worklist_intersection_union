@@ -267,6 +267,26 @@ Proof with eauto using binds_subenv.
 Qed.
 
 
+Lemma d_wneq_all_subtenv: forall Ψ A Ψ',
+  d_wneq_all Ψ A -> 
+  d_subtenv Ψ' Ψ -> 
+  d_wneq_all Ψ' A.
+Proof with eauto using binds_subtenv.
+  intros* HD HS. gen HS.
+  induction HD; intros...
+Qed.
+
+
+Lemma d_wneq_all_subenv: forall Ψ A Ψ',
+  d_wneq_all Ψ A -> 
+  d_subenv Ψ' Ψ -> 
+  d_wneq_all Ψ' A.
+Proof with eauto using binds_subenv.
+  intros* HD HS. gen HS.
+  induction HD; intros...
+Qed.
+
+
 #[local] Hint Immediate d_wf_tenv_d_wf_env  : core.
 
 
@@ -300,7 +320,7 @@ Lemma d_sub_subenv: forall Ψ A B,
   forall Ψ', 
     d_subenv Ψ' Ψ -> 
     Ψ' ⊢ A <: B.
-Proof with eauto using d_mono_typ_subenv, d_wf_env_subenv, d_subenv_wf_typ.
+Proof with eauto using d_mono_typ_subenv, d_wneq_all_subenv, d_wf_env_subenv, d_subenv_wf_typ.
   intros Ψ A B Hsub.
   induction Hsub; intros; auto; try solve [constructor; eauto using d_mono_typ_subtenv, d_wf_env_subenv, d_subenv_wf_typ].
   - inst_cofinites_for d_sub__all; intros; inst_cofinites_with X...
@@ -354,6 +374,27 @@ Fixpoint typ_size (A:typ) : nat :=
   end.
 
 
+Lemma d_wneq_all_tapp_false : forall Ψ A B C,
+  d_wneq_all Ψ A ->
+  Ψ ⊢ A ○ B ⇒⇒ C -> 
+  False.
+Proof. 
+  intros. generalize dependent B. generalize dependent C. 
+    dependent induction H; intros; auto.
+  - dependent destruction H0.
+  - dependent destruction H0.
+  - dependent destruction H0.
+  - dependent destruction H1.
+  - dependent destruction H1; auto.
+    eapply IHd_wneq_all; eauto.
+  - dependent destruction H1; auto.
+    eapply IHd_wneq_all; eauto.
+  - dependent destruction H1; auto.
+    + eapply IHd_wneq_all1; eauto.
+    + eapply IHd_wneq_all2; eauto.
+Qed.
+  
+
 Theorem d_inftapp_subsumption_same_env : forall Ψ A B C A',
   Ψ ⊢ A ○ B ⇒⇒ C ->
   Ψ ⊢ A' <: A ->
@@ -362,7 +403,7 @@ Proof with auto.
   intros. generalize dependent A'. dependent induction H.
   - intros. dependent induction H1.
     + exists typ_bot. split; auto... 
-    + eapply d_sub_open_mono_bot_false in H6; eauto. contradiction.
+    + eapply d_sub_open_mono_bot_false in H4; eauto. contradiction.
     + specialize (IHd_sub H H0 (eq_refl _)). destruct IHd_sub as [C1 Hc1].
       exists C1; intuition...
     + specialize (IHd_sub H H0 (eq_refl _)). destruct IHd_sub as [C1 Hc1].
@@ -391,7 +432,7 @@ Proof with auto.
       * inst_cofinites_with X.
         apply d_wf_typ_stvar_tvar_cons; eauto...
         apply d_sub_d_wf in H5; intuition.
-    + inversion H5.
+    + inversion H3.
     + specialize (IHd_sub _ H H0 H1 (eq_refl _)).
       destruct IHd_sub as [C1 Hc1].
       exists C1; intuition...
@@ -412,7 +453,9 @@ Proof with auto.
       apply d_inftapp_d_wf in H.
       apply d_inftapp_d_wf in H0.
       intuition...
-    + inversion H1.
+    + dependent destruction H3.
+      * exfalso. eapply d_wneq_all_tapp_false; eauto.
+      * exfalso. eapply d_wneq_all_tapp_false; eauto.
     + specialize (IHd_sub _ _ H H0 IHd_inftapp1 IHd_inftapp2 (eq_refl _)).
       apply d_inftapp_d_wf in H. intuition.
       destruct IHd_sub as [C3]. exists C3. intuition.
@@ -501,10 +544,10 @@ Proof with auto using d_mono_typ_d_wf_typ.
       exists B2 C2; intuition...
       econstructor. eauto. auto...
       * pick fresh Y and apply d_wf_typ__all.
-         ** forwards: H2 Y...
-         ** forwards: d_sub_d_wf_typ1 H4.
-            rewrite_env (nil++Ψ) in H8.
-            forwards*: d_wf_typ_open_mono_inv H8.
+         ** forwards: H4 Y...
+         ** forwards: d_sub_d_wf_typ1 H2.
+            rewrite_env (nil++Ψ) in H6.
+            forwards*: d_wf_typ_open_mono_inv H6.
       * eauto.
     + specialize (IHd_sub _ _ H H0 H1 (eq_refl _)).
       destruct IHd_sub as [B2 [C2]].
@@ -545,7 +588,7 @@ Proof with auto using d_mono_typ_d_wf_typ.
       ** forwards: d_sub_d_wf_typ1 H6.
          rewrite_env (nil++Ψ) in H7.
          forwards*: d_wf_typ_open_mono_inv Y H7 H.
-    + inversion H5.
+    + inversion H3.
     + specialize (IHd_sub _ H H0 H1 IHd_infabs (eq_refl _)).
       destruct IHd_sub as [B2 [C2]].
       exists B2 C2. intuition.
@@ -568,7 +611,15 @@ Proof with auto using d_mono_typ_d_wf_typ.
     + exists typ_top typ_bot. intuition.
       econstructor; econstructor; eauto.
       all: eauto using d_infabs_d_wf_typ2, d_infabs_d_wf_typ3.
-    + inversion H1.
+    + specialize (IHd_sub _ _ H H0 IHd_infabs1 IHd_infabs2 (eq_refl _)).
+      destruct IHd_sub as [B2' [C2']].
+      exists B2' C2'. intuition.
+      eapply d_infabs__all with (T:=T); auto.
+      * pick fresh Y and apply d_wf_typ__all.
+        -- forwards: H4 Y...
+        -- forwards: d_sub_d_wf_typ1 H2.
+           rewrite_env (nil++Ψ) in H5.
+           forwards*: d_wf_typ_open_mono_inv H5.
     + specialize (IHd_sub _ _ H H0 IHd_infabs1 IHd_infabs2 (eq_refl _)).
       destruct IHd_sub as [B2' [C2']].
       exists B2' C2'. intuition.
