@@ -9,6 +9,7 @@ Require Import uni.notations.
 Require Import uni.decl.prop_basic.
 Require Import uni.ltac_utils.
 
+
 Lemma d_wf_typ_rename_var : forall Ψ1 Ψ2 x y A B,
   (Ψ2 ++ (x , dbind_typ B) :: Ψ1) ᵗ⊢ᵈ A ->
   y ∉ dom (Ψ2 ++ (x , dbind_typ B) :: Ψ1) ->
@@ -27,6 +28,7 @@ Proof with auto.
     rewrite_env ((X ~ □ ++ Ψ2) ++ (y, dbind_typ B) :: Ψ1).
     eapply H1; simpl; eauto.
 Qed.
+
 
 Lemma d_mono_typ_rename_var : forall Ψ1 Ψ2 x y T A,
   (Ψ2 ++ (x , dbind_typ A) :: Ψ1) ᵗ⊢ᵈₘ T ->
@@ -252,6 +254,7 @@ Proof with auto.
     + rewrite subst_typ_in_typ_refl_eq. rewrite IHe. auto.
 Qed.
 
+
 Theorem d_sub_rename_dtvar_cons : forall Ψ X Y A B b,
   b = □ \/ b = ■ ->
   (X, b) :: Ψ ⊢ A <: B ->
@@ -263,6 +266,7 @@ Proof.
   - intros. rewrite_env (map (subst_typ_in_dbind `Y X) nil ++ (Y, b) :: Ψ).
     apply d_sub_rename_dtvar; eauto.
 Qed.
+
 
 Theorem d_infabs_rename_tvar : forall Ψ1 Ψ2 X Y A B C, 
   d_infabs (Ψ2 ++ (X, □) :: Ψ1) A B C ->
@@ -276,6 +280,7 @@ Proof with eauto using d_mono_typ_rename_tvar, d_wf_typ_rename_dtvar, d_wf_tenv_
     + replace (typ_all ({` Y ᵗ/ₜ X} A)) with ({` Y ᵗ/ₜ X} (typ_all A)) by auto...
     + rewrite <- subst_typ_in_typ_open_typ_wrt_typ...
 Qed.
+
 
 Theorem d_inftapp_rename_tvar : forall Ψ1 Ψ2 X Y A B C, 
   d_inftapp (Ψ2 ++ (X, □) :: Ψ1) A B C ->

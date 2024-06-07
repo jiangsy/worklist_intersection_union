@@ -1049,8 +1049,6 @@ Inductive wneq_all : typ -> Prop :=    (* defn wneq_all *)
      wneq_all typ_unit
  | wneq_all__top : 
      wneq_all typ_top
- | wneq_all__bot : 
-     wneq_all typ_bot
  | wneq_all__var : forall (X:typvar),
      wneq_all (typ_var_f X)
  | wneq_all__arrow : forall (A1 A2:typ),
@@ -1065,13 +1063,9 @@ Inductive wneq_all : typ -> Prop :=    (* defn wneq_all *)
      lc_typ A1 ->
      wneq_all A2 ->
      wneq_all (typ_union A1 A2)
- | wneq_all__intersection1 : forall (A1 A2:typ),
-     lc_typ A2 ->
-     wneq_all A1 ->
-     wneq_all (typ_intersection A1 A2)
  | wneq_all__intersection2 : forall (A1 A2:typ),
-     lc_typ A2 ->
      wneq_all A1 ->
+     wneq_all A2 ->
      wneq_all (typ_intersection A1 A2).
 
 (* defns J_neq_intersection *)
