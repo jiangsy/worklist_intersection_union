@@ -329,7 +329,7 @@ Inductive weq_stvar : typvar -> typ -> Prop :=
       weq_stvar X (typ_intersection A1 A2).
 
 
-Theorem d_sub_open_mono_stvar_false: forall n1 n2 Ψ A T X L,
+(* Theorem d_sub_open_mono_stvar_false: forall n1 n2 Ψ A T X L,
   typ_order (A ᵗ^^ₜ T) < n1 ->
   typ_size (A ᵗ^^ₜ T) < n2 ->
   X ~ ■ ∈ᵈ Ψ ->
@@ -393,6 +393,100 @@ Proof.
         -- dependent destruction Heq. unfold open_typ_wrt_typ in *.
            eapply IHn2 with (L:=L); eauto. lia. lia.
            intros. inst_cofinites_with X0. dependent destruction H3; auto.
+Qed. *)
+
+Ltac inversion_weq_stvar :=
+  match goal with 
+    | H : weq_stvar ?X _ |- _ => try solve [inversion H]
+  end.
+
+Theorem d_sub_open_mono_eq_stvar_false: forall n1 n2 Ψ A B T X L,
+  typ_order (A ᵗ^^ₜ T) < n1 ->
+  typ_size (A ᵗ^^ₜ T) < n2 ->
+  X ~ ■ ∈ᵈ Ψ ->
+  Ψ ⊢ A ᵗ^^ₜ T <: B ->
+  weq_stvar X B ->
+  (forall X, X ∉ L -> s_in X (A ᵗ^ₜ X)) ->
+  d_mono_typ Ψ T ->
+  False.
+Proof.
+  intro n1. induction n1.
+  - intros. inversion H.
+  - intros n2. induction n2.
+    + intros. inversion H0.
+    + intros. dependent induction H2; try solve [inversion_weq_stvar].
+      * destruct A; simpl in *; try solve [inversion x].
+        -- inst_cofinites_by L using_name X. inversion H5.
+        -- destruct n.
+           ++ unfold open_typ_wrt_typ in x. simpl in *.
+              subst. inversion H6.
+           ++ unfold open_typ_wrt_typ in x. simpl in *.
+              inversion x.
+      * destruct A; simpl in *; try solve [inversion x].
+        -- destruct n.
+          ++ unfold open_typ_wrt_typ in x. simpl in *.
+             subst. dependent destruction H4.
+             dependent destruction H6. unify_binds. 
+          ++ unfold open_typ_wrt_typ in x. simpl in *.
+            inversion x.
+        -- inversion x. subst. inst_cofinites_by (L `union` singleton X) using_name X. 
+           inversion H4. inversion H5.
+           subst. solve_notin.
+      * destruct A; simpl in *; try solve [inversion x].
+        -- destruct n.
+          ++ unfold open_typ_wrt_typ in x. simpl in x.
+              subst. dependent destruction H8.
+          ++ unfold open_typ_wrt_typ in x. simpl in x.
+            inversion x.
+        -- dependent destruction x.
+           eapply IHn1; eauto. erewrite d_open_mono_same_order; eauto. lia.
+      * dependent destruction H3.
+        eapply IHd_sub1; eauto. 
+        eapply IHd_sub2; eauto. 
+      * destruct A; simpl in *; try solve [inversion x].
+        -- destruct n.
+          ++ unfold open_typ_wrt_typ in H, H0, x. simpl in *.
+              subst. dependent destruction H6.
+          ++ unfold open_typ_wrt_typ in x. simpl in x.
+             inversion x.
+        -- dependent destruction x. unfold open_typ_wrt_typ in *.
+          eapply IHn2 with (L:=L); eauto. lia. lia.
+          intros. inst_cofinites_with X0. dependent destruction H5; auto.
+      * destruct A; simpl in *; try solve [inversion x].
+        -- destruct n.
+          ++ unfold open_typ_wrt_typ in H, H0, x. simpl in *.
+              subst. dependent destruction H6.
+          ++ unfold open_typ_wrt_typ in x. simpl in x.
+             inversion x.
+        -- dependent destruction x. unfold open_typ_wrt_typ in *.
+          eapply IHn2 with (L:=L); eauto. lia. lia.
+          intros. inst_cofinites_with X0. dependent destruction H5; auto.
+      * dependent destruction H4.
+        eapply IHd_sub; eauto. 
+      * dependent destruction H4.
+        eapply IHd_sub; eauto. 
+      * destruct A; simpl in *; try solve [inversion x].
+        -- destruct n.
+           ++ unfold open_typ_wrt_typ in H, H0, x. simpl in *.
+              subst. dependent destruction H5.
+           ++ unfold open_typ_wrt_typ in x. simpl in x. inversion x.
+        -- dependent destruction x. unfold open_typ_wrt_typ in *.
+           eapply IHn2 with (L:=L); eauto. lia. lia.
+           intros. inst_cofinites_with X0. dependent destruction H4; auto.
+Qed.
+
+
+Theorem d_sub_open_mono_stvar_false: forall n1 n2 Ψ A T X L,
+  typ_order (A ᵗ^^ₜ T) < n1 ->
+  typ_size (A ᵗ^^ₜ T) < n2 ->
+  X ~ ■ ∈ᵈ Ψ ->
+  Ψ ⊢ A ᵗ^^ₜ T <: typ_var_f X ->
+  (forall X, X ∉ L -> s_in X (A ᵗ^ₜ X)) ->
+  d_mono_typ Ψ T ->
+  False.
+Proof.
+  intros. eapply d_sub_open_mono_eq_stvar_false; eauto.
+  econstructor.
 Qed.
 
 
@@ -423,6 +517,23 @@ Proof.
   - econstructor; eauto.
   - econstructor; eauto.
 Qed.
+
+Lemma wneq_all_subst : forall A B X,
+  wneq_all A ->
+  (weq_stvar X A -> False) ->
+  wneq_all ({B ᵗ/ₜ X} A).
+Proof.
+  intros. dependent induction H; simpl; auto.
+  - destruct_eq_atom. exfalso. apply H0; constructor.
+    auto.
+  - constructor; auto. admit. admit.
+  - constructor. admit.
+    admit.
+  - constructor. admit.
+    admit.
+  - constructor.
+    apply IHwneq_all1. intros. apply H0. constructor; auto.
+    apply IHwneq_all2. intros. apply H0. apply weq_stvar__intersection2. auto.
 
 
 Theorem d_sub_subst_stvar : forall Ψ1 X Ψ2 A B C,
