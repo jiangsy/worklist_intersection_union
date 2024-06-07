@@ -65,7 +65,7 @@ Inductive d_sub : denv -> typ -> typ -> Prop :=    (* defn d_sub *)
       d_sub Ψ (typ_union A1 A2) B.
 
 
-  Inductive d_inftapp : denv -> typ -> typ -> typ -> Prop := 
+Inductive d_inftapp : denv -> typ -> typ -> typ -> Prop := 
   | d_inftapp__bot : forall (Ψ:denv) (B:typ),
       d_wf_tenv Ψ -> 
       d_wf_typ Ψ B ->
