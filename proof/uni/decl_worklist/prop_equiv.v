@@ -448,6 +448,7 @@ Proof.
     rewrite_dwl_app. auto.
   - eapply d_wl_red__sub_alll with (T:=T); auto.
     rewrite d_wl_app_cons_work_same_env; auto.
+    rewrite d_wl_app_cons_work_same_env; auto.
     rewrite_dwl_app. auto.
   - eapply d_wl_red__chk_absarrow with (L:=L).
     intros. inst_cofinites_with x.

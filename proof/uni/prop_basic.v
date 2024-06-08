@@ -508,6 +508,7 @@ Proof.
     rewrite subst_typ_in_typ_open_typ_wrt_typ_fresh2; auto...
 Qed.
 
+
 Lemma neq_all_rename: forall A X Y,
   neq_all A ->
   neq_all ({typ_var_f Y ᵗ/ₜ X} A).
