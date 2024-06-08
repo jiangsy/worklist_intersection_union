@@ -1254,6 +1254,7 @@ Proof with (autorewrite with core in *); simpl; eauto; solve_false; try solve_no
   - simpl in *. constructor; eauto.
 Qed.
 
+
 Lemma a_wf_typ_reorder_aenv : forall Σ Σ' A,
   ⊢ᵃ Σ ->
   ⊢ᵃ Σ' ->
