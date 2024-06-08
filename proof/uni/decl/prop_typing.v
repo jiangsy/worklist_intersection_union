@@ -202,13 +202,12 @@ Proof.
 Qed.
 
 
-Lemma d_subtenv_wf_tenv_inv : forall Ψ',
+Lemma d_subtenv_wf_tenv_inv : forall Ψ' Ψ,
   ⊢ᵈₜ Ψ' ->
-  forall Ψ,
-    d_subtenv Ψ' Ψ ->
-    ⊢ᵈₜ Ψ.
+  d_subtenv Ψ' Ψ ->
+  ⊢ᵈₜ Ψ. 
 Proof with subst; try solve_notin; eauto using d_sub_d_wf_typ2.
-  intros * HW Ψ HS. induction* HS.
+  intros * HW HS. induction* HS.
   all: forwards HE: d_subtenv_same_dom HS;
     forwards*: d_wf_tenv_strengthen_cons HW;
     inverts HW;
@@ -315,13 +314,12 @@ Proof.
 Qed.
 
 
-Lemma d_sub_subenv: forall Ψ A B,
+Lemma d_sub_subenv: forall Ψ Ψ' A B,
   Ψ ⊢ A <: B -> 
-  forall Ψ', 
-    d_subenv Ψ' Ψ -> 
-    Ψ' ⊢ A <: B.
+  d_subenv Ψ' Ψ -> 
+  Ψ' ⊢ A <: B.
 Proof with eauto using d_mono_typ_subenv, d_wneq_all_subenv, d_wf_env_subenv, d_subenv_wf_typ.
-  intros Ψ A B Hsub.
+  intros Ψ Ψ' A B Hsub. generalize dependent Ψ'.
   induction Hsub; intros; auto; try solve [constructor; eauto using d_mono_typ_subtenv, d_wf_env_subenv, d_subenv_wf_typ].
   - inst_cofinites_for d_sub__all; intros; inst_cofinites_with X...
   - inst_cofinites_for d_sub__alll T:=T...
@@ -336,8 +334,10 @@ Proof.
 Qed.
 
 
-Lemma d_sub_subtenv : forall Ψ A B,
-  Ψ ⊢ A <: B -> forall Ψ', d_subtenv Ψ' Ψ -> Ψ' ⊢ A <: B.
+Lemma d_sub_subtenv : forall Ψ Ψ' A B,
+  Ψ ⊢ A <: B -> 
+  d_subtenv Ψ' Ψ -> 
+  Ψ' ⊢ A <: B.
 Proof.
   intros. apply d_subtenv_subenv in H0. eapply d_sub_subenv; eauto.
 Qed.
@@ -368,9 +368,9 @@ Fixpoint exp_size (e:exp) : nat :=
 
 Fixpoint typ_size (A:typ) : nat :=
   match A with
-  | typ_intersection A1 A2 => typ_size A1 + typ_size A2 + 1
-  | typ_union A1 A2 => typ_size A1 + typ_size A2 + 1
-  | _ => 0
+    | typ_intersection A1 A2 => typ_size A1 + typ_size A2 + 1
+    | typ_union A1 A2 => typ_size A1 + typ_size A2 + 1
+    | _ => 0
   end.
 
 
@@ -482,6 +482,7 @@ Qed.
 
 #[export] Hint Immediate d_inftapp_d_wf_env d_inftapp_d_wf_typ1 d_inftapp_d_wf_typ2 d_inftapp_d_wf_typ3 : core.
 
+
 Lemma d_inftapp_subenv : forall Ψ Ψ' A B C,
   Ψ ⊢ A ○ B ⇒⇒ C ->
   d_subtenv Ψ' Ψ ->
@@ -491,6 +492,7 @@ eauto using d_subtenv_wf_env, d_subtenv_wf_typ.
   intros * HA HE.
   induction HA; intuition eauto...
 Qed.
+
 
 Corollary d_inftapp_subsumption: forall Ψ Ψ' A A' B C,
   Ψ ⊢ A ○ B ⇒⇒ C ->
@@ -879,11 +881,11 @@ Proof with auto.
 Qed.
 
 
-Corollary d_chk_subsumption : forall Ψ e A A',
+Corollary d_chk_subsumption : forall Ψ e A B,
   ⊢ᵈₜ Ψ ->
   Ψ ⊢ e ⇐ A ->
-  Ψ ⊢ A <: A' ->
-  Ψ ⊢ e ⇐ A'.
+  Ψ ⊢ A <: B ->
+  Ψ ⊢ e ⇐ B.
 Proof.
   intros.
   refine (d_chk_inf_subsumption _ _ _ _ _ _ _ _ _ _ _ H0 _ _ _); eauto.

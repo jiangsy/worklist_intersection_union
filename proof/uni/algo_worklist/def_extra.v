@@ -69,9 +69,7 @@ Inductive a_wl_red : aworklist -> Prop :=    (* defn a_wl_red *)
      a_wl_red (aworklist_cons_work (aworklist_cons_work Γ (work_sub A1 B1)) (work_sub B2 A2)) ->
      a_wl_red (aworklist_cons_work Γ (work_sub (typ_arrow B1 B2) (typ_arrow A1 A2)))
  | a_wl_red__sub_alll : forall (L:vars) (Γ:aworklist) (B1 A1:typ),
-     neq_all A1 ->
-     neq_intersection A1 ->
-     neq_union A1 ->
+     a_wneq_all (awl_to_aenv Γ) B1 ->
       ( forall X , X \notin  L  -> a_wl_red (aworklist_cons_work (aworklist_cons_var Γ X abind_etvar_empty) (work_sub  ( open_typ_wrt_typ B1 (typ_var_f X) )  A1)) )  ->
      a_wl_red (aworklist_cons_work Γ (work_sub (typ_all B1) A1))
  | a_wl_red__sub_all : forall (L:vars) (Γ:aworklist) (B1 A1:typ),
@@ -235,8 +233,7 @@ Inductive a_wl_red : aworklist -> Prop :=    (* defn a_wl_red *)
  | a_wl_red__applyd : forall (Γ:aworklist) (w:work) (A B:typ) (cd:contd),
      apply_contd cd A B w ->
      a_wl_red (aworklist_cons_work Γ w) ->
-     a_wl_red (aworklist_cons_work Γ (work_applyd cd A B))  
-.
+     a_wl_red (aworklist_cons_work Γ (work_applyd cd A B)).
 
     
 Declare Scope aworklist_scope.

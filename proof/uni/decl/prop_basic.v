@@ -105,6 +105,7 @@ Qed.
 Hint Constructors d_wf_typ: core.
 Hint Constructors d_wf_env: core.
 
+
 Lemma d_wf_typ_weaken : forall Ψ1 Ψ2 Ψ3 A,
   Ψ3 ++ Ψ1 ᵗ⊢ᵈ A ->
   Ψ3 ++ Ψ2 ++ Ψ1 ᵗ⊢ᵈ A.
@@ -118,6 +119,7 @@ Proof.
       eapply H1; eauto.
 Qed.
 
+
 Corollary d_wf_typ_weaken_cons : forall Ψ X b A,
   Ψ ᵗ⊢ᵈ A ->
   ((X ~ b) ++ Ψ) ᵗ⊢ᵈ A.
@@ -126,6 +128,7 @@ Proof.
   replace (X ~ b ++ Ψ) with (nil ++ X ~ b ++ Ψ) by auto.
   apply d_wf_typ_weaken; auto.
 Qed.
+
 
 Corollary d_wf_typ_weaken_app: forall Ψ1 Ψ2 A,
   Ψ1 ᵗ⊢ᵈ A ->
@@ -136,12 +139,14 @@ Proof.
   applys* d_wf_typ_weaken.
 Qed.
 
+
 Lemma d_wf_tenv_uniq: forall Ψ,
   ⊢ᵈₜ Ψ -> uniq Ψ.
 Proof.
   intros.
   induction H; auto.
 Qed.
+
 
 Lemma d_wf_env_uniq: forall Ψ,
   ⊢ᵈ Ψ -> uniq Ψ.
@@ -154,13 +159,13 @@ Qed.
 
 #[export] Hint Resolve d_wf_env_uniq d_wf_tenv_uniq : core.
 
+
 Lemma d_wf_tenv_strengthen_cons : forall a Ψ,
   ⊢ᵈₜ a :: Ψ -> ⊢ᵈₜ Ψ.
 Proof with auto.
   intros * H.
   inverts* H.
 Qed.
-
 
 
 Lemma d_wf_env_strengthen_cons : forall a Ψ,
@@ -171,12 +176,14 @@ Proof with auto.
   inversion H0; auto.
 Qed.
 
+
 Lemma d_wf_tenv_strengthen_app : forall Ψ1 Ψ2,
   ⊢ᵈₜ Ψ2 ++ Ψ1 -> ⊢ᵈₜ Ψ1.
 Proof with auto.
   intros * H. induction Ψ2; auto. 
     dependent destruction H; auto.
 Qed.
+
 
 Lemma d_wf_env_strengthen_app : forall Ψ1 Ψ2,
   ⊢ᵈ Ψ2 ++ Ψ1 -> ⊢ᵈ Ψ1.
@@ -188,6 +195,7 @@ Qed.
 
 
 #[local] Hint Resolve d_wf_typ_weaken_cons : core.
+
 
 Lemma d_wf_tenv_binds_d_wf_typ : forall Ψ x A,
   ⊢ᵈₜ Ψ ->
@@ -205,6 +213,7 @@ Proof.
     + simpl in *. apply IHd_wf_tenv in H3.
       apply d_wf_typ_weaken_cons; auto.
 Qed.
+
 
 Lemma d_wf_env_binds_d_wf_typ : forall Ψ x A,
   ⊢ᵈ Ψ ->
