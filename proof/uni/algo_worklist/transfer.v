@@ -700,6 +700,14 @@ Qed.
 #[local] Hint Resolve trans_typ_lc_atyp trans_typ_lc_dtyp : core.
 
 
+Lemma d_mono_typ_d_wneq_all : forall Ψ A,
+  d_mono_typ Ψ A ->
+  d_wneq_all Ψ A.  
+Proof.
+  intros. induction H; eauto. 
+Qed.
+
+
 Lemma trans_typ_neq_all : forall θ Aᵃ Aᵈ,
   θ ᵗ⊩ Aᵃ ⇝ Aᵈ -> 
   neq_all Aᵃ -> 
@@ -1759,6 +1767,52 @@ Proof.
     destruct H as [T].  
     eapply binds_ss_etvar_binds_ss_to_aenv; eauto.
   - dependent destruction Htransa; eauto.
+Qed.
+
+
+Lemma trans_wl_a_wneq_all_d_wneq_all : forall Γ Ω θ Aᵃ Aᵈ,
+  nil ⊩ Γ ⇝ Ω ⫣ θ ->
+  θ ᵗ⊩ Aᵃ ⇝ Aᵈ -> 
+  a_wneq_all (⌊ Γ ⌋ᵃ) Aᵃ -> 
+  d_wneq_all (⌊ Ω ⌋ᵈ) Aᵈ.
+Proof with eauto using a_wneq_all, d_wneq_all.
+  intros * Htranswl Htrans Hneq. generalize dependent Aᵈ.
+  dependent induction Hneq; intros; dependent destruction Htrans; eauto...
+  - econstructor...
+    eapply trans_wl_a_wl_binds_tvar_d_wl...
+  - eapply trans_wl_a_wl_binds_tvar_ss in Htranswl...
+    unify_binds.
+  - eapply trans_wl_a_wl_binds_tvar_ss in Htranswl...
+    unify_binds.
+  - eapply trans_wl_a_wl_binds_etvar_ss in Htranswl...
+    destruct Htranswl as [T]. 
+    unify_binds.
+  - eapply trans_wl_a_wl_binds_etvar_ss in Htranswl...
+    destruct Htranswl as [T]. 
+    unify_binds.
+  - apply wf_ss_binds_mono_typ in H1; auto.
+    eapply trans_wl_ss_mono_typ_d_wl_mono_typ in H1...
+    eapply d_mono_typ_d_wneq_all...
+Qed.
+
+
+Lemma trans_wl_d_wneq_all_a_wneq_all : forall Γ Ω θ Aᵃ Aᵈ,
+  nil ⊩ Γ ⇝ Ω ⫣ θ ->
+  θ ᵗ⊩ Aᵃ ⇝ Aᵈ -> 
+  d_wneq_all (⌊ Ω ⌋ᵈ) Aᵈ ->
+  a_wneq_all (⌊ Γ ⌋ᵃ) Aᵃ. 
+Proof with eauto using a_wneq_all, d_wneq_all.
+  intros * Htranswl Htrans Hneq. generalize dependent Aᵃ.
+  dependent induction Hneq; intros; dependent destruction Htrans; eauto;
+    try solve [eapply trans_wl_ss_binds_etvar_a_wl in H0; eauto using a_wneq_all, d_wneq_all].
+  - econstructor. 
+    eapply trans_wl_ss_binds_tvar_a_wl...
+  - eapply trans_wl_d_wl_binds_tvar_ss in H...
+    apply binds_ss_to_denv_binds_ss in H. unify_binds.
+  - eapply trans_wl_ss_binds_etvar_a_wl in H1...
+  - eapply trans_wl_ss_binds_etvar_a_wl in H2...
+  - eapply trans_wl_ss_binds_etvar_a_wl in H1...
+  - eapply trans_wl_ss_binds_etvar_a_wl in H1...
 Qed.
 
 

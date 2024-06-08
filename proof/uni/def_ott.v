@@ -1343,8 +1343,8 @@ Inductive a_wneq_all : aenv -> typ -> Prop :=    (* defn a_wneq_all *)
      a_wneq_all Σ typ_unit
  | a_wneq_all__top : forall (Σ:aenv),
      a_wneq_all Σ typ_top
- | a_wneq_all__tvar : forall (Σ:aenv) (X:typvar) (Ψ:denv),
-      binds ( X )  ( dbind_tvar_empty ) ( Ψ )  ->
+ | a_wneq_all__tvar : forall (Σ:aenv) (X:typvar),
+      binds ( X )  ( abind_tvar_empty ) ( Σ )  ->
      a_wneq_all Σ (typ_var_f X)
  | a_wneq_all__etvar : forall (Σ:aenv) (X:typvar),
       binds ( X )  ( abind_etvar_empty ) ( Σ )  ->
