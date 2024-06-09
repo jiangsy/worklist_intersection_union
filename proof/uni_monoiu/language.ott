@@ -1,0 +1,1193 @@
+metavar typvar, X, Y, Z     ::= {{ repr-locally-nameless }}
+metavar expvar, x, y, z     ::= {{ repr-locally-nameless }}
+
+grammar
+
+typ, A, B, C, T    :: typ_ ::=
+  | UNIT           ::   :: unit
+  | TOP            ::   :: top
+  | BOT            ::   :: bot
+  | X              ::   :: var
+  | A1 -> A2       ::   :: arrow
+  | ∀ X . A        ::   :: all  (+ bind X in A +)
+  | A1 ⊔ A2        ::   :: union
+  | A1 ⊓ A2        ::   :: intersection
+  | ( A )          :: S :: paren {{ coq ([[A]]) }}
+  | { A2 / X } A1  :: M :: subst {{ coq (open_typ_wrt_typ [[X A1]] [[A2]]) }}
+
+exp, e, f, g :: exp_ ::=
+  | unit                                ::   :: unit 
+  | x                                   ::   :: var
+  | \ x . e                             ::   :: abs  (+ bind x in e +)
+  | e1 e2                               ::   :: app
+  | \ X . e                             ::   :: tabs (+ bind X in e +) 
+  | e @ A                               ::   :: tapp
+  | e : A                               ::   :: anno
+  | ( e )                               :: S :: paren  {{ coq ([[e]]) }}
+  | { e2 / x } e1                       :: M :: subst1 {{ coq (open_exp_wrt_exp [[x e1]] [[e2]]) }}
+  | { A2 / X } e1                       :: M :: subst2 {{ coq (open_exp_wrt_typ [[X e1]] [[A2]]) }}
+
+
+dbind, db :: dbind_ ::=
+  | : □  ::   :: tvar_empty
+  | : ■ ::   :: stvar_empty
+  | : A  ::   :: typ
+
+abind, ab :: abind_ ::=
+  | : □        ::   :: tvar_empty
+  | : ■       ::   :: stvar_empty
+  | : ⬒       ::   :: etvar_empty
+  | : A        ::   :: var_typ
+
+
+conts, cs :: 'conts_' ::=
+  | _ ▹ cd                 ::   :: infabs
+  | _ ○ A =>=> cs          ::   :: inftapp
+  | _ ⊔∘ A1 ○ A2 =>=> cs   ::   :: inftappunion
+  | _ ⊔∘ A2 >> cs          ::   :: unioninftapp
+  | _ <: A                 ::   :: sub
+  | ( cs )                 :: S :: app {{ coq ( [[cs]] )}}
+
+contd, cd :: 'contd_' ::=
+  | _ ⊔▹ A ▹ cd           ::   :: infabsunion
+  | _ • e =>=> cs          ::   :: infapp
+  | _ ⊔▹ A ~> B >> cd     ::   :: unioninfabs
+  | ( cd )                :: S :: app {{ coq ( [[cd]] )}}
+
+work, w :: 'work_' ::=
+  | e => cs                                ::   :: infer
+  | e <= A                                 ::   :: check
+  | A ▹ cd                                 ::   :: infabs
+  | A1 ~> B1 ⊔▹ A2 ▹ cd                    ::   :: infabsunion
+  | A ~> B • e =>=> cs                     ::   :: infapp
+  | A1 ○ A2 =>=> cs                        ::   :: inftapp
+  | A1 <: A2                               ::   :: sub
+  | A1 ⊔∘ A2 ○ B =>=> cs                   ::   :: inftappunion
+  | A1 ⊔∘ A2 >> cs                         ::   :: unioninftapp
+  | A1 ~> B1 ⊔▹ A2 ~> B2 >> cd             ::   :: unioninfabs
+  | cs $$ A                                ::   :: applys
+  | cd $ A $ B                             ::   :: applyd
+
+substitutions
+  single A X  :: subst_typ_in
+  single w X  :: subst_typ_in
+  single e x  :: subst_exp_in
+  single w x  :: subst_exp_in
+
+freevars
+  A X  :: ftvar_in
+  e x  :: fvar_in
+ 
+grammar
+
+denv, dE, dF, dG:: '' ::= {{ coq list (atom*dbind) }}
+  | empty    ::   :: dempty {{ coq nil }}
+  | dE , x db  ::   :: dcons1 {{ coq ([[x]]~[[db]] ++ [[dE]])  }}
+  | dE , X db  ::   :: dcons2 {{ coq ([[X]]~[[db]] ++ [[dE]])  }}
+  | ⌊ dW ⌋   :: M :: dwlenv {{ coq ( dwl_to_denv [[dW]] )}}
+
+aenv, aE, aF, aG :: '' ::= {{ coq list (atom*abind) }}
+  | empty    ::   :: aempty {{ coq nil }}
+  | aE , x ab  ::   :: aconsvar {{ coq ([[x]]~[[ab]] ++ [[aE]])  }}
+  | aE , X ab  ::   :: aconstvar {{ coq ([[X]]~[[ab]] ++ [[aE]]) }}
+  | ⌊ aW ⌋    :: M :: awlenv {{ coq ( awl_to_aenv [[aW]] )}}
+
+
+dworklist, dW :: 'dworklist_' ::=
+  | empty       ::   :: empty
+  | dW , X db   ::   :: cons_var 
+  | dW , x db   :: M :: cons_evar {{ coq ( dworklist_cons_var [[dW]] [[x]] [[db]] )}} 
+  | dW , w      ::   :: cons_work
+
+aworklist, aW  :: 'aworklist_' ::=
+  | empty       ::   :: empty 
+  | aW , X ab   ::   :: cons_var 
+  | aW , x ab   :: M :: cons_evar {{ coq ( aworklist_cons_var [[aW]] [[x]] [[ab]] )}} 
+  | aW , w      ::   :: cons_work
+  | ( aW )      :: S :: paren {{ coq ( [[aW]] ) }}
+  | aW1 ++ aW2  :: M :: app {{ coq ( awl_app [[aW2]] [[aW1]] )}} 
+  
+formula :: formula_ ::=
+  | judgement             ::   :: judgement
+  | formula \/ formula'       ::   :: judgement_or {{ coq  ([[formula]]) \/ ([[formula']]) }}
+  | ( x db )  in dE    ::   :: binds1 {{ coq binds ([[x]])  ([[db]]) ([[dE]]) }}
+  | ( X db )  in dE    ::   :: binds2 {{ coq binds ([[X]])  ([[db]]) ([[dE]]) }}
+  | ( x ab )  in aE    ::   :: binds3 {{ coq binds ([[x]])  ([[ab]]) ([[aE]]) }}
+  | ( X ab )  in aE    ::   :: binds4 {{ coq binds ([[X]])  ([[ab]]) ([[aE]]) }}
+  | x  `notin` dom dE ::   :: fresh1 {{ coq ([[x]]  `notin` dom ([[dE]])) }}
+  | X  `notin` dom dE ::   :: fresh2 {{ coq ([[X]]  `notin` dom ([[dE]])) }}
+  | x  `notin` dom aE ::   :: fresh3 {{ coq ([[x]]  `notin` dom ([[aE]])) }}
+  | X  `notin` dom aE ::   :: fresh4 {{ coq ([[X]]  `notin` dom ([[aE]])) }}
+  | A <> TOP         ::   :: neqtop  {{ coq ~ ([[A]] = typ_top)}}
+  | ⌊ dW ⌋           ::   :: dwl_to_env {{ coq dwl_to_denv [[ dW ]] }}
+  | ⌊ aW ⌋           ::   :: awl_to_env {{ coq awl_to_aenv [[ aW ]] }}
+  | w != * <: *      ::   :: neqsub {{ coq ((exists A B, [[w]] = work_sub A B) -> False) }}
+
+
+embed {{ coq 
+
+Fixpoint dwl_to_denv (dW : dworklist) : denv :=
+  match dW with 
+  | dworklist_empty => nil
+  | dworklist_cons_work dW' _ => dwl_to_denv dW'
+  | dworklist_cons_var dW' x b => x ~ b ++ dwl_to_denv dW'
+  end.
+
+Fixpoint awl_to_aenv (aW : aworklist) : aenv :=
+  match aW with 
+  | aworklist_empty => nil
+  | aworklist_cons_work aW' _ => awl_to_aenv aW'
+  | aworklist_cons_var aW' x b => x ~ b ++ awl_to_aenv aW'
+  end.
+
+
+}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+defns
+J_strong_in :: '' ::=
+
+defn
+X ∈ₛ A :: :: s_in :: 's_in__' by
+
+------------------------ :: var
+X ∈ₛ X 
+
+X ∈ₛ A1
+------------------------ :: arrow1
+X ∈ₛ A1 -> A2 
+
+X ∈ₛ A2
+------------------------ :: arrow2
+X ∈ₛ A1 -> A2 
+
+X ∈ₛ A
+------------------------ :: all
+X ∈ₛ ∀ Y . A
+
+X ∈ₛ A1
+X ∈ₛ A2
+------------------------ :: union
+X ∈ₛ A1 ⊔ A2
+
+X ∈ₛ A1
+X ∈ₛ A2
+------------------------ :: intersection
+X ∈ₛ A1 ⊓ A2
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+defns
+J_neq_abs :: '' ::= 
+
+defn 
+e <> λ :: :: neq_abs :: 'neq_abs__' by 
+
+---------------------- :: unit
+unit <> λ
+
+---------------------- :: var
+x <> λ
+
+---------------------- :: app
+e1 e2  <> λ
+
+---------------------- :: tabs
+\ X . e  <> λ
+
+---------------------- :: tapp
+e @ A <> λ
+
+---------------------- :: anno
+e : A <> λ
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+defns
+J_neq_all :: '' ::=
+
+defn
+A <> ∀ :: :: neq_all :: 'neq_all__' by
+
+------------------------ :: unit
+UNIT <> ∀
+
+------------------------ :: top
+TOP <> ∀
+
+------------------------ :: bot
+BOT <> ∀
+
+------------------------ :: var
+X <> ∀
+
+------------------------ :: arrow
+A1 -> A2 <> ∀
+
+------------------------ :: union
+A1 ⊔ A2 <> ∀
+
+------------------------ :: intersection
+A1 ⊓ A2 <> ∀
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+defns
+J_neq_intersection :: '' ::=
+
+defn
+A <> ⊓ :: :: neq_intersection :: 'neq_intersection__' by
+
+------------------------ :: unit
+UNIT <> ⊓
+
+------------------------ :: top
+TOP <> ⊓ 
+
+------------------------ :: bot
+BOT <> ⊓
+
+------------------------ :: var
+X <> ⊓
+
+------------------------ :: arrow
+A1 -> A2 <> ⊓
+
+------------------------ :: all
+∀ X . A <> ⊓
+
+------------------------ :: union
+A1 ⊔ A2 <> ⊓
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+defns
+J_neq_union :: '' ::=
+
+defn
+A <> ⊔ :: :: neq_union :: 'neq_union__' by
+
+------------------------ :: unit
+UNIT <> ⊔
+
+------------------------ :: top
+TOP <> ⊔
+
+------------------------ :: bot
+BOT <> ⊔
+
+------------------------ :: var
+X <> ⊔
+
+------------------------ :: arrow
+A1 -> A2 <> ⊔
+
+------------------------ :: all
+∀ X . A <> ⊔
+
+------------------------ :: intersection
+A1 ⊓ A2 <> ⊔
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+defns
+J_neq_bot :: '' ::=
+
+defn
+A <> ⊥ :: :: neq_bot :: 'neq_bot__' by
+
+------------------------ :: unit
+UNIT <> ⊥
+
+------------------------ :: top
+TOP <> ⊥
+
+------------------------ :: var
+X <> ⊥
+
+------------------------ :: arrow
+A1 -> A2 <> ⊥
+
+------------------------ :: union
+A1 ⊔ A2 <> ⊥
+
+------------------------ :: intersection
+A1 ⊓ A2 <> ⊥
+
+------------------------ :: all
+∀ X . A <> ⊥
+
+
+defns
+J_d_wneq_all :: '' ::=
+
+defn
+dE |- A <>ʷ ∀ :: :: d_wneq_all :: 'd_wneq_all__' by
+
+------------------------ :: unit
+dE |- UNIT <>ʷ ∀
+
+------------------------ :: top
+dE |- TOP <>ʷ ∀
+
+( X : □ ) in dE
+------------------------ :: tvar
+dE |- X <>ʷ ∀
+
+------------------------ :: arrow
+dE |- A1 -> A2 <>ʷ ∀
+
+dE |- A1 <>ʷ ∀
+------------------------ :: union1
+dE |- A1 ⊔ A2 <>ʷ ∀
+
+dE |- A2 <>ʷ ∀
+------------------------ :: union2
+dE |- A1 ⊔ A2 <>ʷ ∀
+
+dE |- A1 <>ʷ  ∀
+dE |- A2 <>ʷ  ∀
+------------------------ :: intersection2
+dE |- A1 ⊓ A2 <>ʷ ∀
+
+defns
+J_d_wf_typ :: '' ::=
+
+defn
+dE |- A :: :: d_wf_typ :: 'd_wf_typ__' by
+
+--------- :: unit
+dE |- UNIT 
+
+--------- :: bot
+dE |- BOT 
+
+--------- :: top
+dE |- TOP
+
+(X : □) in dE
+-------------- :: tvar
+dE |- X
+
+(X : ■) in dE 
+-------------- :: stvar 
+dE |- X
+
+dE |- A1
+dE |- A2
+-------------- :: arrow
+dE |- A1 -> A2
+
+X ∈ₛ A
+dE, X : □ |- A
+-------------------- :: all
+dE |- ∀ X . A
+
+dE |- A1
+dE |- A2
+------------- :: union
+dE |- A1 ⊔ A2
+
+dE |- A1
+dE |- A2 
+------------- :: intersection
+dE |- A1 ⊓ A2
+
+
+defns
+J_d_wf_exp :: '' ::=
+
+defn
+dE |- e :: :: d_wf_exp :: 'd_wf_exp__' by
+
+--------- :: unit
+dE |- unit 
+
+(x : A) in dE  
+----------------- :: var
+dE |- x 
+
+dE |- T
+dE , x : T |- e
+----------------- :: abs
+dE |- \ x . e
+
+dE |- e1
+dE |- e2
+----------------- :: app
+dE |- e1 e2
+
+X ∈ₛ A
+dE , X : □ |- e : A
+----------------- :: tabs 
+dE |- \ X . ( e : A )
+
+dE |- A
+dE |- e
+----------------- :: tapp 
+dE |- e @ A
+
+dE |- A
+dE |- e
+----------------- :: anno 
+dE |- e : A
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+defns
+J_d_wf_tenv :: '' ::=
+
+defn
+|-t dE :: :: d_wf_tenv :: 'd_wf_tenv__' by
+
+--------- :: empty
+|-t empty
+
+|-t dE
+X `notin` dom dE
+---------------- :: tvar
+|-t dE , X : □
+
+|-t dE
+dE |- A
+x `notin` dom dE
+---------------- :: typ
+|-t dE , x : A
+
+
+defns
+J_d_wf_env :: '' ::=
+
+defn
+|- dE :: :: d_wf_env :: 'd_wf_env__' by
+
+|-t dE
+--------- :: empty
+|- dE
+
+|- dE
+X `notin` dom dE 
+---------------- :: stvar
+|- dE , X : ■
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+defns 
+J_d_mono_typ :: '' ::= 
+
+defn 
+dE |-m A :: :: d_mono_typ :: 'd_mono_typ__' by 
+
+--------------- :: unit
+dE |-m UNIT
+
+(X : □) in dE
+--------------- :: tvar
+dE |-m X
+
+dE |-m A1
+dE |-m A2
+--------------- :: arrow
+dE |-m A1 -> A2
+
+dE |-m A1 
+dE |-m A2 
+--------------- :: intersection
+dE |-m A1 ⊓ A2
+
+dE |-m A1 
+dE |-m A2 
+--------------- :: union
+dE |-m A1 ⊔ A2
+
+
+defns 
+J_d_wf_cont :: '' ::= 
+
+defn 
+dE |- cs :: :: d_wf_conts :: 'd_wf_conts__' by 
+
+dE |- cd
+----------------- :: infabs
+dE |- _ ▹ cd
+
+dE |- A 
+dE |- cs
+-------------------- :: inftapp
+dE |- _ ○ A =>=> cs  
+
+dE |- A1 
+dE |- A2
+dE |- cs
+-------------------- :: inftappunion
+dE |- _ ⊔∘ A1 ○ A2 =>=> cs  
+
+dE |- A 
+dE |- cs
+-------------------- :: unioninftapp
+dE |- _ ⊔∘ A >> cs  
+
+dE |- A 
+-------------------- :: sub
+dE |- _ <: A  
+
+defn 
+dE |- cd :: :: d_wf_contd :: 'd_wf_contd__' by 
+
+dE |- A
+dE |- cd
+------------------ :: infabsunion
+dE |- _ ⊔▹ A ▹ cd
+
+dE |- e 
+dE |- cs
+-------------------- :: infapp
+dE |- _ • e =>=> cs  
+
+dE |- A -> B
+dE |- cd
+-------------------- :: unioninfabs
+dE |- _ ⊔▹ A ~> B >> cd  
+
+
+defns 
+J_d_wf_work :: '' ::= 
+
+defn 
+dE |- w :: :: d_wf_work :: 'd_wf_work__' by 
+
+dE |- e
+dE |- cs
+----------------- :: infer
+dE |- e => cs
+
+dE |- e
+dE |- A
+------------------ :: check
+dE |- e <= A
+
+dE |- A 
+dE |- cd
+-------------------- :: infabs
+dE |- A ▹ cd  
+
+dE |- A1 -> B1
+dE |- A2
+dE |- cd
+----------------------- :: infabsunion
+dE |- A1 ~> B1 ⊔▹ A2 ▹ cd
+
+dE |- A -> B
+dE |- e
+dE |- cs
+------------------------- :: infapp
+dE |- A ~> B • e =>=> cs    
+
+dE |- A1
+dE |- A2
+dE |- cs
+---------------------------- :: inftapp
+dE |- A1 ○ A2 =>=> cs  
+
+dE |- A1 
+dE |- A2
+dE |- B
+dE |- cs
+---------------------------- :: inftappunion
+dE |- A1 ⊔∘ A2 ○ B =>=> cs  
+
+dE |- A1
+dE |- A2 
+dE |- cs
+------------------------------ :: unioninftapp
+dE |- A1 ⊔∘ A2 >> cs  
+
+dE |- A1 -> B1
+dE |- A2 -> B2
+dE |- cd
+-------------------- :: unioninfabs
+dE |- A1 ~> B1 ⊔▹ A2 ~> B2 >> cd  
+
+dE |- A
+dE |- B 
+-------------------- :: sub
+dE |- A <: B  
+
+dE |- A
+dE |- cs
+-------------------- :: apply
+dE |- cs $$ A
+
+dE |- A
+dE |- B
+dE |- cd
+-------------------- :: apply2
+dE |- cd $ A $ B
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+defns 
+Jd_wf_twl :: '' ::= 
+
+defn 
+|-t dW :: :: d_wf_twl :: 'd_wf_twl__' by 
+
+-------------------- :: empty
+|-t empty
+
+x `notin`  dom ⌊ dW ⌋
+⌊ dW ⌋ |- A
+|-t dW
+-------------------- :: consvar
+|-t dW , x : A
+
+X `notin`  dom ⌊ dW ⌋
+|-t dW
+-------------------- :: constvar
+|-t dW , X : □
+
+⌊ dW ⌋ |- w
+w != * <: * 
+|-t dW
+-------------------- :: conswork
+|-t dW , w
+
+
+defns 
+Jd_wf_wl :: '' ::= 
+
+defn 
+|- dW :: :: d_wf_wl :: 'd_wf_wl__' by 
+
+|-t dW
+-------------------- :: twl
+|- dW
+
+X `notin` dom ⌊ dW ⌋
+|- dW
+-------------------- :: consstvar
+|- dW , X : ■
+
+⌊ dW ⌋ |- A
+⌊ dW ⌋ |- B
+|- dW
+-------------------- :: conswork_sub
+|- dW , A <: B
+
+
+% defns
+% J_d_sub :: '' ::=
+
+% defn
+% dE ||- A <: B :: :: d_sub :: 'd_sub__' by
+
+
+% |- dE
+% dE |- A
+% -------------- :: top
+% dE ||- A <: TOP
+
+% |- dE
+% dE |- B
+% ------------------- :: bot
+% dE ||- BOT <: B
+
+% |- dE
+% ------------------- :: unit
+% dE ||- UNIT <: UNIT
+
+% |- dE
+% dE |- X
+% ------------ :: tvar
+% dE ||- X <: X
+
+% dE ||- B1 <: A1
+% dE ||- A2 <: B2
+% -------------------------- :: arrow
+% dE ||- A1 -> A2 <: B1 -> B2
+
+% X ∈ₛ A
+% X ∈ₛ B
+% dE , X : ■ ||- A <: B
+% -------------------------------------------- :: all
+% dE ||- ∀ X. A <: ∀ X. B
+
+% B <> ∀ 
+% B <> ⊓
+% B <> ⊔
+% X ∈ₛ A
+% dE |-m T
+% dE ||- { T / X } A <: B
+% ---------------------------- :: alll
+% dE ||- ∀ X . A <: B
+
+% dE ||- A <: B1
+% dE ||- A <: B2
+% ------------------------ :: intersection1
+% dE ||- A <: B1 ⊓ B2
+
+% dE ||- A1 <: B
+% dE |- A2
+% ------------------------ :: intersection2
+% dE ||- A1 ⊓ A2 <: B
+
+% dE ||- A2 <: B
+% dE |- A1
+% ------------------------ :: intersection3
+% dE ||- A1 ⊓ A2 <: B
+
+% dE ||- A <: B1
+% dE |- B2
+% ------------------------ :: union1
+% dE ||- A <: B1 ⊔ B2
+
+% dE ||- A <: B2
+% dE |- B1  
+% ------------------------ :: union2
+% dE ||- A <: B1 ⊔ B2
+
+% dE ||- A1 <: B
+% dE ||- A2 <: B
+% ------------------------ :: union3
+% dE ||- A1 ⊔ A2 <: B
+
+
+defns
+J_a_wneq_all :: '' ::=
+
+defn
+aE |- A <>ʷ ∀ :: :: a_wneq_all :: 'a_wneq_all__' by
+
+------------------------ :: unit
+aE |- UNIT <>ʷ ∀
+
+------------------------ :: top
+aE |- TOP <>ʷ ∀
+
+( X : □ ) in aE
+------------------------ :: tvar
+aE |- X <>ʷ ∀
+
+( X : ⬒ ) in aE
+------------------------ :: etvar
+aE |- X <>ʷ ∀
+
+------------------------ :: arrow
+aE |- A1 -> A2 <>ʷ ∀
+
+aE |- A1 <>ʷ ∀
+------------------------ :: union1
+aE |- A1 ⊔ A2 <>ʷ ∀
+
+aE |- A2 <>ʷ ∀
+------------------------ :: union2
+aE |- A1 ⊔ A2 <>ʷ ∀
+
+aE |- A1 <>ʷ  ∀
+aE |- A2 <>ʷ  ∀
+------------------------ :: intersection2
+aE |- A1 ⊓ A2 <>ʷ ∀
+
+
+defns
+J_a_wf_typ :: '' ::=
+
+defn
+aE |- A :: :: a_wf_typ :: 'a_wf_typ__' by
+
+--------- :: unit
+aE |- UNIT 
+
+--------- :: bot
+aE |- BOT 
+
+--------- :: top
+aE |- TOP
+
+(X : □) in aE
+-------------- :: tvar
+aE |- X
+
+(X : ■) in aE 
+-------------- :: stvar 
+aE |- X
+
+(X : ⬒ ) in aE 
+-------------------- :: etvar 
+aE |- X
+
+aE |- A1
+aE |- A2
+-------------- :: arrow
+aE |- A1 -> A2
+
+X ∈ₛ A
+aE, X : □ |- A
+-------------------- :: all
+aE |- ∀ X . A
+
+aE |- A1
+aE |- A2
+------------- :: union
+aE |- A1 ⊔ A2
+
+aE |- A1
+aE |- A2 
+------------- :: intersection
+aE |- A1 ⊓ A2
+
+defns 
+J_a_mono_typ :: '' ::= 
+
+defn 
+aE |-m A :: :: a_mono_typ :: 'a_mono_typ__' by 
+
+--------------- :: unit
+aE |-m UNIT
+
+(X : □) in aE
+--------------- :: tvar
+aE |-m X
+
+(X : ⬒ ) in aE
+----------------- :: etvar
+aE |-m X
+
+aE |-m A1
+aE |-m A2
+--------------- :: arrow
+aE |-m A1 -> A2
+
+aE |-m A1 
+aE |-m A2 
+--------------- :: intersection
+aE |-m A1 ⊓ A2
+
+aE |-m A1 
+aE |-m A2 
+--------------- :: union
+aE |-m A1 ⊔ A2
+
+
+defns
+J_a_wf_exp :: '' ::=
+
+defn
+aE |- e :: :: a_wf_exp :: 'a_wf_exp__' by
+
+--------- :: unit
+aE |- unit 
+
+(x : A) in aE  
+----------------- :: var
+aE |- x 
+
+aE |- T
+aE , x : T |- e
+----------------- :: abs
+aE |- \ x . e
+
+aE |- e1
+aE |- e2
+----------------- :: app
+aE |- e1 e2
+
+X ∈ₛ A
+aE , X : □ |- e : A
+----------------- :: tabs 
+aE |- \ X . (e : A)
+
+aE |- A
+aE |- e
+----------------- :: tapp 
+aE |- e @ A
+
+aE |- A
+aE |- e
+----------------- :: anno 
+aE |- e : A
+
+
+defns 
+J_a_wf_cont :: '' ::= 
+
+defn 
+aE |- cs :: :: a_wf_conts :: 'a_wf_conts__' by 
+
+aE |- cd
+----------------- :: infabs
+aE |- _ ▹ cd
+
+aE |- A 
+aE |- cs
+-------------------- :: inftapp
+aE |- _ ○ A =>=> cs  
+
+aE |- A1 
+aE |- A2
+aE |- cs
+-------------------- :: inftappunion
+aE |- _ ⊔∘ A1 ○ A2 =>=> cs  
+
+aE |- A 
+aE |- cs
+-------------------- :: unioninftapp
+aE |- _ ⊔∘ A >> cs  
+
+aE |- A 
+-------------------- :: sub
+aE |- _ <: A  
+
+defn 
+aE |- cd :: :: a_wf_contd :: 'a_wf_contd__' by 
+
+aE |- A
+aE |- cd
+------------------ :: infabsunion
+aE |- _ ⊔▹ A ▹ cd
+
+aE |- e 
+aE |- cs
+-------------------- :: infapp
+aE |- _ • e =>=> cs  
+
+aE |- A -> B
+aE |- cd
+-------------------- :: unioninfabs
+aE |- _ ⊔▹ A ~> B >> cd  
+
+
+defns 
+J_a_wf_work :: '' ::= 
+
+defn 
+aE |- w :: :: a_wf_work :: 'a_wf_work__' by 
+
+aE |- e
+aE |- cs
+----------------- :: infer
+aE |- e => cs
+
+aE |- e
+aE |- A
+------------------ :: check
+aE |- e <= A
+
+aE |- A 
+aE |- cd
+-------------------- :: infabs
+aE |- A ▹ cd  
+
+aE |- A1 -> B1
+aE |- A2
+aE |- cd
+----------------------- :: infabsunion
+aE |- A1 ~> B1 ⊔▹ A2 ▹ cd
+
+aE |- A -> B
+aE |- e
+aE |- cs
+------------------------- :: infapp
+aE |- A ~> B • e =>=> cs    
+
+aE |- A1
+aE |- A2
+aE |- cs
+---------------------------- :: inftapp
+aE |- A1 ○ A2 =>=> cs  
+
+aE |- A1 
+aE |- A2
+aE |- B
+aE |- cs
+---------------------------- :: inftappunion
+aE |- A1 ⊔∘ A2 ○ B =>=> cs  
+
+aE |- A1
+aE |- A2 
+aE |- cs
+------------------------------ :: unioninftapp
+aE |- A1 ⊔∘ A2 >> cs  
+
+aE |- A1 -> B1
+aE |- A2 -> B2
+aE |- cd
+------------------------------- :: unioninfabs
+aE |- A1 ~> B1 ⊔▹ A2 ~> B2 >> cd  
+
+aE |- A
+aE |- B 
+-------------------- :: sub
+aE |- A <: B  
+
+aE |- A
+aE |- cs
+-------------------- :: apply
+aE |- cs $$ A
+
+aE |- A
+aE |- B
+aE |- cd
+-------------------- :: apply2
+aE |- cd $ A $ B
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+defns 
+J_a_wf_wwl :: '' ::= 
+
+defn 
+|-w aW :: :: a_wf_wwl :: 'a_wf_wwl__' by 
+
+-------------------- :: empty
+|-w empty
+
+x `notin`  dom ⌊ aW ⌋
+⌊ aW ⌋ |- A
+|-w aW
+-------------------- :: consvar
+|-w aW , x : A
+
+X `notin`  dom ⌊ aW ⌋
+|-w aW
+-------------------- :: constvar
+|-w aW , X : □
+
+X `notin` dom ⌊ aW ⌋
+|-w aW
+-------------------- :: consstvar
+|-w aW , X : ■
+
+X `notin` dom ⌊ aW ⌋
+|-w aW
+-------------------- :: consetvar
+|-w aW , X : ⬒
+
+⌊ aW ⌋ |- w
+|-w aW
+-------------------- :: conswork
+|-w aW , w
+
+
+defns 
+J_a_wf_twl :: '' ::= 
+
+defn 
+|-t aW :: :: a_wf_twl :: 'a_wf_twl__' by 
+
+-------------------- :: empty
+|-t empty
+
+x `notin`  dom ⌊ aW ⌋
+⌊ aW ⌋ |- A
+|-t aW
+-------------------- :: consvar
+|-t aW , x : A
+
+X `notin`  dom ⌊ aW ⌋
+|-t aW
+-------------------- :: constvar
+|-t aW , X : □
+
+
+X `notin` dom ⌊ aW ⌋
+|-t aW
+-------------------- :: consetvar
+|-t aW , X : ⬒
+
+⌊ aW ⌋ |- w
+w != * <: *
+|-t aW
+-------------------- :: conswork
+|-t aW , w
+
+
+defns 
+J_a_wf_wl :: '' ::= 
+
+defn 
+|- aW :: :: a_wf_wl :: 'a_wf_wl__' by 
+
+|-t aW 
+-------------------- :: twl
+|- aW
+
+X `notin` dom ⌊ aW ⌋
+|- aW
+-------------------- :: consstvar
+|- aW , X : ■
+
+X `notin` dom ⌊ aW ⌋
+|- aW
+-------------------- :: consetvar
+|- aW , X : ⬒
+
+⌊ aW ⌋ |- A
+⌊ aW ⌋ |- B
+|- aW
+-------------------- :: conswork_sub
+|- aW , A <: B
+
+
+
+defns
+J_a_wf_env :: '' ::=
+
+defn
+|- aE :: :: a_wf_env :: 'a_wf_env__' by
+
+--------- :: empty
+|- empty
+
+|- aE
+X `notin` dom aE
+---------------- :: tvar
+|- aE , X : □
+
+|- aE
+X `notin` dom aE 
+---------------- :: stvar
+|- aE , X : ■
+
+
+|- aE
+X `notin` dom aE 
+---------------- :: etvar
+|- aE , X : ⬒
+
+|- aE
+aE |- A
+x `notin` dom aE
+---------------- :: typ
+|- aE , x : A
+
+
+% defns
+% J_a_wf_env :: '' ::=
+
+% defn
+% |- aE :: :: a_wf_env :: 'a_wf_env__' by
+
+% |-t aE
+% --------- :: tenv
+% |- aE
+
+% |- aE
+% X `notin` dom aE 
+% ---------------- :: stvar
+% |- aE , X : ■
+
+% |- aE
+% X `notin` dom aE 
+% ---------------- :: etvar
+% |- aE , X : ⬒
