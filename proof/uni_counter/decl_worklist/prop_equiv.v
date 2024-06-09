@@ -589,7 +589,7 @@ Lemma d_iuv_size_d_mono : forall Γ A,
 Proof.
   intros Γ A Hmono.
   induction Hmono; simpl; eauto using d_iuv_size; try lia.
-  replace 0 with (0 + 0) by auto. eauto using d_iuv_size.
+  replace 0 with (0 + 0 + 0 * 0) by auto. eauto using d_iuv_size.
 Qed.
 
 Lemma d_iuv_size_subst_mono_cons : forall Ψ A X T n,

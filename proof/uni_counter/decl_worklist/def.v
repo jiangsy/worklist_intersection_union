@@ -113,7 +113,7 @@ Inductive d_iuv_size : denv -> typ -> nat -> Prop :=
   | d_iuv_size__arrow : forall Ψ A1 A2 n1 n2,
       d_iuv_size Ψ A1 n1 ->
       d_iuv_size Ψ A2 n2 ->
-      d_iuv_size Ψ (typ_arrow A1 A2) (n1 + n2)
+      d_iuv_size Ψ (typ_arrow A1 A2) (n1 + n2 + n1 * n2)
   | d_iuv_size__all : forall L Ψ A n m,
       (forall X,
         X \notin L ->

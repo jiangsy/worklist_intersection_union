@@ -1306,6 +1306,8 @@ Proof.
   destruct (le_lt_dec (iu_size A) n); eauto.
   right. intros [w Happly]. dependent destruction Happly. lia.
 Qed.
+(* 
+Lemma exp_size *)
 
 Lemma decidablity_lemma : forall me mj mt mtj ma maj ms mw ne Γ,
   ⊢ᵃʷₛ Γ ->
@@ -1500,7 +1502,7 @@ Proof.
            ++ pick fresh x. inst_cofinites_with x.
               assert (JgArr: (work_check (e ᵉ^^ₑ exp_var_f x) A2 ⫤ᵃ x ~ᵃ A1;ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ 
                            ~ (work_check (e ᵉ^^ₑ exp_var_f x) A2 ⫤ᵃ x ~ᵃ A1;ᵃ Γ) ⟶ᵃʷ⁎⋅).
-              {+ eapply IHme with (ne := n0 * S (iu_size A2) + n); eauto; simpl; try lia.
+              { eapply IHme with (ne := n0 * S (iu_size A2) + n); eauto; simpl; try lia.
                 repeat constructor; auto.
                 admit. admit. (* wf *)
                 repeat constructor; auto.
