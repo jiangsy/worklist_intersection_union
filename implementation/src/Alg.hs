@@ -494,7 +494,7 @@ bigStep n info ws@(WJug (Sub (TUnion t11 t12) t2) : w)
 bigStep n info ws@(WJug (Sub t1 (TUnion t21 t22)) : w)
   | useRule "≤∪R" = case bigStep (n - 1) (info ++ curInfo ws "≤∪R1") (WJug (Sub t1 t21) : w) of
       (True, info') -> (True, info')
-      (False, _) -> bigStep (n - 1) (info ++ curInfo ws "≤∪R2") (WJug (Sub t1 t22) : w)
+      (False, info') -> bigStep (n - 1) (info ++ info' ++ curInfo ws "≤∪R2") (WJug (Sub t1 t22) : w)
 bigStep n info ws@(WJug (Sub (TLabel l1) (TLabel l2)) : w) -- Record Extension
   | useRule "≤Label" && l1 == l2 = bigStep (n - 1) (info ++ curInfo ws "≤Label") w
 bigStep n info ws@(WJug (Sub (TList a) (TList b)) : w)
@@ -541,7 +541,7 @@ bigStep n info ws@(WJug (Chk e (TIntersection t1 t2)) : w)
 bigStep n info ws@(WJug (Chk e (TUnion t1 t2)) : w)
   | useRule "⇐∪" = case bigStep (n - 1) (info ++ curInfo ws "⇐∪1") (WJug (Chk e t1) : w) of
       (True, info') -> (True, info')
-      (False, _) -> bigStep (n - 1) (info ++ curInfo ws "⇐∪2") (WJug (Chk e t2) : w)
+      (False, info') -> bigStep (n - 1) (info ++ info' ++ curInfo ws "⇐∪2") (WJug (Chk e t2) : w)
 bigStep n info ws@(WJug (Chk Nil (TList _)) : w) -- Unformalized
   | useRule "⇐[]Nil" = bigStep (n - 1) (info ++ curInfo ws "⇐[]Nil") w
 bigStep n info ws@(WJug (Chk (Cons e1 e2) (TList a)) : w) -- Unformalized
@@ -713,7 +713,7 @@ bigStep n info ws@(WJug (InfAbs (TUnion t1 t2) b1 b2 c) : w)
     b4 = pickNewTVar ws [b3]
     b5 = pickNewTVar ws [b3, b4]
     b6 = pickNewTVar ws [b3, b4, b5]
-    ws' = WJug (InfAbs t1 b3 b4 (InfAbs t2 b5 b6 (ctsubst b2 (TIntersection (TVar b3) (TVar b5)) (ctsubst b1 (TUnion (TVar b4) (TVar b6)) c)))) : w
+    ws' = WJug (InfAbs t1 b3 b4 (InfAbs t2 b5 b6 (ctsubst b1 (TIntersection (TVar b3) (TVar b5)) (ctsubst b2 (TUnion (TVar b4) (TVar b6)) c)))) : w
 bigStep n info ws@(WJug (InfAbs (TVar a) b1 b2 c) : w)
   | useRule "▹α" && findTVar w a == ETVarBind = bigStep (n - 1) (info ++ curInfo ws "▹α") ws'
   where
@@ -756,7 +756,7 @@ bigStep n info ws@(WJug End : w) = bigStep (n - 1) (info ++ curInfo ws "Dummy") 
 --
 -- Stuck
 --
-bigStep _ info _ = (False, info)
+bigStep _ info ws = (False, info ++ curInfo ws "Stuck")
 
 run :: FilePath -> IO ()
 run s = do
@@ -768,7 +768,7 @@ run s = do
       where
         b = pickNewTVar [] (tvarInExp e)
         ws = [WJug (Inf e b End)]
-        (flag, message) = bigStep 40 "" ws
+        (flag, message) = bigStep 400 "" ws
 
 ex_ws1 :: [Work]
 ex_ws1 = [WJug (Sub (TAll "a" (TArr (TVar "a") (TVar "a"))) (TAll "a" (TArr (TVar "a") (TVar "a"))))]
