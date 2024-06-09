@@ -1530,7 +1530,7 @@ Lemma size_work_open_work_wrt_typ_rec_mutual :
   size_work w1 <= size_work (open_work_wrt_typ_rec n1 A1 w1)).
 Proof.
 apply_mutual_ind work_mutind;
-default_simp.
+default_simp; auto 6 with arith lngen.
 Qed.
 
 (* end hide *)
