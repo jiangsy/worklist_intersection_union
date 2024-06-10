@@ -4,11 +4,11 @@ Require Import Lia.
 Require Import Metalib.Metatheory.
 
 
-Require Import uni.notations.
-Require Import uni.decl.prop_basic.
-Require Import uni.decl.prop_rename.
-Require Import uni.decl.prop_subtyping.
-Require Import uni.ltac_utils.
+Require Import uni_monoiu.notations.
+Require Import uni_monoiu.decl.prop_basic.
+Require Import uni_monoiu.decl.prop_rename.
+Require Import uni_monoiu.decl.prop_subtyping.
+Require Import uni_monoiu.ltac_utils.
 
 
 Hint Constructors d_wf_typ: core.
@@ -706,6 +706,12 @@ Proof.
   apply exp_size_open_typ_rec.
 Qed.
 
+
+(* #[local] Hint Resolve d_wf_typ_weaken_cons : core. *)
+
+(* #[export] Hint Immediate d_sub_d_wf_env d_sub_d_wf_typ1 d_sub_d_wf_typ2 : subtyping. *)
+
+(* #[local] Hint Resolve d_chk_inf_wf_env : core. *)
 
 Theorem d_chk_inf_subsumption : forall n1 n2 n3 Ψ Ψ' e A mode,
   exp_size e < n1 ->

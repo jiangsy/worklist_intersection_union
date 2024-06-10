@@ -3,7 +3,7 @@ COQ_MAKEFILE := CoqMakefile
 
 OTT_FLAGS := -coq_lngen true -signal_parse_errors true
 
-SYSTEMS := uni uni_rec uni_counter systemf
+SYSTEMS := uni uni_rec uni_counter uni_monoiu systemf
 IGNORE_DIRS := ""
 OTT_OUTS   := $(addsuffix /def_ott.v,${SYSTEMS})
 LNGEN_OUTS := $(addsuffix /prop_ln.v,${SYSTEMS})
