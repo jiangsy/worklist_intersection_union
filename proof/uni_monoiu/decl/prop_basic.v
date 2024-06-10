@@ -352,18 +352,6 @@ Proof.
   intros; induction H; eauto...
 Qed.
 
-Lemma d_mono_typ_neq_union : forall Ψ T,
-  Ψ ᵗ⊢ᵈₘ T -> neq_union T.
-Proof.
-  intros; induction H; eauto...
-Qed.
-
-Lemma d_mono_typ_neq_intersection : forall Ψ T,
-  Ψ ᵗ⊢ᵈₘ T -> neq_intersection T.
-Proof.
-  intros; induction H; eauto...
-Qed.
-
 
 #[local] Hint Constructors neq_all neq_intersection neq_union : core.
 
@@ -375,30 +363,6 @@ Proof with eauto 6 using subst_typ_in_typ_lc_typ.
   intros. induction H0; simpl; eauto...
   - destruct (X0 == X); auto.
     eapply d_mono_typ_neq_all; eauto.
-Qed.
-
-Lemma neq_union_subst_mono_neq_union : forall Ψ A X T,
-  Ψ ᵗ⊢ᵈₘ T  ->
-  neq_union A ->
-  neq_union ( {T ᵗ/ₜ X} A ).
-Proof with eauto 7 using subst_typ_in_typ_lc_typ.
-  intros. induction H0; simpl; eauto...
-  - destruct (X0 == X); auto.
-    eapply d_mono_typ_neq_union; eauto.
-  - eapply neq_union__all.
-    replace ((typ_all ({T ᵗ/ₜ X} A))) with ({T ᵗ/ₜ X} (typ_all A)) by auto...
-Qed.
-
-Lemma neq_intersection_subst_mono_neq_intersection : forall Ψ A X T,
-  Ψ ᵗ⊢ᵈₘ T  ->
-  neq_intersection A ->
-  neq_intersection ( {T ᵗ/ₜ X} A ).
-Proof with eauto 7 using subst_typ_in_typ_lc_typ.
-  intros. induction H0; simpl; eauto... 
-  - destruct (X0 == X); auto.
-    eapply d_mono_typ_neq_intersection; eauto.
-  - eapply neq_intersection__all.
-    replace ((typ_all ({T ᵗ/ₜ X} A))) with ({T ᵗ/ₜ X} (typ_all A)) by auto...
 Qed.
 
 
@@ -485,6 +449,8 @@ Proof.
     + apply binds_remove_mid in H; auto.
     + apply binds_remove_mid in H; auto.
     + apply binds_remove_mid in H; auto.
+  - simpl in *. eauto.  
+  - simpl in *. eauto.  
   - simpl in *. eauto.  
 Qed.
 

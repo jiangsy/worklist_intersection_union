@@ -124,19 +124,6 @@ Qed.
 
 #[global] Hint Resolve a_wf_typ_lc a_mono_typ_lc : core.
 
-Lemma a_mono_typ_in_s_in : forall Σ A X,
-  Σ ᵗ⊢ᵃₘ A ->
-  X `in` ftvar_in_typ A ->
-  s_in X A.
-Proof.
-  intros. induction H; simpl in *; auto.
-  - fsetdec.
-  - apply singleton_iff in H0. subst. constructor.
-  - apply singleton_iff in H0. subst. constructor.
-  - apply union_iff in H0. destruct H0.
-    + apply s_in__arrow1; auto. eapply a_mono_typ_lc; eauto.
-    + apply s_in__arrow2; auto. eapply a_mono_typ_lc; eauto.
-Qed.
 
 
 Theorem a_mono_typ_wf : forall Σ A,
@@ -295,7 +282,10 @@ Proof.
     simpl in *. solve_notin_eq X0.
     auto.
   - simpl in *; eauto.
+  - simpl in *; eauto.
+  - simpl in *; eauto.
 Qed.
+
 
 Lemma a_mono_typ_strengthen_stvar : forall Σ X T,
   (X, ■) :: Σ ᵗ⊢ᵃₘ T ->
@@ -308,6 +298,7 @@ Proof.
     apply a_mono_typ__etvar; auto.
 Qed.
 
+
 Lemma a_mono_typ_strengthen_var : forall Σ x A T,
   (x, abind_var_typ A) :: Σ ᵗ⊢ᵃₘ T ->
   Σ ᵗ⊢ᵃₘ T.
@@ -318,6 +309,7 @@ Proof.
   - inversion H. dependent destruction H0.
     apply a_mono_typ__etvar; auto.
 Qed.
+
 
 Lemma a_wf_typ_var_binds_another : forall Σ1 x Σ2 A B1 B2,
   Σ2 ++ x ~ abind_var_typ B1 ++ Σ1 ᵗ⊢ᵃ A ->
@@ -1251,6 +1243,8 @@ Proof with (autorewrite with core in *); simpl; eauto; solve_false; try solve_no
   - case_eq (X==X0); intros. { subst. simpl in Hnotin. solve_notin. }
     apply a_mono_typ__etvar.
     eapply aworklist_subst_binds_same_atvar; eauto.
+  - simpl in *. constructor; eauto.
+  - simpl in *. constructor; eauto.
   - simpl in *. constructor; eauto.
 Qed.
 

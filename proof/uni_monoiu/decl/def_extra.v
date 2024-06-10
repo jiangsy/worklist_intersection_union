@@ -65,65 +65,6 @@ Inductive d_sub : denv -> typ -> typ -> Prop :=    (* defn d_sub *)
       d_sub Ψ (typ_union A1 A2) B.
 
 
-Inductive d_sub_alt : denv -> typ -> typ -> Prop :=    (* defn d_sub *)
-  | d_sub_alt__top : forall (Ψ:denv) (A:typ),
-      d_wf_env Ψ ->
-      d_wf_typ Ψ A ->
-      d_sub_alt Ψ A typ_top
-  | d_sub_alt__bot : forall (Ψ:denv) (B:typ),
-      d_wf_env Ψ ->
-      d_wf_typ Ψ B ->
-      d_sub_alt Ψ typ_bot B
-  | d_sub_alt__unit : forall (Ψ:denv),
-      d_wf_env Ψ ->
-      d_sub_alt Ψ typ_unit typ_unit
-  | d_sub_alt__tvar : forall (Ψ:denv) (X:typvar),
-      d_wf_env Ψ ->
-      d_wf_typ Ψ (typ_var_f X) ->
-      d_sub_alt Ψ (typ_var_f X) (typ_var_f X)
-  | d_sub_alt__arrow : forall (Ψ:denv) (A1 A2 B1 B2:typ),
-      d_sub_alt Ψ B1 A1 ->
-      d_sub_alt Ψ A2 B2 ->
-      d_sub_alt Ψ (typ_arrow A1 A2) (typ_arrow B1 B2)
-  | d_sub_alt__all : forall (L:vars) (Ψ:denv) (A B:typ),
-      ( forall X , X \notin  L  -> s_in X  ( open_typ_wrt_typ A (typ_var_f X) )  )  ->
-      ( forall X , X \notin  L  -> s_in X  ( open_typ_wrt_typ B (typ_var_f X) )  )  ->
-      ( forall X , X \notin  L  -> d_sub_alt  ( X ~ dbind_stvar_empty  ++  Ψ )   ( open_typ_wrt_typ A (typ_var_f X) )   ( open_typ_wrt_typ B (typ_var_f X) )  )  ->
-      d_sub_alt Ψ (typ_all A) (typ_all B)
-  | d_sub_alt__alll : forall (L:vars) (Ψ:denv) (A B T:typ),
-      neq_all B ->
-      neq_intersection B ->
-      neq_union B ->
-      ( forall X , X \notin  L  -> s_in X  ( open_typ_wrt_typ A (typ_var_f X) )  )  ->
-      d_mono_typ Ψ T ->
-      d_sub_alt Ψ  (open_typ_wrt_typ  A   T )  B ->
-      d_sub_alt Ψ (typ_all A) B
-  | d_sub_alt__intersection1 : forall (Ψ:denv) (A B1 B2:typ),
-      d_sub_alt Ψ A B1 ->
-      d_sub_alt Ψ A B2 ->
-      d_sub_alt Ψ A (typ_intersection B1 B2)
-  | d_sub_alt__intersection2 : forall (Ψ:denv) (A1 A2 B:typ),
-      d_sub_alt Ψ A1 B ->
-      d_wf_typ Ψ A2 ->
-      d_sub_alt Ψ (typ_intersection A1 A2) B
-  | d_sub_alt__intersection3 : forall (Ψ:denv) (A1 A2 B:typ),
-      d_sub_alt Ψ A2 B ->
-      d_wf_typ Ψ A1 ->
-      d_sub_alt Ψ (typ_intersection A1 A2) B
-  | d_sub_alt__union1 : forall (Ψ:denv) (A B1 B2:typ),
-      d_sub_alt Ψ A B1 ->
-      d_wf_typ Ψ B2 ->
-      d_sub_alt Ψ A (typ_union B1 B2)
-  | d_sub_alt__union2 : forall (Ψ:denv) (A B1 B2:typ),
-      d_sub_alt Ψ A B2 ->
-      d_wf_typ Ψ B1 ->
-      d_sub_alt Ψ A (typ_union B1 B2)
-  | d_sub_alt__union3 : forall (Ψ:denv) (A1 A2 B:typ),
-      d_sub_alt Ψ A1 B ->
-      d_sub_alt Ψ A2 B ->
-      d_sub_alt Ψ (typ_union A1 A2) B.
-
-
 Inductive d_inftapp : denv -> typ -> typ -> typ -> Prop := 
   | d_inftapp__bot : forall (Ψ:denv) (B:typ),
       d_wf_tenv Ψ -> 
