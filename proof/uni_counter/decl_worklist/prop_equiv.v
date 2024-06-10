@@ -907,7 +907,8 @@ Lemma iu_size_le_d_iuv_size : forall A Ψ n,
 Proof.
   intro A. induction A; intros * Hiuv; simpl; try lia.
   - dependent destruction Hiuv.
-    eapply IHA1 in Hiuv1. eapply IHA2 in Hiuv2. lia.
+    eapply IHA1 in Hiuv1. eapply IHA2 in Hiuv2.
+    assert (iu_size A1 * iu_size A2 <= n1 * n2) by (eapply mult_le_compat; eauto). lia.
   - dependent destruction Hiuv.
     pick fresh X. inst_cofinites_with X.
     eapply d_iuv_size_close in H.

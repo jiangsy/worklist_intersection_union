@@ -52,7 +52,7 @@ Inductive apply_conts : conts -> typ -> work -> Prop :=
 
 Fixpoint iu_size (A : typ) : nat :=
   match A with
-  | typ_arrow A1 A2 => iu_size A1 + iu_size A2
+  | typ_arrow A1 A2 => iu_size A1 + iu_size A2 + iu_size A1 * iu_size A2
   | typ_all A => iu_size A
   | typ_union A1 A2 => 2 + iu_size A1 + iu_size A2
   | typ_intersection A1 A2 => 2 + iu_size A1 + iu_size A2

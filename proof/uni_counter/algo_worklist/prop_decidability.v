@@ -1306,8 +1306,123 @@ Proof.
   destruct (le_lt_dec (iu_size A) n); eauto.
   right. intros [w Happly]. dependent destruction Happly. lia.
 Qed.
-(* 
-Lemma exp_size *)
+
+(* Lemma a_exp_split_size_open_arr : forall e Σ1 Σ2 x A B n m,
+  (Σ2 ++ (x, abind_var_typ typ_bot) :: Σ1) ᵉ⊢ᵃ e ->
+  a_exp_split_size (Σ2 ++ (x, abind_var_typ typ_bot) :: Σ1) e n ->
+  a_exp_split_size (Σ2 ++ (x, abind_var_typ A) :: Σ1) e m ->
+  m * S (iu_size B) <= n * S (iu_size A + iu_size B).
+Proof.
+  intros * Hwf.
+  generalize dependent m. generalize dependent n.
+  generalize dependent B. generalize dependent A.
+  dependent induction Hwf; intros * Hsize1 Hsize2.
+  - dependent destruction Hsize1. dependent destruction Hsize2. lia.
+  - dependent destruction Hsize1. dependent destruction Hsize2.
+    assert (n = n0) by admit. subst. lia.
+  - dependent destruction Hsize1. dependent destruction Hsize2.
+    pick fresh x0. inst_cofinites_with x0. simpl in *.
+    specialize (H1 Σ1 ((x0, abind_var_typ typ_bot) :: Σ2) x0).  *)
+
+Lemma a_iuv_size_var_binds_another : forall m Σ1 Σ2 x A B1 B2 n1 n2,
+  size_typ A < m ->
+  a_iuv_size (Σ2 ++ (x, abind_var_typ B1) :: Σ1) A n1 ->
+  a_iuv_size (Σ2 ++ (x, abind_var_typ B2) :: Σ1) A n2 -> n1 = n2.
+Proof.
+  intro m. induction m. lia. intros * Hlt Hsize1 Hsize2.
+  dependent destruction Hsize1; dependent destruction Hsize2; simpl in *; eauto; try lia.
+  - eapply IHm in Hsize1_1; eauto; try lia.
+    eapply IHm in Hsize1_2; eauto; try lia.
+  - pick fresh X. inst_cofinites_with X.
+    specialize (IHm Σ1 ((X, □%abind) :: Σ2) x (A ᵗ^ₜ X) B1 B2 n n0).
+    simpl in *. erewrite IHm; eauto.
+    erewrite num_occurs_in_typ_det with (n1 := m0); eauto.
+    unfold open_typ_wrt_typ.
+    specialize (size_typ_open_typ_wrt_typ_rec_var A X 0). lia.
+  - eapply IHm in Hsize1_1; eauto; try lia.
+    eapply IHm in Hsize1_2; eauto; try lia.
+  - eapply IHm in Hsize1_1; eauto; try lia.
+    eapply IHm in Hsize1_2; eauto; try lia.
+Qed.
+
+Lemma a_iuv_size_det : forall Ψ A n1 n2,
+  a_iuv_size Ψ A n1 -> a_iuv_size Ψ A n2 -> n1 = n2.
+Proof.
+  intros * Hiuv1. generalize dependent n2.
+  dependent induction Hiuv1; intros * Hiuv2; dependent destruction Hiuv2; auto.
+  pick fresh X. inst_cofinites_with X.
+  erewrite H0; eauto. erewrite num_occurs_in_typ_det with (n1 := m); eauto.
+Qed.
+
+(* Lemma a_exp_split_size_open_arr : forall ne e Σ1 Σ2 x A n m p,
+  size_exp e < ne ->
+  ⊢ᵃ Σ2 ++ (x, abind_var_typ A) :: Σ1 ->
+  a_exp_split_size (Σ2 ++ (x, abind_var_typ typ_bot) :: Σ1) e n ->
+  a_exp_split_size (Σ2 ++ (x, abind_var_typ A) :: Σ1) e m ->
+  (1 + m) * (1 + p) <= (1 + n) * (1 + iu_size A + p).
+Proof.
+  intro ne. induction ne. lia.
+  intros * Hlt Hwf Hsize1 Hsize2.
+  dependent destruction Hsize1; dependent destruction Hsize2; simpl in *; eauto; try lia.
+  - destruct (x == x0); subst.
+    + apply binds_unique with (b := abind_var_typ typ_bot) in H.
+      apply binds_unique with (b := abind_var_typ A) in H1.
+      dependent destruction H. dependent destruction H1.
+      dependent destruction H0. simpl.
+      admit. admit. admit. admit. admit.
+    + 
+    eapply a_iuv_size_det in H0; eauto.
+      eapply a_iuv_size_det in Hsize1_2; eauto.
+     assert (n = n0) by admit. subst. lia.
+  - pick fresh x0. inst_cofinites_with x0.
+    specialize (IHne (e ᵉ^^ₑ exp_var_f x0) Σ1 ((x0, abind_var_typ typ_bot) :: Σ2) x A n n0 p).
+    eapply IHne; eauto.
+    unfold open_exp_wrt_exp.
+    specialize (size_exp_open_exp_wrt_exp_rec_var e x0 0). lia.
+  - eapply IHne with (p := p) in Hsize2_1; eauto; try lia.
+    eapply IHne with (p := p) in Hsize2_2; eauto; try lia.
+  - pick fresh x0. inst_cofinites_with x0.
+    eapply a_iuv_size_var_binds_another in H0; eauto. subst.
+    specialize (IHne (e ᵉ^^ₜ ` x0) Σ1 ((x0, □%abind) :: Σ2) x A n n0 p).
+    eapply IHne in H1; eauto; try lia.
+    rewrite Nat.mul_add_distr_r. rewrite Nat.mul_add_distr_r.
+    apply mult_le_compat_r with (p := S (S m0)) in H1. lia.
+    unfold open_exp_wrt_typ.
+    specialize (size_exp_open_exp_wrt_typ_rec_var e x0 0). lia.
+  - eapply a_iuv_size_var_binds_another in H; eauto. subst.
+    eapply IHne with (p := p) in Hsize2; eauto; try lia.
+    rewrite Nat.mul_add_distr_r. rewrite Nat.mul_add_distr_r.
+    apply mult_le_compat_r with (p := S (S m0)) in Hsize2. lia.
+  - eapply a_iuv_size_var_binds_another in H; eauto. subst.
+    eapply IHne with (p := p) in Hsize2; eauto; try lia.
+    rewrite Nat.mul_add_distr_r. rewrite Nat.mul_add_distr_r.
+    apply mult_le_compat_r with (p := S (S m0)) in Hsize2. lia.
+Admitted. *)
+
+(* Lemma exp_size_open_arr : forall e Σ1 Σ2 x A B n m,
+  exp_size (Σ2 ++ (x, abind_var_typ typ_bot) :: Σ1) e n ->
+  exp_size (Σ2 ++ (x, abind_var_typ A) :: Σ1) e m ->
+  m * S (iu_size B) <= iu_size A + iu_size B + n * S (iu_size A + iu_size B).
+Proof.
+  intro e. induction e; intros * Hsize1 Hsize2; eauto;
+    try solve [dependent destruction Hsize1; dependent destruction Hsize2; lia].
+  - admit.
+  - dependent destruction Hsize1. dependent destruction Hsize2.
+    eapply IHe1 with (B := B) (n := n1) in Hsize2_1; eauto.
+    eapply IHe2 with (B := B) (n := n2) in Hsize2_2; eauto.
+    assert (Hle: n0 * S (iu_size B) + n3 * S (iu_size B) <=
+              2 * (iu_size A + iu_size B) + (n1 * S (iu_size A + iu_size B) + n2 * S (iu_size A + iu_size B))) by lia.
+    rewrite <- Nat.mul_add_distr_r in Hle. rewrite <- Nat.mul_add_distr_r in Hle.
+    lia.
+    rewrite Nat.mul_add_distr_r.
+    eapply 
+    eapply IHe2 with (B := B) in Hsize1_2; eauto.
+    lia.
+    eapply IHe2 in H0; eauto. lia.  
+  - dependent destruction Hsize1. dependent destruction Hsize2. lia.
+  intros Σ1 Σ2 e x A B n m Hsize1 Hsize2.
+  
+  dependent destruction Hsize1; dependent destruction Hsize2; simpl *)
 
 Lemma decidablity_lemma : forall me mj mt mtj ma maj ms mw ne Γ,
   ⊢ᵃʷₛ Γ ->
@@ -1502,7 +1617,13 @@ Proof.
            ++ pick fresh x. inst_cofinites_with x.
               assert (JgArr: (work_check (e ᵉ^^ₑ exp_var_f x) A2 ⫤ᵃ x ~ᵃ A1;ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ 
                            ~ (work_check (e ᵉ^^ₑ exp_var_f x) A2 ⫤ᵃ x ~ᵃ A1;ᵃ Γ) ⟶ᵃʷ⁎⋅).
-              { eapply IHme with (ne := n0 * S (iu_size A2) + n); eauto; simpl; try lia.
+              { eapply IHme; auto.
+                  admit.
+                  eapply exp_size_wl__cons_work; eauto.
+                  eapply exp_size_work__check; eauto.
+                  eapply a_wf_exp_var_binds_another with (Σ2 := nil) (A1 := T); eauto. }
+                 eauto; simpl; try lia.
+                 eapply IHme with (ne := n0 * S (iu_size A2) + n); eauto; simpl; try lia.
                 repeat constructor; auto.
                 admit. admit. (* wf *)
                 repeat constructor; auto.
