@@ -3,13 +3,13 @@ Require Import Program.Tactics.
 Require Import Metalib.Metatheory.
 Require Import List.
 
-Require Import uni.notations.
-Require Import uni.decl.prop_basic.
-Require Import uni.decl_worklist.prop_equiv.
-Require Import uni.decl.prop_subtyping.
-Require Import uni.algo_worklist.def_extra.
-Require Import uni.algo_worklist.prop_basic.
-Require Import uni.ltac_utils.
+Require Import uni_monoiu.notations.
+Require Import uni_monoiu.decl.prop_basic.
+Require Import uni_monoiu.decl_worklist.prop_equiv.
+Require Import uni_monoiu.decl.prop_subtyping.
+Require Import uni_monoiu.algo_worklist.def_extra.
+Require Import uni_monoiu.algo_worklist.prop_basic.
+Require Import uni_monoiu.ltac_utils.
 
 
 Definition subst_set := denv.
@@ -708,6 +708,50 @@ Proof.
 Qed.
 
 
+Lemma trans_typ_neq_all : forall θ Aᵃ Aᵈ,
+  θ ᵗ⊩ Aᵃ ⇝ Aᵈ -> 
+  neq_all Aᵃ -> 
+  neq_all Aᵈ.
+Proof.
+  intros. dependent destruction H0; dependent destruction H; eauto.
+  + apply wf_ss_binds_mono_typ in H0; auto.
+    eapply d_mono_typ_neq_all. eauto.
+Qed.
+
+
+Lemma trans_typ_neq_all_rev : forall θ Aᵃ Aᵈ,
+  θ ᵗ⊩ Aᵃ ⇝ Aᵈ -> 
+  neq_all Aᵈ -> 
+  neq_all Aᵃ.
+Proof.
+  intros. dependent destruction H0; dependent destruction H; eauto.
+Qed.
+
+
+Lemma trans_typ_neq_union_rev : forall θ Aᵃ Aᵈ,
+  θ ᵗ⊩ Aᵃ ⇝ Aᵈ -> 
+  neq_union Aᵈ ->
+  neq_union Aᵃ.
+Proof.
+  intros. dependent destruction H0; dependent destruction H; eauto.
+Qed.
+
+
+Lemma trans_typ_neq_intersection_rev : forall θ Aᵃ Aᵈ,
+  θ ᵗ⊩ Aᵃ ⇝ Aᵈ -> 
+  neq_intersection Aᵈ -> 
+  neq_intersection Aᵃ.
+Proof.
+  intros. dependent destruction H0; dependent destruction H; eauto.
+Qed.
+
+
+#[export] Hint Resolve 
+  trans_typ_neq_all trans_typ_neq_all_rev 
+  trans_typ_neq_union_rev trans_typ_neq_intersection_rev
+  : core.
+  
+
 Lemma trans_typ_det : forall θ Aᵃ A₁ᵈ A₂ᵈ,
   uniq θ -> 
   θ ᵗ⊩ Aᵃ ⇝ A₁ᵈ -> 
@@ -1123,8 +1167,10 @@ Proof.
   - exfalso. eapply H2; eauto; simpl in *. fsetdec. 
     apply sin_in in H5. fsetdec.
   - solve_binds_nonmono_contradiction.
-  - solve_binds_nonmono_contradiction.
-  - solve_binds_nonmono_contradiction.
+  - exfalso. eapply H2; eauto; simpl in *. fsetdec. 
+    apply sin_in in H3_. fsetdec. 
+  - exfalso. eapply H2; eauto; simpl in *. fsetdec. 
+    apply sin_in in H3_. fsetdec. 
   - eapply s_in__arrow1; eauto.
     apply IHtrans_typ1; auto.
     intros. eapply H2; simpl; eauto. 
@@ -1700,6 +1746,8 @@ Proof.
     destruct H as [T].  
     eapply binds_ss_etvar_binds_ss_to_aenv; eauto.
   - dependent destruction Htransa; eauto.
+  - dependent destruction Htransa; eauto.
+  - dependent destruction Htransa; eauto.
 Qed.
 
 
@@ -1946,10 +1994,11 @@ Proof with eauto.
       eapply H0 with (Ω:=(dworklist_cons_var Ω X dbind_tvar_empty))...
       econstructor...
   - dependent destruction H0...
-    solve_binds_nonmono_contradiction.
+    apply a_wf_typ__etvar...
+    eapply trans_wl_ss_binds_etvar_a_wl...
     dependent destruction H1...
   - dependent destruction H0...
-    solve_binds_nonmono_contradiction.
+    apply a_wf_typ__etvar...  eapply trans_wl_ss_binds_etvar_a_wl...
     dependent destruction H1...
 Qed.
 
@@ -2561,6 +2610,8 @@ Proof.
     apply H1 in H2; simpl; auto.
     constructor. 
     apply binds_tvar_ss_binds_ss_to_denv; eauto.
+  - simpl in *. constructor; eauto.
+  - simpl in *. constructor; eauto.
   - simpl in *. constructor; eauto.
 Qed.
 
