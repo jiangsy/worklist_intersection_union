@@ -525,7 +525,10 @@ Proof.
     apply binds_ss_to_denv_binds_ss in H. unfold not. intros. subst.
     apply binds_dom_contradiction in H; auto.
   - simpl in *. apply union_iff in H1. inversion H1; eauto.
+  - simpl in *. apply union_iff in H1. inversion H1; eauto.
+  - simpl in *. apply union_iff in H1. inversion H1; eauto.
 Qed.
+
 
 Lemma wf_ss_move_etvar_before : forall θ1 θ2 X1 X2 T1 T2,
   wf_ss (θ2 ++ (X1, dbind_typ T1) :: (X2, dbind_typ T2) :: θ1) ->

@@ -1,4 +1,4 @@
-Require Import Coq.Program.Equality.
+(* Require Import Coq.Program.Equality.
 Require Import Program.Tactics.
 Require Import Metalib.Metatheory.
 Require Import Lia.
@@ -1854,4 +1854,4 @@ Proof with eauto.
     destruct_a_wf_wl.  apply a_wf_wl_strengthen_work... eapply a_wf_work_apply_contd with (A:=Aᵃ)... 
     exists θ0...
 Qed.
-    
+     *)
