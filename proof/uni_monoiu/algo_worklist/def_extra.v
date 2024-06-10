@@ -2,9 +2,9 @@ Require Import Bool.
 Require Import Metalib.Metatheory.
 Require Import List.
 
-Require Import uni.prop_ln.
-Require Export uni.def_ott.
-Require Export uni.decl_worklist.def.
+Require Import uni_monoiu.prop_ln.
+Require Export uni_monoiu.def_ott.
+Require Export uni_monoiu.decl_worklist.def.
 
 
 Fixpoint awl_app (Γ1 Γ2 : aworklist) :=

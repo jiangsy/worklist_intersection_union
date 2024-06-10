@@ -3,9 +3,9 @@ Require Import Program.Tactics.
 Require Import Lia.
 Require Import Metalib.Metatheory.
 
-Require Import uni.notations.
-Require Export uni.prop_basic.
-Require Import uni.ltac_utils.
+Require Import uni_monoiu.notations.
+Require Export uni_monoiu.prop_basic.
+Require Import uni_monoiu.ltac_utils.
 
 
 Open Scope dbind_scope.

@@ -1,12 +1,12 @@
 Require Import Coq.Program.Equality.
 
-Require Import uni.decl.def_extra.
-Require Import uni.decl.prop_basic.
-Require Import uni.decl.prop_typing.
-Require Import uni.def_ott.
-Require Import uni.notations.
-Require Import uni.decl_worklist.def.
-Require Import uni.ltac_utils.
+Require Import uni_monoiu.decl.def_extra.
+Require Import uni_monoiu.decl.prop_basic.
+Require Import uni_monoiu.decl.prop_typing.
+Require Import uni_monoiu.def_ott.
+Require Import uni_monoiu.notations.
+Require Import uni_monoiu.decl_worklist.def.
+Require Import uni_monoiu.ltac_utils.
 
 Open Scope dworklist.
 

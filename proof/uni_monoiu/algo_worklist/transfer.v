@@ -3,13 +3,13 @@ Require Import Program.Tactics.
 Require Import Metalib.Metatheory.
 Require Import List.
 
-Require Import uni.notations.
-Require Import uni.decl.prop_basic.
-Require Import uni.decl_worklist.prop_equiv.
-Require Import uni.decl.prop_subtyping.
-Require Import uni.algo_worklist.def_extra.
-Require Import uni.algo_worklist.prop_basic.
-Require Import uni.ltac_utils.
+Require Import uni_monoiu.notations.
+Require Import uni_monoiu.decl.prop_basic.
+Require Import uni_monoiu.decl_worklist.prop_equiv.
+Require Import uni_monoiu.decl.prop_subtyping.
+Require Import uni_monoiu.algo_worklist.def_extra.
+Require Import uni_monoiu.algo_worklist.prop_basic.
+Require Import uni_monoiu.ltac_utils.
 
 
 Definition subst_set := denv.

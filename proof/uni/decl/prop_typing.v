@@ -707,12 +707,6 @@ Proof.
 Qed.
 
 
-(* #[local] Hint Resolve d_wf_typ_weaken_cons : core. *)
-
-(* #[export] Hint Immediate d_sub_d_wf_env d_sub_d_wf_typ1 d_sub_d_wf_typ2 : subtyping. *)
-
-(* #[local] Hint Resolve d_chk_inf_wf_env : core. *)
-
 Theorem d_chk_inf_subsumption : forall n1 n2 n3 Ψ Ψ' e A mode,
   exp_size e < n1 ->
   dmode_size mode < n2 ->

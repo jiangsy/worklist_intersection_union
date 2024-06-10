@@ -1,8 +1,8 @@
 Require Import Program.Equality.
 
-Require Export uni.def_ott.
-Require Export uni.def_extra.
-Require Export uni.decl.def_extra.
+Require Export uni_monoiu.def_ott.
+Require Export uni_monoiu.def_extra.
+Require Export uni_monoiu.decl.def_extra.
 
 
 Fixpoint dwl_app (Ω1 Ω2 : dworklist) :=

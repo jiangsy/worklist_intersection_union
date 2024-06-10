@@ -5,10 +5,10 @@ Require Import systemf.def_ott.
 Require Import systemf.prop_ln.
 Require Import systemf.prop_basic.
 
-Require Import uni.prop_basic.
-Require Import uni.decl.prop_basic.
-Require Import uni.decl.prop_rename.
-Require Import uni.ltac_utils.
+Require Import uni_monoiu.prop_basic.
+Require Import uni_monoiu.decl.prop_basic.
+Require Import uni_monoiu.decl.prop_rename.
+Require Import uni_monoiu.ltac_utils.
 
 
 Open Scope dbind.

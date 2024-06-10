@@ -2,8 +2,8 @@ Require Import Bool.
 Require Import Metalib.Metatheory.
 Require Import List.
 
-Require Import uni.prop_ln.
-Require Export uni.def_ott.
+Require Import uni_monoiu.prop_ln.
+Require Export uni_monoiu.def_ott.
 
 
 

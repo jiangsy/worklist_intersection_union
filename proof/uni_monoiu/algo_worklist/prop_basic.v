@@ -4,10 +4,10 @@ Require Import Metalib.Metatheory.
 Require Import List.
 
 
-Require Import uni.notations.
-Require Import uni.prop_basic.
-Require Import uni.algo_worklist.def_extra.
-Require Import uni.ltac_utils.
+Require Import uni_monoiu.notations.
+Require Import uni_monoiu.prop_basic.
+Require Import uni_monoiu.algo_worklist.def_extra.
+Require Import uni_monoiu.ltac_utils.
 
 
 Open Scope aworklist_scope.

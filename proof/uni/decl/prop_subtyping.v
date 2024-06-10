@@ -499,6 +499,19 @@ Proof.
 Qed.
 
 
+Theorem d_wneq_weaken_sound : forall Ψ A B,
+  d_wneq_all Ψ A ->
+  Ψ ⊢ A <: typ_all B ->
+  False.
+Proof.
+  intros * Hneq Hsub. dependent induction Hsub; eauto; try solve [inversion Hneq].
+  - inversion Hneq. eauto.
+  - inversion Hneq. eauto.
+  - inversion Hneq; subst; eauto.
+Qed.
+
+
+
 Lemma d_sub_size_rename_stvar : forall Ψ1 Ψ2 X Y A B n,
   Ψ2 ++ X ~ ■ ++ Ψ1 ⊢ A <: B | n ->
   Y ∉ (dom Ψ1 `union` dom Ψ2) ->

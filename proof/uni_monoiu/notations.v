@@ -1,7 +1,7 @@
-Require Export uni.def_ott.
-Require Export uni.def_extra.
-Require Export uni.decl.def_extra.
-Require Export uni.prop_ln.
+Require Export uni_monoiu.def_ott.
+Require Export uni_monoiu.def_extra.
+Require Export uni_monoiu.decl.def_extra.
+Require Export uni_monoiu.prop_ln.
 
 Notation "x ∉ L" := (x `notin` L)
   (at level 70, no associativity).

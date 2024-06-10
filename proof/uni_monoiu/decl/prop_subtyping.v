@@ -1,10 +1,10 @@
 Require Import Coq.Program.Equality.
 Require Import Lia.
 
-Require Import uni.notations.
-Require Import uni.decl.prop_basic.
-Require Import uni.decl.prop_rename.
-Require Import uni.ltac_utils.
+Require Import uni_monoiu.notations.
+Require Import uni_monoiu.decl.prop_basic.
+Require Import uni_monoiu.decl.prop_rename.
+Require Import uni_monoiu.ltac_utils.
 
 
 Lemma d_sub_refl : forall Ψ A,
