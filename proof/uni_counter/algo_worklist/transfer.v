@@ -2719,46 +2719,45 @@ Proof with eauto.
     intros. apply H1; eauto.
 Qed.
 
-Lemma iuv_size_d_mono : forall Σ A,
-  d_mono_typ Σ A -> iuv_size A = 0.
+Lemma iu_size_d_mono : forall Σ A,
+  d_mono_typ Σ A -> iu_size A = 0.
 Proof.
   intros Σ A Hmono.
   induction Hmono; simpl; eauto; try lia.
 Qed.
 
-Lemma iuv_size_a_mono : forall Σ A,
-  a_mono_typ Σ A -> iuv_size A = 0.
+Lemma iu_size_a_mono : forall Σ A,
+  a_mono_typ Σ A -> iu_size A = 0.
 Proof.
   intros Σ A Hmono.
   induction Hmono; simpl; eauto; try lia.
 Qed.
 
-Lemma iuv_size_open_typ_wrt_typ_rec : forall Σ A T n,
+Lemma iu_size_open_typ_wrt_typ_rec : forall Σ A T n,
   a_mono_typ Σ T -> 
-  iuv_size (open_typ_wrt_typ_rec n T A) = iuv_size A.
+  iu_size (open_typ_wrt_typ_rec n T A) = iu_size A.
 Proof.
   intros. generalize dependent n. induction A; simpl; intros; eauto.
   destruct (lt_eq_lt_dec n n0).
-  - destruct s; simpl; eauto. eapply iuv_size_a_mono; eauto.
+  - destruct s; simpl; eauto. eapply iu_size_a_mono; eauto.
   - simpl; eauto; lia.
-  - admit.
-Admitted.
-
-Lemma iuv_size_open_typ_wrt_typ : forall A X,
-  iuv_size (A ᵗ^ₜ X) = iuv_size A.
-Proof.
-  intros. unfold open_typ_wrt_typ.
-  eapply iuv_size_open_typ_wrt_typ_rec with (Σ := (X ~ abind_tvar_empty ++ nil)); eauto.
 Qed.
 
-Lemma trans_typ_iuv_size : forall θ Aᵃ Aᵈ,
+Lemma iu_size_open_typ_wrt_typ : forall A X,
+  iu_size (A ᵗ^ₜ X) = iu_size A.
+Proof.
+  intros. unfold open_typ_wrt_typ.
+  eapply iu_size_open_typ_wrt_typ_rec with (Σ := (X ~ abind_tvar_empty ++ nil)); eauto.
+Qed.
+
+Lemma trans_typ_iu_size : forall θ Aᵃ Aᵈ,
   θ ᵗ⊩ Aᵃ ⇝ Aᵈ ->
-  iuv_size Aᵃ = iuv_size Aᵈ.
+  iu_size Aᵃ = iu_size Aᵈ.
 Proof.
   intros. induction H; simpl; eauto; try lia.
   apply wf_ss_binds_mono_typ in H0; auto.
-  erewrite iuv_size_d_mono; eauto.
+  erewrite iu_size_d_mono; eauto.
   pick fresh X. inst_cofinites_with X.
-  rewrite iuv_size_open_typ_wrt_typ in H1.
-  rewrite iuv_size_open_typ_wrt_typ in H1.
-Admitted.
+  rewrite iu_size_open_typ_wrt_typ in H1.
+  rewrite iu_size_open_typ_wrt_typ in H1. auto.
+Qed.

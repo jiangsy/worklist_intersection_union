@@ -50,28 +50,18 @@ Inductive apply_conts : conts -> typ -> work -> Prop :=
                    (work_sub A B)
 .
 
-Fixpoint num_typ_var_b (A : typ) : nat :=
+Fixpoint iu_size (A : typ) : nat :=
   match A with
-  | typ_arrow A1 A2 => num_typ_var_b A1 + num_typ_var_b A2
-  | typ_all A => num_typ_var_b A
-  | typ_union A1 A2 => num_typ_var_b A1 + num_typ_var_b A2
-  | typ_intersection A1 A2 => num_typ_var_b A1 + num_typ_var_b A2
-  | typ_var_b _ => 1
-  | _ => 0
-  end.
-
-Fixpoint iuv_size (A : typ) : nat :=
-  match A with
-  | typ_arrow A1 A2 => iuv_size A1 + iuv_size A2 + iuv_size A1 * iuv_size A2
-  | typ_all A => iuv_size A + num_typ_var_b A
-  | typ_union A1 A2 => 2 + iuv_size A1 + iuv_size A2
-  | typ_intersection A1 A2 => 2 + iuv_size A1 + iuv_size A2
+  | typ_arrow A1 A2 => iu_size A1 + iu_size A2
+  | typ_all A => iu_size A
+  | typ_union A1 A2 => 2 + iu_size A1 + iu_size A2
+  | typ_intersection A1 A2 => 2 + iu_size A1 + iu_size A2
   | _ => 0
   end.
 
 Inductive apply_contd : contd -> typ -> typ -> work -> Prop :=
   | apply_contd__infapp : forall A B n e c,
-      iuv_size A <= n ->
+      iu_size A <= n ->
       apply_contd (contd_infapp n e c) 
                   A B
                   (work_infapp A B e c)

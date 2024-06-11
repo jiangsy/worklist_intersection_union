@@ -745,7 +745,7 @@ Lemma trans_apply_contd : forall θ cdᵃ cdᵈ Aᵃ Aᵈ Bᵃ Bᵈ wᵈ,
   exists wᵃ, apply_contd cdᵃ Aᵃ Bᵃ wᵃ /\ θ ʷ⊩ wᵃ ⇝ wᵈ.
 Proof.
   intros. induction H2; try dependent destruction H; eauto 6.
-  erewrite <- trans_typ_iuv_size in H3; eauto.
+  erewrite <- trans_typ_iu_size in H3; eauto.
 Qed.
 
 
@@ -1191,7 +1191,7 @@ Lemma d_iuv_size_mono : forall Ψ A,
   d_iuv_size Ψ A 0.
 Proof.
   intros. induction H; simpl; eauto using d_iuv_size.
-  replace 0 with (0 + 0 + 0 * 0); eauto using d_iuv_size.
+  replace 0 with (0 + 0); eauto using d_iuv_size.
 Qed.
 
 
@@ -1200,7 +1200,7 @@ Lemma a_iuv_size_mono : forall Σ A,
   a_iuv_size Σ A 0.
 Proof.
   intros. induction H; simpl; eauto using a_iuv_size.
-  replace 0 with (0 + 0 + 0 * 0); eauto using a_iuv_size.
+  replace 0 with (0 + 0); eauto using a_iuv_size.
 Qed.
 
 
@@ -1211,7 +1211,7 @@ Lemma num_occurs_in_typ_not_in_a_wf : forall X A,
 Proof.
   intros * Hlc Hnotin.
   induction Hlc; simpl in *; 
-    try solve [replace 0 with (0 + 0 + 0 * 0); eauto using num_occurs_in_typ; try lia].
+    try solve [replace 0 with (0 + 0); eauto using num_occurs_in_typ; try lia].
   inst_cofinites_for num_occurs_in_typ__all. intros.
   eapply H0. rewrite ftvar_in_typ_open_typ_wrt_typ_upper; eauto.
 Qed.

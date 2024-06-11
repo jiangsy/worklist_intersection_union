@@ -64,7 +64,7 @@ Inductive a_iuv_size : aenv -> typ -> nat -> Prop :=
   | a_iuv_size__arrow : forall Σ A1 A2 n1 n2,
       a_iuv_size Σ A1 n1 ->
       a_iuv_size Σ A2 n2 ->
-      a_iuv_size Σ (typ_arrow A1 A2) (n1 + n2 + n1 * n2)
+      a_iuv_size Σ (typ_arrow A1 A2) (n1 + n2)
   | a_iuv_size__all : forall L Σ A n m,
       (forall X,
         X \notin L ->
