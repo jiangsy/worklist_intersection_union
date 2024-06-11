@@ -1023,7 +1023,6 @@ Proof.
       right; unfold not; intros Hcontra; inversion Hcontra; contradiction.
 Qed.
 
-
 Lemma a_wf_wl_aworklist_subst_dec : forall Γ X A,
   ⊢ᵃʷₛ Γ -> 
   (exists Γ1 Γ2, aworklist_subst Γ X A Γ1 Γ2) \/ ~ (exists Γ1 Γ2, aworklist_subst Γ X A Γ1 Γ2).
@@ -1065,7 +1064,6 @@ Proof.
   - destruct (X == X0); subst; auto; try contradiction.
   - destruct (X0 == X); subst; auto.
 Qed.
-
 
 Lemma split_depth_rec_etvar : forall A Γ1 Γ2 X n,
   ⊢ᵃʷ (Γ2 ⧺ Γ1) ->
@@ -1123,7 +1121,6 @@ Proof.
   assert (X ∉ ftvar_in_work w) by admit.
   erewrite <- split_depth_work_etvar; eauto. 
 Admitted.
-
 
 Lemma split_depth_wl_aworklist_subst : forall Γ2 X A Γ1 Γ1' Γ2',
   ⊢ᵃʷ (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) -> 

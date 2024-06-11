@@ -12,7 +12,6 @@ Require Import uni_counter.ltac_utils.
 
 Open Scope dworklist.
 
-
 Ltac destruct_d_wf_wl' :=
   lazymatch goal with
     | H : d_wf_wl (dworklist_cons_work ?Ω ?w) |- _ => dependent destruction H
@@ -66,7 +65,6 @@ Lemma dwl_app_cons_var: forall Ω1 Ω2 X b,
 Proof.
   intros. auto.
 Qed.
-
 
 Ltac rewrite_dwl_app :=
   repeat
@@ -172,7 +170,6 @@ Proof with auto.
   eapply d_wl_red_weaken_works with (Ω2:=(w1 ⫤ᵈ dworklist_empty)%dworklist)...
 Qed.
 
-
 Theorem d_wf_work_apply_conts : forall Ω c A w,
   ⊢ᵈʷₜ Ω -> d_wf_conts (dwl_to_denv Ω) c -> dwl_to_denv Ω ᵗ⊢ᵈ A -> apply_conts c A w ->
   ⊢ᵈʷₛ dworklist_cons_work Ω w.
@@ -260,7 +257,6 @@ Proof.
 Qed.
 
 #[local] Hint Resolve d_wf_wl_wf_env d_wf_tenv_d_wf_env d_wf_twl_d_wf_tenv d_wf_twl_d_wf_wl : core.
-
 
 #[local] Hint Immediate d_mono_typ_d_wf_typ : core.
 
@@ -383,7 +379,6 @@ Proof with eauto.
     eapply d_wf_work_apply_contd with (A:=A) in H0; eauto.
 Qed.
 
-
 Lemma d_wl_red_sub_complete: forall Ω A B,
   dwl_to_denv Ω ⊢ A <: B -> ⊢ᵈʷₛ (work_sub A B ⫤ᵈ Ω) -> 
   Ω ⟶ᵈʷ⁎⋅ -> (work_sub A B ⫤ᵈ Ω) ⟶ᵈʷ⁎⋅.
@@ -402,7 +397,6 @@ Proof with auto.
     apply d_wf_wl__conswork_sub; auto. 
     apply d_wf_typ_all_open; eauto; auto.
 Qed.
-
 
 Lemma d_wl_app_assoc : forall Ω1 Ω2 Ω3,
   Ω3 ⧺ Ω2 ⧺ Ω1 = (Ω3 ⧺ Ω2) ⧺ Ω1.
@@ -480,7 +474,6 @@ Proof.
     rewrite_dwl_app. auto.
 Qed.
 
-
 Lemma d_wl_red_infabs_complete: forall Ω A B C cd,
    dwl_to_denv Ω ⊢ A ▹ B → C -> d_wf_twl (dworklist_cons_work Ω (work_infabs A cd)) -> 
    d_wl_red (dworklist_cons_work Ω (work_applyd cd B C)) -> d_wl_red (dworklist_cons_work Ω (work_infabs A cd)).
@@ -503,7 +496,6 @@ Proof with auto.
     econstructor.
 Qed.
 
-
 Lemma d_wl_red_inftapp_complete: forall Ω A B C cs,
   dwl_to_denv Ω ⊢ A ○ B ⇒⇒ C -> d_wf_wl (dworklist_cons_work Ω (work_inftapp A B cs)) ->
   d_wl_red (dworklist_cons_work Ω (work_applys cs C)) -> d_wl_red (dworklist_cons_work Ω (work_inftapp A B cs)).
@@ -523,7 +515,6 @@ Proof with auto.
     eapply apply_conts__unioninftapp...
     econstructor...
 Qed.
-
 
 Lemma num_occurs_in_typ_det : forall X A n1 n2,
   num_occurs_in_typ X A n1 -> num_occurs_in_typ X A n2 -> n1 = n2.
@@ -996,7 +987,6 @@ Proof with auto.
   - destruct_d_wf_wl. eauto 7. 
   - destruct_d_wf_wl. eauto 7. 
 Admitted.
-
 
 Theorem d_wl_red_complete: forall Ω, 
     ⊢ᵈʷₛ Ω -> Ω ⟶ᵈ⁎⋅ -> Ω ⟶ᵈʷ⁎⋅.

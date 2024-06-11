@@ -5,7 +5,6 @@ Require Import List.
 Require Import uni_counter.prop_ln.
 Require Export uni_counter.def_ott.
 
-
 Inductive d_inftapp : denv -> typ -> typ -> typ -> Prop := 
   | d_inftapp__bot : forall (Ψ:denv) (B:typ),
       d_wf_tenv Ψ -> 
@@ -57,11 +56,9 @@ Inductive d_infabs : denv -> typ -> typ -> typ -> Prop :=
       d_infabs Ψ A2 B2 C2 ->
       d_infabs Ψ (typ_union A1 A2) (typ_intersection B1 B2) (typ_union C1 C2).
 
-
 Inductive typing_mode :=
   | typingmode__inf 
   | typingmode__chk.
-
 
 Inductive d_chk_inf : denv -> exp -> typing_mode -> typ -> Prop :=
   | d_chk_inf__inf_var : forall (Ψ:denv) (x:expvar) (A:typ),
@@ -120,7 +117,6 @@ Inductive d_chk_inf : denv -> exp -> typing_mode -> typ -> Prop :=
       d_chk_inf Ψ e typingmode__chk A2 ->
       d_wf_typ Ψ A1 ->
       d_chk_inf Ψ e typingmode__chk (typ_union A1 A2).
-
 
 #[export] Hint Constructors neq_union neq_intersection neq_all : core.
 #[export] Hint Constructors d_sub d_infabs d_inftapp d_chk_inf : core.

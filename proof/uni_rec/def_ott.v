@@ -51,12 +51,6 @@ Inductive dbind : Set :=
  | dbind_stvar_empty : dbind
  | dbind_typ (A:typ).
 
-Inductive abind : Set := 
- | abind_tvar_empty : abind
- | abind_stvar_empty : abind
- | abind_etvar_empty : abind
- | abind_var_typ (A:typ).
-
 Inductive work : Set := 
  | work_infer (e:exp) (cs:conts)
  | work_check (e:exp) (A:typ)
@@ -74,7 +68,18 @@ Inductive work : Set :=
  | work_applys (cs:conts) (A:typ)
  | work_applyd (cd:contd) (A:typ) (B:typ).
 
+Inductive abind : Set := 
+ | abind_tvar_empty : abind
+ | abind_stvar_empty : abind
+ | abind_etvar_empty : abind
+ | abind_var_typ (A:typ).
+
 Definition denv : Set := list (atom*dbind).
+
+Inductive dworklist : Set := 
+ | dworklist_empty : dworklist
+ | dworklist_cons_var (Ω:dworklist) (X:typvar) (db:dbind)
+ | dworklist_cons_work (Ω:dworklist) (w:work).
 
 Definition aenv : Set := list (atom*abind).
 
@@ -82,11 +87,6 @@ Inductive aworklist : Set :=
  | aworklist_empty : aworklist
  | aworklist_cons_var (Γ:aworklist) (X:typvar) (ab:abind)
  | aworklist_cons_work (Γ:aworklist) (w:work).
-
-Inductive dworklist : Set := 
- | dworklist_empty : dworklist
- | dworklist_cons_var (Ω:dworklist) (X:typvar) (db:dbind)
- | dworklist_cons_work (Ω:dworklist) (w:work).
 
 (* EXPERIMENTAL *)
 (** auxiliary functions on the new list types *)
@@ -113,21 +113,6 @@ Fixpoint open_typ_wrt_typ_rec (k:nat) (A_5:typ) (A__6:typ) {struct A__6}: typ :=
   | (typ_label l) => typ_label l
 end.
 
-Fixpoint open_exp_wrt_typ_rec (k:nat) (A_5:typ) (e_5:exp) {struct e_5}: exp :=
-  match e_5 with
-  | exp_unit => exp_unit 
-  | (exp_var_b nat) => exp_var_b nat
-  | (exp_var_f x) => exp_var_f x
-  | (exp_abs e) => exp_abs (open_exp_wrt_typ_rec k A_5 e)
-  | (exp_app e1 e2) => exp_app (open_exp_wrt_typ_rec k A_5 e1) (open_exp_wrt_typ_rec k A_5 e2)
-  | (exp_tabs e) => exp_tabs (open_exp_wrt_typ_rec (S k) A_5 e)
-  | (exp_tapp e A) => exp_tapp (open_exp_wrt_typ_rec k A_5 e) (open_typ_wrt_typ_rec k A_5 A)
-  | (exp_anno e A) => exp_anno (open_exp_wrt_typ_rec k A_5 e) (open_typ_wrt_typ_rec k A_5 A)
-  | exp_rcd_nil => exp_rcd_nil 
-  | (exp_rcd_cons l e1 e2) => exp_rcd_cons l (open_exp_wrt_typ_rec k A_5 e1) (open_exp_wrt_typ_rec k A_5 e2)
-  | (exp_rcd_proj e l) => exp_rcd_proj (open_exp_wrt_typ_rec k A_5 e) l
-end.
-
 Fixpoint open_exp_wrt_exp_rec (k:nat) (e_5:exp) (e__6:exp) {struct e__6}: exp :=
   match e__6 with
   | exp_unit => exp_unit 
@@ -148,22 +133,19 @@ Fixpoint open_exp_wrt_exp_rec (k:nat) (e_5:exp) (e__6:exp) {struct e__6}: exp :=
   | (exp_rcd_proj e l) => exp_rcd_proj (open_exp_wrt_exp_rec k e_5 e) l
 end.
 
-Fixpoint open_contd_wrt_typ_rec (k:nat) (A5:typ) (cd5:contd) {struct cd5}: contd :=
-  match cd5 with
-  | (contd_infabsunion A cd) => contd_infabsunion (open_typ_wrt_typ_rec k A5 A) (open_contd_wrt_typ_rec k A5 cd)
-  | (contd_infapp e cs) => contd_infapp (open_exp_wrt_typ_rec k A5 e) (open_conts_wrt_typ_rec k A5 cs)
-  | (contd_infproj A cs) => contd_infproj (open_typ_wrt_typ_rec k A5 A) (open_conts_wrt_typ_rec k A5 cs)
-  | (contd_unioninfabs A B cd) => contd_unioninfabs (open_typ_wrt_typ_rec k A5 A) (open_typ_wrt_typ_rec k A5 B) (open_contd_wrt_typ_rec k A5 cd)
-end
-with open_conts_wrt_typ_rec (k:nat) (A_5:typ) (cs5:conts) {struct cs5}: conts :=
-  match cs5 with
-  | (conts_infabs cd) => conts_infabs (open_contd_wrt_typ_rec k A_5 cd)
-  | (conts_inftapp A cs) => conts_inftapp (open_typ_wrt_typ_rec k A_5 A) (open_conts_wrt_typ_rec k A_5 cs)
-  | (conts_inftappunion A1 A2 cs) => conts_inftappunion (open_typ_wrt_typ_rec k A_5 A1) (open_typ_wrt_typ_rec k A_5 A2) (open_conts_wrt_typ_rec k A_5 cs)
-  | (conts_unioninftapp A2 cs) => conts_unioninftapp (open_typ_wrt_typ_rec k A_5 A2) (open_conts_wrt_typ_rec k A_5 cs)
-  | (conts_infrcdconsintersection l e cs) => conts_infrcdconsintersection l (open_exp_wrt_typ_rec k A_5 e) (open_conts_wrt_typ_rec k A_5 cs)
-  | (conts_intersectioninfrcdcons A cs) => conts_intersectioninfrcdcons (open_typ_wrt_typ_rec k A_5 A) (open_conts_wrt_typ_rec k A_5 cs)
-  | (conts_sub A) => conts_sub (open_typ_wrt_typ_rec k A_5 A)
+Fixpoint open_exp_wrt_typ_rec (k:nat) (A_5:typ) (e_5:exp) {struct e_5}: exp :=
+  match e_5 with
+  | exp_unit => exp_unit 
+  | (exp_var_b nat) => exp_var_b nat
+  | (exp_var_f x) => exp_var_f x
+  | (exp_abs e) => exp_abs (open_exp_wrt_typ_rec k A_5 e)
+  | (exp_app e1 e2) => exp_app (open_exp_wrt_typ_rec k A_5 e1) (open_exp_wrt_typ_rec k A_5 e2)
+  | (exp_tabs e) => exp_tabs (open_exp_wrt_typ_rec (S k) A_5 e)
+  | (exp_tapp e A) => exp_tapp (open_exp_wrt_typ_rec k A_5 e) (open_typ_wrt_typ_rec k A_5 A)
+  | (exp_anno e A) => exp_anno (open_exp_wrt_typ_rec k A_5 e) (open_typ_wrt_typ_rec k A_5 A)
+  | exp_rcd_nil => exp_rcd_nil 
+  | (exp_rcd_cons l e1 e2) => exp_rcd_cons l (open_exp_wrt_typ_rec k A_5 e1) (open_exp_wrt_typ_rec k A_5 e2)
+  | (exp_rcd_proj e l) => exp_rcd_proj (open_exp_wrt_typ_rec k A_5 e) l
 end.
 
 Fixpoint open_contd_wrt_exp_rec (k:nat) (e5:exp) (cd5:contd) {struct cd5}: contd :=
@@ -182,6 +164,50 @@ with open_conts_wrt_exp_rec (k:nat) (e5:exp) (cs5:conts) {struct cs5}: conts :=
   | (conts_infrcdconsintersection l e cs) => conts_infrcdconsintersection l (open_exp_wrt_exp_rec k e5 e) (open_conts_wrt_exp_rec k e5 cs)
   | (conts_intersectioninfrcdcons A cs) => conts_intersectioninfrcdcons A (open_conts_wrt_exp_rec k e5 cs)
   | (conts_sub A) => conts_sub A
+end.
+
+Fixpoint open_contd_wrt_typ_rec (k:nat) (A5:typ) (cd5:contd) {struct cd5}: contd :=
+  match cd5 with
+  | (contd_infabsunion A cd) => contd_infabsunion (open_typ_wrt_typ_rec k A5 A) (open_contd_wrt_typ_rec k A5 cd)
+  | (contd_infapp e cs) => contd_infapp (open_exp_wrt_typ_rec k A5 e) (open_conts_wrt_typ_rec k A5 cs)
+  | (contd_infproj A cs) => contd_infproj (open_typ_wrt_typ_rec k A5 A) (open_conts_wrt_typ_rec k A5 cs)
+  | (contd_unioninfabs A B cd) => contd_unioninfabs (open_typ_wrt_typ_rec k A5 A) (open_typ_wrt_typ_rec k A5 B) (open_contd_wrt_typ_rec k A5 cd)
+end
+with open_conts_wrt_typ_rec (k:nat) (A_5:typ) (cs5:conts) {struct cs5}: conts :=
+  match cs5 with
+  | (conts_infabs cd) => conts_infabs (open_contd_wrt_typ_rec k A_5 cd)
+  | (conts_inftapp A cs) => conts_inftapp (open_typ_wrt_typ_rec k A_5 A) (open_conts_wrt_typ_rec k A_5 cs)
+  | (conts_inftappunion A1 A2 cs) => conts_inftappunion (open_typ_wrt_typ_rec k A_5 A1) (open_typ_wrt_typ_rec k A_5 A2) (open_conts_wrt_typ_rec k A_5 cs)
+  | (conts_unioninftapp A2 cs) => conts_unioninftapp (open_typ_wrt_typ_rec k A_5 A2) (open_conts_wrt_typ_rec k A_5 cs)
+  | (conts_infrcdconsintersection l e cs) => conts_infrcdconsintersection l (open_exp_wrt_typ_rec k A_5 e) (open_conts_wrt_typ_rec k A_5 cs)
+  | (conts_intersectioninfrcdcons A cs) => conts_intersectioninfrcdcons (open_typ_wrt_typ_rec k A_5 A) (open_conts_wrt_typ_rec k A_5 cs)
+  | (conts_sub A) => conts_sub (open_typ_wrt_typ_rec k A_5 A)
+end.
+
+Definition open_work_wrt_exp_rec (k:nat) (e5:exp) (w5:work) : work :=
+  match w5 with
+  | (work_infer e cs) => work_infer (open_exp_wrt_exp_rec k e5 e) (open_conts_wrt_exp_rec k e5 cs)
+  | (work_check e A) => work_check (open_exp_wrt_exp_rec k e5 e) A
+  | (work_infabs A cd) => work_infabs A (open_contd_wrt_exp_rec k e5 cd)
+  | (work_infabsunion A1 B1 A2 cd) => work_infabsunion A1 B1 A2 (open_contd_wrt_exp_rec k e5 cd)
+  | (work_infapp A B e cs) => work_infapp A B (open_exp_wrt_exp_rec k e5 e) (open_conts_wrt_exp_rec k e5 cs)
+  | (work_infproj A B C cs) => work_infproj A B C (open_conts_wrt_exp_rec k e5 cs)
+  | (work_infrcdconsintersection l A e cs) => work_infrcdconsintersection l A (open_exp_wrt_exp_rec k e5 e) (open_conts_wrt_exp_rec k e5 cs)
+  | (work_intersectioninfrcdcons A1 A2 cs) => work_intersectioninfrcdcons A1 A2 (open_conts_wrt_exp_rec k e5 cs)
+  | (work_inftapp A1 A2 cs) => work_inftapp A1 A2 (open_conts_wrt_exp_rec k e5 cs)
+  | (work_sub A1 A2) => work_sub A1 A2
+  | (work_inftappunion A1 A2 B cs) => work_inftappunion A1 A2 B (open_conts_wrt_exp_rec k e5 cs)
+  | (work_unioninftapp A1 A2 cs) => work_unioninftapp A1 A2 (open_conts_wrt_exp_rec k e5 cs)
+  | (work_unioninfabs A1 B1 A2 B2 cd) => work_unioninfabs A1 B1 A2 B2 (open_contd_wrt_exp_rec k e5 cd)
+  | (work_applys cs A) => work_applys (open_conts_wrt_exp_rec k e5 cs) A
+  | (work_applyd cd A B) => work_applyd (open_contd_wrt_exp_rec k e5 cd) A B
+end.
+
+Definition open_dbind_wrt_typ_rec (k:nat) (A5:typ) (db5:dbind) : dbind :=
+  match db5 with
+  | dbind_tvar_empty => dbind_tvar_empty 
+  | dbind_stvar_empty => dbind_stvar_empty 
+  | (dbind_typ A) => dbind_typ (open_typ_wrt_typ_rec k A5 A)
 end.
 
 Definition open_work_wrt_typ_rec (k:nat) (A_5:typ) (w5:work) : work :=
@@ -211,39 +237,6 @@ Definition open_abind_wrt_typ_rec (k:nat) (A5:typ) (ab5:abind) : abind :=
   | (abind_var_typ A) => abind_var_typ (open_typ_wrt_typ_rec k A5 A)
 end.
 
-Definition open_work_wrt_exp_rec (k:nat) (e5:exp) (w5:work) : work :=
-  match w5 with
-  | (work_infer e cs) => work_infer (open_exp_wrt_exp_rec k e5 e) (open_conts_wrt_exp_rec k e5 cs)
-  | (work_check e A) => work_check (open_exp_wrt_exp_rec k e5 e) A
-  | (work_infabs A cd) => work_infabs A (open_contd_wrt_exp_rec k e5 cd)
-  | (work_infabsunion A1 B1 A2 cd) => work_infabsunion A1 B1 A2 (open_contd_wrt_exp_rec k e5 cd)
-  | (work_infapp A B e cs) => work_infapp A B (open_exp_wrt_exp_rec k e5 e) (open_conts_wrt_exp_rec k e5 cs)
-  | (work_infproj A B C cs) => work_infproj A B C (open_conts_wrt_exp_rec k e5 cs)
-  | (work_infrcdconsintersection l A e cs) => work_infrcdconsintersection l A (open_exp_wrt_exp_rec k e5 e) (open_conts_wrt_exp_rec k e5 cs)
-  | (work_intersectioninfrcdcons A1 A2 cs) => work_intersectioninfrcdcons A1 A2 (open_conts_wrt_exp_rec k e5 cs)
-  | (work_inftapp A1 A2 cs) => work_inftapp A1 A2 (open_conts_wrt_exp_rec k e5 cs)
-  | (work_sub A1 A2) => work_sub A1 A2
-  | (work_inftappunion A1 A2 B cs) => work_inftappunion A1 A2 B (open_conts_wrt_exp_rec k e5 cs)
-  | (work_unioninftapp A1 A2 cs) => work_unioninftapp A1 A2 (open_conts_wrt_exp_rec k e5 cs)
-  | (work_unioninfabs A1 B1 A2 B2 cd) => work_unioninfabs A1 B1 A2 B2 (open_contd_wrt_exp_rec k e5 cd)
-  | (work_applys cs A) => work_applys (open_conts_wrt_exp_rec k e5 cs) A
-  | (work_applyd cd A B) => work_applyd (open_contd_wrt_exp_rec k e5 cd) A B
-end.
-
-Definition open_dbind_wrt_typ_rec (k:nat) (A5:typ) (db5:dbind) : dbind :=
-  match db5 with
-  | dbind_tvar_empty => dbind_tvar_empty 
-  | dbind_stvar_empty => dbind_stvar_empty 
-  | (dbind_typ A) => dbind_typ (open_typ_wrt_typ_rec k A5 A)
-end.
-
-Fixpoint open_aworklist_wrt_typ_rec (k:nat) (A5:typ) (Γ_5:aworklist) {struct Γ_5}: aworklist :=
-  match Γ_5 with
-  | aworklist_empty => aworklist_empty 
-  | (aworklist_cons_var Γ X ab) => aworklist_cons_var (open_aworklist_wrt_typ_rec k A5 Γ) X (open_abind_wrt_typ_rec k A5 ab)
-  | (aworklist_cons_work Γ w) => aworklist_cons_work (open_aworklist_wrt_typ_rec k A5 Γ) (open_work_wrt_typ_rec k A5 w)
-end.
-
 Fixpoint open_aworklist_wrt_exp_rec (k:nat) (e5:exp) (Γ_5:aworklist) {struct Γ_5}: aworklist :=
   match Γ_5 with
   | aworklist_empty => aworklist_empty 
@@ -265,11 +258,12 @@ Fixpoint open_dworklist_wrt_exp_rec (k:nat) (e5:exp) (Ω5:dworklist) {struct Ω5
   | (dworklist_cons_work Ω w) => dworklist_cons_work (open_dworklist_wrt_exp_rec k e5 Ω) (open_work_wrt_exp_rec k e5 w)
 end.
 
-Definition open_contd_wrt_exp e5 cd5 := open_contd_wrt_exp_rec 0 cd5 e5.
-
-Definition open_contd_wrt_typ A5 cd5 := open_contd_wrt_typ_rec 0 cd5 A5.
-
-Definition open_aworklist_wrt_typ A5 Γ_5 := open_aworklist_wrt_typ_rec 0 Γ_5 A5.
+Fixpoint open_aworklist_wrt_typ_rec (k:nat) (A5:typ) (Γ_5:aworklist) {struct Γ_5}: aworklist :=
+  match Γ_5 with
+  | aworklist_empty => aworklist_empty 
+  | (aworklist_cons_var Γ X ab) => aworklist_cons_var (open_aworklist_wrt_typ_rec k A5 Γ) X (open_abind_wrt_typ_rec k A5 ab)
+  | (aworklist_cons_work Γ w) => aworklist_cons_work (open_aworklist_wrt_typ_rec k A5 Γ) (open_work_wrt_typ_rec k A5 w)
+end.
 
 Definition open_dbind_wrt_typ A5 db5 := open_dbind_wrt_typ_rec 0 db5 A5.
 
@@ -294,6 +288,12 @@ Definition open_exp_wrt_typ A_5 e_5 := open_exp_wrt_typ_rec 0 e_5 A_5.
 Definition open_dworklist_wrt_exp e5 Ω5 := open_dworklist_wrt_exp_rec 0 Ω5 e5.
 
 Definition open_typ_wrt_typ A_5 A__6 := open_typ_wrt_typ_rec 0 A__6 A_5.
+
+Definition open_contd_wrt_exp e5 cd5 := open_contd_wrt_exp_rec 0 cd5 e5.
+
+Definition open_contd_wrt_typ A5 cd5 := open_contd_wrt_typ_rec 0 cd5 A5.
+
+Definition open_aworklist_wrt_typ A5 Γ_5 := open_aworklist_wrt_typ_rec 0 Γ_5 A5.
 
 (** closing up abstractions *)
 Fixpoint close_typ_wrt_typ_rec (k:nat) (A_5:var) (A__6:typ) {struct A__6}: typ :=
@@ -616,18 +616,6 @@ Inductive lc_dbind : dbind -> Prop :=    (* defn lc_dbind *)
      (lc_typ A) ->
      (lc_dbind (dbind_typ A)).
 
-(* defns LC_abind *)
-Inductive lc_abind : abind -> Prop :=    (* defn lc_abind *)
- | lc_abind_tvar_empty : 
-     (lc_abind abind_tvar_empty)
- | lc_abind_stvar_empty : 
-     (lc_abind abind_stvar_empty)
- | lc_abind_etvar_empty : 
-     (lc_abind abind_etvar_empty)
- | lc_abind_var_typ : forall (A:typ),
-     (lc_typ A) ->
-     (lc_abind (abind_var_typ A)).
-
 (* defns LC_work *)
 Inductive lc_work : work -> Prop :=    (* defn lc_work *)
  | lc_work_infer : forall (e:exp) (cs:conts),
@@ -707,18 +695,17 @@ Inductive lc_work : work -> Prop :=    (* defn lc_work *)
      (lc_typ B) ->
      (lc_work (work_applyd cd A B)).
 
-(* defns LC_aworklist *)
-Inductive lc_aworklist : aworklist -> Prop :=    (* defn lc_aworklist *)
- | lc_aworklist_empty : 
-     (lc_aworklist aworklist_empty)
- | lc_aworklist_cons_var : forall (Γ:aworklist) (X:typvar) (ab:abind),
-     (lc_aworklist Γ) ->
-     (lc_abind ab) ->
-     (lc_aworklist (aworklist_cons_var Γ X ab))
- | lc_aworklist_cons_work : forall (Γ:aworklist) (w:work),
-     (lc_aworklist Γ) ->
-     (lc_work w) ->
-     (lc_aworklist (aworklist_cons_work Γ w)).
+(* defns LC_abind *)
+Inductive lc_abind : abind -> Prop :=    (* defn lc_abind *)
+ | lc_abind_tvar_empty : 
+     (lc_abind abind_tvar_empty)
+ | lc_abind_stvar_empty : 
+     (lc_abind abind_stvar_empty)
+ | lc_abind_etvar_empty : 
+     (lc_abind abind_etvar_empty)
+ | lc_abind_var_typ : forall (A:typ),
+     (lc_typ A) ->
+     (lc_abind (abind_var_typ A)).
 
 (* defns LC_dworklist *)
 Inductive lc_dworklist : dworklist -> Prop :=    (* defn lc_dworklist *)
@@ -732,6 +719,19 @@ Inductive lc_dworklist : dworklist -> Prop :=    (* defn lc_dworklist *)
      (lc_dworklist Ω) ->
      (lc_work w) ->
      (lc_dworklist (dworklist_cons_work Ω w)).
+
+(* defns LC_aworklist *)
+Inductive lc_aworklist : aworklist -> Prop :=    (* defn lc_aworklist *)
+ | lc_aworklist_empty : 
+     (lc_aworklist aworklist_empty)
+ | lc_aworklist_cons_var : forall (Γ:aworklist) (X:typvar) (ab:abind),
+     (lc_aworklist Γ) ->
+     (lc_abind ab) ->
+     (lc_aworklist (aworklist_cons_var Γ X ab))
+ | lc_aworklist_cons_work : forall (Γ:aworklist) (w:work),
+     (lc_aworklist Γ) ->
+     (lc_work w) ->
+     (lc_aworklist (aworklist_cons_work Γ w)).
 (** free variables *)
 Fixpoint ftvar_in_typ (A_5:typ) : vars :=
   match A_5 with
@@ -813,14 +813,6 @@ with fvar_in_conts (cs5:conts) : vars :=
   | (conts_sub A) => {}
 end.
 
-Definition ftvar_in_abind (ab5:abind) : vars :=
-  match ab5 with
-  | abind_tvar_empty => {}
-  | abind_stvar_empty => {}
-  | abind_etvar_empty => {}
-  | (abind_var_typ A) => (ftvar_in_typ A)
-end.
-
 Definition ftvar_in_work (w5:work) : vars :=
   match w5 with
   | (work_infer e cs) => (ftvar_in_exp e) \u (ftvar_in_conts cs)
@@ -838,6 +830,14 @@ Definition ftvar_in_work (w5:work) : vars :=
   | (work_unioninfabs A1 B1 A2 B2 cd) => (ftvar_in_typ A1) \u (ftvar_in_typ B1) \u (ftvar_in_typ A2) \u (ftvar_in_typ B2) \u (ftvar_in_contd cd)
   | (work_applys cs A) => (ftvar_in_conts cs) \u (ftvar_in_typ A)
   | (work_applyd cd A B) => (ftvar_in_contd cd) \u (ftvar_in_typ A) \u (ftvar_in_typ B)
+end.
+
+Definition ftvar_in_abind (ab5:abind) : vars :=
+  match ab5 with
+  | abind_tvar_empty => {}
+  | abind_stvar_empty => {}
+  | abind_etvar_empty => {}
+  | (abind_var_typ A) => (ftvar_in_typ A)
 end.
 
 Definition ftvar_in_dbind (db5:dbind) : vars :=
@@ -1132,78 +1132,33 @@ Inductive neq_abs : exp -> Prop :=    (* defn neq_abs *)
      lc_typ A ->
      neq_abs (exp_anno e A).
 
-(* defns J_neq_all *)
-Inductive neq_all : typ -> Prop :=    (* defn neq_all *)
- | neq_all__unit : 
-     neq_all typ_unit
- | neq_all__top : 
-     neq_all typ_top
- | neq_all__bot : 
-     neq_all typ_bot
- | neq_all__var : forall (X:typvar),
-     neq_all (typ_var_f X)
- | neq_all__arrow : forall (A1 A2:typ),
+(* defns J_d_wneq_all *)
+Inductive d_wneq_all : denv -> typ -> Prop :=    (* defn d_wneq_all *)
+ | d_wneq_all__unit : forall (Ψ:denv),
+     d_wneq_all Ψ typ_unit
+ | d_wneq_all__top : forall (Ψ:denv),
+     d_wneq_all Ψ typ_top
+ | d_wneq_all__label : forall (Ψ:denv) (l:label),
+     d_wneq_all Ψ (typ_label l)
+ | d_wneq_all__tvar : forall (Ψ:denv) (X:typvar),
+      binds ( X )  ( dbind_tvar_empty ) ( Ψ )  ->
+     d_wneq_all Ψ (typ_var_f X)
+ | d_wneq_all__arrow : forall (Ψ:denv) (A1 A2:typ),
      lc_typ A1 ->
      lc_typ A2 ->
-     neq_all (typ_arrow A1 A2)
- | neq_all__union : forall (A1 A2:typ),
-     lc_typ A1 ->
+     d_wneq_all Ψ (typ_arrow A1 A2)
+ | d_wneq_all__union1 : forall (Ψ:denv) (A1 A2:typ),
      lc_typ A2 ->
-     neq_all (typ_union A1 A2)
- | neq_all__intersection : forall (A1 A2:typ),
+     d_wneq_all Ψ A1 ->
+     d_wneq_all Ψ (typ_union A1 A2)
+ | d_wneq_all__union2 : forall (Ψ:denv) (A1 A2:typ),
      lc_typ A1 ->
-     lc_typ A2 ->
-     neq_all (typ_intersection A1 A2)
- | neq_all__label : forall (l:label),
-     neq_all (typ_label l).
-
-(* defns J_neq_intersection *)
-Inductive neq_intersection : typ -> Prop :=    (* defn neq_intersection *)
- | neq_intersection__unit : 
-     neq_intersection typ_unit
- | neq_intersection__top : 
-     neq_intersection typ_top
- | neq_intersection__bot : 
-     neq_intersection typ_bot
- | neq_intersection__var : forall (X:typvar),
-     neq_intersection (typ_var_f X)
- | neq_intersection__arrow : forall (A1 A2:typ),
-     lc_typ A1 ->
-     lc_typ A2 ->
-     neq_intersection (typ_arrow A1 A2)
- | neq_intersection__all : forall (A:typ),
-     lc_typ (typ_all A) ->
-     neq_intersection (typ_all A)
- | neq_intersection__union : forall (A1 A2:typ),
-     lc_typ A1 ->
-     lc_typ A2 ->
-     neq_intersection (typ_union A1 A2)
- | neq_intersection__label : forall (l:label),
-     neq_intersection (typ_label l).
-
-(* defns J_neq_union *)
-Inductive neq_union : typ -> Prop :=    (* defn neq_union *)
- | neq_union__unit : 
-     neq_union typ_unit
- | neq_union__top : 
-     neq_union typ_top
- | neq_union__bot : 
-     neq_union typ_bot
- | neq_union__var : forall (X:typvar),
-     neq_union (typ_var_f X)
- | neq_union__arrow : forall (A1 A2:typ),
-     lc_typ A1 ->
-     lc_typ A2 ->
-     neq_union (typ_arrow A1 A2)
- | neq_union__all : forall (A:typ),
-     lc_typ (typ_all A) ->
-     neq_union (typ_all A)
- | neq_union__intersection : forall (A1 A2:typ),
-     lc_typ A1 ->
-     lc_typ A2 ->
-     neq_union (typ_intersection A1 A2)
- | neq_union__label : forall (l:label),
-     neq_union (typ_label l).
+     d_wneq_all Ψ A2 ->
+     d_wneq_all Ψ (typ_union A1 A2)
+ | d_wneq_all__intersection2 : forall (Ψ:denv) (A1 A2:typ),
+     d_wneq_all Ψ A1 ->
+     d_wneq_all Ψ A2 ->
+     d_wneq_all Ψ (typ_intersection A1 A2).
 
 (* defns J_d_wf_typ *)
 Inductive d_wf_typ : denv -> typ -> Prop :=    (* defn d_wf_typ *)
@@ -1468,67 +1423,36 @@ Inductive d_wf_wl : dworklist -> Prop :=    (* defn d_wf_wl *)
      d_wf_wl Ω ->
      d_wf_wl (dworklist_cons_work Ω (work_sub A B)).
 
-(* defns J_d_sub *)
-Inductive d_sub : denv -> typ -> typ -> Prop :=    (* defn d_sub *)
- | d_sub__top : forall (Ψ:denv) (A:typ),
-     d_wf_env Ψ ->
-     d_wf_typ Ψ A ->
-     d_sub Ψ A typ_top
- | d_sub__bot : forall (Ψ:denv) (B:typ),
-     d_wf_env Ψ ->
-     d_wf_typ Ψ B ->
-     d_sub Ψ typ_bot B
- | d_sub__unit : forall (Ψ:denv),
-     d_wf_env Ψ ->
-     d_sub Ψ typ_unit typ_unit
- | d_sub__tvar : forall (Ψ:denv) (X:typvar),
-     d_wf_env Ψ ->
-     d_wf_typ Ψ (typ_var_f X) ->
-     d_sub Ψ (typ_var_f X) (typ_var_f X)
- | d_sub__label : forall (Ψ:denv) (l:label),
-     d_wf_env Ψ ->
-     d_sub Ψ (typ_label l) (typ_label l)
- | d_sub__arrow : forall (Ψ:denv) (A1 A2 B1 B2:typ),
-     d_sub Ψ B1 A1 ->
-     d_sub Ψ A2 B2 ->
-     d_sub Ψ (typ_arrow A1 A2) (typ_arrow B1 B2)
- | d_sub__all : forall (L:vars) (Ψ:denv) (A B:typ),
-      ( forall X , X \notin  L  -> s_in X  ( open_typ_wrt_typ A (typ_var_f X) )  )  ->
-      ( forall X , X \notin  L  -> s_in X  ( open_typ_wrt_typ B (typ_var_f X) )  )  ->
-      ( forall X , X \notin  L  -> d_sub  ( X ~ dbind_stvar_empty  ++  Ψ )   ( open_typ_wrt_typ A (typ_var_f X) )   ( open_typ_wrt_typ B (typ_var_f X) )  )  ->
-     d_sub Ψ (typ_all A) (typ_all B)
- | d_sub__alll : forall (L:vars) (Ψ:denv) (A B T:typ),
-     neq_all B ->
-     neq_intersection B ->
-     neq_union B ->
-      ( forall X , X \notin  L  -> s_in X  ( open_typ_wrt_typ A (typ_var_f X) )  )  ->
-     d_mono_typ Ψ T ->
-     d_sub Ψ  (open_typ_wrt_typ  A   T )  B ->
-     d_sub Ψ (typ_all A) B
- | d_sub__intersection1 : forall (Ψ:denv) (A B1 B2:typ),
-     d_sub Ψ A B1 ->
-     d_sub Ψ A B2 ->
-     d_sub Ψ A (typ_intersection B1 B2)
- | d_sub__intersection2 : forall (Ψ:denv) (A1 A2 B:typ),
-     d_sub Ψ A1 B ->
-     d_wf_typ Ψ A2 ->
-     d_sub Ψ (typ_intersection A1 A2) B
- | d_sub__intersection3 : forall (Ψ:denv) (A1 A2 B:typ),
-     d_sub Ψ A2 B ->
-     d_wf_typ Ψ A1 ->
-     d_sub Ψ (typ_intersection A1 A2) B
- | d_sub__union1 : forall (Ψ:denv) (A B1 B2:typ),
-     d_sub Ψ A B1 ->
-     d_wf_typ Ψ B2 ->
-     d_sub Ψ A (typ_union B1 B2)
- | d_sub__union2 : forall (Ψ:denv) (A B1 B2:typ),
-     d_sub Ψ A B2 ->
-     d_wf_typ Ψ B1 ->
-     d_sub Ψ A (typ_union B1 B2)
- | d_sub__union3 : forall (Ψ:denv) (A1 A2 B:typ),
-     d_sub Ψ A1 B ->
-     d_sub Ψ A2 B ->
-     d_sub Ψ (typ_union A1 A2) B.
+(* defns J_a_wneq_all *)
+Inductive a_wneq_all : aenv -> typ -> Prop :=    (* defn a_wneq_all *)
+ | a_wneq_all__unit : forall (Σ:aenv),
+     a_wneq_all Σ typ_unit
+ | a_wneq_all__top : forall (Σ:aenv),
+     a_wneq_all Σ typ_top
+ | a_wneq_all__label : forall (Σ:aenv) (l:label),
+     a_wneq_all Σ (typ_label l)
+ | a_wneq_all__tvar : forall (Σ:aenv) (X:typvar),
+      binds ( X )  ( abind_tvar_empty ) ( Σ )  ->
+     a_wneq_all Σ (typ_var_f X)
+ | a_wneq_all__etvar : forall (Σ:aenv) (X:typvar),
+      binds ( X )  ( abind_etvar_empty ) ( Σ )  ->
+     a_wneq_all Σ (typ_var_f X)
+ | a_wneq_all__arrow : forall (Σ:aenv) (A1 A2:typ),
+     lc_typ A1 ->
+     lc_typ A2 ->
+     a_wneq_all Σ (typ_arrow A1 A2)
+ | a_wneq_all__union1 : forall (Σ:aenv) (A1 A2:typ),
+     lc_typ A2 ->
+     a_wneq_all Σ A1 ->
+     a_wneq_all Σ (typ_union A1 A2)
+ | a_wneq_all__union2 : forall (Σ:aenv) (A1 A2:typ),
+     lc_typ A1 ->
+     a_wneq_all Σ A2 ->
+     a_wneq_all Σ (typ_union A1 A2)
+ | a_wneq_all__intersection2 : forall (Σ:aenv) (A1 A2:typ),
+     a_wneq_all Σ A1 ->
+     a_wneq_all Σ A2 ->
+     a_wneq_all Σ (typ_intersection A1 A2).
 
 (* defns J_a_wf_typ *)
 Inductive a_wf_typ : aenv -> typ -> Prop :=    (* defn a_wf_typ *)
@@ -1833,6 +1757,6 @@ Inductive a_wf_env : aenv -> Prop :=    (* defn a_wf_env *)
 
 
 (** infrastructure *)
-#[export] Hint Constructors is_exp_rcd s_in neq_abs neq_all neq_intersection neq_union d_wf_typ d_wf_exp d_wf_tenv d_wf_env d_mono_typ d_wf_conts d_wf_contd d_wf_work d_wf_twl d_wf_wl d_sub a_wf_typ a_mono_typ a_wf_exp a_wf_conts a_wf_contd a_wf_work a_wf_wwl a_wf_twl a_wf_wl a_wf_env lc_typ lc_exp lc_contd lc_conts lc_dbind lc_abind lc_work lc_aworklist lc_dworklist : core.
+#[export] Hint Constructors is_exp_rcd s_in neq_abs d_wneq_all d_wf_typ d_wf_exp d_wf_tenv d_wf_env d_mono_typ d_wf_conts d_wf_contd d_wf_work d_wf_twl d_wf_wl a_wneq_all a_wf_typ a_mono_typ a_wf_exp a_wf_conts a_wf_contd a_wf_work a_wf_wwl a_wf_twl a_wf_wl a_wf_env lc_typ lc_exp lc_contd lc_conts lc_dbind lc_work lc_abind lc_dworklist lc_aworklist : core.
 
 

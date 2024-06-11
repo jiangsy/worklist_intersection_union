@@ -4,14 +4,12 @@ Require Export uni_rec.def_ott.
 Require Export uni_rec.def_extra.
 Require Export uni_rec.decl.def_extra.
 
-
 Fixpoint dwl_app (Ω1 Ω2 : dworklist) :=
   match Ω1 with 
   | dworklist_empty => Ω2 
   | dworklist_cons_var Ω1' X b => dworklist_cons_var (dwl_app Ω1' Ω2) X b
   | dworklist_cons_work Ω1' w => dworklist_cons_work (dwl_app Ω1' Ω2) w
   end.
-
 
 (* decl worklist delegated reduction, corresponds to Jimmy's dc *)
 Inductive d_wl_del_red : dworklist -> Prop :=
@@ -73,8 +71,7 @@ Inductive d_wl_del_red : dworklist -> Prop :=
   | d_wl_del_red__applyd : forall Ω cd A B w,
       apply_contd cd A B w ->
       d_wl_del_red (dworklist_cons_work Ω w) ->
-      d_wl_del_red (dworklist_cons_work Ω (work_applyd cd A B))
-  .
+      d_wl_del_red (dworklist_cons_work Ω (work_applyd cd A B)).
 
 (* defns Jdworklist_reduction *)
 Inductive d_wl_red : dworklist -> Prop :=    (* defn d_wl_red *)
@@ -112,9 +109,7 @@ Inductive d_wl_red : dworklist -> Prop :=    (* defn d_wl_red *)
       (work_sub  (open_typ_wrt_typ  A   (typ_var_f X) )   (open_typ_wrt_typ  B   (typ_var_f X) ) ))) ->
       d_wl_red (dworklist_cons_work Ω (work_sub (typ_all A) (typ_all B)))    
   | d_wl_red__sub_alll : forall (Ω:dworklist) (A B T:typ),
-      neq_all B ->
-      neq_intersection B ->
-      neq_union B -> 
+      d_wneq_all ( dwl_to_denv Ω ) B ->
       d_mono_typ ( dwl_to_denv  Ω  )  T ->
       d_wl_red (dworklist_cons_work Ω (work_sub  (open_typ_wrt_typ  A   T )  B)) ->
       d_wl_red (dworklist_cons_work Ω (work_sub (typ_all A) B))
@@ -259,7 +254,6 @@ Inductive d_wl_red : dworklist -> Prop :=    (* defn d_wl_red *)
       d_wl_red (dworklist_cons_work Ω w) ->
       d_wl_red (dworklist_cons_work Ω (work_applyd cd A B))   
 .
-
 
 #[export] Hint Constructors d_wl_red d_wf_wl d_wl_del_red : core.
 

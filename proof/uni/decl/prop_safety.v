@@ -10,7 +10,6 @@ Require Import uni.decl.prop_basic.
 Require Import uni.decl.prop_rename.
 Require Import uni.ltac_utils.
 
-
 Open Scope dbind.
 
 Notation "Ψ ⊢ e : A" :=
@@ -53,14 +52,12 @@ Proof.
   - rewrite IHA1_1. rewrite IHA1_2. auto.
 Qed.
 
-
 Theorem trans_typ_open_typ_wrt_typ : forall A1 A2,
   trans_typ (A1 ᵗ^^ₜ A2) = open_ftyp_wrt_ftyp (trans_typ A1) (trans_typ A2).
 Proof.
   unfold open_typ_wrt_typ. unfold open_ftyp_wrt_ftyp.
   intros. apply trans_typ_open_typ_wrt_typ_rec.
 Qed.
-
 
 Theorem trans_typ_lc_ftyp : forall (A:typ),
   lc_typ A -> lc_ftyp (trans_typ A).
@@ -90,14 +87,12 @@ Proof.
   destruct a; destruct d; destruct_binds; auto.
 Qed.
 
-
 Theorem trans_env_stvar_in : forall (Ψ:denv) X,
   X ~ ■ ∈ᵈ Ψ -> binds X fbind_tvar_empty (trans_env Ψ).
 Proof.
   intros. induction Ψ; auto.
   destruct a; destruct d; destruct_binds; auto.
 Qed.
-
 
 Theorem trans_typ_wf : forall Ψ A,
   Ψ ᵗ⊢ᵈ A -> f_wf_typ (trans_env Ψ) (trans_typ A).
@@ -128,7 +123,6 @@ Proof with eauto using trans_env_wf_tenv_wf_fenv.
   try solve [apply trans_env_notin_dom in H0; apply wf_env_sub; auto]...
   constructor...
 Qed.
-
 
 Inductive d_sub_elab : denv -> typ -> typ -> fexp -> Prop :=
   | d_sub_elab__top : forall (Ψ:denv) (A:typ),
@@ -202,7 +196,6 @@ Inductive d_sub_elab : denv -> typ -> typ -> fexp -> Prop :=
         (fexp_abs (trans_typ (typ_union A1 A2)) (fexp_case (fexp_var_b 0) (fexp_app co1ᶠ (fexp_var_b 0)) (fexp_app co2ᶠ (fexp_var_b 0)))).
 
 Notation "Ψ ⊢ A <: B ↪ coᶠ" := (d_sub_elab Ψ A B coᶠ) (at level 65, A at next level, B at next level, no associativity) : type_scope.
-
 
 Inductive d_infabs_elab : denv -> typ -> typ -> typ -> fexp -> Prop := 
   | d_infabs_elab__bot : forall (Ψ:denv),
@@ -291,7 +284,6 @@ Notation "Ψ ⊢ A ○ B ⇒⇒ C ↪ co1ᶠ | co2ᶠ" :=
     (d_inftapp_elab Ψ A B C co1ᶠ co2ᶠ) 
       (at level 65, A at next level, B at next level, C at next level, no associativity) : type_scope. 
 
-
 Inductive d_chk_inf_elab : denv -> exp -> typing_mode -> typ -> fexp -> Prop :=
   | d_chk_inf_elab__inf_var : forall (Ψ:denv) (x:expvar) (A:typ),
       d_wf_tenv Ψ ->
@@ -357,17 +349,14 @@ Inductive d_chk_inf_elab : denv -> exp -> typing_mode -> typ -> fexp -> Prop :=
       d_chk_inf_elab Ψ e typingmode__chk (typ_union A1 A2)
         (fexp_inr eᶠ).
 
-
 #[local] Hint Constructors d_sub_elab d_inftapp_elab d_infabs_elab d_chk_inf_elab : core.
 #[local] Hint Constructors f_typing : core.
-
 
 Theorem d_sub_elab_sound: forall Ψ A B coᶠ,
   Ψ ⊢ A <: B ↪ coᶠ -> Ψ ⊢ A <: B.
 Proof.
   intros. induction H; eauto.
 Qed.
-
 
 Lemma trans_typ_rename_tvar : forall A X Y,
   subst_ftyp_in_ftyp (ftyp_var_f Y) X ᵗ⟦ A ⟧ = ᵗ⟦ {`Y ᵗ/ₜ X} A ⟧.
@@ -379,7 +368,6 @@ Proof.
   - rewrite IHA1. rewrite IHA2. auto.
   - rewrite IHA1. rewrite IHA2. auto. 
 Qed.
-
 
 Lemma d_sub_elab_rename_dtvar : forall Ψ1 Ψ2 A B b X Y coᶠ,
   b = □ \/ b = ■ ->
@@ -422,7 +410,6 @@ Proof with eauto 6 using d_wf_typ_rename_dtvar, d_wf_env_rename_dtvar.
   - simpl; repeat rewrite trans_typ_rename_tvar... econstructor...
 Qed.
 
-
 Lemma d_sub_elab_rename_tvar_cons : forall Ψ A B X Y coᶠ b,
   b = □ \/ b = ■ ->
   Y `notin` dom ((X, b) :: Ψ) ->
@@ -432,7 +419,6 @@ Proof.
   intros. rewrite_env ((map (subst_typ_in_dbind `Y X) nil) ++ (Y , b) :: Ψ). 
   eapply d_sub_elab_rename_dtvar; eauto.
 Qed.
-
 
 Ltac rewrite_close_open_subst :=
   match goal with
@@ -447,8 +433,6 @@ Ltac rewrite_close_open_subst :=
       rewrite open_fexp_wrt_fexp_close_fexp_wrt_fexp
   | H : _ |- _ => idtac
   end.
-
-
 
 Theorem d_sub_elab_complete: forall Ψ A B,
   Ψ ⊢ A <: B -> exists coᶠ, Ψ ⊢ A <: B ↪ coᶠ.
@@ -466,13 +450,11 @@ Proof with auto.
       eapply d_sub_elab_rename_tvar_cons; eauto.
 Qed.
 
-
 Theorem d_infabs_elab_sound : forall Ψ A B C coᶠ,
   Ψ ⊢ A ▹ B → C ↪ coᶠ -> Ψ ⊢ A ▹ B → C.
 Proof.  
   intros; induction H; eauto.
 Qed.
-
 
 Theorem d_infabs_elab_complete : forall Ψ A B C,
   Ψ ⊢ A ▹ B → C -> exists coᶠ, Ψ ⊢ A ▹ B → C ↪ coᶠ.
@@ -480,14 +462,11 @@ Proof with eauto 4.
   intros. induction H; try solve [destruct_conj; eauto].
 Qed.
 
-
-
 Theorem d_inftapp_elab_sound : forall Ψ A B C co1ᶠ co2ᶠ,
   Ψ ⊢ A ○ B ⇒⇒ C ↪ co1ᶠ | co2ᶠ -> Ψ ⊢ A ○ B ⇒⇒ C.
 Proof.
   intros. induction H; auto 6.
 Qed.
-
 
 Theorem d_inftapp_elab_complete : forall Ψ A B C,
   Ψ ⊢ A ○ B ⇒⇒ C -> exists co1ᶠ co2ᶠ, Ψ ⊢ A ○ B ⇒⇒ C ↪ co1ᶠ | co2ᶠ.
@@ -495,14 +474,11 @@ Proof.
   intros. induction H; try solve [destruct_conj; eauto].
 Qed.
 
-
-
 Theorem d_chk_inf_elab_sound : forall Ψ e mode A eᶠ,
   d_chk_inf_elab Ψ e mode A eᶠ -> d_chk_inf Ψ e mode A.
 Proof with eauto using d_sub_elab_sound, d_infabs_elab_sound, d_inftapp_elab_sound.
   intros. induction H...
 Qed.
-
 
 Lemma d_infabs_elab_rename_tvar : forall Ψ1 Ψ2 X Y A B C coᶠ,
   Ψ2 ++ (X , □) :: Ψ1 ⊢ A ▹ B → C ↪ coᶠ ->
@@ -523,7 +499,6 @@ Proof with eauto.
     + rewrite <- subst_typ_in_typ_open_typ_wrt_typ; eauto.
 Qed.
 
-
 Lemma d_inftapp_elab_rename_tvar : forall Ψ1 Ψ2 X Y A B C co1ᶠ co2ᶠ,
   Ψ2 ++ (X , □) :: Ψ1 ⊢ A ○ B ⇒⇒ C ↪ co1ᶠ | co2ᶠ ->
   Y `notin` dom (Ψ2 ++ (X , □) :: Ψ1) ->
@@ -539,7 +514,6 @@ Proof.
     replace (typ_all ({` Y ᵗ/ₜ X} A)) with ({` Y ᵗ/ₜ X} typ_all A) by auto.
     eapply d_wf_typ_rename_dtvar; eauto.
 Qed.
-
 
 Lemma d_chk_inf_elab_rename_tvar : forall Ψ1 Ψ2 X Y e A eᶠ mode,
   d_chk_inf_elab (Ψ2 ++ (X , □) :: Ψ1) e mode A eᶠ ->
@@ -597,7 +571,6 @@ Proof with eauto using d_wf_typ_rename_dtvar, d_mono_typ_rename_dtvar, d_wf_tenv
     eapply d_sub_elab_rename_dtvar; eauto.
 Qed.
 
-
 Corollary d_chk_inf_elab_rename_tvar_cons : forall Ψ X Y e A eᶠ mode,
   Y `notin` dom ((X , □) :: Ψ) ->
   d_chk_inf_elab ((X , □) :: Ψ) e mode A eᶠ ->
@@ -606,7 +579,6 @@ Proof.
   intros. rewrite_env (map (subst_typ_in_dbind (`Y) X) nil ++ (Y , □) :: Ψ).
   apply d_chk_inf_elab_rename_tvar; eauto.
 Qed.
-
 
 Lemma d_sub_elab_rename_var : forall Ψ1 Ψ2 x y A B C coᶠ,
   Ψ2 ++ (x , dbind_typ C) :: Ψ1 ⊢ A <: B ↪ coᶠ ->
@@ -623,7 +595,6 @@ Proof with eauto 6 using d_wf_typ_rename_var, d_mono_typ_rename_var, d_wf_env_re
     eapply d_wneq_all_rename_var; eauto.
 Qed.
 
-
 Lemma d_infabs_elab_rename_var : forall Ψ1 Ψ2 x y A B C D coᶠ,
   Ψ2 ++ (x , dbind_typ D) :: Ψ1 ⊢ A ▹ B → C ↪ coᶠ ->
   y `notin` dom (Ψ2 ++ (x , dbind_typ C) :: Ψ1) ->
@@ -633,7 +604,6 @@ Proof with eauto 6 using d_wf_typ_rename_var, d_mono_typ_rename_var, d_wf_tenv_r
     eauto using d_wf_typ_rename_var, d_mono_typ_rename_var, d_wf_tenv_rename_var].
 Qed.
 
-
 Lemma d_inftapp_elab_rename_var : forall Ψ1 Ψ2 x y A B C D co1ᶠ co2ᶠ,
   Ψ2 ++ (x , dbind_typ D) :: Ψ1 ⊢ A ○ B ⇒⇒ C ↪ co1ᶠ | co2ᶠ ->
   y `notin` dom (Ψ2 ++ (x , dbind_typ C) :: Ψ1) ->
@@ -642,7 +612,6 @@ Proof.
   intros. dependent induction H; eauto; try solve [simpl; constructor; 
     eauto using d_wf_typ_rename_var, d_mono_typ_rename_var, d_wf_tenv_rename_var].
 Qed.
-
 
 Lemma d_chk_inf_elab_rename_var : forall Ψ1 Ψ2 x y e A B eᶠ mode,
   d_chk_inf_elab (Ψ2 ++ (x , dbind_typ B) :: Ψ1) e mode A eᶠ ->
@@ -684,7 +653,6 @@ Proof with eauto using d_wf_typ_rename_var, d_mono_typ_rename_var, d_wf_tenv_ren
       rewrite_env ((x0 ~ dbind_typ A ++ Ψ2) ++ (y, dbind_typ B) :: Ψ1)...
 Qed.
 
-
 Corollary d_chk_inf_elab_rename_var_cons : forall Ψ x y e A B eᶠ mode,
   d_chk_inf_elab ((x ~ dbind_typ B) ++ Ψ) e mode A eᶠ ->
   y `notin` dom ((x ~ dbind_typ B) ++ Ψ) ->
@@ -693,7 +661,6 @@ Proof.
   intros. rewrite_env (nil ++ (y ~ dbind_typ B) ++ Ψ).
   apply d_chk_inf_elab_rename_var; eauto.
 Qed.
-
 
 Theorem d_chk_inf_elab_complete : forall Ψ e mode A,
   d_chk_inf Ψ e mode A -> exists eᶠ, d_chk_inf_elab Ψ e mode A eᶠ.
@@ -740,13 +707,11 @@ Proof.
     destruct_conj; eauto.
 Qed.
 
-
 Theorem d_sub_elab_sound_f : forall Ψ A B coᶠ,
   Ψ ⊢ A <: B ↪ coᶠ -> ⟦ Ψ ⟧ ⊢ coᶠ : ftyp_arrow ᵗ⟦ A ⟧ ᵗ⟦ B ⟧.
 Proof with eauto 4.
   intros. induction H...
 Admitted.
-
 
 Theorem d_infabs_elab_sound_f : forall Ψ A B C coᶠ,
   Ψ ⊢ A ▹ B → C ↪ coᶠ -> 
@@ -754,13 +719,11 @@ Theorem d_infabs_elab_sound_f : forall Ψ A B C coᶠ,
 Proof.
 Admitted.
 
-
 Theorem d_inftapp_elab_sound_f : forall Ψ A B C co1ᶠ co2ᶠ,
   Ψ ⊢ A ○ B ⇒⇒ C ↪ co1ᶠ | co2ᶠ ->
   exists D, ⟦ Ψ ⟧ ⊢ co1ᶠ : ftyp_arrow ᵗ⟦ A ⟧ D /\ ⟦ Ψ ⟧ ⊢ co2ᶠ : ftyp_arrow D ᵗ⟦ C ⟧.
 Proof.
 Admitted.
-
 
 Theorem d_chk_inf_elab_lc_fexp : forall Ψ e A eᶠ mode,
   d_chk_inf_elab Ψ e mode A eᶠ -> lc_fexp eᶠ.
@@ -768,14 +731,12 @@ Proof.
   intros. induction H; eauto; simpl.
 Admitted.
 
-
 Theorem d_chk_inf_elab_sound_f : forall Ψ e A eᶠ mode,
   d_chk_inf_elab Ψ e mode A eᶠ -> ⟦ Ψ ⟧ ⊢ eᶠ : ᵗ⟦ A ⟧.
 Proof.
 Admitted.
 
 (* 
-
 
 Proof with eauto with safety.
   intros. induction H; simpl; eauto.
@@ -938,7 +899,6 @@ Proof with eauto with safety.
         admit. (* wf *) 
 Admitted.
 
-
 Lemma lc_ftyp_all_id : lc_ftyp (ftyp_all (ftyp_var_b 0)).
 Proof.
   apply lc_ftyp_all. unfold open_ftyp_wrt_ftyp. simpl. auto.
@@ -1047,8 +1007,6 @@ Proof with eauto with safety.
            apply typing_var; auto. admit. (* wf *)
       * admit. (* wf *)
 Admitted.
-
-
 
 Theorem d_inftapp_elab_lc_fexp : forall Ψ A B C co1ᶠ co2ᶠ,
   d_inftapp_elab Ψ A B C co1ᶠ co2ᶠ -> lc_fexp co1ᶠ /\ lc_fexp co2ᶠ.
@@ -1180,7 +1138,6 @@ Proof with eauto with safety.
       unfold open_fexp_wrt_fexp. simpl. intros.
       apply typing_var; auto. admit. (* wf *)  
 Admitted.
-
 
 Theorem trans_binds : forall Ψ x T,
   binds x (dbind_typ T) Ψ -> binds x (bind_typ (trans_typ T)) (trans_env Ψ).

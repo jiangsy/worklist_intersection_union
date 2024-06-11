@@ -5,8 +5,6 @@ Require Import List.
 Require Import uni.prop_ln.
 Require Export uni.def_ott.
 
-
-
 (* defns J_d_sub *)
 Inductive d_sub : denv -> typ -> typ -> Prop :=    (* defn d_sub *)
   | d_sub__top : forall (Ψ:denv) (A:typ),
@@ -63,7 +61,6 @@ Inductive d_sub : denv -> typ -> typ -> Prop :=    (* defn d_sub *)
       d_sub Ψ A1 B ->
       d_sub Ψ A2 B ->
       d_sub Ψ (typ_union A1 A2) B.
-
 
 Inductive d_sub_alt : denv -> typ -> typ -> Prop :=    (* defn d_sub *)
   | d_sub_alt__top : forall (Ψ:denv) (A:typ),
@@ -123,7 +120,6 @@ Inductive d_sub_alt : denv -> typ -> typ -> Prop :=    (* defn d_sub *)
       d_sub_alt Ψ A2 B ->
       d_sub_alt Ψ (typ_union A1 A2) B.
 
-
 Inductive d_inftapp : denv -> typ -> typ -> typ -> Prop := 
   | d_inftapp__bot : forall (Ψ:denv) (B:typ),
       d_wf_tenv Ψ -> 
@@ -146,7 +142,6 @@ Inductive d_inftapp : denv -> typ -> typ -> typ -> Prop :=
       d_inftapp Ψ A1 B C1 ->
       d_inftapp Ψ A2 B C2 ->
       d_inftapp Ψ (typ_union A1 A2) B (typ_union C1 C2).
-
 
 Inductive d_infabs : denv -> typ -> typ -> typ -> Prop := 
   | d_infabs__bot : forall (Ψ:denv),
@@ -179,7 +174,6 @@ Inductive d_infabs : denv -> typ -> typ -> typ -> Prop :=
 Inductive typing_mode :=
   | typingmode__inf 
   | typingmode__chk.
-
 
 Inductive d_chk_inf : denv -> exp -> typing_mode -> typ -> Prop :=
   | d_chk_inf__inf_var : forall (Ψ:denv) (x:expvar) (A:typ),
@@ -238,7 +232,6 @@ Inductive d_chk_inf : denv -> exp -> typing_mode -> typ -> Prop :=
       d_chk_inf Ψ e typingmode__chk A2 ->
       d_wf_typ Ψ A1 ->
       d_chk_inf Ψ e typingmode__chk (typ_union A1 A2).
-
 
 #[export] Hint Constructors neq_union neq_intersection neq_all : core.
 #[export] Hint Constructors d_sub d_infabs d_inftapp d_chk_inf : core.

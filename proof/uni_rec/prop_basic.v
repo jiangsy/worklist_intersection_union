@@ -7,11 +7,9 @@ Require Import LibTactics.
 Require Import uni_rec.notations.
 Require Import uni_rec.ltac_utils.
 
-
 #[export] Hint Constructors d_wf_typ: core.
 #[export] Hint Constructors d_wf_env: core.
 #[export] Hint Constructors s_in: core.
-
 
 Ltac solve_by_inverts n :=
   match goal with | H : ?T |- _ =>
@@ -23,7 +21,6 @@ Ltac solve_by_inverts n :=
 
 Ltac solve_by_invert :=
   solve_by_inverts 1.
-
 
 Lemma neq_symm {A : Type} : forall (a b : A),
   a <> b -> b <> a. 
@@ -117,7 +114,6 @@ Proof.
       apply IHls2 in x; subst; auto.
 Qed.
 
-
 Lemma ls_split_det {A : Type} : forall (ls1 ls2 ls'1 ls'2 : list (atom * A)) X b,
   X `notin` dom (ls'1 ++ ls'2) ->
   ls2 ++ (X, b) :: ls1 = ls'2 ++ (X, b) :: ls'1 ->
@@ -190,7 +186,6 @@ Proof.
     contradiction.
 Qed.
 
-
 Lemma open_typ_wrt_typ_twice : forall n X Y A,
   lc_typ Y ->
   open_typ_wrt_typ_rec n ` X (open_typ_wrt_typ_rec (n+1) Y A) = 
@@ -214,8 +209,6 @@ Proof with subst; simpl in *; eauto; try lia.
     rewrite H. congruence. lia.
 Qed.
 
-
-
 Lemma typ_open_r_close_l : forall A B X, 
   X `notin` ftvar_in_typ B -> 
   A = open_typ_wrt_typ B ` X -> 
@@ -226,7 +219,6 @@ Proof.
   now rewrite close_typ_wrt_typ_open_typ_wrt_typ in H0.
 Qed.
 
-
 Lemma close_typ_wrt_typ_notin_rec : forall X A n,
     X `notin` ftvar_in_typ (close_typ_wrt_typ_rec n X A).
 Proof.
@@ -236,13 +228,11 @@ Proof.
   - unfold eq_dec. destruct EqDec_eq_of_X; auto.
 Qed.
 
-
 Lemma close_typ_wrt_typ_notin : forall X A,
   X `notin` ftvar_in_typ (close_typ_wrt_typ X A).
 Proof.
   intros. apply close_typ_wrt_typ_notin_rec.
 Qed.
-
 
 Lemma close_exp_wrt_exp_notin_rec : forall x e n,
   x `notin` fvar_in_exp (close_exp_wrt_exp_rec n x e).
@@ -258,7 +248,6 @@ Proof.
   intros until e. unfold close_exp_wrt_exp.
   apply close_exp_wrt_exp_notin_rec.
 Qed.
-
 
 Lemma close_exp_wrt_typ_notin_rec : forall X e n,
   X `notin` ftvar_in_exp (close_exp_wrt_typ_rec n X e).
@@ -276,7 +265,6 @@ Proof.
   intros until e. unfold close_exp_wrt_typ.
     apply close_exp_wrt_typ_notin_rec.
 Qed.
-
 
 Lemma sin_in : forall X T,
   s_in X T ->
@@ -316,7 +304,6 @@ Proof.
   - destruct A; try solve [inversion x]; auto.
 Qed.
 
-
 Lemma lc_typ_subst : forall A T X,
   lc_typ A ->
   lc_typ T ->
@@ -329,7 +316,6 @@ Proof.
     rewrite subst_typ_in_typ_open_typ_wrt_typ_fresh2; auto.
 Qed.
 
-
 Lemma lc_exp_subst_typ_in_exp : forall e A X,
   lc_exp e ->
   lc_typ A ->
@@ -341,7 +327,6 @@ Proof with eauto using lc_typ_subst.
   - pick fresh X0. apply lc_exp_tabs_exists with (X1:=X0).
     rewrite subst_typ_in_exp_open_exp_wrt_typ_fresh2...
 Qed.
-
 
 Lemma lc_exp_subst_exp_in_exp : forall e1 e2 x,
   lc_exp e1 ->
@@ -394,7 +379,6 @@ Proof.
     inversion x. subst.
     constructor; eauto.
 Qed.
-
 
 Lemma s_in_subst : forall X Y A T,
   lc_typ T ->
@@ -457,7 +441,6 @@ Proof.
       * eapply IHs_in2 with (T:=T) (Y:=Y); eauto.
 Qed.
 
-
 Lemma s_in_subst_inv : forall X Y T1 S1,
   lc_typ S1 ->
   X <> Y ->
@@ -478,14 +461,12 @@ Proof.
     rewrite subst_typ_in_typ_open_typ_wrt_typ_fresh2; auto.
 Qed.
 
-
 Lemma s_in_lc_typ : forall A X,
   s_in X A ->
   lc_typ A.
 Proof.
   intros; induction H; auto.
 Qed.
-
 
 Lemma s_in_rename : forall A X Y,
   s_in X A ->
@@ -498,70 +479,3 @@ Proof.
   - apply s_in__all with (L:=L `union` singleton X). intros. inst_cofinites_with Y0. 
     rewrite subst_typ_in_typ_open_typ_wrt_typ_fresh2; auto...
 Qed.
-
-Lemma neq_all_rename: forall A X Y,
-  neq_all A ->
-  neq_all ({typ_var_f Y ᵗ/ₜ X} A).
-Proof with  simpl; eauto using lc_typ_subst; try solve_by_invert.
-  intros. destruct A...
-  - case_if; subst*.
-  - eapply neq_all__arrow;
-      applys lc_typ_subst...
-    all: inverts~ H.
-  - econstructor; applys lc_typ_subst; try inverts~ H...
-  - econstructor; applys lc_typ_subst; try inverts~ H...
-Qed.
-
-
-Lemma neq_intersection_rename: forall A X Y,
-  neq_intersection A ->
-  neq_intersection ({typ_var_f Y ᵗ/ₜ X} A).
-Proof with  simpl; eauto using lc_typ_subst; try solve_by_invert.
-  intros. destruct A...
-  - case_if; subst*.
-  - eapply neq_intersection__arrow;
-      applys lc_typ_subst...
-    all: inverts~ H.
-  - econstructor.
-    dependent destruction H...
-    forwards*: lc_typ_subst (typ_all A) (typ_var_f Y) X.
-  - econstructor; applys lc_typ_subst; try inverts~ H...
-Qed.
-
-
-Lemma neq_union_rename: forall A X Y,
-  neq_union A ->
-  neq_union ({typ_var_f Y ᵗ/ₜ X} A).
-Proof with  simpl; eauto using lc_typ_subst; try solve_by_invert.
-  intros. destruct A...
-  - case_if; subst*.
-  - eapply neq_union__arrow;
-      applys lc_typ_subst...
-    all: inverts~ H.
-  - econstructor.
-    dependent destruction H...
-    forwards*: lc_typ_subst (typ_all A) (typ_var_f Y) X.
-  - econstructor; applys lc_typ_subst; try inverts~ H...
-Qed.
-
-Lemma neq_all_lc_typ : forall A,
-  neq_all A -> lc_typ A.
-Proof.
-  intros. induction H; eauto.
-Qed.
-
-Lemma neq_intersection_lc_typ : forall A,
-  neq_intersection A -> lc_typ A.
-Proof.
-  intros. induction H; eauto.
-Qed.
-
-Lemma neq_union_lc_typ : forall A,
-  neq_union A -> lc_typ A.
-Proof.
-  intros. induction H; eauto.
-Qed.
-
-
-#[export] Hint Resolve neq_all_rename neq_intersection_rename neq_union_rename : core.
-#[export] Hint Immediate neq_all_lc_typ neq_intersection_lc_typ neq_union_lc_typ : core.

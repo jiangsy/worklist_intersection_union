@@ -4,14 +4,12 @@ Require Export uni.def_ott.
 Require Export uni.def_extra.
 Require Export uni.decl.def_extra.
 
-
 Fixpoint dwl_app (Ω1 Ω2 : dworklist) :=
   match Ω1 with 
-  | dworklist_empty => Ω2 
-  | dworklist_cons_var Ω1' X b => dworklist_cons_var (dwl_app Ω1' Ω2) X b
-  | dworklist_cons_work Ω1' w => dworklist_cons_work (dwl_app Ω1' Ω2) w
+    | dworklist_empty => Ω2 
+    | dworklist_cons_var Ω1' X b => dworklist_cons_var (dwl_app Ω1' Ω2) X b
+    | dworklist_cons_work Ω1' w => dworklist_cons_work (dwl_app Ω1' Ω2) w
   end.
-
 
 (* decl worklist delegated reduction, corresponds to Jimmy's dc *)
 Inductive d_wl_del_red : dworklist -> Prop :=
@@ -221,7 +219,6 @@ Inductive d_wl_red : dworklist -> Prop :=    (* defn d_wl_red *)
      apply_contd cd A B w ->
      d_wl_red (dworklist_cons_work Ω w) ->
      d_wl_red (dworklist_cons_work Ω (work_applyd cd A B)).
-
 
 #[export] Hint Constructors d_wl_red d_wf_wl d_wl_del_red : core.
 

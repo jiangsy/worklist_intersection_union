@@ -4,14 +4,12 @@ Require Export uni_counter.def_ott.
 Require Export uni_counter.def_extra.
 Require Export uni_counter.decl.def_extra.
 
-
 Fixpoint dwl_app (Ω1 Ω2 : dworklist) :=
   match Ω1 with 
   | dworklist_empty => Ω2 
   | dworklist_cons_var Ω1' X b => dworklist_cons_var (dwl_app Ω1' Ω2) X b
   | dworklist_cons_work Ω1' w => dworklist_cons_work (dwl_app Ω1' Ω2) w
   end.
-
 
 (* decl worklist delegated reduction, corresponds to Jimmy's dc *)
 Inductive d_wl_del_red : dworklist -> Prop :=
@@ -65,7 +63,6 @@ Inductive d_wl_del_red : dworklist -> Prop :=
       d_wl_del_red (dworklist_cons_work Ω w) ->
       d_wl_del_red (dworklist_cons_work Ω (work_applyd cd A B)).
 
-
 Inductive num_occurs_in_typ : atom -> typ -> nat -> Prop :=
   | num_occurs_in_typ__unit : forall X,
       num_occurs_in_typ X typ_unit 0
@@ -95,7 +92,6 @@ Inductive num_occurs_in_typ : atom -> typ -> nat -> Prop :=
       num_occurs_in_typ X A1 n1 ->
       num_occurs_in_typ X A2 n2 ->
       num_occurs_in_typ X (typ_intersection A1 A2) (n1 + n2).
-
 
 Inductive d_iuv_size : denv -> typ -> nat -> Prop :=
   | d_iuv_size__unit : forall Ψ,
@@ -130,7 +126,6 @@ Inductive d_iuv_size : denv -> typ -> nat -> Prop :=
       d_iuv_size Ψ A1 n1 ->
       d_iuv_size Ψ A2 n2 ->
       d_iuv_size Ψ (typ_intersection A1 A2) (2 + n1 + n2).
-
 
 Inductive d_exp_split_size : denv -> exp -> nat -> Prop :=
   | d_exp_split_size__unit : forall Ψ,
@@ -325,7 +320,6 @@ Inductive d_wl_red : dworklist -> Prop :=    (* defn d_wl_red *)
      apply_contd cd A B w ->
      d_wl_red (dworklist_cons_work Ω w) ->
      d_wl_red (dworklist_cons_work Ω (work_applyd cd A B)).
-
 
 #[export] Hint Constructors d_wl_red d_wf_wl d_wl_del_red : core.
 

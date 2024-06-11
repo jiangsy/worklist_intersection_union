@@ -74,7 +74,6 @@ Inductive d_sub_alt : denv -> typ -> typ -> Prop :=    (* d_sub plus more side c
      d_sub_alt Ψ A2 B ->
      d_sub_alt Ψ (typ_union A1 A2) B.
 
-
 (* d_chk_inf plus more side conditions *)
 Inductive d_typing_alt : denv -> exp -> typing_mode -> typ -> Prop :=
 | d_typing_alt__infvar : forall (Ψ:denv) (x:expvar) (A:typ),
@@ -269,7 +268,6 @@ Proof with eauto using d_sub_alt_dwft_1, d_sub_alt_dwft_2.
                  try econstructor;
                  try eapply lc_typ_all_exists; eauto; intro HF; inverts HF; inverts H].
 Qed.
-
 
 Lemma d_typing_alt_complete : forall Ψ e dir A,
     d_chk_inf Ψ e dir A -> d_typing_alt Ψ e dir A.

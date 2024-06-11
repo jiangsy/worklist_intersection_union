@@ -3,7 +3,6 @@ Require Import Program.Tactics.
 Require Import Metalib.Metatheory.
 Require Import List.
 
-
 Require Import uni_monoiu.notations.
 Require Import uni_monoiu.decl.prop_basic.
 Require Import uni_monoiu.decl.prop_subtyping.
@@ -15,14 +14,12 @@ Require Import uni_monoiu.algo_worklist.prop_basic.
 Require Import uni_monoiu.algo_worklist.transfer.
 Require Import uni_monoiu.ltac_utils.  
 
-
 Hint Constructors a_wf_wl : core.
 
 #[local] Hint Constructors d_wl_del_red aworklist_subst : core.
 #[local] Hint Resolve wf_ss_uniq a_wf_wl_d_wf_env : core.
 
 Open Scope aworklist_scope.
-
 
 Ltac rename_typ_to_fresh' :=
   repeat 
@@ -79,7 +76,6 @@ Ltac destruct_trans' :=
   try unify_trans_typ;
   try unify_trans_exp.
 
-
 Ltac destruct_trans :=
   repeat destruct_trans'.
 
@@ -104,7 +100,6 @@ Ltac solve_a_wf_wl Γ :=
     assert (H1 : ⊢ᵃʷₛ Γ) by eauto 7
   end.
 
-
 Ltac _apply_IH_a_wl_red :=
   match goal with 
   | H : (⊢ᵃʷₛ ?Γ) -> ?P |- _ => 
@@ -117,7 +112,6 @@ Ltac _apply_IH_a_wl_red :=
     destruct Hdred as [Ω [Htrans Hdred]];
     destruct Htrans as [θ Htrans]
   end.
-
 
 Ltac trans_all_typ :=
   match goal with 
@@ -203,7 +197,6 @@ Proof with eauto.
     intuition... subst...
 Qed.
 
-
 Lemma trans_typ_subst_tvar_cons : forall θ Bᵃ Bᵈ X Aᵃ A'ᵈ,
   lc_typ Aᵃ -> 
   X ∉ dom θ ->
@@ -215,7 +208,6 @@ Proof with eauto.
   rewrite_env (nil ++ θ) in H2.
   eapply trans_typ_subst_tvar in H2...
 Qed.
-
 
 Lemma trans_typ_subst_etvar : forall θ1 θ2 Tᵃ Tᵈ X Aᵃ Aᵈ,
   lc_typ Aᵃ -> 
@@ -278,7 +270,6 @@ Proof.
   - simpl in Hinsta.
     dependent destruction Hinsta. constructor; auto.
 Qed.
-
 
 Lemma trans_typ_subst_etvar_same_ss : forall θ Tᵃ Tᵈ X Aᵃ Aᵈ,
   wf_ss θ ->
@@ -353,7 +344,6 @@ Proof.
     * eapply trans_typ_subst_etvar_same_ss; eauto.
 Qed.
 
-
 Lemma trans_exp_subst_etvar_same_ss : forall θ Tᵃ Tᵈ X eᵃ eᵈ,
   wf_ss θ ->
   binds X (dbind_typ Tᵈ) θ ->
@@ -368,7 +358,6 @@ Proof.
   apply lc_exp_subst_typ_in_exp_inv in Hlce; auto.
   eapply trans_exp_subst_etvar_same_ss'; eauto. 
 Qed.
-
 
 Lemma trans_conts_subst_etvar_same_ss : forall θ Tᵃ Tᵈ X csᵃ csᵈ,
   wf_ss θ ->
@@ -492,7 +481,6 @@ Proof with eauto.
     intuition... subst...
 Qed.
 
-
 Lemma trans_typ_etvar_tvar_subst_cons : forall θ1 T X Aᵃ A'ᵈ,
   lc_typ Aᵃ -> 
   X ∉ dom θ1 ->
@@ -504,7 +492,6 @@ Proof with auto.
   rewrite_env (nil ++ (X, □) :: θ1).  
   apply trans_typ_etvar_tvar_subst...
 Qed.
-
 
 Lemma neq_symm {A : Type} : forall (a b : A),
   a <> b -> b <> a. 
@@ -528,7 +515,6 @@ Proof.
   - simpl in *. apply union_iff in H1. inversion H1; eauto.
   - simpl in *. apply union_iff in H1. inversion H1; eauto.
 Qed.
-
 
 Lemma wf_ss_move_etvar_before : forall θ1 θ2 X1 X2 T1 T2,
   wf_ss (θ2 ++ (X1, dbind_typ T1) :: (X2, dbind_typ T2) :: θ1) ->
@@ -741,7 +727,6 @@ Proof with auto.
     + auto.
 Qed.
 
-
 Lemma aworklist_subst_transfer_same_dworklist: forall Γ Ω θ X T Γ1 Γ2,
   ⊢ᵃʷₛ Γ ->
   ⌊ Γ ⌋ᵃ ᵗ⊢ᵃₘ T->
@@ -853,7 +838,6 @@ Proof with auto.
    + solve_notin_dom.
 Qed.
 
-
 Lemma worklist_subst_fresh_etvar_total' : forall Γ X X1 X2,
   uniq (⌊ Γ ⌋ᵃ) ->
   X ~ ⬒ ∈ᵃ ⌊ Γ ⌋ᵃ ->
@@ -868,12 +852,10 @@ Proof.
   eapply worklist_subst_fresh_etvar_total in H; eauto.
 Qed.
 
-
 #[local] Hint Extern 1 ((exists _, _) -> False) => try solve_false : core.
 
 #[local] Hint Resolve trans_wl_wf_ss trans_typ_wf_ss wf_ss_uniq : core.
 #[local] Hint Resolve trans_typ_lc_atyp : core.
-
 
 Lemma trans_apply_conts : forall θ csᵃ csᵈ Aᵃ Aᵈ wᵃ wᵈ,
   θ ᶜˢ⊩ csᵃ ⇝ csᵈ ->
@@ -901,13 +883,11 @@ Proof.
     try repeat unify_trans_typ; try unify_trans_exp; try constructor.
 Qed.
 
-
 #[local] Hint Resolve trans_typ_wf_ss trans_wl_a_wf_typ_d_wf_typ trans_wl_a_wf_twl_d_wf_twl d_wf_twl_wf_tenv : core.
 
 #[local] Hint Resolve a_wf_wl_a_wf_bind_typ : core.
 
 Open Scope dworklist_scope.
-
 
 Theorem a_wl_red_soundness: forall Γ,
   ⊢ᵃʷₛ Γ -> Γ ⟶ᵃʷ⁎⋅ -> exists Ω, transfer Γ Ω /\ Ω ⟶ᵈ⁎⋅.

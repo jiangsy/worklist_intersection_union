@@ -116,7 +116,6 @@ Notation "Ψ ⊢ A ▹ B → C" :=
   (d_infabs Ψ A B C) 
     (at level 65, A at next level, B at next level, no associativity) : type_scope. 
 
-
 Notation "Σ ᵗ⊢ᵃ A" :=
   (a_wf_typ Σ A)
     (at level 65, no associativity) : type_scope.

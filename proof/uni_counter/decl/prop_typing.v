@@ -3,17 +3,14 @@ Require Import Program.Tactics.
 Require Import Lia.
 Require Import Metalib.Metatheory.
 
-
 Require Import uni_counter.notations.
 Require Import uni_counter.decl.prop_basic.
 Require Import uni_counter.decl.prop_rename.
 Require Import uni_counter.decl.prop_subtyping.
 Require Import uni_counter.ltac_utils.
 
-
 Hint Constructors d_wf_typ: core.
 Hint Constructors d_wf_env: core.
-
 
 Inductive d_subtenv : denv -> denv -> Prop :=
   | d_subtenv__empty: d_subtenv nil nil
@@ -141,7 +138,6 @@ Proof.
     inversion H2.
 Qed.
 
-
 Lemma d_subtenv_wf_typ : forall Ψ Ψ' A,
   Ψ ᵗ⊢ᵈ A -> 
   d_subtenv Ψ' Ψ -> 
@@ -206,7 +202,6 @@ Proof with subst; try solve_notin; eauto using d_sub_d_wf_typ2.
     econstructor; try rewrite HE...
 Qed.
 
-
 Ltac solve_wf_subenv := match goal with
   | H : d_subtenv ?Ψ' ?Ψ |- ?Ψ' ᵗ⊢ᵈ ?A => eapply d_subtenv_wf_typ; eauto
   | H : d_subtenv ?Ψ' ?Ψ |- ⊢ᵈₜ ?Ψ' => eapply d_subtenv_wf_env; eauto
@@ -246,7 +241,6 @@ Proof with eauto using binds_subenv.
   intros* HD HS. gen HS.
   induction HD; intros... 
 Qed.
-
 
 #[local] Hint Immediate d_wf_tenv_d_wf_env  : core.
 
@@ -300,7 +294,6 @@ Qed.
 
 #[local] Hint Resolve d_wf_typ_subst_tvar d_wf_env_subst_tvar bind_typ_subst d_wf_typ_lc_typ : core.
 
-
 Definition dmode_size (mode : typing_mode) : nat :=
   match mode with
   | typingmode__inf => 0
@@ -325,7 +318,6 @@ Fixpoint typ_size (A:typ) : nat :=
   | typ_union A1 A2 => typ_size A1 + typ_size A2 + 1
   | _ => 0
   end.
-
 
 Theorem d_inftapp_subsumption_same_env : forall Ψ A B C A',
   Ψ ⊢ A ○ B ⇒⇒ C ->
@@ -409,7 +401,6 @@ Proof with auto.
       exists (typ_union C1' C2'). intuition...
 Qed.
 
-
 #[export] Hint Immediate d_inftapp_d_wf_env d_inftapp_d_wf_typ1 d_inftapp_d_wf_typ2 d_inftapp_d_wf_typ3 : core.
 
 Lemma d_inftapp_subenv : forall Ψ Ψ' A B C,
@@ -433,7 +424,6 @@ Proof with eauto.
   forwards : d_inftapp_subenv HA' HE.
   exists*.
 Qed.
-
 
 #[export] Hint Immediate d_infabs_d_wf_env d_infabs_d_wf_typ1 d_infabs_d_wf_typ2 d_infabs_d_wf_typ3 : core.
 
@@ -564,7 +554,6 @@ Proof with auto using d_mono_typ_d_wf_typ.
       intuition...
 Qed.
 
-
 Lemma d_infabs_subenv : forall Ψ Ψ' A B C,
   Ψ ⊢ A ▹ B → C ->
   d_subtenv Ψ' Ψ ->
@@ -590,7 +579,6 @@ Qed.
 #[local] Hint Extern 1 (_ < _) => lia : core.
 (* #[local] Hint Extern 1 (_ ᵗ⊢ᵈ _) => eapply d_subenv_wf_typ; eauto : core. *)
 
-
 Lemma exp_size_open_var_rec : forall e x n,
   exp_size e = exp_size (open_exp_wrt_exp_rec n (exp_var_f x) e).
 Proof.
@@ -600,7 +588,6 @@ Proof.
     + auto.
 Qed.
 
-
 Lemma d_exp_size_open_var: forall e x,
   exp_size e = exp_size (open_exp_wrt_exp e (exp_var_f x)).
 Proof.
@@ -608,13 +595,11 @@ Proof.
   apply exp_size_open_var_rec.
 Qed.
 
-
 Lemma exp_size_open_typ_rec : forall e A n,
   exp_size e = exp_size (open_exp_wrt_typ_rec n A e).
 Proof.
   intros. generalize dependent n. induction e; simpl; auto.
 Qed.
-
 
 Lemma d_exp_size_open_typ: forall e A,
   exp_size e = exp_size (open_exp_wrt_typ e A).
@@ -622,7 +607,6 @@ Proof.
   intros. unfold open_exp_wrt_exp.
   apply exp_size_open_typ_rec.
 Qed.
-
 
 (* #[local] Hint Resolve d_wf_typ_weaken_cons : core. *)
 

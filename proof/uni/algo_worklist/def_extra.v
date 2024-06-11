@@ -6,7 +6,6 @@ Require Import uni.prop_ln.
 Require Export uni.def_ott.
 Require Export uni.decl_worklist.def.
 
-
 Fixpoint awl_app (Γ1 Γ2 : aworklist) :=
   match Γ1 with 
   | aworklist_empty => Γ2 
@@ -42,9 +41,7 @@ Inductive aworklist_subst : aworklist -> typvar -> typ -> aworklist -> aworklist
     aworklist_subst (awl_app Γ2 (aworklist_cons_var (aworklist_cons_var Γ1 Y abind_etvar_empty) X abind_etvar_empty)) X A Γ'1 Γ'2 ->
     Y <> X ->
     Y `in` ftvar_in_typ A -> 
-    aworklist_subst (aworklist_cons_var (awl_app Γ2 (aworklist_cons_var Γ1 X abind_etvar_empty)) Y (abind_etvar_empty)) X A Γ'1 Γ'2
-.
-    
+    aworklist_subst (aworklist_cons_var (awl_app Γ2 (aworklist_cons_var Γ1 X abind_etvar_empty)) Y (abind_etvar_empty)) X A Γ'1 Γ'2.
 
 (* defns Jaworklist_reduction *)
 Inductive a_wl_red : aworklist -> Prop :=    (* defn a_wl_red *)
@@ -239,12 +236,6 @@ Inductive a_wl_red : aworklist -> Prop :=    (* defn a_wl_red *)
 Declare Scope aworklist_scope.
 Delimit Scope aworklist_scope with aworklist.
 Bind Scope aworklist_scope with aworklist.
-
-
-(* Notation " x ~ᵃ A ;ᵃ Γ " :=
-  (aworklist_cons_var Γ x (abind_var_typ A))
-      (at level 58, A at next level, right associativity) : aworklist_scope.
- *)
 
 Notation " X ~ᵃ b ; Γ " :=
     (aworklist_cons_var Γ X b)

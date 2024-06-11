@@ -80,7 +80,6 @@ Ltac auto_apply :=
   | H : context [ ?P -> ?Q ] |- ?Q => apply H
   end.
 
-
 Ltac gather_atoms ::=
   let A := gather_atoms_with (fun x : vars => x) in
 
@@ -133,7 +132,6 @@ Ltac destruct_conj :=
                          end
     end.
 
-
 Ltac solve_by_inverts n :=
   match goal with | H : ?T |- _ =>
   match type of T with Prop =>
@@ -149,7 +147,6 @@ Create HintDb FalseHd.
 Ltac solve_false := let HF := fresh "HF" in
                     try solve [ try intro HF; destruct_conj; try solve_by_invert;
                                 false; eauto 3 with FalseHd ].
-
 
 Ltac destruct_binds_eq :=
   repeat
@@ -171,7 +168,6 @@ Ltac destruct_binds :=
     try solve [solve_notin_eq X];
     try solve [solve_notin_eq X']
   end.
-
 
 Ltac destruct_in :=
   simpl in *;

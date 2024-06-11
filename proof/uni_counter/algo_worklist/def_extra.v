@@ -6,7 +6,6 @@ Require Import uni_counter.prop_ln.
 Require Export uni_counter.def_ott.
 Require Export uni_counter.decl_worklist.def.
 
-
 Fixpoint awl_app (Γ1 Γ2 : aworklist) :=
   match Γ1 with 
   | aworklist_empty => Γ2 
@@ -42,8 +41,7 @@ Inductive aworklist_subst : aworklist -> typvar -> typ -> aworklist -> aworklist
     aworklist_subst (awl_app Γ2 (aworklist_cons_var (aworklist_cons_var Γ1 Y abind_etvar_empty) X abind_etvar_empty)) X A Γ'1 Γ'2 ->
     Y <> X ->
     Y `in` ftvar_in_typ A -> 
-    aworklist_subst (aworklist_cons_var (awl_app Γ2 (aworklist_cons_var Γ1 X abind_etvar_empty)) Y (abind_etvar_empty)) X A Γ'1 Γ'2
-.
+    aworklist_subst (aworklist_cons_var (awl_app Γ2 (aworklist_cons_var Γ1 X abind_etvar_empty)) Y (abind_etvar_empty)) X A Γ'1 Γ'2.
 
 Inductive a_iuv_size : aenv -> typ -> nat -> Prop :=
   | a_iuv_size__unit : forall Σ,
@@ -80,8 +78,7 @@ Inductive a_iuv_size : aenv -> typ -> nat -> Prop :=
   | a_iuv_size__intersection : forall Σ A1 A2 n1 n2,
       a_iuv_size Σ A1 n1 ->
       a_iuv_size Σ A2 n2 ->
-      a_iuv_size Σ (typ_intersection A1 A2) (2 + n1 + n2)
-  .
+      a_iuv_size Σ (typ_intersection A1 A2) (2 + n1 + n2).
 
 Inductive a_exp_split_size : aenv -> exp -> nat -> Prop :=
   | a_exp_split_size__unit : forall Σ,
@@ -112,7 +109,6 @@ Inductive a_exp_split_size : aenv -> exp -> nat -> Prop :=
       a_exp_split_size Σ e n ->
       a_iuv_size Σ A m ->
       a_exp_split_size Σ (exp_anno e A) ((1 + n) * (2 + m)).
-    
 
 (* defns Jaworklist_reduction *)
 Inductive a_wl_red : aworklist -> Prop :=    (* defn a_wl_red *)
@@ -304,39 +300,31 @@ Inductive a_wl_red : aworklist -> Prop :=    (* defn a_wl_red *)
  | a_wl_red__applyd : forall (Γ:aworklist) (w:work) (A B:typ) (cd:contd),
      apply_contd cd A B w ->
      a_wl_red (aworklist_cons_work Γ w) ->
-     a_wl_red (aworklist_cons_work Γ (work_applyd cd A B))  
-.
+     a_wl_red (aworklist_cons_work Γ (work_applyd cd A B)).
 
-    
 Declare Scope aworklist_scope.
 Delimit Scope aworklist_scope with aworklist.
 Bind Scope aworklist_scope with aworklist.
 
-
-(* Notation " x ~ᵃ A ;ᵃ Γ " :=
-  (aworklist_cons_var Γ x (abind_var_typ A))
-      (at level 58, A at next level, right associativity) : aworklist_scope.
- *)
-
 Notation " X ~ᵃ b ; Γ " :=
-    (aworklist_cons_var Γ X b)
+  (aworklist_cons_var Γ X b)
     (at level 58, b at next level, right associativity) : aworklist_scope.
     
 Notation " X ~ᵃ □ ;ᵃ Γ " :=
   (aworklist_cons_var Γ X abind_tvar_empty)
-      (at level 58, right associativity) : aworklist_scope.
+    (at level 58, right associativity) : aworklist_scope.
 
 Notation " X ~ᵃ ■ ;ᵃ Γ " :=
   (aworklist_cons_var Γ X abind_stvar_empty)
-      (at level 58, right associativity) : aworklist_scope.
+    (at level 58, right associativity) : aworklist_scope.
 
 Notation " X ~ᵃ ⬒ ;ᵃ Γ " :=
   (aworklist_cons_var Γ X abind_etvar_empty)
-      (at level 58, right associativity) : aworklist_scope.
+    (at level 58, right associativity) : aworklist_scope.
 
 Notation " X ~ᵃ A ;ᵃ Γ " :=
-    (aworklist_cons_var Γ X (abind_var_typ A))
-        (at level 58, A at next level, right associativity) : aworklist_scope.
+  (aworklist_cons_var Γ X (abind_var_typ A))
+    (at level 58, A at next level, right associativity) : aworklist_scope.
 
 Notation " w ⫤ᵃ Γ " :=
   (aworklist_cons_work Γ w)
@@ -360,7 +348,7 @@ Notation " ⊢ᵃʷₛ Γ " :=
       
 Notation " ⊢ᵃʷ Γ " :=
   (a_wf_wwl Γ)
-      (at level 58, no associativity) : type_scope.
+    (at level 58, no associativity) : type_scope.
 
 Notation " ⌊ Γ ⌋ᵃ " :=
   (awl_to_aenv Γ)

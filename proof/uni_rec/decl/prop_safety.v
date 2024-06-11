@@ -5,7 +5,6 @@ Require Import uni_rec.prop_basic.
 Require Import uni_rec.decl.prop_subtyping.
 Require Import uni_rec.ltac_utils.
 
-
 Require Import systemf.def_ott.
 Require Import systemf.prop_ln.
 
@@ -830,7 +829,6 @@ Proof with eauto with safety.
       unfold open_fexp_wrt_fexp. simpl. intros.
       apply typing_var; auto. admit. (* wf *)  
 Admitted.
-
 
 Inductive typing_elab : denv -> dexp -> d_typing_mode -> dtyp -> fexp -> Prop :=
 | typing_elab_infvar : forall (E:denv) (x:expvar) (T1:dtyp),

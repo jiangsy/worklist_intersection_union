@@ -4,7 +4,6 @@ Require Import Metalib.Metatheory.
 Require Import List.
 Require Import Lia.
 
-
 Require Import uni_counter.notations.
 Require Import uni_counter.prop_basic.
 Require Import uni_counter.decl_worklist.prop_equiv.
@@ -12,12 +11,10 @@ Require Import uni_counter.algo_worklist.def_extra.
 Require Import uni_counter.algo_worklist.prop_basic.
 Require Import uni_counter.ltac_utils.
 
-
 Open Scope aworklist_scope.
 
 #[local] Hint Rewrite awl_to_aenv_cons awl_to_aenv_app: core.
 #[local] Hint Rewrite dom_app dom_cons : core.
-
 
 Fixpoint rename_tvar_in_aworklist (Y X:typvar) (Γ:aworklist) {struct Γ} : aworklist :=
   match Γ with
@@ -51,7 +48,6 @@ Notation "{ y ᵃʷ/ₑᵥ x } Γ" :=
     ( at level 49, y at level 50, x at level 0
     , right associativity) : type_scope. 
 
-
 Lemma rename_tvar_in_aworklist_tvar_bind_same : forall Γ X1 X2 Y b,
   ⊢ᵃʷ Γ ->
   Y ∉ ftvar_in_aworklist' Γ ->
@@ -69,7 +65,6 @@ Proof.
   - destruct_eq_atom; dependent destruction H; auto.
 Qed.
 
-
 Corollary rename_tvar_in_aworklist_neq_tvar_bind_same : forall Γ X1 X2 Y b,
   ⊢ᵃʷ Γ ->
   X1 <> X2 ->
@@ -82,7 +77,6 @@ Proof.
   destruct_eq_atom; auto.
 Qed.
 
-
 Corollary rename_tvar_in_aworklist_eq_tvar_bind_same : forall Γ X X' b,
   ⊢ᵃʷ Γ ->
   X' ∉ ftvar_in_aworklist' Γ ->
@@ -93,7 +87,6 @@ Proof.
   intros. eapply rename_tvar_in_aworklist_tvar_bind_same with (X2:=X) in H1; eauto...
   destruct_eq_atom; auto.
 Qed.
-
 
 Lemma rename_tvar_in_aworklist_var_bind_same : forall Γ x X Y A,
   ⊢ᵃʷ Γ ->
@@ -106,7 +99,6 @@ Proof.
       dependent destruction H; destruct_eq_atom; destruct_binds; auto.
   - destruct_eq_atom; dependent destruction H; auto.
 Qed.
-
 
 Lemma rename_tvar_in_aworklist_app : forall Γ1 Γ2 X Y,
   {Y ᵃʷ/ₜᵥ X} Γ2 ⧺ {Y ᵃʷ/ₜᵥ X} Γ1 = {Y ᵃʷ/ₜᵥ X} (Γ2 ⧺ Γ1).
@@ -163,7 +155,6 @@ Proof.
     fsetdec.
 Qed.
 
-
 Lemma ftvar_in_wf_exp_upper : forall Γ e,
   ⌊ Γ ⌋ᵃ ᵉ⊢ᵃ e ->
   ftvar_in_exp e [<=] dom (⌊ Γ ⌋ᵃ).
@@ -195,7 +186,6 @@ Proof.
     rewrite ftvar_in_a_wf_typ_upper; eauto.
     fsetdec.
 Qed.
-
 
 Lemma ftvar_in_wf_conts_upper : forall Γ cs,
   ⌊ Γ ⌋ᵃ ᶜˢ⊢ᵃ cs ->
@@ -246,7 +236,6 @@ Proof.
 Qed.
 
 (* -- *)
-
 
 (* #[local] Hint Rewrite ftvar_in_aworklist'_awl_cons_tvar ftvar_in_aworklist'_awl_app : core. *)
 
@@ -320,7 +309,6 @@ Proof.
   - destruct_eq_atom; simpl; destruct_eq_atom; simpl; auto.
 Qed.
 
-
 Lemma subst_typ_in_exp_rename_tvar : forall X Y e A,
   Y ∉ ftvar_in_exp e ->
   {` Y ᵉ/ₜ X} {A ᵉ/ₜ X} e = {({` Y ᵗ/ₜ X} A) ᵉ/ₜ Y} {` Y ᵉ/ₜ X} e.
@@ -335,7 +323,6 @@ Proof.
     + rewrite IHe; auto.
       rewrite subst_typ_in_typ_rename_tvar; auto.
 Qed.
-
 
 Lemma subst_typ_in_conts_rename : forall X Y A cs,
   Y ∉ ftvar_in_conts cs ->
@@ -356,7 +343,6 @@ Proof.
       try rewrite subst_typ_in_conts_rename; auto.
 Qed.
 
-
 Lemma subst_typ_in_work_rename : forall X Y w A,
   Y ∉ ftvar_in_work w ->
   {` Y ʷ/ₜ X} {A ʷ/ₜ X} w = {({` Y ᵗ/ₜ X} A) ʷ/ₜ Y} {` Y ʷ/ₜ X} w.
@@ -367,7 +353,6 @@ Proof.
     try rewrite subst_typ_in_conts_rename; auto;
     try rewrite subst_typ_in_contd_rename; auto.
 Qed.
-
 
 Lemma subst_typ_in_awl_rename_eq_tvar : forall Γ X Y A,
   Y ∉ ftvar_in_aworklist' Γ ->
@@ -436,7 +421,6 @@ Ltac rewrite_aworklist_rename_subst :=
     rewrite subst_typ_in_awl_rename_neq_tvar in H; auto
   end.
 
-
 Lemma notin_rename_tvar_in_aworklist : forall X Y Γ,
   X <> Y ->
   X ∉ ftvar_in_aworklist' ({Y ᵃʷ/ₜᵥ X} Γ).
@@ -446,7 +430,6 @@ Proof.
     rewrite ftvar_in_typ_subst_typ_in_typ_upper; simpl; auto.
   - rewrite ftvar_in_work_subst_typ_in_work_upper; simpl; auto.
 Qed.
-
 
 Ltac solve_notin_rename_tvar' :=
   match goal with
@@ -518,7 +501,6 @@ Ltac rewrite_aworklist_rename_rev' :=
 Ltac rewrite_aworklist_rename_rev :=
   repeat rewrite_aworklist_rename_rev'.
 
-
 Ltac rewrite_aworklist_rename_subst' :=
   match goal with
   | H : context [rename_tvar_in_aworklist _ ?X (subst_typ_in_aworklist ?A ?X _)] |- _ =>
@@ -546,7 +528,6 @@ Proof.
     rewrite subst_typ_in_work_fresh_eq; auto.
 Qed.
 
-
 Lemma ftvar_in_typ_rename : forall A X Y,
    X `in` ftvar_in_typ A -> Y `in` ftvar_in_typ ({`Y ᵗ/ₜ X} A).
 Proof.
@@ -564,7 +545,6 @@ Ltac solve_a_wf_wl Γ :=
     assert (H1 : ⊢ᵃʷ Γ) by eauto 7
   end.
 
-
 Ltac apply_IH_a_wf_wwl :=
   match goal with 
   | H : (⊢ᵃʷ ?Γ) -> ?P |- _ => 
@@ -575,7 +555,6 @@ Ltac apply_IH_a_wf_wwl :=
     let Hdred := fresh "IHared" in
     apply H in H1 as Hdred
   end.
-
 
 Lemma rename_tvar_aworklist_subst : forall Γ X1 X2 Y A Γ1 Γ2,
   Y ∉ ftvar_in_typ A `union` ftvar_in_aworklist' Γ `union` singleton X2 ->
@@ -611,7 +590,6 @@ Proof with auto.
     + rewrite <- ftvar_in_typ_subst_typ_in_typ_lower...
 Qed.
 
-
 Ltac create_ftvar_in_awl_set :=
   match goal with 
   | H1 : ⊢ᵃʷ ?Γ , H2 : ?X ∉ dom (⌊ ?Γ ⌋ᵃ) |- _ =>
@@ -637,15 +615,12 @@ Proof.
     apply rename_tvar_in_aworklist_neq_tvar_bind_same; eauto.
 Qed.
 
-
-
 Lemma rename_tvar_in_aworklist_dom_upper : forall Γ X Y,
   dom (⌊ {Y ᵃʷ/ₜᵥ X} Γ ⌋ᵃ) [<=] union (dom (⌊ Γ ⌋ᵃ)) (singleton Y).
 Proof.
   intros. induction Γ; simpl; try fsetdec.
   destruct ab; simpl; destruct_eq_atom; simpl; fsetdec. 
 Qed.
-
 
 Lemma rename_tvar_in_aworklist_a_wf_typ : forall Γ X Y A,
   ⊢ᵃʷ Γ ->
@@ -681,7 +656,6 @@ Proof.
       simpl. destruct_eq_atom. auto.
 Qed.
 
-
 Lemma rename_tvar_in_aworklist_var_bind_subst : forall x A X Y Γ,
   ⊢ᵃʷ Γ ->
   x ~ A ∈ᵃ ⌊ Γ ⌋ᵃ ->
@@ -692,7 +666,6 @@ Proof with auto.
   - destruct_a_wf_wl; try destruct ab; destruct_binds; destruct_eq_atom; auto.
   - destruct_a_wf_wl...
 Qed.
-
 
 Lemma rename_tvar_in_aworklist_a_wf_exp : forall Γ X Y e,
   ⊢ᵃʷ Γ ->
@@ -719,9 +692,7 @@ Proof with eauto using rename_tvar_in_aworklist_a_wf_typ.
       simpl. destruct_eq_atom. auto.
 Qed.
 
-
 #[local] Hint Immediate  a_wf_exp_weaken_etvar_twice : core.
-
 
 Lemma rename_tvar_in_aworklist_a_wf_conts : forall Γ X Y cs,
   ⊢ᵃʷ Γ ->
@@ -737,7 +708,6 @@ Proof with auto using rename_tvar_in_aworklist_a_wf_typ, rename_tvar_in_aworklis
   - intros. clear rename_tvar_in_aworklist_a_wf_conts. dependent induction H1; simpl in *; auto...
   - intros. clear rename_tvar_in_aworklist_a_wf_contd. dependent induction H1; try repeat destruct_wf_arrow; simpl in *; auto...
 Qed.
-
 
 Lemma rename_tvar_in_aworklist_a_wf_work : forall Γ X Y w,
   ⊢ᵃʷ Γ ->
@@ -759,7 +729,6 @@ Proof with eauto 6 using num_occurs_in_typ.
   - inst_cofinites_for num_occurs_in_typ__all. intros. inst_cofinites_with Y0. 
     rewrite subst_typ_in_typ_open_typ_wrt_typ_fresh2...
 Qed.
-
 
 Lemma a_iuv_size_rename_tvar : forall Γ X Y A m, 
   ⊢ᵃʷ Γ ->
@@ -807,7 +776,6 @@ Proof with eauto using a_iuv_size.
   - dependent destruction H0...
     econstructor...
 Qed.
-
 
 Lemma a_exp_split_size_rename_tvar : forall Γ X Y e n,
   ⊢ᵃʷ Γ ->
@@ -869,7 +837,6 @@ Proof with eauto.
     apply rename_tvar_in_aworklist_a_wf_work...
 Qed.
 
-
 Lemma apply_conts_rename_tvar : forall cs A w X Y,
   apply_conts cs A w ->
   apply_conts ({`Y ᶜˢ/ₜ X} cs) ({`Y ᵗ/ₜ X} A) ({` Y ʷ/ₜ X} w).
@@ -925,14 +892,12 @@ Proof.
   intros. fsetdec.
 Qed.
 
-
 Corollary a_wf_typ_weaken_cons_twice : forall X1 X2 A Σ,
   Σ ᵗ⊢ᵃ A ->
   (X2, ⬒) :: (X1, ⬒) :: Σ ᵗ⊢ᵃ A.
 Proof.
   intros. apply a_wf_typ_weaken_cons. apply a_wf_typ_weaken_cons. auto.
 Qed.
-
 
 Lemma a_mono_typ_false_rename : forall Γ X Y A,
   ⊢ᵃʷ Γ ->
@@ -948,9 +913,7 @@ Proof with eauto.
   - apply notin_rename_tvar_in_aworklist...
 Qed.
 
-
 #[local] Hint Immediate a_wf_typ_weaken_cons_twice : core.
-
 
 Ltac fold_subst :=
   match goal with
@@ -966,7 +929,6 @@ Proof.
   intros. induction A; simpl; auto.
   destruct_eq_atom; auto.
 Qed. *)
-
 
 Theorem rename_tvar_in_a_wf_wwl_a_wl_red : forall Γ X Y,
   X <> Y ->
@@ -1286,9 +1248,7 @@ Proof with eauto.
     eapply a_wf_wwl_apply_contd in H0... 
 Qed.
 
-
 Print Assumptions rename_tvar_in_a_wf_wwl_a_wl_red.
-
 
 Theorem rename_tvar_in_a_wf_twl_a_wl_red : forall Γ X Y,
   X <> Y ->
@@ -1301,7 +1261,6 @@ Proof.
   apply a_wf_twl_a_wf_wwl; auto.
 Qed.
 
-
 Theorem rename_tvar_in_a_wf_wl_a_wl_red : forall Γ X Y,
   X <> Y ->
   ⊢ᵃʷₛ Γ ->
@@ -1313,14 +1272,12 @@ Proof.
   apply a_wf_wl_a_wf_wwl; auto.
 Qed.
 
-
 Lemma rename_var_dom_upper : forall Γ x y,
   dom (⌊ {y ᵃʷ/ₑᵥ x} Γ ⌋ᵃ) [<=] dom (⌊ Γ ⌋ᵃ) `union` singleton y.
 Proof.
   intros. induction Γ; simpl; try fsetdec.
   destruct ab; destruct_eq_atom; simpl; try fsetdec.
 Qed.
-
 
 Lemma fvar_in_aworklist'_awl_app : forall Γ1 Γ2,
   fvar_in_aworklist' (Γ2 ⧺ Γ1) [=] fvar_in_aworklist' Γ2 `union` fvar_in_aworklist' Γ1.
@@ -1352,7 +1309,6 @@ Proof.
   - rewrite <- awl_app_rename_var_comm... simpl. auto.
 Qed.
 
-
 Lemma fvar_in_wf_exp_upper : forall Γ e,
   ⌊ Γ ⌋ᵃ ᵉ⊢ᵃ e ->
   fvar_in_exp e [<=] dom (⌊ Γ ⌋ᵃ).
@@ -1379,7 +1335,6 @@ Proof.
   - simpl. rewrite IHa_wf_exp; eauto. fsetdec.
   - simpl. rewrite IHa_wf_exp; eauto. fsetdec.
 Qed.
-
 
 Lemma fvar_in_wf_conts_upper : forall Γ cs,
   ⌊ Γ ⌋ᵃ ᶜˢ⊢ᵃ cs ->
@@ -1426,7 +1381,6 @@ Proof.
   fsetdec.
 Qed.
 
-
 Ltac rewrite_fvar_in_aworklist :=
   match goal with
   | H : context [dom (awl_to_aenv ?Γ)] |- context [fvar_in_aworklist' ?Γ] =>
@@ -1443,7 +1397,6 @@ Proof.
   - rewrite IHΓ; auto.
     rewrite subst_exp_in_work_fresh_eq; auto.
 Qed.
-
 
 Lemma subst_typ_in_exp_rename_var : forall x y X e A,
   y ∉ fvar_in_exp e ->
@@ -1497,7 +1450,6 @@ Proof.
   - rewrite subst_typ_in_work_rename_var; auto.
 Qed.
 
-
 Lemma aworklist_subst_fvar_in_aworklist_2 : forall Γ X A Γ1 Γ2,
   aworklist_subst Γ X A Γ1 Γ2 ->
   fvar_in_aworklist' Γ2 [<=] fvar_in_aworklist' Γ.
@@ -1505,7 +1457,6 @@ Proof.
   intros. induction H; simpl; try fsetdec.
   rewrite fvar_in_aworklist'_awl_app in *. fsetdec.
 Qed.
-
 
 Lemma aworklist_subst_fvar_in_aworklist_1 : forall Γ X A Γ1 Γ2,
   aworklist_subst Γ X A Γ1 Γ2 ->
@@ -1578,7 +1529,6 @@ Proof.
     + simpl. destruct_eq_atom; auto.
     + simpl. destruct_eq_atom; auto.
 Qed.
-
 
 Lemma rename_var_in_conts_rev_eq : forall x y cs,
   y ∉ fvar_in_conts cs ->
@@ -1676,7 +1626,6 @@ Ltac rewrite_aworklist_rename_var_rev' :=
 Ltac rewrite_aworklist_rename_var_rev :=
   repeat rewrite_aworklist_rename_var_rev'.
 
-
 Ltac rewrite_aworklist_rename_var' :=
   match goal with
   | H : context [rename_var_in_aworklist _ _ (awl_app _ _)] |- _ =>
@@ -1704,7 +1653,6 @@ Proof.
     apply H1; auto.
 Qed.
 
-
 Lemma rename_var_a_mono_typ : forall Γ x y T,
   ⊢ᵃʷ Γ ->
   y ∉ fvar_in_aworklist' Γ ->
@@ -1715,7 +1663,6 @@ Proof.
   - constructor. apply rename_var_in_aworklist_tvar_bind_same; auto.
   - apply a_mono_typ__etvar. apply rename_var_in_aworklist_tvar_bind_same; auto.
 Qed.
-
 
 Lemma rename_var_a_wf_exp : forall Γ x y e,
   ⊢ᵃʷ Γ ->
@@ -1739,7 +1686,6 @@ Proof with eauto using rename_var_a_wf_typ.
     rewrite_env (⌊ {y ᵃʷ/ₑᵥ x} ( X ~ᵃ □ ;ᵃ Γ )⌋ᵃ)...
 Qed.
 
-
 Lemma rename_var_a_wf_conts : forall Γ x y cs,
   ⊢ᵃʷ Γ ->
   y ∉ fvar_in_aworklist' Γ ->
@@ -1755,7 +1701,6 @@ Proof with eauto using rename_var_a_wf_typ, rename_var_a_wf_exp.
   - intros. clear rename_var_a_wf_contd. dependent induction H1; simpl...
 Qed.
 
-
 Lemma rename_var_a_wf_work : forall Γ x y w,
   ⊢ᵃʷ Γ ->
   y ∉ fvar_in_aworklist' Γ ->
@@ -1764,7 +1709,6 @@ Lemma rename_var_a_wf_work : forall Γ x y w,
 Proof with eauto 10 using rename_var_a_wf_typ, rename_var_a_wf_exp, rename_var_a_wf_conts, rename_var_a_wf_contd.
   intros. dependent destruction H1; simpl in *...
 Qed.
-
 
 Lemma rename_var_a_wf_wwl : forall Γ x y,
   ⊢ᵃʷ Γ ->
@@ -1794,7 +1738,6 @@ Proof with eauto.
     apply rename_var_a_wf_work...
     rewrite fvar_in_aworklist_upper; auto... 
 Qed.
-
 
 Ltac create_fvar_in_awl_set :=
   match goal with 
@@ -2004,7 +1947,6 @@ Proof with eauto.
     auto_apply...
     eapply a_wf_wwl_apply_contd; eauto.
 Qed.
-
 
 Theorem rename_var_in_a_wf_twl_a_wl_red : forall Γ x y,
   ⊢ᵃʷₜ Γ ->

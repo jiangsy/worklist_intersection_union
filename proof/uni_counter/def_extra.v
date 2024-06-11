@@ -3,7 +3,6 @@ Require Import List.
 
 Require Import uni_counter.def_ott.
 
-
 Fixpoint ftvar_in_aworklist' (Γ_5:aworklist) : vars :=
   match Γ_5 with
   | aworklist_empty => empty
@@ -14,7 +13,6 @@ Fixpoint ftvar_in_aworklist' (Γ_5:aworklist) : vars :=
     end
   | (aworklist_cons_work Γ w) => (ftvar_in_aworklist' Γ) \u (ftvar_in_work w)
 end.
-
 
 Fixpoint fvar_in_aworklist' (Γ_5:aworklist) : vars :=
   match Γ_5 with

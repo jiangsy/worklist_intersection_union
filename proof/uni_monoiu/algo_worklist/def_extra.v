@@ -6,7 +6,6 @@ Require Import uni_monoiu.prop_ln.
 Require Export uni_monoiu.def_ott.
 Require Export uni_monoiu.decl_worklist.def.
 
-
 Fixpoint awl_app (Γ1 Γ2 : aworklist) :=
   match Γ1 with 
   | aworklist_empty => Γ2 
@@ -239,12 +238,6 @@ Inductive a_wl_red : aworklist -> Prop :=    (* defn a_wl_red *)
 Declare Scope aworklist_scope.
 Delimit Scope aworklist_scope with aworklist.
 Bind Scope aworklist_scope with aworklist.
-
-
-(* Notation " x ~ᵃ A ;ᵃ Γ " :=
-  (aworklist_cons_var Γ x (abind_var_typ A))
-      (at level 58, A at next level, right associativity) : aworklist_scope.
- *)
 
 Notation " X ~ᵃ b ; Γ " :=
     (aworklist_cons_var Γ X b)

@@ -4,7 +4,6 @@ Require Import Metalib.Metatheory.
 Require Import Lia.
 Require Import List.
 
-
 Require Import uni_monoiu.notations.
 Require Import uni_monoiu.prop_basic.
 Require Import uni_monoiu.decl.prop_basic.
@@ -79,7 +78,6 @@ Open Scope aworklist_scope.
 
 #[local] Hint Resolve wf_ss_uniq trans_typ_wf_ss trans_wl_wf_ss : core.
 
-
 Lemma wf_ss_etvar_bind_another : forall θ1 θ2 X T1 T2,
   wf_ss (θ2 ++ (X, dbind_typ T1) :: θ1) ->
   ⌈ θ1 ⌉ᵈ ᵗ⊢ᵈₘ T2 ->
@@ -116,7 +114,6 @@ Proof.
     + eapply IHd_mono_typ2; eauto.
       eapply wf_ss_etvar_bind_another; eauto.
 Qed.
-
 
 Corollary a_wf_wwl_two_etvar_neq1 : forall X1 X2 b1 b2 Γ1 Γ2,
   ⊢ᵃʷ (X2 ~ᵃ b2; Γ2 ⧺ X1 ~ᵃ b1; Γ1) ->
@@ -184,8 +181,6 @@ Proof.
       * dependent destruction H; auto.
 Qed.
 
-
-
 Lemma trans_typ_tvar_stvar_notin : forall θ X1 X2 T Tᵈ Γ1 Γ2 Ω b,
   b = □ \/ b = ■ ->
   (X2, b) :: θ ᵗ⊩ T ⇝ Tᵈ -> 
@@ -244,7 +239,6 @@ Proof with eauto using wf_ss_strengthen_etvar.
         apply trans_typ_weaken; auto.
         constructor; auto.
 Qed.
-
 
 Lemma trans_typ_etvar_subst_same_ss : forall θ Tᵃ Tᵈ X Aᵃ Aᵈ,
   wf_ss θ ->
@@ -311,7 +305,6 @@ Proof.
     + eapply trans_typ_etvar_subst_same_ss; eauto.
 Qed.
 
-
 Lemma trans_exp_etvar_subst_same_ss : forall θ Tᵃ Tᵈ X eᵃ eᵈ,
   wf_ss θ ->
   X ~ Tᵈ ∈ᵈ θ ->
@@ -325,7 +318,6 @@ Proof.
   apply trans_typ_lc_atyp in H2 as Hlct.
   eapply trans_exp_etvar_subst_same_ss'; eauto. 
 Qed.
-
 
 Lemma trans_conts_etvar_subst_same_ss : forall θ Tᵃ Tᵈ X csᵃ csᵈ,
   wf_ss θ ->
@@ -387,7 +379,6 @@ Proof.
   assert (θ ᵗ⊩ ` X ⇝ T') by eauto.
   unify_trans_typ. auto.
 Qed.
-
 
 Lemma aworklist_subst_transfer_same_dworklist_rev_exist': forall Γ1 Γ2 Ω θ X T Tᵈ,
   ⊢ᵃʷ (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) ->
@@ -523,7 +514,6 @@ Proof with eauto.
     + auto.
     + dependent destruction Hwf... 
 Qed.
-
 
 Lemma aworklist_subst_det' : forall Γ X T Γ1 Γ2 Γ3 Γ4,
   ⊢ᵃʷ Γ ->
@@ -720,7 +710,6 @@ Proof.
   intros. induction H1; try dependent destruction H; eauto.
 Qed.
 
-
 Lemma trans_apply_contd : forall θ cdᵃ cdᵈ Aᵃ Aᵈ Bᵃ Bᵈ wᵈ,
   θ ᶜᵈ⊩ cdᵃ ⇝ cdᵈ ->
   θ ᵗ⊩ Aᵃ ⇝ Aᵈ ->
@@ -730,7 +719,6 @@ Lemma trans_apply_contd : forall θ cdᵃ cdᵈ Aᵃ Aᵈ Bᵃ Bᵈ wᵈ,
 Proof.
   intros. induction H2; try dependent destruction H; eauto 6.
 Qed.
-
 
 Lemma trans_typ_subst : forall θ1 θ2 Aᵃ Aᵈ Bᵃ Bᵈ X b,
   b = □ \/ b = ■ ->
@@ -762,7 +750,6 @@ Proof with eauto.
       * simpl... apply trans_typ_weaken_cons...
 Qed.
 
-
 Fixpoint num_arrow_in_typ (A : typ) : nat :=
   match A with
   | typ_arrow A1 A2 => 1 + num_arrow_in_typ A1 + num_arrow_in_typ A2
@@ -782,13 +769,11 @@ Proof.
   - specialize (IHA1 n). specialize (IHA2 n). lia.
 Qed.
 
-
 Lemma d_more_num_arr_open_typ : forall A B,
   num_arrow_in_typ (A ᵗ^^ₜ B) >= num_arrow_in_typ A.
 Proof.
   intros. unfold open_typ_wrt_typ. eapply d_more_num_arr_open_typ_rec.
 Qed.
-
 
 Lemma d_same_num_arr_open_typ_rec_tvar : forall A X n,
   num_arrow_in_typ (open_typ_wrt_typ_rec n `X A) = num_arrow_in_typ A.
@@ -803,13 +788,11 @@ Proof.
   - specialize (IHA1 n). specialize (IHA2 n). lia.
 Qed.
 
-
 Lemma d_same_num_arr_open_typ_tvar : forall A X,
   num_arrow_in_typ (A ᵗ^ₜ X) = num_arrow_in_typ A.
 Proof.
   intros. unfold open_typ_wrt_typ. eapply d_same_num_arr_open_typ_rec_tvar.
 Qed.
-
 
 Lemma d_sub_more_num_arrow_in_mono_typ : forall Ψ A B,
   Ψ ⊢ A <: B ->
@@ -825,7 +808,6 @@ Proof.
     apply H4 in Hmono.
     specialize (d_more_num_arr_open_typ A T). lia.
 Qed.  
-
 
 Lemma trans_typ_etvar_s_in_more_num_arrow' : forall θ Aᵃ Aᵈ X T,
   wf_ss θ ->
@@ -851,7 +833,6 @@ Proof.
     lia.
 Qed.
 
-
 Lemma trans_typ_etvar_s_in_more_num_arrow : forall θ A1ᵃ A2ᵃ A1ᵈ A2ᵈ X T,
   X ~ T ∈ᵈ θ ->
   θ ᵗ⊩ (typ_arrow A1ᵃ A2ᵃ) ⇝ (typ_arrow A1ᵈ A2ᵈ) ->
@@ -863,7 +844,6 @@ Proof.
   - eapply trans_typ_etvar_s_in_more_num_arrow' in H0_; eauto. simpl. lia.
   - eapply trans_typ_etvar_s_in_more_num_arrow' in H0_0; eauto. simpl. lia.
 Qed.
-
 
 Lemma wf_ss_tvar_etvar : forall θ1 θ2 X T,
   wf_ss (θ2 ++ (X , dbind_tvar_empty) :: θ1) ->
@@ -895,7 +875,6 @@ Proof.
     unify_binds.
   - dependent destruction Hmono; auto.
 Qed.
-
 
 Lemma trans_typ_tvar_etvar : forall θ1 θ2 Aᵃ Aᵈ Tᵃ Tᵈ X,
   θ2 ++ (X , □) :: θ1 ᵗ⊩ Aᵃ ⇝ Aᵈ ->
@@ -937,7 +916,6 @@ Proof with eauto using wf_ss_tvar_etvar, d_mono_typ_strengthen_to_wf_env.
     eapply H1; eauto.
 Qed.
 
-
 Lemma trans_typ_tvar_etvar_cons : forall θ Aᵃ Aᵈ Tᵃ Tᵈ X,
   (X , □) :: θ ᵗ⊩ Aᵃ ⇝ Aᵈ ->
   ⌈ θ ⌉ᵈ ᵗ⊢ᵈₘ Tᵈ ->
@@ -948,14 +926,11 @@ Proof.
   eapply trans_typ_tvar_etvar; eauto.
 Qed.
 
-
 Ltac solve_right := 
   let Hcontra := fresh "Hcontra" in 
   right; intros Hcontra; inversion Hcontra.
 
-
 #[local] Hint Constructors a_mono_typ : core.
-
 
 Lemma a_mono_typ_dec : forall Γ A,
   ⊢ᵃʷ Γ ->
@@ -991,9 +966,7 @@ Qed.
 
 #[local] Hint Resolve d_wf_wl_wf_env trans_wl_ss_binds_etvar_a_wl : core.
 
-
 #[local] Hint Constructors a_mono_typ : core.
-
 
 Lemma trans_wl_d_mono_typ_a_mono_typ_no_etvar : forall θ Γ Ω T,
   ⊢ᵃʷ Γ ->
@@ -1018,8 +991,6 @@ Proof with auto.
     simpl; intuition.
     apply union_iff in H6. inversion H6; eauto.
 Qed.
-
-
 
 Lemma trans_wl_aworklist_trailing_sub_arrow : forall Γ Ω θ A1 A2 B1 B2,
   ⊢ᵃʷ Γ ->
@@ -1128,7 +1099,6 @@ Ltac solve_wf_typ :=
     eapply trans_wl_ss_wf_typ_d_wf_typ; eauto
   | _ : _ |- _ => idtac
   end.
-
 
 (* to short-cut the search of eauto  *)
 Lemma trans_typ_etvar_arrow : forall X1 X2 A1 A2 θ,

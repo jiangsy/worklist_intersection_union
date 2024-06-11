@@ -4,7 +4,6 @@ Require Import Metalib.Metatheory.
 Require Import Lia.
 Require Import List.
 
-
 Require Import uni_counter.notations.
 Require Import uni_counter.prop_basic.
 Require Import uni_counter.decl.prop_basic.
@@ -80,7 +79,6 @@ Open Scope aworklist_scope.
 
 #[local] Hint Resolve wf_ss_uniq trans_typ_wf_ss trans_wl_wf_ss : core.
 
-
 Lemma wf_ss_etvar_bind_another : forall θ1 θ2 X T1 T2,
   wf_ss (θ2 ++ (X, dbind_typ T1) :: θ1) ->
   ⌈ θ1 ⌉ᵈ ᵗ⊢ᵈₘ T2 ->
@@ -117,7 +115,6 @@ Proof.
     + eapply IHd_mono_typ2; eauto.
       eapply wf_ss_etvar_bind_another; eauto.
 Qed.
-
 
 Corollary a_wf_wwl_two_etvar_neq1 : forall X1 X2 b1 b2 Γ1 Γ2,
   ⊢ᵃʷ (X2 ~ᵃ b2; Γ2 ⧺ X1 ~ᵃ b1; Γ1) ->
@@ -185,8 +182,6 @@ Proof.
       * dependent destruction H; auto.
 Qed.
 
-
-
 Lemma trans_typ_tvar_stvar_notin : forall θ X1 X2 T Tᵈ Γ1 Γ2 Ω b,
   b = □ \/ b = ■ ->
   (X2, b) :: θ ᵗ⊩ T ⇝ Tᵈ -> 
@@ -245,7 +240,6 @@ Proof with eauto using wf_ss_strengthen_etvar.
         apply trans_typ_weaken; auto.
         constructor; auto.
 Qed.
-
 
 Lemma trans_typ_etvar_subst_same_ss : forall θ Tᵃ Tᵈ X Aᵃ Aᵈ,
   wf_ss θ ->
@@ -312,7 +306,6 @@ Proof.
     + eapply trans_typ_etvar_subst_same_ss; eauto.
 Qed.
 
-
 Lemma trans_exp_etvar_subst_same_ss : forall θ Tᵃ Tᵈ X eᵃ eᵈ,
   wf_ss θ ->
   X ~ Tᵈ ∈ᵈ θ ->
@@ -326,7 +319,6 @@ Proof.
   apply trans_typ_lc_atyp in H2 as Hlct.
   eapply trans_exp_etvar_subst_same_ss'; eauto. 
 Qed.
-
 
 Lemma trans_conts_etvar_subst_same_ss : forall θ Tᵃ Tᵈ X csᵃ csᵈ,
   wf_ss θ ->
@@ -388,7 +380,6 @@ Proof.
   assert (θ ᵗ⊩ ` X ⇝ T') by eauto.
   unify_trans_typ. auto.
 Qed.
-
 
 Lemma aworklist_subst_transfer_same_dworklist_rev_exist': forall Γ1 Γ2 Ω θ X T Tᵈ,
   ⊢ᵃʷ (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) ->
@@ -525,7 +516,6 @@ Proof with eauto.
     + dependent destruction Hwf... 
 Qed.
 
-
 Lemma aworklist_subst_det' : forall Γ X T Γ1 Γ2 Γ3 Γ4,
   ⊢ᵃʷ Γ ->
   aworklist_subst Γ X T Γ1 Γ2 ->
@@ -544,7 +534,6 @@ Proof.
     eapply a_wf_wwl_tvar_notin_remaining in Hwf; eauto.
 Qed.
 
-
 Lemma aworklist_subst_det : forall Γ X T Γ1 Γ2 Γ3 Γ4,
   ⊢ᵃʷₛ Γ ->
   aworklist_subst Γ X T Γ1 Γ2 ->
@@ -556,7 +545,6 @@ Proof.
 Qed.
 
 #[local] Hint Resolve a_wf_wl_a_wf_wwl : core.
-
 
 Corollary aworklist_subst_transfer_same_dworklist_rev_exist: forall Γ Ω θ X T Tᵈ,
   ⊢ᵃʷₛ Γ ->
@@ -576,7 +564,6 @@ Proof.
   destruct H0 as [Γ' [Γ'' Heq]]. rewrite <- Heq in *. clear Heq.
   eapply aworklist_subst_transfer_same_dworklist_rev_exist'; eauto.
 Qed.
-
 
 Corollary aworklist_subst_transfer_same_dworklist_rev: forall Γ Ω θ X T Tᵈ Γ1 Γ2,
   ⊢ᵃʷₛ Γ ->
@@ -599,7 +586,6 @@ Proof.
   eapply aworklist_subst_target_is_etvar; eauto.
 Qed.
 
-
 Inductive aworklist_ord : aworklist -> Prop :=
   | awl_t_o__empty : aworklist_ord aworklist_empty
   | awl_t_o__work : forall Γ w, aworklist_ord (w ⫤ᵃ Γ)
@@ -607,16 +593,13 @@ Inductive aworklist_ord : aworklist -> Prop :=
   | awl_t_o__tvar : forall Γ X, aworklist_ord (X ~ᵃ □ ;ᵃ Γ)
   | awl_t_o__stvar : forall Γ X, aworklist_ord (X ~ᵃ ■ ;ᵃ Γ).
 
-
 Inductive aworklist_trailing_etvar : aworklist -> aworklist -> Prop :=
   | awl_t_e__base : forall Γ0, aworklist_ord Γ0 -> aworklist_trailing_etvar Γ0 Γ0
   | awl_t_e__etvar : forall Γ0 Γ X, aworklist_trailing_etvar Γ0 Γ -> aworklist_trailing_etvar Γ0 
     (aworklist_cons_var Γ X abind_etvar_empty).
 
-
 #[local] Hint Constructors aworklist_ord : core.
 #[local] Hint Constructors aworklist_trailing_etvar : core.
-
 
 Lemma a_wf_twl_aworklist_trailing_etvar_total : forall Γ,
   ⊢ᵃʷₜ Γ -> exists Γ0, aworklist_trailing_etvar Γ0 Γ.
@@ -625,7 +608,6 @@ Proof.
   - destruct IHa_wf_twl as [Γ0].
     exists Γ0; eauto.
 Qed.
-
 
 Lemma a_wf_wl_aworklist_trailing_etvar_total : forall Γ,
   ⊢ᵃʷₛ Γ -> exists Γ0, aworklist_trailing_etvar Γ0 Γ.
@@ -636,13 +618,11 @@ Proof.
     exists Γ0; eauto.
 Qed.
 
-
 Lemma aworklist_trailing_etvar_reduce_ord : forall Γ0 Γ,
   aworklist_trailing_etvar Γ0 Γ -> Γ0 ⟶ᵃʷ⁎⋅ -> Γ ⟶ᵃʷ⁎⋅.
 Proof.
   intros. induction H; auto.
 Qed.
-
 
 Lemma aworklist_trailing_etvar_trans : forall Γ0 Γ Ω θ θ',
   aworklist_trailing_etvar Γ0 Γ -> 
@@ -656,7 +636,6 @@ Proof.
     destruct H0 as [Θ'']; eauto.
 Qed.
 
-
 Lemma aworklist_trailing_base_ord : forall Γ0 Γ,
   aworklist_trailing_etvar Γ0 Γ -> 
   aworklist_ord Γ0.
@@ -664,7 +643,6 @@ Proof.
   intros. 
   induction H; eauto; intros.
 Qed.
-
 
 Lemma a_wf_twl_rm_trailing_etvar : forall Γ0 Γ,
   aworklist_trailing_etvar Γ0 Γ -> 
@@ -675,7 +653,6 @@ Proof.
   - dependent destruction H0; eauto.
 Qed.
 
-
 Lemma a_wf_wl_rm_trailing_etvar : forall Γ0 Γ,
   aworklist_trailing_etvar Γ0 Γ -> 
   ⊢ᵃʷₛ Γ ->
@@ -684,7 +661,6 @@ Proof.
   intros. induction H; eauto.
   - apply a_wf_wl_weaken_cons in H0; eauto.
 Qed.
-
 
 Inductive aworklist_trailing_sub : aworklist -> aworklist -> Prop :=
   | awl_t_s__base : forall Γ0, aworklist_trailing_sub Γ0 Γ0
@@ -697,7 +673,6 @@ Inductive aworklist_trailing_sub : aworklist -> aworklist -> Prop :=
       aworklist_trailing_sub Γ0 (aworklist_cons_work Γ (work_sub T1 T2)).
 
 #[local] Hint Constructors aworklist_trailing_sub : core.
-
 
 Lemma a_wl_red_aworklist_trailing_sub_weaken : forall Γ0 Γ,
   aworklist_trailing_sub Γ0 Γ ->
@@ -726,7 +701,6 @@ Proof.
   - inversion H0.
 Qed.
 
-
 Lemma trans_apply_conts : forall θ csᵃ csᵈ Aᵃ Aᵈ wᵈ,
   θ ᶜˢ⊩ csᵃ ⇝ csᵈ ->
   θ ᵗ⊩ Aᵃ ⇝ Aᵈ ->
@@ -735,7 +709,6 @@ Lemma trans_apply_conts : forall θ csᵃ csᵈ Aᵃ Aᵈ wᵈ,
 Proof.
   intros. induction H1; try dependent destruction H; eauto.
 Qed.
-
 
 Lemma trans_apply_contd : forall θ cdᵃ cdᵈ Aᵃ Aᵈ Bᵃ Bᵈ wᵈ,
   θ ᶜᵈ⊩ cdᵃ ⇝ cdᵈ ->
@@ -747,7 +720,6 @@ Proof.
   intros. induction H2; try dependent destruction H; eauto 6.
   erewrite <- trans_typ_iu_size in H3; eauto.
 Qed.
-
 
 Lemma trans_typ_subst : forall θ1 θ2 Aᵃ Aᵈ Bᵃ Bᵈ X b,
   b = □ \/ b = ■ ->
@@ -823,7 +795,6 @@ Proof.
   intros. unfold open_typ_wrt_typ. eapply d_same_num_arr_open_typ_rec_tvar.
 Qed.
 
-
 Lemma d_sub_more_num_arrow_in_mono_typ : forall Ψ A B,
   Ψ ⊢ A <: B ->
   (Ψ ᵗ⊢ᵈₘ A -> num_arrow_in_typ A >= num_arrow_in_typ B) /\
@@ -838,7 +809,6 @@ Proof.
     apply H6 in Hmono.
     specialize (d_more_num_arr_open_typ A T). lia.
 Qed.  
-
 
 Lemma trans_typ_etvar_s_in_more_num_arrow' : forall θ Aᵃ Aᵈ X T,
   wf_ss θ ->
@@ -864,7 +834,6 @@ Proof.
     lia.
 Qed.
 
-
 Lemma trans_typ_etvar_s_in_more_num_arrow : forall θ A1ᵃ A2ᵃ A1ᵈ A2ᵈ X T,
   X ~ T ∈ᵈ θ ->
   θ ᵗ⊩ (typ_arrow A1ᵃ A2ᵃ) ⇝ (typ_arrow A1ᵈ A2ᵈ) ->
@@ -876,7 +845,6 @@ Proof.
   - eapply trans_typ_etvar_s_in_more_num_arrow' in H0_; eauto. simpl. lia.
   - eapply trans_typ_etvar_s_in_more_num_arrow' in H0_0; eauto. simpl. lia.
 Qed.
-
 
 Lemma wf_ss_tvar_etvar : forall θ1 θ2 X T,
   wf_ss (θ2 ++ (X , dbind_tvar_empty) :: θ1) ->
@@ -908,7 +876,6 @@ Proof.
     unify_binds.
   - dependent destruction Hmono; auto.
 Qed.
-
 
 Lemma trans_typ_tvar_etvar : forall θ1 θ2 Aᵃ Aᵈ Tᵃ Tᵈ X,
   θ2 ++ (X , □) :: θ1 ᵗ⊩ Aᵃ ⇝ Aᵈ ->
@@ -950,7 +917,6 @@ Proof with eauto using wf_ss_tvar_etvar, d_mono_typ_strengthen_to_wf_env.
     eapply H1; eauto.
 Qed.
 
-
 Lemma trans_typ_tvar_etvar_cons : forall θ Aᵃ Aᵈ Tᵃ Tᵈ X,
   (X , □) :: θ ᵗ⊩ Aᵃ ⇝ Aᵈ ->
   ⌈ θ ⌉ᵈ ᵗ⊢ᵈₘ Tᵈ ->
@@ -961,14 +927,11 @@ Proof.
   eapply trans_typ_tvar_etvar; eauto.
 Qed.
 
-
 Ltac solve_right := 
   let Hcontra := fresh "Hcontra" in 
   right; intros Hcontra; inversion Hcontra.
 
-
 #[local] Hint Constructors a_mono_typ : core.
-
 
 Lemma a_mono_typ_dec : forall Γ A,
   ⊢ᵃʷ Γ ->
@@ -1004,9 +967,7 @@ Qed.
 
 #[local] Hint Resolve d_wf_wl_wf_env trans_wl_ss_binds_etvar_a_wl : core.
 
-
 #[local] Hint Constructors a_mono_typ : core.
-
 
 Lemma trans_wl_d_mono_typ_a_mono_typ_no_etvar : forall θ Γ Ω T,
   ⊢ᵃʷ Γ ->
@@ -1031,7 +992,6 @@ Proof with auto.
     simpl; intuition.
     apply union_iff in H6. inversion H6; eauto.
 Qed.
-
 
 Lemma trans_wl_aworklist_trailing_sub_arrow : forall Γ Ω θ A1 A2 B1 B2,
   ⊢ᵃʷ Γ ->
@@ -1141,7 +1101,6 @@ Ltac solve_wf_typ :=
   | _ : _ |- _ => idtac
   end.
 
-
 (* to short-cut the search of eauto  *)
 Lemma trans_typ_etvar_arrow : forall X1 X2 A1 A2 θ,
   wf_ss ((X2, dbind_typ A2) :: (X1, dbind_typ A1) :: θ) ->
@@ -1185,7 +1144,6 @@ Ltac solve_awl_trailing_etvar :=
     end
   end.
 
-
 Lemma d_iuv_size_mono : forall Ψ A,
   Ψ ᵗ⊢ᵈₘ A -> 
   d_iuv_size Ψ A 0.
@@ -1194,7 +1152,6 @@ Proof.
   replace 0 with (0 + 0); eauto using d_iuv_size.
 Qed.
 
-
 Lemma a_iuv_size_mono : forall Σ A,
   Σ ᵗ⊢ᵃₘ A -> 
   a_iuv_size Σ A 0.
@@ -1202,7 +1159,6 @@ Proof.
   intros. induction H; simpl; eauto using a_iuv_size.
   replace 0 with (0 + 0); eauto using a_iuv_size.
 Qed.
-
 
 Lemma num_occurs_in_typ_not_in_a_wf : forall X A,
   lc_typ A ->
@@ -1215,7 +1171,6 @@ Proof.
   inst_cofinites_for num_occurs_in_typ__all. intros.
   eapply H0. rewrite ftvar_in_typ_open_typ_wrt_typ_upper; eauto.
 Qed.
-
 
 Lemma trans_typ_num_occurs_in_typ : forall Γ Ω θ X Aᵃ Aᵈ n,
   ⊢ᵃʷ Γ ->
@@ -1237,7 +1192,6 @@ Proof.
     eapply H1 with (Γ := Y ~ᵃ □ ;ᵃ Γ); eauto.
     intros. destruct_binds; eauto.
 Qed.
-
 
 Lemma trans_typ_iuv_size : forall Γ Ω θ Aᵃ Aᵈ n,
   ⊢ᵃʷ Γ ->
@@ -1263,7 +1217,6 @@ Proof.
       apply trans_wl_wf_ss in Htranswl.
       apply wf_ss_ftvar_in_typ_upper in H8; auto. fsetdec.
 Qed.
-
 
 Lemma trans_exp_exp_split_size : forall Γ Ω θ eᵃ eᵈ n,
   ⊢ᵃʷ Γ ->
@@ -1301,7 +1254,6 @@ Proof.
     eapply trans_typ_iuv_size in H0; eauto.
     eauto using a_exp_split_size.
 Qed.
-
 
 Theorem a_wl_red_completeness: forall Ω Γ,
    Ω ⟶ᵈʷ⁎⋅ -> ⊢ᵃʷₛ Γ -> transfer Γ Ω  -> Γ ⟶ᵃʷ⁎⋅.

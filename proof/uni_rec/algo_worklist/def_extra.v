@@ -6,7 +6,6 @@ Require Import uni_rec.prop_ln.
 Require Export uni_rec.def_ott.
 Require Export uni_rec.decl_worklist.def.
 
-
 Fixpoint awl_app (Γ1 Γ2 : aworklist) :=
   match Γ1 with 
     | aworklist_empty => Γ2 
@@ -42,8 +41,7 @@ Inductive aworklist_subst : aworklist -> typvar -> typ -> aworklist -> aworklist
       aworklist_subst (awl_app Γ2 (aworklist_cons_var (aworklist_cons_var Γ1 Y abind_etvar_empty) X abind_etvar_empty)) X A Γ'1 Γ'2 ->
       Y <> X ->
       Y `in` ftvar_in_typ A -> 
-      aworklist_subst (aworklist_cons_var (awl_app Γ2 (aworklist_cons_var Γ1 X abind_etvar_empty)) Y (abind_etvar_empty)) X A Γ'1 Γ'2
-.
+      aworklist_subst (aworklist_cons_var (awl_app Γ2 (aworklist_cons_var Γ1 X abind_etvar_empty)) Y (abind_etvar_empty)) X A Γ'1 Γ'2.
     
 
 (* defns Jaworklist_reduction *)
@@ -72,9 +70,7 @@ Inductive a_wl_red : aworklist -> Prop :=    (* defn a_wl_red *)
       a_wl_red (aworklist_cons_work (aworklist_cons_work Γ (work_sub A1 B1)) (work_sub B2 A2)) ->
       a_wl_red (aworklist_cons_work Γ (work_sub (typ_arrow B1 B2) (typ_arrow A1 A2)))
   | a_wl_red__sub_alll : forall (L:vars) (Γ:aworklist) (B1 A1:typ),
-      neq_all A1 ->
-      neq_intersection A1 ->
-      neq_union A1 ->
+      a_wneq_all (awl_to_aenv Γ) A1 ->
       ( forall X , X \notin  L  -> a_wl_red (aworklist_cons_work (aworklist_cons_var Γ X abind_etvar_empty) (work_sub  ( open_typ_wrt_typ B1 (typ_var_f X) )  A1)) )  ->
       a_wl_red (aworklist_cons_work Γ (work_sub (typ_all B1) A1))
   | a_wl_red__sub_all : forall (L:vars) (Γ:aworklist) (B1 A1:typ),
@@ -263,7 +259,6 @@ Inductive a_wl_red : aworklist -> Prop :=    (* defn a_wl_red *)
 Declare Scope aworklist_scope.
 Delimit Scope aworklist_scope with aworklist.
 Bind Scope aworklist_scope with aworklist.
-
 
 Notation " X ~ᵃ b ; Γ " :=
   (aworklist_cons_var Γ X b)

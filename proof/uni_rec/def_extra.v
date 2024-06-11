@@ -3,7 +3,6 @@ Require Import List.
 
 Require Import uni_rec.def_ott.
 
-
 Fixpoint ftvar_in_aworklist' (Γ_5:aworklist) : vars :=
   match Γ_5 with
   | aworklist_empty => empty
@@ -14,7 +13,6 @@ Fixpoint ftvar_in_aworklist' (Γ_5:aworklist) : vars :=
     end
   | (aworklist_cons_work Γ w) => (ftvar_in_aworklist' Γ) \u (ftvar_in_work w)
 end.
-
 
 Fixpoint fvar_in_aworklist' (Γ_5:aworklist) : vars :=
   match Γ_5 with
@@ -41,8 +39,7 @@ Inductive apply_conts : conts -> typ -> work -> Prop :=
   | apply_conts__intersectioninfrcdcons : forall A1 A2 cs,
       apply_conts (conts_intersectioninfrcdcons A1 cs) A2 (work_intersectioninfrcdcons A1 A2 cs)
   | apply_conts__sub : forall A B,
-      apply_conts (conts_sub B) A (work_sub A B)
-.
+      apply_conts (conts_sub B) A (work_sub A B).
 
 Inductive apply_contd : contd -> typ -> typ -> work -> Prop :=
   | apply_contd__infapp : forall A B e cs,
@@ -52,5 +49,4 @@ Inductive apply_contd : contd -> typ -> typ -> work -> Prop :=
   | apply_contd__unioninfabs : forall B1 B2 C1 C2 cd,
       apply_contd (contd_unioninfabs B1 C1 cd) B2 C2 (work_unioninfabs B1 C1 B2 C2 cd)
   | apply_conted__infproj : forall A B C cs,
-      apply_contd (contd_infproj C cs) A B (work_infproj A B C cs)
-.
+      apply_contd (contd_infproj C cs) A B (work_infproj A B C cs).

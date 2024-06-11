@@ -4,7 +4,6 @@ Require Import Lia.
 Require Import Metalib.Metatheory.
 Require Import LibTactics.
 
-
 Require Import uni_counter.notations.
 Require Import uni_counter.decl.prop_basic.
 Require Import uni_counter.ltac_utils.
@@ -52,8 +51,6 @@ Proof with eauto.
       eapply d_wf_typ_rename_var with (x:=x); eauto.
 Qed.
 
-
-
 Lemma d_wf_env_rename_var : forall Ψ1 Ψ2 x y A,
   ⊢ᵈ Ψ2 ++ (x , dbind_typ A) :: Ψ1 ->
   y ∉ dom (Ψ2 ++ (x , dbind_typ A) :: Ψ1) ->
@@ -69,8 +66,6 @@ Proof with eauto.
       constructor; auto.
 Qed.
 
-
-
 Lemma subst_exp_in_exp_refl : forall x e,
   {exp_var_f x ᵉ/ₑ x} e = e.
 Proof.
@@ -82,7 +77,6 @@ Proof.
     + rewrite IHe. auto.
     + rewrite IHe. auto.
 Qed.
-
 
 Theorem d_sub_rename_var : forall Ψ1 Ψ2 x y A B C,  
   Ψ2 ++ (x, dbind_typ C) :: Ψ1 ⊢ A <: B ->
@@ -148,7 +142,6 @@ Proof with eauto using d_wf_typ_rename_var, d_wf_tenv_rename_var, d_sub_rename_v
     rewrite_env ((x0 ~ dbind_typ A1 ++ Ψ2) ++ (y, dbind_typ B) :: Ψ1)...
 Qed.
 
-
 Theorem d_chk_inf_rename_var : forall Ψ1 Ψ2 x y e A B mode, 
   d_chk_inf (Ψ2 ++ (x ,dbind_typ B) :: Ψ1) e mode A ->
   y ∉ (dom (Ψ2 ++ Ψ1)) ->
@@ -168,7 +161,6 @@ Proof.
   intros. rewrite_env (nil ++ y ~ (dbind_typ B) ++ Ψ).
   eapply  d_chk_inf_rename_var; eauto.
 Qed.
-
 
 Lemma d_wf_typ_rename_dtvar : forall Ψ1 Ψ2 X Y b A,
   b = □ \/ b = ■ ->
@@ -208,7 +200,6 @@ Proof with auto.
     apply binds_map_2 with (f:=subst_typ_in_dbind `Y X) in H3...
 Qed.
 
-
 Theorem d_sub_rename_dtvar : forall Ψ1 Ψ2 X Y b A B, 
   b = □ \/ b = ■  ->
   Ψ2 ++ (X, b) :: Ψ1 ⊢ A <: B ->
@@ -237,7 +228,6 @@ Proof with eauto using d_wf_typ_rename_dtvar, d_mono_typ_rename_tvar, d_wf_env_r
     + apply d_mono_typ_rename_tvar... apply d_wf_env_uniq. eapply d_sub_d_wf_env...
     + rewrite <- subst_typ_in_typ_open_typ_wrt_typ...
 Qed.
-
 
 Lemma subst_typ_in_exp_refl_eq : forall X e,
   subst_typ_in_exp (`X) X e = e.
@@ -286,7 +276,6 @@ Proof with eauto using d_wf_typ_rename_dtvar, d_wf_tenv_rename_tvar.
     replace (typ_all ({` Y ᵗ/ₜ X} A)) with ({` Y ᵗ/ₜ X} (typ_all A)) by auto...
 Qed.
 
-
 Lemma ftvar_in_d_wf_typ_upper : forall Ψ A,
   d_wf_typ Ψ A ->
   ftvar_in_typ A [<=] dom Ψ.
@@ -319,7 +308,6 @@ Proof with eauto.
       rewrite ftvar_in_d_wf_typ_upper...
   - destruct H; solve_false.
 Qed.
-
 
 Theorem d_chk_inf_rename_tvar : forall Ψ1 Ψ2 X Y e A mode, 
   d_chk_inf (Ψ2 ++ (X, □) :: Ψ1) e mode A ->
