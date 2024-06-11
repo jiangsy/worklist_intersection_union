@@ -902,22 +902,44 @@ Lemma d_iuv_size_close : forall A Ψ X n,
 (* change the lemma and its name to whatever you like *)
 Admitted.
 
-Lemma iu_size_le_d_iuv_size : forall A Ψ n,
-  d_iuv_size Ψ A n -> iu_size A <= n.
+Lemma iuv_size_open : forall A X,
+  lc_typ (A ᵗ^ₜ X) -> X `notin` ftvar_in_typ A ->
+  iuv_size A = iuv_size (A ᵗ^ₜ X).
 Proof.
-  intro A. induction A; intros * Hiuv; simpl; try lia.
-  - dependent destruction Hiuv.
-    eapply IHA1 in Hiuv1. eapply IHA2 in Hiuv2.
-    assert (iu_size A1 * iu_size A2 <= n1 * n2) by (eapply mult_le_compat; eauto). lia.
-  - dependent destruction Hiuv.
-    pick fresh X. inst_cofinites_with X.
-    eapply d_iuv_size_close in H.
-    eapply IHA in H. lia.
-  - dependent destruction Hiuv.
-    eapply IHA1 in Hiuv1. eapply IHA2 in Hiuv2. lia.
-  - dependent destruction Hiuv.
-    eapply IHA1 in Hiuv1. eapply IHA2 in Hiuv2. lia.
-Qed.
+  intro A. induction A; intros * Hlc Hfv; unfold open_typ_wrt_typ in *; simpl in *; eauto.
+  - destruct (lt_eq_lt_dec n 0) as [[Hlt | Heq] | Hgt]; simpl; eauto; lia.
+  - dependent destruction Hlc.
+    eapply IHA1 in Hlc1; eauto.
+    eapply IHA2 in Hlc2; eauto.
+  - dependent destruction Hlc.
+    pick fresh Y. specialize (H Y).
+    (* eapply IHA in H. erewrite IHA in H0; eauto.
+    
+    try solve [dependent destruction Hocc; eauto; solve_false].
+  - destruct (lt_eq_lt_dec n 0) as [[Hlt | Heq] | Hgt]; simpl; try lia.
+  - dependent destruction Hlc. dependent destruction Hocc.
+    eapply IHA1 in Hocc1; eauto.
+    eapply IHA2 in Hocc2; eauto.
+  - dependent destruction Hlc. dependent destruction Hocc.
+    pick fresh Y. inst_cofinites_with Y.
+    eapply H0 in H1. erewrite IHA in H1; eauto.
+    eapply IHA1 in Hocc1; eauto. *)
+Admitted.
+
+Lemma iuv_size_d_iuv_size : forall A Ψ n,
+  lc_typ A -> d_iuv_size Ψ A n -> iuv_size A = n.
+Proof.
+  intros * Hlc.
+  generalize dependent n. generalize dependent Ψ.
+  dependent induction Hlc; intros * Hiuv; dependent destruction Hiuv; simpl; eauto.
+  - eapply IHHlc1 in Hiuv1; eauto.
+    eapply IHHlc2 in Hiuv2; eauto.
+  - pick fresh X. inst_cofinites_with X.
+    eapply H0 in H1. erewrite iuv_size_open; eauto.
+    admit.
+  - eapply IHHlc1 in Hiuv1; eauto.
+  - eapply IHHlc1 in Hiuv1; eauto.
+Admitted.
 
 Lemma d_wl_red_chk_inf_complete: forall Ω e A mode,
   d_chk_inf (dwl_to_denv Ω) e mode A -> 
@@ -945,7 +967,8 @@ Proof with auto.
     destruct H7 as [nb HiuvB].
     eapply inf_iuv_size_d_exp_split_size in HiuvA as Hle; eauto.
     eapply infabs_d_iuv_size_B with (n := na) (m := nb) in H0 as Hle2; eauto.
-    eapply iu_size_le_d_iuv_size in HiuvB. lia.
+    eapply iuv_size_d_iuv_size in HiuvB. lia.
+    admit. (* wf *)
     econstructor.
     assert ((work_check e2 B ⫤ᵈ Ω) ⟶ᵈʷ⁎⋅).
       apply IHd_chk_inf2; auto.

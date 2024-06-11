@@ -897,7 +897,7 @@ Proof.
   intros. dependent destruction H3; destruct_trans;
     try unify_trans_contd; try unify_trans_conts; 
     try repeat unify_trans_typ; try unify_trans_exp; try constructor.
-  erewrite <- trans_typ_iu_size; eauto.
+  erewrite <- trans_typ_iuv_size; eauto.
 Qed.
 
 

@@ -745,7 +745,7 @@ Lemma trans_apply_contd : forall θ cdᵃ cdᵈ Aᵃ Aᵈ Bᵃ Bᵈ wᵈ,
   exists wᵃ, apply_contd cdᵃ Aᵃ Bᵃ wᵃ /\ θ ʷ⊩ wᵃ ⇝ wᵈ.
 Proof.
   intros. induction H2; try dependent destruction H; eauto 6.
-  erewrite <- trans_typ_iu_size in H3; eauto.
+  erewrite <- trans_typ_iuv_size in H3; eauto.
 Qed.
 
 

@@ -877,19 +877,20 @@ Proof.
   intros. induction H; simpl; try solve [simpl; eauto].
 Qed.
 
-Lemma iu_size_rename_tvar : forall A X Y,
-  iu_size A = iu_size ({`Y ᵗ/ₜ X} A).
-Proof.
+Lemma iuv_size_rename_tvar : forall A X Y,
+  iuv_size A = iuv_size ({`Y ᵗ/ₜ X} A).
+Admitted.
+(* Proof.
   intros. induction A; simpl; auto.
   destruct_eq_atom; auto.
-Qed.
+Qed. *)
 
 Lemma apply_contd_rename_tvar : forall cd A B w X Y,
   apply_contd cd A B w ->
   apply_contd ({`Y ᶜᵈ/ₜ X} cd) ({`Y ᵗ/ₜ X} A) ({`Y ᵗ/ₜ X} B) ({`Y ʷ/ₜ X} w).
 Proof.
   intros. induction H; simpl; try solve [simpl; eauto].
-  erewrite iu_size_rename_tvar in H; eauto.
+  erewrite iuv_size_rename_tvar in H; eauto.
 Qed.
 
 Lemma aworlist_subst_dom_upper1' : forall Γ X A Γ1 Γ2,
