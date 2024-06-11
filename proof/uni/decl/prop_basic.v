@@ -27,7 +27,15 @@ Proof.
   intros; induction H; auto.
 Qed.
 
+
 #[global] Hint Resolve d_wf_typ_lc_typ d_mono_typ_lc : core.
+
+Lemma d_mono_typ_d_wneq_all : forall Ψ A,
+  d_mono_typ Ψ A ->
+  d_wneq_all Ψ A.  
+Proof.
+  intros. induction H; eauto.
+Qed.
 
 Lemma d_wf_typ_stvar_tvar : forall Ψ1 Ψ2 X A,
   Ψ2 ++ (X ~ ■) ++ Ψ1 ᵗ⊢ᵈ A ->

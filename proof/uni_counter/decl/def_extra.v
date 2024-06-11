@@ -5,6 +5,62 @@ Require Import List.
 Require Import uni_counter.prop_ln.
 Require Export uni_counter.def_ott.
 
+Inductive d_sub : denv -> typ -> typ -> Prop :=    (* defn d_sub *)
+ | d_sub__top : forall (Ψ:denv) (A:typ),
+     d_wf_env Ψ ->
+     d_wf_typ Ψ A ->
+     d_sub Ψ A typ_top
+ | d_sub__bot : forall (Ψ:denv) (B:typ),
+     d_wf_env Ψ ->
+     d_wf_typ Ψ B ->
+     d_sub Ψ typ_bot B
+ | d_sub__unit : forall (Ψ:denv),
+     d_wf_env Ψ ->
+     d_sub Ψ typ_unit typ_unit
+ | d_sub__tvar : forall (Ψ:denv) (X:typvar),
+     d_wf_env Ψ ->
+     d_wf_typ Ψ (typ_var_f X) ->
+     d_sub Ψ (typ_var_f X) (typ_var_f X)
+ | d_sub__arrow : forall (Ψ:denv) (A1 A2 B1 B2:typ),
+     d_sub Ψ B1 A1 ->
+     d_sub Ψ A2 B2 ->
+     d_sub Ψ (typ_arrow A1 A2) (typ_arrow B1 B2)
+ | d_sub__all : forall (L:vars) (Ψ:denv) (A B:typ),
+      ( forall X , X \notin  L  -> s_in X  ( open_typ_wrt_typ A (typ_var_f X) )  )  ->
+      ( forall X , X \notin  L  -> s_in X  ( open_typ_wrt_typ B (typ_var_f X) )  )  ->
+      ( forall X , X \notin  L  -> d_sub  ( X ~ dbind_stvar_empty  ++  Ψ )   ( open_typ_wrt_typ A (typ_var_f X) )   ( open_typ_wrt_typ B (typ_var_f X) )  )  ->
+     d_sub Ψ (typ_all A) (typ_all B)
+ | d_sub__alll : forall (L:vars) (Ψ:denv) (A B T:typ),
+     d_wneq_all Ψ B ->
+      ( forall X , X \notin  L  -> s_in X  ( open_typ_wrt_typ A (typ_var_f X) )  )  ->
+     d_mono_typ Ψ T ->
+     d_sub Ψ  (open_typ_wrt_typ  A   T )  B ->
+     d_sub Ψ (typ_all A) B
+ | d_sub__intersection1 : forall (Ψ:denv) (A B1 B2:typ),
+     d_sub Ψ A B1 ->
+     d_sub Ψ A B2 ->
+     d_sub Ψ A (typ_intersection B1 B2)
+ | d_sub__intersection2 : forall (Ψ:denv) (A1 A2 B:typ),
+     d_sub Ψ A1 B ->
+     d_wf_typ Ψ A2 ->
+     d_sub Ψ (typ_intersection A1 A2) B
+ | d_sub__intersection3 : forall (Ψ:denv) (A1 A2 B:typ),
+     d_sub Ψ A2 B ->
+     d_wf_typ Ψ A1 ->
+     d_sub Ψ (typ_intersection A1 A2) B
+ | d_sub__union1 : forall (Ψ:denv) (A B1 B2:typ),
+     d_sub Ψ A B1 ->
+     d_wf_typ Ψ B2 ->
+     d_sub Ψ A (typ_union B1 B2)
+ | d_sub__union2 : forall (Ψ:denv) (A B1 B2:typ),
+     d_sub Ψ A B2 ->
+     d_wf_typ Ψ B1 ->
+     d_sub Ψ A (typ_union B1 B2)
+ | d_sub__union3 : forall (Ψ:denv) (A1 A2 B:typ),
+     d_sub Ψ A1 B ->
+     d_sub Ψ A2 B ->
+     d_sub Ψ (typ_union A1 A2) B.
+
 Inductive d_inftapp : denv -> typ -> typ -> typ -> Prop := 
   | d_inftapp__bot : forall (Ψ:denv) (B:typ),
       d_wf_tenv Ψ -> 
@@ -97,10 +153,6 @@ Inductive d_chk_inf : denv -> exp -> typing_mode -> typ -> Prop :=
       d_wf_typ Ψ A1 ->
       ( forall x , x \notin  L  -> d_chk_inf  ( x ~ (dbind_typ A1)  ++  Ψ )  ( open_exp_wrt_exp e (exp_var_f x) ) typingmode__chk A2 )  ->
       d_chk_inf Ψ (exp_abs e) typingmode__chk (typ_arrow A1 A2)
-  (* | d_chk_inf__chkall : forall (L:vars) (Ψ:denv) (e:exp) (T1:typ),
-      d_wf_typ Ψ (typ_all T1) ->
-      ( forall X , X \notin  L  -> d_chk_inf  ( X ~ dbind_tvar_empty  ++  Ψ )  e  typingmode__chk ( open_typ_wrt_typ T1 (typ_var_f X) )  )  ->
-      d_chk_inf Ψ e typingmode__chk (typ_all T1) *)
   | d_chk_inf__chk_sub : forall (Ψ:denv) (e:exp) (A B:typ),
       d_chk_inf Ψ e typingmode__inf B ->
       d_sub Ψ B A ->
@@ -118,5 +170,4 @@ Inductive d_chk_inf : denv -> exp -> typing_mode -> typ -> Prop :=
       d_wf_typ Ψ A1 ->
       d_chk_inf Ψ e typingmode__chk (typ_union A1 A2).
 
-#[export] Hint Constructors neq_union neq_intersection neq_all : core.
 #[export] Hint Constructors d_sub d_infabs d_inftapp d_chk_inf : core.

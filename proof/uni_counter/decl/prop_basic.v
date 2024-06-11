@@ -323,60 +323,6 @@ Qed.
 
 #[export] Hint Resolve d_wf_exp_lc_exp d_mono_typ_lc : core.
 
-Lemma d_mono_typ_neq_all : forall Ψ T,
-  Ψ ᵗ⊢ᵈₘ T -> neq_all T.
-Proof.
-  intros; induction H; eauto...
-Qed.
-
-Lemma d_mono_typ_neq_union : forall Ψ T,
-  Ψ ᵗ⊢ᵈₘ T -> neq_union T.
-Proof.
-  intros; induction H; eauto...
-Qed.
-
-Lemma d_mono_typ_neq_intersection : forall Ψ T,
-  Ψ ᵗ⊢ᵈₘ T -> neq_intersection T.
-Proof.
-  intros; induction H; eauto...
-Qed.
-
-#[local] Hint Constructors neq_all neq_intersection neq_union : core.
-
-Lemma neq_all_subst_mono_neq_all : forall Ψ A X T,
-  Ψ ᵗ⊢ᵈₘ T  ->
-  neq_all A ->
-  neq_all ( {T ᵗ/ₜ X} A ).
-Proof with eauto 6 using subst_typ_in_typ_lc_typ.
-  intros. induction H0; simpl; eauto...
-  - destruct (X0 == X); auto.
-    eapply d_mono_typ_neq_all; eauto.
-Qed.
-
-Lemma neq_union_subst_mono_neq_union : forall Ψ A X T,
-  Ψ ᵗ⊢ᵈₘ T  ->
-  neq_union A ->
-  neq_union ( {T ᵗ/ₜ X} A ).
-Proof with eauto 7 using subst_typ_in_typ_lc_typ.
-  intros. induction H0; simpl; eauto...
-  - destruct (X0 == X); auto.
-    eapply d_mono_typ_neq_union; eauto.
-  - eapply neq_union__all.
-    replace ((typ_all ({T ᵗ/ₜ X} A))) with ({T ᵗ/ₜ X} (typ_all A)) by auto...
-Qed.
-
-Lemma neq_intersection_subst_mono_neq_intersection : forall Ψ A X T,
-  Ψ ᵗ⊢ᵈₘ T  ->
-  neq_intersection A ->
-  neq_intersection ( {T ᵗ/ₜ X} A ).
-Proof with eauto 7 using subst_typ_in_typ_lc_typ.
-  intros. induction H0; simpl; eauto... 
-  - destruct (X0 == X); auto.
-    eapply d_mono_typ_neq_intersection; eauto.
-  - eapply neq_intersection__all.
-    replace ((typ_all ({T ᵗ/ₜ X} A))) with ({T ᵗ/ₜ X} (typ_all A)) by auto...
-Qed.
-
 Lemma bind_typ_subst : forall Ψ2 X Ψ1 x A B,
   ⊢ᵈ Ψ2 ++ (X, dbind_tvar_empty) :: Ψ1 ->
   x ~ A ∈ᵈ (Ψ2 ++ (X, dbind_tvar_empty) :: Ψ1) ->
@@ -622,8 +568,6 @@ Lemma d_inftapp_d_wf_typ3 : forall Ψ A B C,
 Proof.
   intros. forwards*: d_inftapp_d_wf H.
 Qed.
-
-(* Lemma d_wf_env_binds_d_wf_typ *)
 
 Lemma d_wf_typ_strengthen : forall Ψ1 Ψ2 X A b,
   uniq (Ψ2 ++ X ~ b ++ Ψ1) ->

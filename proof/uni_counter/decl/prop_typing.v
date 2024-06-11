@@ -22,8 +22,7 @@ Inductive d_subtenv : denv -> denv -> Prop :=
       d_subtenv Ψ' Ψ ->
       d_sub Ψ A A' ->
       d_subtenv (x ~ dbind_typ A ++ Ψ')
-          (x ~ dbind_typ A' ++ Ψ)
-.
+          (x ~ dbind_typ A' ++ Ψ).
 
 Inductive d_subenv : denv -> denv -> Prop :=
   | d_subenv__empty: d_subenv nil nil
@@ -39,8 +38,7 @@ Inductive d_subenv : denv -> denv -> Prop :=
       d_subenv Ψ' Ψ ->
       d_sub Ψ A A' ->
       d_subenv (x ~ dbind_typ A ++ Ψ')
-          (x ~ dbind_typ A' ++ Ψ)
-.
+          (x ~ dbind_typ A' ++ Ψ).
 
 #[local] Hint Constructors d_subtenv d_subenv: core.
 
@@ -169,8 +167,6 @@ Proof.
       econstructor. auto.
 Qed.
 
-(* #[local] Hint Resolve d_subenv_wf_typ : core. *)
-
 Lemma d_subtenv_wf_env : forall Ψ,
   ⊢ᵈₜ Ψ ->
   forall Ψ',
@@ -189,13 +185,12 @@ Proof.
     + erewrite <- d_subtenv_same_dom; auto.
 Qed.
 
-Lemma d_subtenv_wf_tenv_inv : forall Ψ',
+Lemma d_subtenv_wf_tenv_inv : forall Ψ' Ψ,
   ⊢ᵈₜ Ψ' ->
-  forall Ψ,
-    d_subtenv Ψ' Ψ ->
-    ⊢ᵈₜ Ψ.
+  d_subtenv Ψ' Ψ ->
+  ⊢ᵈₜ Ψ. 
 Proof with subst; try solve_notin; eauto using d_sub_d_wf_typ2.
-  intros * HW Ψ HS. induction* HS.
+  intros * HW HS. induction* HS.
   all: forwards HE: d_subtenv_same_dom HS;
     forwards*: d_wf_tenv_strengthen_cons HW;
     inverts HW;
@@ -208,7 +203,9 @@ Ltac solve_wf_subenv := match goal with
 end.
 
 Lemma binds_subtenv: forall Ψ X Ψ',
-    X ~ □ ∈ᵈ Ψ -> d_subtenv Ψ' Ψ -> X ~ □ ∈ᵈ Ψ'.
+  X ~ □ ∈ᵈ Ψ -> 
+  d_subtenv Ψ' Ψ -> 
+  X ~ □ ∈ᵈ Ψ'.
 Proof with try solve_by_invert.
   intros* HD HS. induction* HS.
   - forwards* [?|?]: binds_app_1 HD.
@@ -217,7 +214,9 @@ Qed.
 
 Lemma binds_subenv: forall Ψ X Ψ' b,
   b = □ \/ b = ■ ->
-  binds X b Ψ -> d_subenv Ψ' Ψ -> binds X b Ψ'.
+  binds X b Ψ ->
+  d_subenv Ψ' Ψ -> 
+  binds X b Ψ'.
 Proof with try solve_by_invert.
   intros* HB HD HS. induction* HS.
   - forwards* [?|?]: binds_app_1 HD.
@@ -227,7 +226,9 @@ Proof with try solve_by_invert.
 Qed.
 
 Lemma d_mono_typ_subtenv: forall Ψ A Ψ',
-  d_mono_typ Ψ A -> d_subtenv Ψ' Ψ -> d_mono_typ Ψ' A.
+  d_mono_typ Ψ A -> 
+  d_subtenv Ψ' Ψ -> 
+  d_mono_typ Ψ' A.
 Proof with eauto using binds_subtenv.
   intros* HD HS. gen HS.
   induction HD; intros...
@@ -240,6 +241,24 @@ Lemma d_mono_typ_subenv: forall Ψ A Ψ',
 Proof with eauto using binds_subenv.
   intros* HD HS. gen HS.
   induction HD; intros... 
+Qed.
+
+Lemma d_wneq_all_subtenv: forall Ψ A Ψ',
+  d_wneq_all Ψ A -> 
+  d_subtenv Ψ' Ψ -> 
+  d_wneq_all Ψ' A.
+Proof with eauto using binds_subtenv.
+  intros* HD HS. gen HS.
+  induction HD; intros...
+Qed.
+
+Lemma d_wneq_all_subenv: forall Ψ A Ψ',
+  d_wneq_all Ψ A -> 
+  d_subenv Ψ' Ψ -> 
+  d_wneq_all Ψ' A.
+Proof with eauto using binds_subenv.
+  intros* HD HS. gen HS.
+  induction HD; intros...
 Qed.
 
 #[local] Hint Immediate d_wf_tenv_d_wf_env  : core.
@@ -267,13 +286,12 @@ Proof.
     erewrite <- d_subenv_same_dom; eauto.
 Qed.
 
-Lemma d_sub_subenv: forall Ψ A B,
+Lemma d_sub_subenv: forall Ψ Ψ' A B,
   Ψ ⊢ A <: B -> 
-  forall Ψ', 
-    d_subenv Ψ' Ψ -> 
-    Ψ' ⊢ A <: B.
-Proof with eauto using d_mono_typ_subenv, d_wf_env_subenv, d_subenv_wf_typ.
-  intros Ψ A B Hsub.
+  d_subenv Ψ' Ψ -> 
+  Ψ' ⊢ A <: B.
+Proof with eauto using d_mono_typ_subenv, d_wneq_all_subenv, d_wf_env_subenv, d_subenv_wf_typ.
+  intros Ψ Ψ' A B Hsub. generalize dependent Ψ'.
   induction Hsub; intros; auto; try solve [constructor; eauto using d_mono_typ_subtenv, d_wf_env_subenv, d_subenv_wf_typ].
   - inst_cofinites_for d_sub__all; intros; inst_cofinites_with X...
   - inst_cofinites_for d_sub__alll T:=T...
@@ -286,8 +304,10 @@ Proof.
   intros. dependent induction H; auto.
 Qed.
 
-Lemma d_sub_subtenv : forall Ψ A B,
-  Ψ ⊢ A <: B -> forall Ψ', d_subtenv Ψ' Ψ -> Ψ' ⊢ A <: B.
+Lemma d_sub_subtenv : forall Ψ Ψ' A B,
+  Ψ ⊢ A <: B -> 
+  d_subtenv Ψ' Ψ -> 
+  Ψ' ⊢ A <: B.
 Proof.
   intros. apply d_subtenv_subenv in H0. eapply d_sub_subenv; eauto.
 Qed.
@@ -314,10 +334,31 @@ Fixpoint exp_size (e:exp) : nat :=
 
 Fixpoint typ_size (A:typ) : nat :=
   match A with
-  | typ_intersection A1 A2 => typ_size A1 + typ_size A2 + 1
-  | typ_union A1 A2 => typ_size A1 + typ_size A2 + 1
-  | _ => 0
+    | typ_intersection A1 A2 => typ_size A1 + typ_size A2 + 1
+    | typ_union A1 A2 => typ_size A1 + typ_size A2 + 1
+    | _ => 0
   end.
+
+Lemma d_wneq_all_tapp_false : forall Ψ A B C,
+  d_wneq_all Ψ A ->
+  Ψ ⊢ A ○ B ⇒⇒ C -> 
+  False.
+Proof. 
+  intros. generalize dependent B. generalize dependent C. 
+    dependent induction H; intros; auto.
+  - dependent destruction H0.
+  - dependent destruction H0.
+  - dependent destruction H0.
+  - dependent destruction H1.
+  - dependent destruction H1; auto.
+    eapply IHd_wneq_all; eauto.
+  - dependent destruction H1; auto.
+    eapply IHd_wneq_all; eauto.
+  - dependent destruction H1; auto.
+    + eapply IHd_wneq_all1; eauto.
+    + eapply IHd_wneq_all2; eauto.
+Qed.
+  
 
 Theorem d_inftapp_subsumption_same_env : forall Ψ A B C A',
   Ψ ⊢ A ○ B ⇒⇒ C ->
@@ -327,7 +368,7 @@ Proof with auto.
   intros. generalize dependent A'. dependent induction H.
   - intros. dependent induction H1.
     + exists typ_bot. split; auto... 
-    + eapply d_sub_open_mono_bot_false in H6; eauto. contradiction.
+    + eapply d_sub_open_mono_bot_false in H4; eauto. contradiction.
     + specialize (IHd_sub H H0 (eq_refl _)). destruct IHd_sub as [C1 Hc1].
       exists C1; intuition...
     + specialize (IHd_sub H H0 (eq_refl _)). destruct IHd_sub as [C1 Hc1].
@@ -356,7 +397,7 @@ Proof with auto.
       * inst_cofinites_with X.
         apply d_wf_typ_stvar_tvar_cons; eauto...
         apply d_sub_d_wf in H5; intuition.
-    + inversion H5.
+    + inversion H3.
     + specialize (IHd_sub _ H H0 H1 (eq_refl _)).
       destruct IHd_sub as [C1 Hc1].
       exists C1; intuition...
@@ -377,7 +418,9 @@ Proof with auto.
       apply d_inftapp_d_wf in H.
       apply d_inftapp_d_wf in H0.
       intuition...
-    + inversion H1.
+    + dependent destruction H3.
+      * exfalso. eapply d_wneq_all_tapp_false; eauto.
+      * exfalso. eapply d_wneq_all_tapp_false; eauto.
     + specialize (IHd_sub _ _ H H0 IHd_inftapp1 IHd_inftapp2 (eq_refl _)).
       apply d_inftapp_d_wf in H. intuition.
       destruct IHd_sub as [C3]. exists C3. intuition.
@@ -463,10 +506,10 @@ Proof with auto using d_mono_typ_d_wf_typ.
       exists B2 C2; intuition...
       econstructor. eauto. auto...
       * pick fresh Y and apply d_wf_typ__all.
-         ** forwards: H2 Y...
-         ** forwards: d_sub_d_wf_typ1 H4.
-            rewrite_env (nil++Ψ) in H8.
-            forwards*: d_wf_typ_open_mono_inv H8.
+         ** forwards: H4 Y...
+         ** forwards: d_sub_d_wf_typ1 H2.
+            rewrite_env (nil++Ψ) in H6.
+            forwards*: d_wf_typ_open_mono_inv H6.
       * eauto.
     + specialize (IHd_sub _ _ H H0 H1 (eq_refl _)).
       destruct IHd_sub as [B2 [C2]].
@@ -488,25 +531,26 @@ Proof with auto using d_mono_typ_d_wf_typ.
     + assert (Ψ ⊢ A0 ᵗ^^ₜ T <: A ᵗ^^ₜ T). {
         pick fresh SZ. forwards*: H5 SZ.
         rewrite_env (nil++ (SZ, ■) :: Ψ ) in H6.
-        forwards*: d_sub_subst_stvar T H6.
-        apply d_mono_typ_d_wf_typ; eauto.
-        rewrite subst_typ_in_typ_open_typ_wrt_typ in H7; eauto.
-        rewrite subst_typ_in_typ_open_typ_wrt_typ in H7; eauto.
-        simpl in H7; destruct_eq_atom; eauto.
+        forwards*: d_sub_subst_stvar T H6. eapply d_mono_typ_d_wf_typ...
+        simpl in H7.
+        rewrite subst_typ_in_typ_open_typ_wrt_typ in H7...
+        simpl in H7. case_if in H7.
         rewrite subst_typ_in_typ_fresh_eq in H7...
+        rewrite subst_typ_in_typ_open_typ_wrt_typ in H7...
+        simpl in H7. case_if in H7...
         rewrite subst_typ_in_typ_fresh_eq in H7...
+        all: eauto.
       }
       specialize (IHd_infabs _ H6).
       destruct IHd_infabs as [B2 [C2]].
       exists B2 C2. intuition...
-      eapply d_infabs__all with (T:=T). eauto.
+      eapply d_infabs__all with (T:=T); auto. 
       pick fresh Y and apply d_wf_typ__all.
       ** forwards: H3 Y...
       ** forwards: d_sub_d_wf_typ1 H6.
          rewrite_env (nil++Ψ) in H7.
          forwards*: d_wf_typ_open_mono_inv Y H7 H.
-      ** eauto...
-    + inversion H5.
+    + inversion H3.
     + specialize (IHd_sub _ H H0 H1 IHd_infabs (eq_refl _)).
       destruct IHd_sub as [B2 [C2]].
       exists B2 C2. intuition.
@@ -529,7 +573,15 @@ Proof with auto using d_mono_typ_d_wf_typ.
     + exists typ_top typ_bot. intuition.
       econstructor; econstructor; eauto.
       all: eauto using d_infabs_d_wf_typ2, d_infabs_d_wf_typ3.
-    + inversion H1.
+    + specialize (IHd_sub _ _ H H0 IHd_infabs1 IHd_infabs2 (eq_refl _)).
+      destruct IHd_sub as [B2' [C2']].
+      exists B2' C2'. intuition.
+      eapply d_infabs__all with (T:=T); auto.
+      * pick fresh Y and apply d_wf_typ__all.
+        -- forwards: H4 Y...
+        -- forwards: d_sub_d_wf_typ1 H2.
+           rewrite_env (nil++Ψ) in H5.
+           forwards*: d_wf_typ_open_mono_inv H5.
     + specialize (IHd_sub _ _ H H0 IHd_infabs1 IHd_infabs2 (eq_refl _)).
       destruct IHd_sub as [B2' [C2']].
       exists B2' C2'. intuition.
@@ -577,7 +629,6 @@ Proof with eauto.
 Qed.
 
 #[local] Hint Extern 1 (_ < _) => lia : core.
-(* #[local] Hint Extern 1 (_ ᵗ⊢ᵈ _) => eapply d_subenv_wf_typ; eauto : core. *)
 
 Lemma exp_size_open_var_rec : forall e x n,
   exp_size e = exp_size (open_exp_wrt_exp_rec n (exp_var_f x) e).
@@ -607,12 +658,6 @@ Proof.
   intros. unfold open_exp_wrt_exp.
   apply exp_size_open_typ_rec.
 Qed.
-
-(* #[local] Hint Resolve d_wf_typ_weaken_cons : core. *)
-
-(* #[export] Hint Immediate d_sub_d_wf_env d_sub_d_wf_typ1 d_sub_d_wf_typ2 : subtyping. *)
-
-(* #[local] Hint Resolve d_chk_inf_wf_env : core. *)
 
 Theorem d_chk_inf_subsumption : forall n1 n2 n3 Ψ Ψ' e A mode,
   exp_size e < n1 ->
@@ -781,11 +826,11 @@ Proof with auto.
         apply d_sub_union_inv in H0. intros. intuition.
 Qed.
 
-Corollary d_chk_subsumption : forall Ψ e A A',
+Corollary d_chk_subsumption : forall Ψ e A B,
   ⊢ᵈₜ Ψ ->
   Ψ ⊢ e ⇐ A ->
-  Ψ ⊢ A <: A' ->
-  Ψ ⊢ e ⇐ A'.
+  Ψ ⊢ A <: B ->
+  Ψ ⊢ e ⇐ B.
 Proof.
   intros.
   refine (d_chk_inf_subsumption _ _ _ _ _ _ _ _ _ _ _ H0 _ _ _); eauto.

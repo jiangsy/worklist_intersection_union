@@ -1311,7 +1311,7 @@ Inductive d_wf_work : denv -> work -> Prop :=    (* defn d_wf_work *)
      d_wf_contd Ψ cd ->
      d_wf_work Ψ (work_applyd cd A B).
 
-(* defns Jd_wf_twl *)
+(* defns J_d_wf_twl *)
 Inductive d_wf_twl : dworklist -> Prop :=    (* defn d_wf_twl *)
  | d_wf_twl__empty : 
      d_wf_twl dworklist_empty
@@ -1330,7 +1330,7 @@ Inductive d_wf_twl : dworklist -> Prop :=    (* defn d_wf_twl *)
      d_wf_twl Ω ->
      d_wf_twl (dworklist_cons_work Ω w).
 
-(* defns Jd_wf_wl *)
+(* defns J_d_wf_wl *)
 Inductive d_wf_wl : dworklist -> Prop :=    (* defn d_wf_wl *)
  | d_wf_wl__twl : forall (Ω:dworklist),
      d_wf_twl Ω ->

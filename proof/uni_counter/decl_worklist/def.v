@@ -11,7 +11,6 @@ Fixpoint dwl_app (Ω1 Ω2 : dworklist) :=
   | dworklist_cons_work Ω1' w => dworklist_cons_work (dwl_app Ω1' Ω2) w
   end.
 
-(* decl worklist delegated reduction, corresponds to Jimmy's dc *)
 Inductive d_wl_del_red : dworklist -> Prop :=
   | d_wl_del_red__empty : d_wl_del_red dworklist_empty
   | d_wl_del_red__var : forall Ω x b,
@@ -157,7 +156,7 @@ Inductive d_exp_split_size : denv -> exp -> nat -> Prop :=
       d_iuv_size Ψ A m ->
       d_exp_split_size Ψ (exp_anno e A) ((1 + n) * (2 + m)).
 
-(* defns Jdworklist_reduction *)
+(* defns J_dworklist_reduction *)
 Inductive d_wl_red : dworklist -> Prop :=    (* defn d_wl_red *)
  | d_wl_red__empty : d_wl_red dworklist_empty
  | d_wl_red__gc_var : forall (Ω:dworklist) (x:atom) (A:typ),
@@ -190,9 +189,7 @@ Inductive d_wl_red : dworklist -> Prop :=    (* defn d_wl_red *)
         (work_sub  (open_typ_wrt_typ  A   (typ_var_f X) )   (open_typ_wrt_typ  B   (typ_var_f X) ) ))) ->
      d_wl_red (dworklist_cons_work Ω (work_sub (typ_all A) (typ_all B)))    
  | d_wl_red__sub_alll : forall (Ω:dworklist) (A B T:typ),
-     neq_all B ->
-     neq_intersection B ->
-     neq_union B -> 
+     d_wneq_all ( dwl_to_denv  Ω  ) B ->
      d_mono_typ ( dwl_to_denv  Ω  )  T ->
      d_wl_red (dworklist_cons_work Ω (work_sub  (open_typ_wrt_typ  A   T )  B)) ->
      d_wl_red (dworklist_cons_work Ω (work_sub (typ_all A) B))
@@ -217,10 +214,6 @@ Inductive d_wl_red : dworklist -> Prop :=    (* defn d_wl_red *)
  | d_wl_red__chk_sub : forall (Ω:dworklist) (e:exp) (A:typ),
      d_wl_red (dworklist_cons_work Ω (work_infer e (conts_sub A))) ->
      d_wl_red (dworklist_cons_work Ω (work_check e A))
- (* | d_wl_red__chkall : forall (L:vars) (Ω:dworklist) (e:exp) (T1:typ),
-      ( forall X , X \notin  L  -> ds_in X  ( open_typ_wrt_typ T1 (typ_var_f X) )  )  ->
-      ( forall X , X \notin  L  -> d_wl_red (dworklist_cons_work (dworklist_cons_var Ω X dbind_tvar_empty) (work_check e  ( open_typ_wrt_typ T1 (typ_var_f X) ) )) )  ->
-     d_wl_red (dworklist_cons_work Ω (work_check e (typ_all T1))) *)
  | d_wl_red__chk_absarrow : forall (L:vars) (Ω:dworklist) (e:exp) (A1 A2:typ),
       ( forall x , x \notin  L  -> d_wl_red (dworklist_cons_work (dworklist_cons_var Ω x (dbind_typ A1)) (work_check  ( open_exp_wrt_exp e (exp_var_f x) )  A2)) )  ->
      d_wl_red (dworklist_cons_work Ω (work_check (exp_abs e) (typ_arrow A1 A2)))
@@ -244,7 +237,6 @@ Inductive d_wl_red : dworklist -> Prop :=    (* defn d_wl_red *)
      d_wl_red (dworklist_cons_work (dworklist_cons_work Ω (work_applys cs  A)) (work_check e A)) ->
      d_wl_red (dworklist_cons_work Ω (work_infer  ( (exp_anno e A) )  cs))
  | d_wl_red__inf_tabs : forall (L:vars) (Ω:dworklist) (e:exp) (A:typ) (cs:conts),
-      (* ( forall X , X \notin  L  -> ds_in X  ( open_typ_wrt_typ A1 (typ_var_f X) )  )  -> *)
       ( forall X , X \notin  L  -> 
         d_wl_red (dworklist_cons_work (dworklist_cons_var (dworklist_cons_work Ω (work_applys cs  (typ_all A) )) X dbind_tvar_empty) (work_check ( open_exp_wrt_typ e (typ_var_f X) ) ( open_typ_wrt_typ A (typ_var_f X) ) )) )  ->
      d_wl_red (dworklist_cons_work Ω (work_infer (exp_tabs (exp_anno e A)) cs))

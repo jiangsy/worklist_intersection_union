@@ -669,13 +669,6 @@ Qed.
 #[local] Hint Resolve trans_typ_wf_ss : core.
 #[local] Hint Resolve trans_typ_lc_atyp trans_typ_lc_dtyp : core.
 
-Lemma d_mono_typ_d_wneq_all : forall Ψ A,
-  d_mono_typ Ψ A ->
-  d_wneq_all Ψ A.  
-Proof.
-  intros. induction H; eauto. 
-Qed.
-
 Lemma trans_typ_det : forall θ Aᵃ A₁ᵈ A₂ᵈ,
   uniq θ -> 
   θ ᵗ⊩ Aᵃ ⇝ A₁ᵈ -> 
@@ -699,7 +692,7 @@ Ltac unify_trans_typ :=
       eauto; subst
   end.
 
-  Lemma trans_exp_det : forall θ eᵃ e₁ᵈ e₂ᵈ,
+Lemma trans_exp_det : forall θ eᵃ e₁ᵈ e₂ᵈ,
   uniq θ -> 
   θ ᵉ⊩ eᵃ ⇝ e₁ᵈ -> 
   θ ᵉ⊩ eᵃ ⇝ e₂ᵈ -> 

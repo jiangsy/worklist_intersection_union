@@ -64,7 +64,7 @@ Inductive d_wl_del_red : dworklist -> Prop :=
       d_wl_del_red (dworklist_cons_work Ω (work_applyd cd A B))
   .
 
-(* defns Jdworklist_reduction *)
+(* defns J_dworklist_reduction *)
 Inductive d_wl_red : dworklist -> Prop :=    (* defn d_wl_red *)
  | d_wl_red__empty : d_wl_red dworklist_empty
  | d_wl_red__gc_var : forall (Ω:dworklist) (x:atom) (A:typ),

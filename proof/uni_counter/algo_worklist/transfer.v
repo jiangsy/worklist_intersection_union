@@ -670,66 +670,6 @@ Qed.
 #[local] Hint Resolve trans_typ_wf_ss : core.
 #[local] Hint Resolve trans_typ_lc_atyp trans_typ_lc_dtyp : core.
 
-Lemma trans_typ_neq_all : forall θ Aᵃ Aᵈ,
-  θ ᵗ⊩ Aᵃ ⇝ Aᵈ -> 
-  neq_all Aᵃ -> 
-  neq_all Aᵈ.
-Proof.
-  intros. dependent destruction H0; dependent destruction H; eauto.
-  + apply wf_ss_binds_mono_typ in H0; auto.
-    eapply d_mono_typ_neq_all. eauto.
-Qed.
-
-Lemma trans_typ_neq_all_rev : forall θ Aᵃ Aᵈ,
-  θ ᵗ⊩ Aᵃ ⇝ Aᵈ -> 
-  neq_all Aᵈ -> 
-  neq_all Aᵃ.
-Proof.
-  intros. dependent destruction H0; dependent destruction H; eauto.
-Qed.
-
-Lemma trans_typ_neq_union : forall θ Aᵃ Aᵈ,
-  θ ᵗ⊩ Aᵃ ⇝ Aᵈ -> 
-  neq_union Aᵃ -> 
-  neq_union Aᵈ.
-Proof.
-  intros. dependent destruction H0; dependent destruction H; eauto.
-  + apply wf_ss_binds_mono_typ in H0; auto.
-    eapply d_mono_typ_neq_union. eauto.
-Qed.
-
-Lemma trans_typ_neq_union_rev : forall θ Aᵃ Aᵈ,
-  θ ᵗ⊩ Aᵃ ⇝ Aᵈ -> 
-  neq_union Aᵈ ->
-  neq_union Aᵃ.
-Proof.
-  intros. dependent destruction H0; dependent destruction H; eauto.
-Qed.
-
-Lemma trans_typ_neq_intersection : forall θ Aᵃ Aᵈ,
-  θ ᵗ⊩ Aᵃ ⇝ Aᵈ ->
-  neq_intersection Aᵃ -> 
-  neq_intersection Aᵈ.
-Proof.
-  intros. dependent destruction H0; dependent destruction H; eauto.
-  + apply wf_ss_binds_mono_typ in H0; auto.
-    eapply d_mono_typ_neq_intersection. eauto.
-Qed.
-
-Lemma trans_typ_neq_intersection_rev : forall θ Aᵃ Aᵈ,
-  θ ᵗ⊩ Aᵃ ⇝ Aᵈ -> 
-  neq_intersection Aᵈ -> 
-  neq_intersection Aᵃ.
-Proof.
-  intros. dependent destruction H0; dependent destruction H; eauto.
-Qed.
-
-#[export] Hint Resolve 
-  trans_typ_neq_all trans_typ_neq_all_rev 
-  trans_typ_neq_union trans_typ_neq_union_rev
-  trans_typ_neq_intersection trans_typ_neq_intersection_rev
-  : core.
-  
 Lemma trans_typ_det : forall θ Aᵃ A₁ᵈ A₂ᵈ,
   uniq θ -> 
   θ ᵗ⊩ Aᵃ ⇝ A₁ᵈ -> 
@@ -1668,6 +1608,58 @@ Proof.
   - dependent destruction Htransa; eauto.
 Qed.
 
+Lemma d_mono_typ_d_wneq_all : forall Ψ A,
+  d_mono_typ Ψ A ->
+  d_wneq_all Ψ A.  
+Proof.
+  intros. induction H; eauto. 
+Qed.
+
+Lemma trans_wl_a_wneq_all_d_wneq_all : forall Γ Ω θ Aᵃ Aᵈ,
+  nil ⊩ Γ ⇝ Ω ⫣ θ ->
+  θ ᵗ⊩ Aᵃ ⇝ Aᵈ -> 
+  a_wneq_all (⌊ Γ ⌋ᵃ) Aᵃ -> 
+  d_wneq_all (⌊ Ω ⌋ᵈ) Aᵈ.
+Proof with eauto using a_wneq_all, d_wneq_all.
+  intros * Htranswl Htrans Hneq. generalize dependent Aᵈ.
+  dependent induction Hneq; intros; dependent destruction Htrans; eauto...
+  - econstructor...
+    eapply trans_wl_a_wl_binds_tvar_d_wl...
+  - eapply trans_wl_a_wl_binds_tvar_ss in Htranswl...
+    unify_binds.
+  - eapply trans_wl_a_wl_binds_tvar_ss in Htranswl...
+    unify_binds.
+  - eapply trans_wl_a_wl_binds_etvar_ss in Htranswl...
+    destruct Htranswl as [T]. 
+    unify_binds.
+  - eapply trans_wl_a_wl_binds_etvar_ss in Htranswl...
+    destruct Htranswl as [T]. 
+    unify_binds.
+  - apply wf_ss_binds_mono_typ in H1; auto.
+    eapply trans_wl_ss_mono_typ_d_wl_mono_typ in H1...
+    eapply d_mono_typ_d_wneq_all...
+Qed.
+
+Lemma trans_wl_d_wneq_all_a_wneq_all : forall Γ Ω θ Aᵃ Aᵈ,
+  nil ⊩ Γ ⇝ Ω ⫣ θ ->
+  θ ᵗ⊩ Aᵃ ⇝ Aᵈ -> 
+  d_wneq_all (⌊ Ω ⌋ᵈ) Aᵈ ->
+  a_wneq_all (⌊ Γ ⌋ᵃ) Aᵃ. 
+Proof with eauto using a_wneq_all, d_wneq_all.
+  intros * Htranswl Htrans Hneq. generalize dependent Aᵃ.
+  dependent induction Hneq; intros; dependent destruction Htrans; eauto;
+    try solve [eapply trans_wl_ss_binds_etvar_a_wl in H0; eauto using a_wneq_all, d_wneq_all].
+  - econstructor. 
+    eapply trans_wl_ss_binds_tvar_a_wl...
+  - eapply trans_wl_d_wl_binds_tvar_ss in H...
+    apply binds_ss_to_denv_binds_ss in H. unify_binds.
+  - eapply trans_wl_ss_binds_etvar_a_wl in H1...
+  - eapply trans_wl_ss_binds_etvar_a_wl in H2...
+  - eapply trans_wl_ss_binds_etvar_a_wl in H1...
+  - eapply trans_wl_ss_binds_etvar_a_wl in H1...
+Qed.
+
+
 Lemma trans_typ_binds_etvar : forall θ X T,
   wf_ss θ ->
   X ~ T ∈ᵈ θ ->
@@ -2156,8 +2148,6 @@ Proof with eauto.
   - constructor; auto. erewrite trans_wl_d_wl_dom_upper; eauto. 
   - constructor; auto. erewrite trans_wl_d_wl_dom_upper; eauto. 
 Qed.
-
-(* dependent destruction all non-atomic ⊢ᵃʷ relation *)
 
 Lemma a_wf_work_apply_conts : forall Γ cs A w,
   a_wf_conts Γ cs ->

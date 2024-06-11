@@ -669,12 +669,6 @@ Qed.
 #[local] Hint Resolve trans_typ_wf_ss : core.
 #[local] Hint Resolve trans_typ_lc_atyp trans_typ_lc_dtyp : core.
 
-Lemma d_mono_typ_d_wneq_all : forall Ψ A,
-  d_mono_typ Ψ A ->
-  d_wneq_all Ψ A.  
-Proof.
-  intros. induction H; eauto. 
-Qed.
 
 Lemma trans_typ_neq_all : forall θ Aᵃ Aᵈ,
   θ ᵗ⊩ Aᵃ ⇝ Aᵈ -> 

@@ -450,6 +450,7 @@ Proof.
     rewrite_dwl_app. auto.
   - eapply d_wl_red__sub_alll with (T:=T); auto.
     rewrite d_wl_app_cons_work_same_env; auto.
+    rewrite d_wl_app_cons_work_same_env; auto.
     rewrite_dwl_app. auto.
   - eapply d_wl_red__chk_absarrow with (L:=L).
     intros. inst_cofinites_with x.
@@ -989,7 +990,7 @@ Proof with auto.
 Admitted.
 
 Theorem d_wl_red_complete: forall Ω, 
-    ⊢ᵈʷₛ Ω -> Ω ⟶ᵈ⁎⋅ -> Ω ⟶ᵈʷ⁎⋅.
+  ⊢ᵈʷₛ Ω -> Ω ⟶ᵈ⁎⋅ -> Ω ⟶ᵈʷ⁎⋅.
 Proof with auto.
   intros. induction H0; auto;
   try solve [destruct_d_wf_wl; econstructor; eauto 7].

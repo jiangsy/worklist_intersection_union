@@ -930,6 +930,25 @@ Proof.
   destruct_eq_atom; auto.
 Qed. *)
 
+Lemma a_wneq_all_rename_tvar : forall Γ X Y A,
+  ⊢ᵃʷ Γ ->
+  Y ∉ dom (⌊ Γ ⌋ᵃ) ->
+  a_wneq_all (⌊ Γ ⌋ᵃ) A ->
+  a_wneq_all (⌊ {Y ᵃʷ/ₜᵥ X} Γ ⌋ᵃ) ({` Y ᵗ/ₜ X} A).
+Proof with auto using lc_typ_subst.
+  intros. dependent induction H1; simpl; eauto...
+  - destruct_eq_atom...
+    + econstructor. apply rename_tvar_in_aworklist_eq_tvar_bind_same; eauto. 
+      rewrite ftvar_in_a_wf_wwl_upper; eauto.
+    + econstructor. apply rename_tvar_in_aworklist_neq_tvar_bind_same; eauto.
+      rewrite ftvar_in_a_wf_wwl_upper; eauto.
+  - destruct_eq_atom...
+    + eapply a_wneq_all__etvar. apply rename_tvar_in_aworklist_eq_tvar_bind_same; eauto. 
+      rewrite ftvar_in_a_wf_wwl_upper; eauto.
+    + eapply a_wneq_all__etvar. apply rename_tvar_in_aworklist_neq_tvar_bind_same; eauto.
+      rewrite ftvar_in_a_wf_wwl_upper; eauto.
+Qed.
+
 Theorem rename_tvar_in_a_wf_wwl_a_wl_red : forall Γ X Y,
   X <> Y ->
   ⊢ᵃʷ Γ ->
@@ -942,9 +961,7 @@ Proof with eauto.
   - simpl.
     destruct_a_wf_wl. dependent destruction H0.
     inst_cofinites_for a_wl_red__sub_alll.
-    + apply neq_all_rename...
-    + apply neq_intersection_rename...
-    + apply neq_union_rename...
+    + eapply a_wneq_all_rename_tvar... 
     + intros. simpl in *. inst_cofinites_with X0.
       rewrite subst_typ_in_typ_open_typ_wrt_typ_fresh2...
       destruct_eq_atom.
@@ -1247,8 +1264,6 @@ Proof with eauto.
     auto_apply...
     eapply a_wf_wwl_apply_contd in H0... 
 Qed.
-
-Print Assumptions rename_tvar_in_a_wf_wwl_a_wl_red.
 
 Theorem rename_tvar_in_a_wf_twl_a_wl_red : forall Γ X Y,
   X <> Y ->
@@ -1756,6 +1771,19 @@ Proof.
   intros.
 Admitted.
 
+Lemma a_wneq_all_rename_var : forall Γ x y A,
+  ⊢ᵃʷ Γ ->
+  y `notin` dom ( ⌊ Γ ⌋ᵃ ) ->
+  a_wneq_all (⌊ Γ ⌋ᵃ) A -> 
+  a_wneq_all (⌊ {y ᵃʷ/ₑᵥ x} Γ ⌋ᵃ) A.
+Proof.
+  intros. dependent induction H1; try solve [simpl in *; eauto].
+  - constructor. eapply rename_var_in_aworklist_tvar_bind_same; eauto.
+    rewrite fvar_in_aworklist_upper; auto.
+  - eapply a_wneq_all__etvar. eapply rename_var_in_aworklist_tvar_bind_same; eauto.
+    rewrite fvar_in_aworklist_upper; auto.
+Qed.
+
 Theorem rename_var_in_a_wf_wwl_a_wl_red : forall Γ x y,
   ⊢ᵃʷ Γ ->
   y <> x ->
@@ -1767,6 +1795,7 @@ Proof with eauto.
   - simpl.
     destruct_a_wf_wl. dependent destruction H.
     inst_cofinites_for a_wl_red__sub_alll; auto.
+    + eapply a_wneq_all_rename_var; eauto.
     + intros. simpl in *. inst_cofinites_with X.
       auto_apply; auto.
       repeat (constructor; simpl; auto).

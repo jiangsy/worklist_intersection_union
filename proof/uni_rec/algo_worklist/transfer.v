@@ -1767,13 +1767,6 @@ Proof.
   eapply trans_typ_tvar_stvar_in_etvar_binds_in_atyp'; eauto.
 Qed.
 
-Lemma d_mono_typ_d_wneq_all : forall Ψ A,
-  d_mono_typ Ψ A ->
-  d_wneq_all Ψ A.  
-Proof.
-  intros. induction H; eauto. 
-Qed.
-
 Lemma trans_wl_a_wneq_all_d_wneq_all : forall Γ Ω θ Aᵃ Aᵈ,
   nil ⊩ Γ ⇝ Ω ⫣ θ ->
   θ ᵗ⊩ Aᵃ ⇝ Aᵈ -> 
