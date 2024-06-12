@@ -195,23 +195,6 @@ Proof.
   - constructor; auto. solve_false.
 Qed.
 
-(* Ltac destruct_d_wl_del_red' := 
-  match goal with
-  | H : d_wl_del_red (dworklist_cons_work ?Ω ?w) |- _ => 
-    lazymatch w with 
-    | work_apply (?c ?B) ?A => dependent destruction H
-    | work_apply ?c ?A => fail
-    | ?w1 _ _ => dependent destruction H
-    | ?w1 _ _ _ => dependent destruction H
-    end
-  | H : d_wl_del_red (dworklist_cons_var ?Ω ?x ?A) |- _ => 
-    dependent destruction H
-  | H : d_wl_del_red (dworklist_cons_var ?Ω ?x ?b) |- _ => 
-    dependent destruction Hƒ
-  | H : apply_cont ?c ?A ?w |- _ => dependent destruction H
-  (* | H : apply_cont2 ?cc ?A ?B ?w |- _ => dependent destruction H *)
-  end. *)
-
 Ltac destruct_d_wl_del_red' := 
   match goal with
   | H : d_wl_del_red (dworklist_cons_work ?Ω ?w) |- _ => 
@@ -356,11 +339,6 @@ Proof with eauto.
         - apply d_wf_typ_weaken_cons...
       }
       _apply_IH_d_wl_red. destruct_d_wl_del_red...
-  - destruct_d_wf_wl. _apply_IH_d_wl_red.
-    destruct_d_wl_del_red.
-    eapply d_wl_del_red__inf with (A:=B).
-    + econstructor; eauto. apply d_wl_red_weaken_work1 in H8. inversion H8... 
-    + eapply d_wl_red_weaken_work2; eauto.
   - destruct_d_wf_wl. 
     assert (⊢ᵈʷₛ (work_applys cs (A ᵗ^^ₜ B) ⫤ᵈ Ω)).
     { repeat constructor... apply d_wf_typ_all_open... }
@@ -529,7 +507,7 @@ Proof with auto.
     assert ((work_check e2 B ⫤ᵈ Ω) ⟶ᵈʷ⁎⋅).
       apply IHd_chk_inf2; auto.
       apply d_wl_red_weaken_consw in H6; auto.
-    replace (work_applys c C ⫤ᵈ work_check e2 B ⫤ᵈ Ω) with ((work_applys c C ⫤ᵈ dworklist_empty) ⧺ work_check e2 B ⫤ᵈ Ω) by auto.
+    replace (work_check e2 B ⫤ᵈ work_applys c C ⫤ᵈ Ω) with ((work_check e2 B ⫤ᵈ dworklist_empty) ⧺ work_applys c C ⫤ᵈ Ω) by auto.
     apply d_wl_red_strengthen_work; eauto.
   - destruct_d_wf_wl.
     eapply d_wl_red__inf_abs_mono with (L:=L `union` L0 `union` dom (dwl_to_denv Ω)); eauto.

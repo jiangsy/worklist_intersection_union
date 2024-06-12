@@ -37,7 +37,7 @@ Inductive d_wl_del_red : dworklist -> Prop :=
       d_wl_del_red (dworklist_cons_work Ω (work_applyd cd (typ_intersection B1 B2) (typ_union C1 C2))) -> 
       d_wl_del_red (dworklist_cons_work Ω (work_unioninfabs B1 C1 B2 C2 cd))
   | d_wl_del_red__infapp : forall Ω e A B cs,
-      d_wl_del_red (dworklist_cons_work (dworklist_cons_work Ω (work_check e A)) (work_applys cs B)) ->
+      d_wl_del_red (dworklist_cons_work (dworklist_cons_work Ω (work_applys cs B)) (work_check e A)) ->
       d_wl_del_red (dworklist_cons_work Ω (work_infapp A B e cs))
   | d_wl_del_red__inftapp : forall Ω A B C cs,
       d_inftapp (dwl_to_denv Ω) A B C ->
@@ -61,8 +61,7 @@ Inductive d_wl_del_red : dworklist -> Prop :=
   | d_wl_del_red__applyd : forall Ω cd A B w,
       apply_contd cd A B w ->
       d_wl_del_red (dworklist_cons_work Ω w) ->
-      d_wl_del_red (dworklist_cons_work Ω (work_applyd cd A B))
-  .
+      d_wl_del_red (dworklist_cons_work Ω (work_applyd cd A B)).
 
 (* defns J_dworklist_reduction *)
 Inductive d_wl_red : dworklist -> Prop :=    (* defn d_wl_red *)
@@ -209,7 +208,7 @@ Inductive d_wl_red : dworklist -> Prop :=    (* defn d_wl_red *)
      d_wl_red (dworklist_cons_work Ω (work_infabs A (contd_unioninfabs B C cd))) ->
      d_wl_red (dworklist_cons_work Ω (work_infabsunion B C A cd))
  | d_wl_red__infapp: forall (Ω:dworklist) (e:exp) (A B:typ) (cs:conts),
-     d_wl_red (dworklist_cons_work (dworklist_cons_work Ω (work_check e A)) (work_applys cs B)) ->
+     d_wl_red (dworklist_cons_work (dworklist_cons_work Ω (work_applys cs B)) (work_check e A)) ->
      d_wl_red (dworklist_cons_work Ω (work_infapp A B e cs))
  | d_wl_red__applys : forall (Ω:dworklist) (w:work) (A:typ) (cs:conts),
      apply_conts cs A w ->
