@@ -358,11 +358,6 @@ Proof with eauto.
         - apply d_wf_typ_weaken_cons...
       }
       _apply_IH_d_wl_red. destruct_d_wl_del_red...
-  - destruct_d_wf_wl. _apply_IH_d_wl_red.
-    destruct_d_wl_del_red.
-    eapply d_wl_del_red__inf with (A:=B).
-    + econstructor; eauto. apply d_wl_red_weaken_work1 in H9. inversion H9... 
-    + eapply d_wl_red_weaken_work2; eauto.
   - destruct_d_wf_wl. 
     assert (⊢ᵈʷₛ (work_applys cs (A ᵗ^^ₜ B) ⫤ᵈ Ω)).
     { repeat constructor... apply d_wf_typ_all_open... }
@@ -941,7 +936,7 @@ Proof with auto.
     assert ((work_check e2 B ⫤ᵈ Ω) ⟶ᵈʷ⁎⋅).
       apply IHd_chk_inf2; auto.
       apply d_wl_red_weaken_consw in H6; auto.
-    replace (work_applys c C ⫤ᵈ work_check e2 B ⫤ᵈ Ω) with ((work_applys c C ⫤ᵈ dworklist_empty) ⧺ work_check e2 B ⫤ᵈ Ω) by auto.
+    replace (work_check e2 B ⫤ᵈ work_applys c C ⫤ᵈ Ω) with ((work_check e2 B ⫤ᵈ dworklist_empty) ⧺ work_applys c C ⫤ᵈ Ω) by auto.
     apply d_wl_red_strengthen_work; eauto.
   - destruct_d_wf_wl.
     eapply d_wl_red__inf_abs_mono with (L:=L `union` L0 `union` dom (dwl_to_denv Ω)); eauto.

@@ -25,26 +25,26 @@ Open Scope aworklist_scope.
 Ltac rename_typ_to_fresh' :=
   repeat 
     lazymatch goal with
-    | H : trans_typ ?θ (open_typ_wrt_typ _ _) ?Aᵈ |- _ => fail
-    | H : trans_typ ?θ (?C_T _ _) ?Aᵈ |- _ => fail
-    | H : trans_typ ?θ ?A1ᵃ ?A1ᵈ |- _ => 
-      let A1ᵃ1 := fresh A1ᵃ"ᵈ0" in 
-      rename A1ᵈ into A1ᵃ1;
-      generalize dependent H
+      | H : trans_typ ?θ (open_typ_wrt_typ _ _) ?Aᵈ |- _ => fail
+      | H : trans_typ ?θ (?C_T _ _) ?Aᵈ |- _ => fail
+      | H : trans_typ ?θ ?A1ᵃ ?A1ᵈ |- _ => 
+        let A1ᵃ1 := fresh A1ᵃ"ᵈ0" in 
+        rename A1ᵈ into A1ᵃ1;
+        generalize dependent H
     end.
     
 Ltac rename_typ' :=
   repeat 
     lazymatch goal with
-    | H : trans_typ ?θ (open_typ_wrt_typ ?Aᵃ (typ_var_f ?X)) ?Aᵈ |- _ => 
-      let A1ᵃ1 := fresh Aᵃ"xᵈ" in 
-      rename Aᵈ into A1ᵃ1;
-      generalize dependent H
-    | H : trans_typ ?θ (?C_T _ _) ?Aᵈ |- _ => fail
-    | H : trans_typ ?θ ?A1ᵃ ?A1ᵈ |- _ => 
-      let A1ᵃ1 := fresh A1ᵃ"ᵈ" in 
-      rename A1ᵈ into A1ᵃ1;
-      generalize dependent H
+      | H : trans_typ ?θ (open_typ_wrt_typ ?Aᵃ (typ_var_f ?X)) ?Aᵈ |- _ => 
+        let A1ᵃ1 := fresh Aᵃ"xᵈ" in 
+        rename Aᵈ into A1ᵃ1;
+        generalize dependent H
+      | H : trans_typ ?θ (?C_T _ _) ?Aᵈ |- _ => fail
+      | H : trans_typ ?θ ?A1ᵃ ?A1ᵈ |- _ => 
+        let A1ᵃ1 := fresh A1ᵃ"ᵈ" in 
+        rename A1ᵈ into A1ᵃ1;
+        generalize dependent H
     end.
 
 Ltac rename_typ :=
@@ -73,7 +73,7 @@ Ltac destruct_trans' :=
     | H : trans_typ ?θ (open_typ_wrt_typ _ _) ?Aᵈ |- _ => fail
     | H : trans_typ ?θ (subst_typ_in_typ _ _ _) ?Aᵈ |- _ => fail
     | H : trans_typ ?θ (?C_T _ _) ?Aᵈ |- _ => dependent destruction H
-    end;
+  end;
   try unify_trans_typ;
   try unify_trans_exp.
 
@@ -116,20 +116,20 @@ Ltac _apply_IH_a_wl_red :=
 
 Ltac trans_all_typ :=
   match goal with 
-  | H5 : nil ⊩ ?Γ ⇝ ?Ω ⫣ ?θ |- _ => 
-    repeat
-    match goal with 
-    | H1 : a_wf_typ (awl_to_aenv ?Γ) ?C |- _ =>
-      let H3 := fresh "Htrans" in
-      let H4 := fresh "Htrans"  in
-      let C1 := fresh C"ᵈ" in
-        lazymatch goal with
-        | _ : trans_typ θ C ?Cᵈ |- _ => fail
-        | _ : _ |- _ =>
-        eapply trans_typ_total in H1 as H3; eauto
-        end;
-        destruct H3 as [C1]
-    end
+    | H5 : nil ⊩ ?Γ ⇝ ?Ω ⫣ ?θ |- _ => 
+      repeat
+        match goal with 
+          | H1 : a_wf_typ (awl_to_aenv ?Γ) ?C |- _ =>
+            let H3 := fresh "Htrans" in
+            let H4 := fresh "Htrans"  in
+            let C1 := fresh C"ᵈ" in
+              lazymatch goal with
+                | _ : trans_typ θ C ?Cᵈ |- _ => fail
+                | _ : _ |- _ =>
+                  eapply trans_typ_total in H1 as H3; eauto
+              end;
+              destruct H3 as [C1]
+        end
   end.
 
 #[local] Hint Constructors wf_ss : core.
@@ -1341,10 +1341,6 @@ Proof with eauto.
   - exists (work_infer (exp_app eᵈ eᵈ0) csᵈ ⫤ᵈ Ω).
     split...
     destruct_d_wl_del_red...
-    eapply d_wl_del_red__inf with (A:=B)...
-    econstructor...
-      apply d_wl_red_weaken_work1 in IHHdred. dependent destruction IHHdred...
-    apply d_wl_red_weaken_work2 in IHHdred...
   - exists (work_infapp Aᵈ Bᵈ eᵈ csᵈ ⫤ᵈ Ω)...
     split. destruct_d_wl_del_red. exists θ...
     econstructor...

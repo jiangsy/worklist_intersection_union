@@ -18,35 +18,33 @@ Open Scope aworklist_scope.
 
 Fixpoint rename_tvar_in_aworklist (Y X:typvar) (Γ:aworklist) {struct Γ} : aworklist :=
   match Γ with
-  | aworklist_empty => aworklist_empty
-  | (aworklist_cons_var Γ' X' b) => 
-    match b with 
-    | abind_var_typ A => aworklist_cons_var (rename_tvar_in_aworklist Y X Γ') X' (subst_typ_in_abind (`Y ) X b)
-    | _ => aworklist_cons_var (rename_tvar_in_aworklist Y X Γ') (if X' == X then Y else X') b
-    end
-  | (aworklist_cons_work Γ' w) => aworklist_cons_work (rename_tvar_in_aworklist Y X Γ') (subst_typ_in_work (` Y) X w)
+    | aworklist_empty => aworklist_empty
+    | (aworklist_cons_var Γ' X' b) => 
+      match b with 
+        | abind_var_typ A => aworklist_cons_var (rename_tvar_in_aworklist Y X Γ') X' (subst_typ_in_abind (`Y ) X b)
+        | _ => aworklist_cons_var (rename_tvar_in_aworklist Y X Γ') (if X' == X then Y else X') b
+      end
+    | (aworklist_cons_work Γ' w) => aworklist_cons_work (rename_tvar_in_aworklist Y X Γ') (subst_typ_in_work (` Y) X w)
 end.
 
 Fixpoint rename_var_in_aworklist (y x:expvar) (Γ:aworklist) {struct Γ} : aworklist :=
   match Γ with
-  | aworklist_empty => aworklist_empty
-  | (aworklist_cons_var Γ' x' b) => 
-    match b with 
-    | abind_var_typ _ => aworklist_cons_var (rename_var_in_aworklist y x Γ') (if x' == x then y else x') b
-    | _ => aworklist_cons_var (rename_var_in_aworklist y x Γ') x' b
-    end
-  | (aworklist_cons_work Γ' w) => aworklist_cons_work (rename_var_in_aworklist y x Γ') (subst_exp_in_work (exp_var_f y) x w)
+    | aworklist_empty => aworklist_empty
+    | (aworklist_cons_var Γ' x' b) => 
+      match b with 
+        | abind_var_typ _ => aworklist_cons_var (rename_var_in_aworklist y x Γ') (if x' == x then y else x') b
+        | _ => aworklist_cons_var (rename_var_in_aworklist y x Γ') x' b
+      end
+    | (aworklist_cons_work Γ' w) => aworklist_cons_work (rename_var_in_aworklist y x Γ') (subst_exp_in_work (exp_var_f y) x w)
   end.
 
 Notation "{ Y ᵃʷ/ₜᵥ X } Γ" :=
   (rename_tvar_in_aworklist Y X Γ)
-    ( at level 49, Y at level 50, X at level 0
-    , right associativity) : type_scope. 
+    ( at level 49, Y at level 50, X at level 0, right associativity) : type_scope. 
 
 Notation "{ y ᵃʷ/ₑᵥ x } Γ" :=
   (rename_var_in_aworklist y x Γ)
-    ( at level 49, y at level 50, x at level 0
-    , right associativity) : type_scope. 
+    ( at level 49, y at level 50, x at level 0, right associativity) : type_scope. 
 
 Lemma rename_tvar_in_aworklist_tvar_bind_same : forall Γ X1 X2 Y b,
   ⊢ᵃʷ Γ ->
@@ -234,10 +232,6 @@ Proof.
   - simpl. rewrite ftvar_in_a_wf_typ_upper; eauto. fsetdec.
   - simpl. rewrite ftvar_in_wf_work_upper; eauto. fsetdec.
 Qed.
-
-(* -- *)
-
-(* #[local] Hint Rewrite ftvar_in_aworklist'_awl_cons_tvar ftvar_in_aworklist'_awl_app : core. *)
 
 Lemma rename_tvar_in_typ_rev_eq : forall X Y A,
   Y ∉ ftvar_in_typ A ->
@@ -1600,32 +1594,32 @@ Qed.
 
 Ltac solve_notin_rename_var' :=
   match goal with
-  | H : context [(dom (awl_to_aenv ?Γ))] |- context [fvar_in_aworklist' ?Γ] =>
-    rewrite fvar_in_aworklist_upper; auto
-  | H : _ |- context [open_exp_wrt_exp ?e1 ?e2] =>
-    rewrite fvar_in_exp_open_exp_wrt_exp_upper; auto
-  | H : _ |- context [subst_exp_in_exp ?e1 ?x ?e2]  =>
-    match goal with
-    | H1 : x ∉ fvar_in_exp (subst_exp_in_exp e1 x e2) |- _ => fail 1
-    | _ => assert (x ∉ fvar_in_exp (subst_exp_in_exp e1 x e2)) by (apply subst_exp_in_exp_fresh_same; auto)
-    end
-  | H : _ |- context [subst_exp_in_contd ?cd ?x ?e]  =>
-    match goal with
-    | H1 : x ∉ fvar_in_contd (subst_exp_in_contd cd x e) |- _ => fail 1
-    | _ => assert (x ∉ fvar_in_contd (subst_exp_in_contd cd x e)) by (apply subst_exp_in_contd_fresh_same; auto)
-    end
-  | H : _ |- context [rename_var_in_aworklist ?x' ?x ?Γ] =>
-    (* assert True *)
-    match goal with
-    | H1 : x ∉ fvar_in_aworklist' (rename_var_in_aworklist x' x Γ) |- _ => fail 1
-    | _ =>
-      assert (x ∉ fvar_in_aworklist' (rename_var_in_aworklist x' x Γ)) by
-        (apply notin_rename_var_in_aworklist; auto)
-    end
-  | H : aworklist_subst ?Γ ?X ?A ?Γ1 ?Γ2 |- context [fvar_in_aworklist' ?Γ2] =>
-      rewrite aworklist_subst_fvar_in_aworklist_2; eauto
-  | H : aworklist_subst ?Γ ?X ?A ?Γ1 ?Γ2 |- context [fvar_in_aworklist' ?Γ1] =>
-      rewrite aworklist_subst_fvar_in_aworklist_1; eauto
+    | H : context [(dom (awl_to_aenv ?Γ))] |- context [fvar_in_aworklist' ?Γ] =>
+      rewrite fvar_in_aworklist_upper; auto
+    | H : _ |- context [open_exp_wrt_exp ?e1 ?e2] =>
+      rewrite fvar_in_exp_open_exp_wrt_exp_upper; auto
+    | H : _ |- context [subst_exp_in_exp ?e1 ?x ?e2]  =>
+      match goal with
+        | H1 : x ∉ fvar_in_exp (subst_exp_in_exp e1 x e2) |- _ => fail 1
+        | _ => assert (x ∉ fvar_in_exp (subst_exp_in_exp e1 x e2)) by (apply subst_exp_in_exp_fresh_same; auto)
+      end
+    | H : _ |- context [subst_exp_in_contd ?cd ?x ?e]  =>
+      match goal with
+        | H1 : x ∉ fvar_in_contd (subst_exp_in_contd cd x e) |- _ => fail 1
+        | _ => assert (x ∉ fvar_in_contd (subst_exp_in_contd cd x e)) by (apply subst_exp_in_contd_fresh_same; auto)
+      end
+    | H : _ |- context [rename_var_in_aworklist ?x' ?x ?Γ] =>
+      (* assert True *)
+      match goal with
+        | H1 : x ∉ fvar_in_aworklist' (rename_var_in_aworklist x' x Γ) |- _ => fail 1
+        | _ =>
+          assert (x ∉ fvar_in_aworklist' (rename_var_in_aworklist x' x Γ)) by
+            (apply notin_rename_var_in_aworklist; auto)
+      end
+    | H : aworklist_subst ?Γ ?X ?A ?Γ1 ?Γ2 |- context [fvar_in_aworklist' ?Γ2] =>
+        rewrite aworklist_subst_fvar_in_aworklist_2; eauto
+    | H : aworklist_subst ?Γ ?X ?A ?Γ1 ?Γ2 |- context [fvar_in_aworklist' ?Γ1] =>
+        rewrite aworklist_subst_fvar_in_aworklist_1; eauto
   end; auto.
 
 Ltac solve_notin_rename_var :=
@@ -1634,8 +1628,8 @@ Ltac solve_notin_rename_var :=
 
 Ltac rewrite_aworklist_rename_var_rev' :=
   match goal with
-  | H : context [rename_var_in_aworklist _ _ (rename_var_in_aworklist _ _ _)] |- _ =>
-      rewrite rename_var_in_aworklist_rev_eq in H; repeat solve_notin_rename_var
+    | H : context [rename_var_in_aworklist _ _ (rename_var_in_aworklist _ _ _)] |- _ =>
+        rewrite rename_var_in_aworklist_rev_eq in H; repeat solve_notin_rename_var
   end.
 
 Ltac rewrite_aworklist_rename_var_rev :=
@@ -1643,11 +1637,11 @@ Ltac rewrite_aworklist_rename_var_rev :=
 
 Ltac rewrite_aworklist_rename_var' :=
   match goal with
-  | H : context [rename_var_in_aworklist _ _ (awl_app _ _)] |- _ =>
-      rewrite <- awl_app_rename_var_comm in H; simpl; auto
-  | H : context [rename_var_in_aworklist _ _ (subst_typ_in_aworklist _ _ _)] |- _ =>
-      rewrite subst_exp_in_awl_rename_tvar_comm in H; auto;
-      solve_notin_rename_var
+    | H : context [rename_var_in_aworklist _ _ (awl_app _ _)] |- _ =>
+        rewrite <- awl_app_rename_var_comm in H; simpl; auto
+    | H : context [rename_var_in_aworklist _ _ (subst_typ_in_aworklist _ _ _)] |- _ =>
+        rewrite subst_exp_in_awl_rename_tvar_comm in H; auto;
+        solve_notin_rename_var
   end.
 
 Ltac rewrite_aworklist_rename_var :=
