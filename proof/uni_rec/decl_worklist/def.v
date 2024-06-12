@@ -252,8 +252,7 @@ Inductive d_wl_red : dworklist -> Prop :=    (* defn d_wl_red *)
   | d_wl_red__applyd : forall (Ω:dworklist) (w:work) (A B:typ) (cd:contd),
       apply_contd cd A B w ->
       d_wl_red (dworklist_cons_work Ω w) ->
-      d_wl_red (dworklist_cons_work Ω (work_applyd cd A B))   
-.
+      d_wl_red (dworklist_cons_work Ω (work_applyd cd A B)).
 
 #[export] Hint Constructors d_wl_red d_wf_wl d_wl_del_red : core.
 

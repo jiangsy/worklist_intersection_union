@@ -14,30 +14,30 @@ Fixpoint awl_app (Γ1 Γ2 : aworklist) :=
   end.
     
 Inductive aworklist_subst : aworklist -> typvar -> typ -> aworklist -> aworklist -> Prop :=
-| a_ws1__stop : forall Γ X A , 
+| a_ws__stop : forall Γ X A , 
     aworklist_subst (aworklist_cons_var Γ X (abind_etvar_empty)) X A Γ aworklist_empty
-| a_ws1__var_stay : forall Γ X Y A B Γ1 Γ2,
+| a_ws__var_stay : forall Γ X Y A B Γ1 Γ2,
     aworklist_subst Γ X A Γ1 Γ2 ->
     aworklist_subst (aworklist_cons_var Γ Y (abind_var_typ B)) X A Γ1 (aworklist_cons_var Γ2 Y (abind_var_typ B))
-| a_ws1__tvar_stay : forall Γ X Y A Γ1 Γ2,
+| a_ws__tvar_stay : forall Γ X Y A Γ1 Γ2,
     aworklist_subst Γ X A Γ1 Γ2 ->
     Y <> X ->
     Y `notin` ftvar_in_typ A -> 
     aworklist_subst (aworklist_cons_var Γ Y (abind_tvar_empty)) X A Γ1 (aworklist_cons_var Γ2 Y (abind_tvar_empty))
-| a_ws1__stvar_stay : forall Γ X Y A Γ1 Γ2,
+| a_ws__stvar_stay : forall Γ X Y A Γ1 Γ2,
     aworklist_subst Γ X A Γ1 Γ2 ->
     Y <> X ->
     Y `notin` ftvar_in_typ A -> 
     aworklist_subst (aworklist_cons_var Γ Y (abind_stvar_empty)) X A Γ1 (aworklist_cons_var Γ2 Y (abind_stvar_empty))
-| a_ws1__work_stay : forall Γ X A w Γ1 Γ2,
+| a_ws__work_stay : forall Γ X A w Γ1 Γ2,
     aworklist_subst Γ X A Γ1 Γ2 ->
     aworklist_subst (aworklist_cons_work Γ w) X A  Γ1 (aworklist_cons_work Γ2 w)
-| a_ws1__etvar_stay : forall Γ X Y A Γ1 Γ2,
+| a_ws__etvar_stay : forall Γ X Y A Γ1 Γ2,
     aworklist_subst Γ X A Γ1 Γ2 ->
     Y <> X ->
     Y `notin` ftvar_in_typ A -> 
     aworklist_subst (aworklist_cons_var Γ Y (abind_etvar_empty)) X A Γ1 (aworklist_cons_var Γ2 Y (abind_etvar_empty))
-| a_ws1__etvar_move : forall Γ1 Γ2 X Y A  Γ'1 Γ'2,
+| a_ws__etvar_move : forall Γ1 Γ2 X Y A  Γ'1 Γ'2,
     aworklist_subst (awl_app Γ2 (aworklist_cons_var (aworklist_cons_var Γ1 Y abind_etvar_empty) X abind_etvar_empty)) X A Γ'1 Γ'2 ->
     Y <> X ->
     Y `in` ftvar_in_typ A -> 

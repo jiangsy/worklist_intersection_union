@@ -11,6 +11,12 @@ Require Import uni_monoiu.ltac_utils.
 #[export] Hint Constructors d_wf_env: core.
 #[export] Hint Constructors s_in: core.
 
+Lemma neq_symm {A : Type} : forall (a b : A),
+  a <> b -> b <> a. 
+Proof. 
+  intros. unfold not. intros. subst. contradiction.
+Qed.
+
 Ltac solve_by_inverts n :=
   match goal with | H : ?T |- _ =>
   match type of T with Prop =>
@@ -317,6 +323,7 @@ Proof.
     inversion x; eauto.
   - destruct A; try solve [inversion x]; auto.
     inversion x; eauto.
+  - destruct A; try solve [inversion x]; auto.
 Qed.
 
 Lemma lc_typ_subst : forall A B X,
@@ -386,6 +393,12 @@ Proof.
     inversion x. subst.
     constructor; eauto.
     eapply lc_typ_subst_inv; eauto.
+  - destruct e; try solve [inversion x]; auto.
+    inversion x. subst.
+    constructor; eauto.
+  - destruct e; try solve [inversion x]; auto.
+    inversion x. subst.
+    constructor. eauto.
 Qed.
 
 Lemma s_in_subst : forall X Y A B,
@@ -487,67 +500,3 @@ Proof.
   - apply s_in__all with (L:=L `union` singleton X). intros. inst_cofinites_with Y0. 
     rewrite subst_typ_in_typ_open_typ_wrt_typ_fresh2; auto...
 Qed.
-
-Lemma neq_all_rename: forall A X Y,
-  neq_all A ->
-  neq_all ({typ_var_f Y ᵗ/ₜ X} A).
-Proof with  simpl; eauto using lc_typ_subst; try solve_by_invert.
-  intros. destruct A...
-  - case_if; subst*.
-  - eapply neq_all__arrow;
-      applys lc_typ_subst...
-    all: inverts~ H.
-  - econstructor; applys lc_typ_subst; try inverts~ H...
-  - econstructor; applys lc_typ_subst; try inverts~ H...
-Qed.
-
-Lemma neq_intersection_rename: forall A X Y,
-  neq_intersection A ->
-  neq_intersection ({typ_var_f Y ᵗ/ₜ X} A).
-Proof with  simpl; eauto using lc_typ_subst; try solve_by_invert.
-  intros. destruct A...
-  - case_if; subst*.
-  - eapply neq_intersection__arrow;
-      applys lc_typ_subst...
-    all: inverts~ H.
-  - econstructor.
-    dependent destruction H...
-    forwards*: lc_typ_subst (typ_all A) (typ_var_f Y) X.
-  - econstructor; applys lc_typ_subst; try inverts~ H...
-Qed.
-
-Lemma neq_union_rename: forall A X Y,
-  neq_union A ->
-  neq_union ({typ_var_f Y ᵗ/ₜ X} A).
-Proof with  simpl; eauto using lc_typ_subst; try solve_by_invert.
-  intros. destruct A...
-  - case_if; subst*.
-  - eapply neq_union__arrow;
-      applys lc_typ_subst...
-    all: inverts~ H.
-  - econstructor.
-    dependent destruction H...
-    forwards*: lc_typ_subst (typ_all A) (typ_var_f Y) X.
-  - econstructor; applys lc_typ_subst; try inverts~ H...
-Qed.
-
-Lemma neq_all_lc_typ : forall A,
-  neq_all A -> lc_typ A.
-Proof.
-  intros. induction H; eauto.
-Qed.
-
-Lemma neq_intersection_lc_typ : forall A,
-  neq_intersection A -> lc_typ A.
-Proof.
-  intros. induction H; eauto.
-Qed.
-
-Lemma neq_union_lc_typ : forall A,
-  neq_union A -> lc_typ A.
-Proof.
-  intros. induction H; eauto.
-Qed.
-
-#[export] Hint Resolve neq_all_rename neq_intersection_rename neq_union_rename : core.
-#[export] Hint Immediate neq_all_lc_typ neq_intersection_lc_typ neq_union_lc_typ : core.

@@ -1173,6 +1173,7 @@ Proof with eauto 8 using aworklist_subst_wf_typ_subst, aworklist_subst_wf_exp_su
   - destruct_wf_arrow...
     destruct_wf_arrow...
     constructor...
+  - destruct_wf_arrow...
 Qed.
 
 Lemma aworklist_subst_mono_typ : forall Γ X A T Γ1 Γ2,
@@ -1417,6 +1418,11 @@ Proof.
   - simpl. rewrite IHa_wf_exp; eauto.
     rewrite ftvar_in_a_wf_typ_upper; eauto.
     fsetdec.
+  - simpl. rewrite IHa_wf_exp1; eauto.
+    rewrite IHa_wf_exp2; eauto.
+    fsetdec.
+  - simpl. rewrite IHa_wf_exp; eauto.
+    fsetdec.   
 Qed.
 
 Lemma ftvar_in_wf_conts_upper : forall Γ cs,

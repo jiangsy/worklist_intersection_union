@@ -81,13 +81,16 @@ Qed.
 Lemma subst_exp_in_exp_refl : forall x e,
   {exp_var_f x ᵉ/ₑ x} e = e.
 Proof.
-  - intros. dependent induction e; simpl; auto.
-    + destruct_eq_atom; eauto.
-    + rewrite IHe; auto.
-    + rewrite IHe1. rewrite IHe2. auto.
-    + rewrite IHe; auto. 
-    + rewrite IHe. auto.
-    + rewrite IHe. auto.
+  intros. dependent induction e; simpl; auto.
+  - destruct_eq_atom; eauto.
+  - rewrite IHe; auto.
+  - rewrite IHe1. rewrite IHe2. auto.
+  - rewrite IHe; auto. 
+  - rewrite IHe. auto.
+  - rewrite IHe. auto.
+  - rewrite IHe1.
+    rewrite IHe2. auto.
+  - rewrite IHe. auto.
 Qed.
 
 Theorem d_sub_rename_var : forall Ψ1 Ψ2 x y A B C,  
@@ -261,13 +264,14 @@ Qed.
 Lemma subst_typ_in_exp_refl_eq : forall X e,
   subst_typ_in_exp (`X) X e = e.
 Proof with auto.
-  - intros. 
-    dependent induction e; simpl; auto.
-    + rewrite IHe...
-    + rewrite IHe1... rewrite IHe2...
-    + rewrite IHe... 
-    + rewrite subst_typ_in_typ_refl_eq. rewrite IHe. auto.
-    + rewrite subst_typ_in_typ_refl_eq. rewrite IHe. auto.
+  intros. dependent induction e; simpl; auto.
+  - rewrite IHe...
+  - rewrite IHe1... rewrite IHe2...
+  - rewrite IHe... 
+  - rewrite subst_typ_in_typ_refl_eq. rewrite IHe. auto.
+  - rewrite subst_typ_in_typ_refl_eq. rewrite IHe. auto.
+  - rewrite IHe1. rewrite IHe2. auto. 
+  - rewrite IHe. auto.
 Qed.
 
 Theorem d_sub_rename_dtvar_cons : forall Ψ X Y A B b,
@@ -346,6 +350,8 @@ Proof with eauto 6 using d_wf_typ_rename_dtvar, d_mono_typ_rename_dtvar, d_wf_te
   intros. dependent induction H; simpl in *; eauto...
   - constructor...
     apply d_binds_var_typ_rename_tvar...
+  - econstructor...
+    replace (typ_label l) with ({` Y ᵗ/ₜ X} (typ_label l)) by auto...
   - inst_cofinites_for d_chk_inf__inf_abs_mono.
     + inst_cofinites_by L.
       apply d_chk_inf_wf_env in H0. dependent destruction H0... dependent destruction H...

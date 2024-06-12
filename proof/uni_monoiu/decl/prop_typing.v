@@ -330,7 +330,11 @@ Fixpoint exp_size (e:exp) : nat :=
     | exp_anno e1 _ => 1 + exp_size e1
     | exp_tapp e1 _ => 1 + exp_size e1
     | exp_tabs e => 1 + exp_size e
+    | exp_rcd_nil => 1
+    | exp_rcd_cons _ e1 e2 => 1 + exp_size e1 + exp_size e2
+    | exp_rcd_proj e _ => 1 + exp_size e
   end.
+
 
 Fixpoint typ_size (A:typ) : nat :=
   match A with
@@ -346,6 +350,7 @@ Lemma d_wneq_all_tapp_false : forall Ψ A B C,
 Proof. 
   intros. generalize dependent B. generalize dependent C. 
     dependent induction H; intros; auto.
+  - dependent destruction H0.
   - dependent destruction H0.
   - dependent destruction H0.
   - dependent destruction H0.
@@ -702,6 +707,24 @@ Proof with auto.
       (* () => 1 *)
       * exists typ_unit. split; auto.
         econstructor. eapply d_subtenv_wf_env; eauto.
+      * exists typ_unit. split; auto.
+        econstructor. eapply d_subtenv_wf_env; eauto.
+      * eapply IHn1 in Hty1; eauto.
+        eapply IHn1 in Hty2; eauto.
+        destruct Hty1 as [A1' [Hsub1 Hinf1]].
+        destruct Hty2 as [A2' [Hsub2 Hinf2]].
+        exists (typ_intersection (typ_arrow (typ_label l1) A1') A2'). split.
+        -- apply d_sub_d_wf in Hsub1 as d_wf1.  apply d_sub_d_wf in Hsub2 as d_wf2.
+          intuition.
+        -- eauto. econstructor; eauto. eapply d_subtenv_wf_env; eauto.
+      * eapply IHn1 in Hty; eauto. destruct Hty as [A' [Hsub Hinf]].
+        eapply d_infabs_subsumption in Hsub; eauto. destruct Hsub as [B' [C']].
+        exists C'; intuition.
+        -- dependent destruction H2...
+        -- dependent destruction H2... econstructor; eauto.
+           eapply d_sub_transitivity with (B:=B); eauto. 
+            eapply d_sub_subenv; eauto. eapply d_subtenv_subenv; eauto.
+            eapply d_sub_subenv; eauto. eapply d_subtenv_subenv; eauto.
       (* e1 e2 => A *)
       * eapply IHn1 in Hty1; eauto...
         destruct Hty1 as [A2]. inversion H0.
@@ -795,16 +818,14 @@ Proof with auto.
            ++ inversion H3.
         -- dependent destruction H1; auto...
         -- dependent destruction H1; eauto using d_subtenv_wf_typ...
-      (* e <= forall a. A *)
-      (*  * admit. ignore for now *** *)
       (* e <= A *)
       * intros.
         eapply IHn2 in Hty; eauto.
         destruct Hty as [A'' [Hsub Hinf]].
         apply d_chk_inf__chk_sub with (B := A''); auto.
-        apply sub_transitivity with (B := B); auto...
+        apply d_sub_transitivity with (B := B); auto...
         eapply d_sub_subenv; eauto. apply d_subtenv_subenv... 
-        apply sub_transitivity with (B := A); auto...
+        apply d_sub_transitivity with (B := A); auto...
         eapply d_sub_subenv; eauto. apply d_subtenv_subenv... 
         eapply d_sub_subenv; eauto. apply d_subtenv_subenv... 
         simpl. lia.

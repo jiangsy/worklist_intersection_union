@@ -702,7 +702,7 @@ Proof with auto.
       (* e1 e2 => A *)
       * exists typ_unit. split; auto.
         econstructor. eapply d_subtenv_wf_env; eauto.
-      (* e1 => A => e2 => A *)
+      (* ⟨ l ↦ e1, e2 ⟩ => A *)
       * eapply IHn1 in Hty1; eauto.
         eapply IHn1 in Hty2; eauto.
         destruct Hty1 as [A1' [Hsub1 Hinf1]].

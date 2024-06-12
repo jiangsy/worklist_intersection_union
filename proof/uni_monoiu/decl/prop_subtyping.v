@@ -153,8 +153,7 @@ Theorem d_sub_mono_stvar_false : forall Ψ T X,
   Ψ ᵗ⊢ᵈₘ T ->
   False.
 Proof.
-  intros.
-  induction H1; dependent destruction H0; auto.
+  intros. induction H1; dependent destruction H0; auto.
   unify_binds.
 Qed.
 
@@ -163,26 +162,11 @@ Inductive d_ord_mono : denv -> typ -> Prop :=
       d_mono_typ Ψ (typ_var_f X) ->
       d_ord_mono Ψ (typ_var_f X)
   | d_ordmono__unit : forall Ψ, d_ord_mono Ψ typ_unit
+  | d_ordmono__label : forall Ψ l, d_ord_mono Ψ (typ_label l)
   | d_ordmono__arr : forall Ψ T1 T2,
       d_mono_typ Ψ T1 ->
       d_mono_typ Ψ T2 ->
       d_ord_mono Ψ (typ_arrow T1 T2).
-
-Lemma d_ord_mono_neq_intersection: forall Ψ T1,
-  d_ord_mono Ψ T1 ->
-  neq_intersection T1.
-Proof.
-  intros. induction H; auto.
-  econstructor; eapply d_mono_typ_lc; eauto.
-Qed.
-
-Lemma d_ord_mono_neq_union: forall Ψ T1,
-  d_ord_mono Ψ T1 ->
-  neq_union T1.
-Proof.
-  intros. induction H; auto.
-  econstructor; eapply d_mono_typ_lc; eauto.
-Qed.
 
 Inductive d_mono_ordiu : denv -> typ -> Prop :=
   | d_monoord__base : forall Ψ T1,
@@ -210,8 +194,6 @@ Lemma d_ord_mono_sound: forall Ψ A1,
 Proof.
   intros. induction H; auto.
 Qed.
-
-(* Hint Resolve d_wf_typ_weaken : weaken. *)
 
 Lemma d_wneq_all_weaken : forall Ψ1 Ψ2 Ψ3 A,
   d_wneq_all (Ψ3 ++ Ψ1) A ->
@@ -352,61 +334,63 @@ Proof with subst; eauto using d_wf_typ_weaken_app.
 Qed.
 
 Inductive d_sub_size : denv -> typ -> typ -> nat -> Prop :=    (* defn d_sub *)
- | d_subs__top : forall (Ψ:denv) (A1:typ) (n:nat),
-     d_wf_env Ψ ->
-     d_wf_typ Ψ A1 ->
-     d_sub_size Ψ A1 typ_top n
- | d_subs__bot : forall (Ψ:denv) (B1:typ) (n:nat),
-     d_wf_env Ψ ->
-     d_wf_typ Ψ B1 ->
-     d_sub_size Ψ typ_bot B1 n
- | d_subs__unit : forall (Ψ:denv) (n:nat),
-     d_wf_env Ψ ->
-     d_sub_size Ψ typ_unit typ_unit n
- | d_subs__tvar : forall (Ψ:denv) (X:typvar) (n:nat),
-     d_wf_env Ψ ->
-     d_wf_typ Ψ (typ_var_f X) ->
-     d_sub_size Ψ (typ_var_f X) (typ_var_f X) n
- | d_subs__arrow : forall (Ψ:denv) (A1 A2 B1 B2:typ) (n1 n2:nat),
-     d_sub_size Ψ B1 A1 n1 ->
-     d_sub_size Ψ A2 B2 n2 ->
-     d_sub_size Ψ (typ_arrow A1 A2) (typ_arrow B1 B2) (S (n1 + n2))
- | d_subs__all : forall (L:vars) (Ψ:denv) (A1 B1:typ) (n:nat),
+  | d_subs__top : forall (Ψ:denv) (A1:typ) (n:nat),
+      d_wf_env Ψ ->
+      d_wf_typ Ψ A1 ->
+      d_sub_size Ψ A1 typ_top n
+  | d_subs__bot : forall (Ψ:denv) (B1:typ) (n:nat),
+      d_wf_env Ψ ->
+      d_wf_typ Ψ B1 ->
+      d_sub_size Ψ typ_bot B1 n
+  | d_subs__unit : forall (Ψ:denv) (n:nat),
+      d_wf_env Ψ ->
+      d_sub_size Ψ typ_unit typ_unit n
+  | d_subs__tvar : forall (Ψ:denv) (X:typvar) (n:nat),
+      d_wf_env Ψ ->
+      d_wf_typ Ψ (typ_var_f X) ->
+      d_sub_size Ψ (typ_var_f X) (typ_var_f X) n
+  | d_subs__label : forall (Ψ:denv) (l:label) (n:nat),
+      d_wf_env Ψ ->
+      d_sub_size Ψ (typ_label l) (typ_label l) n
+  | d_subs__arrow : forall (Ψ:denv) (A1 A2 B1 B2:typ) (n1 n2:nat),
+      d_sub_size Ψ B1 A1 n1 ->
+      d_sub_size Ψ A2 B2 n2 ->
+      d_sub_size Ψ (typ_arrow A1 A2) (typ_arrow B1 B2) (S (n1 + n2))
+  | d_subs__all : forall (L:vars) (Ψ:denv) (A1 B1:typ) (n:nat),
       ( forall X , X \notin  L  -> s_in X  ( open_typ_wrt_typ A1 (typ_var_f X) )  )  ->
       ( forall X , X \notin  L  -> s_in X  ( open_typ_wrt_typ B1 (typ_var_f X) )  )  ->
       ( forall X , X \notin  L  -> d_sub_size  ( X ~ dbind_stvar_empty  ++  Ψ )   ( open_typ_wrt_typ A1 (typ_var_f X) )   ( open_typ_wrt_typ B1 (typ_var_f X) )  n )  ->
       d_sub_size Ψ (typ_all A1) (typ_all B1) (S n)
- | d_subs__alll : forall (L:vars) (Ψ:denv) (A1 B1 T1:typ) (n:nat),
-     d_wneq_all Ψ B1 ->
+  | d_subs__alll : forall (L:vars) (Ψ:denv) (A1 B1 T1:typ) (n:nat),
+      d_wneq_all Ψ B1 ->
       ( forall X , X \notin  L  -> s_in X  ( open_typ_wrt_typ A1 (typ_var_f X) )  )  ->
-     d_mono_typ Ψ T1 ->
-     d_sub_size Ψ  (open_typ_wrt_typ  A1   T1 )  B1 n ->
-     d_sub_size Ψ (typ_all A1) B1 (S n)
- | d_subs__intersection1 : forall (Ψ:denv) (A1 B1 B2:typ) (n1 n2:nat),
-     d_sub_size Ψ A1 B1 n1 ->
-     d_sub_size Ψ A1 B2 n2 ->
-     d_sub_size Ψ A1 (typ_intersection B1 B2) (S (n1 + n2))
- | d_subs__intersection2 : forall (Ψ:denv) (A1 A2 B1:typ) (n:nat),
-     d_sub_size Ψ A1 B1 n ->
-     d_wf_typ Ψ A2 ->
-     d_sub_size Ψ (typ_intersection A1 A2) B1 (S n)
- | d_subs__intersection3 : forall (Ψ:denv) (A1 A2 B1:typ) (n:nat),
-     d_sub_size Ψ A2 B1 n ->
-     d_wf_typ Ψ A1 ->
-     d_sub_size Ψ (typ_intersection A1 A2) B1 (S n)
- | d_subs__union1 : forall (Ψ:denv) (A1 B1 B2:typ) (n:nat),
-     d_sub_size Ψ A1 B1 n ->
-     d_wf_typ Ψ B2 ->
-     d_sub_size Ψ A1 (typ_union B1 B2) (S n)
- | d_subs__union2 : forall (Ψ:denv) (A1 B1 B2:typ) (n:nat),
-     d_sub_size Ψ A1 B2 n ->
-     d_wf_typ Ψ B1 ->
-     d_sub_size Ψ A1 (typ_union B1 B2) (S n)
- | d_subs__union3 : forall (Ψ:denv) (A1 A2 B1:typ) (n1 n2:nat),
-     d_sub_size Ψ A1 B1 n1 ->
-     d_sub_size Ψ A2 B1 n2 ->
-     d_sub_size Ψ (typ_union A1 A2) B1 (S (n1 + n2)).
-     
+      d_mono_typ Ψ T1 ->
+      d_sub_size Ψ  (open_typ_wrt_typ  A1   T1 )  B1 n ->
+      d_sub_size Ψ (typ_all A1) B1 (S n)
+  | d_subs__intersection1 : forall (Ψ:denv) (A1 B1 B2:typ) (n1 n2:nat),
+      d_sub_size Ψ A1 B1 n1 ->
+      d_sub_size Ψ A1 B2 n2 ->
+      d_sub_size Ψ A1 (typ_intersection B1 B2) (S (n1 + n2))
+  | d_subs__intersection2 : forall (Ψ:denv) (A1 A2 B1:typ) (n:nat),
+      d_sub_size Ψ A1 B1 n ->
+      d_wf_typ Ψ A2 ->
+      d_sub_size Ψ (typ_intersection A1 A2) B1 (S n)
+  | d_subs__intersection3 : forall (Ψ:denv) (A1 A2 B1:typ) (n:nat),
+      d_sub_size Ψ A2 B1 n ->
+      d_wf_typ Ψ A1 ->
+      d_sub_size Ψ (typ_intersection A1 A2) B1 (S n)
+  | d_subs__union1 : forall (Ψ:denv) (A1 B1 B2:typ) (n:nat),
+      d_sub_size Ψ A1 B1 n ->
+      d_wf_typ Ψ B2 ->
+      d_sub_size Ψ A1 (typ_union B1 B2) (S n)
+  | d_subs__union2 : forall (Ψ:denv) (A1 B1 B2:typ) (n:nat),
+      d_sub_size Ψ A1 B2 n ->
+      d_wf_typ Ψ B1 ->
+      d_sub_size Ψ A1 (typ_union B1 B2) (S n)
+  | d_subs__union3 : forall (Ψ:denv) (A1 A2 B1:typ) (n1 n2:nat),
+      d_sub_size Ψ A1 B1 n1 ->
+      d_sub_size Ψ A2 B1 n2 ->
+      d_sub_size Ψ (typ_union A1 A2) B1 (S (n1 + n2)).
 
 Notation "Ψ ⊢ A <: B | n" :=
   (d_sub_size Ψ A B n)
@@ -501,6 +485,8 @@ Proof with (simpl in *; eauto using d_wf_env_subst_tvar).
       applys* d_wf_env_rename_stvar...
       forwards: d_wf_typ_rename_stvar Y H0...
       case_if in H1...
+  - econstructor.
+    eapply d_wf_env_rename_dtvar...
   - pick fresh SZ and apply d_subs__all. inst_cofinites_with SZ.
     + rewrite subst_typ_in_typ_open_typ_wrt_typ_fresh2...
       applys~ s_in_subst_inv.
@@ -664,6 +650,7 @@ Inductive d_ord : typ -> Prop :=
   | d_ord__bot : d_ord typ_bot
   | d_ord__top : d_ord typ_top
   | d_ord__unit : d_ord typ_unit
+  | d_ord__label : forall l, d_ord (typ_label l)
   | d_ord__arr : forall A1 A2,
       d_ord (typ_arrow A1 A2)
   | d_ord__all : forall A,
@@ -787,13 +774,6 @@ Proof.
   intros. eapply d_sub_open_mono_eq_stvar_false; eauto.
   econstructor.
 Qed.
-
-Ltac inversion_neq :=
-  match goal with
-    | H : neq_all _ |- _ => solve [inversion H]
-    | H : neq_intersection _ |- _ => solve [inversion H]
-    | H : neq_union _ |- _ => solve [inversion H]
-  end.
 
 Theorem d_sub_open_mono_bot_false: forall n1 n2 Ψ A T L,
   typ_order (A ᵗ^^ₜ T) < n1 ->
@@ -953,6 +933,7 @@ Proof with auto.
       * simpl in H. eapply d_sub__union2.
         eapply IHn_d_sub_size with (B:=` X) (n1:=n); eauto...
         auto.
+    + apply d_sub_size_sound in Hsub2. auto.
     + simpl in *. dependent destruction Hsub2...
       * econstructor... apply d_sub_size_sound in Hsub1_1. apply d_sub_size_sound in Hsub1_2.
         apply d_sub_d_wf in Hsub1_1. apply d_sub_d_wf in Hsub1_2. econstructor; intuition.
@@ -1068,6 +1049,11 @@ Proof with auto.
         eapply d_sub_size_sound; eauto.
         eapply IHn_d_sub_size with (B:=typ_intersection A0 A2); eauto.
         lia.
+      * inst_cofinites_for d_sub__alll T:=T1...
+        eapply d_sub_wneqall_trans; eauto.
+        eapply d_sub_size_sound; eauto.
+        eapply IHn_d_sub_size with (B:=typ_label l); eauto.
+        lia.
     + simpl in *. dependent destruction Hsub2...
       * econstructor... apply d_sub_size_sound in Hsub1_1. apply d_sub_d_wf in Hsub1_1.
         intuition.
@@ -1093,8 +1079,10 @@ Proof with auto.
       * eapply IHn_d_sub_size with (B:=B1) (n1:=n0); eauto...
 Qed.
 
-Theorem sub_transitivity : forall Ψ A B C,
-  Ψ ⊢ A <: B -> Ψ ⊢ B <: C -> Ψ ⊢ A <: C.
+Theorem d_sub_transitivity : forall Ψ A B C,
+  Ψ ⊢ A <: B -> 
+  Ψ ⊢ B <: C -> 
+  Ψ ⊢ A <: C.
 Proof.
   intros * Hab Hbc.
   apply d_sub_size_complete in Hab. destruct Hab as [n1].

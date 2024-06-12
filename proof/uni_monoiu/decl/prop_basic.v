@@ -330,24 +330,6 @@ Qed.
 
 #[export] Hint Resolve d_wf_exp_lc_exp d_mono_typ_lc : core.
 
-Lemma d_mono_typ_neq_all : forall Ψ T,
-  Ψ ᵗ⊢ᵈₘ T -> neq_all T.
-Proof.
-  intros; induction H; eauto...
-Qed.
-
-#[local] Hint Constructors neq_all neq_intersection neq_union : core.
-
-Lemma neq_all_subst_mono_neq_all : forall Ψ A X T,
-  Ψ ᵗ⊢ᵈₘ T  ->
-  neq_all A ->
-  neq_all ( {T ᵗ/ₜ X} A ).
-Proof with eauto 6 using subst_typ_in_typ_lc_typ.
-  intros. induction H0; simpl; eauto...
-  - destruct (X0 == X); auto.
-    eapply d_mono_typ_neq_all; eauto.
-Qed.
-
 Lemma bind_typ_subst : forall Ψ2 X Ψ1 x A B,
   ⊢ᵈ Ψ2 ++ (X, dbind_tvar_empty) :: Ψ1 ->
   x ~ A ∈ᵈ (Ψ2 ++ (X, dbind_tvar_empty) :: Ψ1) ->
@@ -675,6 +657,10 @@ Proof with eauto.
     apply d_wf_tenv_binds_d_wf_typ in H0...
   - intuition.
   - intuition.
+  - intuition.
+  - intuition.
+  - intuition...
+    eapply d_infabs_d_wf_typ3...
   - intuition...
     eapply d_infabs_d_wf_typ3...
   - repeat split.
@@ -1158,6 +1144,8 @@ Proof with eauto using d_wf_typ_var_binds_another.
     eauto.
   - econstructor. eapply d_wf_typ_var_binds_another; eauto.
     eauto.
+  - econstructor; eauto.
+  - econstructor; eauto.
 Qed.
 
 Lemma d_wf_exp_var_binds_another_cons : forall Ψ1 x e A1 A2,
