@@ -709,8 +709,49 @@ Qed.
 
 Theorem d_sub_elab_sound_f : forall Ψ A B coᶠ,
   Ψ ⊢ A <: B ↪ coᶠ -> ⟦ Ψ ⟧ ⊢ coᶠ : ftyp_arrow ᵗ⟦ A ⟧ ᵗ⟦ B ⟧.
-Proof with eauto 4.
+Proof with eauto 6.
   intros. induction H...
+  - inst_cofinites_for f_typing__abs. intros. 
+    unfold open_fexp_wrt_fexp. simpl. 
+    replace (ᵗ⟦ B ⟧) with (open_ftyp_wrt_ftyp (ftyp_var_b 0) ᵗ⟦ B ⟧) at 2 by auto.
+    apply f_typing__tapp...
+    econstructor... econstructor; auto.
+    + admit.
+    + inst_cofinites_for f_wf_typ__all... intros... 
+      econstructor... 
+  - inst_cofinites_for f_typing__abs. intros. 
+    unfold open_fexp_wrt_fexp. simpl...
+    econstructor... econstructor...
+    admit.
+  - inst_cofinites_for f_typing__abs. intros. 
+    unfold open_fexp_wrt_fexp. simpl...
+    econstructor... econstructor...
+    admit.
+    admit.
+  - inst_cofinites_for f_typing__abs. intros.
+    simpl. 
+    unfold open_fexp_wrt_fexp. simpl...
+    inst_cofinites_for f_typing__abs. intros.
+    unfold open_fexp_wrt_fexp. simpl...
+    eapply f_typing__app with (A1:=ᵗ⟦ A2 ⟧)...
+    rewrite open_fexp_wrt_fexp_rec_lc_fexp.
+    rewrite open_fexp_wrt_fexp_rec_lc_fexp.
+    admit. 
+    admit. admit.
+
+    eapply f_typing__app with (A1:=ᵗ⟦ A1 ⟧)...
+    econstructor... admit.
+    eapply f_typing__app with (A1:=ᵗ⟦ B1 ⟧)...
+    admit. econstructor... 
+    admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.  
 Admitted.
 
 Theorem d_infabs_elab_sound_f : forall Ψ A B C coᶠ,
