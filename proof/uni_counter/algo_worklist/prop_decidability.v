@@ -1670,8 +1670,8 @@ Proof.
         dependent destruction Hcontra. eauto.
       * dependent destruction H3. simpl in *.
         dependent destruction H; try solve [right; intro Hcontra; dependent destruction Hcontra].
-        assert (Jg:  (work_applys cs B ⫤ᵃ work_check e A ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/
-                  ~ (work_applys cs B ⫤ᵃ work_check e A ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
+        assert (Jg:  (work_check e A ⫤ᵃ work_applys cs B ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/
+                  ~ (work_check e A ⫤ᵃ work_applys cs B ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
         { eapply IHmj; eauto; simpl in *; try lia. constructor; auto. }
         destruct Jg as [Jg | Jg]; eauto.
         right. intro Hcontra.
