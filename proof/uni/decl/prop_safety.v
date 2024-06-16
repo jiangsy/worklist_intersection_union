@@ -738,20 +738,72 @@ Proof with eauto 6.
     rewrite open_fexp_wrt_fexp_rec_lc_fexp.
     admit. 
     admit. admit.
-
     eapply f_typing__app with (A1:=ᵗ⟦ A1 ⟧)...
     econstructor... admit.
     eapply f_typing__app with (A1:=ᵗ⟦ B1 ⟧)...
     admit. econstructor... 
     admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.  
+  - inst_cofinites_for f_typing__abs; intros.
+    simpl. unfold open_fexp_wrt_fexp. simpl...
+    inst_cofinites_for f_typing__tabs; intros. 
+    inst_cofinites_with X. 
+    unfold open_fexp_wrt_fexp. simpl...
+    (* some thing related to degree_fexp_wrt_fexp and degree_fexp_wrt_ftyp *)  
+    admit.
+  - inst_cofinites_for f_typing__abs; intros.
+    simpl. unfold open_fexp_wrt_fexp. simpl...
+    eapply f_typing__app with (A1:=ᵗ⟦ A ᵗ^^ₜ T ⟧ ); eauto.
+    + rewrite open_fexp_wrt_fexp_rec_lc_fexp; eauto.
+      admit. admit.
+    + rewrite trans_typ_open_typ_wrt_typ. econstructor; eauto.
+      econstructor; eauto. admit.
+  - inst_cofinites_for f_typing__abs; intros.
+    simpl. unfold open_fexp_wrt_fexp. simpl...
+    eapply f_typing__pair; eapply f_typing__app with (A1:=ᵗ⟦ A ⟧); eauto...
+    + admit.
+    + constructor... admit.
+    + admit.
+    + constructor... admit.
+  - inst_cofinites_for f_typing__abs; intros.
+    simpl. unfold open_fexp_wrt_fexp. simpl...
+    eapply f_typing__app with (A1:=ᵗ⟦ A1 ⟧); eauto.
+    + admit.
+    + admit.
+  - inst_cofinites_for f_typing__abs; intros.
+    simpl. unfold open_fexp_wrt_fexp. simpl...
+    eapply f_typing__app with (A1:=ᵗ⟦ A2 ⟧); eauto.
+    + admit.
+    + admit.
+  - inst_cofinites_for f_typing__abs; intros.
+    simpl. unfold open_fexp_wrt_fexp. simpl...
+    eapply f_typing__inl...
+    eapply f_typing__app with (A1:=ᵗ⟦ A ⟧); eauto.
+    + admit.
+    + admit.
+    + admit.
+  - inst_cofinites_for f_typing__abs; intros.
+    simpl. unfold open_fexp_wrt_fexp. simpl...
+    eapply f_typing__inr...
+    eapply f_typing__app with (A1:=ᵗ⟦ A ⟧); eauto.
+    + admit.
+    + admit.
+    + admit.
+  - inst_cofinites_for f_typing__abs; intros.
+    simpl. unfold open_fexp_wrt_fexp. simpl...
+    inst_cofinites_for f_typing__case A1:=(ᵗ⟦ A1 ⟧) , A2:=(ᵗ⟦ A2 ⟧); eauto.
+    + econstructor... admit.
+    + intros.
+       rewrite open_fexp_wrt_fexp_rec_lc_fexp; eauto.
+       unfold open_fexp_wrt_fexp. simpl.  
+       eapply f_typing__app with (A1:=ᵗ⟦ A1 ⟧); eauto.
+       rewrite open_fexp_wrt_fexp_rec_lc_fexp; eauto. 
+       admit. admit.  admit. admit.
+    + intros.
+       rewrite open_fexp_wrt_fexp_rec_lc_fexp; eauto.
+       unfold open_fexp_wrt_fexp. simpl.  
+       eapply f_typing__app with (A1:=ᵗ⟦ A2 ⟧); eauto.
+       rewrite open_fexp_wrt_fexp_rec_lc_fexp; eauto. 
+       admit. admit.  admit. admit.
 Admitted.
 
 Theorem d_infabs_elab_sound_f : forall Ψ A B C coᶠ,
