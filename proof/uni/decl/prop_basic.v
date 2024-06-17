@@ -1127,6 +1127,15 @@ Proof with try solve_notin; simpl in *; eauto.
       ].
 Qed.
 
+Lemma d_wf_typ_open_mono_inv_cons : forall Ψ A T X,
+  Ψ ᵗ⊢ᵈ A ᵗ^^ₜ T -> 
+  d_mono_typ (Ψ) T -> 
+  X ∉ (dom Ψ) -> 
+  X ~ □ ++ Ψ ᵗ⊢ᵈ A ᵗ^ₜ X.
+Proof.
+  intros. rewrite_env (nil ++ X ~ □ ++ Ψ). eapply d_wf_typ_open_mono_inv; eauto.
+Qed.
+
 Lemma d_wf_typ_var_binds_another : forall Ψ1 x Ψ2 A1 B1 B2,
   Ψ2 ++ x ~ dbind_typ B1 ++ Ψ1 ᵗ⊢ᵈ A1 ->
   Ψ1 ᵗ⊢ᵈ B2 ->
