@@ -465,8 +465,8 @@ Inductive d_infabs_elab : denv -> typ -> typ -> typ -> fexp -> Prop :=
         (fexp_abs (trans_ftyp (typ_union A1 A2))
                   (fexp_abs (trans_ftyp (typ_intersection B1 B2))
                             (fexp_case (fexp_var_b 1)
-                                      (fexp_inl (fexp_app co1ᶠ (fexp_proj1 (fexp_var_b 1))))
-                                      (fexp_inr (fexp_app co2ᶠ (fexp_proj2 (fexp_var_b 1))))))).
+                                      (fexp_inl (fexp_app (fexp_app co1ᶠ (fexp_var_b 0)) (fexp_proj1 (fexp_var_b 1))))
+                                      (fexp_inr (fexp_app (fexp_app co2ᶠ (fexp_var_b 0)) (fexp_proj2 (fexp_var_b 1))))))).
 
 Notation "Ψ ⊢ A ▹ B → C ↪ coᶠ" :=   (d_infabs_elab Ψ A B C coᶠ) 
   (at level 65, A at next level, B at next level, C at next level, no associativity) : type_scope.
@@ -1329,8 +1329,72 @@ Qed.
 Theorem d_infabs_elab_sound_f : forall Ψ A B C coᶠ,
   Ψ ⊢ A ▹ B → C ↪ coᶠ -> 
   ⟦ Ψ ⟧ ⊢ coᶠ : ftyp_arrow ᵗ⟦ A ⟧ (ftyp_arrow ᵗ⟦ B ⟧ ᵗ⟦ C ⟧).
-Proof.
-Admitted.
+Proof with eauto using d_infabs_elab_lc_fexp.
+  intros. induction H...
+  - inst_cofinites_for f_typing__abs. intros.
+    unfold open_fexp_wrt_fexp. simpl.
+    solve_f_wf_typ.
+    replace (ftyp_arrow ftyp_unit (ftyp_all (ftyp_var_b 0))) with (open_ftyp_wrt_ftyp (ftyp_var_b 0) (ftyp_arrow ftyp_unit (ftyp_all (ftyp_var_b 0)))) at 2 by auto.
+    eapply f_typing__tapp...
+    solve_f_wf_typ. inst_cofinites_for f_wf_typ__all; intros. solve_f_wf_typ.
+    apply f_typing__var... solve_f_wf_typ.
+    inst_cofinites_for f_wf_typ__all; intros. solve_f_wf_typ.
+  - inst_cofinites_for f_typing__abs. intros.
+    unfold open_fexp_wrt_fexp. simpl.
+    solve_f_wf_typ.
+  - inst_cofinites_for f_typing__abs. intros.
+    unfold open_fexp_wrt_fexp. simpl.
+    apply d_mono_typ_d_wf_typ in H.
+    eapply f_typing__app with (A1:=ᵗ⟦ A ᵗ^^ₜ T ⟧)...
+    rewrite open_fexp_wrt_fexp_rec_lc_fexp...
+    eapply f_typing_weaken_cons_var; eauto. solve_f_wf_typ.
+    rewrite trans_ftyp_open_typ_wrt_typ. eapply f_typing__tapp...
+    solve_f_wf_typ. 
+    apply f_wf_typ_weaken_cons; eauto. 
+    apply f_typing__var; eauto. solve_f_wf_typ.
+  - inst_cofinites_for f_typing__abs. intros.
+    unfold open_fexp_wrt_fexp. simpl.
+    eapply f_typing__app with (A1:=ᵗ⟦ A1 ⟧).
+    rewrite open_fexp_wrt_fexp_rec_lc_fexp... 
+    apply f_typing_weaken_cons_var; eauto. solve_f_wf_typ. 
+    eapply f_typing__proj1; eapply f_typing__var; eauto. solve_f_wf_typ.
+  - inst_cofinites_for f_typing__abs. intros.
+    unfold open_fexp_wrt_fexp. simpl.
+    eapply f_typing__app with (A1:=ᵗ⟦ A2 ⟧).
+    rewrite open_fexp_wrt_fexp_rec_lc_fexp... 
+    apply f_typing_weaken_cons_var; eauto. solve_f_wf_typ.
+    eapply f_typing__proj2; eapply f_typing__var; eauto. solve_f_wf_typ.
+  - inst_cofinites_for f_typing__abs. intros.
+    unfold open_fexp_wrt_fexp. simpl.
+    inst_cofinites_for f_typing__abs. intros.
+    unfold open_fexp_wrt_fexp. simpl.
+    inst_cofinites_for f_typing__case A1:=ᵗ⟦ A1 ⟧, A2:=ᵗ⟦ A2 ⟧; eauto.
+    apply f_typing_weaken_cons_var. 
+    apply f_typing__var; solve_f_wf_typ. 
+    solve_f_wf_typ. apply f_wf_typ_weaken_cons; eauto. apply f_wf_typ_weaken_cons; eauto.
+    + intros. unfold open_fexp_wrt_fexp. simpl. constructor.
+      repeat rewrite open_fexp_wrt_fexp_rec_lc_fexp; eauto...
+      apply f_typing__app with (A1:=ᵗ⟦ B1 ⟧); eauto.
+      apply f_typing__app with (A1:=ᵗ⟦ A1 ⟧); eauto. 
+      repeat apply f_typing_weaken_cons_var; solve_f_wf_typ; auto using f_wf_typ_weaken_cons.
+      apply f_typing__var; auto. solve_f_wf_typ; apply f_wf_typ_weaken_cons; eauto. apply f_wf_typ_weaken_cons; eauto.
+      simpl. auto.
+      apply f_typing_weaken_cons_var... eapply f_typing__proj1. eapply f_typing__var... solve_f_wf_typ; apply f_wf_typ_weaken_cons; eauto.
+      solve_f_wf_typ; apply f_wf_typ_weaken_cons; eauto.  apply f_wf_typ_weaken_cons; eauto.  auto.
+      solve_f_wf_typ; apply f_wf_typ_weaken_cons; eauto.  apply f_wf_typ_weaken_cons; eauto.  auto. apply f_wf_typ_weaken_cons; eauto.  auto.
+      auto.
+    + intros. unfold open_fexp_wrt_fexp. simpl. constructor.
+      repeat rewrite open_fexp_wrt_fexp_rec_lc_fexp; eauto...
+      apply f_typing__app with (A1:=ᵗ⟦ B2 ⟧); eauto.
+      apply f_typing__app with (A1:=ᵗ⟦ A2 ⟧); eauto. 
+      repeat apply f_typing_weaken_cons_var; solve_f_wf_typ; auto using f_wf_typ_weaken_cons.
+      apply f_typing__var; auto. solve_f_wf_typ; apply f_wf_typ_weaken_cons; eauto. apply f_wf_typ_weaken_cons; eauto.
+      simpl. auto.
+      apply f_typing_weaken_cons_var... eapply f_typing__proj2. eapply f_typing__var... solve_f_wf_typ; apply f_wf_typ_weaken_cons; eauto.
+      solve_f_wf_typ; apply f_wf_typ_weaken_cons; eauto.  apply f_wf_typ_weaken_cons; eauto.  auto.
+      solve_f_wf_typ; apply f_wf_typ_weaken_cons; eauto.  apply f_wf_typ_weaken_cons; eauto.  auto. apply f_wf_typ_weaken_cons; eauto.  auto.
+      auto.
+Qed.
 
 Theorem d_inftapp_elab_sound_f : forall Ψ A B C co1ᶠ co2ᶠ,
   Ψ ⊢ A ○ B ⇒⇒ C ↪ co1ᶠ | co2ᶠ ->
@@ -1344,83 +1408,6 @@ Proof.
 Admitted.
 
 (* 
-
-Theorem infabs_sound_f : forall Ψ A B C Co,
-  d_infabs_elab Ψ A B C Co ->
-  typing (trans_env Ψ) Co (ftyp_arrow (trans_ftyp A) (ftyp_arrow (trans_ftyp B) (trans_ftyp C))).
-Proof with eauto with safety.
-  intros. induction H; simpl; eauto.
-  - apply typing_abs with (L:=dom Ψ).
-    unfold open_fexp_wrt_fexp. simpl. intros.
-    replace (ftyp_arrow ftyp_unit (ftyp_all (ftyp_var_b 0))) with
-        (open_ftyp_wrt_ftyp (ftyp_var_b 0)
-                  (ftyp_arrow ftyp_unit (ftyp_all (ftyp_var_b 0)))) at 2; auto.
-    apply typing_tapp.
-    + apply lc_ftyp_arrow; auto.
-    apply lc_ftyp_all. unfold open_ftyp_wrt_ftyp. simpl. auto.
-    + apply typing_var; auto. admit. (* wf *)
-  - apply typing_abs with (L:=dom Ψ).
-    unfold open_fexp_wrt_fexp. simpl. intros.
-    apply typing_var; auto. admit. (* wf *)
-  - apply typing_abs with (L:=dom Ψ).
-    unfold open_fexp_wrt_fexp. simpl. intros.
-    assert (Hlc: lc_fexp Co).
-    { apply d_infabs_elab__lc_fexp in H2. auto. }
-    rewrite open_fexp_wrt_fexp_rec_lc_fexp; auto.
-    apply typing_app with (B1:=trans_ftyp (open_typ_wrt_typ B1 B2)).
-    + admit. (* weaken *)
-    + rewrite trans_ftyp_open_typ_wrt_typ. apply typing_tapp.
-      * apply trans_ftyp_lc_ftyp; auto.
-      * apply typing_var; auto. admit. (* wf *)
-  - apply typing_abs with (L:=dom Ψ).
-    unfold open_fexp_wrt_fexp. simpl. intros.
-    assert (Hlc: lc_fexp Co).
-    { apply d_infabs_elab__lc_fexp in H0. auto. }
-    rewrite open_fexp_wrt_fexp_rec_lc_fexp; auto.
-    apply typing_app with (B1:=trans_ftyp B1); auto.
-    + admit. (* weaken *)
-    + apply typing_proj1 with (B2:=trans_ftyp B2).
-      apply typing_var; auto. admit. (* wf *)
-  - apply typing_abs with (L:=dom Ψ).
-    unfold open_fexp_wrt_fexp. simpl. intros.
-    assert (Hlc: lc_fexp Co).
-    { apply d_infabs_elab__lc_fexp in H0. auto. }
-    rewrite open_fexp_wrt_fexp_rec_lc_fexp; auto.
-    apply typing_app with (B1:=trans_ftyp B2); auto.
-    + admit. (* weaken *)
-    + apply typing_proj2 with (B1:=trans_ftyp B1).
-      apply typing_var; auto. admit. (* wf *)
-  - apply typing_abs with (L:=dom Ψ).
-    unfold open_fexp_wrt_fexp. simpl. intros.
-    assert (Hlc1: lc_fexp co1ᶠ).
-    { apply d_infabs_elab__lc_fexp in H. auto. }
-    assert (Hlc2: lc_fexp co2ᶠ).
-    { apply d_infabs_elab__lc_fexp in H0. auto. }
-    repeat rewrite open_fexp_wrt_fexp_rec_lc_fexp; auto.
-    apply typing_abs with (L:=dom Ψ `union` singleton x).
-    intros. unfold open_fexp_wrt_fexp. simpl.
-    repeat rewrite open_fexp_wrt_fexp_rec_lc_fexp; auto.
-    apply typing_case with
-      (L:=dom Ψ `union` singleton x `union` singleton x0)
-      (B1:=trans_ftyp B1) (B2:=trans_ftyp B2).
-    + apply typing_var; auto. admit. (* wf *)
-    + unfold open_fexp_wrt_fexp. simpl. intros.
-      rewrite open_fexp_wrt_fexp_rec_lc_fexp; auto.
-      apply typing_inl.
-      * apply typing_app with (B1:=trans_ftyp T3).
-        -- admit. (* weaken *)
-        -- apply typing_proj1 with (B2:=trans_ftyp T5).
-           apply typing_var; auto. admit. (* wf *)
-      * admit. (* wf *)
-    + unfold open_fexp_wrt_fexp. simpl. intros.
-      rewrite open_fexp_wrt_fexp_rec_lc_fexp; auto.
-      apply typing_inr.
-      * apply typing_app with (B1:=trans_ftyp T5).
-        -- admit. (* weaken *)
-        -- apply typing_proj2 with (B1:=trans_ftyp T3).
-           apply typing_var; auto. admit. (* wf *)
-      * admit. (* wf *)
-Admitted.
 
 Theorem inftapp_sound_f : forall Ψ A B C co1ᶠ co2ᶠ,
   d_inftapp_elab Ψ A B C co1ᶠ co2ᶠ -> exists D,
