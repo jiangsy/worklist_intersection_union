@@ -708,6 +708,13 @@ Proof.
 Qed.
 
 
+Ltac solve_lc_fexp :=
+  match goal with
+    | _ : _ |- forall x , _ => intros
+    | _ : _ |- context [open_fexp_wrt_fexp ?e1 ?e2] =>  unfold open_fexp_wrt_fexp; simpl; eauto
+    | _ : _ |- context [open_ftyp_wrt_ftyp ?A1 ?A2] =>  unfold open_ftyp_wrt_ftyp; simpl; eauto
+    | H : lc_fexp ?e |- context [open_fexp_wrt_fexp_rec ?n ?e1 ?e] => rewrite open_fexp_wrt_fexp_rec_lc_fexp; eauto
+  end.
 
 Lemma d_sub_elab_lc_ftyp : forall Ψ A B coᶠ,
   Ψ ⊢ A <: B ↪ coᶠ -> lc_ftyp (trans_ftyp A) /\ lc_ftyp (trans_ftyp B).
@@ -729,13 +736,35 @@ Proof.
   intros. apply d_sub_elab_lc_ftyp in H. intuition.
 Qed.
 
-Ltac solve_lc_fexp :=
-  match goal with
-    | _ : _ |- forall x , _ => intros
-    | _ : _ |- context [open_fexp_wrt_fexp ?e1 ?e2] =>  unfold open_fexp_wrt_fexp; simpl; eauto
-    | _ : _ |- context [open_ftyp_wrt_ftyp ?A1 ?A2] =>  unfold open_ftyp_wrt_ftyp; simpl; eauto
-    | H : lc_fexp ?e |- context [open_fexp_wrt_fexp_rec ?n ?e1 ?e] => rewrite open_fexp_wrt_fexp_rec_lc_fexp; eauto
-  end.
+Lemma d_infabs_elab_lc_ftyp : forall Ψ A B C coᶠ,
+  Ψ ⊢ A ▹ B → C ↪ coᶠ -> 
+  lc_ftyp (trans_ftyp A) /\ lc_ftyp (trans_ftyp B) /\ lc_ftyp (trans_ftyp C).
+Proof.
+  intros. apply d_infabs_elab_sound in H.
+  apply d_infabs_d_wf in H.
+  intuition; eauto using trans_ftyp_lc_ftyp.
+Qed.
+
+Corollary d_infabs_elab_lc_ftyp1 : forall Ψ A B C coᶠ,
+  Ψ ⊢ A ▹ B → C ↪ coᶠ ->
+  lc_ftyp (trans_ftyp A).
+Proof.
+  intros. apply d_infabs_elab_lc_ftyp in H. intuition.  
+Qed.
+
+Corollary d_infabs_elab_lc_ftyp2 : forall Ψ A B C coᶠ,
+  Ψ ⊢ A ▹ B → C ↪ coᶠ ->
+  lc_ftyp (trans_ftyp B).
+Proof.
+  intros. apply d_infabs_elab_lc_ftyp in H. intuition.
+Qed.
+
+Corollary d_infabs_elab_lc_ftyp3 : forall Ψ A B C coᶠ,
+  Ψ ⊢ A ▹ B → C ↪ coᶠ ->
+  lc_ftyp (trans_ftyp C). 
+Proof.
+  intros. apply d_infabs_elab_lc_ftyp in H. intuition.
+Qed.
 
 Ltac solve_lc_fexp_sub := 
   repeat
@@ -743,6 +772,9 @@ Ltac solve_lc_fexp_sub :=
     try match goal with 
       | H : ?Ψ ⊢ ?A <: ?B ↪ ?coᶠ |- lc_ftyp (trans_ftyp ?A) => eapply d_sub_elab_lc_ftyp1; eauto
       | H : ?Ψ ⊢ ?A <: ?B ↪ ?coᶠ |- lc_ftyp (trans_ftyp ?B) => eapply d_sub_elab_lc_ftyp2; eauto
+      | H : ?Ψ ⊢ ?A ▹ ?B → ?C ↪ ?co |- lc_ftyp (trans_ftyp ?A) => eapply d_infabs_elab_lc_ftyp1; eauto
+      | H : ?Ψ ⊢ ?A ▹ ?B → ?C ↪ ?co |- lc_ftyp (trans_ftyp ?B) => eapply d_infabs_elab_lc_ftyp2; eauto
+      | H : ?Ψ ⊢ ?A ▹ ?B → ?C ↪ ?co |- lc_ftyp (trans_ftyp ?C) => eapply d_infabs_elab_lc_ftyp3; eauto
     end;
     econstructor;
     eauto.
@@ -779,6 +811,15 @@ Proof with eauto.
     eapply lc_typ_open_stvar_subst_mono with (X:=X) in H2; eauto.
     replace (ftyp_var_f X) with (trans_ftyp (typ_var_f X))...
     rewrite <- trans_ftyp_open_typ_wrt_typ...
+  - simpl...
+  - simpl...
+  - simpl...
+Qed.
+
+Theorem d_infabs_elab_lc_fexp : forall Ψ A B C coᶠ,
+  Ψ ⊢ A ▹ B → C ↪ coᶠ -> lc_fexp coᶠ.
+Proof with eauto.
+  intros. induction H...
   - simpl...
   - simpl...
   - simpl...
@@ -825,7 +866,9 @@ Proof with eauto 6.
     inst_cofinites_for f_typing__tabs; intros. 
     inst_cofinites_with X. 
     unfold open_fexp_wrt_fexp. simpl...
-    (* some thing related to degree_fexp_wrt_fexp and degree_fexp_wrt_ftyp *)  
+    (* some thing related to degree_fexp_wrt_fexp and degree_fexp_wrt_ftyp 
+       see relavent cases in d_sub_elab_lc_fexp 
+    *)  
     admit.
   - inst_cofinites_for f_typing__abs; intros.
     simpl. unfold open_fexp_wrt_fexp. simpl...
