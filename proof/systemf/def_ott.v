@@ -416,6 +416,7 @@ Inductive f_wf_env : fenv -> Prop :=    (* defn f_wf_env *)
 (* defns J_f_typing *)
 Inductive f_typing : fenv -> fexp -> ftyp -> Prop :=    (* defn f_typing *)
  | f_typing__unit : forall (Δ:fenv),
+     f_wf_env Δ ->
      f_typing Δ fexp_unit ftyp_unit
  | f_typing__var : forall (Δ:fenv) (x:expvar) (A:ftyp),
      f_wf_env Δ ->
@@ -432,7 +433,7 @@ Inductive f_typing : fenv -> fexp -> ftyp -> Prop :=    (* defn f_typing *)
       ( forall X , X \notin  L  -> f_typing  ( X ~ fbind_tvar_empty  ++  Δ )   ( open_fexp_wrt_ftyp e (ftyp_var_f X) )   ( open_ftyp_wrt_ftyp A (ftyp_var_f X) )  )  ->
      f_typing Δ (fexp_tabs e) (ftyp_all A)
  | f_typing__tapp : forall (Δ:fenv) (e1:fexp) (A2 A1:ftyp),
-     lc_ftyp A2 ->
+     f_wf_typ Δ A2 ->
      f_typing Δ e1 (ftyp_all A1) ->
      f_typing Δ (fexp_tapp e1 A2)  (open_ftyp_wrt_ftyp  A1   A2 ) 
  | f_typing__inl : forall (Δ:fenv) (e1:fexp) (A1 A2:ftyp),

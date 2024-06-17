@@ -16,6 +16,14 @@ Notation "Ψ ⊢ e : A" :=
   (f_typing Ψ e A) 
     (at level 65, e at next level, no associativity) : type_scope.
 
+Notation "⊢ᶠ Ψ" :=
+  (f_wf_env Ψ)
+    (at level 65, no associativity) : type_scope.
+
+Notation "Ψ ᵗ⊢ᶠ A" :=
+  (f_wf_typ Ψ A)
+    (at level 65, no associativity) : type_scope.
+
 Fixpoint trans_ftyp (A : typ) : ftyp :=
   match A with
   | typ_unit => ftyp_unit
@@ -53,7 +61,7 @@ Proof.
 Qed.
 
 Theorem trans_ftyp_open_typ_wrt_typ : forall A1 A2,
-  trans_ftyp (A1 ᵗ^^ₜ A2) = open_ftyp_wrt_ftyp (trans_ftyp A1) (trans_ftyp A2).
+  ᵗ⟦ A1 ᵗ^^ₜ A2 ⟧ = open_ftyp_wrt_ftyp ᵗ⟦ A1 ⟧ ᵗ⟦ A2 ⟧.
 Proof.
   unfold open_typ_wrt_typ. unfold open_ftyp_wrt_ftyp.
   intros. apply trans_ftyp_open_typ_wrt_typ_rec.
@@ -81,7 +89,7 @@ Qed.
 #[local] Hint Resolve trans_env_notin_dom : core.
 
 Theorem trans_env_tvar_in : forall (Ψ:denv) X,
-  X ~ □ ∈ᵈ Ψ -> binds X fbind_tvar_empty (trans_env Ψ).
+  X ~ □ ∈ᵈ Ψ -> binds X fbind_tvar_empty ⟦ Ψ ⟧.
 Proof.
   intros. induction Ψ; auto.
   destruct a; destruct d; destruct_binds; auto.
@@ -95,7 +103,7 @@ Proof.
 Qed.
 
 Theorem trans_ftyp_wf : forall Ψ A,
-  Ψ ᵗ⊢ᵈ A -> f_wf_typ (trans_env Ψ) (trans_ftyp A).
+  Ψ ᵗ⊢ᵈ A -> f_wf_typ ⟦ Ψ ⟧ ᵗ⟦ A ⟧.
 Proof.
   intros. induction H; simpl; eauto...
   - apply f_wf_typ__all with (L:=dom Ψ).
@@ -109,7 +117,7 @@ Proof.
 Qed.
 
 Theorem trans_env_wf_tenv_wf_fenv : forall Ψ,
-  ⊢ᵈₜ Ψ -> f_wf_env ⟦ Ψ ⟧.
+  ⊢ᵈₜ Ψ -> ⊢ᶠ ⟦ Ψ ⟧.
 Proof with eauto using trans_ftyp_wf.
   intros. induction H; simpl; eauto...
   constructor...
@@ -117,11 +125,156 @@ Proof with eauto using trans_ftyp_wf.
 Qed.
 
 Theorem trans_env_wf_env_wf_fenv : forall Ψ,
-  ⊢ᵈ Ψ -> f_wf_env ⟦ Ψ ⟧.
+  ⊢ᵈ Ψ -> ⊢ᶠ ⟦ Ψ ⟧.
 Proof with eauto using trans_env_wf_tenv_wf_fenv.
   intros. induction H; simpl; eauto;
   try solve [apply trans_env_notin_dom in H0; apply wf_env_sub; auto]...
   constructor...
+Qed.
+
+Lemma f_wf_typ_weaken : forall Δ1 Δ2 Δ3 A,
+  Δ3 ++ Δ1 ᵗ⊢ᶠ A ->
+  uniq (Δ3 ++ Δ2 ++ Δ1) ->
+  Δ3 ++ Δ2 ++ Δ1 ᵗ⊢ᶠ A.
+Proof.
+  intros. dependent induction H; eauto.
+  - remember (dom (Δ3 ++ Δ2 ++ Δ1)).
+    inst_cofinites_for f_wf_typ__all. intros. inst_cofinites_with X.
+    rewrite_env ((X ~ fbind_tvar_empty ++ Δ3) ++ Δ2 ++ Δ1).
+    eapply H0; eauto. simpl. subst. constructor; eauto.
+Qed.
+
+Lemma f_wf_typ_strengthen_var : forall Δ1 Δ2 x A B,
+  Δ2 ++ (x ~ fbind_typ B) ++ Δ1 ᵗ⊢ᶠ A ->
+  x `notin` dom (Δ2 ++ Δ1) ->
+  Δ2 ++ Δ1 ᵗ⊢ᶠ A.
+Proof.
+  intros. dependent induction H; eauto.
+  - apply binds_remove_mid_diff_bind in H; eauto. solve_false.
+  - remember (dom (Δ2 ++ Δ1)). inst_cofinites_for f_wf_typ__all. intros.
+    inst_cofinites_with X. rewrite_env ((X ~ fbind_tvar_empty ++ Δ2) ++ Δ1).
+    eapply H0 with (x:=x) (B:=B); eauto; subst. simpl. auto.
+Qed.
+
+Lemma f_wf_env_uniq : forall Δ,
+  ⊢ᶠ Δ -> uniq Δ.
+Proof.
+  intros. induction H; eauto. 
+Qed.
+
+#[local] Hint Resolve f_wf_env_uniq : core.
+
+Lemma f_wf_env_binds_f_wf_typ : forall Δ x A,
+  ⊢ᶠ Δ -> 
+  binds x (fbind_typ A) Δ -> 
+  Δ ᵗ⊢ᶠ A.
+Proof.
+  intros. induction H; eauto.
+  - inversion H0.
+  - destruct_binds. rewrite_env (nil ++ (X ~ fbind_tvar_empty) ++ Δ).
+    apply f_wf_typ_weaken; eauto. 
+  - destruct_binds.
+    + rewrite_env (nil ++ (x ~ fbind_typ A) ++ Δ).
+      apply f_wf_typ_weaken; eauto. 
+    + rewrite_env (nil ++ (x0 ~ fbind_typ A0) ++ Δ).
+      apply f_wf_typ_weaken; eauto. 
+Qed.
+
+Lemma f_wf_typ_lc_ftyp : forall Δ A,
+  Δ ᵗ⊢ᶠ A -> lc_ftyp A.
+Proof.
+  intros. induction H; auto.
+Qed.
+
+Lemma f_wf_typ_subst_tvar : forall Δ1 Δ2 X A B,
+  Δ2 ++ (X ~ fbind_tvar_empty) ++ Δ1 ᵗ⊢ᶠ A ->
+  Δ1 ᵗ⊢ᶠ B ->
+  uniq (map (subst_ftyp_in_fbind B X) Δ2 ++ Δ1) ->
+  map (subst_ftyp_in_fbind B X) Δ2 ++ Δ1 ᵗ⊢ᶠ (subst_ftyp_in_ftyp B X A).
+Proof.
+  intros. dependent induction H; simpl in *; eauto.
+  - destruct_eq_atom...
+    rewrite_env (nil ++ map (subst_ftyp_in_fbind B X) Δ2 ++ Δ1).
+    apply f_wf_typ_weaken; eauto.
+    apply binds_remove_mid in H; auto.
+    apply binds_app_iff in H. destruct H; auto.
+    + apply binds_map with (f:=subst_ftyp_in_fbind B X) in H; auto. 
+  - remember (dom (map (subst_ftyp_in_fbind B X) Δ2 ++ Δ1)). inst_cofinites_for f_wf_typ__all. intros.  
+    inst_cofinites_with X0. subst. rewrite_env (map (subst_ftyp_in_fbind B X) (X0 ~ fbind_tvar_empty ++ Δ2) ++ Δ1).
+    replace (ftyp_var_f X0) with (subst_ftyp_in_ftyp B X (ftyp_var_f X0)); eauto.
+    rewrite <- subst_ftyp_in_ftyp_open_ftyp_wrt_ftyp; eauto.
+    + eapply H0; eauto. simpl. constructor; eauto.
+    + eapply f_wf_typ_lc_ftyp; eauto.
+    + simpl. destruct_eq_atom; auto.
+Qed.
+
+Lemma f_wf_typ_open : forall Δ A B,
+  uniq Δ ->
+  f_wf_typ Δ (ftyp_all A) ->
+  f_wf_typ Δ B ->
+  f_wf_typ Δ (open_ftyp_wrt_ftyp A B).
+Proof with simpl_env; eauto.
+  intros.
+  dependent destruction H0. 
+  remember (ftvar_in_ftyp A).
+  pick fresh X. inst_cofinites_with X. subst.
+  rewrite (subst_ftyp_in_ftyp_intro X)...
+  rewrite_env (map (subst_ftyp_in_fbind B X) nil ++ Δ).
+  apply f_wf_typ_subst_tvar...
+Qed.
+
+Lemma f_typing_wf : forall Δ e A,
+  Δ ⊢ e : A -> ⊢ᶠ Δ /\ Δ ᵗ⊢ᶠ A.
+Proof with eauto. 
+  intros. induction H; try solve [intuition].
+  - intuition.
+    apply f_wf_env_binds_f_wf_typ in H0...
+  - split.
+    + pick fresh x. inst_cofinites_with x. intuition. dependent destruction H1...
+    + remember (dom Δ). pick fresh x. inst_cofinites_with x. intuition. subst.
+      dependent destruction H1.
+      rewrite_env (nil ++ (x ~ fbind_typ A1) ++ Δ) in H3.
+      apply f_wf_typ_strengthen_var in H3...
+  - intuition. dependent destruction H2...
+  - split.
+    + pick fresh X. inst_cofinites_with X. intuition. dependent destruction H1...
+    + remember (dom Δ). inst_cofinites_for f_wf_typ__all. intros.
+      inst_cofinites_with X. subst. intuition. 
+  - intuition.
+    apply f_wf_typ_open; eauto.
+  - remember (dom Δ). pick fresh x.
+    inst_cofinites_with x.
+    intuition.
+    rewrite_env (nil ++ (x ~ fbind_typ A1) ++ Δ) in H5.
+    apply f_wf_typ_strengthen_var in H5... subst...
+  - intuition. dependent destruction H1...
+  - intuition. dependent destruction H1...
+Qed.
+
+Lemma f_typing_weaken : forall Δ1 Δ2 Δ3 e A,
+  Δ3 ++ Δ1 ⊢ e : A -> 
+  ⊢ᶠ Δ3 ++ Δ2 ++ Δ1 ->
+  Δ3 ++ Δ2 ++ Δ1 ⊢ e : A.
+Proof with eauto using f_wf_typ_weaken.
+  intros. dependent induction H...
+  - remember (dom (Δ3 ++ Δ2 ++ Δ1)). inst_cofinites_for f_typing__abs. intros.
+    inst_cofinites_with x. 
+    rewrite_env ((x ~ fbind_typ A1 ++ Δ3) ++ Δ2 ++ Δ1).
+    eapply H0... simpl. subst. constructor...
+    apply f_typing_wf in H. intuition. dependent destruction H3...
+  - remember (dom (Δ3 ++ Δ2 ++ Δ1)).
+    inst_cofinites_for f_typing__tabs. intros. inst_cofinites_with X.
+    rewrite_env ((X ~ fbind_tvar_empty ++ Δ3) ++ Δ2 ++ Δ1).
+    eapply H0... simpl. subst. constructor...
+  - remember (dom (Δ3 ++ Δ2 ++ Δ1)). inst_cofinites_for f_typing__case A1:=A1,A2:=A2...
+    + intros. inst_cofinites_with x.
+      rewrite_env ((x ~ fbind_typ A1 ++ Δ3) ++ Δ2 ++ Δ1).
+      eapply H1... simpl. subst. constructor...
+      apply f_typing_wf in H. intuition. dependent destruction H7...
+    + intros. inst_cofinites_with y.  
+      rewrite_env ((y ~ fbind_typ A2 ++ Δ3) ++ Δ2 ++ Δ1).
+      eapply H3... simpl. subst. constructor...
+      apply f_typing_wf in H. intuition. dependent destruction H7...
 Qed.
 
 Inductive d_sub_elab : denv -> typ -> typ -> fexp -> Prop :=
@@ -777,21 +930,21 @@ Qed.
 
 Corollary d_inftapp_elab_lc_ftyp1 : forall Ψ A B C co1ᶠ co2ᶠ,
   Ψ ⊢ A ○ B ⇒⇒ C ↪ co1ᶠ | co2ᶠ ->
-  lc_ftyp (trans_ftyp A).
+  lc_ftyp ᵗ⟦ A ⟧.
 Proof.
   intros. apply d_inftapp_elab_lc_ftyp in H. intuition.
 Qed.
 
 Corollary d_inftapp_elab_lc_ftyp2 : forall Ψ A B C co1ᶠ co2ᶠ,
   Ψ ⊢ A ○ B ⇒⇒ C ↪ co1ᶠ | co2ᶠ ->
-  lc_ftyp (trans_ftyp B).
+  lc_ftyp ᵗ⟦ B ⟧.
 Proof.
   intros. apply d_inftapp_elab_lc_ftyp in H. intuition.
 Qed.
 
 Corollary d_inftapp_elab_lc_ftyp3 : forall Ψ A B C co1ᶠ co2ᶠ,
   Ψ ⊢ A ○ B ⇒⇒ C ↪ co1ᶠ | co2ᶠ ->
-  lc_ftyp (trans_ftyp C).
+  lc_ftyp ᵗ⟦ C ⟧.
 Proof.
   intros. apply d_inftapp_elab_lc_ftyp in H. intuition.
 Qed.
@@ -867,26 +1020,47 @@ Proof with eauto.
   - intuition; simpl...
 Qed.
 
+Theorem d_chk_inf_elab_lc_fexp : forall Ψ e A eᶠ mode,
+  d_chk_inf_elab Ψ e mode A eᶠ -> lc_fexp eᶠ.
+Proof with eauto using d_sub_elab_lc_fexp, d_infabs_elab_lc_fexp, d_inftapp_elab_lc_fexp.
+  intros. induction H; eauto; simpl...
+  - pick fresh x.
+    apply lc_fexp_abs_exists with (x1:=x)...
+    dependent destruction H.
+    apply d_mono_typ_d_wf_typ in H.
+    apply d_wf_typ_lc_typ in H...
+  - apply d_inftapp_elab_lc_fexp in H1. intuition.
+Qed.
+
+Ltac solve_f_wf_env :=
+  match goal with 
+    | H : ⊢ᵈ ?Ψ |- f_wf_env (trans_env ?Ψ) => eapply trans_env_wf_env_wf_fenv; eauto
+    | H : ⊢ᵈₜ ?Ψ |- f_wf_env (trans_env ?Ψ) => eapply trans_env_wf_tenv_wf_fenv; eauto
+  end.
+
+Hint Extern 1 (f_wf_env ?Ψ) => solve_f_wf_env : core.
+
 Theorem d_sub_elab_sound_f : forall Ψ A B coᶠ,
   Ψ ⊢ A <: B ↪ coᶠ -> ⟦ Ψ ⟧ ⊢ coᶠ : ftyp_arrow ᵗ⟦ A ⟧ ᵗ⟦ B ⟧.
-Proof with eauto 6.
+Proof with eauto 6 using f_wf_typ, f_wf_env.
   intros. induction H...
+  - inst_cofinites_for f_typing__abs. intros. 
+    unfold open_fexp_wrt_fexp. simpl. 
+    econstructor... econstructor... admit.
   - inst_cofinites_for f_typing__abs. intros. 
     unfold open_fexp_wrt_fexp. simpl. 
     replace (ᵗ⟦ B ⟧) with (open_ftyp_wrt_ftyp (ftyp_var_b 0) ᵗ⟦ B ⟧) at 2 by auto.
     apply f_typing__tapp...
     econstructor... econstructor; auto.
-    + admit.
     + inst_cofinites_for f_wf_typ__all... intros... 
       econstructor... 
   - inst_cofinites_for f_typing__abs. intros. 
     unfold open_fexp_wrt_fexp. simpl...
+    eauto 10 using f_wf_typ, f_wf_env.
     econstructor... econstructor...
-    admit.
   - inst_cofinites_for f_typing__abs. intros. 
     unfold open_fexp_wrt_fexp. simpl...
     econstructor... econstructor...
-    admit.
     admit.
   - inst_cofinites_for f_typing__abs. intros.
     simpl. 
@@ -901,7 +1075,7 @@ Proof with eauto 6.
     eapply f_typing__app with (A1:=ᵗ⟦ A1 ⟧)...
     econstructor... admit.
     eapply f_typing__app with (A1:=ᵗ⟦ B1 ⟧)...
-    admit. econstructor... 
+    admit. econstructor...
     admit.
   - inst_cofinites_for f_typing__abs; intros.
     simpl. unfold open_fexp_wrt_fexp. simpl...
@@ -929,7 +1103,8 @@ Proof with eauto 6.
   - inst_cofinites_for f_typing__abs; intros.
     simpl. unfold open_fexp_wrt_fexp. simpl...
     eapply f_typing__app with (A1:=ᵗ⟦ A1 ⟧); eauto.
-    + admit.
+    + rewrite open_fexp_wrt_fexp_rec_lc_fexp; eauto...
+      admit. admit.
     + admit.
   - inst_cofinites_for f_typing__abs; intros.
     simpl. unfold open_fexp_wrt_fexp. simpl...
@@ -978,12 +1153,6 @@ Theorem d_inftapp_elab_sound_f : forall Ψ A B C co1ᶠ co2ᶠ,
   Ψ ⊢ A ○ B ⇒⇒ C ↪ co1ᶠ | co2ᶠ ->
   exists D, ⟦ Ψ ⟧ ⊢ co1ᶠ : ftyp_arrow ᵗ⟦ A ⟧ D /\ ⟦ Ψ ⟧ ⊢ co2ᶠ : ftyp_arrow D ᵗ⟦ C ⟧.
 Proof.
-Admitted.
-
-Theorem d_chk_inf_elab_lc_fexp : forall Ψ e A eᶠ mode,
-  d_chk_inf_elab Ψ e mode A eᶠ -> lc_fexp eᶠ.
-Proof.
-  intros. induction H; eauto; simpl.
 Admitted.
 
 Theorem d_chk_inf_elab_sound_f : forall Ψ e A eᶠ mode,
@@ -1154,38 +1323,6 @@ Proof with eauto with safety.
         admit. (* wf *) 
 Admitted.
 
-Lemma lc_ftyp_all_id : lc_ftyp (ftyp_all (ftyp_var_b 0)).
-Proof.
-  apply lc_ftyp_all. unfold open_ftyp_wrt_ftyp. simpl. auto.
-Qed.
-
-Hint Resolve lc_ftyp_all_id : safety.
-
-Theorem d_infabs_elab_lc_fexp : forall Ψ A B C Co,
-  d_infabs_elab Ψ A B C Co -> lc_fexp Co.
-Proof.
-  intros. induction H; eauto with safety;
-  apply lc_fexp_abs; eauto with safety; simpl.
-  - unfold open_fexp_wrt_fexp. simpl. intros.
-    apply lc_fexp_tapp; eauto with safety.
-  - unfold open_fexp_wrt_fexp. simpl. auto.
-  - unfold open_fexp_wrt_fexp. simpl. intros.
-    apply lc_fexp_app; eauto with safety.
-    rewrite open_fexp_wrt_fexp_rec_lc_fexp; auto.
-  - apply lc_ftyp_prod.
-    + admit.
-    + apply trans_ftyp_lc_ftyp. apply d_wf_typ_lc_typ with (Ψ:=Ψ); auto.
-  - unfold open_fexp_wrt_fexp. simpl. intros.
-    apply lc_fexp_app; eauto with safety.
-    rewrite open_fexp_wrt_fexp_rec_lc_fexp; auto.
-  - apply lc_ftyp_prod.
-    + apply trans_ftyp_lc_ftyp. apply d_wf_typ_lc_typ with (Ψ:=Ψ); auto.
-    + admit.
-  - unfold open_fexp_wrt_fexp. simpl. intros.
-    apply lc_fexp_app; eauto with safety.
-    rewrite open_fexp_wrt_fexp_rec_lc_fexp; auto.
-Admitted.
-
 Theorem infabs_sound_f : forall Ψ A B C Co,
   d_infabs_elab Ψ A B C Co ->
   typing (trans_env Ψ) Co (ftyp_arrow (trans_ftyp A) (ftyp_arrow (trans_ftyp B) (trans_ftyp C))).
@@ -1261,22 +1398,6 @@ Proof with eauto with safety.
         -- apply typing_proj2 with (B1:=trans_ftyp T3).
            apply typing_var; auto. admit. (* wf *)
       * admit. (* wf *)
-Admitted.
-
-Theorem d_inftapp_elab_lc_fexp : forall Ψ A B C co1ᶠ co2ᶠ,
-  d_inftapp_elab Ψ A B C co1ᶠ co2ᶠ -> lc_fexp co1ᶠ /\ lc_fexp co2ᶠ.
-Proof.
-  intros. induction H; eauto with safety; simpl.
-  - split; apply lc_fexp_abs; eauto with safety;
-    unfold open_fexp_wrt_fexp; simpl; auto.
-  - split; apply lc_fexp_abs; eauto with safety.
-    + replace (ftyp_all (trans_ftyp B1)) with (trans_ftyp (typ_all B1)); eauto.
-      apply trans_ftyp_lc_ftyp. eauto.
-    + unfold open_fexp_wrt_fexp. simpl. auto.
-    + replace (ftyp_all (trans_ftyp B1)) with (trans_ftyp (typ_all B1)); eauto.
-      apply trans_ftyp_lc_ftyp. eauto.
-    + unfold open_fexp_wrt_fexp. simpl. intros.
-      apply lc_fexp_tapp; eauto. apply trans_ftyp_lc_ftyp. eauto. 
 Admitted.
 
 Theorem inftapp_sound_f : forall Ψ A B C co1ᶠ co2ᶠ,
