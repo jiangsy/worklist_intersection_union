@@ -500,14 +500,14 @@ Inductive d_inftapp_elab : denv -> typ -> typ -> typ -> fexp -> fexp -> Prop :=
         (fexp_abs (trans_ftyp (typ_intersection A1 A2))
                   (fexp_app co1ᶠ (fexp_proj2 (fexp_var_b 0))))
         co2ᶠ
-  | d_inftapp_elab__union : forall (Ψ:denv) (A1 A2 B C1 C2:typ) (co1ᶠ co2ᶠ co3 co4:fexp),
+  | d_inftapp_elab__union : forall (Ψ:denv) (A1 A2 B C1 C2:typ) (co1ᶠ co2ᶠ co3ᶠ co4ᶠ:fexp),
       d_inftapp_elab Ψ A1 B C1 co1ᶠ co2ᶠ ->
-      d_inftapp_elab Ψ A2 B C2 co3 co4 ->
+      d_inftapp_elab Ψ A2 B C2 co3ᶠ co4ᶠ ->
       d_inftapp_elab Ψ (typ_union A1 A2) B (typ_union C1 C2)
         (fexp_abs (trans_ftyp (typ_union A1 A2))
                   (fexp_case (fexp_var_b 0)
                               (fexp_inl (fexp_app co2ᶠ (fexp_app co1ᶠ (fexp_var_b 0))))
-                              (fexp_inr (fexp_app co4 (fexp_app co3 (fexp_var_b 0))))))
+                              (fexp_inr (fexp_app co4ᶠ (fexp_app co3ᶠ (fexp_var_b 0))))))
         (fexp_abs (trans_ftyp (typ_union C1 C2)) (fexp_var_b 0)).
 
 Notation "Ψ ⊢ A ○ B ⇒⇒ C ↪ co1ᶠ | co2ᶠ" :=
@@ -1399,8 +1399,92 @@ Qed.
 Theorem d_inftapp_elab_sound_f : forall Ψ A B C co1ᶠ co2ᶠ,
   Ψ ⊢ A ○ B ⇒⇒ C ↪ co1ᶠ | co2ᶠ ->
   exists D, ⟦ Ψ ⟧ ⊢ co1ᶠ : ftyp_arrow ᵗ⟦ A ⟧ D /\ ⟦ Ψ ⟧ ⊢ co2ᶠ : ftyp_arrow D ᵗ⟦ C ⟧.
-Proof.
-Admitted.
+Proof with eauto.
+  intros. induction H...
+  - exists (ftyp_all (ftyp_var_b 0)). split.
+    + inst_cofinites_for f_typing__abs. intros.
+      unfold open_fexp_wrt_fexp. simpl.
+      solve_f_wf_typ. inst_cofinites_for f_wf_typ__all. intros. 
+      solve_f_wf_typ.
+    + inst_cofinites_for f_typing__abs. intros.
+      unfold open_fexp_wrt_fexp. simpl.
+      solve_f_wf_typ.  inst_cofinites_for f_wf_typ__all. intros. 
+      solve_f_wf_typ.
+  - exists (ᵗ⟦ typ_all A ⟧). split.
+    + inst_cofinites_for f_typing__abs. intros.
+      unfold open_fexp_wrt_fexp. simpl.
+      solve_f_wf_typ.
+    + inst_cofinites_for f_typing__abs. intros.
+      unfold open_fexp_wrt_fexp. simpl.
+      solve_f_wf_typ.
+      rewrite trans_ftyp_open_typ_wrt_typ. apply f_typing__tapp...
+      apply f_wf_typ_weaken_cons... solve_f_wf_typ.
+  - destruct IHd_inftapp_elab as [D [Hco1 Hco2]].
+    exists D. split.
+    + inst_cofinites_for f_typing__abs. intros.
+      unfold open_fexp_wrt_fexp. simpl.
+      solve_f_wf_typ.
+      eapply f_typing__app with (A1:=ᵗ⟦ A1 ⟧)...
+      rewrite open_fexp_wrt_fexp_rec_lc_fexp...
+      eapply f_typing_weaken_cons_var; eauto. solve_f_wf_typ.
+      apply d_inftapp_elab_lc_fexp in H0. intuition.
+      eapply f_typing__proj1; eapply f_typing__var; eauto. solve_f_wf_typ.
+    + auto.
+  - destruct IHd_inftapp_elab as [D [Hco1 Hco2]].
+    exists D. split.
+    + inst_cofinites_for f_typing__abs. intros.
+      unfold open_fexp_wrt_fexp. simpl.
+      solve_f_wf_typ.
+      eapply f_typing__app with (A1:=ᵗ⟦ A2 ⟧)...
+      rewrite open_fexp_wrt_fexp_rec_lc_fexp...
+      eapply f_typing_weaken_cons_var; eauto. solve_f_wf_typ.
+      apply d_inftapp_elab_lc_fexp in H0. intuition.
+      eapply f_typing__proj2; eapply f_typing__var; eauto. solve_f_wf_typ.
+    + auto.
+  - destruct IHd_inftapp_elab1 as [D1 [Hco1 Hco2]].
+    destruct IHd_inftapp_elab2 as [D2 [Hco3 Hco4]].
+    exists (ftyp_sum ᵗ⟦ C1 ⟧  ᵗ⟦ C2 ⟧). split.
+    + inst_cofinites_for f_typing__abs. intros.
+      unfold open_fexp_wrt_fexp. simpl.
+      solve_f_wf_typ. inst_cofinites_for f_typing__case A1:=ᵗ⟦ A1 ⟧,A2:=ᵗ⟦ A2 ⟧.
+      * apply f_typing__var. solve_f_wf_typ. auto.
+      * apply d_inftapp_elab_lc_fexp in H as Hlc. destruct_conj. 
+        intros. unfold open_fexp_wrt_fexp. simpl. constructor.
+        eapply f_typing__app with (A1:=D1); eauto.
+        apply d_inftapp_elab_lc_fexp in H as Hlc. destruct_conj. 
+        repeat rewrite open_fexp_wrt_fexp_rec_lc_fexp... 
+        apply f_typing_weaken_cons_var... 
+        apply f_typing_weaken_cons_var... 
+        solve_f_wf_typ. solve_f_wf_typ. apply f_wf_typ_weaken_cons... 
+        apply f_typing__app with (A1:=ᵗ⟦ A1 ⟧); eauto.
+        repeat rewrite open_fexp_wrt_fexp_rec_lc_fexp... 
+        apply f_typing_weaken_cons_var... 
+        apply f_typing_weaken_cons_var...
+        solve_f_wf_typ. solve_f_wf_typ. apply f_wf_typ_weaken_cons... 
+        apply f_typing__var... solve_f_wf_typ. 
+        apply f_wf_typ_weaken_cons...  apply f_wf_typ_weaken_cons...  
+        apply f_wf_typ_weaken_cons... auto.
+      * apply d_inftapp_elab_lc_fexp in H0 as Hlc. destruct_conj. 
+        intros. unfold open_fexp_wrt_fexp. simpl. constructor.
+        eapply f_typing__app with (A1:=D2); eauto.
+        apply d_inftapp_elab_lc_fexp in H as Hlc. destruct_conj. 
+        repeat rewrite open_fexp_wrt_fexp_rec_lc_fexp... 
+        apply f_typing_weaken_cons_var... 
+        apply f_typing_weaken_cons_var... 
+        solve_f_wf_typ. solve_f_wf_typ. apply f_wf_typ_weaken_cons... 
+        apply f_typing__app with (A1:=ᵗ⟦ A2 ⟧); eauto.
+        repeat rewrite open_fexp_wrt_fexp_rec_lc_fexp... 
+        apply f_typing_weaken_cons_var... 
+        apply f_typing_weaken_cons_var...
+        solve_f_wf_typ. solve_f_wf_typ. apply f_wf_typ_weaken_cons... 
+        apply f_typing__var... solve_f_wf_typ. 
+        apply f_wf_typ_weaken_cons...  apply f_wf_typ_weaken_cons...  
+        apply f_wf_typ_weaken_cons... auto.
+    + inst_cofinites_for f_typing__abs. intros.
+      unfold open_fexp_wrt_fexp. simpl.
+      apply f_typing__var. solve_f_wf_typ.
+      auto.
+Qed.
 
 Theorem d_chk_inf_elab_sound_f : forall Ψ e A eᶠ mode,
   d_chk_inf_elab Ψ e mode A eᶠ -> ⟦ Ψ ⟧ ⊢ eᶠ : ᵗ⟦ A ⟧.
