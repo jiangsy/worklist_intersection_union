@@ -986,7 +986,9 @@ Proof with simpl in *; eauto.
 Qed.
 
 Lemma lc_typ_open_stvar_subst_mono : forall A Ψ T X,
-  lc_typ (A ᵗ^^ₜ T) -> d_mono_typ Ψ T -> lc_typ (A ᵗ^ₜ X).
+  lc_typ (A ᵗ^^ₜ T) -> 
+  d_mono_typ Ψ T -> 
+  lc_typ (A ᵗ^ₜ X).
 Proof with try solve_notin; try solve_by_invert; simpl in *; eauto.
   intros * HD HM.
   inductions HD.

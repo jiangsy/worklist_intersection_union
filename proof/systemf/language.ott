@@ -166,6 +166,7 @@ J_f_typing :: '' ::=
 defn
 fE |- e : A :: :: f_typing :: 'f_typing__' by
 
+|- fE
 ---------------- :: unit
 fE |- unit : UNIT
 
@@ -187,6 +188,7 @@ fE, X : □ |- e : A
 -------------------------- :: tabs
 fE |- \ X . e : ∀ X . A
 
+fE |- A2
 fE |- e1 : ∀ X . A1
 --------------------------- :: tapp
 fE |- e1 @ A2 : {A2 / X} A1
