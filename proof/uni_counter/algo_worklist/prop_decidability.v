@@ -2349,7 +2349,13 @@ Proof.
                apply a_wf_typ_rename_tvar_cons; auto.
       -- edestruct JgUnion1 as [JgUnion1' | JgUnion1']; eauto.
          edestruct JgUnion2 as [JgUnion2' | JgUnion2']; eauto.
-         admit.
+         pick fresh X. inst_cofinites_with X.
+         assert (JgAll: (work_sub (A ᵗ^ₜ X) (typ_union A1 A2) ⫤ᵃ X ~ᵃ ⬒ ;ᵃ Γ) ⟶ᵃʷ⁎⋅ \/
+                      ~ (work_sub (A ᵗ^ₜ X) (typ_union A1 A2) ⫤ᵃ X ~ᵃ ⬒ ;ᵃ Γ) ⟶ᵃʷ⁎⋅).
+         { eapply IHmw; eauto; simpl in *; try lia.
+            admit. (* safe: wf *)
+            admit. admit. }
+        admit.
       -- edestruct JgInter1 as [JgInter1' | JgInter1']; eauto.
          admit.
   * dependent destruction H1;
