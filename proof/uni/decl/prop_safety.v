@@ -708,7 +708,7 @@ Proof.
 Qed.
 
 
-Ltac solve_lc_fexp :=
+Ltac solve_lc_fexp_base :=
   match goal with
     | _ : _ |- forall x , _ => intros
     | _ : _ |- context [open_fexp_wrt_fexp ?e1 ?e2] =>  unfold open_fexp_wrt_fexp; simpl; eauto
@@ -766,27 +766,60 @@ Proof.
   intros. apply d_infabs_elab_lc_ftyp in H. intuition.
 Qed.
 
-Ltac solve_lc_fexp_sub := 
+Lemma d_inftapp_elab_lc_ftyp : forall Ψ A B C co1ᶠ co2ᶠ,
+  Ψ ⊢ A ○ B ⇒⇒ C ↪ co1ᶠ | co2ᶠ -> 
+  lc_ftyp (trans_ftyp A) /\ lc_ftyp (trans_ftyp B) /\ lc_ftyp (trans_ftyp C).
+Proof.
+  intros. apply d_inftapp_elab_sound in H.
+  apply d_inftapp_d_wf in H.
+  intuition; eauto using trans_ftyp_lc_ftyp.
+Qed.
+
+Corollary d_inftapp_elab_lc_ftyp1 : forall Ψ A B C co1ᶠ co2ᶠ,
+  Ψ ⊢ A ○ B ⇒⇒ C ↪ co1ᶠ | co2ᶠ ->
+  lc_ftyp (trans_ftyp A).
+Proof.
+  intros. apply d_inftapp_elab_lc_ftyp in H. intuition.
+Qed.
+
+Corollary d_inftapp_elab_lc_ftyp2 : forall Ψ A B C co1ᶠ co2ᶠ,
+  Ψ ⊢ A ○ B ⇒⇒ C ↪ co1ᶠ | co2ᶠ ->
+  lc_ftyp (trans_ftyp B).
+Proof.
+  intros. apply d_inftapp_elab_lc_ftyp in H. intuition.
+Qed.
+
+Corollary d_inftapp_elab_lc_ftyp3 : forall Ψ A B C co1ᶠ co2ᶠ,
+  Ψ ⊢ A ○ B ⇒⇒ C ↪ co1ᶠ | co2ᶠ ->
+  lc_ftyp (trans_ftyp C).
+Proof.
+  intros. apply d_inftapp_elab_lc_ftyp in H. intuition.
+Qed.
+
+Ltac solve_lc_fexp := 
   repeat
-    try solve_lc_fexp;
+    try solve_lc_fexp_base;
     try match goal with 
       | H : ?Ψ ⊢ ?A <: ?B ↪ ?coᶠ |- lc_ftyp (trans_ftyp ?A) => eapply d_sub_elab_lc_ftyp1; eauto
       | H : ?Ψ ⊢ ?A <: ?B ↪ ?coᶠ |- lc_ftyp (trans_ftyp ?B) => eapply d_sub_elab_lc_ftyp2; eauto
       | H : ?Ψ ⊢ ?A ▹ ?B → ?C ↪ ?co |- lc_ftyp (trans_ftyp ?A) => eapply d_infabs_elab_lc_ftyp1; eauto
       | H : ?Ψ ⊢ ?A ▹ ?B → ?C ↪ ?co |- lc_ftyp (trans_ftyp ?B) => eapply d_infabs_elab_lc_ftyp2; eauto
       | H : ?Ψ ⊢ ?A ▹ ?B → ?C ↪ ?co |- lc_ftyp (trans_ftyp ?C) => eapply d_infabs_elab_lc_ftyp3; eauto
+      | H : ?Ψ ⊢ ?A ○ ?B ⇒⇒ ?C ↪ ?co1ᶠ | ?co2ᶠ |- lc_ftyp (trans_ftyp ?A) => eapply d_inftapp_elab_lc_ftyp1; eauto
+      | H : ?Ψ ⊢ ?A ○ ?B ⇒⇒ ?C ↪ ?co1ᶠ | ?co2ᶠ |- lc_ftyp (trans_ftyp ?B) => eapply d_inftapp_elab_lc_ftyp2; eauto
+      | H : ?Ψ ⊢ ?A ○ ?B ⇒⇒ ?C ↪ ?co1ᶠ | ?co2ᶠ |- lc_ftyp (trans_ftyp ?C) => eapply d_inftapp_elab_lc_ftyp3; eauto
     end;
     econstructor;
     eauto.
 
-Hint Extern 2 (lc_ftyp ?A) => solve_lc_fexp_sub : core.
-Hint Extern 1 (lc_fexp ?A) => solve_lc_fexp_sub : core.
+Hint Extern 2 (lc_ftyp ?A) => solve_lc_fexp : core.
+Hint Extern 1 (lc_fexp ?A) => solve_lc_fexp : core.
 
 Theorem d_sub_elab_lc_fexp : forall Ψ A B coᶠ,
   Ψ ⊢ A <: B ↪ coᶠ -> lc_fexp coᶠ.
 Proof with eauto.
   intros. induction H...
-  - solve_lc_fexp_sub.
+  - solve_lc_fexp.
     + simpl. pick fresh X. inst_cofinites_with X.
       apply d_sub_elab_sound in H1.
       apply d_sub_d_wf in H1. intuition.
@@ -801,8 +834,8 @@ Proof with eauto.
         apply degree_fexp_wrt_fexp_of_lc_fexp in H2 as Hdeg.
         apply degree_fexp_wrt_fexp_open_fexp_wrt_ftyp_rec_inv_mutual in Hdeg.
         rewrite open_fexp_wrt_fexp_rec_degree_fexp_wrt_fexp_mutual...
-      * solve_lc_fexp_sub.
-  - solve_lc_fexp_sub.
+      * solve_lc_fexp.
+  - solve_lc_fexp.
     simpl. pick fresh X. inst_cofinites_with X. 
     apply lc_ftyp_all_exists with (X1:=X)...
     apply d_sub_elab_sound in H2.
@@ -823,6 +856,15 @@ Proof with eauto.
   - simpl...
   - simpl...
   - simpl...
+Qed.
+
+Theorem d_inftapp_elab_lc_fexp : forall Ψ A B C co1ᶠ co2ᶠ,
+  Ψ ⊢ A ○ B ⇒⇒ C ↪ co1ᶠ | co2ᶠ -> lc_fexp co1ᶠ /\ lc_fexp co2ᶠ.
+Proof with eauto.
+  intros. induction H...
+  - intuition... simpl...
+  - intuition... simpl...
+  - intuition; simpl...
 Qed.
 
 Theorem d_sub_elab_sound_f : forall Ψ A B coᶠ,
