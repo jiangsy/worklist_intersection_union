@@ -24,6 +24,14 @@ Notation "Ψ ᵗ⊢ᶠ A" :=
   (f_wf_typ Ψ A)
     (at level 65, no associativity) : type_scope.
 
+Notation "{ A ᵗ/ᶠₜ X }" :=
+  (subst_ftyp_in_ftyp A X)
+    ( at level 49, A at level 50) : type_scope.
+
+Notation "{ A ᵇ/ᶠₜ X }" :=
+  (subst_ftyp_in_fbind A X)
+    ( at level 49, A at level 50) : type_scope.
+
 Fixpoint trans_ftyp (A : typ) : ftyp :=
   match A with
   | typ_unit => ftyp_unit
@@ -50,7 +58,7 @@ Fixpoint trans_fenv (Ψ : denv) : fenv :=
 Notation "⟦ Ψ ⟧" := (trans_fenv Ψ) (at level 0, no associativity) : type_scope.
 
 Lemma trans_ftyp_open_typ_wrt_typ_rec : forall A1 A2 n,
-  trans_ftyp (open_typ_wrt_typ_rec n A2 A1) = open_ftyp_wrt_ftyp_rec n ᵗ⟦ A2 ⟧ ᵗ⟦ A1 ⟧.
+  ᵗ⟦ open_typ_wrt_typ_rec n A2 A1 ⟧ = open_ftyp_wrt_ftyp_rec n ᵗ⟦ A2 ⟧ ᵗ⟦ A1 ⟧.
 Proof.
   intros A1. induction A1; auto; intros; simpl.
   - destruct (lt_eq_lt_dec n n0) as [[? | ?] | ?] eqn:Ψ; auto.
@@ -68,7 +76,8 @@ Proof.
 Qed.
 
 Theorem trans_ftyp_lc_ftyp : forall (A:typ),
-  lc_typ A -> lc_ftyp (trans_ftyp A).
+  lc_typ A -> 
+  lc_ftyp ᵗ⟦ A ⟧.
 Proof.
   intros. induction H; simpl; eauto.
   - apply lc_ftyp_all. unfold open_ftyp_wrt_ftyp. simpl. eauto.
@@ -80,7 +89,8 @@ Qed.
 #[local] Hint Resolve trans_ftyp_lc_ftyp : core.
 
 Theorem trans_fenv_notin_dom : forall Ψ X,
-  X `notin` dom Ψ -> X `notin` dom ⟦ Ψ ⟧.
+  X `notin` dom Ψ -> 
+  X `notin` dom ⟦ Ψ ⟧.
 Proof.
   intros Ψ. induction Ψ; auto.
   intros X H. destruct a. destruct d; simpl in *; auto.
@@ -89,21 +99,24 @@ Qed.
 #[local] Hint Resolve trans_fenv_notin_dom : core.
 
 Theorem trans_fenv_tvar_in : forall (Ψ:denv) X,
-  X ~ □ ∈ᵈ Ψ -> binds X fbind_tvar_empty ⟦ Ψ ⟧.
+  X ~ □ ∈ᵈ Ψ -> 
+  binds X fbind_tvar_empty ⟦ Ψ ⟧.
 Proof.
   intros. induction Ψ; auto.
   destruct a; destruct d; destruct_binds; auto.
 Qed.
 
 Theorem trans_fenv_stvar_in : forall (Ψ:denv) X,
-  X ~ ■ ∈ᵈ Ψ -> binds X fbind_tvar_empty (trans_fenv Ψ).
+  X ~ ■ ∈ᵈ Ψ -> 
+  binds X fbind_tvar_empty (trans_fenv Ψ).
 Proof.
   intros. induction Ψ; auto.
   destruct a; destruct d; destruct_binds; auto.
 Qed.
 
 Theorem trans_ftyp_wf : forall Ψ A,
-  Ψ ᵗ⊢ᵈ A -> f_wf_typ ⟦ Ψ ⟧ ᵗ⟦ A ⟧.
+  Ψ ᵗ⊢ᵈ A -> 
+  ⟦ Ψ ⟧ ᵗ⊢ᶠ ᵗ⟦ A ⟧.
 Proof.
   intros. induction H; simpl; eauto...
   - apply f_wf_typ__all with (L:=dom Ψ).
@@ -117,7 +130,8 @@ Proof.
 Qed.
 
 Theorem trans_fenv_wf_tenv_wf_fenv : forall Ψ,
-  ⊢ᵈₜ Ψ -> ⊢ᶠ ⟦ Ψ ⟧.
+  ⊢ᵈₜ Ψ -> 
+  ⊢ᶠ ⟦ Ψ ⟧.
 Proof with eauto using trans_ftyp_wf.
   intros. induction H; simpl; eauto...
   constructor...
@@ -125,7 +139,8 @@ Proof with eauto using trans_ftyp_wf.
 Qed.
 
 Theorem trans_fenv_wf_env_wf_fenv : forall Ψ,
-  ⊢ᵈ Ψ -> ⊢ᶠ ⟦ Ψ ⟧.
+  ⊢ᵈ Ψ -> 
+  ⊢ᶠ ⟦ Ψ ⟧.
 Proof with eauto using trans_fenv_wf_tenv_wf_fenv.
   intros. induction H; simpl; eauto;
   try solve [apply trans_fenv_notin_dom in H0; apply wf_env_sub; auto]...
@@ -165,7 +180,8 @@ Proof.
 Qed.
 
 Lemma f_wf_env_uniq : forall Δ,
-  ⊢ᶠ Δ -> uniq Δ.
+  ⊢ᶠ Δ -> 
+  uniq Δ.
 Proof.
   intros. induction H; eauto. 
 Qed.
@@ -189,7 +205,8 @@ Proof.
 Qed.
 
 Lemma f_wf_typ_lc_ftyp : forall Δ A,
-  Δ ᵗ⊢ᶠ A -> lc_ftyp A.
+  Δ ᵗ⊢ᶠ A -> 
+  lc_ftyp A.
 Proof.
   intros. induction H; auto.
 Qed.
@@ -197,8 +214,8 @@ Qed.
 Lemma f_wf_typ_subst_tvar : forall Δ1 Δ2 X A B,
   Δ2 ++ (X ~ fbind_tvar_empty) ++ Δ1 ᵗ⊢ᶠ A ->
   Δ1 ᵗ⊢ᶠ B ->
-  uniq (map (subst_ftyp_in_fbind B X) Δ2 ++ Δ1) ->
-  map (subst_ftyp_in_fbind B X) Δ2 ++ Δ1 ᵗ⊢ᶠ (subst_ftyp_in_ftyp B X A).
+  uniq (map ({B ᵇ/ᶠₜ X}) Δ2 ++ Δ1) ->
+  map ({B ᵇ/ᶠₜ X}) Δ2 ++ Δ1 ᵗ⊢ᶠ ({B ᵗ/ᶠₜ X}) A.
 Proof.
   intros. dependent induction H; simpl in *; eauto.
   - destruct_eq_atom...
@@ -217,10 +234,10 @@ Proof.
 Qed.
 
 Lemma f_wf_typ_open : forall Δ A B,
-  uniq Δ ->
-  f_wf_typ Δ (ftyp_all A) ->
-  f_wf_typ Δ B ->
-  f_wf_typ Δ (open_ftyp_wrt_ftyp A B).
+  uniq Δ -> 
+  Δ ᵗ⊢ᶠ ftyp_all A -> 
+  Δ ᵗ⊢ᶠ B -> 
+  Δ ᵗ⊢ᶠ open_ftyp_wrt_ftyp A B.
 Proof with simpl_env; eauto.
   intros.
   dependent destruction H0. 
@@ -232,7 +249,8 @@ Proof with simpl_env; eauto.
 Qed.
 
 Lemma f_typing_wf : forall Δ e A,
-  Δ ⊢ e : A -> ⊢ᶠ Δ /\ Δ ᵗ⊢ᶠ A.
+  Δ ⊢ e : A -> 
+  ⊢ᶠ Δ /\ Δ ᵗ⊢ᶠ A.
 Proof with eauto. 
   intros. induction H; try solve [intuition].
   - intuition.
@@ -681,25 +699,29 @@ Proof with auto.
 Qed.
 
 Theorem d_infabs_elab_sound : forall Ψ A B C coᶠ,
-  Ψ ⊢ A ▹ B → C ↪ coᶠ -> Ψ ⊢ A ▹ B → C.
+  Ψ ⊢ A ▹ B → C ↪ coᶠ -> 
+  Ψ ⊢ A ▹ B → C.
 Proof.  
   intros; induction H; eauto.
 Qed.
 
 Theorem d_infabs_elab_complete : forall Ψ A B C,
-  Ψ ⊢ A ▹ B → C -> exists coᶠ, Ψ ⊢ A ▹ B → C ↪ coᶠ.
+  Ψ ⊢ A ▹ B → C -> 
+  exists coᶠ, Ψ ⊢ A ▹ B → C ↪ coᶠ.
 Proof with eauto 4.
   intros. induction H; try solve [destruct_conj; eauto].
 Qed.
 
 Theorem d_inftapp_elab_sound : forall Ψ A B C co1ᶠ co2ᶠ,
-  Ψ ⊢ A ○ B ⇒⇒ C ↪ co1ᶠ | co2ᶠ -> Ψ ⊢ A ○ B ⇒⇒ C.
+  Ψ ⊢ A ○ B ⇒⇒ C ↪ co1ᶠ | co2ᶠ -> 
+  Ψ ⊢ A ○ B ⇒⇒ C.
 Proof.
   intros. induction H; auto 6.
 Qed.
 
 Theorem d_inftapp_elab_complete : forall Ψ A B C,
-  Ψ ⊢ A ○ B ⇒⇒ C -> exists co1ᶠ co2ᶠ, Ψ ⊢ A ○ B ⇒⇒ C ↪ co1ᶠ | co2ᶠ.
+  Ψ ⊢ A ○ B ⇒⇒ C -> 
+  exists co1ᶠ co2ᶠ, Ψ ⊢ A ○ B ⇒⇒ C ↪ co1ᶠ | co2ᶠ.
 Proof.
   intros. induction H; try solve [destruct_conj; eauto].
 Qed.
@@ -893,7 +915,8 @@ Proof.
 Qed.
 
 Theorem d_chk_inf_elab_complete : forall Ψ e mode A,
-  d_chk_inf Ψ e mode A -> exists eᶠ, d_chk_inf_elab Ψ e mode A eᶠ.
+  d_chk_inf Ψ e mode A -> 
+  exists eᶠ, d_chk_inf_elab Ψ e mode A eᶠ.
 Proof.
   intros. induction H; try solve [destruct_conj; eauto]. 
   - apply d_infabs_elab_complete in H0...
@@ -947,7 +970,8 @@ Ltac solve_lc_fexp_base :=
   end.
 
 Lemma d_sub_elab_lc_ftyp : forall Ψ A B coᶠ,
-  Ψ ⊢ A <: B ↪ coᶠ -> lc_ftyp (trans_ftyp A) /\ lc_ftyp (trans_ftyp B).
+  Ψ ⊢ A <: B ↪ coᶠ -> 
+  lc_ftyp ᵗ⟦ A ⟧ /\ lc_ftyp ᵗ⟦ B ⟧.
 Proof.
   intros. apply d_sub_elab_sound in H.
   apply d_sub_d_wf in H.
@@ -955,20 +979,22 @@ Proof.
 Qed.
 
 Lemma d_sub_elab_lc_ftyp1 : forall Ψ A B coᶠ,
-  Ψ ⊢ A <: B ↪ coᶠ -> lc_ftyp (trans_ftyp A).
+  Ψ ⊢ A <: B ↪ coᶠ -> 
+  lc_ftyp ᵗ⟦ A ⟧.
 Proof.
   intros. apply d_sub_elab_lc_ftyp in H. intuition.
 Qed.
 
 Lemma d_sub_elab_lc_ftyp2 : forall Ψ A B coᶠ,
-  Ψ ⊢ A <: B ↪ coᶠ -> lc_ftyp (trans_ftyp B).
+  Ψ ⊢ A <: B ↪ coᶠ -> 
+  lc_ftyp ᵗ⟦ B ⟧.
 Proof.
   intros. apply d_sub_elab_lc_ftyp in H. intuition.
 Qed.
 
 Lemma d_infabs_elab_lc_ftyp : forall Ψ A B C coᶠ,
   Ψ ⊢ A ▹ B → C ↪ coᶠ -> 
-  lc_ftyp (trans_ftyp A) /\ lc_ftyp (trans_ftyp B) /\ lc_ftyp (trans_ftyp C).
+  lc_ftyp ᵗ⟦ A ⟧ /\ lc_ftyp ᵗ⟦ B ⟧ /\ lc_ftyp ᵗ⟦ C ⟧.
 Proof.
   intros. apply d_infabs_elab_sound in H.
   apply d_infabs_d_wf in H.
@@ -984,21 +1010,21 @@ Qed.
 
 Corollary d_infabs_elab_lc_ftyp2 : forall Ψ A B C coᶠ,
   Ψ ⊢ A ▹ B → C ↪ coᶠ ->
-  lc_ftyp (trans_ftyp B).
+  lc_ftyp ᵗ⟦ B ⟧.
 Proof.
   intros. apply d_infabs_elab_lc_ftyp in H. intuition.
 Qed.
 
 Corollary d_infabs_elab_lc_ftyp3 : forall Ψ A B C coᶠ,
   Ψ ⊢ A ▹ B → C ↪ coᶠ ->
-  lc_ftyp (trans_ftyp C). 
+  lc_ftyp ᵗ⟦ C ⟧. 
 Proof.
   intros. apply d_infabs_elab_lc_ftyp in H. intuition.
 Qed.
 
 Lemma d_inftapp_elab_lc_ftyp : forall Ψ A B C co1ᶠ co2ᶠ,
   Ψ ⊢ A ○ B ⇒⇒ C ↪ co1ᶠ | co2ᶠ -> 
-  lc_ftyp (trans_ftyp A) /\ lc_ftyp (trans_ftyp B) /\ lc_ftyp (trans_ftyp C).
+  lc_ftyp ᵗ⟦ A ⟧ /\ lc_ftyp ᵗ⟦ B ⟧ /\ lc_ftyp ᵗ⟦ C ⟧.
 Proof.
   intros. apply d_inftapp_elab_sound in H.
   apply d_inftapp_d_wf in H.
@@ -1046,7 +1072,8 @@ Hint Extern 2 (lc_ftyp ?A) => solve_lc_fexp : core.
 Hint Extern 1 (lc_fexp ?A) => solve_lc_fexp : core.
 
 Theorem d_sub_elab_lc_fexp : forall Ψ A B coᶠ,
-  Ψ ⊢ A <: B ↪ coᶠ -> lc_fexp coᶠ.
+  Ψ ⊢ A <: B ↪ coᶠ -> 
+  lc_fexp coᶠ.
 Proof with eauto.
   intros. induction H...
   - solve_lc_fexp.
@@ -1080,7 +1107,8 @@ Proof with eauto.
 Qed.
 
 Theorem d_infabs_elab_lc_fexp : forall Ψ A B C coᶠ,
-  Ψ ⊢ A ▹ B → C ↪ coᶠ -> lc_fexp coᶠ.
+  Ψ ⊢ A ▹ B → C ↪ coᶠ -> 
+  lc_fexp coᶠ.
 Proof with eauto.
   intros. induction H...
   - simpl...
@@ -1089,7 +1117,8 @@ Proof with eauto.
 Qed.
 
 Theorem d_inftapp_elab_lc_fexp : forall Ψ A B C co1ᶠ co2ᶠ,
-  Ψ ⊢ A ○ B ⇒⇒ C ↪ co1ᶠ | co2ᶠ -> lc_fexp co1ᶠ /\ lc_fexp co2ᶠ.
+  Ψ ⊢ A ○ B ⇒⇒ C ↪ co1ᶠ | co2ᶠ -> 
+  lc_fexp co1ᶠ /\ lc_fexp co2ᶠ.
 Proof with eauto.
   intros. induction H...
   - intuition... simpl...
@@ -1152,7 +1181,8 @@ Ltac solve_f_wf_typ :=
   repeat (constructor; simpl; eauto).
 
 Theorem d_sub_elab_sound_f : forall Ψ A B coᶠ,
-  Ψ ⊢ A <: B ↪ coᶠ -> ⟦ Ψ ⟧ ⊢ coᶠ : ftyp_arrow ᵗ⟦ A ⟧ ᵗ⟦ B ⟧.
+  Ψ ⊢ A <: B ↪ coᶠ -> 
+  ⟦ Ψ ⟧ ⊢ coᶠ : ftyp_arrow ᵗ⟦ A ⟧ ᵗ⟦ B ⟧.
 Proof with eauto 6 using f_wf_typ, f_wf_env, d_sub_elab_lc_fexp, d_infabs_elab_lc_fexp.
   intros. induction H...
   - inst_cofinites_for f_typing__abs. intros. 
@@ -1408,7 +1438,8 @@ Proof with eauto.
       solve_f_wf_typ.
     + inst_cofinites_for f_typing__abs. intros.
       unfold open_fexp_wrt_fexp. simpl.
-      solve_f_wf_typ.  inst_cofinites_for f_wf_typ__all. intros. 
+      solve_f_wf_typ. 
+      inst_cofinites_for f_wf_typ__all. intros. 
       solve_f_wf_typ.
   - exists (ᵗ⟦ typ_all A ⟧). split.
     + inst_cofinites_for f_typing__abs. intros.
@@ -1487,7 +1518,8 @@ Proof with eauto.
 Qed.
 
 Theorem trans_binds : forall Ψ x A,
-  binds x (dbind_typ A) Ψ -> binds x (fbind_typ (trans_ftyp A)) (trans_fenv Ψ).
+  x ~ A ∈ᵈ Ψ -> 
+  binds x (fbind_typ ᵗ⟦ A ⟧) ⟦ Ψ ⟧.
 Proof.
   intros. induction Ψ; auto.
   inversion H.
@@ -1497,7 +1529,8 @@ Proof.
 Qed.
 
 Theorem d_chk_inf_elab_sound_f : forall Ψ e A eᶠ mode,
-  d_chk_inf_elab Ψ e mode A eᶠ -> ⟦ Ψ ⟧ ⊢ eᶠ : ᵗ⟦ A ⟧.
+  d_chk_inf_elab Ψ e mode A eᶠ -> 
+  ⟦ Ψ ⟧ ⊢ eᶠ : ᵗ⟦ A ⟧.
 Proof with eauto.
   intros. induction H; simpl...
   - apply f_typing__var...
