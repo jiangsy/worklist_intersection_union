@@ -449,6 +449,7 @@ Proof.
     eapply exp_size_work_det in H0; eauto. 
 Qed.
 
+(* @jiangsy *)
 Lemma num_occurs_in_typ_total : forall X A,
   lc_typ A -> exists n, num_occurs_in_typ X A n.
 Admitted.
@@ -934,22 +935,41 @@ Proof.
 Qed. 
 
 Lemma apply_conts_exp_size : forall Ξ c A w a n m,
-  apply_conts c A w -> n_iuv_size Ξ A a ->
+  uniq Ξ -> apply_conts c A w -> n_iuv_size Ξ A a ->
   exp_size_conts Ξ c a n -> exp_size_work Ξ w m -> m = n.
 Proof.
-  intros Ξ c A w a n m Happly Hsize1 Hsize2 Hsize3.
-  induction Happly; dependent destruction Hsize2; dependent destruction Hsize3.
-  admit. admit. admit. admit. admit.
-Admitted.
+  intros Ξ c A w a n m Huniq Happly Hsize1 Hsize2 Hsize3.
+  induction Happly; dependent destruction Hsize2; dependent destruction Hsize3; eauto.
+  - eapply n_iuv_size_det in Hsize1; eauto. subst.
+    eapply exp_size_contd_det in H; eauto.
+  - eapply n_iuv_size_det in Hsize1; eauto.
+    eapply n_iuv_size_det in H; eauto. subst.
+    eapply exp_size_conts_det in H2; eauto.
+  - eapply n_iuv_size_det in Hsize1; eauto.
+    eapply n_iuv_size_det in H; eauto.
+    eapply n_iuv_size_det in H0; eauto. subst.
+    eapply exp_size_conts_det in H4; eauto.
+  - eapply n_iuv_size_det in Hsize1; eauto.
+    eapply n_iuv_size_det in H; eauto. subst.
+    eapply exp_size_conts_det in H2; eauto.
+Qed.
 
 Lemma apply_contd_exp_size : forall Ξ c A B w a n m,
-  apply_contd c A B w -> n_iuv_size Ξ A a ->
+  uniq Ξ -> apply_contd c A B w -> n_iuv_size Ξ A a ->
   exp_size_contd Ξ c a n -> exp_size_work Ξ w m -> m = n.
 Proof.
-  intros Ξ c A B w a n m Happly Hsize1 Hsize2 Hsize3.
-  induction Happly; dependent destruction Hsize2; dependent destruction Hsize3.
-  admit. admit. admit.
-Admitted.
+  intros Ξ c A B w a n m Huniq Happly Hsize1 Hsize2 Hsize3.
+  induction Happly; dependent destruction Hsize2; dependent destruction Hsize3; eauto.
+  - eapply n_iuv_size_det in Hsize1; eauto. subst.
+    eapply exp_size_det in H; eauto.
+    eapply exp_size_conts_det in H0; eauto.
+  - eapply n_iuv_size_det in Hsize1; eauto.
+    eapply n_iuv_size_det in H; eauto. subst.
+    eapply exp_size_contd_det in H2; eauto.
+  - eapply n_iuv_size_det in Hsize1; eauto.
+    eapply n_iuv_size_det in H; eauto. subst.
+    eapply exp_size_contd_det in H2; eauto.
+Qed.
 
 (* Lemma apply_conts_exp_size : forall Σ c A w n m,
   apply_conts c A w -> exp_size_conts Σ c n -> exp_size_work Σ w m -> n = m.
@@ -1583,6 +1603,82 @@ Lemma apply_contd_dec : forall c A B,
   right. intros [w Happly]. dependent destruction Happly. lia.
 Qed. *)
 Admitted.
+
+Lemma n_iuv_size_another_bind : forall Ξ1 x Ξ2 A n n' m m',
+  n_iuv_size (Ξ1 ++ (x, nbind_var_typ n) :: Ξ2) A m ->
+  n_iuv_size (Ξ1 ++ (x, nbind_var_typ n') :: Ξ2) A m' ->
+  m = m'.
+Proof.
+  intros Ξ1 x Ξ2 A n n' m m' Hsize.
+  generalize dependent m'. generalize dependent n'.
+  dependent induction Hsize; intros * Hsize'; dependent destruction Hsize'; simpl in *; eauto.
+  - pick fresh X. inst_cofinites_with X.
+    rewrite_env (((X, nbind_tvar_empty) :: Ξ1) ++ (x, nbind_var_typ n') :: Ξ2) in H2.
+    eapply H0 in H2; simpl; eauto.
+    eapply num_occurs_in_typ_det in H1; eauto.
+  - eapply IHHsize1 in Hsize'1; eauto.
+  - eapply IHHsize1 in Hsize'1; eauto.
+Qed.
+
+Lemma exp_split_size_le_bind : forall Ξ1 x Ξ2 e n n' m m',
+  uniq (Ξ1 ++ (x, nbind_var_typ n) :: Ξ2) ->
+  exp_split_size (Ξ1 ++ (x, nbind_var_typ n) :: Ξ2) e m ->
+  exp_split_size (Ξ1 ++ (x, nbind_var_typ n') :: Ξ2) e m' ->
+  n <= n' -> m <= m'.
+Proof.
+  intros Ξ1 x Ξ2 e n n' m m' Huniq Hsize.
+  generalize dependent m'. generalize dependent n'.
+  dependent induction Hsize; intros * Hsize' Hle; dependent destruction Hsize'; try lia.
+  - admit. (* @jiangsy *)
+  - remember (dom (Ξ1 ++ (x, nbind_var_typ n) :: Ξ2)). pick fresh y. subst. inst_cofinites_with y. simpl in *.
+    rewrite_env (((y, nbind_var_typ 0) :: Ξ1) ++ (x, nbind_var_typ n') :: Ξ2) in H1.
+    eapply H0 in H1; simpl; eauto.
+  - eapply IHHsize1 in Hsize'1; eauto.
+    eapply IHHsize2 in Hsize'2; eauto. lia.
+  - remember (dom (Ξ1 ++ (x, nbind_var_typ n) :: Ξ2)). pick fresh X. subst. inst_cofinites_with X. simpl in *.
+    rewrite_env (((X, nbind_tvar_empty) :: Ξ1) ++ (x, nbind_var_typ n') :: Ξ2) in H2.
+    rewrite_env (((X, nbind_tvar_empty) :: Ξ1) ++ (x, nbind_var_typ n') :: Ξ2) in H3.
+    eapply H0 in H2; simpl; eauto.
+    eapply n_iuv_size_another_bind with (m := m) in H3; simpl; eauto. subst.
+    eapply mult_le_compat_r with (p := S (S m0)) in H2. lia.
+  - eapply IHHsize in Hsize'; eauto.
+    eapply n_iuv_size_another_bind with (m := m) in H0; simpl; eauto. subst.
+    eapply mult_le_compat_r with (p := S (S m0)) in Hsize'. lia.
+  - eapply IHHsize in Hsize'; eauto.
+    eapply n_iuv_size_another_bind with (m := m) in H0; simpl; eauto. subst.
+    eapply mult_le_compat_r with (p := S (S m0)) in Hsize'. lia.
+Admitted.
+
+Lemma exp_size_le_bind : forall Ξ1 x Ξ2 e n n' k m m',
+  uniq (Ξ1 ++ (x, nbind_var_typ n) :: Ξ2) ->
+  exp_size (Ξ1 ++ (x, nbind_var_typ n) :: Ξ2) e k m ->
+  exp_size (Ξ1 ++ (x, nbind_var_typ n') :: Ξ2) e k m' ->
+  n <= n' -> m <= m'.
+Proof.
+  intros Ξ1 x Ξ2 e n n' k m m' Huniq Hsize.
+  generalize dependent m'. generalize dependent n'.
+  dependent induction Hsize; intros * Hsize' Hle; dependent destruction Hsize'; try lia.
+  - remember (dom (Ξ1 ++ (x, nbind_var_typ n) :: Ξ2)). pick fresh y. subst. inst_cofinites_with y. simpl in *.
+    rewrite_env ((((y, nbind_var_typ n0) :: Ξ1) ++ (x, nbind_var_typ n') :: Ξ2)) in H1.
+    eapply H0 in H1; simpl; eauto. lia.
+  - eapply exp_split_size_le_bind in H0; eauto.
+    eapply IHHsize1 in Hsize'1; eauto.
+    assert (Hle': s * n0 + s + n0 <= s * n0 + s + n0).
+    {
+      eapply mult_le_compat_r with (p := n0) in H0. lia.
+    }
+    eapply IHHsize2 in Hsize'2; eauto. lia.
+    eapply H0 in H1; simpl; eauto. lia. 
+
+Lemma exp_size_le : forall Ξ e n n' m m',
+  exp_size Ξ e n m -> exp_size Ξ e n' m' ->
+  n <= n' -> m <= m'.
+Proof.
+  intros Ξ e n n' m m' Hsize.
+  generalize dependent m'. generalize dependent n'.
+  induction Hsize; intros * Hsize' Hle; dependent destruction Hsize'; try lia.
+  - remember (dom Ξ). pick fresh x. subst. inst_cofinites_with x.
+    eapply H0 in H2. eauto. try lia.
 
 Lemma exp_size_split : forall Ξ e n m n1 n2 m1 m2,
   exp_size Ξ e n m ->
