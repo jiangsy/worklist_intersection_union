@@ -428,25 +428,29 @@ Qed.
 #[local] Hint Constructors d_sub_size : core.
 
 Lemma d_sub_dwft_sized : forall Ψ A B n,
-  Ψ ⊢ A <: B | n -> ⊢ᵈ Ψ /\ Ψ ᵗ⊢ᵈ A /\ Ψ ᵗ⊢ᵈ B.
+  Ψ ⊢ A <: B | n -> 
+  ⊢ᵈ Ψ /\ Ψ ᵗ⊢ᵈ A /\ Ψ ᵗ⊢ᵈ B.
 Proof.
   intros. applys d_sub_d_wf. applys* d_sub_size_sound.
 Qed.
 
 Corollary d_sub_dwft_sized_0 : forall Ψ A B n,
-  Ψ ⊢ A <: B | n -> ⊢ᵈ Ψ.
+  Ψ ⊢ A <: B | n -> 
+  ⊢ᵈ Ψ.
 Proof.
   intros. forwards*: d_sub_dwft_sized H.
 Qed.
 
 Corollary d_sub_dwft_sized_1 : forall Ψ A B n,
-  Ψ ⊢ A <: B | n -> Ψ ᵗ⊢ᵈ A.
+  Ψ ⊢ A <: B | n -> 
+  Ψ ᵗ⊢ᵈ A.
 Proof.
   intros. forwards*: d_sub_dwft_sized H.
 Qed.
 
 Corollary d_sub_dwft_sized_2 : forall Ψ A B n,
-  Ψ ⊢ A <: B | n -> Ψ ᵗ⊢ᵈ B.
+  Ψ ⊢ A <: B | n ->
+  Ψ ᵗ⊢ᵈ B.
 Proof.
   intros. forwards*: d_sub_dwft_sized H.
 Qed.
@@ -1245,7 +1249,9 @@ Proof with auto.
 Qed.
 
 Theorem sub_transitivity : forall Ψ A B C,
-  Ψ ⊢ A <: B -> Ψ ⊢ B <: C -> Ψ ⊢ A <: C.
+  Ψ ⊢ A <: B -> 
+  Ψ ⊢ B <: C -> 
+  Ψ ⊢ A <: C.
 Proof.
   intros * Hab Hbc.
   apply d_sub_size_complete in Hab. destruct Hab as [n1].

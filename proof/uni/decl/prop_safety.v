@@ -601,7 +601,8 @@ Inductive d_chk_inf_elab : denv -> exp -> typing_mode -> typ -> fexp -> Prop :=
 #[local] Hint Constructors f_typing : core.
 
 Theorem d_sub_elab_sound: forall Ψ A B coᶠ,
-  Ψ ⊢ A <: B ↪ coᶠ -> Ψ ⊢ A <: B.
+  Ψ ⊢ A <: B ↪ coᶠ -> 
+  Ψ ⊢ A <: B.
 Proof.
   intros. induction H; eauto.
 Qed.
@@ -683,7 +684,8 @@ Ltac rewrite_close_open_subst :=
   end.
 
 Theorem d_sub_elab_complete: forall Ψ A B,
-  Ψ ⊢ A <: B -> exists coᶠ, Ψ ⊢ A <: B ↪ coᶠ.
+  Ψ ⊢ A <: B -> 
+  exists coᶠ, Ψ ⊢ A <: B ↪ coᶠ.
 Proof with auto.
   intros. induction H; eauto 4; try solve [destruct_conj; eauto 4].
   - pick fresh X. inst_cofinites_with_keep X.
