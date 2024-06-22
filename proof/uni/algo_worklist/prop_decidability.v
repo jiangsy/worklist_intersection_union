@@ -357,59 +357,30 @@ Proof.
     eapply IHHsize in Hsize'; eauto.
 Qed.
 
-(* Lemma exp_size_conts_det : forall Ξ cs n m,
-  uniq Ξ -> exp_size_conts Ξ cs n m -> forall m', exp_size_conts Ξ cs n m' -> m = m'
-with exp_size_contd_det : forall Ξ cd n m,
-  uniq Ξ -> exp_size_contd Ξ cd n m -> forall m', exp_size_contd Ξ cd n m' -> m = m'.
-Proof.
-  - intros Ξ cs n m Huniq Hsize. 
-    clear exp_size_conts_det.
-    induction Hsize; intros m' Hsize'; dependent destruction Hsize'; auto.
-    + eapply exp_size_contd_det in H; eauto.
-    + apply n_iuv_size_det with (n := b) in H0; auto. subst.
-      apply IHHsize in Hsize'; auto.
-    + apply n_iuv_size_det with (n := a) in H1; auto.
-      apply n_iuv_size_det with (n := b) in H2; auto. subst.
-      apply IHHsize in Hsize'; auto.
-    + apply n_iuv_size_det with (n := a) in H0; auto. subst.
-      apply IHHsize in Hsize'; auto.
-  - intros Ξ cd n m Huniq Hsize. 
-    clear exp_size_contd_det.
-    induction Hsize; intros m' Hsize'; dependent destruction Hsize'; auto.
-    + apply n_iuv_size_det with (n := a) in H0; auto. subst.
-      apply IHHsize in Hsize'; auto.
-    + apply exp_size_det with (m := ne) in H2; auto. subst.
-      apply exp_size_conts_det with (m := ncs) in H3; auto.
-    + apply n_iuv_size_det with (n := a) in H0; auto. subst.
-      eapply IHHsize in Hsize'; eauto.
-Admitted. *)
-
 Lemma exp_size_conts_det : forall Ξ cs n m m',
-  uniq Ξ -> exp_size_conts Ξ cs n m -> exp_size_conts Ξ cs n m' -> m = m'
+  exp_size_conts Ξ cs n m -> uniq Ξ -> exp_size_conts Ξ cs n m' -> m = m'
 with exp_size_contd_det : forall Ξ cd n m m',
-  uniq Ξ -> exp_size_contd Ξ cd n m -> exp_size_contd Ξ cd n m' -> m = m'.
+  exp_size_contd Ξ cd n m -> uniq Ξ -> exp_size_contd Ξ cd n m' -> m = m'.
 Proof.
-  - intros Ξ cs n m m' Huniq Hsize. generalize dependent m'.
-    clear exp_size_conts_det.
-    induction Hsize; intros m' Hsize'; dependent destruction Hsize'; auto.
+  - clear exp_size_conts_det. intros Ξ cs n m m' Hsize Huniq Hsize'. generalize dependent m'. generalize dependent n.
+    induction cs; intros; dependent destruction Hsize; dependent destruction Hsize'; auto.
     + eapply exp_size_contd_det in H; eauto.
     + apply n_iuv_size_det with (n := b) in H0; auto. subst.
-      apply IHHsize in Hsize'; auto.
+      apply IHcs in Hsize'; auto.
     + apply n_iuv_size_det with (n := a) in H1; auto.
       apply n_iuv_size_det with (n := b) in H2; auto. subst.
-      apply IHHsize in Hsize'; auto.
+      apply IHcs in Hsize'; auto.
     + apply n_iuv_size_det with (n := a) in H0; auto. subst.
-      apply IHHsize in Hsize'; auto.
-  - intros Ξ cd n m m' Huniq Hsize. generalize dependent m'.
-    clear exp_size_contd_det.
-    induction Hsize; intros m' Hsize'; dependent destruction Hsize'; auto.
+      apply IHcs in Hsize'; auto.
+  - clear exp_size_contd_det. intros Ξ cd n m m' Hsize Huniq Hsize'. generalize dependent m'. generalize dependent n.
+    induction cd; intros; dependent destruction Hsize; dependent destruction Hsize'; auto.
     + apply n_iuv_size_det with (n := a) in H0; auto. subst.
-      apply IHHsize in Hsize'; auto.
-    + apply exp_size_det with (m := ne) in H2; auto. subst.
-      apply exp_size_conts_det with (m := ncs) in H3; auto.
+      apply IHcd in Hsize'; auto.
+    + apply exp_size_det with (m := ne) in H1; auto. subst.
+      apply exp_size_conts_det with (m := ncs) in H2; auto.
     + apply n_iuv_size_det with (n := a) in H0; auto. subst.
-      eapply IHHsize in Hsize'; eauto.
-Admitted. (* Error: Cannot guess decreasing argument of fix. *)
+      eapply IHcd in Hsize'; eauto.
+Qed.
 
 Lemma exp_size_work_det : forall Ξ w n n',
   uniq Ξ -> exp_size_work Ξ w n -> exp_size_work Ξ w n' -> n = n'.
