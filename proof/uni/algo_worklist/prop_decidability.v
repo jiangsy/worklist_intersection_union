@@ -273,8 +273,8 @@ Inductive abind_to_nbind : nenv -> abind -> nbind -> Prop :=
       abind_to_nbind Ξ (abind_var_typ A) (nbind_var_typ n).
 
 Inductive awl_to_nenv : aworklist -> nenv -> Prop :=
-  | awl_to_nenv__empty : forall Ξ,
-      awl_to_nenv aworklist_empty Ξ
+  | awl_to_nenv__empty :
+      awl_to_nenv aworklist_empty nil
   | awl_to_nenv__cons_var : forall Γ Ξ x b b',
       awl_to_nenv Γ Ξ ->  
       abind_to_nbind Ξ b b' ->
@@ -426,157 +426,87 @@ Proof.
   - eapply n_iuv_size_det in H; eauto.
     eapply n_iuv_size_det in H0; eauto. subst.
     eapply exp_size_contd_det in H4; eauto.
+  - eapply n_iuv_size_det in H; eauto. subst.
+    eapply exp_size_det in H0; eauto. subst.
+    eapply exp_size_conts_det in H1; eauto.
   - eapply n_iuv_size_det in H; eauto.
-    eapply exp_size_conts_det in H0; eauto.
-  - eapply n_iuv_size_det in H; eauto.
-    eapply exp_size_conts_det in H0; eauto.
+    eapply n_iuv_size_det in H0; eauto. subst.
+    eapply exp_size_conts_det in H1; eauto.
   - eapply n_iuv_size_det in H; eauto.
     eapply n_iuv_size_det in H0; eauto.
-    eapply n_iuv_size_det in H1; eauto.
+    eapply n_iuv_size_det in H1; eauto. subst.
     eapply exp_size_conts_det in H2; eauto.
   - eapply n_iuv_size_det in H; eauto.
-    eapply n_iuv_size_det in H0; eauto.
+    eapply n_iuv_size_det in H0; eauto. subst.
     eapply exp_size_conts_det in H1; eauto.
   - eapply n_iuv_size_det in H; eauto.
-    eapply n_iuv_size_det in H0; eauto.
-    eapply exp_size_conts_det in H1; eauto.
-  - eapply n_iuv_size_det in H; eauto.
-    eapply n_iuv_size_det in H0; eauto.
-    eapply exp_size_conts_det in H1; eauto.
-  - eapply n_iuv_size_det in H; eauto.
-    eapply n_iuv_size_det in H0; eauto.
-    eapply exp_size_conts_det in H1; eauto.
-  - eapply n_iuv_size_det in H; eauto.
-    eapply n_iuv_size_det in H0; eauto.
-    eapply exp_size_conts_det in H1; eauto.
+    eapply n_iuv_size_det in H0; eauto. subst.
+    eapply exp_size_contd_det in H4; eauto.
+  - eapply n_iuv_size_det in H; eauto. subst.
+    eapply exp_size_conts_det in H2; eauto.
+  - eapply n_iuv_size_det in H; eauto. subst.
+    eapply exp_size_contd_det in H2; eauto.
+Qed.
 
-(* Lemma a_exp_split_size_total : forall Σ e,
-  Σ ᵉ⊢ᵃ e -> exists n, a_exp_split_size Σ e n.
+Lemma abind_to_nbind_det : forall Ξ b b' b'',
+  abind_to_nbind Ξ b b' -> abind_to_nbind Ξ b b'' -> b' = b''.
+Proof.
+  intros Ξ b b' b'' Hbind. generalize dependent b''.
+  induction Hbind; intros b'' Hbind'; dependent destruction Hbind'; eauto.
+  eapply n_iuv_size_det in H; eauto.
+Qed.
+
+Lemma awl_to_nenv_det : forall Γ Ξ Ξ',
+  awl_to_nenv Γ Ξ -> awl_to_nenv Γ Ξ' -> Ξ = Ξ'.
+Proof.
+  intros Γ Ξ Ξ' Henv. generalize dependent Ξ'.
+  induction Henv; intros Ξ' Henv'; dependent destruction Henv'; eauto.
+  eapply IHHenv in Henv'; eauto. subst.
+  eapply abind_to_nbind_det in H; eauto. subst. auto.
+Qed.
+
+Lemma exp_size_wl_det : forall Γ Ξ n n',
+  awl_to_nenv Γ Ξ -> uniq Ξ ->
+  exp_size_wl Γ n -> exp_size_wl Γ n' -> n = n'.
+Proof.
+  intros * Ha2n Huniq Hsize. generalize dependent n'. generalize dependent Ξ.
+  induction Hsize; intros * Ha2n Huniq * Hsize';
+    dependent destruction Ha2n; dependent destruction Hsize'; eauto.
+  - dependent destruction Huniq. eapply IHHsize in Hsize'; eauto.
+  - eapply awl_to_nenv_det in H; eauto. subst.
+    eapply awl_to_nenv_det in Ha2n; eauto. subst.
+    eapply exp_size_work_det in H0; eauto. 
+Qed.
+
+Lemma num_occurs_in_typ_total : forall X A,
+  lc_typ A -> exists n, num_occurs_in_typ X A n.
 Admitted.
 
-Lemma a_exp_split_size_det : forall Σ e n n',
-  a_exp_split_size Σ e n -> a_exp_split_size Σ e n' -> n = n'.
+Lemma n_iuv_size_total : forall Ξ A,
+  lc_typ A -> exists n, n_iuv_size Ξ A n.
 Admitted.
 
-Lemma exp_size_det : forall Σ e n m m',
-  exp_size Σ e n m -> exp_size Σ e n m' -> m = m'.
+Lemma exp_split_size_total : forall Ξ e,
+  exists n, exp_split_size Ξ e n.
 Admitted.
 
-Lemma exp_size_work_total : forall Γ Ξ w,
-  (awl_to_aenv Γ) ʷ⊢ᵃ w ->
-  awl_to_nenv Γ Ξ ->
+Lemma exp_size_total : forall Ξ e,
+  exists n m, exp_size Ξ e n m.
+Admitted.
+
+Lemma exp_size_conts_total : forall Ξ cs,
+  exists n m, exp_size_conts Ξ cs n m
+with exp_size_contd_total : forall Ξ cd,
+  exists n m, exp_size_contd Ξ cd n m.
+Admitted.
+
+Lemma exp_size_work_total : forall Ξ w,
   exists n, exp_size_work Ξ w n.
-Admitted. *)
-
-(* Lemma exp_size_conts_det : forall Σ cs n n',
-  exp_size_conts Σ cs n -> exp_size_conts Σ cs n' -> n = n'
-with exp_size_contd_det : forall Σ cd n n',
-  exp_size_contd Σ cd n -> exp_size_contd Σ cd n' -> n = n'.
-Proof.
-  - intros Σ cs n n' Hsize. generalize dependent n'.
-    induction Hsize; intros n' Hsize'; dependent destruction Hsize'; eauto.
-  - intros Σ cd n n' Hsize. generalize dependent n'.
-    induction Hsize; intros n' Hsize'; dependent destruction Hsize'; eauto.
-Admitted. help me check this @jiangsy *)
-
-(* Lemma exp_size_det : forall Σ e n n',
-  exp_size Σ e n -> exp_size Σ e n' -> n = n'.
-Proof.
-  intros Σ e n n' Hsize. generalize dependent n'.
-  induction Hsize; intros n' Hsize'; dependent destruction Hsize'; eauto.
-  - pick fresh x. inst_cofinites_with x. eauto.
-  - erewrite IHHsize1; eauto.
-    erewrite IHHsize2; eauto.
-    erewrite a_exp_split_size_det with (n := m); eauto.
-  - pick fresh X. inst_cofinites_with X. eauto.
-Qed.
-
-Lemma exp_size_total : forall Σ e,
-  Σ ᵉ⊢ᵃ e -> exists n, exp_size Σ e n.
-Proof.
-  intros Σ e Hexp.
-  induction Hexp; eauto.
-  - pick fresh x. inst_cofinites_with x.
-    destruct H1 as [n Hsize].
-    exists (1 + n).
-    admit. (* rename *)
-  - destruct IHHexp1 as [n1 Hsize1].
-    destruct IHHexp2 as [n2 Hsize2].
-    destruct a_exp_split_size_total with (Σ := Σ) (e := e1) as [m Hsplit1]; eauto.
-  - pick fresh X. inst_cofinites_with X.
-    destruct H1 as [n Hsize].
-    exists (2 + n * (1 + iu_size A)).
-    admit. (* rename *)
-  - destruct IHHexp as [n Hsize].
-    destruct a_exp_split_size_total with (Σ := Σ) (e := e) as [m Hsplit]; eauto.
-  - destruct IHHexp as [n Hsize].
-    destruct a_exp_split_size_total with (Σ := Σ) (e := e) as [m Hsplit]; eauto.
 Admitted.
 
-Lemma exp_size_conts_det : forall Σ cs n n',
-  exp_size_conts Σ cs n -> exp_size_conts Σ cs n' -> n = n'
-with exp_size_contd_det : forall Σ cd n n',
-  exp_size_contd Σ cd n -> exp_size_contd Σ cd n' -> n = n'.
-Proof.
-  - intros Σ cs n n' Hsize. generalize dependent n'.
-    induction Hsize; intros n' Hsize'; dependent destruction Hsize'; eauto.
-  - intros Σ cd n n' Hsize. generalize dependent n'.
-    induction Hsize; intros n' Hsize'; dependent destruction Hsize'; eauto.
-Admitted. (* help me check this @jiangsy *)
-
-Lemma exp_size_conts_total : forall Σ cs,
-  Σ ᶜˢ⊢ᵃ cs -> exists n, exp_size_conts Σ cs n
-with exp_size_contd_total : forall Σ cd,
-  Σ ᶜᵈ⊢ᵃ cd -> exists n, exp_size_contd Σ cd n.
-Proof.
-  intros; induction H; eauto.
-  intros; induction H; eauto.
-Admitted. (* help me check this @jiangsy *)
-
-Lemma exp_size_work_det : forall Σ w n n',
-  exp_size_work Σ w n -> exp_size_work Σ w n' -> n = n'.
-Proof.
-  intros Σ w n n' Hsize Hsize'.
-  dependent destruction Hsize; dependent destruction Hsize'; auto;
-    try solve [erewrite exp_size_conts_det with (n := n); eauto];
-    try solve [erewrite exp_size_contd_det with (n := n); eauto].
-  - erewrite exp_size_det with (n := m); eauto.
-    erewrite exp_size_conts_det with (n := n); eauto.
-  - erewrite exp_size_det with (n := n); eauto.
-  - erewrite exp_size_det with (n := m); eauto.
-    erewrite exp_size_conts_det with (n := n); eauto.
-  Unshelve. all: eauto.
-Qed.
-
-Lemma exp_size_work_total : forall Σ w,
-  Σ ʷ⊢ᵃ w -> exists n, exp_size_work Σ w n.
-Proof.
-  intros. dependent destruction H;
-  edestruct exp_size_conts_total as [n Hsize] in H0; eauto;
-  edestruct exp_size_contd_total as [n' Hsize'] in H0; eauto;
-  try solve [edestruct exp_size_total as [n'' Hsize''] in H; eauto].
-  Unshelve. all: eauto.
-Qed.
-
-Lemma exp_size_wl_total_a_wf_twl : forall Γ,
-  ⊢ᵃʷₜ Γ -> exists n, exp_size_wl Γ n.
-Proof.
-  intros. induction H; try destruct IHa_wf_twl as [n Hsize]; eauto.
-  edestruct exp_size_work_total as [n' Hsize'] in H; eauto.
-Qed.
-
-Lemma exp_size_wl_total : forall Γ,
-  ⊢ᵃʷₛ Γ -> exists n, exp_size_wl Γ n.
-Proof.
-  intros. induction H; try destruct IHa_wf_wl as [n Hsize]; eauto.
-  edestruct exp_size_wl_total_a_wf_twl as [n' Hsize'] in H; eauto.
-Qed.
-
-Lemma exp_size_gt_0 : forall Γ e n,
-  exp_size Γ e n -> n > 0.
-Proof.
-  intros. induction H; simpl; lia.
-Qed. *)
+Lemma exp_size_wl_total : forall Ξ,
+  exists n, exp_size_wl Ξ n.
+Admitted.
 
 Fixpoint judge_size_conts (cs : conts) : nat :=
   match cs with
