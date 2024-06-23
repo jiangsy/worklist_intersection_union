@@ -2545,6 +2545,19 @@ Lemma rename_var_in_aworklist_fresh_eq : forall x y Γ,
   {y ᵃʷ/ₑᵥ x} Γ = Γ.
 Admitted.
 
+Lemma exp_size_weaken : forall Ξ1 Ξ2 e n m X b,
+  exp_size (Ξ2 ++ Ξ1) e n m ->
+  X ∉ dom (Ξ2 ++ Ξ1) `union` ftvar_in_exp e ->
+  exp_size (Ξ2 ++ (X, b) :: Ξ1) e n m.
+Proof.
+  intros Ξ1 Ξ2 e n m X b Hsize.
+  generalize dependent b. generalize dependent X.
+  dependent induction Hsize; intros * Hnotin; eauto.
+  - pick fresh x. inst_cofinites_with x. simpl in *.
+    (* rewrite_env (((x, nbind_var_typ n) :: Ξ2) ++ Ξ1) in H. *)
+    
+    eapply H0 in H; eauto.
+
 Lemma decidablity_lemma : forall me mj mt mtj ma maj ms mw ne Γ,
   ⊢ᵃʷₛ Γ ->
   exp_size_wl Γ ne -> ne < me ->
@@ -2885,6 +2898,7 @@ Proof.
           { eapply a_wf_wl_apply_contd in Happly as Hwf'; eauto.
             eapply a_wf_work_apply_contd in Happly as Hwf''; eauto.
             edestruct exp_size_work_total as [n' He'] in Hwf''; eauto.
+            eapply 
             eapply IHmaj; eauto; simpl in *; try lia.
             eapply apply_contd_exp_size with (n := n') in Happly; eauto; lia.
             eapply apply_contd_judge_size in Happly; lia.
