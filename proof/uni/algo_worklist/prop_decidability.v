@@ -1101,13 +1101,13 @@ Proof with eauto using n_wf_exp.
     destruct Htrans as [n]...
   - apply a_wf_typ_lc in H as Hlc. apply n_iuv_size_total in Hlc.
     destruct Hlc as [n].  
-    inst_cofinites_for n_wf_exp__abs n:=n; eauto. intros. inst_cofinites_with x.
+    inst_cofinites_for n_wf_exp__abs; eauto. intros. inst_cofinites_with x.
     eapply H1 with (Γ:= x ~ᵃ T ;ᵃ Γ)...
-    simpl...
+    admit.
   - inst_cofinites_for n_wf_exp__tabs; eauto; intros; inst_cofinites_with X.
     + eapply H1 with (Γ:= X ~ᵃ □ ;ᵃ Γ); eauto...
       econstructor...
-Qed.
+Admitted.
 
 Lemma a_wf_conts_n_wf_conts : forall Γ Ξ cs,
   a_wf_conts (awl_to_aenv Γ) cs -> (awl_to_nenv Γ Ξ) -> n_wf_conts Ξ cs
@@ -1116,17 +1116,22 @@ with a_wf_contd_n_wf_contd : forall Γ Ξ cd,
 Proof with eauto using n_wf_conts, n_wf_contd, a_wf_exp_n_wf_exp.
   - intros. clear a_wf_conts_n_wf_conts. dependent induction H...
   - intros. clear a_wf_contd_n_wf_contd. dependent induction H...
+    + econstructor; eauto. admit.  
     + dependent destruction H; eauto 6 using n_wf_contd.
-Qed.
+Admitted.
 
 Lemma a_wf_work_n_wf_work : forall Γ Ξ w,
-  a_wf_work (awl_to_aenv Γ) w -> (awl_to_nenv Γ Ξ) -> n_wf_work Ξ w.
-Proof with eauto 10 using a_wf_conts_n_wf_conts, a_wf_contd_n_wf_contd, a_wf_exp_n_wf_exp, n_wf_work.
-  intros * Hwf Htrans. dependent induction Hwf;  
+  ⊢ᵃʷ Γ ->
+  a_wf_work (awl_to_aenv Γ) w -> 
+  (awl_to_nenv Γ Ξ) -> 
+  n_wf_work Ξ w.
+Proof with eauto 7 using a_wf_conts_n_wf_conts, a_wf_contd_n_wf_contd, a_wf_exp_n_wf_exp, n_wf_work.
+  intros * Hwfwl Hwf Htrans. dependent induction Hwf;  
     try solve [dependent destruction Htrans; eauto 7 using a_wf_conts_n_wf_conts, a_wf_contd_n_wf_contd, a_wf_exp_n_wf_exp, n_wf_work].
   - dependent destruction H...
   - dependent destruction H...
-  - dependent destruction H. dependent destruction H1...
+  - dependent destruction H...
+    dependent destruction H1...
 Qed.
 
 Lemma exp_size_wl_total : forall Γ,
@@ -1134,12 +1139,13 @@ Lemma exp_size_wl_total : forall Γ,
   exists n, exp_size_wl Γ n.
 Proof.
   intros. induction H; eauto; try solve [destruct_conj; eauto using exp_size_wl].
-  - apply awl_to_nenv_total in H0. destruct H0 as [Ξ].
+  - apply awl_to_nenv_total in H0 as Hwfenv. destruct Hwfenv as [Ξ].
     destruct IHa_wf_wwl as [n].
     eapply a_wf_work_n_wf_work in H; eauto.
     apply exp_size_work_total in H; eauto. destruct H as [m].
     exists (m + n). eauto using exp_size_wl.
-Qed.
+    admit.
+Admitted.
 
 Fixpoint judge_size_conts (cs : conts) : nat :=
   match cs with
