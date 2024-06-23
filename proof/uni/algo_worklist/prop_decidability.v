@@ -25,62 +25,127 @@ Inductive nbind : Set :=
 
 Definition nenv : Set := list (atom*nbind).
 
-Inductive n_wf_typ : nenv -> typ -> Prop :=
-  | n_wf_typ__unit : forall Ξ,
-      n_wf_typ Ξ typ_unit
-  | n_wf_typ__bot : forall Ξ,
-      n_wf_typ Ξ typ_bot
-  | n_wf_typ__top : forall Ξ,
-      n_wf_typ Ξ typ_top
-  | n_wf_typ__tvar : forall Ξ X,
-      binds X nbind_tvar_empty Ξ ->
-      n_wf_typ Ξ (typ_var_f X)
-  | n_wf_typ__stvar : forall Ξ X,
-      binds X nbind_stvar_empty Ξ ->
-      n_wf_typ Ξ (typ_var_f X)
-  | n_wf_typ__etvar : forall Ξ X,
-      binds X nbind_etvar_empty Ξ ->
-      n_wf_typ Ξ (typ_var_f X)
-  | n_wf_typ__arrow : forall Ξ A1 A2,
-      n_wf_typ Ξ A1 ->
-      n_wf_typ Ξ A2 ->
-      n_wf_typ Ξ (typ_arrow A1 A2)
-  | n_wf_typ__all : forall Ξ L A,
-      (forall X, X \notin L -> n_wf_typ (X ~ nbind_tvar_empty ++ Ξ) (open_typ_wrt_typ A (typ_var_f X))) ->
-      n_wf_typ Ξ (typ_all A)
-  | n_wf_typ__union : forall Ξ A1 A2,
-      n_wf_typ Ξ A1 ->
-      n_wf_typ Ξ A2 ->
-      n_wf_typ Ξ (typ_union A1 A2)
-  | n_wf_typ__intersection : forall Ξ A1 A2,
-      n_wf_typ Ξ A1 ->
-      n_wf_typ Ξ A2 ->
-      n_wf_typ Ξ (typ_intersection A1 A2).
-
 Inductive n_wf_exp : nenv -> exp -> Prop :=
   | n_wf_exp__unit : forall Ξ,
       n_wf_exp Ξ exp_unit
   | n_wf_exp__var_f : forall Ξ x n,
       binds x (nbind_var_typ n) Ξ ->
       n_wf_exp Ξ (exp_var_f x)
-  | n_wf_exp__abs : forall Ξ e,
-      n_wf_exp Ξ e ->
+  | n_wf_exp__abs : forall Ξ L e,
+      (forall x, x \notin L ->
+        n_wf_exp (x ~ (nbind_var_typ 0) ++ Ξ) (open_exp_wrt_exp e (exp_var_f x)) )->
       n_wf_exp Ξ (exp_abs e)
   | n_wf_exp__app : forall Ξ e1 e2,
       n_wf_exp Ξ e1 ->
       n_wf_exp Ξ e2 ->
       n_wf_exp Ξ (exp_app e1 e2)
-  | n_wf_exp__tabs : forall Ξ e,
-      n_wf_exp Ξ e ->
+  | n_wf_exp__tabs : forall Ξ L e,
+      (forall X, X \notin L ->
+        n_wf_exp (X ~ nbind_tvar_empty ++ Ξ) (open_exp_wrt_typ e (typ_var_f X))) ->
       n_wf_exp Ξ (exp_tabs e)
   | n_wf_exp__tapp : forall Ξ e A,
       n_wf_exp Ξ e ->
-      n_wf_typ Ξ A ->
+      lc_typ A ->
       n_wf_exp Ξ (exp_tapp e A)
   | n_wf_exp__anno : forall Ξ e A,
       n_wf_exp Ξ e ->
-      n_wf_typ Ξ A ->
+      lc_typ A ->
       n_wf_exp Ξ (exp_anno e A).
+
+Inductive n_wf_conts : nenv -> conts -> Prop :=
+  | n_wf_conts__infabs : forall Ξ cd,
+      n_wf_contd Ξ cd ->
+      n_wf_conts Ξ (conts_infabs cd)
+  | n_wf_conts__inftapp : forall Ξ B cs,
+      lc_typ B ->
+      n_wf_conts Ξ cs ->
+      n_wf_conts Ξ (conts_inftapp B cs)
+  | n_wf_conts__inftappunion : forall Ξ A B cs,
+      lc_typ A ->
+      lc_typ B ->
+      n_wf_conts Ξ cs ->
+      n_wf_conts Ξ (conts_inftappunion A B cs)
+  | n_wf_conts__unioninftapp : forall Ξ A cs,
+      lc_typ A ->
+      n_wf_conts Ξ cs ->
+      n_wf_conts Ξ (conts_unioninftapp A cs)
+  | n_wf_conts__sub : forall Ξ A,
+      lc_typ A ->
+      n_wf_conts Ξ (conts_sub A)
+with n_wf_contd : nenv -> contd -> Prop :=
+  | n_wf_contd__infabsunion : forall Ξ A cd,
+      lc_typ A ->
+      n_wf_contd Ξ cd ->
+      n_wf_contd Ξ (contd_infabsunion A cd)
+  | n_wf_contd__infapp : forall Ξ e cs,
+      n_wf_exp Ξ e ->
+      n_wf_conts Ξ cs ->
+      n_wf_contd Ξ (contd_infapp e cs)
+  | n_wf_contd__unioninfabs : forall Ξ A B cd,
+      lc_typ A ->
+      lc_typ B ->
+      n_wf_contd Ξ cd ->
+      n_wf_contd Ξ (contd_unioninfabs A B cd).
+
+Inductive n_wf_work : nenv -> work -> Prop :=
+  | n_wf_work__infer : forall Ξ e cs,
+      n_wf_exp Ξ e ->
+      n_wf_conts Ξ cs ->
+      n_wf_work Ξ (work_infer e cs)
+  | n_wf_work__check : forall Ξ e A,
+      n_wf_exp Ξ e ->
+      lc_typ A ->
+      n_wf_work Ξ (work_check e A)
+  | n_wf_work__infabs : forall Ξ A cd,
+      lc_typ A ->
+      n_wf_contd Ξ cd ->
+      n_wf_work Ξ (work_infabs A cd)
+  | n_wf_work__infabsunion : forall Ξ B1 C1 A2 cd,
+      lc_typ B1 ->
+      lc_typ A2 ->
+      n_wf_contd Ξ cd ->
+      n_wf_work Ξ (work_infabsunion B1 C1 A2 cd)
+  | n_wf_work__infapp : forall Ξ A B e cs,
+      lc_typ A ->
+      n_wf_exp Ξ e ->
+      n_wf_conts Ξ cs ->
+      n_wf_work Ξ (work_infapp A B e cs)
+  | n_wf_work__inftapp : forall Ξ A B cs,
+      lc_typ A ->
+      lc_typ B ->
+      n_wf_conts Ξ cs ->
+      n_wf_work Ξ (work_inftapp A B cs)
+  | n_wf_work__sub : forall Ξ A1 A2,
+      lc_typ A1 ->
+      lc_typ A2 ->
+      n_wf_work Ξ (work_sub A1 A2)
+  | n_wf_work__inftappunion : forall Ξ A1 A2 B cs,
+      lc_typ A1 ->
+      lc_typ A2 ->
+      lc_typ B ->
+      n_wf_conts Ξ cs ->
+      n_wf_work Ξ (work_inftappunion A1 A2 B cs)
+  | n_wf_work__unioninftapp : forall Ξ A1 A2 cs,
+      lc_typ A1 ->
+      lc_typ A2 ->
+      n_wf_conts Ξ cs ->
+      n_wf_work Ξ (work_unioninftapp A1 A2 cs)
+  | n_wf_work__unioninfabs : forall Ξ A1 A2 B1 B2 cd,
+      lc_typ A1 ->
+      lc_typ A2 ->
+      lc_typ B1 ->
+      lc_typ B2 ->
+      n_wf_contd Ξ cd ->
+      n_wf_work Ξ (work_unioninfabs A1 B1 A2 B2 cd)
+  | n_wf_work__applys : forall Ξ cs A,
+      lc_typ A ->
+      n_wf_conts Ξ cs ->
+      n_wf_work Ξ (work_applys cs A)
+  | n_wf_work__applyd : forall Ξ cd A B,
+      lc_typ A ->
+      lc_typ B ->
+      n_wf_contd Ξ cd ->
+      n_wf_work Ξ (work_applyd cd A B).
 
 Inductive num_occurs_in_typ : atom -> typ -> nat -> Prop :=
   | num_occurs_in_typ__unit : forall X,
@@ -485,8 +550,11 @@ Proof.
 Qed.
 
 Lemma exp_size_wl_det : forall Γ Ξ n n',
-  awl_to_nenv Γ Ξ -> uniq Ξ ->
-  exp_size_wl Γ n -> exp_size_wl Γ n' -> n = n'.
+  awl_to_nenv Γ Ξ -> 
+  uniq Ξ ->
+  exp_size_wl Γ n -> 
+  exp_size_wl Γ n' -> 
+  n = n'.
 Proof.
   intros * Ha2n Huniq Hsize. generalize dependent n'. generalize dependent Ξ.
   induction Hsize; intros * Ha2n Huniq * Hsize';
@@ -509,7 +577,7 @@ Proof.
     rewrite ftvar_in_typ_open_typ_wrt_typ_upper; auto.
 Qed.
 
-Lemma num_occurs_in_typ_rename : forall A X X0 Y n,
+Lemma num_occurs_in_typ_rename_tvar_neq : forall A X X0 Y n,
   num_occurs_in_typ X A n ->
   X <> Y ->
   X0 <> X ->
@@ -520,7 +588,6 @@ Proof with eauto 6 using num_occurs_in_typ.
     rewrite subst_typ_in_typ_open_typ_wrt_typ_fresh2...
 Qed.
 
-(* @jiangsy *)
 Lemma num_occurs_in_typ_total : forall X A,
   lc_typ A -> exists n, num_occurs_in_typ X A n.
 Proof.
@@ -531,13 +598,23 @@ Proof.
     exists n.
     inst_cofinites_for num_occurs_in_typ__all. intros.
     erewrite <- subst_typ_in_typ_open_typ_wrt_typ_tvar2; eauto.
-    eapply num_occurs_in_typ_rename; eauto.
+    eapply num_occurs_in_typ_rename_tvar_neq; eauto.
 Qed.
 
-Lemma n_wf_typ_lc_typ : forall Ξ A,
-  n_wf_typ Ξ A -> lc_typ A.
+Lemma n_iuv_size_rename : forall A X Y n,
+  Y `notin` ftvar_in_typ A ->
+  n_iuv_size A n -> n_iuv_size ({`Y ᵗ/ₜ X} A) n.
 Proof.
-  intros. induction H; auto.
+  intros. induction H0; simpl in *; eauto using n_iuv_size.
+  - simpl. destruct_eq_atom; eauto.
+  - pick fresh X0.
+    inst_cofinites_with X0 (keep). 
+    inst_cofinites_for n_iuv_size__all n:=n, m:=m; eauto; intros.
+    + rewrite subst_typ_in_typ_open_typ_wrt_typ_fresh2; eauto.
+      eapply H5; eauto. 
+      rewrite ftvar_in_typ_open_typ_wrt_typ_upper; auto.
+    + rewrite subst_typ_in_typ_open_typ_wrt_typ_fresh2; eauto.
+      apply num_occurs_in_typ_rename_tvar_neq; eauto.
 Qed.
 
 Lemma n_iuv_size_total : forall A,
@@ -551,38 +628,117 @@ Proof.
     apply num_occurs_in_typ_total with (X:=X) in H.
     destruct H as [m].
     exists (n + m). inst_cofinites_for n_iuv_size__all n:=n,m:=m; eauto.
-    + intros. admit.
+    + intros.
+      erewrite <- subst_typ_in_typ_open_typ_wrt_typ_tvar2; eauto.
+      eapply n_iuv_size_rename; eauto.
+      rewrite ftvar_in_typ_open_typ_wrt_typ_upper; auto.
     + intros. erewrite <- subst_typ_in_typ_open_typ_wrt_typ_tvar2; eauto.
       eapply num_occurs_in_typ_rename_tvar; eauto.
       rewrite ftvar_in_typ_open_typ_wrt_typ_upper; auto.
+Qed.
+
+Lemma awl_to_nenv_total : forall Γ,
+  ⊢ᵃʷ Γ ->
+  exists Ξ, awl_to_nenv Γ Ξ.
+Proof.
+  intros. induction H; simpl in *; try solve [destruct_conj; eauto using awl_to_nenv].
+  - apply a_wf_typ_lc in H0. apply n_iuv_size_total in H0.
+    destruct H0 as [n].
+    destruct IHa_wf_wwl as [Ξ]. 
+    exists (x ~ nbind_var_typ n ++ Ξ).
+    simpl. eauto using awl_to_nenv.
+Qed.
+
+Lemma exp_split_size_rename_var : forall Ξ1 Ξ2 e x y n m,
+  exp_split_size (Ξ2 ++ (x , (nbind_var_typ m)) :: Ξ1) e n -> 
+  exp_split_size (Ξ2 ++ (y , (nbind_var_typ m)) :: Ξ1) (subst_exp_in_exp (exp_var_f y) x e) n.
+Proof.
+  intros. dependent induction H; simpl in *; eauto using exp_split_size.
+  - destruct_eq_atom. admit.
+    admit.
+  - admit.
+  - inst_cofinites_for exp_split_size__tabs n:=n,m:=m; eauto; intros.
+    + inst_cofinites_with X. 
+      rewrite <- subst_exp_in_exp_open_exp_wrt_typ; eauto.
+      rewrite_env ((X ~ nbind_tvar_empty ++ Ξ2) ++ (y ~ nbind_var_typ m) ++ Ξ1).
+      eapply H0; eauto.
+    + admit.
+Admitted.
+
+Lemma exp_split_size_rename_var_cons : forall Ξ e x y n m,
+  exp_split_size (x ~ (nbind_var_typ m) ++ Ξ) e n -> 
+  exp_split_size (y ~ (nbind_var_typ m) ++ Ξ) (subst_exp_in_exp (exp_var_f y) x e) n.
 Admitted.
 
 Lemma exp_split_size_total : forall Ξ e,
   n_wf_exp Ξ e ->
   exists n, exp_split_size Ξ e n.
 Proof.
-  intros. induction H; destruct_conj; eauto using exp_split_size.
+  intros. induction H; destruct_conj; simpl in *; eauto using exp_split_size.
+  - pick fresh x. inst_cofinites_with x (keep).
+    destruct H1 as [n].
+    exists n.
+    inst_cofinites_for exp_split_size__abs; eauto. intros. admit.
   - admit.
-  -
+  - admit.
+  - admit.
 Admitted.
 
 Lemma exp_size_total : forall Ξ e,
+  n_wf_exp Ξ e ->
   exists n m, exp_size Ξ e n m.
+Proof.
+  intros. induction H; destruct_conj; simpl in *; eauto using exp_size.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
 Admitted.
 
 Lemma exp_size_conts_total : forall Ξ cs,
+  n_wf_conts Ξ cs ->  
   exists n m, exp_size_conts Ξ cs n m
 with exp_size_contd_total : forall Ξ cd,
+  n_wf_contd Ξ cd ->
   exists n m, exp_size_contd Ξ cd n m.
+Proof.
+  - clear exp_size_conts_total. intros.
+    induction H; simpl in *; eauto using exp_size_conts.
+    + admit.
+    + admit.
+    + admit.
+    + admit.
+  - clear exp_size_contd_total. intros.
+    induction H.
+    + admit.
+    + admit.
+    + admit.
 Admitted.
 
 Lemma exp_size_work_total : forall Ξ w,
+  n_wf_work Ξ w ->  
   exists n, exp_size_work Ξ w n.
+Proof.
+  intros. induction H; eauto.
 Admitted.
 
-Lemma exp_size_wl_total : forall Ξ,
-  exists n, exp_size_wl Ξ n.
+Lemma a_wf_work_n_wf_work : forall Γ Ξ w,
+  a_wf_work (awl_to_aenv Γ) w -> (awl_to_nenv Γ Ξ) -> n_wf_work Ξ w.
+Proof.
 Admitted.
+
+Lemma exp_size_wl_total : forall Γ,
+  ⊢ᵃʷ Γ ->
+  exists n, exp_size_wl Γ n.
+Proof.
+  intros. induction H; eauto; try solve [destruct_conj; eauto using exp_size_wl].
+  - apply awl_to_nenv_total in H0. destruct H0 as [Ξ].
+    destruct IHa_wf_wwl as [n].
+    eapply a_wf_work_n_wf_work in H; eauto.
+    apply exp_size_work_total in H; eauto. destruct H as [m].
+    exists (m + n). eauto using exp_size_wl.
+Qed.
 
 Fixpoint judge_size_conts (cs : conts) : nat :=
   match cs with
