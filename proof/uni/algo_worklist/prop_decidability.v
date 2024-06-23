@@ -25,6 +25,63 @@ Inductive nbind : Set :=
 
 Definition nenv : Set := list (atom*nbind).
 
+Inductive n_wf_typ : nenv -> typ -> Prop :=
+  | n_wf_typ__unit : forall Ξ,
+      n_wf_typ Ξ typ_unit
+  | n_wf_typ__bot : forall Ξ,
+      n_wf_typ Ξ typ_bot
+  | n_wf_typ__top : forall Ξ,
+      n_wf_typ Ξ typ_top
+  | n_wf_typ__tvar : forall Ξ X,
+      binds X nbind_tvar_empty Ξ ->
+      n_wf_typ Ξ (typ_var_f X)
+  | n_wf_typ__stvar : forall Ξ X,
+      binds X nbind_stvar_empty Ξ ->
+      n_wf_typ Ξ (typ_var_f X)
+  | n_wf_typ__etvar : forall Ξ X,
+      binds X nbind_etvar_empty Ξ ->
+      n_wf_typ Ξ (typ_var_f X)
+  | n_wf_typ__arrow : forall Ξ A1 A2,
+      n_wf_typ Ξ A1 ->
+      n_wf_typ Ξ A2 ->
+      n_wf_typ Ξ (typ_arrow A1 A2)
+  | n_wf_typ__all : forall Ξ L A,
+      (forall X, X \notin L -> n_wf_typ (X ~ nbind_tvar_empty ++ Ξ) (open_typ_wrt_typ A (typ_var_f X))) ->
+      n_wf_typ Ξ (typ_all A)
+  | n_wf_typ__union : forall Ξ A1 A2,
+      n_wf_typ Ξ A1 ->
+      n_wf_typ Ξ A2 ->
+      n_wf_typ Ξ (typ_union A1 A2)
+  | n_wf_typ__intersection : forall Ξ A1 A2,
+      n_wf_typ Ξ A1 ->
+      n_wf_typ Ξ A2 ->
+      n_wf_typ Ξ (typ_intersection A1 A2).
+
+Inductive n_wf_exp : nenv -> exp -> Prop :=
+  | n_wf_exp__unit : forall Ξ,
+      n_wf_exp Ξ exp_unit
+  | n_wf_exp__var_f : forall Ξ x n,
+      binds x (nbind_var_typ n) Ξ ->
+      n_wf_exp Ξ (exp_var_f x)
+  | n_wf_exp__abs : forall Ξ e,
+      n_wf_exp Ξ e ->
+      n_wf_exp Ξ (exp_abs e)
+  | n_wf_exp__app : forall Ξ e1 e2,
+      n_wf_exp Ξ e1 ->
+      n_wf_exp Ξ e2 ->
+      n_wf_exp Ξ (exp_app e1 e2)
+  | n_wf_exp__tabs : forall Ξ e,
+      n_wf_exp Ξ e ->
+      n_wf_exp Ξ (exp_tabs e)
+  | n_wf_exp__tapp : forall Ξ e A,
+      n_wf_exp Ξ e ->
+      n_wf_typ Ξ A ->
+      n_wf_exp Ξ (exp_tapp e A)
+  | n_wf_exp__anno : forall Ξ e A,
+      n_wf_exp Ξ e ->
+      n_wf_typ Ξ A ->
+      n_wf_exp Ξ (exp_anno e A).
+
 Inductive num_occurs_in_typ : atom -> typ -> nat -> Prop :=
   | num_occurs_in_typ__unit : forall X,
       num_occurs_in_typ X typ_unit 0
@@ -55,46 +112,39 @@ Inductive num_occurs_in_typ : atom -> typ -> nat -> Prop :=
       num_occurs_in_typ X A2 n2 ->
       num_occurs_in_typ X (typ_intersection A1 A2) (n1 + n2).
 
-Inductive n_iuv_size : nenv -> typ -> nat -> Prop :=
-  | n_iuv_size__unit : forall Ξ,
-      n_iuv_size Ξ typ_unit 0
-  | n_iuv_size__bot : forall Ξ,
-      n_iuv_size Ξ typ_bot 0
-  | n_iuv_size__top : forall Ξ,
-      n_iuv_size Ξ typ_top 0
-  | n_iuv_size__tvar : forall Ξ X,
-      binds X nbind_tvar_empty Ξ ->
-      n_iuv_size Ξ (typ_var_f X) 0
-  | n_iuv_size__stvar : forall Ξ X,
-      binds X nbind_stvar_empty Ξ ->
-      n_iuv_size Ξ (typ_var_f X) 0
-  | n_iuv_size__etvar : forall Ξ X,
-      binds X nbind_etvar_empty Ξ ->
-      n_iuv_size Ξ (typ_var_f X) 0
-  | n_iuv_size__arrow : forall Ξ A1 A2 n1 n2 n,
-      n_iuv_size Ξ A1 n1 ->
-      n_iuv_size Ξ A2 n2 ->
+Inductive n_iuv_size : typ -> nat -> Prop :=
+  | n_iuv_size__unit :
+      n_iuv_size typ_unit 0
+  | n_iuv_size__bot :
+      n_iuv_size typ_bot 0
+  | n_iuv_size__top :
+      n_iuv_size typ_top 0
+  | n_iuv_size__tvar : forall X,
+      n_iuv_size (typ_var_f X) 0
+  | n_iuv_size__arrow : forall A1 A2 n1 n2 n,
+      n_iuv_size A1 n1 ->
+      n_iuv_size A2 n2 ->
       n = n1 + n2 ->
-      n_iuv_size Ξ (typ_arrow A1 A2) n
-  | n_iuv_size__all : forall L Ξ A n m k,
+      n_iuv_size (typ_arrow A1 A2) n
+  | n_iuv_size__all : forall L A n m k,
       (forall X,
         X \notin L ->
-        n_iuv_size (X ~ nbind_tvar_empty ++ Ξ) (open_typ_wrt_typ A (typ_var_f X)) n) ->
+        n_iuv_size (open_typ_wrt_typ A (typ_var_f X)) n) ->
       (forall X,
         X \notin L ->
         num_occurs_in_typ X (open_typ_wrt_typ A (typ_var_f X)) m) ->
       k = n + m ->
-      n_iuv_size Ξ (typ_all A) k
-  | n_iuv_size__union : forall Ξ A1 A2 n1 n2 n,
-      n_iuv_size Ξ A1 n1 ->
-      n_iuv_size Ξ A2 n2 ->
+      n_iuv_size (typ_all A) k
+  | n_iuv_size__union : forall A1 A2 n1 n2 n,
+      n_iuv_size A1 n1 ->
+      n_iuv_size A2 n2 ->
       n = 2 + n1 + n2 ->
-      n_iuv_size Ξ (typ_union A1 A2) n
-  | n_iuv_size__intersection : forall Ξ A1 A2 n1 n2 n,
-      n_iuv_size Ξ A1 n1 ->
-      n_iuv_size Ξ A2 n2 ->
+      n_iuv_size (typ_union A1 A2) n
+  | n_iuv_size__intersection : forall A1 A2 n1 n2 n,
+      n_iuv_size A1 n1 ->
+      n_iuv_size A2 n2 ->
       n = 2 + n1 + n2 ->
-      n_iuv_size Ξ (typ_intersection A1 A2) n.
+      n_iuv_size (typ_intersection A1 A2) n.
 
 Inductive exp_split_size : nenv -> exp -> nat -> Prop :=
   | exp_split_size__unit : forall Ξ,
@@ -117,18 +167,17 @@ Inductive exp_split_size : nenv -> exp -> nat -> Prop :=
         exp_split_size (X ~ nbind_tvar_empty ++ Ξ)
                        (open_exp_wrt_typ e (typ_var_f X)) n) ->
       (forall X, X \notin  L ->
-        n_iuv_size (X ~ nbind_tvar_empty ++ Ξ)
-                   (open_typ_wrt_typ A (typ_var_f X)) m) ->
+        n_iuv_size (open_typ_wrt_typ A (typ_var_f X)) m) ->
       k = (1 + n) * (2 + m) ->
       exp_split_size Ξ (exp_tabs (exp_anno e A)) k
   | exp_split_size__tapp : forall Ξ e A n m k,
       exp_split_size Ξ e n ->
-      n_iuv_size Ξ A m ->
+      n_iuv_size A m ->
       k = (1 + n) * (2 + m) ->
       exp_split_size Ξ (exp_tapp e A) k
   | exp_split_size__anno : forall Ξ e A n m k,
       exp_split_size Ξ e n ->
-      n_iuv_size Ξ A m ->
+      n_iuv_size A m ->
       k = (1 + n) * (2 + m) ->
       exp_split_size Ξ (exp_anno e A) k.
 
@@ -151,20 +200,19 @@ Inductive exp_size : nenv -> exp -> nat -> nat -> Prop :=
       exp_size Ξ (exp_app e1 e2) n k
   | exp_size__tabs : forall L Ξ e A n m a k,
       (forall X, X \notin  L ->
-        n_iuv_size (X ~ nbind_tvar_empty ++ Ξ)
-                   (open_typ_wrt_typ A (typ_var_f X)) a) ->
+        n_iuv_size (open_typ_wrt_typ A (typ_var_f X)) a) ->
       (forall X, X \notin  L ->
         exp_size (X ~ nbind_tvar_empty ++ Ξ)
                  (open_exp_wrt_typ e (typ_var_f X)) a m) ->
       k = 1 + m * n + m + n ->
       exp_size Ξ (exp_tabs (exp_anno e A)) n k
   | exp_size__tapp : forall Ξ e A n m a k,
-      n_iuv_size Ξ A a ->
+      n_iuv_size A a ->
       exp_size Ξ e (a * n + a + n) m ->
       k = 1 + m * n + m + n ->
       exp_size Ξ (exp_tapp e A) n k
   | exp_size__anno : forall Ξ e A n m a k,
-      n_iuv_size Ξ A a ->
+      n_iuv_size A a ->
       exp_size Ξ e a m ->
       k = 1 + m * n + m + n ->
       exp_size Ξ (exp_anno e A) n k.
@@ -174,23 +222,23 @@ Inductive exp_size_conts : nenv -> conts -> nat -> nat -> Prop :=
       exp_size_contd Ξ cd n m ->
       exp_size_conts Ξ (conts_infabs cd ) n m
   | exp_size_conts__inftapp : forall Ξ B cs n m b,
-      n_iuv_size Ξ B b ->
+      n_iuv_size B b ->
       exp_size_conts Ξ cs ((1 + n) * (2 + b)) m ->
       exp_size_conts Ξ (conts_inftapp B cs) n m
   | exp_size_conts__inftappunion : forall Ξ A B cs n m a b,
-      n_iuv_size Ξ A a ->
-      n_iuv_size Ξ B b ->
+      n_iuv_size A a ->
+      n_iuv_size B b ->
       exp_size_conts Ξ cs ((1 + n + a) * b) m ->
       exp_size_conts Ξ (conts_inftappunion A B cs) n m
   | exp_size_conts__unioninftapp : forall Ξ A cs n m a,
-      n_iuv_size Ξ A a ->
+      n_iuv_size A a ->
       exp_size_conts Ξ cs (1 + a + n) m ->
       exp_size_conts Ξ (conts_unioninftapp A cs) n m
   | exp_size_conts__sub : forall Ξ A n,
       exp_size_conts Ξ (conts_sub A) n 0
 with exp_size_contd : nenv -> contd -> nat -> nat -> Prop :=
   | exp_size_contd__infabsunion : forall Ξ A cd n m a,
-      n_iuv_size Ξ A a ->
+      n_iuv_size A a ->
       exp_size_contd Ξ cd (1 + n + a) m ->
       exp_size_contd Ξ (contd_infabsunion A cd) n m
   | exp_size_contd__infapp : forall Ξ n e cs ne ncs k,
@@ -199,7 +247,7 @@ with exp_size_contd : nenv -> contd -> nat -> nat -> Prop :=
       k = ne + ne * n + ncs ->
       exp_size_contd Ξ (contd_infapp e cs) n k
   | exp_size_contd__unioninfabs : forall Ξ A B cd n m a,
-      n_iuv_size Ξ A a ->
+      n_iuv_size A a ->
       exp_size_contd Ξ cd (1 + a + n) m ->
       exp_size_contd Ξ (contd_unioninfabs A B cd) n m.
 
@@ -211,53 +259,53 @@ Inductive exp_size_work : nenv -> work -> nat -> Prop :=
       k = n + m ->
       exp_size_work Ξ (work_infer e cs) k
   | exp_size_work__check : forall Ξ e A n m,
-      n_iuv_size Ξ A n ->
+      n_iuv_size A n ->
       exp_size Ξ e n m ->
       exp_size_work Ξ (work_check e A) m
   | exp_size_work__infabs : forall Ξ A cd n m,
-      n_iuv_size Ξ A n ->
+      n_iuv_size A n ->
       exp_size_contd Ξ cd n m ->
       exp_size_work Ξ (work_infabs A cd) m
   | exp_size_work__infabsunion : forall Ξ B1 C1 A2 cd n1 n2 m,
-      n_iuv_size Ξ B1 n1 ->
-      n_iuv_size Ξ A2 n2 ->
+      n_iuv_size B1 n1 ->
+      n_iuv_size A2 n2 ->
       exp_size_contd Ξ cd (1 + n1 + n2) m ->
       exp_size_work Ξ (work_infabsunion B1 C1 A2 cd) m
   | exp_size_work__infapp : forall Ξ A B e cs a n m k,
-      n_iuv_size Ξ A a ->
+      n_iuv_size A a ->
       exp_size Ξ e a m ->
       exp_size_conts Ξ cs a n ->
       k = m + m * a + n ->
       exp_size_work Ξ (work_infapp A B e cs) k
   | exp_size_work__inftapp : forall Ξ A B cs n1 n2 n,
-      n_iuv_size Ξ A n1 ->
-      n_iuv_size Ξ B n2 ->
+      n_iuv_size A n1 ->
+      n_iuv_size B n2 ->
       exp_size_conts Ξ cs ((1 + n1) * (2 + n2)) n ->
       exp_size_work Ξ (work_inftapp A B cs) n
   | exp_size_work__sub : forall Ξ A1 A2,
       exp_size_work Ξ (work_sub A1 A2) 0
   | exp_size_work__inftappunion : forall Ξ A1 A2 B cs n1 n2 n m,
-      n_iuv_size Ξ A1 n1 ->
-      n_iuv_size Ξ A2 n2 ->
-      n_iuv_size Ξ B n ->
+      n_iuv_size A1 n1 ->
+      n_iuv_size A2 n2 ->
+      n_iuv_size B n ->
       exp_size_conts Ξ cs ((1 + n1 + n2) * n) m ->
       exp_size_work Ξ (work_inftappunion A1 A2 B cs) m
   | exp_size_work__unioninftapp : forall Ξ A1 A2 cs n1 n2 m,
-      n_iuv_size Ξ A1 n1 ->
-      n_iuv_size Ξ A2 n2 ->
+      n_iuv_size A1 n1 ->
+      n_iuv_size A2 n2 ->
       exp_size_conts Ξ cs (1 + n1 + n2) m ->
       exp_size_work Ξ (work_unioninftapp A1 A2 cs) m
   | exp_size_work__unioninfabs : forall Ξ A1 A2 B1 B2 cd n1 n2 m,
-      n_iuv_size Ξ A1 n1 ->
-      n_iuv_size Ξ A2 n2 ->
+      n_iuv_size A1 n1 ->
+      n_iuv_size A2 n2 ->
       exp_size_contd Ξ cd (1 + n1 + n2) m ->
       exp_size_work Ξ (work_unioninfabs A1 B1 A2 B2 cd) m
   | exp_size_work__applys : forall Ξ cs A n m,
-      n_iuv_size Ξ A n ->
+      n_iuv_size A n ->
       exp_size_conts Ξ cs n m ->
       exp_size_work Ξ (work_applys cs A) m
   | exp_size_work__applyd : forall Ξ cd A B n m,
-      n_iuv_size Ξ A n ->
+      n_iuv_size A n ->
       exp_size_contd Ξ cd n m ->
       exp_size_work Ξ (work_applyd cd A B) m.
 
@@ -269,7 +317,7 @@ Inductive abind_to_nbind : nenv -> abind -> nbind -> Prop :=
   | abind_to_nbind__etvar_empty : forall Ξ,
       abind_to_nbind Ξ abind_etvar_empty nbind_etvar_empty
   | abind_to_nbind__var_typ : forall Ξ A n,
-      n_iuv_size Ξ A n ->
+      n_iuv_size A n ->
       abind_to_nbind Ξ (abind_var_typ A) (nbind_var_typ n).
 
 Inductive awl_to_nenv : aworklist -> nenv -> Prop :=
@@ -307,10 +355,10 @@ Proof.
   eapply H0 in H1; eauto.
 Qed.
 
-Lemma n_iuv_size_det : forall Ξ A n n',
-  n_iuv_size Ξ A n -> n_iuv_size Ξ A n' -> n = n'.
+Lemma n_iuv_size_det : forall A n n',
+  n_iuv_size A n -> n_iuv_size A n' -> n = n'.
 Proof.
-  intros Ξ A n n' Hsize. generalize dependent n'.
+  intros A n n' Hsize. generalize dependent n'.
   induction Hsize; intros n' Hsize'; dependent destruction Hsize'; eauto.
   - eapply IHHsize1 in Hsize'1.
     eapply IHHsize2 in Hsize'2. lia.
@@ -449,17 +497,73 @@ Proof.
     eapply exp_size_work_det in H0; eauto. 
 Qed.
 
+Lemma num_occurs_in_typ_rename_tvar : forall X Y A n,
+  Y `notin` ftvar_in_typ A ->
+  num_occurs_in_typ X A n -> num_occurs_in_typ Y (subst_typ_in_typ (typ_var_f Y) X A) n.
+Proof.
+  intros. induction H0; simpl in *; try destruct_eq_atom;
+  eauto using num_occurs_in_typ.
+  - inst_cofinites_for num_occurs_in_typ__all; eauto.
+    intros. rewrite subst_typ_in_typ_open_typ_wrt_typ_fresh2; eauto.
+    eapply H1; eauto.
+    rewrite ftvar_in_typ_open_typ_wrt_typ_upper; auto.
+Qed.
+
+Lemma num_occurs_in_typ_rename : forall A X X0 Y n,
+  num_occurs_in_typ X A n ->
+  X <> Y ->
+  X0 <> X ->
+  num_occurs_in_typ X ({`X0 ᵗ/ₜ Y} A) n.
+Proof with eauto 6 using num_occurs_in_typ.
+  intros. induction H; simpl; destruct_eq_atom; eauto...
+  - inst_cofinites_for num_occurs_in_typ__all. intros. inst_cofinites_with Y0. 
+    rewrite subst_typ_in_typ_open_typ_wrt_typ_fresh2...
+Qed.
+
 (* @jiangsy *)
 Lemma num_occurs_in_typ_total : forall X A,
   lc_typ A -> exists n, num_occurs_in_typ X A n.
-Admitted.
+Proof.
+  intros. induction H; destruct_conj; eauto using num_occurs_in_typ.
+  - destruct (X == X0); subst; eauto using num_occurs_in_typ.
+  - pick fresh X0. specialize (H0 X0).
+    destruct H0 as [n].
+    exists n.
+    inst_cofinites_for num_occurs_in_typ__all. intros.
+    erewrite <- subst_typ_in_typ_open_typ_wrt_typ_tvar2; eauto.
+    eapply num_occurs_in_typ_rename; eauto.
+Qed.
 
-Lemma n_iuv_size_total : forall Ξ A,
-  lc_typ A -> exists n, n_iuv_size Ξ A n.
+Lemma n_wf_typ_lc_typ : forall Ξ A,
+  n_wf_typ Ξ A -> lc_typ A.
+Proof.
+  intros. induction H; auto.
+Qed.
+
+Lemma n_iuv_size_total : forall A,
+  lc_typ A -> exists n, n_iuv_size A n.
+Proof.
+  intros. induction H; destruct_conj; eauto using n_iuv_size. 
+  - pick fresh X. 
+    specialize (H0 X).
+    specialize (H X).
+    destruct H0 as [n].
+    apply num_occurs_in_typ_total with (X:=X) in H.
+    destruct H as [m].
+    exists (n + m). inst_cofinites_for n_iuv_size__all n:=n,m:=m; eauto.
+    + intros. admit.
+    + intros. erewrite <- subst_typ_in_typ_open_typ_wrt_typ_tvar2; eauto.
+      eapply num_occurs_in_typ_rename_tvar; eauto.
+      rewrite ftvar_in_typ_open_typ_wrt_typ_upper; auto.
 Admitted.
 
 Lemma exp_split_size_total : forall Ξ e,
+  n_wf_exp Ξ e ->
   exists n, exp_split_size Ξ e n.
+Proof.
+  intros. induction H; destruct_conj; eauto using exp_split_size.
+  - admit.
+  -
 Admitted.
 
 Lemma exp_size_total : forall Ξ e,
