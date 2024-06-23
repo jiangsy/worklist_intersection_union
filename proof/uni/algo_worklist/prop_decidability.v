@@ -2394,6 +2394,38 @@ Proof.
     eapply mult_le_compat with (p := n) (q := n0) in Hsize' as Hlemn; eauto. lia.
 Qed.
 
+Lemma exp_size_conts_le : forall c Ξ Ξ' n n' m m',
+  uniq Ξ -> le_nenv Ξ Ξ' ->
+  exp_size_conts Ξ c n m -> exp_size_conts Ξ' c n' m' ->
+  n <= n' -> m <= m'
+with exp_size_contd_le : forall c Ξ Ξ' n n' m m',
+  uniq Ξ -> le_nenv Ξ Ξ' ->
+  exp_size_contd Ξ c n m -> exp_size_contd Ξ' c n' m' ->
+  n <= n' -> m <= m'.
+Proof.
+  - clear exp_size_conts_le.
+    intro c. induction c; intros * Huniq Hle Hsize * Hsize' Hlen; dependent destruction Hsize; dependent destruction Hsize'; try lia.
+    + apply exp_size_contd_le with (Ξ := Ξ) (n := n) (m := m) in H0; auto.
+    + apply IHc with (Ξ := Ξ) (n := (1 + n) * (2 + b)) (m := m) in Hsize'; auto.
+      apply n_iuv_size_det with (n := b) in H0; auto. subst.
+      apply mult_le_compat_r. lia.
+    + apply IHc with (Ξ := Ξ) (n := (1 + n + a) * b) (m := m) in Hsize'; auto.
+      apply n_iuv_size_det with (n := a) in H1; auto.
+      apply n_iuv_size_det with (n := b) in H2; auto. subst.
+      apply mult_le_compat_r. lia.
+    + apply IHc with (Ξ := Ξ) (n := 1 + a + n) (m := m) in Hsize'; auto.
+      apply n_iuv_size_det with (n := a) in H0; auto. subst. lia.
+  - clear exp_size_contd_le.
+    intro c. induction c; intros * Huniq Hle Hsize * Hsize' Hlen; dependent destruction Hsize; dependent destruction Hsize'; try lia.
+    + apply IHc with (Ξ := Ξ) (n := 1 + n + a) (m := m) in Hsize'; auto.
+      apply n_iuv_size_det with (n := a) in H0; auto. lia.
+    + apply exp_size_le with (Ξ := Ξ) (n := n) (m := ne) in H1; auto.
+      apply exp_size_conts_le with (Ξ := Ξ) (n := n) (m := ncs) in H2; auto.
+      apply mult_le_compat with (p := ne) (q := ne0) in Hlen; auto. lia. 
+    + apply IHc with (Ξ := Ξ) (n := 1 + a + n) (m := m) in Hsize'; auto.
+      apply n_iuv_size_det with (n := a) in H0; auto. lia.
+Qed.
+
 Lemma le_nenv_uniq_l : forall Ξ Ξ',
   le_nenv Ξ Ξ' -> uniq Ξ -> uniq Ξ'.
 Proof.
@@ -2582,6 +2614,18 @@ Proof.
     eapply H1; eauto.
 Qed.
 
+Lemma exp_size_conts_weaken : forall c Ξ1 Ξ2 Ξ3 n m,
+  exp_size_conts (Ξ3 ++ Ξ1) c n m ->
+  exp_size_conts (Ξ3 ++ Ξ2 ++ Ξ1) c n m
+with exp_size_contd_weaken : forall c Ξ1 Ξ2 Ξ3 n m,
+  exp_size_contd (Ξ3 ++ Ξ1) c n m ->
+  exp_size_contd (Ξ3 ++ Ξ2 ++ Ξ1) c n m.
+Proof.
+  - clear exp_size_conts_weaken. intro c. induction c; intros * Hsize; dependent destruction Hsize; eauto.
+  - clear exp_size_contd_weaken. intro c. induction c; intros * Hsize; dependent destruction Hsize; eauto.
+    eapply exp_size_weaken in H; eauto.
+Qed.
+
 Lemma decidablity_lemma : forall me mj mt mtj ma maj ms mw ne Γ,
   ⊢ᵃʷₛ Γ ->
   exp_size_wl Γ ne -> ne < me ->
@@ -2658,48 +2702,73 @@ Proof.
            pick fresh X1. pick fresh X2.
            assert (Jg: (work_check (e ᵉ^^ₑ exp_var_f x) ` X2 ⫤ᵃ x ~ᵃ ` X1 ;ᵃ work_applys cs (typ_arrow ` X1 ` X2) ⫤ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ) ⟶ᵃʷ⁎⋅ \/
                      ~ (work_check (e ᵉ^^ₑ exp_var_f x) ` X2 ⫤ᵃ x ~ᵃ ` X1 ;ᵃ work_applys cs (typ_arrow ` X1 ` X2) ⫤ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ) ⟶ᵃʷ⁎⋅).
-           { eapply IHme; auto.
-             admit. (* wf *) 
-             eapply exp_size_wl__cons_work with (m := m0) (n := m + n)
+           { assert (Huniq': uniq Ξ).
+             { eapply awl_to_nenv_uniq; eauto. } 
+             assert (He': exists m, exp_size_conts Ξ cs 0 m).
+             {
+              eapply exp_size_conts_total; eauto.
+              eapply a_wf_conts_n_wf_conts with (Γ := Γ); eauto.
+              eapply a_wf_twl_a_wf_wwl; eauto.
+             }
+             destruct He' as [m' He'].
+             eapply exp_size_conts_le with (Ξ := Ξ) (m := m') in H6; eauto; try lia.
+             eapply IHme with (ne := m0 + (m' + n)); auto.
+             admit. (* wf *)    
+             eapply exp_size_wl__cons_work with (m := m0) (n := m' + n)
                 (Ξ := ((x, nbind_var_typ 0) :: (X2, nbind_etvar_empty) :: (X1, nbind_etvar_empty) :: Ξ)); eauto.
              eapply awl_to_nenv__cons_var; eauto.
              eapply exp_size_work__check; eauto.
-             admit. (* exp_size_weaken *)
+             rewrite_env (((x, nbind_var_typ 0) :: nil) ++ ((X2, nbind_etvar_empty) :: (X1, nbind_etvar_empty) :: nil) ++ Ξ).
+             eapply exp_size_weaken; eauto.
              constructor...
-             eapply exp_size_wl__cons_work with (m := m)
+             eapply exp_size_wl__cons_work with (m := m')
                 (Ξ := ((X2, nbind_etvar_empty) :: (X1, nbind_etvar_empty) :: Ξ)); eauto.
              eapply exp_size_work__applys with (n := 0); eauto.
-             admit. (* exp_size_tail_rec_le *)
+             rewrite_env (nil ++ ((X2, nbind_etvar_empty) :: (X1, nbind_etvar_empty) :: nil) ++ Ξ).
+             eapply exp_size_conts_weaken. simpl. eauto.
              lia. }
             admit. (* renaming *)
         -- dependent destruction H4. dependent destruction H5.
            assert (Jg: (work_infer e1 (conts_infabs (contd_infapp e2 cs)) ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/
                      ~ (work_infer e1 (conts_infabs (contd_infapp e2 cs)) ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
-           { assert (s0 = n1) by admit. subst. (* det *)
+           { assert (Huniq': uniq Ξ).
+             { eapply awl_to_nenv_uniq; eauto. } 
+             eapply exp_split_size_det with (n := s0) in H5_; eauto. subst.
+             assert (He': exists m, exp_size_conts Ξ cs n1 m).
+             {
+               eapply exp_size_conts_total; eauto.
+               eapply a_wf_conts_n_wf_conts with (Γ := Γ); eauto.
+               eapply a_wf_twl_a_wf_wwl; eauto.
+             }
+             destruct He' as [m' He'].
+             eapply exp_size_conts_le with (Ξ := Ξ) (m := m') in H6; eauto; try lia.
              simpl in *. eapply IHme; eauto; simpl; try lia. constructor; auto.
              rewrite mult_0_r in H4_0. rewrite plus_0_r in H4_0. simpl in H4_0.
-             eapply exp_size_wl__cons_work; eauto.
-             eapply exp_size_work__infer; eauto.
-             eapply exp_size_conts__infabs; eauto.
-             eapply exp_size_contd__infapp; eauto.
-             admit. admit. }
+             eapply exp_size_wl__cons_work with (Ξ := Ξ) (n := n); eauto.
+             lia. }
            destruct Jg as [Jg | Jg]; eauto.
-           admit.
-           (* right. intro Hcontra.
-           dependent destruction Hcontra.
-           eapply a_exp_split_size_det in H3; eauto. subst. contradiction. *)
+           right. intro Hcontra.
+           dependent destruction Hcontra. eauto.
         -- dependent destruction H4. dependent destruction H6.
+           assert (Hiuv: exists a, n_iuv_size (typ_all A) a) by admit.
+           destruct Hiuv as [a' Hiuv].
            pick fresh X. inst_cofinites_with X.
            assert (Jg: (work_check (e ᵉ^^ₜ ` X) (A ᵗ^ₜ X) ⫤ᵃ X ~ᵃ □ ;ᵃ work_applys cs (typ_all A) ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/
                      ~ (work_check (e ᵉ^^ₜ ` X) (A ᵗ^ₜ X) ⫤ᵃ X ~ᵃ □ ;ᵃ work_applys cs (typ_all A) ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
-           { eapply IHme; eauto; simpl; try lia.
+           { assert (Huniq': uniq Ξ).
+             { eapply awl_to_nenv_uniq; eauto. } 
+             assert (He': exists m, exp_size_conts Ξ cs a' m).
+             {
+               eapply exp_size_conts_total; eauto.
+               eapply a_wf_conts_n_wf_conts with (Γ := Γ); eauto.
+               eapply a_wf_twl_a_wf_wwl; eauto.
+             }
+             destruct He' as [m' He'].
+             assert (m' <= m) by admit.
+             eapply IHme; eauto; simpl; try lia.
              admit. (* wf *)
              eapply exp_size_wl__cons_work; eauto.
-             eapply awl_to_nenv__cons_var; eauto.
-             eapply exp_size_wl__cons_var; eauto.
-             eapply exp_size_wl__cons_work; eauto.
-             eapply exp_size_work__applys with (n := m1); eauto.
-             admit. admit. admit. admit. }
+             eapply awl_to_nenv__cons_var; eauto. lia. }
            admit. (* renaming *)
         -- dependent destruction H4. dependent destruction H6.
            assert (Jg: (work_infer e (conts_inftapp A cs) ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/
