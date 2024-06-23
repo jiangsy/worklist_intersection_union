@@ -2037,6 +2037,71 @@ Proof.
     lia.
 Qed.
 
+Lemma awl_to_nenv_same_dom : forall Γ Ξ,
+  awl_to_nenv Γ Ξ -> dom Ξ = dom (⌊ Γ ⌋ᵃ).
+Proof.
+  intros Γ Ξ Hnenv. dependent induction Hnenv; eauto.
+  simpl. rewrite IHHnenv. reflexivity.
+Qed.
+
+Lemma awl_to_nenv_binds : forall Γ Ξ x A n,
+  uniq Ξ -> awl_to_nenv Γ Ξ ->
+  x ~ A ∈ᵃ ⌊ Γ ⌋ᵃ -> binds x (nbind_var_typ n) Ξ ->
+  n_iuv_size A n.
+Proof.
+  intros Γ Ξ x A n Huniq Hnenv Hbinds Hbinds'.
+  dependent induction Hnenv; eauto.
+  - exfalso. eauto.
+  - dependent destruction Huniq.
+    destruct_binds; eauto.
+    + dependent destruction H0; eauto.
+    + exfalso. erewrite awl_to_nenv_same_dom in H; eauto.
+    + exfalso. eauto.
+Qed.
+
+Lemma awl_to_nenv_uniq : forall Γ Ξ,
+  awl_to_nenv Γ Ξ -> uniq (⌊ Γ ⌋ᵃ) -> uniq Ξ.
+Proof.
+  intros Γ Ξ Hnenv Huniq. dependent induction Hnenv; eauto.
+  dependent destruction Huniq.
+  erewrite <- awl_to_nenv_same_dom in H0; eauto.
+Qed.
+
+Lemma a_wf_wl_uniq : forall Γ,
+  a_wf_wl Γ ->
+  uniq (⌊ Γ ⌋ᵃ).
+Proof.
+  intros. induction H; simpl; auto.
+Qed.
+
+Fixpoint rename_var_in_aworklist (y x:expvar) (Γ:aworklist) {struct Γ} : aworklist :=
+  match Γ with
+    | aworklist_empty => aworklist_empty
+    | (aworklist_cons_var Γ' x' b) => 
+      match b with 
+        | abind_var_typ _ => aworklist_cons_var (rename_var_in_aworklist y x Γ') (if x' == x then y else x') b
+        | _ => aworklist_cons_var (rename_var_in_aworklist y x Γ') x' b
+      end
+    | (aworklist_cons_work Γ' w) => aworklist_cons_work (rename_var_in_aworklist y x Γ') (subst_exp_in_work (exp_var_f y) x w)
+  end.
+
+Notation "{ y ᵃʷ/ₑᵥ x } Γ" :=
+  (rename_var_in_aworklist y x Γ)
+    ( at level 49, y at level 50, x at level 0, right associativity) : type_scope. 
+
+Theorem rename_var_in_a_wf_wwl_a_wl_red : forall Γ x y,
+  ⊢ᵃʷ Γ ->
+  y <> x ->
+  y ∉ dom (⌊ Γ ⌋ᵃ) ->
+  Γ ⟶ᵃʷ⁎⋅ ->
+  {y ᵃʷ/ₑᵥ x} Γ ⟶ᵃʷ⁎⋅.
+Admitted.
+
+Lemma rename_var_in_aworklist_fresh_eq : forall x y Γ,
+  x ∉ fvar_in_aworklist' Γ ->
+  {y ᵃʷ/ₑᵥ x} Γ = Γ.
+Admitted.
+
 Lemma decidablity_lemma : forall me mj mt mtj ma maj ms mw ne Γ,
   ⊢ᵃʷₛ Γ ->
   exp_size_wl Γ ne -> ne < me ->
@@ -2058,6 +2123,7 @@ Proof.
   intros ms; induction ms;
   intros mw; induction mw; try lia.
   intros ne Γ Hwf He Helt Hj Ht Htj Ha Haj Hm Hw.
+  eapply a_wf_wl_uniq in Hwf as Huniq.
   dependent destruction Hwf; auto.
   - rename H into Hwf. dependent destruction Hwf; auto.
     + simpl in *. dependent destruction He.
@@ -2083,25 +2149,6 @@ Proof.
       apply Jg; auto.
     + dependent destruction He.
       dependent destruction H.
-      (* 11: {
-        dependent destruction H3.
-        edestruct (apply_conts_dec cs A) as [[w Happly] | Happly].
-        -- eapply a_wf_wl_apply_conts in Happly as Hwf'; eauto.
-           eapply a_wf_work_apply_conts in Happly as Hwf''; eauto.
-           (* edestruct exp_size_work_total as [n' He'] in Hwf''; eauto. *)
-           assert (JgApply: (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ ~ (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
-           { eapply IHmj; eauto; simpl in *; try lia.
-             eapply exp_size_wl__cons_work; eauto.
-             eapply apply_conts_exp_size in Happly; eauto.
-              }
-             lia.
-             eapply apply_conts_judge_size in Happly; lia. }
-           destruct JgApply as [JgApply | JgApply]; eauto.
-           right. intro Hcontra. dependent destruction Hcontra.
-           eapply apply_conts_det in Happly; eauto. subst. eapply JgApply; eauto.
-        -- right; intro Hcontra; dependent destruction Hcontra;
-           eapply Happly; eauto.
-      } *)
       * dependent destruction H3.
         dependent destruction H; simpl in *.
         -- dependent destruction H3. dependent destruction H4.
@@ -2119,7 +2166,8 @@ Proof.
              eapply a_wf_wl_a_wf_bind_typ in H; eauto.
              eapply exp_size_wl__cons_work; eauto.
              eapply exp_size_work__applys; eauto.
-             admit. lia. }
+             eapply awl_to_nenv_binds with (Ξ := Ξ); eauto.
+             eapply awl_to_nenv_uniq; eauto. lia. }
            destruct Jg as [Jg | Jg]; eauto.
            right. intro Hcontra.
            dependent destruction Hcontra.
@@ -2141,7 +2189,6 @@ Proof.
              eapply exp_size_wl__cons_work with (m := m)
                 (Ξ := ((X2, nbind_etvar_empty) :: (X1, nbind_etvar_empty) :: Ξ)); eauto.
              eapply exp_size_work__applys with (n := 0); eauto.
-             eapply n_iuv_size__arrow; eauto.
              admit. (* exp_size_tail_rec_le *)
              lia. }
             admit. (* renaming *)
@@ -2302,8 +2349,7 @@ Proof.
               { eapply IHme; eauto; simpl; try lia.
                 admit. (* wf *)
                 eapply exp_size_wl__cons_work with (Ξ := ((x, nbind_var_typ n1) :: Ξ)); eauto.
-                eapply exp_size_work__check with (a := n2); eauto.
-                admit. (* n_iuv_size_weaken *)
+                eapply exp_size_work__check with (n := n2); eauto.
                 admit. admit. } 
               destruct JgArr as [JgArr | JgArr]; auto.
               ** left. inst_cofinites_for a_wl_red__chk_absarrow; eauto.
