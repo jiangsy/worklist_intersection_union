@@ -408,7 +408,7 @@ Inductive exp_size_wl : aworklist -> nat -> Prop :=
       k = m + n ->
       exp_size_wl (aworklist_cons_work Γ w) k.
   
-Hint Constructors n_iuv_size exp_size exp_size_conts exp_size_contd exp_size_work exp_size_wl abind_to_nbind awl_to_nenv : core.
+Hint Constructors n_iuv_size exp_split_size exp_size exp_size_conts exp_size_contd exp_size_work exp_size_wl abind_to_nbind awl_to_nenv : core.
 
 Lemma num_occurs_in_typ_det : forall X A n n',
   num_occurs_in_typ X A n -> num_occurs_in_typ X A n' -> n = n'.
@@ -2528,6 +2528,8 @@ Fixpoint rename_var_in_aworklist (y x:expvar) (Γ:aworklist) {struct Γ} : awork
     | (aworklist_cons_work Γ' w) => aworklist_cons_work (rename_var_in_aworklist y x Γ') (subst_exp_in_work (exp_var_f y) x w)
   end.
 
+(* rename *)
+
 Notation "{ y ᵃʷ/ₑᵥ x } Γ" :=
   (rename_var_in_aworklist y x Γ)
     ( at level 49, y at level 50, x at level 0, right associativity) : type_scope. 
@@ -2545,18 +2547,40 @@ Lemma rename_var_in_aworklist_fresh_eq : forall x y Γ,
   {y ᵃʷ/ₑᵥ x} Γ = Γ.
 Admitted.
 
-Lemma exp_size_weaken : forall Ξ1 Ξ2 e n m X b,
-  exp_size (Ξ2 ++ Ξ1) e n m ->
-  X ∉ dom (Ξ2 ++ Ξ1) `union` ftvar_in_exp e ->
-  exp_size (Ξ2 ++ (X, b) :: Ξ1) e n m.
+Lemma exp_split_size_weaken : forall Ξ1 Ξ2 Ξ3 e n,
+  exp_split_size (Ξ3 ++ Ξ1) e n ->
+  exp_split_size (Ξ3 ++ Ξ2 ++ Ξ1) e n.
 Proof.
-  intros Ξ1 Ξ2 e n m X b Hsize.
-  generalize dependent b. generalize dependent X.
-  dependent induction Hsize; intros * Hnotin; eauto.
-  - pick fresh x. inst_cofinites_with x. simpl in *.
-    (* rewrite_env (((x, nbind_var_typ n) :: Ξ2) ++ Ξ1) in H. *)
-    
-    eapply H0 in H; eauto.
+  intros Ξ1 Ξ2 Ξ3 e n Hsize.
+  generalize dependent Ξ2.
+  dependent induction Hsize; intros *; eauto.
+  - inst_cofinites_for exp_split_size__abs n:=n; try lia.
+    intros * Hnotin.
+    rewrite_env ((x ~ nbind_var_typ 0 ++ Ξ3) ++ Ξ2 ++ Ξ1).
+    eapply H0; eauto. 
+  - inst_cofinites_for exp_split_size__tabs n:=n,m:=m; try lia; eauto.
+    intros * Hnotin.
+    rewrite_env ((X ~ nbind_tvar_empty ++ Ξ3) ++ Ξ2 ++ Ξ1).
+    eapply H0; eauto.
+Qed.
+
+Lemma exp_size_weaken : forall Ξ1 Ξ2 Ξ3 e n m,
+  exp_size (Ξ3 ++ Ξ1) e n m ->
+  exp_size (Ξ3 ++ Ξ2 ++ Ξ1) e n m.
+Proof.
+  intros Ξ1 Ξ2 Ξ3 e n m Hsize.
+  generalize dependent Ξ2.
+  dependent induction Hsize; intros *; eauto.
+  - inst_cofinites_for exp_size__abs m:=m; try lia.
+    intros * Hnotin.
+    rewrite_env ((x ~ nbind_var_typ n ++ Ξ3) ++ Ξ2 ++ Ξ1).
+    eapply H0; eauto.
+  - eapply exp_split_size_weaken in H; eauto.
+  - inst_cofinites_for exp_size__tabs a:=a,n:=n,m:=m; try lia; eauto.
+    intros * Hnotin.
+    rewrite_env ((X ~ nbind_tvar_empty ++ Ξ3) ++ Ξ2 ++ Ξ1).
+    eapply H1; eauto.
+Qed.
 
 Lemma decidablity_lemma : forall me mj mt mtj ma maj ms mw ne Γ,
   ⊢ᵃʷₛ Γ ->
