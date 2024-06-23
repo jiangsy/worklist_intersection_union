@@ -2101,6 +2101,22 @@ Proof.
     eapply mult_le_compat with (p := n) (q := n0) in Hsize' as Hlemn; eauto. lia.
 Qed.
 
+Lemma le_nenv_uniq_l : forall Ξ Ξ',
+  le_nenv Ξ Ξ' -> uniq Ξ -> uniq Ξ'.
+Proof.
+  intros Ξ Ξ' Hle Huniq. induction Hle; eauto; dependent destruction Huniq;
+    try solve [erewrite le_nenv_same_dom in H; eauto].
+  erewrite le_nenv_same_dom in H0; eauto.
+Qed.
+
+Lemma le_nenv_uniq_r : forall Ξ Ξ',
+  le_nenv Ξ Ξ' -> uniq Ξ' -> uniq Ξ.
+Proof.
+  intros Ξ Ξ' Hle Huniq. induction Hle; eauto; dependent destruction Huniq;
+    try solve [erewrite <- le_nenv_same_dom in H; eauto].
+  erewrite <- le_nenv_same_dom in H0; eauto.
+Qed.
+
 Lemma exp_size_split : forall Ξ Ξ1 Ξ2 e n m n1 n2 m1 m2,
   uniq Ξ -> exp_size Ξ e n m -> le_nenv Ξ1 Ξ -> le_nenv Ξ2 Ξ ->
   exp_size Ξ1 e n1 m1 -> exp_size Ξ2 e n2 m2 ->
@@ -2119,148 +2135,72 @@ Proof.
       eapply le_nenv__var; eauto. lia.
     }
     lia.
-  - eapply IHHsize1 with (n1 := n1) in Hs1_1; eauto; try lia.
-    eapply IHHsize2 in Hs1_2; eauto; try lia.
-    eapply exp_size_le with (Ξ' := Ξ1) (n' := n1) in Hs1_1; eauto; try lia.
-    eapply exp_size_le with (Ξ' := Ξ2) (n' := n2) in Hs2; eauto; try lia.
+  - unfold lt in *.
+    eapply le_nenv_uniq_r in Hle1 as Huniq1; eauto.
+    eapply le_nenv_uniq_r in Hle2 as Huniq2; eauto.
+    eapply IHHsize1 with (Ξ1 := Ξ0) (n1 := n0) in Hs2_1; eauto.
+    eapply exp_split_size_le with (Ξ' := Ξ) in H1 as Hles1; eauto.
+    eapply exp_split_size_le with (Ξ' := Ξ) in H2 as Hles2; eauto.
+    assert (s0 * n0 + s1 * n1 + s0 + s1 <= s * n).
+    {
+      eapply mult_le_compat_r with (p := n0) in Hles1 as Hlesn1.
+      eapply mult_le_compat_r with (p := n1) in Hles2 as Hlesn2.
+      eapply mult_le_compat_l with (p := s) in Hlt as Hlesn.
+      lia.
+    }
+    eapply IHHsize2 with (Ξ1 := Ξ0) in Hs2_2; eauto; try lia.
+    assert (s0 * m4 + s1 * m5 <= s * m2).
+    {
+      eapply mult_le_compat_r with (p := m4) in Hles1 as Hlesm1.
+      eapply mult_le_compat_r with (p := m5) in Hles2 as Hlesm2.
+      eapply mult_le_compat_l with (p := s) in Hs2_2 as Hlesm.
+      lia.
+    }
     lia.
-  
-  
-  
-  assert (s0 = s1) by admit. subst. (* det *)
-    assert (s = s1) by admit. subst. (* det *)
-    eapply mult_le_compat_l with (p := S s1) in Hlt as Hlt'.
-    simpl in *.
-    eapply IHHsize1 with (n1 := n1) in Hs1_1; eauto; try lia.
-    eapply IHHsize2 with (n2 := s1 * n1 + s1 + n1) in Hs1_2; eauto; try lia.
-    unfold lt in Hs1_2.
-    eapply mult_le_compat_l with (p := s1) in Hs1_2 as Hlt''.
+  - eapply le_nenv_uniq_r in Hle1 as Huniq1; eauto.
+    eapply le_nenv_uniq_r in Hle2 as Huniq2; eauto.
+    remember (dom Ξ). remember (dom Ξ0). remember (dom Ξ1).
+    pick fresh X. subst. inst_cofinites_with X.
+    eapply n_iuv_size_det in H3; eauto. subst.
+    eapply n_iuv_size_det in H; eauto. subst.
+    eapply exp_size_le with (Ξ := (X, nbind_tvar_empty) :: Ξ0) in H0 as Hlem1; eauto.
+    eapply exp_size_le with (Ξ := (X, nbind_tvar_empty) :: Ξ1) in H0 as Hlem2; eauto.
+    assert (m0 * n0 + m1 * n1 + m0 + m1 <= m * n).
+    {
+      eapply mult_le_compat_r with (p := n0) in Hlem1 as Hlemn1.
+      eapply mult_le_compat_r with (p := n1) in Hlem2 as Hlemn2.
+      eapply mult_le_compat_l with (p := m) in Hlt as Hlemn.
+      lia.
+    }
     lia.
-  - pick fresh X. inst_cofinites_with X.
-    assert (a = a0) by admit. subst. (* det *)
-    assert (a0 = a1) by admit. subst. (* det *)
-    assert (m = m0) by admit. subst. (* det *)
-    assert (m0 = m1) by admit. subst. (* det *)
-    unfold lt in Hlt.
-    eapply mult_le_compat_l with (p := m1) in Hlt as Hlt'.
+  - unfold lt in *.
+    eapply le_nenv_uniq_r in Hle1 as Huniq1; eauto.
+    eapply le_nenv_uniq_r in Hle2 as Huniq2; eauto.
+    eapply n_iuv_size_det in H; eauto. subst.
+    eapply n_iuv_size_det in H1; eauto. subst.
+    eapply mult_le_compat_l with (p := a0) in Hlt as Hlt'.
+    eapply IHHsize with (Ξ1 := Ξ0) in Hs2; eauto; try lia.
+    assert (m0 * n0 + m1 * n1 + m0 + m1 <= m * n).
+    {
+      eapply mult_le_compat with (n := S (m1 + m0)) (m := m) in Hlt; try lia.
+    }
     lia.
-  - assert (a = a0) by admit. subst. (* det *)
-    assert (a0 = a1) by admit. subst. (* det *)
-    eapply IHHsize with (n1 := a1 * n1 + a1 + n1) in Hs1 as Hlt'; eauto; try lia.
-    unfold lt in *.
-    eapply mult_le_compat with (n := S (m1 + m0)) (m := m) in Hlt; try lia.
-    eapply mult_le_compat_l with (p := a1) in Hlt as Hlt'.
+  - unfold lt in *.
+    eapply le_nenv_uniq_r in Hle1 as Huniq1; eauto.
+    eapply le_nenv_uniq_r in Hle2 as Huniq2; eauto.
+    eapply n_iuv_size_det in H; eauto. subst.
+    eapply n_iuv_size_det in H1; eauto. subst.
+    eapply exp_size_le with (Ξ := Ξ0) in Hsize as Hlem1; eauto.
+    eapply exp_size_le with (Ξ := Ξ1) in Hsize as Hlem2; eauto.
+    assert (m0 * n0 + m1 * n1 + m0 + m1 <= m * n).
+    {
+      eapply mult_le_compat_r with (p := n0) in Hlem1 as Hlemn1.
+      eapply mult_le_compat_r with (p := n1) in Hlem2 as Hlemn2.
+      eapply mult_le_compat_l with (p := m) in Hlt as Hlemn.
+      lia.
+    }
     lia.
-  - assert (a = a0) by admit. subst. (* det *)
-    assert (a0 = a1) by admit. subst. (* det *)
-    assert (m = m0) by admit. subst. (* det *)
-    assert (m0 = m1) by admit. subst. (* det *)
-    unfold lt in Hlt.
-    eapply mult_le_compat_l with (p := m1) in Hlt as Hlt'.
-    lia.
-
-
-      admit. (* <= m0 *)
-      admit. (* <= m1 *) }
-    lia.
-    specialize (exp_size_total ((x, nbind_var_typ n) :: Ξ) (e ᵉ^^ₑ exp_var_f x) n0) as Hm0.
-    specialize (exp_size_total ((x, nbind_var_typ n1) :: Ξ) (e ᵉ^^ₑ exp_var_f x) n1) as Hm1.
-    destruct Hm0 as [m0' Hm0]. destruct Hm1 as [m1' Hm1].
-    eapply exp_size_le with (Ξ' := (x, nbind_var_typ n0) :: Ξ) (m' := m0) in Hm0 as Hle0; eauto; try lia.
-    eapply exp_size_le with (Ξ' := (x, nbind_var_typ n1) :: Ξ) (m' := m1) in Hm1 as Hle1; eauto; try lia.
-    assert (Hlt': m0 + m1 < m). {
-      eapply H0; eauto. 
-      admit. (* <= m0 *)
-      admit. (* <= m1 *) }
-    lia.
-
-
-  intros Ξ Ξ' e n m n1 n2 m1 m2 Huniq Hsize.
-  generalize dependent m2. generalize dependent m1.
-  generalize dependent n2. generalize dependent n1.
-  generalize dependent Ξ'.
-  dependent induction Hsize; intros * Hle Hs1 Hs2 Hlt;
-    dependent destruction Hs1; dependent destruction Hs2; simpl in *; eauto; try lia.
-  - remember (dom Ξ). pick fresh x. subst. inst_cofinites_with x.
-    assert (Hlt': m0 + m1 < m). {
-      eapply H0; eauto. 
-      admit. (* <= m0 *)
-      admit. (* <= m1 *) }
-    lia.
-    specialize (exp_size_total ((x, nbind_var_typ n) :: Ξ) (e ᵉ^^ₑ exp_var_f x) n0) as Hm0.
-    specialize (exp_size_total ((x, nbind_var_typ n1) :: Ξ) (e ᵉ^^ₑ exp_var_f x) n1) as Hm1.
-    destruct Hm0 as [m0' Hm0]. destruct Hm1 as [m1' Hm1].
-    eapply exp_size_le with (Ξ' := (x, nbind_var_typ n0) :: Ξ) (m' := m0) in Hm0 as Hle0; eauto; try lia.
-    eapply exp_size_le with (Ξ' := (x, nbind_var_typ n1) :: Ξ) (m' := m1) in Hm1 as Hle1; eauto; try lia.
-    assert (Hlt': m0 + m1 < m). {
-      eapply H0; eauto. 
-      admit. (* <= m0 *)
-      admit. (* <= m1 *) }
-    lia.
-  - assert (s0 = s1) by admit. subst. (* det *)
-    assert (s = s1) by admit. subst. (* det *)
-    eapply mult_le_compat_l with (p := S s1) in Hlt as Hlt'.
-    simpl in *.
-    eapply IHHsize1 with (n1 := n1) in Hs1; eauto; try lia.
-    eapply IHHsize2 with (n2 := s1 * n1 + s1 + n1) in Hs2; eauto; try lia.
-    unfold lt in Hs2.
-    eapply mult_le_compat_l with (p := s1) in Hs2 as Hlt''.
-
-Lemma exp_size_split : forall Ξ e n m n1 n2 m1 m2,
-  uniq Ξ -> exp_size Ξ e n m ->
-  exp_size Ξ e n1 m1 -> exp_size Ξ e n2 m2 ->
-  1 + n1 + n2 < n -> m1 + m2 < m.
-Proof.
-  intros Ξ e n m n1 n2 m1 m2 Huniq Hsize.
-  generalize dependent m2. generalize dependent m1.
-  generalize dependent n2. generalize dependent n1.
-  induction Hsize; intros * Hs1 * Hs2 Hlt;
-    dependent destruction Hs1; dependent destruction Hs2; simpl in *; eauto; try lia.
-  - remember (dom Ξ). pick fresh x. subst. inst_cofinites_with x.
-    specialize (exp_size_total ((x, nbind_var_typ n) :: Ξ) (e ᵉ^^ₑ exp_var_f x) n0) as Hm0.
-    specialize (exp_size_total ((x, nbind_var_typ n) :: Ξ) (e ᵉ^^ₑ exp_var_f x) n1) as Hm1.
-    destruct Hm0 as [m0' Hm0]. destruct Hm1 as [m1' Hm1].
-    eapply exp_size_le with (Ξ' := (x, nbind_var_typ n0) :: Ξ) (m' := m0) in Hm0 as Hle0; eauto; try lia.
-    eapply exp_size_le with (Ξ' := (x, nbind_var_typ n1) :: Ξ) (m' := m1) in Hm1 as Hle1; eauto; try lia.
-    (* eapply H0 in Hm0; eauto; try lia. lia.
-    eapply exp_size_total *)
-    assert (Hlt': m0 + m1 < m). {
-      eapply H0; eauto. 
-      admit. (* <= m0 *)
-      admit. (* <= m1 *) }
-    lia.
-  - assert (s0 = s1) by admit. subst. (* det *)
-    assert (s = s1) by admit. subst. (* det *)
-    eapply mult_le_compat_l with (p := S s1) in Hlt as Hlt'.
-    simpl in *.
-    eapply IHHsize1 with (n1 := n1) in Hs1_1; eauto; try lia.
-    eapply IHHsize2 with (n2 := s1 * n1 + s1 + n1) in Hs1_2; eauto; try lia.
-    unfold lt in Hs1_2.
-    eapply mult_le_compat_l with (p := s1) in Hs1_2 as Hlt''.
-    lia.
-  - pick fresh X. inst_cofinites_with X.
-    assert (a = a0) by admit. subst. (* det *)
-    assert (a0 = a1) by admit. subst. (* det *)
-    assert (m = m0) by admit. subst. (* det *)
-    assert (m0 = m1) by admit. subst. (* det *)
-    unfold lt in Hlt.
-    eapply mult_le_compat_l with (p := m1) in Hlt as Hlt'.
-    lia.
-  - assert (a = a0) by admit. subst. (* det *)
-    assert (a0 = a1) by admit. subst. (* det *)
-    eapply IHHsize with (n1 := a1 * n1 + a1 + n1) in Hs1 as Hlt'; eauto; try lia.
-    unfold lt in *.
-    eapply mult_le_compat with (n := S (m1 + m0)) (m := m) in Hlt; try lia.
-    eapply mult_le_compat_l with (p := a1) in Hlt as Hlt'.
-    lia.
-  - assert (a = a0) by admit. subst. (* det *)
-    assert (a0 = a1) by admit. subst. (* det *)
-    assert (m = m0) by admit. subst. (* det *)
-    assert (m0 = m1) by admit. subst. (* det *)
-    unfold lt in Hlt.
-    eapply mult_le_compat_l with (p := m1) in Hlt as Hlt'.
-    lia.
-Admitted.
+Qed.
 
 Lemma decidablity_lemma : forall me mj mt mtj ma maj ms mw ne Γ,
   ⊢ᵃʷₛ Γ ->
