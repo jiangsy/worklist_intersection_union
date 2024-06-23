@@ -814,35 +814,47 @@ Lemma trans_typ_etvar_s_in_more_num_arrow' : forall θ Aᵃ Aᵈ X T,
   X ~ T ∈ᵈ θ ->
   θ ᵗ⊩ Aᵃ ⇝ Aᵈ ->
   s_in X Aᵃ ->
+  ⌈ θ ⌉ᵃ ᵗ⊢ᵃₘ Aᵃ ->
   (num_arrow_in_typ Aᵈ) >= (num_arrow_in_typ T).
 Proof.
-  intros * Hwf Hbinds Htrans Hsin. dependent induction Htrans; simpl in *; dependent destruction Hsin; try lia.
+  intros * Hwf Hbinds Htrans Hsin Hmono. dependent induction Htrans; simpl in *; dependent destruction Hsin; try lia.
   - unify_binds.
   - unify_binds.
   - unify_binds. auto.
-  - apply IHHtrans1 in Hsin; auto. lia.
-  - apply IHHtrans2 in Hsin; auto. lia.
-  - inst_cofinites_by (L `union` L0) using_name X.
-    rewrite <- d_same_num_arr_open_typ_tvar with (X:=X0).
-    apply H1; eauto.
-  - apply IHHtrans1 in Hsin1; auto. 
-    apply IHHtrans2 in Hsin2; auto.
-    lia.
-  - apply IHHtrans1 in Hsin1; auto. 
-    apply IHHtrans2 in Hsin2; auto.
-    lia.
+  - dependent destruction Hmono. apply IHHtrans1 in Hsin; auto. lia.
+  - dependent destruction Hmono. apply IHHtrans2 in Hsin; auto. lia.
+  - inversion Hmono.
+  - inversion Hmono.
+  - inversion Hmono.
+  - inversion Hmono.
 Qed.
 
 Lemma trans_typ_etvar_s_in_more_num_arrow : forall θ A1ᵃ A2ᵃ A1ᵈ A2ᵈ X T,
   X ~ T ∈ᵈ θ ->
+  ⌈ θ ⌉ᵃ ᵗ⊢ᵃₘ typ_arrow A1ᵃ A2ᵃ ->
   θ ᵗ⊩ (typ_arrow A1ᵃ A2ᵃ) ⇝ (typ_arrow A1ᵈ A2ᵈ) ->
   s_in X (typ_arrow A1ᵃ A2ᵃ) ->
   (num_arrow_in_typ (typ_arrow A1ᵈ A2ᵈ)) > (num_arrow_in_typ T).
 Proof.
-  intros. dependent destruction H0.
-  dependent destruction H1.
-  - eapply trans_typ_etvar_s_in_more_num_arrow' in H0_; eauto. simpl. lia.
-  - eapply trans_typ_etvar_s_in_more_num_arrow' in H0_0; eauto. simpl. lia.
+  intros.  dependent destruction H0. dependent destruction H1.
+  dependent destruction H2.
+  - eapply trans_typ_etvar_s_in_more_num_arrow' in H1_; eauto. simpl. lia.
+  - eapply trans_typ_etvar_s_in_more_num_arrow' in H1_0; eauto. simpl. lia.
+Qed.
+
+Lemma trans_wl_a_mono_typ_a_mono_typ : forall Γ Ω θ Tᵃ,
+  nil ⊩ Γ ⇝ Ω ⫣ θ ->
+  ⌊ Γ ⌋ᵃ ᵗ⊢ᵃₘ Tᵃ ->
+  ⌈ θ ⌉ᵃ ᵗ⊢ᵃₘ Tᵃ.
+Proof.
+  intros * Htranswl Hmono. dependent induction Hmono; eauto.
+  - econstructor.
+    apply binds_tvar_ss_binds_ss_to_aenv.
+    eapply trans_wl_a_wl_binds_tvar_ss; eauto.
+  - eapply a_mono_typ__etvar.
+    eapply trans_wl_a_wl_binds_etvar_ss in H; eauto.
+    destruct H as [T].
+    eapply binds_ss_etvar_binds_ss_to_aenv; eauto.
 Qed.
 
 Lemma wf_ss_tvar_etvar : forall θ1 θ2 X T,
@@ -1268,21 +1280,22 @@ Proof with eauto.
     + apply wf_ss_binds_mono_typ in H2 as Hmonob...
       destruct_a_wf_wl.
       assert (a_wf_typ (awl_to_aenv Γ0) (typ_arrow A1ᵃ A2ᵃ)) by auto.
-      assert ( ~ s_in X (typ_arrow A1ᵃ A2ᵃ)). {
-        unfold not. intros Hcontra.
-        eapply trans_typ_etvar_s_in_more_num_arrow in Hcontra...
-        apply d_wl_red_sound in H.
-        dependent destruction H. dependent destruction H0. simpl in *.
-        assert (dwl_to_denv Ω ⊢ typ_arrow A1 A2 <: typ_arrow B1 B2) by auto.
-        apply d_sub_more_num_arrow_in_mono_typ in H6 as [Harr1 Harr2].
-        assert (d_mono_typ (dwl_to_denv Ω) (typ_arrow B1 B2)) by solve_mono_typ. 
-        apply Harr2 in H6. simpl in *. lia.
-        apply d_wf_wl__conswork_sub; simpl. solve_wf_typ. solve_wf_typ.
-        apply d_wf_wl__conswork_sub; simpl. solve_wf_typ. solve_wf_typ.
-        eauto.
-      }
       apply a_mono_typ_dec in H0 as Hmono... inversion Hmono.
-      * destruct_d_wf_wl.
+      * assert ( ~ s_in X (typ_arrow A1ᵃ A2ᵃ)). {
+          unfold not. intros Hcontra.
+          eapply trans_typ_etvar_s_in_more_num_arrow in Hcontra...
+          apply d_wl_red_sound in H.
+          dependent destruction H. dependent destruction H0. simpl in *.
+          assert (dwl_to_denv Ω ⊢ typ_arrow A1 A2 <: typ_arrow B1 B2) by auto.
+          apply d_sub_more_num_arrow_in_mono_typ in H7 as [Harr1 Harr2].
+          assert (d_mono_typ (dwl_to_denv Ω) (typ_arrow B1 B2)) by solve_mono_typ. 
+          apply Harr2 in H7. simpl in *. lia.
+          apply d_wf_wl__conswork_sub; simpl. solve_wf_typ. solve_wf_typ.
+          apply d_wf_wl__conswork_sub; simpl. solve_wf_typ. solve_wf_typ.
+          eauto.
+          eapply trans_wl_a_mono_typ_a_mono_typ in H4; eauto. 
+        }
+        destruct_d_wf_wl.
         destruct_a_wf_wl.
         apply d_wl_red_sound in H.
         destruct_d_wl_del_red; simpl in *.
@@ -1322,12 +1335,12 @@ Proof with eauto.
           eapply trans_typ_etvar_subst_same_ss... 
           eapply trans_typ_etvar_subst_same_ss... 
         }
-        dependent destruction H8...
+        dependent destruction H7...
         assert (aworklist_subst (work_sub (typ_arrow A1ᵃ A2ᵃ) ` X  ⫤ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ0) X (typ_arrow ` X1 ` X2) 
                                 Γ2 (work_sub (typ_arrow A1ᵃ A2ᵃ) ` X  ⫤ᵃ Γ3)) by auto...
         destruct_trans_wl.
-        dependent destruction H11.
-        eapply aworklist_subst_transfer_same_dworklist_rev in H11 as Htransws; eauto.
+        dependent destruction H10.
+        eapply aworklist_subst_transfer_same_dworklist_rev in H10 as Htransws; eauto.
         destruct Htransws as [θ' [Htransws [Hbinds Hwfss]]]; auto.
         -- simpl. destruct_eq_atom.
            simpl in *. destruct_eq_atom. 
@@ -1358,20 +1371,21 @@ Proof with eauto.
       apply wf_ss_binds_mono_typ in H1 as Hmonob...
       destruct_a_wf_wl.
       assert (a_wf_typ (awl_to_aenv Γ0) (typ_arrow B1ᵃ B2ᵃ)) by auto.
-      assert ( ~ s_in X (typ_arrow B1ᵃ B2ᵃ)). {
-        unfold not. intros Hcontra.
-        eapply trans_typ_etvar_s_in_more_num_arrow in Hcontra...
-        apply d_wl_red_sound in H.
-        dependent destruction H. dependent destruction H0. simpl in *.
-        assert (dwl_to_denv Ω ⊢ typ_arrow A1 A2 <: typ_arrow B1 B2) by auto.
-        apply d_sub_more_num_arrow_in_mono_typ in H6 as [Harr1 Harr2].
-        assert (d_mono_typ (dwl_to_denv Ω) (typ_arrow A1 A2)) by (eapply trans_wl_ss_mono_typ_d_wl_mono_typ; eauto).
-        apply Harr1 in H6.
-        simpl in *. lia.
-        repeat (apply d_wf_wl__conswork_sub; simpl; auto); solve_mono_typ; solve_wf_typ...
-      }
       apply a_mono_typ_dec in H3 as Hmono... inversion Hmono.
-      * destruct_d_wf_wl.
+      * assert ( ~ s_in X (typ_arrow B1ᵃ B2ᵃ)). {
+          unfold not. intros Hcontra.
+          eapply trans_typ_etvar_s_in_more_num_arrow in Hcontra...
+          apply d_wl_red_sound in H.
+          dependent destruction H. dependent destruction H0. simpl in *.
+          assert (dwl_to_denv Ω ⊢ typ_arrow A1 A2 <: typ_arrow B1 B2) by auto.
+          apply d_sub_more_num_arrow_in_mono_typ in H7 as [Harr1 Harr2].
+          assert (d_mono_typ (dwl_to_denv Ω) (typ_arrow A1 A2)) by (eapply trans_wl_ss_mono_typ_d_wl_mono_typ; eauto).
+          apply Harr1 in H7.
+          simpl in *. lia.
+          repeat (apply d_wf_wl__conswork_sub; simpl; auto); solve_mono_typ; solve_wf_typ...
+          eapply trans_wl_a_mono_typ_a_mono_typ in H4; eauto. 
+        }
+        destruct_d_wf_wl.
         destruct_a_wf_wl.
         apply d_wl_red_sound in H.
         destruct_mono_arrow.
@@ -1409,12 +1423,12 @@ Proof with eauto.
           eapply trans_typ_etvar_subst_same_ss... 
           eapply trans_typ_etvar_subst_same_ss... 
         }
-        dependent destruction H8.
+        dependent destruction H7.
         assert (aworklist_subst (work_sub ` X (typ_arrow B1ᵃ B2ᵃ) ⫤ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ0) X (typ_arrow ` X1 ` X2) 
                 Γ2 (work_sub ` X (typ_arrow B1ᵃ B2ᵃ) ⫤ᵃ Γ3)) by auto.
         destruct_trans_wl.
-        dependent destruction H11.
-        eapply aworklist_subst_transfer_same_dworklist_rev with (Ω:=Ω) in H11 as Htransws; eauto.
+        dependent destruction H10.
+        eapply aworklist_subst_transfer_same_dworklist_rev with (Ω:=Ω) in H10 as Htransws; eauto.
         destruct Htransws as [θ' [Htransws [Hbinds Hwfss]]]; auto.
         -- simpl. destruct_eq_atom.
            simpl in *. destruct_eq_atom. 

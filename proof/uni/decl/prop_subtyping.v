@@ -702,6 +702,15 @@ Proof.
   intros. induction H; try solve [(dependent destruction H0); auto].
 Qed.
 
+Ltac fold_open_typ_wrt_typ_rec :=
+  repeat
+    match goal with
+      | H : context [open_typ_wrt_typ_rec 0 ?A ?B] |- _ =>
+        replace (open_typ_wrt_typ_rec 0 A B) with (open_typ_wrt_typ B A) in H by auto
+      | _ : _ |- context [open_typ_wrt_typ_rec 0 ?A ?B] =>
+        replace (open_typ_wrt_typ_rec 0 A B) with (open_typ_wrt_typ B A) by auto
+    end.
+
 Theorem d_sub_open_mono_eq_stvar_false: forall n1 n2 Ψ A B T X L,
   typ_order (A ᵗ^^ₜ T) < n1 ->
   typ_size (A ᵗ^^ₜ T) < n2 ->
@@ -776,11 +785,18 @@ Proof.
            pick fresh X0. inst_cofinites_with X0 (keep).
            dependent destruction H2.
            ++ eapply IHn2 with (L:=L) (A:=A3); eauto. lia. lia.
-              intros. 
-              admit.
-            ++ eapply IHn2 with (L:=L) (A:=A4); eauto. lia. lia.
-              admit.
-Admitted.
+              intros. fold_open_typ_wrt_typ_rec.
+              replace (A3 ᵗ^ₜ X1) with ({`X1 ᵗ/ₜ X0 }A3 ᵗ^ₜ X0).
+              apply s_in_rename; eauto.
+              rewrite subst_typ_in_typ_open_typ_wrt_typ; simpl; destruct_eq_atom;  auto.
+              rewrite subst_typ_in_typ_fresh_eq; auto.
+           ++ eapply IHn2 with (L:=L) (A:=A4); eauto. lia. lia.
+              intros. fold_open_typ_wrt_typ_rec.
+              replace (A4 ᵗ^ₜ X1) with ({`X1 ᵗ/ₜ X0 }A4 ᵗ^ₜ X0).
+              apply s_in_rename; eauto.
+              rewrite subst_typ_in_typ_open_typ_wrt_typ; simpl; destruct_eq_atom;  auto.
+              rewrite subst_typ_in_typ_fresh_eq; auto.
+Qed.
 
 Theorem d_sub_open_mono_stvar_false: forall n1 n2 Ψ A T X L,
   typ_order (A ᵗ^^ₜ T) < n1 ->
@@ -871,10 +887,18 @@ Proof.
            pick fresh X0. inst_cofinites_with X0 (keep).
            dependent destruction H2.  
            ++ eapply IHn2 with (L:=L) (A:=A3); eauto. lia. lia.
-              intros.  admit.
+              intros. fold_open_typ_wrt_typ_rec.
+              replace (A3 ᵗ^ₜ X1) with ({`X1 ᵗ/ₜ X0 }A3 ᵗ^ₜ X0).
+              apply s_in_rename; eauto.
+              rewrite subst_typ_in_typ_open_typ_wrt_typ; simpl; destruct_eq_atom;  auto.
+              rewrite subst_typ_in_typ_fresh_eq; auto.
            ++ eapply IHn2 with (L:=L) (A:=A4); eauto. lia. lia.
-              intros. admit.
-Admitted.
+              intros. fold_open_typ_wrt_typ_rec.
+              replace (A4 ᵗ^ₜ X1) with ({`X1 ᵗ/ₜ X0 }A4 ᵗ^ₜ X0).
+              apply s_in_rename; eauto.
+              rewrite subst_typ_in_typ_open_typ_wrt_typ; simpl; destruct_eq_atom;  auto.
+              rewrite subst_typ_in_typ_fresh_eq; auto.
+Qed.
 
 Theorem d_sub_alt_open_mono_bot_false: forall n1 n2 Ψ A T L,
   typ_order (A ᵗ^^ₜ T) < n1 ->
@@ -931,11 +955,19 @@ Proof.
            inst_cofinites_with X (keep). dependent destruction H1.
            ++ eapply IHn2 with (L:=L) (A:=A3); eauto.
               unfold open_typ_wrt_typ. lia. unfold open_typ_wrt_typ. lia.
-              intros. admit.
-           ++ eapply IHn2 with (L:=L) (A:=A3); eauto.
+              intros. fold_open_typ_wrt_typ_rec.
+              replace (A3 ᵗ^ₜ X0) with ({`X0 ᵗ/ₜ X }A3 ᵗ^ₜ X).
+              apply s_in_rename; eauto.
+              rewrite subst_typ_in_typ_open_typ_wrt_typ; simpl; destruct_eq_atom;  auto.
+              rewrite subst_typ_in_typ_fresh_eq; auto.
+           ++ eapply IHn2 with (L:=L) (A:=A4); eauto.
               unfold open_typ_wrt_typ. lia. unfold open_typ_wrt_typ. lia.
-              intros. admit.
-Admitted.
+              intros. fold_open_typ_wrt_typ_rec.
+              replace (A4 ᵗ^ₜ X0) with ({`X0 ᵗ/ₜ X }A4 ᵗ^ₜ X).
+              apply s_in_rename; eauto.
+              rewrite subst_typ_in_typ_open_typ_wrt_typ; simpl; destruct_eq_atom;  auto.
+              rewrite subst_typ_in_typ_fresh_eq; auto.
+Qed.
 
 Theorem d_sub_complete : forall Ψ A B,
   Ψ ⊢ A <:' B ->
@@ -1007,11 +1039,19 @@ Proof.
             dependent destruction H1.
             ++ eapply IHn2 with (L:=L) (A:=A3); eauto.
                 unfold open_typ_wrt_typ. lia. unfold open_typ_wrt_typ. lia.
-                intros. admit.
-            ++ eapply IHn2 with (L:=L) (A:=A3); eauto.
-                unfold open_typ_wrt_typ. lia. unfold open_typ_wrt_typ. lia.
-                intros. admit.  
-Admitted.
+                intros. fold_open_typ_wrt_typ_rec.
+                replace (A3 ᵗ^ₜ X0) with ({`X0 ᵗ/ₜ X }A3 ᵗ^ₜ X).
+                apply s_in_rename; eauto.
+                rewrite subst_typ_in_typ_open_typ_wrt_typ; simpl; destruct_eq_atom;  auto.
+                rewrite subst_typ_in_typ_fresh_eq; auto.
+            ++ eapply IHn2 with (L:=L) (A:=A4); eauto.
+               unfold open_typ_wrt_typ. lia. unfold open_typ_wrt_typ. lia.
+               intros. fold_open_typ_wrt_typ_rec.
+               replace (A4 ᵗ^ₜ X0) with ({`X0 ᵗ/ₜ X }A4 ᵗ^ₜ X).
+               apply s_in_rename; eauto.
+               rewrite subst_typ_in_typ_open_typ_wrt_typ; simpl; destruct_eq_atom;  auto.
+               rewrite subst_typ_in_typ_fresh_eq; auto.
+Qed.
 
 Ltac solve_trans_forall_B_intersection_impl T1 T2:=
   match goal with

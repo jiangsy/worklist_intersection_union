@@ -1012,6 +1012,10 @@ Proof.
     intros. inst_cofinites_with Y.
     apply H4... apply binds_cons; auto.
     auto.
+  - apply s_in__union1; auto...
+    eapply trans_typ_lc_dtyp; eauto.
+  - apply s_in__union2; auto...
+    eapply trans_typ_lc_dtyp; eauto.
 Qed.
 
 Lemma trans_typ_wf_dtyp : forall θ Aᵃ Aᵈ,
@@ -1059,6 +1063,7 @@ Proof.
   - solve_binds_nonmono_contradiction.
   - solve_binds_nonmono_contradiction.
   - solve_binds_nonmono_contradiction.
+  - solve_binds_nonmono_contradiction.
   - eapply s_in__arrow1; eauto.
     apply IHtrans_typ1; auto.
     intros. eapply H2; simpl; eauto. 
@@ -1079,7 +1084,9 @@ Proof.
   - simpl in *; eauto.
     constructor; eauto.
   - simpl in *; eauto.
-    constructor; eauto.  
+    constructor; eauto.
+  - simpl in *; eauto.
+    apply s_in__union2; eauto.
 Qed.
 
 Lemma d_mono_typ_ftvar_in_typ_upper : forall Ψ T,
