@@ -434,11 +434,21 @@ Proof.
   - destruct A; simpl; try solve [inversion x].
     simpl in *. destruct (X0 == Y); subst.
     + assert (s_in X (typ_union A1 A2)) by auto.
-      apply sin_in in H2. contradiction.
+      apply sin_in in H4. contradiction.
     + inversion x.
-    + inversion x. apply s_in__union.
-      * eapply IHs_in1 with (B:=B) (Y:=Y); eauto.
-      * eapply IHs_in2 with (B:=B) (Y:=Y); eauto.
+    + inversion x. apply s_in__union1...
+      * subst.
+        eapply lc_typ_subst_inv; eauto.
+      * eapply IHs_in with (B:=B) (Y:=Y); eauto.
+  - destruct A; simpl; try solve [inversion x].
+    simpl in *. destruct (X0 == Y); subst.
+    + assert (s_in X (typ_union A1 A2)) by auto.
+      apply sin_in in H4. contradiction.
+    + inversion x.
+    + inversion x. apply s_in__union2...
+      * subst.
+        eapply lc_typ_subst_inv; eauto.
+      * eapply IHs_in with (B:=B) (Y:=Y); eauto.
   - destruct A; simpl; try solve [inversion x].
     simpl in *. destruct (X0 == Y); subst.
     + assert (s_in X (typ_intersection A1 A2)) by auto.
@@ -467,6 +477,10 @@ Proof.
   - simpl. eapply s_in__all with (L:=L `union` singleton Y).
     intros. inst_cofinites_with Y0.
     rewrite subst_typ_in_typ_open_typ_wrt_typ_fresh2; auto.
+  - simpl. apply s_in__union1; auto.  
+    eapply lc_typ_subst; eauto.
+  - simpl. apply s_in__union2; auto.  
+    eapply lc_typ_subst; eauto.
 Qed.
 
 Lemma s_in_lc_typ : forall A X,
@@ -486,6 +500,8 @@ Proof.
   - apply s_in__arrow2; auto. apply lc_typ_subst; auto.
   - apply s_in__all with (L:=L `union` singleton X). intros. inst_cofinites_with Y0. 
     rewrite subst_typ_in_typ_open_typ_wrt_typ_fresh2; auto...
+  - apply s_in__union1; auto. apply lc_typ_subst; auto.
+  - apply s_in__union2; auto. apply lc_typ_subst; auto.
 Qed.
 
 Lemma neq_all_rename: forall A X Y,

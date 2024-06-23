@@ -966,8 +966,12 @@ Inductive s_in : typvar -> typ -> Prop :=    (* defn s_in *)
  | s_in__all : forall (L:vars) (X:typvar) (A:typ),
       ( forall Y , Y \notin  L  -> s_in X  ( open_typ_wrt_typ A (typ_var_f Y) )  )  ->
      s_in X (typ_all A)
- | s_in__union : forall (X:typvar) (A1 A2:typ),
+ | s_in__union1 : forall (X:typvar) (A1 A2:typ),
+     lc_typ A2 ->
      s_in X A1 ->
+     s_in X (typ_union A1 A2)
+ | s_in__union2 : forall (X:typvar) (A1 A2:typ),
+     lc_typ A1 ->
      s_in X A2 ->
      s_in X (typ_union A1 A2)
  | s_in__intersection : forall (X:typvar) (A1 A2:typ),
