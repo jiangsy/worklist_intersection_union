@@ -1090,35 +1090,48 @@ Proof.
  Unshelve. inversion H0.
 Qed.
 
+Lemma a_wf_exp_n_wf_exp' : forall Γ Ξ Ξ' e,
+  ⊢ᵃʷ Γ ->
+  a_wf_exp (awl_to_aenv Γ) e -> 
+  (awl_to_nenv Γ Ξ) -> 
+  equiv_nenv Ξ Ξ' ->
+  n_wf_exp Ξ' e.
+Proof with eauto using n_wf_exp.
+  intros * Hwfwl Hwf Htrans Heq. generalize dependent Ξ. generalize dependent Ξ'. dependent induction Hwf; intros; eauto 4 using n_wf_exp.
+  - eapply binds_var_typ_binds_var_num in Htrans; eauto.
+    destruct Htrans as [n]...
+    eapply equiv_nenv_binds_var in H0; eauto.
+    destruct_conj...
+  - apply a_wf_typ_lc in H as Hlc. apply n_iuv_size_total in Hlc.
+    destruct Hlc as [n].  
+    inst_cofinites_for n_wf_exp__abs; eauto. intros. inst_cofinites_with x.
+    eapply H1 with (Γ:= x ~ᵃ T ;ᵃ Γ) (Ξ:= (x , nbind_var_typ n) :: Ξ)...
+    econstructor...
+  - inst_cofinites_for n_wf_exp__tabs; eauto; intros; inst_cofinites_with X.
+    + eapply H1 with (Γ:= X ~ᵃ □ ;ᵃ Γ); eauto...
+      econstructor...
+      econstructor...
+Qed.
+
 Lemma a_wf_exp_n_wf_exp : forall Γ Ξ e,
   ⊢ᵃʷ Γ ->
   a_wf_exp (awl_to_aenv Γ) e -> 
   (awl_to_nenv Γ Ξ) -> 
   n_wf_exp Ξ e.
-Proof with eauto using n_wf_exp.
-  intros * Hwfwl Hwf Htrans. generalize dependent Ξ. dependent induction Hwf; intros; eauto 4 using n_wf_exp.
-  - eapply binds_var_typ_binds_var_num in Htrans; eauto.
-    destruct Htrans as [n]...
-  - apply a_wf_typ_lc in H as Hlc. apply n_iuv_size_total in Hlc.
-    destruct Hlc as [n].  
-    inst_cofinites_for n_wf_exp__abs; eauto. intros. inst_cofinites_with x.
-    eapply H1 with (Γ:= x ~ᵃ T ;ᵃ Γ)...
-    admit.
-  - inst_cofinites_for n_wf_exp__tabs; eauto; intros; inst_cofinites_with X.
-    + eapply H1 with (Γ:= X ~ᵃ □ ;ᵃ Γ); eauto...
-      econstructor...
-Admitted.
+Proof.
+  intros. eapply a_wf_exp_n_wf_exp' with (Ξ':=Ξ); eauto.
+  apply equiv_nenv_refl.
+Qed.
 
 Lemma a_wf_conts_n_wf_conts : forall Γ Ξ cs,
-  a_wf_conts (awl_to_aenv Γ) cs -> (awl_to_nenv Γ Ξ) -> n_wf_conts Ξ cs
+  ⊢ᵃʷ Γ -> a_wf_conts (awl_to_aenv Γ) cs -> (awl_to_nenv Γ Ξ) -> n_wf_conts Ξ cs
 with a_wf_contd_n_wf_contd : forall Γ Ξ cd,
-  a_wf_contd (awl_to_aenv Γ) cd -> (awl_to_nenv Γ Ξ) -> n_wf_contd Ξ cd.
+  ⊢ᵃʷ Γ -> a_wf_contd (awl_to_aenv Γ) cd -> (awl_to_nenv Γ Ξ) -> n_wf_contd Ξ cd.
 Proof with eauto using n_wf_conts, n_wf_contd, a_wf_exp_n_wf_exp.
-  - intros. clear a_wf_conts_n_wf_conts. dependent induction H...
-  - intros. clear a_wf_contd_n_wf_contd. dependent induction H...
-    + econstructor; eauto. admit.  
-    + dependent destruction H; eauto 6 using n_wf_contd.
-Admitted.
+  - intros. clear a_wf_conts_n_wf_conts. dependent induction H0...
+  - intros. clear a_wf_contd_n_wf_contd. dependent induction H0...
+    + dependent destruction H1; eauto 6 using n_wf_contd.
+Qed.
 
 Lemma a_wf_work_n_wf_work : forall Γ Ξ w,
   ⊢ᵃʷ Γ ->
@@ -1134,6 +1147,22 @@ Proof with eauto 7 using a_wf_conts_n_wf_conts, a_wf_contd_n_wf_contd, a_wf_exp_
     dependent destruction H1...
 Qed.
 
+Lemma awl_to_nenv_same_dom : forall Γ Ξ,
+  awl_to_nenv Γ Ξ -> dom Ξ = dom (⌊ Γ ⌋ᵃ).
+Proof.
+  intros Γ Ξ Hnenv. dependent induction Hnenv; eauto.
+  simpl. rewrite IHHnenv. reflexivity.
+Qed.
+
+
+Lemma awl_to_nenv_uniq : forall Γ Ξ,
+  awl_to_nenv Γ Ξ -> uniq (⌊ Γ ⌋ᵃ) -> uniq Ξ.
+Proof.
+  intros Γ Ξ Hnenv Huniq. dependent induction Hnenv; eauto.
+  dependent destruction Huniq.
+  erewrite <- awl_to_nenv_same_dom in H0; eauto.
+Qed.
+
 Lemma exp_size_wl_total : forall Γ,
   ⊢ᵃʷ Γ ->
   exists n, exp_size_wl Γ n.
@@ -1144,8 +1173,8 @@ Proof.
     eapply a_wf_work_n_wf_work in H; eauto.
     apply exp_size_work_total in H; eauto. destruct H as [m].
     exists (m + n). eauto using exp_size_wl.
-    admit.
-Admitted.
+    eapply awl_to_nenv_uniq; eauto.
+Qed.
 
 Fixpoint judge_size_conts (cs : conts) : nat :=
   match cs with
@@ -2466,13 +2495,6 @@ Proof.
     lia.
 Qed.
 
-Lemma awl_to_nenv_same_dom : forall Γ Ξ,
-  awl_to_nenv Γ Ξ -> dom Ξ = dom (⌊ Γ ⌋ᵃ).
-Proof.
-  intros Γ Ξ Hnenv. dependent induction Hnenv; eauto.
-  simpl. rewrite IHHnenv. reflexivity.
-Qed.
-
 Lemma awl_to_nenv_binds : forall Γ Ξ x A n,
   uniq Ξ -> awl_to_nenv Γ Ξ ->
   x ~ A ∈ᵃ ⌊ Γ ⌋ᵃ -> binds x (nbind_var_typ n) Ξ ->
@@ -2486,14 +2508,6 @@ Proof.
     + dependent destruction H0; eauto.
     + exfalso. erewrite awl_to_nenv_same_dom in H; eauto.
     + exfalso. eauto.
-Qed.
-
-Lemma awl_to_nenv_uniq : forall Γ Ξ,
-  awl_to_nenv Γ Ξ -> uniq (⌊ Γ ⌋ᵃ) -> uniq Ξ.
-Proof.
-  intros Γ Ξ Hnenv Huniq. dependent induction Hnenv; eauto.
-  dependent destruction Huniq.
-  erewrite <- awl_to_nenv_same_dom in H0; eauto.
 Qed.
 
 Lemma a_wf_wl_uniq : forall Γ,
