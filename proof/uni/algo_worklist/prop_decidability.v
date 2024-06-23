@@ -10,8 +10,8 @@ Require Import uni.decl_worklist.prop_equiv.
 Require Import uni.algo_worklist.def_extra.
 Require Import uni.algo_worklist.prop_basic.
 (* Require Import uni.algo_worklist.prop_rename. *)
-Require Import uni.algo_worklist.prop_soundness.
-Require Import uni.algo_worklist.prop_completeness.
+(* Require Import uni.algo_worklist.prop_soundness.
+Require Import uni.algo_worklist.prop_completeness. *)
 Require Import uni.algo_worklist.transfer.
 Require Import uni.ltac_utils.
 
@@ -772,16 +772,201 @@ Proof.
     exists ((1 + n) * (2 + m)). eauto using exp_split_size.
 Qed.
 
-Lemma exp_size_total : forall Ξ e n,
-  n_wf_exp Ξ e ->
-  exists m, exp_size Ξ e n m.
+Inductive equiv_nenv : nenv -> nenv -> Prop :=
+  | eq_nenv_base : forall Ξ, equiv_nenv Ξ Ξ
+  | eq_nenv__tvar : forall Ξ Ξ' X,
+      equiv_nenv Ξ Ξ' ->
+      equiv_nenv ((X, nbind_tvar_empty) :: Ξ) ((X, nbind_tvar_empty) :: Ξ')
+  | eq_nenv__stvar : forall Ξ Ξ' X,
+      equiv_nenv Ξ Ξ' ->
+      equiv_nenv ((X, nbind_stvar_empty) :: Ξ) ((X, nbind_stvar_empty) :: Ξ')
+  | eq_nenv__etvar : forall Ξ Ξ' X,
+      equiv_nenv Ξ Ξ' ->
+      equiv_nenv ((X, nbind_etvar_empty) :: Ξ) ((X, nbind_etvar_empty) :: Ξ')
+  | eq_nenv__var : forall Ξ Ξ' x n n',
+      equiv_nenv Ξ Ξ' ->
+      equiv_nenv ((x, nbind_var_typ n) :: Ξ) ((x, nbind_var_typ n') :: Ξ').
+
+Lemma equiv_nenv_binds_var : forall Ξ Ξ' x n,
+  equiv_nenv Ξ Ξ' ->
+  binds x (nbind_var_typ n) Ξ ->
+  exists n', binds x (nbind_var_typ n') Ξ'.
 Proof.
-  intros. induction H; eauto using exp_size.  
-  - admit.
-  - admit.
-  - admit.
-  - admit. 
-Admitted.
+  intros. induction H; destruct_binds; destruct_conj; eauto.
+  - apply IHequiv_nenv in H2. destruct_conj; eauto.
+  - apply IHequiv_nenv in H2. destruct_conj; eauto.
+  - apply IHequiv_nenv in H2. destruct_conj; eauto.
+  - apply IHequiv_nenv in H2. destruct_conj; eauto.
+Qed.
+
+Lemma n_wf_exp_equiv_nenv : forall Ξ Ξ' e,
+  n_wf_exp Ξ e -> equiv_nenv Ξ Ξ' -> n_wf_exp Ξ' e. 
+Proof with eauto using equiv_nenv, n_wf_exp.
+  intros * Hwf Heq. generalize dependent Ξ'. induction Hwf; eauto using n_wf_exp, equiv_nenv; simpl; intros...
+  - eapply equiv_nenv_binds_var in H; eauto.
+    destruct H as [n']... 
+  - inst_cofinites_for n_wf_exp__abs.
+    intros. inst_cofinites_with x.
+    eapply H0; eauto... simpl...
+  - inst_cofinites_for n_wf_exp__tabs.
+    intros. inst_cofinites_with X.
+    eapply H0; eauto... simpl...
+Qed.
+
+Lemma equiv_nenv_same_dom : forall Ξ Ξ',
+  equiv_nenv Ξ Ξ' -> dom Ξ = dom Ξ'.
+Proof.
+  intros. induction H; simpl; try rewrite IHequiv_nenv; auto.
+Qed.
+
+Lemma uniq_equiv_nenv : forall Ξ Ξ',
+  uniq Ξ -> equiv_nenv Ξ Ξ' -> uniq Ξ'. 
+Proof.
+  intros. induction H0; eauto using uniq; econstructor.
+  - dependent destruction H. auto.
+  - dependent destruction H. auto.  
+    erewrite <- equiv_nenv_same_dom; eauto.
+  - dependent destruction H. auto.
+  - dependent destruction H. auto.  
+    erewrite <- equiv_nenv_same_dom; eauto.
+  - dependent destruction H. auto.
+  - dependent destruction H. auto.  
+    erewrite <- equiv_nenv_same_dom; eauto.
+  - dependent destruction H. auto.
+  - dependent destruction H. auto.  
+    erewrite <- equiv_nenv_same_dom; eauto.
+Qed.
+
+Lemma exp_size_rename_tvar : forall Ξ1 Ξ2 e X Y n m,
+  uniq (Ξ2 ++ (X , nbind_tvar_empty) :: Ξ1) ->
+  Y `notin` dom (Ξ2 ++ (X , nbind_tvar_empty) :: Ξ1) ->
+  exp_size (Ξ2 ++ (X , nbind_tvar_empty) :: Ξ1) e n m -> 
+  exp_size (Ξ2 ++ (Y , nbind_tvar_empty) :: Ξ1) (subst_typ_in_exp (typ_var_f Y) X e) n m.
+Proof.
+  intros. dependent induction H1; simpl in *; eauto using exp_size.
+  - remember ( dom (Ξ2 ++ (X, nbind_tvar_empty) :: Ξ1)). inst_cofinites_for exp_size__abs m:=m; eauto. intros. subst.
+    subst. replace (exp_var_f x) with (subst_typ_in_exp (typ_var_f Y) X (exp_var_f x)); auto.
+    rewrite <- subst_typ_in_exp_open_exp_wrt_exp.
+    rewrite_env ((x ~ nbind_var_typ n ++ Ξ2) ++ (Y ~ nbind_tvar_empty) ++ Ξ1).
+    eapply H3; eauto. simpl...
+    + constructor; eauto.
+  - econstructor; eauto.
+    apply exp_split_size_rename_tvar; eauto.  
+  - remember ( dom (Ξ2 ++ (X, nbind_tvar_empty) :: Ξ1)). 
+    inst_cofinites_for exp_size__tabs n:=n,m:=m,a:=a; eauto; intros; subst.
+    + erewrite subst_typ_in_typ_open_typ_wrt_typ_fresh2; eauto.
+      apply n_iuv_size_rename; eauto.
+    + erewrite subst_typ_in_exp_open_exp_wrt_typ_fresh2; eauto.
+      rewrite_env ((X0 ~ nbind_tvar_empty ++ Ξ2) ++ (Y ~ nbind_tvar_empty) ++ Ξ1).
+      eapply H1; eauto. simpl...
+      constructor; eauto. 
+  - econstructor; eauto.
+    apply n_iuv_size_rename; eauto.
+  - econstructor; eauto.
+    apply n_iuv_size_rename; eauto.
+Qed.
+
+Lemma exp_size_rename_tvar_cons : forall Ξ e X Y n m,
+  uniq (X ~ nbind_tvar_empty ++ Ξ) ->
+  Y `notin` dom (X ~ nbind_tvar_empty ++ Ξ) ->
+  exp_size (X ~ nbind_tvar_empty ++ Ξ) e n m -> 
+  exp_size (Y ~ nbind_tvar_empty ++ Ξ) (subst_typ_in_exp (typ_var_f Y) X e) n m.
+Proof.
+  intros. rewrite_env (nil ++ Y ~ nbind_tvar_empty ++ Ξ).
+  eapply exp_size_rename_tvar; eauto.
+Qed.
+
+Lemma exp_size_rename_var : forall Ξ1 Ξ2 e x y n m p,
+  uniq (Ξ2 ++ (x , (nbind_var_typ p)) :: Ξ1) ->
+  y `notin` dom (Ξ2 ++ (x , (nbind_var_typ p)) :: Ξ1) ->
+  exp_size (Ξ2 ++ (x , (nbind_var_typ p)) :: Ξ1) e n m -> 
+  exp_size (Ξ2 ++ (y , (nbind_var_typ p)) :: Ξ1) (subst_exp_in_exp (exp_var_f y) x e) n m.
+Proof.
+  intros. dependent induction H1; simpl in *; eauto using exp_size.
+  - destruct_eq_atom; eauto using exp_size.
+  - remember (dom (Ξ2 ++ (x, nbind_var_typ p) :: Ξ1)).
+    inst_cofinites_for exp_size__abs m:=m; eauto. intros.
+    subst. inst_cofinites_with x0. subst.
+    replace (exp_var_f x0) with (subst_exp_in_exp (exp_var_f y) x (exp_var_f x0))...
+    erewrite <- subst_exp_in_exp_open_exp_wrt_exp; eauto.
+    rewrite_env ((x0 ~ nbind_var_typ n ++ Ξ2) ++ (y ~ nbind_var_typ p) ++ Ξ1).
+    eapply H3; eauto. simpl...
+    + constructor; eauto.
+    + simpl. destruct_eq_atom; eauto.
+  - econstructor; eauto.
+    apply exp_split_size_rename_var; eauto.
+  - remember (dom (Ξ2 ++ (x, nbind_var_typ p) :: Ξ1)).
+    inst_cofinites_for exp_size__tabs n:=n,m:=m,a:=a; eauto; intros; subst.
+    + rewrite <- subst_exp_in_exp_open_exp_wrt_typ; eauto.
+      rewrite_env ((X ~ nbind_tvar_empty ++ Ξ2) ++ (y ~ nbind_var_typ p) ++ Ξ1).
+      eapply H1; eauto. simpl...
+      constructor; auto.
+Qed.
+
+Lemma exp_size_rename_var_cons : forall Ξ e x y n m p,
+  uniq (x ~ (nbind_var_typ p) ++ Ξ) ->
+  y `notin` dom (x ~ (nbind_var_typ m) ++ Ξ) ->
+  exp_size (x ~ (nbind_var_typ p) ++ Ξ) e n m -> 
+  exp_size (y ~ (nbind_var_typ p) ++ Ξ) (subst_exp_in_exp (exp_var_f y) x e) n m.
+Proof.
+  intros. rewrite_env (nil ++ y ~ (nbind_var_typ p) ++ Ξ).
+  eapply exp_size_rename_var; eauto.
+Qed.
+
+Lemma exp_size_total : forall Ξ Ξ' e n,
+  uniq Ξ ->
+  n_wf_exp Ξ e ->
+  equiv_nenv Ξ Ξ' ->
+  exists m, exp_size Ξ' e n m.
+Proof with eauto using exp_size.
+  intros. generalize dependent n. generalize dependent Ξ'. induction H0; eauto using exp_size; intros.  
+  - remember (dom Ξ). pick fresh x. inst_cofinites_with x (keep). subst.
+    assert (uniq (x ~ nbind_var_typ 0 ++ Ξ) ) by auto.
+    assert (equiv_nenv (x ~ nbind_var_typ 0 ++ Ξ) (x ~ nbind_var_typ n ++ Ξ')) by (simpl; eauto using equiv_nenv).
+    specialize (H3 H5 (x ~ nbind_var_typ n ++ Ξ') H6 n). destruct H3 as [m].
+    exists (1+n+m).  remember (dom Ξ). inst_cofinites_for exp_size__abs m:=m; eauto; intros; subst.
+    replace (e ᵉ^^ₑ exp_var_f x0) with (subst_exp_in_exp (exp_var_f x0) x (e ᵉ^^ₑ exp_var_f x))...
+    eapply exp_size_rename_var_cons; eauto; simpl.
+    + constructor. eapply uniq_equiv_nenv with (Ξ:=Ξ); eauto.
+      erewrite <- equiv_nenv_same_dom with (Ξ:=Ξ); eauto.
+    + erewrite <- equiv_nenv_same_dom with (Ξ:=Ξ); eauto.
+    + rewrite subst_exp_in_exp_open_exp_wrt_exp; eauto.
+      simpl. destruct_eq_atom; eauto.
+      rewrite subst_exp_in_exp_fresh_eq; eauto.
+  - eapply n_wf_exp_equiv_nenv in H0_; eauto. 
+    apply exp_split_size_total in H0_... destruct H0_ as [s].
+    specialize (IHn_wf_exp1 H _ H1 n).
+    specialize (IHn_wf_exp2 H _ H1 (s * n + s + n)).
+    destruct IHn_wf_exp1 as [m1].
+    destruct IHn_wf_exp2 as [m2].
+    exists (1 + m1 + m2 + s * m2). 
+    eapply exp_size__app; eauto.
+    eapply uniq_equiv_nenv; eauto. 
+  - remember (dom Ξ). pick fresh X. inst_cofinites_with X. subst.
+    assert (uniq (X ~ nbind_tvar_empty ++ Ξ)) by auto.
+    assert (equiv_nenv (X ~ nbind_tvar_empty ++ Ξ) (X ~ nbind_tvar_empty ++ Ξ')) by (simpl; eauto using equiv_nenv).
+    specialize (H1 H3 (X ~ nbind_tvar_empty ++ Ξ') H4 n). destruct H1 as [m].
+    dependent destruction H1.
+    exists (1 + m * n + m + n). 
+    remember (dom Ξ). inst_cofinites_for exp_size__tabs a:=a,m:=m; eauto; intros; subst.
+    + erewrite <- subst_typ_in_typ_open_typ_wrt_typ_tvar2; eauto.
+      eapply n_iuv_size_rename; eauto. 
+    + replace (e ᵉ^^ₜ ` X0) with (subst_typ_in_exp (typ_var_f X0) X (e ᵉ^^ₜ `X))...
+      eapply exp_size_rename_tvar_cons; eauto; simpl.
+      * eapply uniq_equiv_nenv; eauto.
+      * erewrite <- equiv_nenv_same_dom with (Ξ:=Ξ); eauto.
+      * rewrite subst_typ_in_exp_open_exp_wrt_typ; eauto.
+        simpl. destruct_eq_atom; eauto.
+        rewrite subst_typ_in_exp_fresh_eq; eauto.
+  - apply n_iuv_size_total in H1. destruct H1 as [n0].
+    specialize (IHn_wf_exp H _ H2 (n0 * n + n0 + n)). destruct IHn_wf_exp as [m].
+    exists (1 + m * n + m + n).
+    econstructor; eauto.
+  - apply n_iuv_size_total in H1. destruct H1 as [n0].
+    specialize (IHn_wf_exp H _ H2 n0). destruct IHn_wf_exp as [m].
+    exists (1 + m * n + m + n).
+    eapply exp_size__anno; eauto.
+Qed.
 
 Lemma exp_size_conts_total : forall Ξ cs n,
   n_wf_conts Ξ cs ->
