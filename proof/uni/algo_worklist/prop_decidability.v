@@ -1620,65 +1620,76 @@ Proof.
   - eapply IHHsize1 in Hsize'1; eauto.
 Qed.
 
-Lemma exp_split_size_le_bind : forall Ξ1 x Ξ2 e n n' m m',
-  uniq (Ξ1 ++ (x, nbind_var_typ n) :: Ξ2) ->
-  exp_split_size (Ξ1 ++ (x, nbind_var_typ n) :: Ξ2) e m ->
-  exp_split_size (Ξ1 ++ (x, nbind_var_typ n') :: Ξ2) e m' ->
+Inductive le_nenv : nenv -> nenv -> Prop :=
+  | le_nenv_base : forall Ξ, le_nenv Ξ Ξ
+  | le_nenv__tvar : forall Ξ Ξ' X,
+      le_nenv Ξ Ξ' ->
+      le_nenv ((X, nbind_tvar_empty) :: Ξ) ((X, nbind_tvar_empty) :: Ξ')
+  | le_nenv__stvar : forall Ξ Ξ' X,
+      le_nenv Ξ Ξ' ->
+      le_nenv ((X, nbind_stvar_empty) :: Ξ) ((X, nbind_stvar_empty) :: Ξ')
+  | le_nenv__etvar : forall Ξ Ξ' X,
+      le_nenv Ξ Ξ' ->
+      le_nenv ((X, nbind_etvar_empty) :: Ξ) ((X, nbind_etvar_empty) :: Ξ')
+  | le_nenv__var : forall Ξ Ξ' x n n',
+      le_nenv Ξ Ξ' -> n <= n' ->
+      le_nenv ((x, nbind_var_typ n) :: Ξ) ((x, nbind_var_typ n') :: Ξ').
+
+#[local] Hint Constructors le_nenv : core.
+
+Lemma exp_split_size_le : forall Ξ Ξ' e n n' m m',
+  uniq Ξ -> le_nenv Ξ Ξ' ->
+  exp_split_size Ξ e m -> exp_split_size Ξ' e m' ->
   n <= n' -> m <= m'.
 Proof.
-  intros Ξ1 x Ξ2 e n n' m m' Huniq Hsize.
-  generalize dependent m'. generalize dependent n'.
-  dependent induction Hsize; intros * Hsize' Hle; dependent destruction Hsize'; try lia.
-  - admit. (* @jiangsy *)
-  - remember (dom (Ξ1 ++ (x, nbind_var_typ n) :: Ξ2)). pick fresh y. subst. inst_cofinites_with y. simpl in *.
-    rewrite_env (((y, nbind_var_typ 0) :: Ξ1) ++ (x, nbind_var_typ n') :: Ξ2) in H1.
+  intros Ξ Ξ' e n n' m m' Huniq Hle Hsize.
+  generalize dependent m'. generalize dependent n'. generalize dependent Ξ'.
+  dependent induction Hsize; intros * Hle * Hsize' Hlen; dependent destruction Hsize'; try lia.
+  - admit.
+  - remember (dom Ξ). pick fresh x. subst. inst_cofinites_with x.
     eapply H0 in H1; simpl; eauto.
   - eapply IHHsize1 in Hsize'1; eauto.
     eapply IHHsize2 in Hsize'2; eauto. lia.
-  - remember (dom (Ξ1 ++ (x, nbind_var_typ n) :: Ξ2)). pick fresh X. subst. inst_cofinites_with X. simpl in *.
-    rewrite_env (((X, nbind_tvar_empty) :: Ξ1) ++ (x, nbind_var_typ n') :: Ξ2) in H2.
-    rewrite_env (((X, nbind_tvar_empty) :: Ξ1) ++ (x, nbind_var_typ n') :: Ξ2) in H3.
-    eapply H0 in H2; simpl; eauto.
-    eapply n_iuv_size_another_bind with (m := m) in H3; simpl; eauto. subst.
-    eapply mult_le_compat_r with (p := S (S m0)) in H2. lia.
+  - remember (dom Ξ). pick fresh X. subst. inst_cofinites_with X. simpl in *.
+    eapply H0 in H3; simpl; eauto.
+    assert (m = m0) by admit. subst.
+    eapply mult_le_compat_r with (p := S (S m0)) in H3. lia.
   - eapply IHHsize in Hsize'; eauto.
-    eapply n_iuv_size_another_bind with (m := m) in H0; simpl; eauto. subst.
+    assert (m = m0) by admit. subst.
     eapply mult_le_compat_r with (p := S (S m0)) in Hsize'. lia.
   - eapply IHHsize in Hsize'; eauto.
-    eapply n_iuv_size_another_bind with (m := m) in H0; simpl; eauto. subst.
+    assert (m = m0) by admit. subst.
     eapply mult_le_compat_r with (p := S (S m0)) in Hsize'. lia.
 Admitted.
 
-Lemma exp_size_le_bind : forall Ξ1 x Ξ2 e n n' k m m',
-  uniq (Ξ1 ++ (x, nbind_var_typ n) :: Ξ2) ->
-  exp_size (Ξ1 ++ (x, nbind_var_typ n) :: Ξ2) e k m ->
-  exp_size (Ξ1 ++ (x, nbind_var_typ n') :: Ξ2) e k m' ->
+Lemma exp_size_le : forall Ξ Ξ' e n n' m m',
+  uniq Ξ -> le_nenv Ξ Ξ' ->
+  exp_size Ξ e n m -> exp_size Ξ' e n' m' ->
   n <= n' -> m <= m'.
 Proof.
-  intros Ξ1 x Ξ2 e n n' k m m' Huniq Hsize.
-  generalize dependent m'. generalize dependent n'.
-  dependent induction Hsize; intros * Hsize' Hle; dependent destruction Hsize'; try lia.
-  - remember (dom (Ξ1 ++ (x, nbind_var_typ n) :: Ξ2)). pick fresh y. subst. inst_cofinites_with y. simpl in *.
-    rewrite_env ((((y, nbind_var_typ n0) :: Ξ1) ++ (x, nbind_var_typ n') :: Ξ2)) in H1.
-    eapply H0 in H1; simpl; eauto. lia.
-  - eapply exp_split_size_le_bind in H0; eauto.
-    eapply IHHsize1 in Hsize'1; eauto.
-    assert (Hle': s * n0 + s + n0 <= s * n0 + s + n0).
-    {
-      eapply mult_le_compat_r with (p := n0) in H0. lia.
-    }
-    eapply IHHsize2 in Hsize'2; eauto. lia.
-    eapply H0 in H1; simpl; eauto. lia. 
-
-Lemma exp_size_le : forall Ξ e n n' m m',
-  exp_size Ξ e n m -> exp_size Ξ e n' m' ->
-  n <= n' -> m <= m'.
-Proof.
-  intros Ξ e n n' m m' Hsize.
-  generalize dependent m'. generalize dependent n'.
-  induction Hsize; intros * Hsize' Hle; dependent destruction Hsize'; try lia.
+  intros Ξ Ξ' e n n' m m' Huniq Hle Hsize.
+  generalize dependent m'. generalize dependent n'. generalize dependent Ξ'.
+  dependent induction Hsize; intros * Hle * Hsize' Hlen; dependent destruction Hsize'; try lia.
   - remember (dom Ξ). pick fresh x. subst. inst_cofinites_with x.
-    eapply H0 in H2. eauto. try lia.
+    eapply H0 in H2; simpl; eauto. lia.
+  - eapply exp_split_size_le in H1; eauto.
+    eapply mult_le_compat with (p := n) (q := n0) in H1 as Hlesn; eauto.
+    eapply IHHsize1 in Hsize'1; eauto.
+    eapply IHHsize2 in Hsize'2; eauto; try lia.
+    eapply mult_le_compat with (p := m2) (q := m3) in H1 as Hlesm; eauto. lia.
+  - remember (dom Ξ). pick fresh X. inst_cofinites_with X.
+    assert (a = a0) by admit. subst.
+    eapply H1 in H4; eauto.
+    eapply mult_le_compat with (p := n) (q := n0) in H4 as Hlemn; eauto. lia.
+    eapply le_nenv__tvar; eauto.
+  - assert (a = a0) by admit. subst.
+    eapply mult_le_compat_l with (p := a0) in Hlen as Hlean; eauto.
+    eapply IHHsize in Hsize'; eauto; try lia.
+    eapply mult_le_compat with (p := n) (q := n0) in Hsize' as Hlemn; eauto. lia.
+  - assert (a = a0) by admit. subst.
+    eapply IHHsize in Hsize'; eauto.
+    eapply mult_le_compat with (p := n) (q := n0) in Hsize' as Hlemn; eauto. lia.
+Admitted.
 
 Lemma exp_size_split : forall Ξ e n m n1 n2 m1 m2,
   exp_size Ξ e n m ->
@@ -1691,7 +1702,8 @@ Proof.
   induction Hsize; intros * Hs1 * Hs2 Hlt;
     dependent destruction Hs1; dependent destruction Hs2; simpl in *; eauto; try lia.
   - pick fresh x. inst_cofinites_with x.
-    assert (Hlt': m0 + m1 < m). { eapply H0; eauto. 
+    assert (Hlt': m0 + m1 < m). {
+      eapply H0; eauto. 
       admit. (* <= m0 *)
       admit. (* <= m1 *) }
     lia.
