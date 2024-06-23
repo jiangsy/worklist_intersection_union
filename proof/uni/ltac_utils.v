@@ -128,6 +128,11 @@ Tactic Notation "inst_cofinites_for" constr(H) ident(argname1)":="constr(arg1) "
   let L1 := beautify_fset L1 in
   apply H with (L:=L1) (argname1:=arg1) (argname2:=arg2).
 
+Tactic Notation "inst_cofinites_for" constr(H) ident(argname1)":="constr(arg1) "," ident(argname2) ":=" constr(arg2)"," ident(argname3) ":=" constr(arg3):= 
+  let L1 := gather_atoms in
+  let L1 := beautify_fset L1 in
+  apply H with (L:=L1) (argname1:=arg1) (argname2:=arg2)  (argname3:=arg3).
+
 (* destruct conjunctions *)
 Ltac destruct_conj :=
   repeat match goal with H: ?T |- _ =>
