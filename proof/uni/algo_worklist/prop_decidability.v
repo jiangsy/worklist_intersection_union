@@ -913,7 +913,7 @@ Proof.
   eapply exp_size_rename_var; eauto.
 Qed.
 
-Lemma exp_size_total : forall Ξ Ξ' e n,
+Lemma exp_size_total' : forall Ξ Ξ' e n,
   uniq Ξ ->
   n_wf_exp Ξ e ->
   equiv_nenv Ξ Ξ' ->
@@ -968,41 +968,114 @@ Proof with eauto using exp_size.
     eapply exp_size__anno; eauto.
 Qed.
 
+Lemma equiv_nenv_refl : forall Ξ,
+  equiv_nenv Ξ Ξ.
+Proof.
+  intros. induction Ξ; eauto using equiv_nenv.  
+Qed.
+
+Lemma exp_size_total : forall Ξ e n,
+  uniq Ξ ->
+  n_wf_exp Ξ e ->  
+  exists m, exp_size Ξ e n m.
+Proof.
+  intros. eapply exp_size_total' with (Ξ':=Ξ); eauto.
+  apply equiv_nenv_refl.
+Qed.
+
+
 Lemma exp_size_conts_total : forall Ξ cs n,
+  uniq Ξ ->
   n_wf_conts Ξ cs ->
   exists m, exp_size_conts Ξ cs n m
 with exp_size_contd_total : forall Ξ cd n,
+  uniq Ξ ->
   n_wf_contd Ξ cd ->
   exists m, exp_size_contd Ξ cd n m.
-Proof.
-  - clear exp_size_conts_total. intros. induction H; eauto using exp_size_conts.
-    + admit.
-    + admit.
-    + admit.
-    + admit.
-  - clear exp_size_contd_total. intros. induction H; eauto using exp_size_contd. 
-    + admit.
-    + admit.
-    + admit.
-Admitted.
+Proof with eauto  using exp_size_conts.
+  - clear exp_size_conts_total. intros. generalize dependent n. induction H0; intros...
+    + eapply exp_size_contd_total with (n:=n) in H0... destruct_conj; eauto.
+    + apply n_iuv_size_total in H0. 
+      destruct H0 as [b].
+      specialize (IHn_wf_conts H ((1 + n) * (2 + b))). 
+      destruct_conj; eauto.
+    + apply n_iuv_size_total in H0. 
+      destruct H0 as [a].
+      apply n_iuv_size_total in H1.
+      destruct H1 as [b].
+      specialize (IHn_wf_conts H ((1 + n + a) * b)). 
+      destruct_conj; eauto.
+    + apply n_iuv_size_total in H0. 
+      destruct H0 as [a].
+      specialize (IHn_wf_conts H (1 + a + n)). 
+      destruct_conj; eauto. 
+  - clear exp_size_contd_total. intros. generalize dependent n. induction H0; intros.
+    + apply n_iuv_size_total in H0. 
+      destruct H0 as [a].
+      specialize (IHn_wf_contd H (1 + n + a)).
+      destruct_conj; eauto.
+    + eapply exp_size_total with (n:=n) in H as Hesz; eauto.
+      eapply exp_size_conts_total with (n:=n) in H1; eauto.
+      destruct_conj; eauto. 
+    + apply n_iuv_size_total in H0. 
+      destruct H0 as [a].
+      specialize (IHn_wf_contd H (1 + a + n)).
+      destruct_conj; eauto.
+Qed.
 
 Lemma exp_size_work_total : forall Ξ w,
+  uniq Ξ ->
   n_wf_work Ξ w ->  
   exists n, exp_size_work Ξ w n.
-Proof.
-  intros. induction H; eauto using exp_size_work.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-Admitted.
+Proof with eauto using exp_size_work.
+  intros. induction H0...
+  - apply exp_split_size_total in H0 as Hs...
+    destruct Hs as [s].
+    apply exp_size_conts_total with (n:=s) in H1 as Hc...
+    destruct Hc as [m].
+    apply exp_size_total with (n:=0) in H0...
+    destruct_conj; eauto.
+  - apply n_iuv_size_total in H1. destruct H1 as [n].
+    apply exp_size_total with (n:=n) in H0...
+    destruct_conj; eauto.
+  - apply n_iuv_size_total in H0. destruct H0 as [n].
+    apply exp_size_contd_total with (n:=n) in H1...
+    destruct_conj; eauto.
+  - apply n_iuv_size_total in H0. destruct H0 as [n1].
+    apply n_iuv_size_total in H1. destruct H1 as [n2].
+    apply exp_size_contd_total with (n:=(1+n1+n2)) in H2...
+    destruct_conj; eauto.
+  - apply n_iuv_size_total in H0.
+    destruct H0 as [a].
+    apply exp_size_total with (n:=a) in H1...
+    apply exp_size_conts_total with (n:=a) in H2...
+    destruct_conj; eauto.
+  - apply n_iuv_size_total in H0. destruct H0 as [n1].
+    apply n_iuv_size_total in H1. destruct H1 as [n2].
+    apply exp_size_conts_total with (n:=(1+n1)*(2+n2)) in H2...
+    destruct_conj; eauto.
+  - apply n_iuv_size_total in H0. destruct H0 as [n1].
+    apply n_iuv_size_total in H1. destruct H1 as [n2].
+    apply n_iuv_size_total in H2. destruct H2 as [n].
+    apply exp_size_conts_total with (n:=(1+n1+n2)*n) in H3...
+    destruct_conj; eauto.
+  - apply n_iuv_size_total in H0. destruct H0 as [n1].
+    apply n_iuv_size_total in H1. destruct H1 as [n2].
+    apply exp_size_conts_total with (n:=(1+n1+n2)) in H2...
+    destruct_conj; eauto.
+  - apply n_iuv_size_total in H0. destruct H0 as [n1].
+    apply n_iuv_size_total in H1. destruct H1 as [n2].
+    apply exp_size_contd_total with (n:=(1+n1+n2)) in H4...
+    destruct_conj; eauto.
+  - apply n_iuv_size_total in H0. 
+    destruct H0 as [n].
+    apply exp_size_conts_total with (n:=n) in H1...
+    destruct_conj; eauto.
+  - apply n_iuv_size_total in H0. 
+    destruct H0 as [n].
+    apply exp_size_contd_total with (n:=n) in H2...
+    destruct_conj; eauto.
+Qed.
 
 Lemma binds_var_typ_binds_var_num : forall Γ Ξ x A,
   ⊢ᵃʷ Γ ->
