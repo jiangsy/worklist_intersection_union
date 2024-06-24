@@ -2611,6 +2611,12 @@ Proof.
     eapply exp_size_weaken in H; eauto.
 Qed.
 
+Lemma n_iuv_size_open : forall A B n a b,
+  n_iuv_size (typ_all A) a -> n_iuv_size B b ->
+  n_iuv_size (A ᵗ^^ₜ B) n -> n <= (1 + a) * (1 + b).
+Admitted.
+(* @jiangsy*)
+
 Lemma a_wf_wl_red_decidable : forall me mj mt mtj ma maj ms mw ne Γ,
   ⊢ᵃʷₛ Γ ->
   exp_size_wl Γ ne -> ne < me ->
