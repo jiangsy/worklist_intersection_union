@@ -3,7 +3,7 @@ Require Import uni.decl.prop_typing.
 Require Import uni.decl_worklist.prop_equiv.
 Require Import uni.algo_worklist.prop_soundness.
 Require Import uni.algo_worklist.prop_completeness.
-(* Require Import uni.algo_worklist.prop_decidability. *)
+Require Import uni.algo_worklist.prop_decidability.
 
 (* Prop of decl system *)
 Check d_chk_inf_subsumption.
@@ -20,3 +20,5 @@ Check a_wl_red_soundness.
 Print Assumptions a_wl_red_soundness.
 Check a_wl_red_completeness.
 Print Assumptions a_wl_red_completeness.
+Check a_wf_wl_red_decidable.
+Print Assumptions a_wf_wl_red_decidable.
