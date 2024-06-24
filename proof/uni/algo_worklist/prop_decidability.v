@@ -372,9 +372,10 @@ Inductive exp_size_work : nenv -> work -> nat -> Prop :=
       n_iuv_size A n ->
       exp_size_conts Ξ cs n m ->
       exp_size_work Ξ (work_applys cs A) m
-  | exp_size_work__applyd : forall Ξ cd A B n m,
-      n_iuv_size A n ->
-      exp_size_contd Ξ cd n m ->
+  | exp_size_work__applyd : forall Ξ cd A B a b m,
+      n_iuv_size A a ->
+      n_iuv_size B b ->
+      exp_size_contd Ξ cd (a + b) m ->
       exp_size_work Ξ (work_applyd cd A B) m.
 
 Inductive abind_to_nbind : nenv -> abind -> nbind -> Prop :=
@@ -536,7 +537,8 @@ Proof.
   - eapply n_iuv_size_det in H; eauto. subst.
     eapply exp_size_conts_det in H2; eauto.
   - eapply n_iuv_size_det in H; eauto. subst.
-    eapply exp_size_contd_det in H2; eauto.
+    eapply n_iuv_size_det in H0; eauto. subst.
+    eapply exp_size_contd_det in H1; eauto.
 Qed.
 
 Lemma abind_to_nbind_det : forall Ξ b b' b'',
@@ -1084,8 +1086,10 @@ Proof with eauto using exp_size_work.
     apply exp_size_conts_total with (n:=n) in H1...
     destruct_conj; eauto.
   - apply n_iuv_size_total in H0. 
-    destruct H0 as [n].
-    apply exp_size_contd_total with (n:=n) in H2...
+    destruct H0 as [a].
+    apply n_iuv_size_total in H1. 
+    destruct H1 as [b].
+    apply exp_size_contd_total with (n:=a+b) in H2...
     destruct_conj; eauto.
 Qed.
 
@@ -3552,34 +3556,43 @@ Proof.
         eapply apply_contd_det in Happly; eauto.
         subst. eauto.
       * exfalso. apply H1. eauto.
-      * dependent destruction H3. simpl in *.
+      * assert (Huniq' : uniq Ξ).
+        { eapply awl_to_nenv_uniq; eauto. }
+        dependent destruction H3. simpl in *.
         edestruct (apply_conts_total cs A) as [w Happly].
         -- eapply a_wf_wl_apply_conts in Happly as Hwf'; eauto.
            eapply a_wf_work_apply_conts in Happly as Hwf''; eauto.
            edestruct exp_size_work_total as [n' He'] in Hwf''; eauto.
+           eapply a_wf_work_n_wf_work with (Γ:=Γ); eauto. apply a_wf_wl_a_wf_wwl; eauto.
            assert (JgApply: (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ ~ (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
            { eapply IHmj; eauto; simpl in *; try lia.
-             eapply apply_conts_exp_size with (n := n0) in Happly; eauto; lia.
+             assert (He'': exists n, exp_size_work Ξ w n).
+             { eapply exp_size_work_total; eauto.
+               eapply a_wf_work_n_wf_work with (Γ := Γ); eauto.
+               eapply a_wf_twl_a_wf_wwl; eauto. }
+             destruct He'' as [n'' He''].
+             eapply apply_conts_exp_size with (n := m) in Happly; eauto. subst.
+             eapply exp_size_work_det in He'; eauto. subst.
+             auto. 
              eapply apply_conts_judge_size in Happly; lia. }
            destruct JgApply as [JgApply | JgApply]; eauto.
            right. intro Hcontra. dependent destruction Hcontra.
            eapply apply_conts_det in Happly; eauto. subst. eapply JgApply; eauto.
-        -- right; intro Hcontra; dependent destruction Hcontra;
-           eapply Happly; eauto.
-      * dependent destruction H4. simpl in *.
-        simpl in *. edestruct (apply_contd_dec cd A B) as [[w Happly] | Happly].
+      * assert (Huniq' : uniq Ξ).
+        { eapply awl_to_nenv_uniq; eauto. }
+        dependent destruction H4. simpl in *.
+        simpl in *. edestruct (apply_contd_total cd A B) as [w Happly].
         -- eapply a_wf_wl_apply_contd with (Γ := Γ) in Happly as Hwf'; eauto.
            eapply a_wf_work_apply_contd in Happly as Hwf''; eauto.
            edestruct exp_size_work_total as [n' He'] in Hwf''; eauto.
+           eapply a_wf_work_n_wf_work with (Γ:=Γ); eauto. apply a_wf_wl_a_wf_wwl; eauto.
            assert (JgApply: (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ ~ (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
            { eapply IHmj; eauto; simpl in *; try lia.
-             eapply apply_contd_exp_size with (n := n') in Happly; eauto; lia.
+             eapply apply_contd_exp_size with (n := m) in Happly; eauto. lia.
              eapply apply_contd_judge_size in Happly; lia. }
            destruct JgApply as [JgApply | JgApply]; eauto.
            right. intro Hcontra. dependent destruction Hcontra.
            eapply apply_contd_det in Happly; eauto. subst. eapply JgApply; eauto.
-        -- right; intro Hcontra; dependent destruction Hcontra;
-           eapply Happly; eauto.
   - dependent destruction He. simpl in *.
     assert (Jg: a_wl_red Γ \/ ~ a_wl_red Γ).
     { eapply IHmw; eauto. lia. }
