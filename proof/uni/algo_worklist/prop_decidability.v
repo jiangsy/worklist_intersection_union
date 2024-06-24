@@ -2651,11 +2651,11 @@ Proof.
 Qed.
 
 Lemma num_occurs_in_typ_subst : forall A B X Y n m,
-  X `notin` ftvar_in_typ B -> lc_typ A -> lc_typ B ->
+  X `notin` ftvar_in_typ B -> lc_typ B ->
   num_occurs_in_typ X (subst_typ_in_typ B Y A) n ->
   num_occurs_in_typ X A m -> n <= m.
 Proof.
-  intros A B X Y n m Hfv Hlca Hlcb Hocc1 Hocc2.
+  intros A B X Y n m Hfv Hlcb Hocc1 Hocc2.
   generalize dependent B. generalize dependent Y.
   generalize dependent n.
   induction Hocc2; intros; simpl in *; eauto;
@@ -2668,19 +2668,15 @@ Proof.
     + dependent destruction Hocc1; eauto.
       exfalso. eauto.
   - dependent destruction Hocc1.
-    dependent destruction Hlca.
     eapply IHHocc2_1 in Hocc1_1; eauto.
     eapply IHHocc2_2 in Hocc1_2; eauto. lia.
   - dependent destruction Hocc1.
-    dependent destruction Hlca.
     pick fresh Y0. inst_cofinites_with Y0.
-    rewrite subst_typ_in_typ_open_typ_wrt_typ_fresh2 in H2; eauto.
+    rewrite subst_typ_in_typ_open_typ_wrt_typ_fresh2 in H1; eauto.
   - dependent destruction Hocc1.
-    dependent destruction Hlca.
     eapply IHHocc2_1 in Hocc1_1; eauto.
     eapply IHHocc2_2 in Hocc1_2; eauto. lia.
   - dependent destruction Hocc1.
-    dependent destruction Hlca.
     eapply IHHocc2_1 in Hocc1_1; eauto.
     eapply IHHocc2_2 in Hocc1_2; eauto. lia.
 Qed.
@@ -3107,7 +3103,7 @@ Proof.
                      constructor; auto. constructor; auto. constructor; auto.
                      simpl. apply a_wf_exp_var_binds_another with (Σ2 := nil) (A1 := T); simpl; auto.
                      erewrite subst_exp_in_exp_intro with (x1:=x); eauto.
-                     admit. (* @jiangsy wf rename *)
+                     apply a_wf_exp_rename_var_cons; eauto.
                      apply a_wf_typ_weaken_cons; auto.
            ++ specialize (Jg1 A1 A2). destruct Jg1 as [Jg1 | Jg1]; eauto.
               specialize (Jg2 A1 A2). destruct Jg2 as [Jg2 | Jg2]; eauto.

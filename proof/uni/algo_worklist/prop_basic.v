@@ -462,6 +462,54 @@ Proof.
   apply a_wf_typ_rename_tvar; auto.
 Qed.
 
+Lemma a_wf_typ_rename_var : forall Σ1 Σ2 x y A B,
+  Σ2 ++ x ~ abind_var_typ B ++ Σ1 ᵗ⊢ᵃ A ->
+  Σ2 ++ y ~ abind_var_typ B ++ Σ1 ᵗ⊢ᵃ A.
+Proof.
+  intros. dependent induction H; eauto.
+  - apply binds_remove_mid_diff_bind in H; eauto.
+    solve_false.
+  - apply binds_remove_mid_diff_bind in H; eauto.
+    solve_false.
+  - apply binds_remove_mid_diff_bind in H; eauto.
+    solve_false.
+  - inst_cofinites_for a_wf_typ__all; intros; inst_cofinites_with X; auto.
+    rewrite_env ((X ~ □ ++ Σ2) ++ y ~ abind_var_typ B ++ Σ1); eauto.
+    eapply H1... simpl; eauto.
+Qed.
+
+Lemma a_wf_exp_rename_var : forall Σ1 Σ2 e x y A,
+  Σ2 ++ x ~ abind_var_typ A ++ Σ1 ᵉ⊢ᵃ e ->
+  Σ2 ++ y ~ abind_var_typ A ++ Σ1 ᵉ⊢ᵃ { exp_var_f y ᵉ/ₑ x } e.
+Proof with eauto using a_wf_typ_rename_var.
+  intros.
+  dependent induction H; simpl in *; eauto 4...
+  - destruct_eq_atom...
+    apply binds_remove_mid in H; eauto. 
+    rewrite_env (Σ2 ++ (y ~ abind_var_typ A) ++ Σ1)...
+  - inst_cofinites_for a_wf_exp__abs T:=T; intros; inst_cofinites_with x0; auto...
+    rewrite_env (Σ2 ++ y ~ abind_var_typ A ++ Σ1); 
+    rewrite_env (Σ2 ++ x ~ abind_var_typ A ++ Σ1) in H...
+    rewrite_env ((x0 ~ abind_var_typ T ++ Σ2) ++ y ~ abind_var_typ A ++ Σ1)...
+    replace (exp_var_f x0) with ({exp_var_f y ᵉ/ₑ x} (exp_var_f x0)).
+    rewrite <- subst_exp_in_exp_open_exp_wrt_exp; eauto.
+    eapply H1; eauto. simpl. destruct_eq_atom. auto.
+  - inst_cofinites_for a_wf_exp__tabs; intros; inst_cofinites_with X; auto.
+    rewrite <- subst_exp_in_exp_open_exp_wrt_typ; auto.
+    rewrite_env ((X ~ □ ++ Σ2) ++ (y, abind_var_typ A) :: Σ1); eapply H1; eauto.
+  - econstructor... eapply a_wf_typ_rename_var. simpl...
+  - econstructor... eapply a_wf_typ_rename_var. simpl...
+Qed.
+
+Lemma a_wf_exp_rename_var_cons : forall Σ x y e A,
+  x ~ abind_var_typ A ++ Σ ᵉ⊢ᵃ e -> 
+  y ~ abind_var_typ A ++ Σ ᵉ⊢ᵃ { exp_var_f y ᵉ/ₑ x } e.
+Proof.
+  intros.
+  rewrite_env (nil ++ y ~ abind_var_typ A ++ Σ).
+  eapply a_wf_exp_rename_var; eauto.
+Qed.
+
 Lemma a_wf_typ_subst : forall Σ1 X Σ2 A B,
   uniq (Σ2 ++ X ~ □ ++ Σ1) ->
   Σ2 ++ X ~ □ ++ Σ1 ᵗ⊢ᵃ A ->
