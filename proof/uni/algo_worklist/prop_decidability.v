@@ -2782,56 +2782,90 @@ Proof.
            dependent destruction Hcontra.
            apply Jg; auto.
         -- dependent destruction H4. dependent destruction H6.
-           assert (a = m1) by admit. subst. (* det *)
+           eapply n_iuv_size_det with (n := a) in H7; eauto. subst.
+           assert (Huniq' : uniq Ξ).
+           { eapply awl_to_nenv_uniq; eauto. }
+           assert (He': exists m, exp_size_conts Ξ cs m1 m).
+           { eapply exp_size_conts_total; eauto.
+             eapply a_wf_conts_n_wf_conts with (Γ := Γ); eauto.
+             eapply a_wf_twl_a_wf_wwl; eauto. }
+           destruct He' as [m' He'].
+           eapply exp_size_conts_le with (m' := m) in He' as Hle; eauto; try lia.
            assert (Jg: (work_check e A ⫤ᵃ work_applys cs A ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/
                      ~ (work_check e A ⫤ᵃ work_applys cs A ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
            { eapply IHme; eauto; simpl; try lia. constructor; auto.
-             eapply exp_size_wl__cons_work with (m := m0) (n := m + n); eauto.
-             eapply exp_size_wl__cons_work; eauto.
-             eapply exp_size_work__applys; eauto.
-             admit.
-             
-             lia. }
+             eapply exp_size_wl__cons_work with (m := m0) (n := m' + n); eauto. lia. }
            destruct Jg as [Jg | Jg]; eauto.
            right. intro Hcontra.
            dependent destruction Hcontra.
            apply Jg; auto.
       * dependent destruction H3. simpl in *.
-        (* assert (He': n0 > 0) by (eapply exp_size_gt_0; eauto). *)
+        assert (Huniq' : uniq Ξ).
+        { eapply awl_to_nenv_uniq; eauto. }
         assert (Jg: (work_infer e (conts_sub A) ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/
                   ~ (work_infer e (conts_sub A) ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
-        { eapply IHmj; eauto; simpl; try lia.
-          eapply exp_size_wl__cons_work; eauto.
-          eapply exp_size_work__infer; eauto.
-          admit. (* exp_size_tail_rec_le *) }
+        { assert (Hes: exists s, exp_split_size Ξ e s).
+          { eapply exp_split_size_total; eauto.
+            eapply a_wf_exp_n_wf_exp with (Γ := Γ); eauto.
+            eapply a_wf_twl_a_wf_wwl; eauto. }
+          destruct Hes as [s Hes].
+          assert (He': exists m, exp_size Ξ e 0 m).
+          { eapply exp_size_total; eauto.
+            eapply a_wf_exp_n_wf_exp with (Γ := Γ); eauto.
+            eapply a_wf_twl_a_wf_wwl; eauto. }
+          destruct He' as [m' He'].
+          eapply exp_size_le with (m' := m) in He' as Hle; eauto; try lia.
+          eapply IHmj; eauto; simpl; try lia. }
         assert (Jg1: forall A1 A2, A = typ_union A1 A2 ->
                        (work_check e A1 ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ ~ (work_check e A1 ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
         { intros A1 A2 Heq. subst.
           dependent destruction H0. dependent destruction H3.
-          eapply IHme; eauto; simpl; try lia.
-          eapply exp_size_wl__cons_work; eauto.
-          eapply exp_size_work__check; eauto.
-          admit. admit. (* exp_size_tail_rec_le *) }
+          assert (He1: exists m, exp_size Ξ e n1 m).
+          { eapply exp_size_total; eauto.
+            eapply a_wf_exp_n_wf_exp with (Γ := Γ); eauto.
+            eapply a_wf_twl_a_wf_wwl; eauto. }
+          destruct He1 as [m1 He1].
+          assert (He2: exists m, exp_size Ξ e n2 m).
+          { eapply exp_size_total; eauto.
+            eapply a_wf_exp_n_wf_exp with (Γ := Γ); eauto.
+            eapply a_wf_twl_a_wf_wwl; eauto. }
+          destruct He2 as [m2 He2].
+          eapply exp_size_split with (n := 2 + n1 + n2) in He1 as Hle'; eauto; try lia.
+          eapply IHme; eauto; simpl; try lia. }
         assert (Jg2: forall A1 A2, A = typ_union A1 A2 ->
                        (work_check e A2 ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ ~ (work_check e A2 ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
         { intros A1 A2 Heq. subst.
           dependent destruction H0. dependent destruction H3.
-          eapply IHme; eauto; simpl; try lia.
-          eapply exp_size_wl__cons_work; eauto.
-          eapply exp_size_work__check; eauto.
-          admit. admit. (* exp_size_tail_rec_le *) }
+          assert (He1: exists m, exp_size Ξ e n1 m).
+          { eapply exp_size_total; eauto.
+            eapply a_wf_exp_n_wf_exp with (Γ := Γ); eauto.
+            eapply a_wf_twl_a_wf_wwl; eauto. }
+          destruct He1 as [m1 He1].
+          assert (He2: exists m, exp_size Ξ e n2 m).
+          { eapply exp_size_total; eauto.
+            eapply a_wf_exp_n_wf_exp with (Γ := Γ); eauto.
+            eapply a_wf_twl_a_wf_wwl; eauto. }
+          destruct He2 as [m2 He2].
+          eapply exp_size_split with (n := 2 + n1 + n2) in He1 as Hle'; eauto; try lia.
+          eapply IHme; eauto; simpl; try lia. }
         assert (Jg': forall A1 A2, A = typ_intersection A1 A2 ->
                        (work_check e A2 ⫤ᵃ work_check e A1 ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/
                      ~ (work_check e A2 ⫤ᵃ work_check e A1 ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ ).
         { intros A1 A2 Heq. subst.
           dependent destruction H0. dependent destruction H3.
-          assert (exists m1, exp_size Ξ e n1 m1) by admit.
-          assert (exists m2, exp_size Ξ e n2 m2) by admit.
-          destruct H0 as [m1]. destruct H3 as [m2].
+          assert (He1: exists m, exp_size Ξ e n1 m).
+          { eapply exp_size_total; eauto.
+            eapply a_wf_exp_n_wf_exp with (Γ := Γ); eauto.
+            eapply a_wf_twl_a_wf_wwl; eauto. }
+          destruct He1 as [m1 He1].
+          assert (He2: exists m, exp_size Ξ e n2 m).
+          { eapply exp_size_total; eauto.
+            eapply a_wf_exp_n_wf_exp with (Γ := Γ); eauto.
+            eapply a_wf_twl_a_wf_wwl; eauto. }
+          destruct He2 as [m2 He2].
+          eapply exp_size_split with (n := 2 + n1 + n2) in He1 as Hle'; eauto; try lia.
           eapply IHme; eauto; simpl; try lia. constructor; auto.
-          eapply exp_size_wl__cons_work; eauto.
-          eapply exp_size_split with (n := 2 + n1 + n2) in H0; eauto; try lia.
-        }
+          eapply exp_size_wl__cons_work; eauto. lia. }
         destruct Jg as [Jg | Jg]; eauto.
         dependent destruction H; simpl in *.
         -- dependent destruction H0; simpl in *;
@@ -2854,15 +2888,22 @@ Proof.
               apply Jg; auto. apply Jg'; auto.
         -- dependent destruction H5. dependent destruction H1; simpl in *;
              try solve [right; intro Hcontra; dependent destruction Hcontra; eapply Jg; eauto].
-           ++ pick fresh x.
+           ++ remember (dom Ξ). pick fresh x. subst.
               assert (Jgt: (work_check (e ᵉ^^ₑ exp_var_f x) typ_top ⫤ᵃ x ~ᵃ typ_bot;ᵃ Γ) ⟶ᵃʷ⁎⋅ \/
                          ~ (work_check (e ᵉ^^ₑ exp_var_f x) typ_top ⫤ᵃ x ~ᵃ typ_bot;ᵃ Γ) ⟶ᵃʷ⁎⋅).
               { inst_cofinites_with x.
+                assert (He': exists m, exp_size ((x, nbind_var_typ 0) :: Ξ) (e ᵉ^^ₑ exp_var_f x) 0 m).
+                { eapply exp_size_total; eauto.
+                  eapply a_wf_exp_n_wf_exp with (Γ := aworklist_cons_var Γ x (abind_var_typ typ_top)); eauto.
+                  eapply a_wf_twl_a_wf_wwl; eauto.
+                  simpl. eapply a_wf_exp_var_binds_another with (Σ2 := nil); simpl; eauto. }
+                destruct He' as [m' He'].
+                eapply exp_size_le with (Ξ' := (x, nbind_var_typ n0) :: Ξ) (m' := m) in He' as Hle; eauto; try lia.
                 eapply IHme; eauto; simpl; try lia.
                 constructor; auto. constructor; auto. constructor; auto.
                 apply a_wf_exp_var_binds_another with (Σ2 := nil) (A1 := T); simpl; auto.
-                eapply exp_size_wl__cons_work with (Ξ := ((x, nbind_var_typ 0) :: Ξ)); eauto.
-                eapply exp_size_work__check; eauto. admit. admit. }
+                eapply exp_size_wl__cons_work with (Ξ := ((x, nbind_var_typ 0) :: Ξ)); eauto. lia.
+                eapply le_nenv__var; eauto. lia. }
               destruct Jgt as [Jgt | Jgt].
               ** left. inst_cofinites_for a_wl_red__chk_abstop; eauto.
                  intros x' Hnin.
@@ -2891,15 +2932,24 @@ Proof.
            ++ right. intro Hcontra. dependent destruction Hcontra.
               eapply Jg; eauto. unify_binds.
            ++ admit. (* TODO: split *)
-           ++ pick fresh x. inst_cofinites_with x.
+           ++ remember (dom Ξ). pick fresh x. subst. inst_cofinites_with x.
               dependent destruction H4.
               assert (JgArr: (work_check (e ᵉ^^ₑ exp_var_f x) A2 ⫤ᵃ x ~ᵃ A1;ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ 
                            ~ (work_check (e ᵉ^^ₑ exp_var_f x) A2 ⫤ᵃ x ~ᵃ A1;ᵃ Γ) ⟶ᵃʷ⁎⋅).
-              { eapply IHme; eauto; simpl; try lia.
-                admit. (* wf *)
+              { assert (He': exists m, exp_size ((x, nbind_var_typ n1) :: Ξ) (e ᵉ^^ₑ exp_var_f x) n2 m).
+                { eapply exp_size_total; eauto.
+                  eapply a_wf_exp_n_wf_exp with (Γ := aworklist_cons_var Γ x (abind_var_typ A1)); eauto.
+                  eapply a_wf_twl_a_wf_wwl; eauto.
+                  simpl. eapply a_wf_exp_var_binds_another with (Σ2 := nil); simpl; eauto. }
+                destruct He' as [m' He'].
+                eapply exp_size_le with (Ξ' := (x, nbind_var_typ (n1 + n2)) :: Ξ) (m' := m) in He' as Hle; eauto; try lia.
+                eapply IHme; eauto; simpl; try lia.
+                constructor; auto. constructor; auto. constructor; auto.
+                apply a_wf_exp_var_binds_another with (Σ2 := nil) (A1 := T); simpl; auto.
+                simpl. eapply a_wf_typ_weaken_cons; eauto.
                 eapply exp_size_wl__cons_work with (Ξ := ((x, nbind_var_typ n1) :: Ξ)); eauto.
-                eapply exp_size_work__check with (n := n2); eauto.
-                admit. admit. } 
+                lia.
+                eapply le_nenv__var; eauto. lia. }
               destruct JgArr as [JgArr | JgArr]; auto.
               ** left. inst_cofinites_for a_wl_red__chk_absarrow; eauto.
                  intros x' Hnin.
@@ -2969,8 +3019,10 @@ Proof.
            ** specialize (Jg' A1 A2). destruct Jg' as [Jg' | Jg']; eauto.
               right. intro Hcontra. dependent destruction Hcontra.
               apply Jg; auto. apply Jg'; auto.
-      * dependent destruction H3.
-        simpl in *. dependent destruction H;
+      * dependent destruction H3. simpl in *.
+        assert (Huniq' : uniq Ξ).
+        { eapply awl_to_nenv_uniq; eauto. } 
+        dependent destruction H;
           try solve [right; intro Hcontra; dependent destruction Hcontra].
         -- assert (Jg:   (work_infabs (typ_arrow typ_top typ_bot) cd ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ 
                        ~ (work_infabs (typ_arrow typ_top typ_bot) cd ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
@@ -2990,10 +3042,20 @@ Proof.
           assert (Jg: (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ ~ (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
           { eapply a_wf_wl_apply_contd in Happly as Hwf'; eauto.
             eapply a_wf_work_apply_contd in Happly as Hwf''; eauto.
-            edestruct exp_size_work_total as [n' He'] in Hwf''; eauto.
-            eapply 
+            assert (He': exists m, exp_size_work Ξ w m).
+            { eapply exp_size_work_total; eauto.
+              eapply a_wf_work_n_wf_work with (Γ := Γ); eauto.
+              eapply a_wf_wl_a_wf_wwl; eauto. }
+            destruct He' as [m' He'].
+            dependent destruction H4.
+            assert (He'': exists m, exp_size_contd Ξ cd n1 m).
+            { eapply exp_size_contd_total; eauto.
+              eapply a_wf_contd_n_wf_contd with (Γ := Γ); eauto.
+              eapply a_wf_twl_a_wf_wwl; eauto. }
+            destruct He'' as [m'' He''].
+            eapply exp_size_contd_le with (m := m'') in H5 as Hle; eauto; try lia.
+            eapply apply_contd_exp_size with (n := m'') in Happly as ?; eauto. subst.
             eapply IHmaj; eauto; simpl in *; try lia.
-            eapply apply_contd_exp_size with (n := n') in Happly; eauto; lia.
             eapply apply_contd_judge_size in Happly; lia.
             eapply apply_contd_inftapp_depth in Happly; lia.
             eapply apply_contd_inftapp_judge_size in Happly; lia.
@@ -3005,17 +3067,23 @@ Proof.
           dependent destruction Hcontra.
           eapply apply_contd_det in Happly; eauto.
           subst. eauto.
-        -- pick fresh X. inst_cofinites_with X.
+        -- dependent destruction H4.
+           remember (dom Ξ). pick fresh X. subst. inst_cofinites_with X.
            assert (Jg: (work_infabs (A ᵗ^ₜ X) cd ⫤ᵃ X ~ᵃ ⬒ ;ᵃ Γ) ⟶ᵃʷ⁎⋅ \/
                      ~ (work_infabs (A ᵗ^ₜ X) cd ⫤ᵃ X ~ᵃ ⬒ ;ᵃ Γ) ⟶ᵃʷ⁎⋅).
            { assert (Heq: infabs_depth (open_typ_wrt_typ A (typ_var_f X)) = infabs_depth A) by admit. (* should be fine *)
-             eapply IHma; eauto; simpl in *; try lia.
+             assert (He': exists m, exp_size_contd Ξ cd n0 m).
+             { eapply exp_size_contd_total; eauto.
+               eapply a_wf_contd_n_wf_contd with (Γ := Γ); eauto.
+               eapply a_wf_twl_a_wf_wwl; eauto. }
+             destruct He' as [m' He'].
+             eapply exp_size_contd_le with (m := m') in H6; eauto; try lia.
+             eapply exp_size_contd_weaken with (Ξ3 := nil) (Ξ2 := (X, nbind_etvar_empty) :: nil) in He'.
+             eapply IHma with (ne := m' + n); eauto; simpl in *; try lia.
              constructor; simpl; auto. constructor; simpl; auto. constructor; simpl; auto.
              eapply a_wf_typ_tvar_etvar with (Σ2 := nil). simpl. auto.
              eapply a_wf_contd_weaken_cons; auto.
-             eapply exp_size_wl__cons_work with (Ξ := ((X, nbind_etvar_empty) :: Ξ)); eauto.
-             eapply exp_size_work__infabs; eauto.
-             admit. (* exp_size weaken *) }
+             eapply exp_size_wl__cons_work with (Ξ := ((X, nbind_etvar_empty) :: Ξ)); eauto. }
            destruct Jg as [Jg | Jg]; eauto.
            ++ left. inst_cofinites_for a_wl_red__infabs_all.
               intros X' Hnin.
@@ -3118,7 +3186,9 @@ Proof.
              assert (Hfact'': inftapp_depth_conts_tail_rec cs ((1 + inftapp_depth A) * (1 + inftapp_depth A2)) <= inftapp_depth_conts_tail_rec cs (S (inftapp_depth A + S (inftapp_depth A + inftapp_depth A2 * S (inftapp_depth A))))).
              { eapply inftapp_depth_conts_tail_rec_le; eauto; lia. }
              lia.
-             eapply apply_conts_inftapp_judge_size in Happly; lia.
+             eapply apply_conts_inftapp_judge_size in Happly; lia.                eapply exp_size_work__check; eauto.
+             eapply
+             admit. admit. }
              eapply a_wf_typ_all_open; eauto. }
            destruct Jg as [Jg | Jg]; eauto.
            right. intro Hcontra.
