@@ -292,11 +292,11 @@ Inductive exp_size_conts : nenv -> conts -> nat -> nat -> Prop :=
   | exp_size_conts__inftappunion : forall Ξ A B cs n m a b,
       n_iuv_size A a ->
       n_iuv_size B b ->
-      exp_size_conts Ξ cs (1 + a * (2 + b) + n) m ->
+      exp_size_conts Ξ cs (2 + a * (2 + b) + n) m ->
       exp_size_conts Ξ (conts_inftappunion A B cs) n m
   | exp_size_conts__unioninftapp : forall Ξ A cs n m a,
       n_iuv_size A a ->
-      exp_size_conts Ξ cs (1 + a + n) m ->
+      exp_size_conts Ξ cs (2 + a + n) m ->
       exp_size_conts Ξ (conts_unioninftapp A cs) n m
   | exp_size_conts__sub : forall Ξ A n,
       exp_size_conts Ξ (conts_sub A) n 0
@@ -353,12 +353,12 @@ Inductive exp_size_work : nenv -> work -> nat -> Prop :=
       n_iuv_size A1 n1 ->
       n_iuv_size A2 n2 ->
       n_iuv_size B n ->
-      exp_size_conts Ξ cs (1 + n2 * (2 + n) + n1) m ->
+      exp_size_conts Ξ cs (2 + n2 * (2 + n) + n1) m ->
       exp_size_work Ξ (work_inftappunion A1 A2 B cs) m
   | exp_size_work__unioninftapp : forall Ξ A1 A2 cs n1 n2 m,
       n_iuv_size A1 n1 ->
       n_iuv_size A2 n2 ->
-      exp_size_conts Ξ cs (1 + n1 + n2) m ->
+      exp_size_conts Ξ cs (2 + n1 + n2) m ->
       exp_size_work Ξ (work_unioninftapp A1 A2 cs) m
   | exp_size_work__unioninfabs : forall Ξ A1 A2 B1 B2 cd n1 n2 m,
       n_iuv_size A1 n1 ->
@@ -1003,11 +1003,11 @@ Proof with eauto  using exp_size_conts.
       destruct H0 as [a].
       apply n_iuv_size_total in H1.
       destruct H1 as [b].
-      specialize (IHn_wf_conts H (1 + a * (2 + b) + n)). 
+      specialize (IHn_wf_conts H (2 + a * (2 + b) + n)). 
       destruct_conj; eauto.
     + apply n_iuv_size_total in H0. 
       destruct H0 as [a].
-      specialize (IHn_wf_conts H (1 + a + n)). 
+      specialize (IHn_wf_conts H (2 + a + n)). 
       destruct_conj; eauto. 
   - clear exp_size_contd_total. intros. generalize dependent n. induction H0; intros.
     + apply n_iuv_size_total in H0. 
@@ -1059,11 +1059,11 @@ Proof with eauto using exp_size_work.
   - apply n_iuv_size_total in H0. destruct H0 as [n1].
     apply n_iuv_size_total in H1. destruct H1 as [n2].
     apply n_iuv_size_total in H2. destruct H2 as [n].
-    apply exp_size_conts_total with (n:=(1+n2*(2+n)+n1)) in H3...
+    apply exp_size_conts_total with (n:=(2+n2*(2+n)+n1)) in H3...
     destruct_conj; eauto.
   - apply n_iuv_size_total in H0. destruct H0 as [n1].
     apply n_iuv_size_total in H1. destruct H1 as [n2].
-    apply exp_size_conts_total with (n:=(1+n1+n2)) in H2...
+    apply exp_size_conts_total with (n:=(2+n1+n2)) in H2...
     destruct_conj; eauto.
   - apply n_iuv_size_total in H0. destruct H0 as [n1].
     apply n_iuv_size_total in H1. destruct H1 as [n2].
@@ -2394,11 +2394,11 @@ Proof.
     + apply IHc with (Ξ := Ξ) (n := (2 + b) * n) (m := m) in Hsize'; auto.
       apply n_iuv_size_det with (n := b) in H0; auto. subst.
       apply mult_le_compat_r with (p := b0) in Hlen as Hlen'. lia.
-    + apply IHc with (Ξ := Ξ) (n := 1 + a * (2 + b) + n) (m := m) in Hsize'; auto.
+    + apply IHc with (Ξ := Ξ) (n := 2 + a * (2 + b) + n) (m := m) in Hsize'; auto.
       apply n_iuv_size_det with (n := a) in H1; auto.
       apply n_iuv_size_det with (n := b) in H2; auto. subst.
       eapply mult_le_compat_r with (p := b0) in Hlen as Hlen'. lia.
-    + apply IHc with (Ξ := Ξ) (n := 1 + a + n) (m := m) in Hsize'; auto.
+    + apply IHc with (Ξ := Ξ) (n := 2 + a + n) (m := m) in Hsize'; auto.
       apply n_iuv_size_det with (n := a) in H0; auto. subst. lia.
   - clear exp_size_contd_le.
     intro c. induction c; intros * Huniq Hle Hsize * Hsize' Hlen; dependent destruction Hsize; dependent destruction Hsize'; try lia.
@@ -3397,7 +3397,7 @@ Proof.
             eapply exp_size_work__inftapp. admit. admit.
             eapply exp_size_conts__inftappunion. admit. admit. *)
 
-            assert (He': exists m, exp_size_conts Ξ cs (1 + n3 * (2 + n2) + (2 + n2) * n1) m).
+            assert (He': exists m, exp_size_conts Ξ cs (2 + n3 * (2 + n2) + (2 + n2) * n1) m).
              { eapply exp_size_conts_total; eauto.
                eapply a_wf_conts_n_wf_conts with (Γ := Γ); eauto.
                eapply a_wf_twl_a_wf_wwl; eauto. }
@@ -3471,7 +3471,7 @@ Proof.
             eapply exp_size_wl__cons_work. admit.
             eapply exp_size_work__inftapp. admit. admit.
             eapply exp_size_conts__unioninftapp. admit. *)
-          assert (He': exists m, exp_size_conts Ξ cs (1 + n1 + (2 + n0) * n2) m).
+          assert (He': exists m, exp_size_conts Ξ cs (2 + n1 + (2 + n0) * n2) m).
           { eapply exp_size_conts_total; eauto.
             eapply a_wf_conts_n_wf_conts with (Γ := Γ); eauto.
             eapply a_wf_twl_a_wf_wwl; eauto. }
@@ -3501,10 +3501,10 @@ Proof.
             eapply a_wf_work_n_wf_work with (Γ := Γ); eauto.
             eapply a_wf_twl_a_wf_wwl; eauto. }
           destruct He' as [n' He'].
-          eapply apply_conts_exp_size with (n := m) in Happly as Hle. eauto. subst.
+          eapply apply_conts_exp_size with (n := m) in Happly as Hle; eauto. subst.
           eapply IHmtj; eauto; simpl in *; try lia.
           eapply a_wf_wl_apply_conts; eauto.
-          eapply apply_conts_exp_size with (n := n0) in Happly; eauto; lia.
+          (* eapply apply_conts_exp_size with (n := n0) in Happly; eauto; lia. *)
           eapply apply_conts_judge_size in Happly; lia.
           eapply apply_conts_inftapp_depth in Happly.
           assert (inftapp_depth_conts_tail_rec cs (inftapp_depth (typ_union A1 A2))
@@ -3529,7 +3529,7 @@ Proof.
         { eapply a_wf_wl_apply_contd with (Γ := Γ) in Happly as Hwf'; eauto.
           2: { constructor; auto. }
           eapply a_wf_work_apply_contd in Happly as Hwf''; eauto.
-          edestruct exp_size_work_total with (Γ := Γ) (w := w) as [n' He'] in Hwf''; eauto.
+          destruct exp_size_work_total with (Γ := Γ) (w := w) as [n' He'] in Hwf''; eauto.
           eapply IHmaj; eauto; simpl in *; try lia.
           eapply apply_contd_exp_size with (n := n') in Happly; eauto; lia.
           eapply apply_contd_judge_size in Happly; lia.
