@@ -3205,12 +3205,29 @@ Proof.
              eapply Happly; eauto].
            assert (Jg: (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ ~ (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
            { eapply a_wf_work_apply_conts in Happly as Hwf'; eauto.
-             edestruct exp_size_work_total as [n' He'] in Hwf'; eauto.
+             2: { eapply a_wf_typ_all_open; eauto. }
+              assert (He': exists m, exp_size_work Ξ w m).
+              { eapply exp_size_work_total; eauto.
+                eapply a_wf_work_n_wf_work with (Γ := Γ); eauto.
+                eapply a_wf_twl_a_wf_wwl; eauto. }
+              destruct He' as [m' He'].
+              assert (He'': exists n, n_iuv_size (A ᵗ^^ₜ A2) n).
+              { eapply n_iuv_size_total; eauto.
+                eapply a_wf_typ_lc; eauto.
+                eapply a_wf_typ_all_open; eauto. }
+              destruct He'' as [n' He''].
+              assert (He''': exists m, exp_size_conts Ξ cs n' m).
+              { eapply exp_size_conts_total; eauto.
+                eapply a_wf_conts_n_wf_conts with (Γ := Γ); eauto.
+                eapply a_wf_twl_a_wf_wwl; eauto. }
+              destruct He''' as [m'' He'''].
+              assert (Hle: n' <= S (S (n2 + n1 * S (S n2)))) by admit.
+              eapply exp_size_conts_le with (m := m'') in H7; eauto; try lia.
+              eapply apply_conts_exp_size in Happly as Hwf''; eauto. subst.
              eapply IHmtj; eauto; simpl in *; try lia.
              eapply a_wf_wl_apply_conts; eauto.
              constructor; auto. constructor; auto.
              eapply a_wf_typ_all_open; eauto.
-             eapply apply_conts_exp_size with (n := n0) in Happly; eauto. lia.
              eapply apply_conts_judge_size in Happly; lia.
              eapply apply_conts_inftapp_depth in Happly.
              assert (Hfact: inftapp_depth (open_typ_wrt_typ A A2) < (1 + inftapp_depth A) * (1 + inftapp_depth A2))
@@ -3220,10 +3237,7 @@ Proof.
              assert (Hfact'': inftapp_depth_conts_tail_rec cs ((1 + inftapp_depth A) * (1 + inftapp_depth A2)) <= inftapp_depth_conts_tail_rec cs (S (inftapp_depth A + S (inftapp_depth A + inftapp_depth A2 * S (inftapp_depth A))))).
              { eapply inftapp_depth_conts_tail_rec_le; eauto; lia. }
              lia.
-             eapply apply_conts_inftapp_judge_size in Happly; lia.                eapply exp_size_work__check; eauto.
-             eapply
-             admit. admit. }
-             eapply a_wf_typ_all_open; eauto. }
+             eapply apply_conts_inftapp_judge_size in Happly; lia. }
            destruct Jg as [Jg | Jg]; eauto.
            right. intro Hcontra.
            dependent destruction Hcontra.
@@ -3240,7 +3254,7 @@ Proof.
                        (S (inftapp_depth A1 + inftapp_depth A0 +
                         S (inftapp_depth A1 + inftapp_depth A0 +
                           inftapp_depth A2 * S (inftapp_depth A1 + inftapp_depth A0))))).
-             { eapply inftapp_depth_conts_tail_rec_lt; eauto; try lia. }
+             { eapply inftapp_depth_conts_tail_rec_lt; eauto; try lia. } admit.
              lia. }
            destruct Jg as [Jg | Jg]; eauto.
            right. intro Hcontra.
