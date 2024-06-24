@@ -2611,11 +2611,93 @@ Proof.
     eapply exp_size_weaken in H; eauto.
 Qed.
 
+(* Lemma n_iuv_size_open_typ_wrt_typ_rec : forall A B n m1 m2 m3,
+  n_iuv_size (open_typ_wrt_typ_rec n B A) m1 ->
+  n_iuv_size A m2 ->
+  n_iuv_size B m3 ->
+  m1 <= m2 * (1 + m3).
+Proof.
+  intros * Hopen Ha Hb. generalize dependent n. generalize dependent m1. generalize dependent m2. generalize dependent m3.
+  induction A; intros; simpl in *; eauto; 
+    try (dependent destruction Ha; dependent destruction Hb; dependent destruction Hopen; eauto; lia).
+  - dependent destruction Hopen.
+    dependent destruction Ha. 
+    specialize (IHA1 _ Hb _ Ha1 _ n Hopen1).
+    specialize (IHA2 _ Hb _ Ha2 _ n Hopen2). lia. 
+  - dependent destruction Hopen.
+    dependent destruction Ha. 
+    pick fresh X. inst_cofinites_with X.
+    specialize (IHA _ Hb _ H).
+  admit.
+  - dependent destruction Hopen.
+    dependent destruction Ha. 
+    specialize (IHA1 _ Hb _ Ha1 _ n Hopen1).
+    specialize (IHA2 _ Hb _ Ha2 _ n Hopen2). lia. 
+  - dependent destruction Hopen.
+    dependent destruction Ha. 
+    specialize (IHA1 _ Hb _ Ha1 _ n Hopen1).
+    specialize (IHA2 _ Hb _ Ha2 _ n Hopen2). lia. 
+Admitted. *)
+
+Lemma iuv_size_open_typ_wrt_typ : forall A X B n m1 m2 m3,
+  lc_typ A ->
+  lc_typ B ->
+  X `notin` ftvar_in_typ B -> 
+  num_occurs_in_typ X A n ->
+  n_iuv_size (subst_typ_in_typ B X A) m1 ->
+  n_iuv_size A m2 ->
+  n_iuv_size B m3 ->
+  m1 <= (n + m2) * (1 + m3).
+Proof.
+  intros * Hlca Hlcb Hfv Hocc Hopen Ha Hb.
+  generalize dependent n. generalize dependent m1. generalize dependent m2. generalize dependent m3.  
+  induction Hlca; intros; simpl in *;
+     try solve [dependent destruction Ha; dependent destruction Hb; dependent destruction Hopen; simpl in *; try lia].
+  - destruct_eq_atom.
+    + assert (m1 = m3) by admit. subst. dependent destruction Hocc. lia.
+      solve_false.
+    + dependent destruction Hopen. lia.
+  - dependent destruction Ha.
+    dependent destruction Hopen.
+    dependent destruction Hocc.
+    specialize (IHHlca1 _ Hb _ Ha1 _ Hopen1 _ Hocc1).
+    specialize (IHHlca2 _ Hb _ Ha2 _ Hopen2 _ Hocc2).
+    lia.
+  - dependent destruction Ha.
+    dependent destruction Hopen.
+    dependent destruction Hocc.
+    pick fresh X0. inst_cofinites_with X0.
+    rewrite subst_typ_in_typ_open_typ_wrt_typ_fresh2 in H3; eauto.
+    rewrite subst_typ_in_typ_open_typ_wrt_typ_fresh2 in H4; eauto.
+    specialize (H0 X0 _ Hb _ H1 _ H3 _ H5). admit. 
+  - dependent destruction Ha.
+    dependent destruction Hopen.
+    dependent destruction Hocc.
+    specialize (IHHlca1 _ Hb _ Ha1 _ Hopen1 _ Hocc1).
+    specialize (IHHlca2 _ Hb _ Ha2 _ Hopen2 _ Hocc2).
+    lia.
+- dependent destruction Ha.
+    dependent destruction Hopen.
+    dependent destruction Hocc.
+    specialize (IHHlca1 _ Hb _ Ha1 _ Hopen1 _ Hocc1).
+    specialize (IHHlca2 _ Hb _ Ha2 _ Hopen2 _ Hocc2).
+    lia.
+Admitted.
+
 Lemma n_iuv_size_open : forall A B n a b,
   n_iuv_size (typ_all A) a -> n_iuv_size B b ->
   n_iuv_size (A ᵗ^^ₜ B) n -> n <= (1 + a) * (1 + b).
+Proof.
+  intros.
+  intros. dependent destruction H; eauto.
+  pick fresh X. inst_cofinites_with X.
+  replace (A ᵗ^^ₜ B) with ({B ᵗ/ₜ X} (A ᵗ^ₜ X)) in H2 by admit.
+  assert (lc_typ (A ᵗ^ₜ X)) by admit.
+  assert (lc_typ B) by admit.
+  assert (X `notin` ftvar_in_typ B) by admit.
+  specialize (iuv_size_open_typ_wrt_typ (A ᵗ^ₜ X) X B _ _ _ _ H3 H4 H5 H0 H2 H H1). intros.
+  lia.
 Admitted.
-(* @jiangsy*)
 
 Lemma a_wf_wl_red_decidable : forall me mj mt mtj ma maj ms mw ne Γ,
   ⊢ᵃʷₛ Γ ->
@@ -2704,20 +2786,22 @@ Proof.
              destruct He' as [m' He'].
              eapply exp_size_conts_le with (Ξ := Ξ) (m := m') in H6; eauto; try lia.
              eapply IHme with (ne := m0 + (m' + n)); auto.
-             admit. (* @jiangsy wf *)    
-             eapply exp_size_wl__cons_work with (m := m0) (n := m' + n)
+             ++ repeat (constructor; simpl; auto).
+                eapply a_wf_exp_weaken_etvar_twice. simpl. eauto.
+                apply a_wf_conts_weaken_cons. apply a_wf_conts_weaken_cons. auto.
+             ++ eapply exp_size_wl__cons_work with (m := m0) (n := m' + n)
                 (Ξ := ((x, nbind_var_typ 0) :: (X2, nbind_etvar_empty) :: (X1, nbind_etvar_empty) :: Ξ)); eauto.
-             eapply awl_to_nenv__cons_var; eauto.
-             eapply exp_size_work__check; eauto.
-             rewrite_env (((x, nbind_var_typ 0) :: nil) ++ ((X2, nbind_etvar_empty) :: (X1, nbind_etvar_empty) :: nil) ++ Ξ).
-             eapply exp_size_weaken; eauto.
-             constructor...
-             eapply exp_size_wl__cons_work with (m := m')
-                (Ξ := ((X2, nbind_etvar_empty) :: (X1, nbind_etvar_empty) :: Ξ)); eauto.
-             eapply exp_size_work__applys with (n := 0); eauto.
-             rewrite_env (nil ++ ((X2, nbind_etvar_empty) :: (X1, nbind_etvar_empty) :: nil) ++ Ξ).
-             eapply exp_size_conts_weaken. simpl. eauto.
-             lia. }
+                eapply awl_to_nenv__cons_var; eauto.
+                eapply exp_size_work__check; eauto.
+                rewrite_env (((x, nbind_var_typ 0) :: nil) ++ ((X2, nbind_etvar_empty) :: (X1, nbind_etvar_empty) :: nil) ++ Ξ).
+                eapply exp_size_weaken; eauto.
+                constructor...
+                eapply exp_size_wl__cons_work with (m := m')
+                    (Ξ := ((X2, nbind_etvar_empty) :: (X1, nbind_etvar_empty) :: Ξ)); eauto.
+                eapply exp_size_work__applys with (n := 0); eauto.
+                rewrite_env (nil ++ ((X2, nbind_etvar_empty) :: (X1, nbind_etvar_empty) :: nil) ++ Ξ).
+                eapply exp_size_conts_weaken. simpl. eauto.
+             ++ lia. }
             admit. (* renaming *)
         -- dependent destruction H4. dependent destruction H5.
            assert (Jg: (work_infer e1 (conts_infabs (contd_infapp e2 cs)) ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/
@@ -2741,10 +2825,13 @@ Proof.
            right. intro Hcontra.
            dependent destruction Hcontra. eauto.
         -- dependent destruction H4. dependent destruction H6.
-           assert (Hiuv: exists a, n_iuv_size (typ_all A) a) by admit.
-           (* @jiangsy wf (typ_all A) *)
+           assert (lc_typ (typ_all A)). {  
+            pick fresh X. inst_cofinites_with X. 
+            dependent destruction H0. eapply lc_typ_all_exists; eauto. 
+           }
+           apply n_iuv_size_total in H9 as Hiuv.
            destruct Hiuv as [a' Hiuv].
-           pick fresh X. inst_cofinites_with X.
+           pick fresh X. inst_cofinites_with X (keep).
            assert (Jg: (work_check (e ᵉ^^ₜ ` X) (A ᵗ^ₜ X) ⫤ᵃ X ~ᵃ □ ;ᵃ work_applys cs (typ_all A) ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/
                      ~ (work_check (e ᵉ^^ₜ ` X) (A ᵗ^ₜ X) ⫤ᵃ X ~ᵃ □ ;ᵃ work_applys cs (typ_all A) ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
            { assert (Huniq': uniq Ξ).
@@ -2758,9 +2845,13 @@ Proof.
              destruct He' as [m' He'].
              assert (m' <= m) by admit.
              eapply IHme; eauto; simpl; try lia.
-             admit. (* @jiangsy wf *)
-             eapply exp_size_wl__cons_work; eauto.
-             eapply awl_to_nenv__cons_var; eauto. lia. }
+             ++ dependent destruction H4. repeat (constructor; simpl; auto).
+                 inst_cofinites_for a_wf_typ__all; intros; inst_cofinites_with X0; auto.
+                 dependent destruction H12; auto.
+             ++ eapply exp_size_wl__cons_work; eauto.
+                 eapply awl_to_nenv__cons_var; eauto. 
+             ++ lia. 
+           }
            admit. (* renaming *)
         -- dependent destruction H4. dependent destruction H6.
            assert (Jg: (work_infer e (conts_inftapp A cs) ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/
@@ -2966,6 +3057,8 @@ Proof.
                  --- apply a_wf_wl_a_wf_wwl.
                      constructor; auto. constructor; auto. constructor; auto.
                      simpl. apply a_wf_exp_var_binds_another with (Σ2 := nil) (A1 := T); simpl; auto.
+                     erewrite subst_exp_in_exp_intro with (x1:=x); eauto.
+                     admit.
                      admit. (* @jiangsy wf rename *)
                      apply a_wf_typ_weaken_cons; auto.
            ++ specialize (Jg1 A1 A2). destruct Jg1 as [Jg1 | Jg1]; eauto.
