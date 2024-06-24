@@ -2268,22 +2268,17 @@ Proof.
   induction Happly1; dependent destruction Happly2; eauto.
 Qed.
 
-Lemma apply_conts_dec : forall c A,
-  (exists w, apply_conts c A w) \/ ((exists w, apply_conts c A w) -> False).
+Lemma apply_conts_total : forall c A,
+  exists w, apply_conts c A w.
 Proof.
-  intros c A.
-  destruct c; eauto using apply_conts.
+  intros. induction c; eauto.
 Qed.
 
-Lemma apply_contd_dec : forall c A B,
-  (exists w, apply_contd c A B w) \/ ((exists w, apply_contd c A B w) -> False).
-(* Proof.
-  intros c A B.
-  destruct c; eauto using apply_contd.
-  destruct (le_lt_dec (iu_size A) n); eauto.
-  right. intros [w Happly]. dependent destruction Happly. lia.
-Qed. *)
-Admitted.
+Lemma apply_contd_total : forall c A B,
+  exists w, apply_contd c A B w.
+Proof.
+  intros. induction c; eauto.
+Qed.
 
 Inductive le_nenv : nenv -> nenv -> Prop :=
   | le_nenv_base : forall Ξ, le_nenv Ξ Ξ
@@ -3313,7 +3308,7 @@ Proof.
         { eapply awl_to_nenv_uniq; eauto. }
         dependent destruction H;
           try solve [right; intro Hcontra; dependent destruction Hcontra].
-        -- destruct (apply_conts_dec cs typ_bot) as [[w Happly] | Happly];
+        -- destruct (apply_conts_total cs typ_bot) as [w Happly];
            try solve [right; intro Hcontra; dependent destruction Hcontra; dependent destruction Hcontra;
              eapply Happly; eauto].
            assert (Jg: a_wl_red (aworklist_cons_work Γ w) \/
@@ -3343,7 +3338,7 @@ Proof.
            dependent destruction Hcontra.
            eapply apply_conts_det in Happly; eauto.
            subst. eauto.
-        -- destruct (apply_conts_dec cs (open_typ_wrt_typ A A2)) as [[w Happly] | Happly];
+        -- destruct (apply_conts_total cs (open_typ_wrt_typ A A2)) as [w Happly];
            try solve [right; intro Hcontra; dependent destruction Hcontra; dependent destruction Hcontra;
              eapply Happly; eauto].
            assert (Jg: (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ ~ (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
@@ -3392,11 +3387,6 @@ Proof.
            assert (Jg: (work_inftapp A1 A2 (conts_inftappunion A0 A2 cs) ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/
                      ~ (work_inftapp A1 A2 (conts_inftappunion A0 A2 cs) ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
            {
-            (* eapply IHmt. admit.
-            eapply exp_size_wl__cons_work. admit.
-            eapply exp_size_work__inftapp. admit. admit.
-            eapply exp_size_conts__inftappunion. admit. admit. *)
-
             assert (He': exists m, exp_size_conts Ξ cs (2 + n3 * (2 + n2) + (2 + n2) * n1) m).
              { eapply exp_size_conts_total; eauto.
                eapply a_wf_conts_n_wf_conts with (Γ := Γ); eauto.
@@ -3419,11 +3409,7 @@ Proof.
            apply Jg; auto.
         -- dependent destruction H5.
            assert (Jg1: (work_inftapp A1 A2 cs ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ ~ (work_inftapp A1 A2 cs ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
-           { 
-            (* eapply IHmt. admit.
-            eapply exp_size_wl__cons_work. admit.
-            eapply exp_size_work__inftapp. admit. admit. *)
-             assert (He': exists m, exp_size_conts Ξ cs ((2 + n2) * n1) m).
+           { assert (He': exists m, exp_size_conts Ξ cs ((2 + n2) * n1) m).
              { eapply exp_size_conts_total; eauto.
                eapply a_wf_conts_n_wf_conts with (Γ := Γ); eauto.
                eapply a_wf_twl_a_wf_wwl; eauto. }
@@ -3491,7 +3477,7 @@ Proof.
       * assert (Huniq' : uniq Ξ).
         { eapply awl_to_nenv_uniq; eauto. }
         dependent destruction H4. simpl in *.
-        destruct (apply_conts_dec cs (typ_union A1 A2)) as [[w Happly] | Happly];
+        destruct (apply_conts_total cs (typ_union A1 A2)) as [w Happly];
         try solve [right; intro Hcontra; dependent destruction Hcontra; dependent destruction Hcontra;
           eapply Happly; eauto].
         assert (Jg: (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ ~ (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
@@ -3518,7 +3504,9 @@ Proof.
         dependent destruction Hcontra.
         eapply apply_conts_det in Happly; eauto.
         subst. eauto.
-      * dependent destruction H4. simpl in *. dependent destruction H;
+      *  assert (Huniq' : uniq Ξ).
+         { eapply awl_to_nenv_uniq; eauto. }
+        dependent destruction H4. simpl in *. dependent destruction H;
           try solve [right; intro Hcontra; dependent destruction Hcontra];
         dependent destruction H1;
           try solve [right; intro Hcontra; dependent destruction Hcontra].
@@ -3527,7 +3515,6 @@ Proof.
           eapply Happly; eauto].
         assert (Jg: (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ ~ (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
         { eapply a_wf_wl_apply_contd with (Γ := Γ) in Happly as Hwf'; eauto.
-          2: { constructor; auto. }
           eapply a_wf_work_apply_contd in Happly as Hwf''; eauto.
           destruct exp_size_work_total with (Γ := Γ) (w := w) as [n' He'] in Hwf''; eauto.
           eapply IHmaj; eauto; simpl in *; try lia.
