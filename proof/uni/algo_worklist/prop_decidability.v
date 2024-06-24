@@ -2639,6 +2639,52 @@ Proof.
     specialize (IHA2 _ Hb _ Ha2 _ n Hopen2). lia. 
 Admitted. *)
 
+Lemma num_occurs_in_typ_fresh : forall A X n,
+  X `notin` ftvar_in_typ A -> num_occurs_in_typ X A n -> n = 0.
+Proof.
+  intros A X n Hnotin Hocc.
+  induction Hocc; simpl in *; eauto;
+    try solve [exfalso; eauto];
+    try solve [rewrite IHHocc1; eauto].
+  pick fresh Y. inst_cofinites_with Y.
+  eapply H0. rewrite ftvar_in_typ_open_typ_wrt_typ_upper; eauto.
+Qed.
+
+Lemma num_occurs_in_typ_subst : forall A B X Y n m,
+  X `notin` ftvar_in_typ B -> lc_typ A -> lc_typ B ->
+  num_occurs_in_typ X (subst_typ_in_typ B Y A) n ->
+  num_occurs_in_typ X A m -> n <= m.
+Proof.
+  intros A B X Y n m Hfv Hlca Hlcb Hocc1 Hocc2.
+  generalize dependent B. generalize dependent Y.
+  generalize dependent n.
+  induction Hocc2; intros; simpl in *; eauto;
+    try solve [dependent destruction Hocc1; eauto; lia].
+  - destruct_eq_atom.
+    erewrite num_occurs_in_typ_fresh with (n := n); eauto.
+    dependent destruction Hocc1; auto.
+  - destruct_eq_atom.
+    + erewrite num_occurs_in_typ_fresh with (n := n); eauto.
+    + dependent destruction Hocc1; eauto.
+      exfalso. eauto.
+  - dependent destruction Hocc1.
+    dependent destruction Hlca.
+    eapply IHHocc2_1 in Hocc1_1; eauto.
+    eapply IHHocc2_2 in Hocc1_2; eauto. lia.
+  - dependent destruction Hocc1.
+    dependent destruction Hlca.
+    pick fresh Y0. inst_cofinites_with Y0.
+    rewrite subst_typ_in_typ_open_typ_wrt_typ_fresh2 in H2; eauto.
+  - dependent destruction Hocc1.
+    dependent destruction Hlca.
+    eapply IHHocc2_1 in Hocc1_1; eauto.
+    eapply IHHocc2_2 in Hocc1_2; eauto. lia.
+  - dependent destruction Hocc1.
+    dependent destruction Hlca.
+    eapply IHHocc2_1 in Hocc1_1; eauto.
+    eapply IHHocc2_2 in Hocc1_2; eauto. lia.
+Qed.
+
 Lemma iuv_size_open_typ_wrt_typ : forall A X B n m1 m2 m3,
   lc_typ A ->
   lc_typ B ->
@@ -2654,7 +2700,8 @@ Proof.
   induction Hlca; intros; simpl in *;
      try solve [dependent destruction Ha; dependent destruction Hb; dependent destruction Hopen; simpl in *; try lia].
   - destruct_eq_atom.
-    + assert (m1 = m3) by admit. subst. dependent destruction Hocc. lia.
+    + eapply n_iuv_size_det with (n := m3) in Hopen; eauto. subst.
+      dependent destruction Hocc. lia.
       solve_false.
     + dependent destruction Hopen. lia.
   - dependent destruction Ha.
@@ -2669,7 +2716,9 @@ Proof.
     pick fresh X0. inst_cofinites_with X0.
     rewrite subst_typ_in_typ_open_typ_wrt_typ_fresh2 in H3; eauto.
     rewrite subst_typ_in_typ_open_typ_wrt_typ_fresh2 in H4; eauto.
-    specialize (H0 X0 _ Hb _ H1 _ H3 _ H5). admit. 
+    specialize (H0 X0 _ Hb _ H1 _ H3 _ H5). 
+    eapply num_occurs_in_typ_subst with (B := B) in H2; eauto.
+    lia.
   - dependent destruction Ha.
     dependent destruction Hopen.
     dependent destruction Hocc.
@@ -2682,22 +2731,22 @@ Proof.
     specialize (IHHlca1 _ Hb _ Ha1 _ Hopen1 _ Hocc1).
     specialize (IHHlca2 _ Hb _ Ha2 _ Hopen2 _ Hocc2).
     lia.
-Admitted.
+Qed.
 
 Lemma n_iuv_size_open : forall A B n a b,
+  lc_typ (typ_all A) -> lc_typ B ->
   n_iuv_size (typ_all A) a -> n_iuv_size B b ->
   n_iuv_size (A ᵗ^^ₜ B) n -> n <= (1 + a) * (1 + b).
 Proof.
-  intros.
-  intros. dependent destruction H; eauto.
-  pick fresh X. inst_cofinites_with X.
-  replace (A ᵗ^^ₜ B) with ({B ᵗ/ₜ X} (A ᵗ^ₜ X)) in H2 by admit.
-  assert (lc_typ (A ᵗ^ₜ X)) by admit.
-  assert (lc_typ B) by admit.
-  assert (X `notin` ftvar_in_typ B) by admit.
-  specialize (iuv_size_open_typ_wrt_typ (A ᵗ^ₜ X) X B _ _ _ _ H3 H4 H5 H0 H2 H H1). intros.
+  intros * Hlca Hlcb Ha Hb Hn.
+  intros. dependent destruction Ha; eauto.
+  dependent destruction Hlca.
+  pick fresh X. inst_cofinites_with X. specialize (H X).
+  erewrite <- subst_typ_in_typ_open_typ_wrt_typ_tvar2 in Hn; eauto.
+  assert (Hnotin: X `notin` ftvar_in_typ B) by auto.
+  specialize (iuv_size_open_typ_wrt_typ (A ᵗ^ₜ X) X B _ _ _ _ H Hlcb Hnotin H1 Hn H0 Hb).
   lia.
-Admitted.
+Qed.
 
 Lemma a_wf_wl_red_decidable : forall me mj mt mtj ma maj ms mw ne Γ,
   ⊢ᵃʷₛ Γ ->
@@ -3058,7 +3107,6 @@ Proof.
                      constructor; auto. constructor; auto. constructor; auto.
                      simpl. apply a_wf_exp_var_binds_another with (Σ2 := nil) (A1 := T); simpl; auto.
                      erewrite subst_exp_in_exp_intro with (x1:=x); eauto.
-                     admit.
                      admit. (* @jiangsy wf rename *)
                      apply a_wf_typ_weaken_cons; auto.
            ++ specialize (Jg1 A1 A2). destruct Jg1 as [Jg1 | Jg1]; eauto.
@@ -3305,24 +3353,25 @@ Proof.
            assert (Jg: (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ ~ (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
            { eapply a_wf_work_apply_conts in Happly as Hwf'; eauto.
              2: { eapply a_wf_typ_all_open; eauto. }
-              assert (He': exists m, exp_size_work Ξ w m).
-              { eapply exp_size_work_total; eauto.
-                eapply a_wf_work_n_wf_work with (Γ := Γ); eauto.
-                eapply a_wf_twl_a_wf_wwl; eauto. }
-              destruct He' as [m' He'].
-              assert (He'': exists n, n_iuv_size (A ᵗ^^ₜ A2) n).
-              { eapply n_iuv_size_total; eauto.
-                eapply a_wf_typ_lc; eauto.
-                eapply a_wf_typ_all_open; eauto. }
-              destruct He'' as [n' He''].
-              assert (He''': exists m, exp_size_conts Ξ cs n' m).
-              { eapply exp_size_conts_total; eauto.
-                eapply a_wf_conts_n_wf_conts with (Γ := Γ); eauto.
-                eapply a_wf_twl_a_wf_wwl; eauto. }
-              destruct He''' as [m'' He'''].
-              assert (Hle: n' <= S (S (n2 + n1 * S (S n2)))) by admit.
-              eapply exp_size_conts_le with (m := m'') in H7; eauto; try lia.
-              eapply apply_conts_exp_size in Happly as Hwf''; eauto. subst.
+             assert (He': exists m, exp_size_work Ξ w m).
+             { eapply exp_size_work_total; eauto.
+               eapply a_wf_work_n_wf_work with (Γ := Γ); eauto.
+               eapply a_wf_twl_a_wf_wwl; eauto. }
+             destruct He' as [m' He'].
+             assert (He'': exists n, n_iuv_size (A ᵗ^^ₜ A2) n).
+             { eapply n_iuv_size_total; eauto.
+               eapply a_wf_typ_lc; eauto.
+               eapply a_wf_typ_all_open; eauto. }
+             destruct He'' as [n' He''].
+             assert (He''': exists m, exp_size_conts Ξ cs n' m).
+             { eapply exp_size_conts_total; eauto.
+               eapply a_wf_conts_n_wf_conts with (Γ := Γ); eauto.
+               eapply a_wf_twl_a_wf_wwl; eauto. }
+             destruct He''' as [m'' He'''].
+             assert (Hle: n' <= (1 + n1) * (1 + n2)).
+             { eapply n_iuv_size_open with (A := A) (B := A2); eauto. }
+             eapply exp_size_conts_le with (m := m'') in H7; eauto; try lia.
+             eapply apply_conts_exp_size in Happly as Hwf''; eauto. subst.
              eapply IHmtj; eauto; simpl in *; try lia.
              eapply a_wf_wl_apply_conts; eauto.
              constructor; auto. constructor; auto.
