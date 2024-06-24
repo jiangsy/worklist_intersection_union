@@ -9,9 +9,7 @@ Require Import uni.prop_basic.
 Require Import uni.decl_worklist.prop_equiv.
 Require Import uni.algo_worklist.def_extra.
 Require Import uni.algo_worklist.prop_basic.
-(* Require Import uni.algo_worklist.prop_rename. *)
-(* Require Import uni.algo_worklist.prop_soundness.
-Require Import uni.algo_worklist.prop_completeness. *)
+Require Import uni.algo_worklist.prop_rename.
 Require Import uni.algo_worklist.transfer.
 Require Import uni.ltac_utils.
 
@@ -2560,25 +2558,6 @@ Fixpoint rename_var_in_aworklist (y x:expvar) (Γ:aworklist) {struct Γ} : awork
     | (aworklist_cons_work Γ' w) => aworklist_cons_work (rename_var_in_aworklist y x Γ') (subst_exp_in_work (exp_var_f y) x w)
   end.
 
-(* rename *)
-
-Notation "{ y ᵃʷ/ₑᵥ x } Γ" :=
-  (rename_var_in_aworklist y x Γ)
-    ( at level 49, y at level 50, x at level 0, right associativity) : type_scope. 
-
-Theorem rename_var_in_a_wf_wwl_a_wl_red : forall Γ x y,
-  ⊢ᵃʷ Γ ->
-  y <> x ->
-  y ∉ dom (⌊ Γ ⌋ᵃ) ->
-  Γ ⟶ᵃʷ⁎⋅ ->
-  {y ᵃʷ/ₑᵥ x} Γ ⟶ᵃʷ⁎⋅.
-Admitted.
-
-Lemma rename_var_in_aworklist_fresh_eq : forall x y Γ,
-  x ∉ fvar_in_aworklist' Γ ->
-  {y ᵃʷ/ₑᵥ x} Γ = Γ.
-Admitted.
-
 Lemma exp_split_size_weaken : forall Ξ1 Ξ2 Ξ3 e n,
   exp_split_size (Ξ3 ++ Ξ1) e n ->
   exp_split_size (Ξ3 ++ Ξ2 ++ Ξ1) e n.
@@ -2626,7 +2605,7 @@ Proof.
     eapply exp_size_weaken in H; eauto.
 Qed.
 
-Lemma decidablity_lemma : forall me mj mt mtj ma maj ms mw ne Γ,
+Lemma a_wf_wl_red_decidable : forall me mj mt mtj ma maj ms mw ne Γ,
   ⊢ᵃʷₛ Γ ->
   exp_size_wl Γ ne -> ne < me ->
   judge_size_wl Γ < mj ->

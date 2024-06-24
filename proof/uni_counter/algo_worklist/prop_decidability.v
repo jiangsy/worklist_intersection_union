@@ -1498,7 +1498,7 @@ Proof.
     lia.
 Admitted.
 
-Lemma decidablity_lemma : forall me mj mt mtj ma maj ms mw ne Γ,
+Lemma a_wf_wl_red_decidable : forall me mj mt mtj ma maj ms mw ne Γ,
   ⊢ᵃʷₛ Γ ->
   exp_size_wl Γ ne -> ne < me ->
   judge_size_wl Γ < mj ->
