@@ -3523,13 +3523,19 @@ Proof.
           try solve [right; intro Hcontra; dependent destruction Hcontra];
         dependent destruction H1;
           try solve [right; intro Hcontra; dependent destruction Hcontra].
-        destruct (apply_contd_dec cd ( (typ_intersection A1 A2) )   ( (typ_union B1 B2) ) ) as [[w Happly] | Happly];
+        destruct (apply_contd_total cd ( (typ_intersection A1 A2) )   ( (typ_union B1 B2) ) ) as [w Happly];
         try solve [right; intro Hcontra; dependent destruction Hcontra; dependent destruction Hcontra;
           eapply Happly; eauto].
         assert (Jg: (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ ~ (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
         { eapply a_wf_wl_apply_contd with (Γ := Γ) in Happly as Hwf'; eauto.
+          2 : { constructor; auto. }
           eapply a_wf_work_apply_contd in Happly as Hwf''; eauto.
-          destruct exp_size_work_total with (Γ := Γ) (w := w) as [n' He'] in Hwf''; eauto.
+          assert (He': exists n, exp_size_work Ξ w n).
+          { eapply exp_size_work_total; eauto.
+            eapply a_wf_work_n_wf_work with (Γ := Γ); eauto.
+            eapply a_wf_wl_a_wf_wwl; eauto. }
+          destruct He' as [n' He'].
+          eapply apply_contd_exp_size with (n := n') in Happly; eauto.
           eapply IHmaj; eauto; simpl in *; try lia.
           eapply apply_contd_exp_size with (n := n') in Happly; eauto; lia.
           eapply apply_contd_judge_size in Happly; lia.
