@@ -3160,9 +3160,7 @@ Proof.
         -- right. intro Hcontra.
            dependent destruction Hcontra. unify_binds.
         -- admit. (* TODO: split *)
-        -- destruct (apply_contd_dec cd A1 A2) as [[w Happly] | Happly];
-            try solve [right; intro Hcontra; dependent destruction Hcontra; dependent destruction Hcontra;
-                      eapply Happly; eauto].
+        -- destruct (apply_contd_total cd A1 A2) as [w Happly].
           assert (Jg: (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ ~ (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
           { eapply a_wf_wl_apply_contd in Happly as Hwf'; eauto.
             eapply a_wf_work_apply_contd in Happly as Hwf''; eauto.
@@ -3272,8 +3270,7 @@ Proof.
            right. intro Hcontra.
            dependent destruction Hcontra.
            apply Jg1; auto. apply Jg2; auto.
-      * dependent destruction H4. simpl in *. dependent destruction H;
-        try solve [right; intro Hcontra; dependent destruction Hcontra].
+      * dependent destruction H4. simpl in *. dependent destruction H.
         assert (Jg:  (work_infabs A2 (contd_unioninfabs A1 B1 cd) ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/
                    ~ (work_infabs A2 (contd_unioninfabs A1 B1 cd) ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
         { eapply IHmaj; eauto; simpl in *; try lia. constructor; auto. }
@@ -3283,7 +3280,7 @@ Proof.
       * dependent destruction H4. simpl in *.
         assert (Huniq' : uniq Ξ).
         { eapply awl_to_nenv_uniq; eauto. }
-        dependent destruction H; try solve [right; intro Hcontra; dependent destruction Hcontra].
+        dependent destruction H.
         assert (Jg:  (work_check e A ⫤ᵃ work_applys cs B ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/
                   ~ (work_check e A ⫤ᵃ work_applys cs B ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
         { assert (He': exists m, exp_size Ξ e a m).
@@ -3308,9 +3305,7 @@ Proof.
         { eapply awl_to_nenv_uniq; eauto. }
         dependent destruction H;
           try solve [right; intro Hcontra; dependent destruction Hcontra].
-        -- destruct (apply_conts_total cs typ_bot) as [w Happly];
-           try solve [right; intro Hcontra; dependent destruction Hcontra; dependent destruction Hcontra;
-             eapply Happly; eauto].
+        -- destruct (apply_conts_total cs typ_bot) as [w Happly].
            assert (Jg: a_wl_red (aworklist_cons_work Γ w) \/
                      ~ a_wl_red (aworklist_cons_work Γ w)).
            { eapply a_wf_work_apply_conts in Happly as Hwf'; eauto.
@@ -3338,9 +3333,7 @@ Proof.
            dependent destruction Hcontra.
            eapply apply_conts_det in Happly; eauto.
            subst. eauto.
-        -- destruct (apply_conts_total cs (open_typ_wrt_typ A A2)) as [w Happly];
-           try solve [right; intro Hcontra; dependent destruction Hcontra; dependent destruction Hcontra;
-             eapply Happly; eauto].
+        -- destruct (apply_conts_total cs (open_typ_wrt_typ A A2)) as [w Happly].
            assert (Jg: (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ ~ (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
            { eapply a_wf_work_apply_conts in Happly as Hwf'; eauto.
              2: { eapply a_wf_typ_all_open; eauto. }
@@ -3477,9 +3470,7 @@ Proof.
       * assert (Huniq' : uniq Ξ).
         { eapply awl_to_nenv_uniq; eauto. }
         dependent destruction H4. simpl in *.
-        destruct (apply_conts_total cs (typ_union A1 A2)) as [w Happly];
-        try solve [right; intro Hcontra; dependent destruction Hcontra; dependent destruction Hcontra;
-          eapply Happly; eauto].
+        destruct (apply_conts_total cs (typ_union A1 A2)) as [w Happly].
         assert (Jg: (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ ~ (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
         { eapply a_wf_work_apply_conts in Happly as Hwf'; eauto.
           assert (He': exists n, exp_size_work Ξ w n).
@@ -3532,7 +3523,7 @@ Proof.
         subst. eauto.
       * exfalso. apply H1. eauto.
       * dependent destruction H3. simpl in *.
-        edestruct (apply_conts_dec cs A) as [[w Happly] | Happly].
+        destruct (apply_conts_total cs A) as [w Happly].
         -- eapply a_wf_wl_apply_conts in Happly as Hwf'; eauto.
            eapply a_wf_work_apply_conts in Happly as Hwf''; eauto.
            edestruct exp_size_work_total as [n' He'] in Hwf''; eauto.
