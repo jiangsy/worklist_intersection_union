@@ -2098,9 +2098,11 @@ Proof.
   generalize dependent Γ1.
   induction Γ2; simpl; intros; try solve [dependent destruction H; auto].
   dependent destruction H.
-  assert (X ∉ ftvar_in_work w) by admit.
+  assert (X ∉ ftvar_in_work w). {
+    rewrite <- ftvar_in_wf_work_upper in H1;eauto.
+  }
   erewrite <- split_depth_work_etvar; eauto. 
-Admitted.
+Qed.
 
 Lemma split_depth_wl_aworklist_subst : forall Γ2 X A Γ1 Γ1' Γ2',
   ⊢ᵃʷ (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) -> 
@@ -2164,7 +2166,8 @@ Qed. *)
 Admitted.
 
 Lemma split_depth_rec_non_zero_non_mono : forall A Γ n,
-  ⊢ᵃʷ Γ -> split_depth_rec (⌊ Γ ⌋ᵃ) A n > 0 ->
+  ⊢ᵃʷ Γ -> 
+  split_depth_rec (⌊ Γ ⌋ᵃ) A n > 0 ->
   a_mono_typ (awl_to_aenv Γ) A -> False.
 (* Proof.
   intros A. induction A; simpl; intros Γ n0 Hwf Hgt Hmono;
@@ -2182,7 +2185,9 @@ Qed. *)
 Admitted.
 
 Lemma split_depth_rec_non_mono_lt_ : forall A Γ n m,
-  ⊢ᵃʷ Γ -> split_depth_rec (⌊ Γ ⌋ᵃ) A n > 0 -> n < m ->
+  ⊢ᵃʷ Γ -> 
+  split_depth_rec (⌊ Γ ⌋ᵃ) A n > 0 -> 
+  n < m ->
   split_depth_rec (⌊ Γ ⌋ᵃ) A n < split_depth_rec (⌊ Γ ⌋ᵃ) A m.
 Proof.
   intros A. induction A; simpl; intros Γ n0 m Hwf Hgt Hlt; eauto.
@@ -2201,8 +2206,25 @@ Proof.
     specialize (IHA2 Γ n0 m Hwf). lia.
 Qed.
 
+
+Lemma infabs_depth_open_tvar_rec : forall A X n,
+  infabs_depth (open_typ_wrt_typ_rec n (typ_var_f X) A) = infabs_depth A.
+Proof.
+  intros. generalize dependent n; induction A; intros; simpl; eauto.  
+  - destruct (lt_eq_lt_dec n n0); eauto. 
+    destruct s; eauto.
+Qed.
+
+Lemma infabs_depth_open_tvar : forall A X,
+  infabs_depth (open_typ_wrt_typ A (typ_var_f X) ) = infabs_depth A.
+Proof.  
+  intros. unfold open_typ_wrt_typ. erewrite infabs_depth_open_tvar_rec; eauto.
+Qed.
+
 Lemma split_depth_rec_non_mono_lt : forall A Γ n m,
-  ⊢ᵃʷ Γ -> ⌊ Γ ⌋ᵃ ᵗ⊢ᵃ A -> (a_mono_typ (awl_to_aenv Γ) A -> False) ->
+  ⊢ᵃʷ Γ -> 
+  ⌊ Γ ⌋ᵃ ᵗ⊢ᵃ A -> 
+  (⌊ Γ ⌋ᵃ ᵗ⊢ᵃₘ A -> False) ->
   n > 0 -> n < m ->
   split_depth_rec (⌊ Γ ⌋ᵃ) A n < split_depth_rec (⌊ Γ ⌋ᵃ) A m.
 Proof.
@@ -3193,7 +3215,7 @@ Proof.
            remember (dom Ξ). pick fresh X. subst. inst_cofinites_with X.
            assert (Jg: (work_infabs (A ᵗ^ₜ X) cd ⫤ᵃ X ~ᵃ ⬒ ;ᵃ Γ) ⟶ᵃʷ⁎⋅ \/
                      ~ (work_infabs (A ᵗ^ₜ X) cd ⫤ᵃ X ~ᵃ ⬒ ;ᵃ Γ) ⟶ᵃʷ⁎⋅).
-           { assert (Heq: infabs_depth (open_typ_wrt_typ A (typ_var_f X)) = infabs_depth A) by admit. (* should be fine *)
+           { assert (Heq: infabs_depth (open_typ_wrt_typ A (typ_var_f X)) = infabs_depth A) by apply infabs_depth_open_tvar. 
              assert (He': exists m, exp_size_contd Ξ cd n0 m).
              { eapply exp_size_contd_total; eauto.
                eapply a_wf_contd_n_wf_contd with (Γ := Γ); eauto.
