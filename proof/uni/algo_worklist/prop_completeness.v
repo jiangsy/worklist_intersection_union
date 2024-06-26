@@ -898,30 +898,9 @@ Proof.
   eapply trans_typ_tvar_etvar; eauto.
 Qed.
 
-Ltac solve_right := 
-  let Hcontra := fresh "Hcontra" in 
-  right; intros Hcontra; inversion Hcontra.
+
 
 #[local] Hint Constructors a_mono_typ : core.
-
-Lemma a_mono_typ_dec : forall Γ A,
-  ⊢ᵃʷ Γ ->
-  ⌊ Γ ⌋ᵃ ᵗ⊢ᵃ A ->
-  ⌊ Γ ⌋ᵃ ᵗ⊢ᵃₘ A \/ ~ ⌊ Γ ⌋ᵃ ᵗ⊢ᵃₘ A.
-Proof.
-  intros. dependent induction H0; auto; try solve [solve_right].  
-  - right. unfold not. intros.
-    dependent destruction H1.
-    + unify_binds.
-    + unify_binds. 
-  - specialize (IHa_wf_typ1 _ H (eq_refl _)). 
-    specialize (IHa_wf_typ2 _ H (eq_refl _)). 
-    dependent destruction IHa_wf_typ1; dependent destruction IHa_wf_typ2.
-    + left; auto.
-    + right. unfold not. intros. dependent destruction H2. contradiction.
-    + right. unfold not. intros. dependent destruction H2. contradiction.
-    + right. unfold not. intros. dependent destruction H2. contradiction.
-Qed.
 
 Lemma trans_typ_subst_tvar_cons : forall θ Aᵃ Aᵈ Bᵃ Bᵈ X,
   (X , □) :: θ ᵗ⊩ Aᵃ ⇝ Aᵈ ->
