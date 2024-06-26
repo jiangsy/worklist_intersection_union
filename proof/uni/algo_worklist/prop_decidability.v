@@ -3041,7 +3041,9 @@ Proof.
            { eapply IHme; eauto; simpl; try lia.
              eapply exp_size_wl__cons_work; eauto.
              eapply exp_size_work__infer; eauto.
-             admit. admit. (* exp_size_tail_rec_le *) }
+             admit. admit.
+             admit.
+             (* exp_size_tail_rec_le *) }
            destruct Jg as [Jg | Jg]; eauto.
            right. intro Hcontra.
            dependent destruction Hcontra.
@@ -3764,6 +3766,7 @@ Proof.
       apply a_wf_typ_all_open; auto.
       apply a_wf_typ_weaken_cons; auto. simpl. auto.
       apply a_wf_typ_weaken_cons; auto.
+      admit.
       assert (HspA1: split_depth ((X, ⬒) :: ⌊ Γ ⌋ᵃ) (A1 ᵗ^ₜ X) <= split_depth (⌊ Γ ⌋ᵃ) A1) by admit.
       assert (HspB: split_depth ((X, ⬒) :: ⌊ Γ ⌋ᵃ) B <= split_depth (⌊ Γ ⌋ᵃ) B) by admit.
       eapply mult_le_compat_r with (p := S (iu_size B)) in HspA1.
@@ -3823,7 +3826,7 @@ Proof.
       - admit.
       - admit.
     } *)
-    dependent destruction H1. dependent destruction H.
+    dependent destruction H2. dependent destruction H.
     * dependent destruction H0;
         try solve [right; intro Hcontra;
           dependent destruction Hcontra];
