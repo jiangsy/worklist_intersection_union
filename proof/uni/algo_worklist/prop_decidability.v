@@ -2663,34 +2663,6 @@ Proof.
     eapply exp_size_weaken in H; eauto.
 Qed.
 
-(* Lemma n_iuv_size_open_typ_wrt_typ_rec : forall A B n m1 m2 m3,
-  n_iuv_size (open_typ_wrt_typ_rec n B A) m1 ->
-  n_iuv_size A m2 ->
-  n_iuv_size B m3 ->
-  m1 <= m2 * (1 + m3).
-Proof.
-  intros * Hopen Ha Hb. generalize dependent n. generalize dependent m1. generalize dependent m2. generalize dependent m3.
-  induction A; intros; simpl in *; eauto; 
-    try (dependent destruction Ha; dependent destruction Hb; dependent destruction Hopen; eauto; lia).
-  - dependent destruction Hopen.
-    dependent destruction Ha. 
-    specialize (IHA1 _ Hb _ Ha1 _ n Hopen1).
-    specialize (IHA2 _ Hb _ Ha2 _ n Hopen2). lia. 
-  - dependent destruction Hopen.
-    dependent destruction Ha. 
-    pick fresh X. inst_cofinites_with X.
-    specialize (IHA _ Hb _ H).
-  admit.
-  - dependent destruction Hopen.
-    dependent destruction Ha. 
-    specialize (IHA1 _ Hb _ Ha1 _ n Hopen1).
-    specialize (IHA2 _ Hb _ Ha2 _ n Hopen2). lia. 
-  - dependent destruction Hopen.
-    dependent destruction Ha. 
-    specialize (IHA1 _ Hb _ Ha1 _ n Hopen1).
-    specialize (IHA2 _ Hb _ Ha2 _ n Hopen2). lia. 
-Admitted. *)
-
 Lemma num_occurs_in_typ_fresh : forall A X n,
   X `notin` ftvar_in_typ A -> num_occurs_in_typ X A n -> n = 0.
 Proof.
@@ -2899,7 +2871,88 @@ Proof.
                 rewrite_env (nil ++ ((X2, nbind_etvar_empty) :: (X1, nbind_etvar_empty) :: nil) ++ Ξ).
                 eapply exp_size_conts_weaken. simpl. eauto.
              ++ lia. }
-            admit. (* renaming *)
+             ++ destruct Jg as [Jg | Jg].
+                ** left. inst_cofinites_for a_wl_red__inf_abs_mono; intros.
+                   apply rename_var_in_a_wf_wwl_a_wl_red with (x:=x) (y:=x0) in Jg; eauto.
+                   simpl in Jg. destruct_eq_atom.
+                   rewrite subst_exp_in_exp_open_exp_wrt_exp in Jg. 
+                   simpl in Jg. destruct_eq_atom.
+                   rewrite subst_exp_in_exp_fresh_eq in Jg; eauto.
+                   rewrite subst_exp_in_conts_fresh_eq in Jg; eauto.
+                   rewrite rename_var_in_aworklist_fresh_eq in Jg; eauto. 
+                   apply rename_tvar_in_a_wf_wwl_a_wl_red with (X:=X2) (Y:=X3) in Jg; simpl; eauto.
+                   simpl in Jg. destruct_eq_atom.
+                   rewrite subst_typ_in_exp_open_exp_wrt_exp in Jg.
+                   simpl in Jg. rewrite subst_typ_in_exp_fresh_eq in Jg; eauto.
+                   rewrite subst_typ_in_conts_fresh_eq in Jg; eauto.
+                   rewrite rename_tvar_in_aworklist_fresh_eq in Jg; eauto.
+                   apply rename_tvar_in_a_wf_wwl_a_wl_red with (X:=X1) (Y:=X0) in Jg; simpl; eauto.
+                   simpl in Jg. destruct_eq_atom.
+                   rewrite subst_typ_in_exp_open_exp_wrt_exp in Jg.
+                   simpl in Jg. rewrite subst_typ_in_exp_fresh_eq in Jg; eauto.
+                   rewrite subst_typ_in_conts_fresh_eq in Jg; eauto.
+                   rewrite rename_tvar_in_aworklist_fresh_eq in Jg; eauto.
+                   auto.
+                   --- repeat (constructor; simpl; auto). 
+                       apply a_wf_exp_rename_var_cons with (y:=x0) in H0; eauto.
+                       rewrite subst_exp_in_exp_open_exp_wrt_exp in H0; auto. simpl in H0. destruct_eq_atom.  
+                       rewrite subst_exp_in_exp_fresh_eq in H0; eauto.
+                       eapply a_wf_exp_weaken_etvar_twice; simpl; eauto.
+                       apply a_wf_conts_weaken_cons. apply a_wf_conts_weaken_cons. auto.  
+                       apply a_wf_wl_a_wf_wwl; eauto.
+                   --- repeat (constructor; simpl; auto). 
+                       apply a_wf_exp_rename_var_cons with (y:=x0) in H0; eauto.
+                       rewrite subst_exp_in_exp_open_exp_wrt_exp in H0; auto. simpl in H0. destruct_eq_atom.  
+                       rewrite subst_exp_in_exp_fresh_eq in H0; eauto.
+                       eapply a_wf_exp_weaken_etvar_twice; simpl; eauto.
+                       apply a_wf_conts_weaken_cons. apply a_wf_conts_weaken_cons. auto.  
+                       apply a_wf_wl_a_wf_wwl; eauto.
+                   --- rewrite fvar_in_wf_conts_upper; eauto. 
+                   --- auto.
+                   --- repeat (constructor; simpl; auto).
+                       eapply a_wf_exp_weaken_etvar_twice; simpl; eauto.
+                       apply a_wf_conts_weaken_cons. apply a_wf_conts_weaken_cons. auto.  
+                       apply a_wf_wl_a_wf_wwl; eauto.
+                ** right. unfold not. intros Hcontra. dependent destruction Hcontra. rename H7 into Hcontra.
+                   pick fresh x0. pick fresh X3. pick fresh X4.
+                   inst_cofinites_with x0. inst_cofinites_with X3. inst_cofinites_with X4. 
+                   apply rename_var_in_a_wf_wwl_a_wl_red with (x:=x0) (y:=x) in Hcontra; eauto.
+                   simpl in Hcontra. destruct_eq_atom.
+                   rewrite subst_exp_in_exp_open_exp_wrt_exp in Hcontra. 
+                   simpl in Hcontra. destruct_eq_atom.
+                   rewrite subst_exp_in_exp_fresh_eq in Hcontra; eauto.
+                   rewrite subst_exp_in_conts_fresh_eq in Hcontra; eauto.
+                   rewrite rename_var_in_aworklist_fresh_eq in Hcontra; eauto. 
+                   apply rename_tvar_in_a_wf_wwl_a_wl_red with (X:=X4) (Y:=X2) in Hcontra; simpl; eauto.
+                   simpl in Hcontra. destruct_eq_atom.
+                   rewrite subst_typ_in_exp_open_exp_wrt_exp in Hcontra.
+                   simpl in Hcontra. rewrite subst_typ_in_exp_fresh_eq in Hcontra; eauto.
+                   rewrite subst_typ_in_conts_fresh_eq in Hcontra; eauto.
+                   rewrite rename_tvar_in_aworklist_fresh_eq in Hcontra; eauto.
+                   apply rename_tvar_in_a_wf_wwl_a_wl_red with (X:=X3) (Y:=X1) in Hcontra; simpl; eauto.
+                   simpl in Hcontra. destruct_eq_atom.
+                   rewrite subst_typ_in_exp_open_exp_wrt_exp in Hcontra.
+                   simpl in Hcontra. rewrite subst_typ_in_exp_fresh_eq in Hcontra; eauto.
+                   rewrite subst_typ_in_conts_fresh_eq in Hcontra; eauto.
+                   rewrite rename_tvar_in_aworklist_fresh_eq in Hcontra; eauto.
+                   auto.
+                   --- repeat (constructor; simpl; auto). 
+                       eapply a_wf_exp_weaken_etvar_twice; simpl; eauto.
+                       apply a_wf_conts_weaken_cons. apply a_wf_conts_weaken_cons. auto.  
+                       apply a_wf_wl_a_wf_wwl; eauto.
+                   --- repeat (constructor; simpl; auto). 
+                       eapply a_wf_exp_weaken_etvar_twice; simpl; eauto.
+                       apply a_wf_conts_weaken_cons. apply a_wf_conts_weaken_cons. auto.  
+                       apply a_wf_wl_a_wf_wwl; eauto.
+                   --- rewrite fvar_in_wf_conts_upper; eauto. 
+                   --- auto.
+                   --- repeat (constructor; simpl; auto).
+                       apply a_wf_exp_rename_var_cons with (y:=x0) in H0; eauto.
+                       rewrite subst_exp_in_exp_open_exp_wrt_exp in H0; auto. simpl in H0. destruct_eq_atom.  
+                       rewrite subst_exp_in_exp_fresh_eq in H0; eauto.
+                       eapply a_wf_exp_weaken_etvar_twice; simpl; eauto.
+                       apply a_wf_conts_weaken_cons. apply a_wf_conts_weaken_cons. auto.  
+                       apply a_wf_wl_a_wf_wwl; eauto.
         -- dependent destruction H4. dependent destruction H5.
            assert (Jg: (work_infer e1 (conts_infabs (contd_infapp e2 cs)) ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/
                      ~ (work_infer e1 (conts_infabs (contd_infapp e2 cs)) ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
@@ -2949,7 +3002,39 @@ Proof.
                  eapply awl_to_nenv__cons_var; eauto. 
              ++ lia. 
            }
-           admit. (* renaming *)
+           destruct Jg as [Jg | Jg].
+           ++ left. inst_cofinites_for a_wl_red__inf_tabs; intros.
+              apply rename_tvar_in_a_wf_wwl_a_wl_red with (X:=X) (Y:=X0) in Jg; eauto.
+              simpl in Jg. destruct_eq_atom.
+              rewrite subst_typ_in_exp_open_exp_wrt_typ in Jg. 
+              simpl in Jg. destruct_eq_atom.
+              rewrite subst_typ_in_exp_fresh_eq in Jg; eauto.
+              rewrite subst_typ_in_typ_open_typ_wrt_typ_tvar2 in Jg; eauto.
+              rewrite subst_typ_in_conts_fresh_eq in Jg; eauto.
+              rewrite subst_typ_in_typ_fresh_eq in Jg; eauto.
+              rewrite rename_tvar_in_aworklist_fresh_eq in Jg; eauto.
+              auto.
+              ** dependent destruction H4. repeat (constructor; simpl; auto).
+                 inst_cofinites_for a_wf_typ__all; intros; inst_cofinites_with X1; auto.
+                 dependent destruction H12; auto.
+                 apply a_wf_wl_a_wf_wwl; eauto.
+           ++ right. unfold not. intros Hcontra. dependent destruction Hcontra. rename H16 into Hcontra.
+              pick fresh X0. inst_cofinites_with X0 (keep).
+              clear Hcontra. rename H16 into Hcontra. 
+              apply rename_tvar_in_a_wf_wwl_a_wl_red with (X:=X0) (Y:=X) in Hcontra; eauto.
+              simpl in Hcontra. destruct_eq_atom.
+              rewrite subst_typ_in_exp_open_exp_wrt_typ in Hcontra. 
+              simpl in Hcontra. destruct_eq_atom.
+              rewrite subst_typ_in_typ_open_typ_wrt_typ_tvar2 in Hcontra; eauto.
+              rewrite subst_typ_in_exp_fresh_eq in Hcontra; eauto.
+              rewrite subst_typ_in_conts_fresh_eq in Hcontra; eauto.
+              rewrite subst_typ_in_typ_fresh_eq in Hcontra; eauto.
+              rewrite rename_tvar_in_aworklist_fresh_eq in Hcontra; eauto.
+              auto.
+              ** dependent destruction H12. repeat (constructor; simpl; auto).
+                  inst_cofinites_for a_wf_typ__all; intros; inst_cofinites_with X1; auto.
+                  dependent destruction H18; auto.
+                 apply a_wf_wl_a_wf_wwl; eauto.
         -- dependent destruction H4. dependent destruction H6.
            assert (Jg: (work_infer e (conts_inftapp A cs) ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/
                      ~ (work_infer e (conts_inftapp A cs) ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
@@ -3286,8 +3371,11 @@ Proof.
                 rewrite subst_typ_in_contd_fresh_eq in H7; auto.
                 rewrite subst_typ_in_typ_open_typ_wrt_typ_tvar2 in H7; auto.
              ** eapply a_wf_wl_a_wf_wwl.
-                constructor; auto. constructor; auto. constructor; simpl; auto.
-                admit. admit. (* wf *)
+                repeat (constructor; simpl; auto).
+                --- apply a_wf_typ_tvar_etvar_cons.
+                    erewrite <- subst_typ_in_typ_open_typ_wrt_typ_tvar2; eauto.
+                    apply a_wf_typ_rename_tvar_cons; eauto.
+                --- apply a_wf_contd_weaken_cons; eauto.
         -- assert (Jg: (work_infabs A1 (contd_infabsunion A2 cd) ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/
                      ~ (work_infabs A1 (contd_infabsunion A2 cd) ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
            { dependent destruction H4.
