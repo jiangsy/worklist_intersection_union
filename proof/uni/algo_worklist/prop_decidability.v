@@ -529,6 +529,21 @@ Proof.
     destruct H1. subst. auto.
 Qed.
 
+Lemma awl_to_nenv_dom : forall Γ Ξ,
+  awl_to_nenv Γ Ξ -> dom Ξ [<=] dom (⌊ Γ ⌋ᵃ).
+Proof.
+  intros Γ Ξ Hnenv. dependent induction Hnenv; simpl; fsetdec.
+Qed.
+
+Lemma awl_to_nenv_uniq : forall Γ Ξ,
+  awl_to_nenv Γ Ξ -> uniq (⌊ Γ ⌋ᵃ) -> uniq Ξ.
+Proof.
+  intros Γ Ξ Hnenv Huniq.
+  dependent induction Hnenv; eauto;
+    dependent destruction Huniq; eauto.
+  erewrite <- awl_to_nenv_dom in H0; eauto.
+Qed.
+
 Lemma awl_to_nenv_det : forall Γ Ξ Ξ',
   awl_to_nenv Γ Ξ -> awl_to_nenv Γ Ξ' -> Ξ = Ξ'.
 Proof.
@@ -538,20 +553,20 @@ Proof.
   eapply n_iuv_size_det in H; eauto. subst. auto.
 Qed.
 
-Lemma exp_size_wl_det : forall Γ Ξ n n',
-  awl_to_nenv Γ Ξ -> 
-  uniq Ξ ->
+Lemma exp_size_wl_det : forall Γ n n',
+  uniq (⌊ Γ ⌋ᵃ) ->
   exp_size_wl Γ n -> 
   exp_size_wl Γ n' -> 
   n = n'.
 Proof.
-  intros * Ha2n Huniq Hsize. generalize dependent n'. generalize dependent Ξ.
-  induction Hsize; intros * Ha2n Huniq * Hsize';
-    dependent destruction Ha2n; dependent destruction Hsize'; eauto.
-  - dependent destruction Huniq. eapply IHHsize in Hsize'; eauto.
-  - eapply awl_to_nenv_det in H; eauto. subst.
-    eapply awl_to_nenv_det in Ha2n; eauto. subst.
-    eapply exp_size_work_det in H0; eauto. 
+  intros * Huniq Hsize1 Hsize2. generalize dependent n'. 
+  induction Hsize1; intros; dependent destruction Hsize2; eauto.
+  - dependent destruction Huniq; eauto.
+  - simpl in Huniq.
+    eapply awl_to_nenv_det in H; eauto. subst.
+    (* eapply awl_to_nenv_det in Ha2n; eauto. subst. *)
+    eapply exp_size_work_det in H0; eauto.
+    eapply awl_to_nenv_uniq; eauto.
 Qed.
 
 Lemma num_occurs_in_typ_rename_tvar : forall X Y A n,
@@ -1055,21 +1070,6 @@ Proof with eauto 7 using a_wf_conts_n_wf_conts, a_wf_contd_n_wf_contd, a_wf_exp_
     dependent destruction H1...
 Qed.
 
-Lemma awl_to_nenv_dom : forall Γ Ξ,
-  awl_to_nenv Γ Ξ -> dom Ξ [<=] dom (⌊ Γ ⌋ᵃ).
-Proof.
-  intros Γ Ξ Hnenv. dependent induction Hnenv; simpl; fsetdec.
-Qed.
-
-
-Lemma awl_to_nenv_uniq : forall Γ Ξ,
-  awl_to_nenv Γ Ξ -> uniq (⌊ Γ ⌋ᵃ) -> uniq Ξ.
-Proof.
-  intros Γ Ξ Hnenv Huniq.
-  dependent induction Hnenv; eauto;
-    dependent destruction Huniq; eauto.
-  erewrite <- awl_to_nenv_dom in H0; eauto.
-Qed.
 
 Lemma exp_size_wl_total : forall Γ,
   ⊢ᵃʷ Γ ->
@@ -2757,20 +2757,44 @@ Proof.
     eapply exp_size_contd_subst_mono in H4; eauto. lia.
 Qed. 
 
+Lemma exp_size_wl_move_etvar_back : forall X Y Γ1 Γ2 n m,
+  uniq (⌊ Y ~ᵃ ⬒ ;ᵃ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1 ⌋ᵃ) ->
+  exp_size_wl (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) n -> 
+  exp_size_wl (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Y ~ᵃ ⬒ ;ᵃ Γ1) m ->
+  n = m.
+Proof.
+  intros * Huniq Hsize1 Hsize2. generalize dependent n; generalize dependent m; induction Γ2; intros; simpl in *; eauto.
+  - dependent destruction Hsize1. dependent destruction Hsize2. 
+    dependent destruction Hsize2; eauto. 
+    eapply exp_size_wl_det in Hsize2; eauto.
+    dependent destruction Huniq. dependent destruction Huniq. auto.
+  - dependent destruction Huniq. dependent destruction Huniq.
+    dependent destruction Hsize1. dependent destruction Hsize2. eauto. 
+  - dependent destruction Hsize1. dependent destruction Hsize2.
+    rewrite awl_rewrite_middle in H.
+    eapply awl_to_nenv_tvar with (X:=Y) (Γ2:=(Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ aworklist_empty)%aworklist) (Γ1:=Γ1) (Ξ':=Ξ0) in H; eauto.
+    subst. eapply exp_size_work_det in H0; eauto.
+    dependent destruction Huniq. eapply awl_to_nenv_uniq; eauto.
+    rewrite <- awl_rewrite_middle. eauto.  
+Qed.
+
+Open Scope aworklist.
+
 Lemma exp_size_wl_aworklist_subst : forall Γ2 X A Γ1 Γ1' Γ2' n m,
   ⊢ᵃʷ (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) ->
   aworklist_subst (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) X A Γ1' Γ2' ->
+  X `notin` ftvar_in_typ A ->
   ⌊ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1 ⌋ᵃ ᵗ⊢ᵃₘ A ->
   exp_size_wl ({A ᵃʷ/ₜ X} Γ2' ⧺ Γ1') n ->
   exp_size_wl (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) m -> n = m.
 Proof.
-  intros Γ2. induction Γ2; intros * Hwf Hsubst Hmono Hsize1 Hsize2;
+  intros Γ2. induction Γ2; intros * Hwf Hsubst Hnotin Hmono Hsize1 Hsize2;
     dependent destruction Hwf; dependent destruction Hsubst;
     destruct (awl_to_nenv_total _ Hwf) as [Ξ Ha2n];
     eapply awl_to_nenv_uniq in Ha2n as Huniq; eauto;
     simpl in *; dependent destruction Hsize2;
     try solve [exfalso; eauto];
-    try solve [eapply exp_size_wl_det; eauto];
+    try solve [eapply exp_size_wl_det in Hsize1; eauto];
     try solve [dependent destruction Hsize1; eapply IHΓ2; eauto;
       try solve [eapply a_mono_typ_strengthen_var; eauto];
       try solve [eapply a_mono_typ_strengthen_mtvar with (b := □%abind); eauto];
@@ -2780,12 +2804,16 @@ Proof.
     eapply IHΓ2 with (Γ1 := X ~ᵃ ⬒ ;ᵃ Γ1) (A := A); eauto.
     eapply a_wf_wwl_move_etvar_back; eauto.
     eapply a_mono_typ_move_etvar_back; eauto.
-    admit. (* exp_size_wl move back *)
+    assert (⊢ᵃʷ (Γ2 ⧺ X0 ~ᵃ ⬒ ;ᵃ X ~ᵃ ⬒ ;ᵃ Γ1)). {
+      apply a_wf_wwl_move_etvar_back; eauto.
+    }
+    apply exp_size_wl_total in H2. destruct H2 as [m H2].
+    erewrite exp_size_wl_move_etvar_back with (Y:=X) (X:=X0); eauto.
     eapply a_wf_wwl_tvar_notin_remaining in Hwf; eauto.
   - dependent destruction Hsize1.
     erewrite IHΓ2 with (n := n); eauto.
     eapply exp_size_work_aworklist_subst in H3; eauto.
-Admitted.
+Qed.
 
 Lemma awl_to_nenv_dom' : forall Γ Ξ x A,
   awl_to_nenv Γ Ξ -> x ~ A ∈ᵃ ⌊ Γ ⌋ᵃ -> x `in` dom Ξ.
