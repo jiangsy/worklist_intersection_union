@@ -2491,24 +2491,37 @@ Proof.
     rewrite subst_typ_in_typ_open_typ_wrt_typ_fresh2 in H1; eauto.
 Qed.
 
-Lemma n_iuv_size_subst_mono : forall A n Σ B X,
-  n_iuv_size A n -> lc_typ A -> a_mono_typ Σ B ->
+Lemma n_iuv_size_lc_typ : forall A n,
+  n_iuv_size A n -> lc_typ A.
+Proof.
+  intros. induction H; eauto.
+Qed.
+
+Lemma n_iuv_size_subst_mono' : forall A n Σ B X,
+  n_iuv_size A n -> a_mono_typ Σ B ->
   n_iuv_size ({B ᵗ/ₜ X} A) n.
 Proof.
-  intros A n Σ B X Hsize Hlc.
+  intros A n Σ B X Hsize.
   generalize dependent B. generalize dependent Σ.
-  induction Hsize; intros * Hmono; eauto; simpl;
-    try solve [dependent destruction Hlc; eauto].
+  induction Hsize; intros * Hmono; eauto; simpl; eauto.
   - destruct_eq_atom; eauto. eapply n_iuv_size_mono_typ; eauto.
-  - dependent destruction Hlc.
-    inst_cofinites_for n_iuv_size__all n:=n,m:=m; auto; intros * Hnotin;
-      inst_cofinites_with X0; specialize (H3 X0);
-      rewrite subst_typ_in_typ_open_typ_wrt_typ_fresh2; eauto.
+  - simpl. inst_cofinites_for n_iuv_size__all n:=n,m:=m; auto; intros * Hnotin;
+      inst_cofinites_with X0; rewrite subst_typ_in_typ_open_typ_wrt_typ_fresh2; eauto.
     assert (Hn: exists m, num_occurs_in_typ X0 ({B ᵗ/ₜ X} A ᵗ^ₜ X0) m).
     { eapply num_occurs_in_typ_total; eauto.
-      eapply lc_typ_subst; eauto. }
+      eapply lc_typ_subst; eauto. eapply n_iuv_size_lc_typ; eauto. }
     destruct Hn as [m' Hn].
     eapply num_occurs_in_typ_subst_eq in H1; eauto. subst. auto.
+Qed.
+
+Lemma n_iuv_size_subst_mono : forall A n n' Σ B X,
+  Σ ᵗ⊢ᵃₘ B -> 
+  n_iuv_size A n -> 
+  n_iuv_size ({B ᵗ/ₜ X} A) n' ->
+  n = n'.
+Proof.
+  intros. eapply n_iuv_size_subst_mono' with (X:=X) in H0; eauto.
+  unify_n_iuv_size.
 Qed.
 
 Lemma awl_to_nenv_tvar : forall Γ2 Γ1 X b Ξ Ξ',
@@ -2542,8 +2555,7 @@ Proof.
     eapply awl_to_nenv_det in Hsize1 as Hdet; eauto; subst;
     try solve [exfalso; eauto].
   - dependent destruction Hsize2.
-    eapply n_iuv_size_subst_mono with (X := X0) in H1; eauto.
-    eapply n_iuv_size_det in H2; eauto. subst.
+    eapply n_iuv_size_subst_mono in H2; eauto. subst. 
     assert (Heq: Ξ = Ξ0).
     { eapply IHΓ2; eauto. eapply a_mono_typ_strengthen_var; eauto. }
     subst. eauto.
@@ -2582,37 +2594,106 @@ Proof.
     subst. eauto.
 Qed.
 
-Lemma exp_split_size_subst_mono : forall Ξ e A X m m',
-  exp_split_size Ξ e m -> exp_split_size Ξ ({A ᵉ/ₜ X} e) m' -> m = m'.
-Admitted.
-
-Lemma exp_size_subst_mono : forall Ξ e A X n m m',
-  exp_size Ξ e n m -> exp_size Ξ ({A ᵉ/ₜ X} e) n m' -> m = m'.
+Lemma exp_split_size_subst_mono : forall Ξ Σ e A X m m',
+  uniq Ξ -> 
+  Σ ᵗ⊢ᵃₘ A ->
+  exp_split_size Ξ e m -> 
+  exp_split_size Ξ ({A ᵉ/ₜ X} e) m' -> 
+  m = m'.
 Proof.
-  intros Ξ e A X n m m' Hsize1.
-  generalize dependent m'. generalize dependent X. generalize dependent A.
-  dependent induction Hsize1; intros * Hsize2;
-    dependent destruction Hsize2; eauto.
-Admitted.
+  intros * Huniq Hmono Hsz Hszsusbt. 
+    generalize dependent m'. induction Hsz; intros; simpl in *; dependent destruction Hszsusbt; simpl in *; eauto.
+  - unify_binds; eauto.
+  - remember (dom Ξ). pick fresh x. inst_cofinites_with x. subst.
+    replace (exp_var_f x) with ({A ᵉ/ₜ X} (exp_var_f x)) in H1; eauto.
+    rewrite <- subst_typ_in_exp_open_exp_wrt_exp in H1.
+    apply H0 in H1; eauto. 
+  - apply IHHsz1 in Hszsusbt1; eauto.
+    apply IHHsz2 in Hszsusbt2; eauto. subst. auto.
+  - eapply n_iuv_size_subst_mono in H; eauto.
+  - apply IHHsz in Hszsusbt; eauto.
+    eapply n_iuv_size_subst_mono in H; eauto. subst. 
+    auto.
+  - apply IHHsz in Hszsusbt; eauto. 
+    eapply n_iuv_size_subst_mono in H; eauto. subst.
+    auto.
+Qed.
 
-Lemma exp_size_conts_subst_mono : forall Ξ c A X n m m',
-  exp_size_conts Ξ c n m -> exp_size_conts Ξ ({A ᶜˢ/ₜ X} c) n m' -> m = m'
-with exp_size_contd_subst_mono : forall Ξ c A X n1 n2 m1 m2 m1' m2',
-  exp_size_contd Ξ c n1 n2 m1 m2 -> exp_size_contd Ξ ({A ᶜᵈ/ₜ X} c) n1 n2 m1' m2' -> m1 = m1' /\ m2 = m2'.
-Admitted.
+Lemma exp_size_subst_mono : forall Ξ Σ e A X n m m',
+  uniq Ξ ->
+  Σ ᵗ⊢ᵃₘ A ->
+  exp_size Ξ e n m -> 
+  exp_size Ξ ({A ᵉ/ₜ X} e) n m' -> 
+  m = m'.
+Proof.
+  intros * Huniq Hmono Hsize1 Hsize2.
+  generalize dependent m'. generalize dependent X. generalize dependent A.
+  dependent induction Hsize1; intros; dependent destruction Hsize2; eauto.
+  - remember (dom Ξ). pick fresh x. inst_cofinites_with x. subst.
+    replace (exp_var_f x) with ({A ᵉ/ₜ X} (exp_var_f x)) in H2; eauto.
+    rewrite <- subst_typ_in_exp_open_exp_wrt_exp in H2.
+    apply H0 in H2; eauto.
+  - eapply exp_split_size_subst_mono in H1; eauto.
+    eapply IHHsize1_1 in Hsize2_1; eauto. subst.
+    eapply IHHsize1_2 in Hsize2_2; eauto.
+  - pick fresh X0. inst_cofinites_with X0.
+    rewrite subst_typ_in_typ_open_typ_wrt_typ_fresh2 in H3; eauto.
+    eapply n_iuv_size_subst_mono in H; eauto. subst.
+    rewrite subst_typ_in_exp_open_exp_wrt_typ_fresh2 in H4; eauto.
+    apply H1 in H4; eauto.
+  - eapply n_iuv_size_subst_mono in H1; eauto. subst.
+    apply IHHsize1 in Hsize2; eauto. 
+  - eapply n_iuv_size_subst_mono in H1; eauto. subst.
+    eapply IHHsize1 in Hsize2; eauto.
+Qed.
+
+Lemma exp_size_conts_subst_mono : forall Ξ Σ c A X n m m',
+  uniq Ξ ->  Σ ᵗ⊢ᵃₘ A -> exp_size_conts Ξ c n m -> exp_size_conts Ξ ({A ᶜˢ/ₜ X} c) n m' -> m = m'
+with exp_size_contd_subst_mono : forall Ξ Σ c A X n1 n2 m1 m2 m1' m2',
+  uniq Ξ ->  Σ ᵗ⊢ᵃₘ A -> exp_size_contd Ξ c n1 n2 m1 m2 -> exp_size_contd Ξ ({A ᶜᵈ/ₜ X} c) n1 n2 m1' m2' -> m1 = m1' /\ m2 = m2'.
+Proof.
+  - intros * Huniq Hmono Hsize1 Hsize2. clear exp_size_conts_subst_mono; generalize dependent m'.
+    generalize dependent n; generalize dependent X; generalize dependent A.
+    induction c; intros; simpl in *; dependent destruction Hsize1; dependent destruction Hsize2; eauto.
+    + eapply exp_size_contd_subst_mono in H0; destruct_conj; eauto.
+    + eapply n_iuv_size_subst_mono in H; eauto. subst.
+      eapply IHc in Hsize1; eauto.
+    + eapply n_iuv_size_subst_mono in H; eauto. subst.
+      eapply n_iuv_size_subst_mono in H0; eauto. subst.
+      eapply IHc in Hsize1; eauto.
+    + eapply n_iuv_size_subst_mono in H; eauto. subst.
+      eapply IHc in Hsize1; eauto.
+  - intros * Huniq Hmono Hsize1 Hsize2. clear exp_size_contd_subst_mono; generalize dependent m1'; generalize dependent m2'.
+    generalize dependent n1; generalize dependent n2; generalize dependent X; generalize dependent A.
+    induction c; intros; simpl in *; dependent destruction Hsize1; dependent destruction Hsize2; auto.
+    + eapply n_iuv_size_subst_mono in H0; eauto 3. subst.
+      eapply IHc in Hsize2; eauto 3.
+    + eapply exp_size_subst_mono in H1; eauto 3.
+      eapply exp_size_conts_subst_mono in H2; eauto 3.
+      subst. auto.
+    + eapply n_iuv_size_subst_mono in H1; eauto 3.
+      eapply n_iuv_size_subst_mono in H2; eauto 3. subst.
+      eapply IHc in Hsize2; eauto 3.
+Qed.
 
 Lemma exp_size_work_aworklist_subst : forall X w A Γ1 Γ2 Γ1' Γ2' Ξ Ξ' m m',
   ⊢ᵃʷ (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) ->
   ⌊ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1 ⌋ᵃ ʷ⊢ᵃ w ->
   aworklist_subst (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) X A Γ1' Γ2' ->
   ⌊ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1 ⌋ᵃ ᵗ⊢ᵃₘ A ->
+  X `notin` ftvar_in_typ A ->
   awl_to_nenv (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) Ξ ->
   awl_to_nenv ({A ᵃʷ/ₜ X} Γ2' ⧺ Γ1') Ξ' ->
   exp_size_work Ξ w m ->
   exp_size_work Ξ' ({A ʷ/ₜ X} w) m' ->
   m = m'.
 Proof.
-  intros X w A Γ1 Γ2 Γ1' Γ2' Ξ Ξ' m m' Hwf1 Hwf2 Hsubst Hmono Ha2n Ha2n' Hsize1 Hsize2.
+  intros X w A Γ1 Γ2 Γ1' Γ2' Ξ Ξ' m m' Hwf1 Hwf2 Hsubst Hmono Hnotin Ha2n Ha2n' Hsize1 Hsize2.
+  assert (Huniq : uniq Ξ'). {
+      eapply awl_to_nenv_uniq; eauto.
+      apply a_wf_wwl_uniq.
+      eapply aworklist_subst_wf_wwl; eauto.
+    }
   induction Hsize1; simpl in *; dependent destruction Hsize2.
   - eapply aworklist_subst_same_nenv in Ha2n; eauto. subst.
     eapply exp_size_subst_mono in H3; eauto.
@@ -2625,74 +2706,54 @@ Proof.
     eapply exp_size_subst_mono in H2; eauto.
   - dependent destruction Hwf2.
     eapply aworklist_subst_same_nenv in Ha2n; eauto. subst.
-    eapply n_iuv_size_subst_mono with (X := X) in H1; eauto.
-    eapply n_iuv_size_det in H4; eauto. subst.
+    eapply n_iuv_size_subst_mono in H4; eauto. subst.
     eapply exp_size_contd_subst_mono in H2; eauto. lia.
   - dependent destruction Hwf2. dependent destruction H.
     eapply aworklist_subst_same_nenv in Ha2n; eauto. subst.
-    eapply n_iuv_size_subst_mono with (X := X) in H3; eauto.
-    eapply n_iuv_size_subst_mono with (X := X) in H4; eauto.
-    eapply n_iuv_size_subst_mono with (X := X) in H5; eauto.
-    eapply n_iuv_size_det in H8; eauto. subst.
-    eapply n_iuv_size_det in H9; eauto. subst.
-    eapply n_iuv_size_det in H10; eauto. subst.
+    eapply n_iuv_size_subst_mono in H8; eauto.
+    eapply n_iuv_size_subst_mono in H9; eauto.
+    eapply n_iuv_size_subst_mono in H10; eauto. subst.
     eapply exp_size_contd_subst_mono in H6; eauto. lia.
   - dependent destruction Hwf2. dependent destruction H.
     eapply aworklist_subst_same_nenv in Ha2n; eauto. subst.
-    eapply n_iuv_size_subst_mono with (X := X) in H3; eauto.
-    eapply n_iuv_size_subst_mono with (X := X) in H4; eauto.
-    eapply n_iuv_size_det in H8; eauto. subst.
-    eapply n_iuv_size_det in H9; eauto. subst.
+    eapply n_iuv_size_subst_mono with (X := X) in H8; eauto.
+    eapply n_iuv_size_subst_mono with (X := X) in H9; eauto. subst.
     eapply exp_size_subst_mono in H5; eauto. subst.
     eapply exp_size_conts_subst_mono in H6; eauto.
   - dependent destruction Hwf2.
     eapply aworklist_subst_same_nenv in Ha2n; eauto. subst.
-    eapply n_iuv_size_subst_mono with (X := X) in H2; eauto.
-    eapply n_iuv_size_subst_mono with (X := X) in H3; eauto.
-    eapply n_iuv_size_det in H5; eauto. subst.
-    eapply n_iuv_size_det in H6; eauto. subst.
+    eapply n_iuv_size_subst_mono with (X := X) in H5; eauto.
+    eapply n_iuv_size_subst_mono with (X := X) in H6; eauto. subst.
     eapply exp_size_conts_subst_mono in H4; eauto.
   - dependent destruction Hwf2.
     eapply aworklist_subst_same_nenv in Ha2n; eauto.
   - dependent destruction Hwf2.
     eapply aworklist_subst_same_nenv in Ha2n; eauto. subst.
-    eapply n_iuv_size_subst_mono with (X := X) in H3; eauto.
-    eapply n_iuv_size_subst_mono with (X := X) in H4; eauto.
-    eapply n_iuv_size_subst_mono with (X := X) in H5; eauto.
-    eapply n_iuv_size_det in H7; eauto. subst.
-    eapply n_iuv_size_det in H8; eauto. subst.
-    eapply n_iuv_size_det in H9; eauto. subst.
+    eapply n_iuv_size_subst_mono with (X := X) in H7; eauto.
+    eapply n_iuv_size_subst_mono with (X := X) in H8; eauto.
+    eapply n_iuv_size_subst_mono with (X := X) in H9; eauto. subst.
     eapply exp_size_conts_subst_mono in H6; eauto.
   - dependent destruction Hwf2.
     eapply aworklist_subst_same_nenv in Ha2n; eauto. subst.
-    eapply n_iuv_size_subst_mono with (X := X) in H2; eauto.
-    eapply n_iuv_size_subst_mono with (X := X) in H3; eauto.
-    eapply n_iuv_size_det in H5; eauto. subst.
-    eapply n_iuv_size_det in H6; eauto. subst.
+    eapply n_iuv_size_subst_mono with (X := X) in H5; eauto.
+    eapply n_iuv_size_subst_mono with (X := X) in H6; eauto. subst.
     eapply exp_size_conts_subst_mono in H4; eauto.
   - dependent destruction Hwf2.
     dependent destruction H. dependent destruction H1.
     eapply aworklist_subst_same_nenv in Ha2n; eauto. subst.
-    eapply n_iuv_size_subst_mono with (X := X) in H3; eauto.
-    eapply n_iuv_size_subst_mono with (X := X) in H4; eauto.
-    eapply n_iuv_size_subst_mono with (X := X) in H5; eauto.
-    eapply n_iuv_size_subst_mono with (X := X) in H6; eauto.
-    eapply n_iuv_size_det in H9; eauto. subst.
-    eapply n_iuv_size_det in H10; eauto. subst.
-    eapply n_iuv_size_det in H11; eauto. subst.
-    eapply n_iuv_size_det in H12; eauto. subst.
+    eapply n_iuv_size_subst_mono with (X := X) in H9; eauto.
+    eapply n_iuv_size_subst_mono with (X := X) in H10; eauto.
+    eapply n_iuv_size_subst_mono with (X := X) in H11; eauto.
+    eapply n_iuv_size_subst_mono with (X := X) in H12; eauto. subst.
     eapply exp_size_contd_subst_mono in H7; eauto. lia.
   - dependent destruction Hwf2.
     eapply aworklist_subst_same_nenv in Ha2n; eauto. subst.
-    eapply n_iuv_size_subst_mono with (X := X) in H1; eauto.
-    eapply n_iuv_size_det in H3; eauto. subst.
+    eapply n_iuv_size_subst_mono with (X := X) in H3; eauto. subst.
     eapply exp_size_conts_subst_mono in H2; eauto.
   - dependent destruction Hwf2.
     eapply aworklist_subst_same_nenv in Ha2n; eauto. subst.
-    eapply n_iuv_size_subst_mono with (X := X) in H2; eauto.
-    eapply n_iuv_size_subst_mono with (X := X) in H3; eauto.
-    eapply n_iuv_size_det in H6; eauto. subst.
-    eapply n_iuv_size_det in H7; eauto. subst.
+    eapply n_iuv_size_subst_mono with (X := X) in H6; eauto.
+    eapply n_iuv_size_subst_mono with (X := X) in H7; eauto. subst.
     eapply exp_size_contd_subst_mono in H4; eauto. lia.
 Qed. 
 
