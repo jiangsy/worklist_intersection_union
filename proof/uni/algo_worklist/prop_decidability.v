@@ -441,6 +441,13 @@ Proof.
     eapply IHHsize2 in Hsize'2. lia.
 Qed.
 
+Ltac unify_n_iuv_size :=
+  repeat 
+  match goal with
+  | [ H1 : n_iuv_size ?A ?n1, H2 : n_iuv_size ?A ?n2 |- _ ] =>
+    eapply n_iuv_size_det with (n:=n1) (n':=n2) in H1; auto; subst
+  end.
+
 Lemma exp_split_size_det : forall Ξ e n n',
   uniq Ξ -> exp_split_size Ξ e n -> exp_split_size Ξ e n' -> n = n'.
 Proof.
@@ -451,9 +458,9 @@ Proof.
     eapply H0 in H1; eauto.
   - eapply IHHsize1 in Hsize'1; eauto.
     eapply IHHsize2 in Hsize'2; eauto. lia.
-  - remember (dom Ξ). pick fresh X. subst. eapply n_iuv_size_det in H; eauto.
-  - eapply IHHsize in Hsize'; eauto. eapply n_iuv_size_det in H; eauto. lia.
-  - eapply IHHsize in Hsize'; eauto. eapply n_iuv_size_det in H; eauto. lia.
+  - remember (dom Ξ). pick fresh X. subst. unify_n_iuv_size.
+  - eapply IHHsize in Hsize'; eauto. unify_n_iuv_size. lia.
+  - eapply IHHsize in Hsize'; eauto. unify_n_iuv_size. lia.
 Qed.
 
 Lemma exp_size_det : forall Ξ e n m m',
@@ -467,11 +474,11 @@ Proof.
     eapply IHHsize1 in Hsize'1; eauto.
     eapply IHHsize2 in Hsize'2; eauto.
   - remember (dom Ξ). pick fresh X. subst. inst_cofinites_with X.
-    eapply n_iuv_size_det in H; eauto. subst.
+    unify_n_iuv_size.
     eapply H1 in H4; eauto.
-  - eapply n_iuv_size_det in H; eauto. subst.
+  - unify_n_iuv_size.
     eapply IHHsize in Hsize'; eauto.
-  - eapply n_iuv_size_det in H; eauto. subst.
+  - unify_n_iuv_size. 
     eapply IHHsize in Hsize'; eauto.
 Qed.
 
@@ -481,25 +488,16 @@ with exp_size_contd_det : forall Ξ cd n1 n2 m1 m2 m1' m2',
   exp_size_contd Ξ cd n1 n2 m1 m2 -> uniq Ξ -> exp_size_contd Ξ cd n1 n2 m1' m2' -> m1 = m1' /\ m2 = m2'.
 Proof.
   - clear exp_size_conts_det. intros Ξ cs n m m' Hsize Huniq Hsize'. generalize dependent m'. generalize dependent n.
-    induction cs; intros; dependent destruction Hsize; dependent destruction Hsize'; auto.
+    induction cs; intros; dependent destruction Hsize; dependent destruction Hsize'; auto; try solve [unify_n_iuv_size; eauto].
     + edestruct exp_size_contd_det with (m1 := m1) in H; eauto.
-    + apply n_iuv_size_det with (n := b) in H0; auto. subst.
-      apply IHcs in Hsize'; auto.
-    + apply n_iuv_size_det with (n := a) in H1; auto.
-      apply n_iuv_size_det with (n := b) in H2; auto. subst.
-      apply IHcs in Hsize'; auto.
-    + apply n_iuv_size_det with (n := a) in H0; auto. subst.
-      apply IHcs in Hsize'; auto.
   - clear exp_size_contd_det. intros Ξ cd n1 n2 m1 m2 m1' m2' Hsize Huniq Hsize'.
     generalize dependent m2'. generalize dependent m1'. generalize dependent n1. generalize dependent n2.
     induction cd; intros; dependent destruction Hsize; dependent destruction Hsize'; auto.
-    + apply n_iuv_size_det with (n := a) in H0; auto. subst.
+    + unify_n_iuv_size. 
       apply IHcd in Hsize'; auto.
     + apply exp_size_conts_det with (m := ncs) in H2; auto. subst.
       apply exp_size_det with (m := ne) in H1; auto.
-    + apply n_iuv_size_det with (n := a) in H1; auto. subst.
-      apply n_iuv_size_det with (n := b) in H2; auto. subst.
-      eapply IHcd in Hsize'; eauto.
+    + unify_n_iuv_size. eauto.
 Qed.
 
 Lemma exp_size_work_det : forall Ξ w n n',
@@ -510,40 +508,29 @@ Proof.
   - eapply exp_size_det in H; eauto.
     eapply exp_split_size_det in H0; eauto. subst.
     eapply exp_size_conts_det in H5; eauto.
-  - eapply n_iuv_size_det in H; eauto. subst.
+  - unify_n_iuv_size.
     eapply exp_size_det in H0; eauto.
-  - eapply n_iuv_size_det in H; eauto. subst.
+  - unify_n_iuv_size.
     eapply exp_size_contd_det in H0; eauto.
     destruct H0. subst. auto.
-  - eapply n_iuv_size_det in H; eauto.
-    eapply n_iuv_size_det in H0; eauto.
-    eapply n_iuv_size_det in H1; eauto. subst.
+  - unify_n_iuv_size.
     eapply exp_size_contd_det in H2; eauto.
     destruct H2. subst. auto.
-  - eapply n_iuv_size_det in H; eauto. subst.
-    eapply n_iuv_size_det in H0; eauto. subst.
+  - unify_n_iuv_size.
     eapply exp_size_det in H1; eauto. subst.
     eapply exp_size_conts_det in H2; eauto.
-  - eapply n_iuv_size_det in H; eauto. subst.
-    eapply n_iuv_size_det in H0; eauto. subst.
+  - unify_n_iuv_size.
     eapply exp_size_conts_det in H1; eauto.
-  - eapply n_iuv_size_det in H; eauto.
-    eapply n_iuv_size_det in H0; eauto.
-    eapply n_iuv_size_det in H1; eauto. subst.
+  - unify_n_iuv_size.
     eapply exp_size_conts_det in H2; eauto.
-  - eapply n_iuv_size_det in H; eauto.
-    eapply n_iuv_size_det in H0; eauto. subst.
+  - unify_n_iuv_size.
     eapply exp_size_conts_det in H1; eauto.
-  - eapply n_iuv_size_det in H; eauto.
-    eapply n_iuv_size_det in H0; eauto.
-    eapply n_iuv_size_det in H1; eauto.
-    eapply n_iuv_size_det in H2; eauto. subst.
+  - unify_n_iuv_size. subst.
     eapply exp_size_contd_det in H3; eauto.
     destruct H3. subst. auto.
-  - eapply n_iuv_size_det in H; eauto. subst.
+  - unify_n_iuv_size.
     eapply exp_size_conts_det in H2; eauto.
-  - eapply n_iuv_size_det in H; eauto.
-    eapply n_iuv_size_det in H0; eauto. subst.
+  - unify_n_iuv_size.
     eapply exp_size_contd_det in H1; eauto.
     destruct H1. subst. auto.
 Qed.
@@ -553,7 +540,7 @@ Lemma abind_to_nbind_det : forall Ξ b b' b'',
 Proof.
   intros Ξ b b' b'' Hbind. generalize dependent b''.
   induction Hbind; intros b'' Hbind'; dependent destruction Hbind'; eauto.
-  eapply n_iuv_size_det in H; eauto.
+  unify_n_iuv_size.
 Qed.
 
 Lemma awl_to_nenv_det : forall Γ Ξ Ξ',
@@ -1632,17 +1619,13 @@ Lemma apply_conts_exp_size : forall Ξ c A w a n m,
 Proof.
   intros Ξ c A w a n m Huniq Happly Hsize1 Hsize2 Hsize3.
   induction Happly; dependent destruction Hsize2; dependent destruction Hsize3; eauto.
-  - eapply n_iuv_size_det in Hsize1; eauto. subst.
+  - unify_n_iuv_size.
     eapply exp_size_contd_det in H; eauto. lia.
-  - eapply n_iuv_size_det in Hsize1; eauto.
-    eapply n_iuv_size_det in H; eauto. subst.
+  - unify_n_iuv_size.
     eapply exp_size_conts_det in H2; eauto.
-  - eapply n_iuv_size_det in Hsize1; eauto.
-    eapply n_iuv_size_det in H; eauto.
-    eapply n_iuv_size_det in H0; eauto. subst.
+  - unify_n_iuv_size.
     eapply exp_size_conts_det in H4; eauto.
-  - eapply n_iuv_size_det in Hsize1; eauto.
-    eapply n_iuv_size_det in H; eauto. subst.
+  - unify_n_iuv_size.
     eapply exp_size_conts_det in H2; eauto.
 Qed.
 
@@ -2349,13 +2332,13 @@ Proof.
   - eapply IHHsize1 in Hsize'1; eauto.
     eapply IHHsize2 in Hsize'2; eauto. lia.
   - remember (dom Ξ). pick fresh X. subst. inst_cofinites_with X. simpl in *.
-    eapply n_iuv_size_det in H; eauto. subst. lia.
+    unify_n_iuv_size. lia.
   - eapply IHHsize in Hsize'; eauto.
-    eapply n_iuv_size_det in H; eauto. subst.
-    eapply mult_le_compat_r with (p := S (S m)) in Hsize'. lia.
+    unify_n_iuv_size.
+    eapply mult_le_compat_r with (p := S (S m0)) in Hsize'. lia.
   - eapply IHHsize in Hsize'; eauto.
-    eapply n_iuv_size_det in H; eauto. subst.
-    eapply mult_le_compat_r with (p := S (S m)) in Hsize'. lia.
+    unify_n_iuv_size.
+    eapply mult_le_compat_r with (p := S (S m0)) in Hsize'. lia.
 Qed.
 
 Lemma exp_size_le : forall Ξ Ξ' e n n' m m',
@@ -2374,15 +2357,15 @@ Proof.
     eapply IHHsize2 in Hsize'2; eauto; try lia.
     eapply mult_le_compat with (p := m2) (q := m3) in H1 as Hlesm; eauto. lia.
   - remember (dom Ξ). pick fresh X. inst_cofinites_with X.
-    eapply n_iuv_size_det in H; eauto. subst.
+    unify_n_iuv_size.
     eapply H1 in H4; eauto.
     eapply mult_le_compat with (p := n) (q := n0) in H4 as Hlemn; eauto. lia.
     eapply le_nenv__tvar; eauto.
-  - eapply n_iuv_size_det in H; eauto. subst.
-    eapply mult_le_compat_l with (p := a) in Hlen as Hlean; eauto.
+  - unify_n_iuv_size.
+    eapply mult_le_compat_l with (p := a0) in Hlen as Hlean; eauto.
     eapply IHHsize in Hsize'; eauto; try lia.
     eapply mult_le_compat with (p := n) (q := n0) in Hsize' as Hlemn; eauto. lia.
-  - eapply n_iuv_size_det in H; eauto. subst.
+  - unify_n_iuv_size.
     eapply IHHsize in Hsize'; eauto.
     eapply mult_le_compat with (p := n) (q := n0) in Hsize' as Hlemn; eauto. lia.
 Qed.
@@ -2401,25 +2384,23 @@ Proof.
     intro c. induction c; intros * Huniq Hle Hsize * Hsize' Hlen; dependent destruction Hsize; dependent destruction Hsize'; try lia.
     + apply exp_size_contd_le with (Ξ := Ξ) (n1 := n) (n2 := n) (m1 := m1) (m2 := m2) in H0; auto. lia.
     + apply IHc with (Ξ := Ξ) (n := (2 + b) * n) (m := m) in Hsize'; auto.
-      apply n_iuv_size_det with (n := b) in H0; auto. subst.
+      unify_n_iuv_size.
       apply mult_le_compat_r with (p := b0) in Hlen as Hlen'. lia.
     + apply IHc with (Ξ := Ξ) (n := 2 + a * (2 + b) + n) (m := m) in Hsize'; auto.
-      apply n_iuv_size_det with (n := a) in H1; auto.
-      apply n_iuv_size_det with (n := b) in H2; auto. subst.
+      unify_n_iuv_size.
       eapply mult_le_compat_r with (p := b0) in Hlen as Hlen'. lia.
     + apply IHc with (Ξ := Ξ) (n := 2 + a + n) (m := m) in Hsize'; auto.
-      apply n_iuv_size_det with (n := a) in H0; auto. subst. lia.
+      unify_n_iuv_size. lia.
   - clear exp_size_contd_le.
     intro c. induction c; intros * Huniq Hle Hsize * Hsize' Hlen1 Hlen2;
       dependent destruction Hsize; dependent destruction Hsize'; try lia.
-    + apply n_iuv_size_det with (n := a0) in H; auto. subst.
-      apply IHc with (Ξ := Ξ) (n1 := 2 + n1 + a) (n2 := 2 + n2 + a) (m1 := m1) (m2 := m2) in Hsize'; auto; lia.
+    + unify_n_iuv_size. 
+      apply IHc with (Ξ := Ξ) (n1 := 2 + n1 + a0) (n2 := 2 + n2 + a0) (m1 := m1) (m2 := m2) in Hsize'; auto; lia.
     + apply exp_size_le with (Ξ := Ξ) (n := n1) (m := ne) in H1; auto.
       apply exp_size_conts_le with (Ξ := Ξ) (n := n2) (m := ncs) in H2; auto.
       apply mult_le_compat with (p := ne) (q := ne0) in Hlen1; auto. lia. 
-    + apply n_iuv_size_det with (n := a0) in H; auto.
-      apply n_iuv_size_det with (n := b0) in H0; auto. subst.
-      apply IHc with (Ξ := Ξ) (n1 := 2 + a + n1) (n2 := 2 + b + n2) (m1 := m1) (m2 := m2) in Hsize'; auto; lia.
+    + unify_n_iuv_size.
+      apply IHc with (Ξ := Ξ) (n1 := 2 + a0 + n1) (n2 := 2 + b0 + n2) (m1 := m1) (m2 := m2) in Hsize'; auto; lia.
 Qed.
 
 Lemma le_nenv_uniq_l : forall Ξ Ξ',
@@ -2482,8 +2463,7 @@ Proof.
     eapply le_nenv_uniq_r in Hle2 as Huniq2; eauto.
     remember (dom Ξ). remember (dom Ξ0). remember (dom Ξ1).
     pick fresh X. subst. inst_cofinites_with X.
-    eapply n_iuv_size_det in H3; eauto. subst.
-    eapply n_iuv_size_det in H; eauto. subst.
+    unify_n_iuv_size.
     eapply exp_size_le with (Ξ := (X, nbind_tvar_empty) :: Ξ0) in H0 as Hlem1; eauto.
     eapply exp_size_le with (Ξ := (X, nbind_tvar_empty) :: Ξ1) in H0 as Hlem2; eauto.
     assert (m0 * n0 + m1 * n1 + m0 + m1 <= m * n).
@@ -2497,9 +2477,8 @@ Proof.
   - unfold lt in *.
     eapply le_nenv_uniq_r in Hle1 as Huniq1; eauto.
     eapply le_nenv_uniq_r in Hle2 as Huniq2; eauto.
-    eapply n_iuv_size_det in H; eauto. subst.
-    eapply n_iuv_size_det in H1; eauto. subst.
-    eapply mult_le_compat_l with (p := a0) in Hlt as Hlt'.
+    unify_n_iuv_size.
+    eapply mult_le_compat_l with (p := a1) in Hlt as Hlt'.
     eapply IHHsize with (Ξ1 := Ξ0) in Hs2; eauto; try lia.
     assert (m0 * n0 + m1 * n1 + m0 + m1 <= m * n).
     {
@@ -2509,8 +2488,7 @@ Proof.
   - unfold lt in *.
     eapply le_nenv_uniq_r in Hle1 as Huniq1; eauto.
     eapply le_nenv_uniq_r in Hle2 as Huniq2; eauto.
-    eapply n_iuv_size_det in H; eauto. subst.
-    eapply n_iuv_size_det in H1; eauto. subst.
+    unify_n_iuv_size.
     eapply exp_size_le with (Ξ := Ξ0) in Hsize as Hlem1; eauto.
     eapply exp_size_le with (Ξ := Ξ1) in Hsize as Hlem2; eauto.
     assert (m0 * n0 + m1 * n1 + m0 + m1 <= m * n).
@@ -2531,18 +2509,12 @@ Lemma apply_contd_exp_size : forall Ξ c A B w a b n1 n2 m,
 Proof.
   intros Ξ c A B w a b n1 n2 m Huniq Happly Ha Hb Hsize1 Hsize2.
   induction Happly; dependent destruction Hsize1; dependent destruction Hsize2; eauto.
-  - eapply n_iuv_size_det in Ha; eauto. subst.
-    eapply n_iuv_size_det in Hb; eauto. subst.
+  - unify_n_iuv_size.
     eapply exp_size_conts_det with (m' := n) in H0; eauto.
     eapply exp_size_det in H; eauto. subst. lia.
-  - eapply n_iuv_size_det in Ha; eauto.
-    eapply n_iuv_size_det in Hb; eauto.
-    eapply n_iuv_size_det in H; eauto. subst.
+  - unify_n_iuv_size.
     eapply exp_size_contd_det in Hsize1; eauto. lia.
-  - eapply n_iuv_size_det in Ha; eauto.
-    eapply n_iuv_size_det in Hb; eauto.
-    eapply n_iuv_size_det in H; eauto.
-    eapply n_iuv_size_det in H0; eauto. subst.
+  - unify_n_iuv_size.
     eapply exp_size_contd_det in Hsize1; eauto. lia.
 Qed.
 
@@ -2679,7 +2651,7 @@ Proof.
   induction Hlca; intros; simpl in *;
      try solve [dependent destruction Ha; dependent destruction Hb; dependent destruction Hopen; simpl in *; try lia].
   - destruct_eq_atom.
-    + eapply n_iuv_size_det with (n := m3) in Hopen; eauto. subst.
+    + unify_n_iuv_size.
       dependent destruction Hocc. lia.
       solve_false.
     + dependent destruction Hopen. lia.
@@ -3006,7 +2978,7 @@ Proof.
            dependent destruction Hcontra.
            apply Jg; auto.
         -- dependent destruction H4. dependent destruction H6.
-           eapply n_iuv_size_det with (n := a) in H7; eauto. subst.
+           unify_n_iuv_size.
            assert (Huniq' : uniq Ξ).
            { eapply awl_to_nenv_uniq; eauto. }
            assert (He': exists m, exp_size_conts Ξ cs m1 m).
