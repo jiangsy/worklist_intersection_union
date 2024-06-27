@@ -515,34 +515,6 @@ Proof with eauto.
     + dependent destruction Hwf... 
 Qed.
 
-Lemma aworklist_subst_det' : forall Γ X T Γ1 Γ2 Γ3 Γ4,
-  ⊢ᵃʷ Γ ->
-  aworklist_subst Γ X T Γ1 Γ2 ->
-  aworklist_subst Γ X T Γ3 Γ4 ->
-  Γ1 = Γ3 /\ Γ2 = Γ4.
-Proof.
-  intros * Hwf Hws1 Hws2. generalize dependent Γ3. generalize dependent Γ4. 
-    induction Hws1; intros; dependent destruction Hws2; auto; destruct_a_wf_wl;
-      try solve_notin_eq X;
-      try solve_notin_eq Y;
-      try solve [apply IHHws1 in Hws2; intuition; subst; auto].
-  - apply worklist_split_etvar_det in x; auto; dependent destruction x.
-    subst.
-    apply IHHws1 in Hws2; intuition; subst; auto.
-    apply a_wf_wwl_move_etvar_back; auto.
-    eapply a_wf_wwl_tvar_notin_remaining in Hwf; eauto.
-Qed.
-
-Lemma aworklist_subst_det : forall Γ X T Γ1 Γ2 Γ3 Γ4,
-  ⊢ᵃʷₛ Γ ->
-  aworklist_subst Γ X T Γ1 Γ2 ->
-  aworklist_subst Γ X T Γ3 Γ4 ->
-  Γ1 = Γ3 /\ Γ2 = Γ4.
-Proof.
-  intros. apply a_wf_wl_a_wf_wwl in H.
-   eapply aworklist_subst_det'; eauto.
-Qed.
-
 #[local] Hint Resolve a_wf_wl_a_wf_wwl : core.
 
 Corollary aworklist_subst_transfer_same_dworklist_rev_exist: forall Γ Ω θ X T Tᵈ,
@@ -926,30 +898,9 @@ Proof.
   eapply trans_typ_tvar_etvar; eauto.
 Qed.
 
-Ltac solve_right := 
-  let Hcontra := fresh "Hcontra" in 
-  right; intros Hcontra; inversion Hcontra.
+
 
 #[local] Hint Constructors a_mono_typ : core.
-
-Lemma a_mono_typ_dec : forall Γ A,
-  ⊢ᵃʷ Γ ->
-  ⌊ Γ ⌋ᵃ ᵗ⊢ᵃ A ->
-  ⌊ Γ ⌋ᵃ ᵗ⊢ᵃₘ A \/ ~ ⌊ Γ ⌋ᵃ ᵗ⊢ᵃₘ A.
-Proof.
-  intros. dependent induction H0; auto; try solve [solve_right].  
-  - right. unfold not. intros.
-    dependent destruction H1.
-    + unify_binds.
-    + unify_binds. 
-  - specialize (IHa_wf_typ1 _ H (eq_refl _)). 
-    specialize (IHa_wf_typ2 _ H (eq_refl _)). 
-    dependent destruction IHa_wf_typ1; dependent destruction IHa_wf_typ2.
-    + left; auto.
-    + right. unfold not. intros. dependent destruction H2. contradiction.
-    + right. unfold not. intros. dependent destruction H2. contradiction.
-    + right. unfold not. intros. dependent destruction H2. contradiction.
-Qed.
 
 Lemma trans_typ_subst_tvar_cons : forall θ Aᵃ Aᵈ Bᵃ Bᵈ X,
   (X , □) :: θ ᵗ⊩ Aᵃ ⇝ Aᵈ ->

@@ -1524,3 +1524,148 @@ Proof.
   - simpl. rewrite ftvar_in_a_wf_typ_upper; eauto. fsetdec.
   - simpl. rewrite ftvar_in_wf_work_upper; eauto. fsetdec.
 Qed.
+
+Lemma aworklist_subst_det' : forall Γ X T Γ1 Γ2 Γ3 Γ4,
+  ⊢ᵃʷ Γ ->
+  aworklist_subst Γ X T Γ1 Γ2 ->
+  aworklist_subst Γ X T Γ3 Γ4 ->
+  Γ1 = Γ3 /\ Γ2 = Γ4.
+Proof.
+  intros * Hwf Hws1 Hws2. generalize dependent Γ3. generalize dependent Γ4. 
+    induction Hws1; intros; dependent destruction Hws2; auto; destruct_a_wf_wl;
+      try solve_notin_eq X;
+      try solve_notin_eq Y;
+      try solve [apply IHHws1 in Hws2; intuition; subst; auto].
+  - apply worklist_split_etvar_det in x; auto; dependent destruction x.
+    subst.
+    apply IHHws1 in Hws2; intuition; subst; auto.
+    apply a_wf_wwl_move_etvar_back; auto.
+    eapply a_wf_wwl_tvar_notin_remaining in Hwf; eauto.
+Qed.
+
+Lemma aworklist_subst_det : forall Γ X T Γ1 Γ2 Γ3 Γ4,
+  ⊢ᵃʷₛ Γ ->
+  aworklist_subst Γ X T Γ1 Γ2 ->
+  aworklist_subst Γ X T Γ3 Γ4 ->
+  Γ1 = Γ3 /\ Γ2 = Γ4.
+Proof.
+  intros. apply a_wf_wl_a_wf_wwl in H.
+   eapply aworklist_subst_det'; eauto.
+Qed.
+
+Ltac solve_notin_dom :=
+  rewrite awl_to_aenv_app in *; rewrite dom_aenv_app_comm in *; simpl in *; auto.
+
+Lemma worklist_subst_fresh_etvar_total : forall Γ1 Γ2 X X1 X2,
+  uniq (⌊ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1 ⌋ᵃ) ->
+  X1 ∉ dom (⌊ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1 ⌋ᵃ) ->
+  X2 ∉ add X1 (dom (⌊ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1 ⌋ᵃ)) ->
+  aworklist_subst (X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) X
+    (typ_arrow ` X1 ` X2) (X1 ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1) Γ2.
+Proof with auto.
+  induction Γ2; intros; simpl in *; auto.
+  - replace (X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ X ~ᵃ ⬒ ;ᵃ Γ1) with 
+      (X2 ~ᵃ ⬒ ;ᵃ (X1 ~ᵃ ⬒ ;ᵃ aworklist_empty) ⧺ X ~ᵃ ⬒ ;ᵃ Γ1);
+    constructor; simpl...
+    replace (X1 ~ᵃ ⬒ ;ᵃ X ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1) with 
+      (X1 ~ᵃ ⬒ ;ᵃ aworklist_empty ⧺ X ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1);
+    constructor; simpl...
+  - replace (X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ aworklist_cons_var (Γ2 ⧺ X0 ~ᵃ ⬒ ;ᵃ Γ1) X ab) with 
+      (X2 ~ᵃ ⬒ ;ᵃ (X1 ~ᵃ ⬒ ;ᵃ aworklist_cons_var Γ2 X ab) ⧺ X0 ~ᵃ ⬒ ;ᵃ Γ1);
+    constructor; simpl...
+    replace (X1 ~ᵃ ⬒ ;ᵃ aworklist_cons_var (Γ2 ⧺ X0 ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1) X ab) with
+      ((X1 ~ᵃ ⬒ ;ᵃ aworklist_cons_var Γ2 X ab) ⧺ X0 ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1); 
+    constructor; simpl...
+    + dependent destruction H.
+      eapply IHΓ2 with (X1:=X1) (X2:=X2) in H as Hws...
+      dependent destruction Hws...
+      * simpl in *. solve_notin_eq X2.
+      * simpl in *. solve_notin_eq X2.
+      * replace (X1 ~ᵃ ⬒ ;ᵃ Γ'2 ⧺ X0 ~ᵃ ⬒ ;ᵃ Γ1) with 
+        ((X1 ~ᵃ ⬒ ;ᵃ Γ'2) ⧺ X0 ~ᵃ ⬒ ;ᵃ Γ1) in x by auto.
+        apply worklist_split_etvar_det in x; destruct x; subst. simpl in *.
+        dependent destruction Hws; auto; simpl in *.
+        -- solve_notin_eq X1.
+        -- solve_notin_eq X1.
+        -- replace (Γ'2 ⧺ X ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1) 
+            with  (Γ'2 ⧺ X ~ᵃ ⬒ ;ᵃ (X2 ~ᵃ ⬒ ;ᵃ Γ1)) in x by auto.
+            apply worklist_split_etvar_det in x; auto.
+            destruct x; subst...
+            destruct ab; auto.
+            ++ constructor... rewrite awl_to_aenv_app in H0. 
+               rewrite dom_app in H0... simpl in *. solve_notin. 
+            ++ constructor... rewrite awl_to_aenv_app in H0. 
+               rewrite dom_app in H0... simpl in *. solve_notin.
+            ++ constructor... rewrite awl_to_aenv_app in H0. 
+               rewrite dom_app in H0... simpl in *. solve_notin.
+            ++ simpl. rewrite awl_to_aenv_app in H. simpl in H. 
+               apply uniq_notin_remaining in H. solve_notin.  
+        -- simpl. rewrite awl_to_aenv_app in *. rewrite dom_app in *. simpl in *. 
+           apply uniq_notin_remaining in H. simpl. solve_notin. 
+    + solve_notin_dom.
+    + solve_notin_dom.
+  - replace (X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ w ⫤ᵃ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) with 
+    (X2 ~ᵃ ⬒ ;ᵃ (X1 ~ᵃ ⬒ ;ᵃ w ⫤ᵃ Γ2) ⧺ X ~ᵃ ⬒ ;ᵃ Γ1);
+   constructor; simpl; auto.
+   replace (X1 ~ᵃ ⬒ ;ᵃ w ⫤ᵃ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1) with 
+    (X1 ~ᵃ ⬒ ;ᵃ (w ⫤ᵃ Γ2) ⧺ X ~ᵃ ⬒ ;ᵃ (X2 ~ᵃ ⬒ ;ᵃ Γ1));
+   constructor; simpl; auto.
+   + constructor; auto.
+     eapply IHΓ2 with (X1:=X1) (X2:=X2) in H0 as Hws; eauto.
+     dependent destruction Hws; auto.
+     * simpl in *. solve_notin_eq X2.
+     * simpl in *. solve_notin_eq X2.
+     * replace (X1 ~ᵃ ⬒ ;ᵃ Γ'2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) with 
+         ((X1 ~ᵃ ⬒ ;ᵃ Γ'2) ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) in x by auto.
+       apply worklist_split_etvar_det in x; destruct x; subst. simpl in *.
+       dependent destruction Hws; auto; simpl in *.
+       -- solve_notin_eq X1.
+       -- solve_notin_eq X1.
+       -- replace (Γ'2 ⧺ X ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1) with 
+           (Γ'2 ⧺ X ~ᵃ ⬒ ;ᵃ (X2 ~ᵃ ⬒ ;ᵃ Γ1)) in x; auto.
+          apply worklist_split_etvar_det in x; auto.
+          destruct x; subst; auto.
+          simpl. rewrite awl_to_aenv_app in *. rewrite dom_app in *. simpl in *. 
+           apply uniq_notin_remaining in H. simpl. solve_notin. 
+       -- simpl. rewrite awl_to_aenv_app in *. rewrite dom_app in *. simpl in *. 
+       apply uniq_notin_remaining in H. simpl. solve_notin. 
+   + solve_notin_dom.
+   + solve_notin_dom.
+Qed.
+
+Lemma worklist_subst_fresh_etvar_total' : forall Γ X X1 X2,
+  uniq (⌊ Γ ⌋ᵃ) ->
+  X ~ ⬒ ∈ᵃ ⌊ Γ ⌋ᵃ ->
+  X1 ∉ dom (awl_to_aenv Γ) ->
+  X2 ∉ add X1 (dom (awl_to_aenv Γ)) ->
+  exists Γ1 Γ2, aworklist_subst (X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ) X
+      (typ_arrow ` X1 ` X2) Γ1 Γ2.
+Proof.
+  intros. apply awl_split_etvar in H0.
+  destruct H0 as [Γ1 [Γ2 Heq]].
+  rewrite <- Heq in *.
+  eapply worklist_subst_fresh_etvar_total in H; eauto.
+Qed.
+
+Ltac solve_right := 
+  let Hcontra := fresh "Hcontra" in 
+  right; intros Hcontra; inversion Hcontra.
+
+Lemma a_mono_typ_dec : forall Γ A,
+  ⊢ᵃʷ Γ ->
+  ⌊ Γ ⌋ᵃ ᵗ⊢ᵃ A ->
+  ⌊ Γ ⌋ᵃ ᵗ⊢ᵃₘ A \/ ~ ⌊ Γ ⌋ᵃ ᵗ⊢ᵃₘ A.
+Proof.
+  intros. dependent induction H0; auto; try solve [solve_right].  
+  - right. unfold not. intros.
+    dependent destruction H1.
+    + unify_binds.
+    + unify_binds. 
+  - specialize (IHa_wf_typ1 _ H (eq_refl _)). 
+    specialize (IHa_wf_typ2 _ H (eq_refl _)). 
+    dependent destruction IHa_wf_typ1; dependent destruction IHa_wf_typ2.
+    + left; auto.
+    + right. unfold not. intros. dependent destruction H2. contradiction.
+    + right. unfold not. intros. dependent destruction H2. contradiction.
+    + right. unfold not. intros. dependent destruction H2. contradiction.
+Qed.
