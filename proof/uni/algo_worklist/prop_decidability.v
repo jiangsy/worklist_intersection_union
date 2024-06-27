@@ -650,10 +650,7 @@ Proof with eauto using exp_split_size.
     rewrite <- subst_exp_in_exp_open_exp_wrt_exp...
     rewrite_env ((x0 ~ nbind_var_typ 0 ++ Ξ2) ++ (y ~ nbind_var_typ m) ++ Ξ1).
     eapply H2; eauto. simpl...
-    simpl. destruct_eq_atom; eauto. 
-  - remember (dom (Ξ2 ++ (x, nbind_var_typ m) :: Ξ1)). inst_cofinites_for exp_split_size__tabs n:=n,m:=m0; subst; eauto; intros.
-    inst_cofinites_with X. 
-    rewrite <- subst_exp_in_exp_open_exp_wrt_typ; eauto.
+    simpl. destruct_eq_atom; eauto.
 Qed.
 
 Lemma exp_split_size_rename_var_cons : forall Ξ e x y n m,
@@ -677,14 +674,9 @@ Proof with eauto using exp_split_size.
     intros. inst_cofinites_with x.
     replace (exp_var_f x) with (subst_typ_in_exp (typ_var_f Y) X (exp_var_f x))...
     rewrite <- subst_typ_in_exp_open_exp_wrt_exp...
-  - remember (dom Ξ). inst_cofinites_for exp_split_size__tabs n:=n,m:=m; subst; 
-    intros; inst_cofinites_with x.
-    + replace (`X0) with (subst_typ_in_typ (typ_var_f Y) X (`X0))...
-      rewrite <- subst_typ_in_exp_open_exp_wrt_typ...
-      simpl. destruct_eq_atom; eauto.
-    + erewrite subst_typ_in_typ_open_typ_wrt_typ_fresh2; eauto.
-      apply n_iuv_size_rename; eauto.
-    + lia.
+  - econstructor.
+    replace (typ_all ({` Y ᵗ/ₜ X} A)) with  ({` Y ᵗ/ₜ X} typ_all A) by auto.
+    apply n_iuv_size_rename; eauto.
   - econstructor; eauto.
     + eapply n_iuv_size_rename...
     + lia.

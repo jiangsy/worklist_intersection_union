@@ -1669,3 +1669,17 @@ Proof.
     + right. unfold not. intros. dependent destruction H2. contradiction.
     + right. unfold not. intros. dependent destruction H2. contradiction.
 Qed.
+
+Lemma a_mono_typ_move_etvar_back : forall Γ1 Γ2 A X Y ,  
+  ⌊ Y ~ᵃ ⬒;ᵃ Γ2 ⧺ X ~ᵃ ⬒;ᵃ Γ1 ⌋ᵃ ᵗ⊢ᵃₘ A ->
+  ⌊ Γ2 ⧺ X ~ᵃ ⬒;ᵃ Y ~ᵃ ⬒;ᵃ Γ1 ⌋ᵃ ᵗ⊢ᵃₘ A.
+Proof.
+  intros. dependent induction H; auto.
+  - simpl in *. rewrite awl_to_aenv_app in *.
+    destruct_binds. simpl in *. apply binds_app_iff in H1; destruct H1; auto.
+    destruct_binds. eauto.
+  - apply a_mono_typ__etvar. simpl in *. rewrite awl_to_aenv_app in *.
+    destruct_binds. eauto.
+    apply binds_app_iff in H1; destruct H1; auto.
+    destruct_binds; eauto.
+Qed.
