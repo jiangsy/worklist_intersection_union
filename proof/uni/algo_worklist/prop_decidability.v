@@ -3007,10 +3007,18 @@ Proof.
         -- dependent destruction H4. dependent destruction H6.
            assert (Jg: (work_infer e (conts_inftapp A cs) ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/
                      ~ (work_infer e (conts_inftapp A cs) ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
-           {
-             eapply IHme; eauto; simpl; try lia.
-             eapply exp_size_wl__cons_work; eauto.
-             admit. admit. (* exp_size_tail_rec_le *) }
+           { assert (Huniq': uniq Ξ).
+             { eapply awl_to_nenv_uniq; eauto. }
+             assert (He': exists m, exp_size_conts Ξ cs ((2 + m1) * n0) m).
+             { eapply exp_size_conts_total; eauto.
+               eapply a_wf_conts_n_wf_conts with (Γ := Γ); eauto. }
+             destruct He' as [m' He'].
+             eapply exp_size_conts_le with (m := m') in H8 as Hle; eauto; try lia.
+             assert (He'': exists m, exp_size Ξ e 0 m).
+             { eapply exp_size_total_a_wf_exp with (Γ := Γ); eauto. }
+             destruct He'' as [m'' He''].
+             eapply exp_size_le with (m := m'') in H5 as Hle'; eauto; try lia.
+             eapply IHme; eauto; simpl; try lia. }
            destruct Jg as [Jg | Jg]; eauto.
            right. intro Hcontra.
            dependent destruction Hcontra.
