@@ -2815,6 +2815,18 @@ Proof.
     eapply exp_size_work_aworklist_subst in H3; eauto.
 Qed.
 
+Lemma exp_size_wl_aworklist_subst' : forall Γ X A Γ1' Γ2' n m,
+  ⊢ᵃʷ Γ -> X ~ ⬒ ∈ᵃ ⌊ Γ ⌋ᵃ ->
+  aworklist_subst Γ X A Γ1' Γ2' ->
+  ⌊ Γ ⌋ᵃ ᵗ⊢ᵃₘ A ->
+  exp_size_wl ({A ᵃʷ/ₜ X} Γ2' ⧺ Γ1') n ->
+  exp_size_wl Γ m -> n = m.
+Proof.
+  intros * Hwf Hbinds Hsubst Hmono Hsize1 Hsize2.
+  eapply awl_split_etvar in Hbinds as [Γ1 [Γ2 Hbinds]]. subst.
+  eapply exp_size_wl_aworklist_subst in Hsize2; eauto.
+Qed.
+
 Lemma awl_to_nenv_dom' : forall Γ Ξ x A,
   awl_to_nenv Γ Ξ -> x ~ A ∈ᵃ ⌊ Γ ⌋ᵃ -> x `in` dom Ξ.
 Proof.
@@ -3239,7 +3251,32 @@ Proof.
               eapply Jg; eauto. unify_binds.
            ++ right. intro Hcontra. dependent destruction Hcontra.
               eapply Jg; eauto. unify_binds.
-           ++ admit. (* TODO: split *)
+           ++ remember (dom Ξ). pick fresh x.
+              pick fresh X1. pick fresh X2. subst.
+              dependent destruction H4. simpl in *.
+              assert (Hsubst: exists Γ1 Γ2, aworklist_subst (work_check (e ᵉ^^ₑ exp_var_f x) ` X2 ⫤ᵃ x ~ᵃ ` X1;ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ) X (typ_arrow ` X1 ` X2) Γ1 Γ2).
+              { assert (Hsubst': exists Γ1 Γ2, aworklist_subst (X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ) X 
+              (typ_arrow ` X1 ` X2) Γ1 Γ2).
+                { eapply worklist_subst_fresh_etvar_total'; eauto. }
+                destruct Hsubst' as [Γ1 [Γ2 Hsubst']]. eauto. }
+              destruct Hsubst as [Γ1 [Γ2 Hsubst]].
+              assert (He': exp_size_wl (work_check (e ᵉ^^ₑ exp_var_f x) ` X2 ⫤ᵃ x ~ᵃ ` X1;ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ) (m + n)).
+              { eapply exp_size_wl__cons_work; eauto.
+                eapply awl_to_nenv__cons_var; eauto. }
+              assert (He'': exists k, exp_size_wl ({typ_arrow ` X1 ` X2 ᵃʷ/ₜ X} Γ2 ⧺ Γ1) k).
+              { eapply exp_size_wl_total; eauto.
+                eapply aworklist_subst_wf_wwl with (Γ := (work_check (e ᵉ^^ₑ exp_var_f x) ` X2
+                ⫤ᵃ x ~ᵃ ` X1;ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ)); eauto.
+                admit. admit. (* wf *)
+              }
+              destruct He'' as [k He''].
+              eapply exp_size_wl_aworklist_subst' in He'; simpl; eauto. subst.
+              2 : { admit. (* wf *) }
+              2 : { admit. (* wf *) }
+              assert (Jge: ({typ_arrow ` X1 ` X2 ᵃʷ/ₜ X} Γ2 ⧺ Γ1) ⟶ᵃʷ⁎⋅ \/
+                         ~ ({typ_arrow ` X1 ` X2 ᵃʷ/ₜ X} Γ2 ⧺ Γ1) ⟶ᵃʷ⁎⋅).
+              { eapply IHme with (ne := m + n); eauto; simpl; try lia. admit. (* wf *) }
+              admit. (* rename *)
            ++ remember (dom Ξ). pick fresh x. subst. inst_cofinites_with x.
               dependent destruction H4.
               assert (JgArr: (work_check (e ᵉ^^ₑ exp_var_f x) A2 ⫤ᵃ x ~ᵃ A1;ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ 
