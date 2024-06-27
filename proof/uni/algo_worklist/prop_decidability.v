@@ -3683,7 +3683,6 @@ Proof.
       apply a_wf_typ_all_open; auto.
       apply a_wf_typ_weaken_cons; auto. simpl. auto.
       apply a_wf_typ_weaken_cons; auto.
-      admit.
       assert (HspA1: split_depth ((X, ⬒) :: ⌊ Γ ⌋ᵃ) (A1 ᵗ^ₜ X) <= split_depth (⌊ Γ ⌋ᵃ) A1) by admit.
       assert (HspB: split_depth ((X, ⬒) :: ⌊ Γ ⌋ᵃ) B <= split_depth (⌊ Γ ⌋ᵃ) B) by admit.
       eapply mult_le_compat_r with (p := S (iu_size B)) in HspA1.
