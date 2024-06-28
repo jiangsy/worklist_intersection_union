@@ -3785,12 +3785,31 @@ Proof.
            eapply exp_size_wl_aworklist_subst' in Hsubst as Heq; simpl; try solve [econstructor; eauto]; eauto. subst.
            assert (Jg: (w ⫤ᵃ {typ_arrow ` X1 ` X2 ᵃʷ/ₜ X} Γ2 ⧺ Γ1) ⟶ᵃʷ⁎⋅ \/
                      ~ (w ⫤ᵃ {typ_arrow ` X1 ` X2 ᵃʷ/ₜ X} Γ2 ⧺ Γ1) ⟶ᵃʷ⁎⋅).
-           { eapply IHmaj; eauto; simpl in *; try lia. admit. (* wf *)
-             erewrite judge_size_wl_aworklist_subst' with (Γ := X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ); simpl; eauto.
-             erewrite apply_contd_judge_size with (c := {typ_arrow ` X1 ` X2 ᶜᵈ/ₜ X} cd); eauto.
-             erewrite judge_size_contd_subst_typ_in_contd; eauto.
-             econstructor; eauto.
-             admit. admit. admit. admit. (* other measures *) }
+           { eapply IHma; eauto; simpl in *; try lia. admit. (* wf *)
+             - erewrite judge_size_wl_aworklist_subst' with (Γ := X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ);
+                  simpl; eauto; try solve [econstructor; eauto].
+               erewrite apply_contd_judge_size with (c := {typ_arrow ` X1 ` X2 ᶜᵈ/ₜ X} cd); eauto.
+               erewrite judge_size_contd_subst_typ_in_contd; eauto.
+             - erewrite inftapp_depth_wl_aworklist_subst' with (Γ := X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ);
+                  simpl; eauto; try solve [econstructor; eauto].
+               assert (Ht': inftapp_depth_work w <= inftapp_depth_contd_tail_rec ({typ_arrow ` X1 ` X2 ᶜᵈ/ₜ X} cd) 0).
+               { erewrite apply_contd_inftapp_depth with (c := {typ_arrow ` X1 ` X2 ᶜᵈ/ₜ X} cd); eauto. }
+               erewrite <- inftapp_depth_contd_tail_rec_subst_mono
+                with (Σ := (X1, abind_etvar_empty) :: (X2, abind_etvar_empty) :: nil) in Ht';
+                eauto; try solve [econstructor; eauto].
+               lia.
+             - erewrite inftapp_judge_size_wl_aworklist_subst' with (Γ := X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ);
+                  simpl; eauto; try solve [econstructor; eauto].
+               erewrite apply_contd_inftapp_judge_size with (c := {typ_arrow ` X1 ` X2 ᶜᵈ/ₜ X} cd); eauto.
+               erewrite inftapp_judge_size_contd_subst_typ_in_contd; eauto.
+             - assert (Ha': infabs_depth_wl ({typ_arrow ` X1 ` X2 ᵃʷ/ₜ X} Γ2 ⧺ Γ1) <= infabs_depth_wl Γ).
+               erewrite infabs_depth_wl_aworklist_subst' with (Γ := X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ);
+                  simpl; eauto; try solve [econstructor; eauto].
+               erewrite apply_contd_infabs_depth with (c := {typ_arrow ` X1 ` X2 ᶜᵈ/ₜ X} cd); eauto.
+               assert (Ha'': infabs_depth_contd ({typ_arrow ` X1 ` X2 ᶜᵈ/ₜ X} cd) <= infabs_depth_contd cd).
+               { eapply infabs_depth_contd_subst_mono with (Σ := (X1, abind_etvar_empty) :: (X2, abind_etvar_empty) :: nil); eauto.
+                 econstructor; eauto. }
+               lia. }
            admit. (* rename *) 
         -- destruct (apply_contd_total cd A1 A2) as [w Happly].
           assert (Jg: (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ ~ (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
