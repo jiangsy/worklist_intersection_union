@@ -550,7 +550,7 @@ Ltac apply_IH_a_wf_wwl :=
     apply H in H1 as Hdred
   end.
 
-Lemma rename_tvar_aworklist_subst : forall Γ X1 X2 Y A Γ1 Γ2,
+Lemma aworklist_subst_rename_tvar : forall Γ X1 X2 Y A Γ1 Γ2,
   Y ∉ ftvar_in_typ A `union` ftvar_in_aworklist' Γ `union` singleton X2 ->
   aworklist_subst Γ X2 A Γ1 Γ2 ->
   aworklist_subst (rename_tvar_in_aworklist Y X1 Γ) (if X2 == X1 then Y else X2)
@@ -885,7 +885,7 @@ Proof with eauto.
     + destruct_a_wf_wl. 
       fold_subst. apply a_mono_typ_false_rename; simpl; eauto.
     + intros. simpl in *. subst.
-      apply rename_tvar_aworklist_subst with (Y:=X) (X1:=Y) (X2:=Y) in H8 as Hws.
+      apply aworklist_subst_rename_tvar with (Y:=X) (X1:=Y) (X2:=Y) in H8 as Hws.
       * destruct_eq_atom. simpl in Hws.
         destruct_eq_atom.
         rewrite rename_tvar_in_aworklist_rev_eq in Hws; auto.
@@ -905,7 +905,7 @@ Proof with eauto.
     + destruct_a_wf_wl.
       fold_subst. apply a_mono_typ_false_rename; simpl; eauto.
     + intros. simpl in *.
-      apply rename_tvar_aworklist_subst with (Y:=X) (X1:=Y) (X2:=X0) in H8 as Hws.
+      apply aworklist_subst_rename_tvar with (Y:=X) (X1:=Y) (X2:=X0) in H8 as Hws.
       * destruct_eq_atom. simpl in Hws.
         destruct_eq_atom.
         rewrite rename_tvar_in_typ_rev_eq in *...
@@ -927,7 +927,7 @@ Proof with eauto.
     + destruct_a_wf_wl. 
       fold_subst. apply a_mono_typ_false_rename; simpl; eauto.
     + intros. simpl in *. subst.
-      apply rename_tvar_aworklist_subst with (Y:=X) (X1:=Y) (X2:=Y) in H9 as Hws.
+      apply aworklist_subst_rename_tvar with (Y:=X) (X1:=Y) (X2:=Y) in H9 as Hws.
       * destruct_eq_atom. simpl in Hws.
         destruct_eq_atom.
         rewrite rename_tvar_in_aworklist_rev_eq in Hws; auto...
@@ -946,7 +946,7 @@ Proof with eauto.
     + destruct_a_wf_wl. 
       fold_subst. apply a_mono_typ_false_rename; simpl; eauto.
     + intros. simpl in *.
-      apply rename_tvar_aworklist_subst with (Y:=X) (X1:=Y) (X2:=X0) in H9 as Hws.
+      apply aworklist_subst_rename_tvar with (Y:=X) (X1:=Y) (X2:=X0) in H9 as Hws.
       * simpl in Hws. destruct_eq_atom.
         rewrite rename_tvar_in_typ_rev_eq in *...
         rewrite rename_tvar_in_typ_rev_eq in *...
@@ -961,7 +961,7 @@ Proof with eauto.
         -- rewrite aworklist_subst_dom_upper with (Γ:=(work_sub (typ_arrow A1 A2) ` X0 ⫤ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ))...
       * solve_notin_rename_tvar; auto. 
   - simpl in *. destruct_a_wf_wl.
-    eapply rename_tvar_aworklist_subst with (Y:=Y) (X1:=X) in H7 as Hsubst...
+    eapply aworklist_subst_rename_tvar with (Y:=Y) (X1:=X) in H7 as Hsubst...
     destruct_eq_atom;
     apply a_wl_red__sub_etvarmono1 with (Γ1:={Y ᵃʷ/ₜᵥ X} Γ1) (Γ2:={Y ᵃʷ/ₜᵥ X} Γ2)...
     + apply rename_tvar_in_aworklist_eq_tvar_bind_same; eauto...
@@ -980,7 +980,7 @@ Proof with eauto.
       * eapply aworklist_subst_wf_wwl; eauto.
       * rewrite aworklist_subst_dom_upper with (Γ:=Γ)...
   - simpl in *. destruct_a_wf_wl.
-    eapply rename_tvar_aworklist_subst with (Y:=Y) (X1:=X) in H7 as Hsubst...
+    eapply aworklist_subst_rename_tvar with (Y:=Y) (X1:=X) in H7 as Hsubst...
     destruct_eq_atom;
     apply a_wl_red__sub_etvarmono2 with (Γ1:={Y ᵃʷ/ₜᵥ X} Γ1) (Γ2:={Y ᵃʷ/ₜᵥ X} Γ2)...
     + apply rename_tvar_in_aworklist_eq_tvar_bind_same; auto...
@@ -1012,7 +1012,7 @@ Proof with eauto.
     + apply rename_tvar_in_aworklist_eq_tvar_bind_same; auto...
     + intros.
       inst_cofinites_with x. inst_cofinites_with X1. inst_cofinites_with X2.
-      apply rename_tvar_aworklist_subst with (Y:=X) (X1:=Y) (X2:=Y) in H11 as Hws.
+      apply aworklist_subst_rename_tvar with (Y:=X) (X1:=Y) (X2:=Y) in H11 as Hws.
       simpl in Hws. destruct_eq_atom.
       * rewrite rename_tvar_in_aworklist_rev_eq in Hws; auto...
         simpl in Hws.
@@ -1032,7 +1032,7 @@ Proof with eauto.
       * simpl. solve_notin_rename_tvar; auto.
     + apply rename_tvar_in_aworklist_neq_tvar_bind_same; auto...
     + intros. inst_cofinites_with x. inst_cofinites_with X1. inst_cofinites_with X2.  
-      apply rename_tvar_aworklist_subst with (Y:=X) (X1:=Y) (X2:=X0) in H11 as Hws.
+      apply aworklist_subst_rename_tvar with (Y:=X) (X1:=Y) (X2:=X0) in H11 as Hws.
       destruct_eq_atom.
       * simpl in Hws.
         destruct_eq_atom.
@@ -1107,7 +1107,7 @@ Proof with eauto.
     destruct (X0 == X); subst; inst_cofinites_for a_wl_red__infabs_etvar; auto.
     + apply rename_tvar_in_aworklist_eq_tvar_bind_same; auto...
     + intros.
-      apply rename_tvar_aworklist_subst with (Y:=X) (X1:=Y) (X2:=Y) in H9 as Hws.
+      apply aworklist_subst_rename_tvar with (Y:=X) (X1:=Y) (X2:=Y) in H9 as Hws.
       destruct_eq_atom.
       * simpl in Hws.
         destruct_eq_atom.
@@ -1126,7 +1126,7 @@ Proof with eauto.
       * simpl; solve_notin_rename_tvar; auto.
     + apply rename_tvar_in_aworklist_neq_tvar_bind_same; auto...
     + intros.
-      apply rename_tvar_aworklist_subst with (Y:=X) (X1:=Y) (X2:=X0) in H9 as Hws.
+      apply aworklist_subst_rename_tvar with (Y:=X) (X1:=Y) (X2:=X0) in H9 as Hws.
       destruct_eq_atom.
       * simpl in Hws.
         destruct_eq_atom.
