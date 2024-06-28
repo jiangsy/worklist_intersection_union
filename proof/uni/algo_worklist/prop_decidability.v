@@ -3939,6 +3939,9 @@ Proof.
              destruct He'' as [m'' He''].
              eapply exp_size_conts_le with (m := m'') in H6; eauto; try lia.
              eapply apply_conts_exp_size with (n := m'') in Happly as Hle; eauto. subst.
+             assert (Hs': exists m, split_depth_wl (w ⫤ᵃ Γ) m).
+             { eapply split_depth_wl_total; eauto. }
+             destruct Hs' as [m''' Hs'].
              eapply IHmtj; eauto; simpl in *; try lia.
              eapply a_wf_wl_apply_conts; eauto.
              eapply apply_conts_judge_size in Happly; lia.
@@ -3972,6 +3975,9 @@ Proof.
              { eapply n_iuv_size_open with (A := A) (B := A2); eauto. }
              eapply exp_size_conts_le with (m := m'') in H7; eauto; try lia.
              eapply apply_conts_exp_size in Happly as Hwf''; eauto. subst.
+             assert (Hs': exists m, split_depth_wl (w ⫤ᵃ Γ) m).
+             { eapply split_depth_wl_total; eauto. }
+             destruct Hs' as [m''' Hs'].
              eapply IHmtj; eauto; simpl in *; try lia.
              eapply a_wf_wl_apply_conts; eauto.
              constructor; auto. constructor; auto.
