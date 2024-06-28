@@ -3667,16 +3667,16 @@ Proof.
                  destruct_conj; subst.
                  apply rename_tvar_in_a_wf_wwl_a_wl_red with (X:=X1) (Y:=X0) in Jge as Jgern; eauto.
                  ---  assert (Heq1 : {X0 ᵃʷ/ₜᵥ X1} ({typ_arrow ` X1 ` X2 ᵃʷ/ₜ X} Γ2 ⧺ Γ1) = ({typ_arrow ` X0 ` X2 ᵃʷ/ₜ X} {X0 ᵃʷ/ₜᵥ X1} Γ2 ⧺ {X0 ᵃʷ/ₜᵥ X1}  Γ1)). {
-                      rewrite <- rename_tvar_in_aworklist_app; eauto.
-                      rewrite subst_typ_in_awl_rename_neq_tvar; eauto.
-                      simpl; destruct_eq_atom. auto.
+                        rewrite <- rename_tvar_in_aworklist_app; eauto.
+                        rewrite subst_typ_in_awl_rename_neq_tvar; eauto.
+                        simpl; destruct_eq_atom. auto.
                       }
                       rewrite Heq1 in Jgern; destruct_eq_atom.
                       apply rename_tvar_in_a_wf_wwl_a_wl_red with (X:=X2) (Y:=X3) in Jgern; eauto.
                       assert (Heq2: {X3 ᵃʷ/ₜᵥ X2} ({typ_arrow ` X0 ` X2 ᵃʷ/ₜ X} {X0 ᵃʷ/ₜᵥ X1} Γ2 ⧺ {X0 ᵃʷ/ₜᵥ X1} Γ1) = ({typ_arrow ` X0 ` X3 ᵃʷ/ₜ X} {X3 ᵃʷ/ₜᵥ X2} {X0 ᵃʷ/ₜᵥ X1} Γ2 ⧺ {X3 ᵃʷ/ₜᵥ X2} {X0 ᵃʷ/ₜᵥ X1} Γ1)). {
-                      rewrite <- rename_tvar_in_aworklist_app; eauto.
-                      rewrite subst_typ_in_awl_rename_neq_tvar; eauto.
-                      simpl; destruct_eq_atom. auto.
+                        rewrite <- rename_tvar_in_aworklist_app; eauto.
+                        rewrite subst_typ_in_awl_rename_neq_tvar; eauto.
+                        simpl; destruct_eq_atom. auto.
                       }
                       rewrite Heq2 in Jgern.
                       apply rename_var_in_a_wf_wwl_a_wl_red with (x:=x) (y:=x0) in Jgern; eauto.
@@ -3698,7 +3698,8 @@ Proof.
                  --- repeat (econstructor; simpl; eauto 4).
                       eapply a_wf_exp_weaken_etvar_twice; simpl; eauto. 
               ** right. unfold not. intros. dependent destruction H4. eauto.
-              econstructor; eauto.
+                 --- admit.
+              ** econstructor; eauto.
            ++ remember (dom Ξ). pick fresh x. subst. inst_cofinites_with x.
               dependent destruction H4.
               assert (JgArr: (work_check (e ᵉ^^ₑ exp_var_f x) A2 ⫤ᵃ x ~ᵃ A1;ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ 
