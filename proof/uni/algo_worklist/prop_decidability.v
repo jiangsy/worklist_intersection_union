@@ -2594,6 +2594,19 @@ Proof.
     subst. eauto.
 Qed.
 
+Lemma aworklist_subst_same_nenv' : forall Γ X A Γ1' Γ2' Ξ Ξ',
+  ⊢ᵃʷ Γ -> X ~ ⬒ ∈ᵃ ⌊ Γ ⌋ᵃ ->
+  aworklist_subst Γ X A Γ1' Γ2' ->
+  ⌊ Γ ⌋ᵃ ᵗ⊢ᵃₘ A ->
+  awl_to_nenv Γ Ξ ->
+  awl_to_nenv ({A ᵃʷ/ₜ X} Γ2' ⧺ Γ1') Ξ' ->
+  Ξ = Ξ'.
+Proof.
+  intros Γ X A Γ1' Γ2' Ξ Ξ' Hwf Hbinds Hsubst Hmono Hsize1 Hsize2.
+  eapply awl_split_etvar in Hbinds as [Γ1 [Γ2 Hbinds]]. subst.
+  eapply aworklist_subst_same_nenv in Hsubst; eauto.
+Qed.
+
 Lemma exp_split_size_subst_mono : forall Ξ Σ e A X m m',
   uniq Ξ -> 
   Σ ᵗ⊢ᵃₘ A ->
@@ -3277,7 +3290,7 @@ Proof.
                          ~ ({typ_arrow ` X1 ` X2 ᵃʷ/ₜ X} Γ2 ⧺ Γ1) ⟶ᵃʷ⁎⋅).
               { eapply IHme with (ne := m + n); eauto; simpl; try lia. admit. (* wf *) }
               admit. (* rename *)
-              admit.
+              admit. (* wf *)
               econstructor; eauto.
            ++ remember (dom Ξ). pick fresh x. subst. inst_cofinites_with x.
               dependent destruction H4.
@@ -3380,7 +3393,35 @@ Proof.
            dependent destruction Hcontra. unify_binds.
         -- right. intro Hcontra.
            dependent destruction Hcontra. unify_binds.
-        -- admit. (* TODO: split *)
+        -- remember (dom Ξ).
+           pick fresh X1. pick fresh X2. subst.
+           assert (Hsubst: exists Γ1 Γ2, aworklist_subst (X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ) X  (typ_arrow ` X1 ` X2) Γ1 Γ2).
+           { eapply worklist_subst_fresh_etvar_total'; eauto. }
+           destruct Hsubst as [Γ1 [Γ2 Hsubst]].
+           assert (Ha2n: exists Ξ, awl_to_nenv ({typ_arrow ` X1 ` X2 ᵃʷ/ₜ X} Γ2 ⧺ Γ1) Ξ).
+           { eapply awl_to_nenv_total; eauto.
+             eapply aworklist_subst_wf_wwl with (Γ := (X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ)); simpl; eauto.
+             econstructor; eauto. }
+           destruct Ha2n as [Ξ' Ha2n].
+           dependent destruction H3.
+           eapply aworklist_subst_same_nenv' in Hsubst as Heq; simpl;
+             try solve [econstructor; eauto]; eauto. subst.
+           assert (He': exists m1 m2, exp_size_contd Ξ' ({typ_arrow ` X1 ` X2 ᶜᵈ/ₜ X} cd) 0 0 m1 m2).
+           { eapply exp_size_contd_total; eauto.
+             eapply a_wf_contd_n_wf_contd with (Γ := {typ_arrow ` X1 ` X2 ᵃʷ/ₜ X} Γ2 ⧺ Γ1); eauto.
+             admit. admit. (* wf *) }
+           destruct He' as [m1' [m2' He']].
+           eapply exp_size_contd_subst_mono with (Σ := (X1, abind_etvar_empty) :: (X2, abind_etvar_empty) :: nil) in He' as He''; try solve [econstructor; eauto]; eauto.
+           destruct He''. subst.
+           assert (He'': exists k, exp_size_wl ({typ_arrow ` X1 ` X2 ᵃʷ/ₜ X} Γ2 ⧺ Γ1) k).
+           { eapply exp_size_wl_total; eauto. admit. (* wf *) }
+           destruct He'' as [k He''].
+           eapply exp_size_wl_aworklist_subst' in Hsubst; simpl; try solve [econstructor; eauto]; eauto. subst.
+           assert (Jg: (work_applyd ({typ_arrow ` X1 ` X2 ᶜᵈ/ₜ X} cd) ` X1 ` X2 ⫤ᵃ {typ_arrow ` X1 ` X2 ᵃʷ/ₜ X} Γ2 ⧺ Γ1) ⟶ᵃʷ⁎⋅ \/
+                     ~ (work_applyd ({typ_arrow ` X1 ` X2 ᶜᵈ/ₜ X} cd) ` X1 ` X2 ⫤ᵃ {typ_arrow ` X1 ` X2 ᵃʷ/ₜ X} Γ2 ⧺ Γ1) ⟶ᵃʷ⁎⋅).
+           { eapply IHma; eauto; simpl in *; try lia. admit. (* wf *)
+             admit. admit. admit. admit. (* other measures *) }
+           admit. (* rename *) 
         -- destruct (apply_contd_total cd A1 A2) as [w Happly].
           assert (Jg: (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ ~ (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
           { eapply a_wf_wl_apply_contd in Happly as Hwf'; eauto.
