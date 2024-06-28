@@ -2924,6 +2924,90 @@ Proof.
   eapply judge_size_wl_aworklist_subst in Hsubst; eauto.
 Qed.
 
+Lemma inftapp_depth_wl_move_etvar_back : forall X Y Γ1 Γ2,
+  uniq (⌊ Y ~ᵃ ⬒ ;ᵃ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1 ⌋ᵃ) ->
+  inftapp_depth_wl (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) = inftapp_depth_wl (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Y ~ᵃ ⬒ ;ᵃ Γ1).
+Proof.
+  intros * Huniq. induction Γ2; intros; simpl in *; eauto.
+  dependent destruction Huniq. dependent destruction Huniq.
+  eapply IHΓ2; eauto.
+Qed.
+
+Lemma inftapp_depth_mono : forall Σ A,
+  Σ ᵗ⊢ᵃₘ A -> inftapp_depth A = 0.
+Proof.
+  intros * Hmono. induction Hmono; simpl in *; eauto.
+Qed.
+
+Lemma inftapp_depth_subst_mono : forall Σ A B X,
+  Σ ᵗ⊢ᵃₘ A -> inftapp_depth B = inftapp_depth ({A ᵗ/ₜ X} B).
+Proof.
+  intros * Hmono. induction B; simpl in *; eauto.
+  destruct_eq_atom; simpl; eauto.
+  erewrite inftapp_depth_mono; eauto.
+Qed.
+
+Lemma inftapp_depth_conts_tail_rec_subst_mono : forall c Σ A X n,
+  Σ ᵗ⊢ᵃₘ A -> inftapp_depth_conts_tail_rec c n = inftapp_depth_conts_tail_rec ({A ᶜˢ/ₜ X} c) n
+with inftapp_depth_contd_tail_rec_subst_mono : forall c Σ A X n,
+  Σ ᵗ⊢ᵃₘ A -> inftapp_depth_contd_tail_rec c n = inftapp_depth_contd_tail_rec ({A ᶜᵈ/ₜ X} c) n.
+Proof.
+  - clear inftapp_depth_conts_tail_rec_subst_mono.
+    intro c. induction c; simpl; intros * Hmono; eauto;
+      try solve [erewrite inftapp_depth_subst_mono; eauto].
+    erewrite <- inftapp_depth_subst_mono; eauto.
+    erewrite <- inftapp_depth_subst_mono; eauto.
+  - clear inftapp_depth_contd_tail_rec_subst_mono.
+    intro c. induction c; simpl; intros * Hmono; eauto.
+Qed.
+
+Lemma inftapp_depth_work_subst_mono : forall Σ A X w,
+  Σ ᵗ⊢ᵃₘ A -> inftapp_depth_work w = inftapp_depth_work ({A ʷ/ₜ X} w).
+Proof.
+  intros * Hmono. induction w; simpl in *; eauto;
+    try erewrite <- inftapp_depth_subst_mono; eauto;
+    try erewrite <- inftapp_depth_subst_mono; eauto;
+    try erewrite <- inftapp_depth_subst_mono; eauto;
+    try solve [erewrite inftapp_depth_conts_tail_rec_subst_mono; eauto];
+    try solve [erewrite inftapp_depth_contd_tail_rec_subst_mono; eauto].
+Qed.
+
+Lemma inftapp_depth_wl_aworklist_subst : forall Γ2 X A Γ1 Γ1' Γ2',
+  ⊢ᵃʷ (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) ->
+  aworklist_subst (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) X A Γ1' Γ2' ->
+  X `notin` ftvar_in_typ A ->
+  ⌊ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1 ⌋ᵃ ᵗ⊢ᵃₘ A ->
+  inftapp_depth_wl ({A ᵃʷ/ₜ X} Γ2' ⧺ Γ1') = inftapp_depth_wl (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1).
+Proof.
+  intros Γ2. induction Γ2; intros * Hwf Hsubst Hnotin Hmono;
+    dependent destruction Hwf; dependent destruction Hsubst;
+    simpl in *; eauto; try solve [exfalso; eauto];
+    try solve [eapply IHΓ2; eauto;
+      try solve [eapply a_mono_typ_strengthen_var; eauto];
+      try solve [eapply a_mono_typ_strengthen_mtvar with (b := □%abind); eauto];
+      try solve [eapply a_mono_typ_strengthen_mtvar with (b := ⬒); eauto];
+      try solve [eapply a_mono_typ_strengthen_stvar; eauto]].
+  - eapply worklist_split_etvar_det in x. destruct x. subst.
+    rewrite inftapp_depth_wl_move_etvar_back with (Y := X); eauto.
+    eapply IHΓ2 with (Γ1 := X ~ᵃ ⬒ ;ᵃ Γ1) (A := A); eauto.
+    eapply a_wf_wwl_move_etvar_back; eauto.
+    eapply a_mono_typ_move_etvar_back; eauto.
+    eapply a_wf_wwl_tvar_notin_remaining in Hwf; eauto.
+  - erewrite <- inftapp_depth_work_subst_mono; eauto.
+Qed.
+
+Lemma inftapp_depth_wl_aworklist_subst' : forall Γ X A Γ1' Γ2',
+  ⊢ᵃʷ Γ -> X ~ ⬒ ∈ᵃ ⌊ Γ ⌋ᵃ ->
+  aworklist_subst Γ X A Γ1' Γ2' ->
+  ⌊ Γ ⌋ᵃ ᵗ⊢ᵃₘ A ->
+  X `notin` ftvar_in_typ A ->
+  inftapp_depth_wl ({A ᵃʷ/ₜ X} Γ2' ⧺ Γ1') = inftapp_depth_wl Γ.
+Proof.
+  intros * Hwf Hbinds Hsubst Hmono Hnotin.
+  eapply awl_split_etvar in Hbinds as [Γ1 [Γ2 Hbinds]]. subst.
+  eapply inftapp_depth_wl_aworklist_subst in Hsubst; eauto.
+Qed.
+
 Lemma a_wf_wl_red_decidable : forall me mj mt mtj ma maj ms mw ne Γ,
   ⊢ᵃʷₛ Γ ->
   exp_size_wl Γ ne -> ne < me ->
