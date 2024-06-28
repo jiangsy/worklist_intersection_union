@@ -3527,39 +3527,85 @@ Proof.
                  eapply aworklist_subst_det with (Γ1:=Γ0) (Γ2:=Γ3) (X:=X) in Hsubstrn3 as Heq; eauto.
                  destruct_conj; subst.
                  apply rename_tvar_in_a_wf_wwl_a_wl_red with (X:=X1) (Y:=X0) in Jge as Jgern; eauto.
-                 ---  assert (Heq1 : {X0 ᵃʷ/ₜᵥ X1} ({typ_arrow ` X1 ` X2 ᵃʷ/ₜ X} Γ2 ⧺ Γ1) = ({typ_arrow ` X0 ` X2 ᵃʷ/ₜ X} {X0 ᵃʷ/ₜᵥ X1} Γ2 ⧺ {X0 ᵃʷ/ₜᵥ X1}  Γ1)). {
-                        rewrite <- rename_tvar_in_aworklist_app; eauto.
-                        rewrite subst_typ_in_awl_rename_neq_tvar; eauto.
-                        simpl; destruct_eq_atom. auto.
-                      }
-                      rewrite Heq1 in Jgern; destruct_eq_atom.
-                      apply rename_tvar_in_a_wf_wwl_a_wl_red with (X:=X2) (Y:=X3) in Jgern; eauto.
-                      assert (Heq2: {X3 ᵃʷ/ₜᵥ X2} ({typ_arrow ` X0 ` X2 ᵃʷ/ₜ X} {X0 ᵃʷ/ₜᵥ X1} Γ2 ⧺ {X0 ᵃʷ/ₜᵥ X1} Γ1) = ({typ_arrow ` X0 ` X3 ᵃʷ/ₜ X} {X3 ᵃʷ/ₜᵥ X2} {X0 ᵃʷ/ₜᵥ X1} Γ2 ⧺ {X3 ᵃʷ/ₜᵥ X2} {X0 ᵃʷ/ₜᵥ X1} Γ1)). {
-                        rewrite <- rename_tvar_in_aworklist_app; eauto.
-                        rewrite subst_typ_in_awl_rename_neq_tvar; eauto.
-                        simpl; destruct_eq_atom. auto.
-                      }
-                      rewrite Heq2 in Jgern.
-                      apply rename_var_in_a_wf_wwl_a_wl_red with (x:=x) (y:=x0) in Jgern; eauto.
+                 rewrite <- rename_tvar_in_aworklist_app in Jgern; eauto.
+                 rewrite subst_typ_in_awl_rename_neq_tvar in Jgern; eauto.
+                 simpl in Jgern; destruct_eq_atom.
+                 apply rename_tvar_in_a_wf_wwl_a_wl_red with (X:=X2) (Y:=X3) in Jgern; eauto.
+                 rewrite <- rename_tvar_in_aworklist_app in Jgern; eauto.
+                 rewrite subst_typ_in_awl_rename_neq_tvar in Jgern; eauto.
+                 simpl in Jgern; destruct_eq_atom.
+                 apply rename_var_in_a_wf_wwl_a_wl_red with (x:=x) (y:=x0) in Jgern; eauto.
+                 rewrite <- awl_app_rename_var_comm in Jgern; eauto.
+                 rewrite subst_exp_in_awl_rename_tvar_comm in Jgern; eauto.
+                 erewrite aworklist_subst_fvar_in_aworklist_2 with (Γ:=(work_check (e ᵉ^^ₑ exp_var_f x) ` X3 ⫤ᵃ x ~ᵃ ` X0;ᵃ X3 ~ᵃ ⬒ ;ᵃ X0 ~ᵃ ⬒ ;ᵃ Γ)); eauto.
+                 simpl; rewrite fvar_in_exp_open_exp_wrt_exp_upper; eauto.
+                 apply aworklist_subst_wf_wwl with (Γ:=(work_check (e ᵉ^^ₑ exp_var_f x) ` X3 ⫤ᵃ x ~ᵃ ` X0;ᵃ X3 ~ᵃ ⬒ ;ᵃ X0 ~ᵃ ⬒ ;ᵃ Γ)); eauto.
+                 repeat (constructor; simpl; eauto). eapply a_wf_exp_weaken_etvar_twice; simpl; eauto. 
+                 simpl. econstructor; eauto.
+                 erewrite aworklist_subst_dom_upper with (Γ:=(work_check (e ᵉ^^ₑ exp_var_f x) ` X3 ⫤ᵃ x ~ᵃ ` X0;ᵃ X3 ~ᵃ ⬒ ;ᵃ X0 ~ᵃ ⬒ ;ᵃ Γ)); eauto.
+                 apply aworklist_subst_wf_wwl with (Γ:=(work_check (e ᵉ^^ₑ exp_var_f x) ` X2 ⫤ᵃ x ~ᵃ ` X0;ᵃ X2 ~ᵃ ⬒ ;ᵃ X0 ~ᵃ ⬒ ;ᵃ Γ)); eauto.
+                 repeat (constructor; simpl; eauto). eapply a_wf_exp_weaken_etvar_twice; simpl; eauto. 
+                 simpl. econstructor; eauto.
+                 erewrite aworklist_subst_dom_upper with (Γ:=(work_check (e ᵉ^^ₑ exp_var_f x) ` X2 ⫤ᵃ x ~ᵃ ` X0;ᵃ X2 ~ᵃ ⬒ ;ᵃ X0 ~ᵃ ⬒ ;ᵃ Γ)); eauto.
+                 eapply aworklist_subst_wf_wwl with (Γ:=(work_check (e ᵉ^^ₑ exp_var_f x) ` X2 ⫤ᵃ x ~ᵃ ` X1;ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ)); eauto.
+                 simpl; eauto. constructor; eauto.
+                 erewrite aworklist_subst_dom_upper with (Γ:=(work_check (e ᵉ^^ₑ exp_var_f x) ` X2 ⫤ᵃ x ~ᵃ ` X1;ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ)); eauto. 
+                 repeat (econstructor; simpl; eauto 4).
+                 eapply a_wf_exp_weaken_etvar_twice; simpl; eauto. 
+              ** right. unfold not. intros. dependent destruction H4. eauto.
+                 --- pick fresh x0. pick fresh X0. pick fresh X3. inst_cofinites_with x0. inst_cofinites_with X0. inst_cofinites_with X3.
+                      assert (Hsubst': exists Γ1 Γ2, aworklist_subst (work_check (e ᵉ^^ₑ exp_var_f x0) ` X3 ⫤ᵃ x0 ~ᵃ ` X0;ᵃ X3 ~ᵃ ⬒ ;ᵃ X0 ~ᵃ ⬒ ;ᵃ Γ) X (typ_arrow ` X0 ` X3) Γ1 Γ2).
+                      { assert (Hsubst'': exists Γ1 Γ2, aworklist_subst (X3 ~ᵃ ⬒ ;ᵃ X0 ~ᵃ ⬒ ;ᵃ Γ) X (typ_arrow ` X0 ` X3) Γ1 Γ2).
+                        { eapply worklist_subst_fresh_etvar_total'; eauto. }
+                      destruct Hsubst'' as [Γ0 [Γ3 Hsubst']]. eauto. }
+                      destruct Hsubst' as [Γ0 [Γ3 Hsubst']]. apply H7 in Hsubst' as Jge'; eauto. clear H7.
+                      apply aworklist_subst_rename_tvar with (X1:=X0) (Y:=X1) in Hsubst' as Hsubstrn1.
+                      2: simpl; rewrite ftvar_in_exp_open_exp_wrt_exp_upper ; eauto.
+                      simpl in Hsubstrn1. destruct_eq_atom.
+                      rewrite rename_tvar_in_aworklist_fresh_eq in Hsubstrn1; eauto.
+                      rewrite subst_typ_in_exp_fresh_eq in Hsubstrn1; eauto.
+                      2: rewrite ftvar_in_exp_open_exp_wrt_exp_upper; eauto.
+                      apply aworklist_subst_rename_tvar with (X1:=X3) (Y:=X2) in Hsubstrn1 as Hsubstrn2.
+                      2: simpl; rewrite ftvar_in_exp_open_exp_wrt_exp_upper; eauto.
+                      simpl in Hsubstrn2. destruct_eq_atom.
+                      rewrite rename_tvar_in_aworklist_fresh_eq in Hsubstrn2; eauto.
+                      rewrite subst_typ_in_exp_fresh_eq in Hsubstrn2; eauto.
+                      2: rewrite ftvar_in_exp_open_exp_wrt_exp_upper; eauto.
+                      apply aworklist_subst_rename_var with (x := x0) (y := x) in Hsubstrn2 as Hsubstrn3.
+                      2: simpl; rewrite fvar_in_exp_open_exp_wrt_exp_upper; eauto.
+                      simpl in Hsubstrn3. destruct_eq_atom.
+                      rewrite subst_exp_in_exp_open_exp_wrt_exp_var2 in Hsubstrn3; eauto.
+                      rewrite rename_var_in_aworklist_fresh_eq in Hsubstrn3; eauto.
+                      eapply aworklist_subst_det with (Γ1:=Γ1) (Γ2:=Γ2) (X:=X) in Hsubstrn3 as Heq; eauto.
+                      destruct_conj; subst.
+                      apply rename_tvar_in_a_wf_wwl_a_wl_red with (X:=X0) (Y:=X1) in Jge' as Jgern; eauto.
+                      rewrite <- rename_tvar_in_aworklist_app in Jgern; eauto.
+                      rewrite subst_typ_in_awl_rename_neq_tvar in Jgern; eauto.
+                      simpl in Jgern; destruct_eq_atom. auto.
+                      apply rename_tvar_in_a_wf_wwl_a_wl_red with (X:=X3) (Y:=X2) in Jgern; eauto.
+                      rewrite <- rename_tvar_in_aworklist_app in Jgern; eauto.
+                      rewrite subst_typ_in_awl_rename_neq_tvar in Jgern; eauto.
+                      simpl in Jgern; destruct_eq_atom.
+                      apply rename_var_in_a_wf_wwl_a_wl_red with (x:=x0) (y:=x) in Jgern; eauto.
                       rewrite <- awl_app_rename_var_comm in Jgern; eauto.
                       rewrite subst_exp_in_awl_rename_tvar_comm in Jgern; eauto.
-                      erewrite aworklist_subst_fvar_in_aworklist_2 with (Γ:=(work_check (e ᵉ^^ₑ exp_var_f x) ` X3 ⫤ᵃ x ~ᵃ ` X0;ᵃ X3 ~ᵃ ⬒ ;ᵃ X0 ~ᵃ ⬒ ;ᵃ Γ)); eauto.
+                      erewrite aworklist_subst_fvar_in_aworklist_2 with (Γ:=(work_check (e ᵉ^^ₑ exp_var_f x0) ` X2 ⫤ᵃ x0 ~ᵃ ` X1;ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ)); eauto.
                       simpl; rewrite fvar_in_exp_open_exp_wrt_exp_upper; eauto.
-                      apply aworklist_subst_wf_wwl with (Γ:=(work_check (e ᵉ^^ₑ exp_var_f x) ` X3 ⫤ᵃ x ~ᵃ ` X0;ᵃ X3 ~ᵃ ⬒ ;ᵃ X0 ~ᵃ ⬒ ;ᵃ Γ)); eauto.
+                      apply aworklist_subst_wf_wwl with (Γ:=(work_check (e ᵉ^^ₑ exp_var_f x0) ` X2 ⫤ᵃ x0 ~ᵃ ` X1;ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ)); eauto.
                       repeat (constructor; simpl; eauto). eapply a_wf_exp_weaken_etvar_twice; simpl; eauto. 
                       simpl. econstructor; eauto.
-                      erewrite aworklist_subst_dom_upper with (Γ:=(work_check (e ᵉ^^ₑ exp_var_f x) ` X3 ⫤ᵃ x ~ᵃ ` X0;ᵃ X3 ~ᵃ ⬒ ;ᵃ X0 ~ᵃ ⬒ ;ᵃ Γ)); eauto.
-                      apply aworklist_subst_wf_wwl with (Γ:=(work_check (e ᵉ^^ₑ exp_var_f x) ` X2 ⫤ᵃ x ~ᵃ ` X0;ᵃ X2 ~ᵃ ⬒ ;ᵃ X0 ~ᵃ ⬒ ;ᵃ Γ)); eauto.
+                      erewrite aworklist_subst_dom_upper with (Γ:=(work_check (e ᵉ^^ₑ exp_var_f x0) ` X2 ⫤ᵃ x0 ~ᵃ ` X1;ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ)); eauto.
+                      apply aworklist_subst_wf_wwl with (Γ:=(work_check (e ᵉ^^ₑ exp_var_f x0) ` X3 ⫤ᵃ x0 ~ᵃ ` X1;ᵃ X3 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ)); eauto.
                       repeat (constructor; simpl; eauto). eapply a_wf_exp_weaken_etvar_twice; simpl; eauto. 
                       simpl. econstructor; eauto.
-                      erewrite aworklist_subst_dom_upper with (Γ:=(work_check (e ᵉ^^ₑ exp_var_f x) ` X2 ⫤ᵃ x ~ᵃ ` X0;ᵃ X2 ~ᵃ ⬒ ;ᵃ X0 ~ᵃ ⬒ ;ᵃ Γ)); eauto.
-                 ---  eapply aworklist_subst_wf_wwl with (Γ:=(work_check (e ᵉ^^ₑ exp_var_f x) ` X2 ⫤ᵃ x ~ᵃ ` X1;ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ)); eauto.
-                      simpl; eauto. constructor; eauto.
-                 --- erewrite aworklist_subst_dom_upper with (Γ:=(work_check (e ᵉ^^ₑ exp_var_f x) ` X2 ⫤ᵃ x ~ᵃ ` X1;ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ)); eauto. 
-                 --- repeat (econstructor; simpl; eauto 4).
+                      erewrite aworklist_subst_dom_upper with (Γ:=(work_check (e ᵉ^^ₑ exp_var_f x0) ` X3 ⫤ᵃ x0 ~ᵃ ` X1;ᵃ X3 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ)); eauto.
+                      eapply aworklist_subst_wf_wwl with (Γ:=(work_check (e ᵉ^^ₑ exp_var_f x0) ` X3 ⫤ᵃ x0 ~ᵃ ` X0;ᵃ X3 ~ᵃ ⬒ ;ᵃ X0 ~ᵃ ⬒ ;ᵃ Γ)); eauto.
+                      repeat (econstructor; simpl; eauto 4).
                       eapply a_wf_exp_weaken_etvar_twice; simpl; eauto. 
-              ** right. unfold not. intros. dependent destruction H4. eauto.
-                 --- admit.
+                      simpl. econstructor; eauto.
+                      erewrite aworklist_subst_dom_upper with (Γ:=(work_check (e ᵉ^^ₑ exp_var_f x0) ` X3 ⫤ᵃ x0 ~ᵃ ` X0;ᵃ X3 ~ᵃ ⬒ ;ᵃ X0 ~ᵃ ⬒ ;ᵃ Γ)); eauto.
+                      dependent destruction H6. simpl in H4.
+                          repeat (constructor; simpl; eauto).
               ** econstructor; eauto.
            ++ remember (dom Ξ). pick fresh x. subst. inst_cofinites_with x.
               dependent destruction H4.
