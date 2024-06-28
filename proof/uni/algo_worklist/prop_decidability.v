@@ -3072,6 +3072,15 @@ Proof.
   eapply inftapp_judge_size_wl_aworklist_subst in Hsubst; eauto.
 Qed.
 
+Lemma infabs_depth_wl_move_etvar_back : forall X Y Γ1 Γ2,
+  uniq (⌊ Y ~ᵃ ⬒ ;ᵃ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1 ⌋ᵃ) ->
+  infabs_depth_wl (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) = infabs_depth_wl (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Y ~ᵃ ⬒ ;ᵃ Γ1).
+Proof.
+  intros * Huniq. induction Γ2; intros; simpl in *; eauto.
+  dependent destruction Huniq. dependent destruction Huniq.
+  eapply IHΓ2; eauto.
+Qed.
+
 Lemma a_wf_wl_red_decidable : forall me mj mt mtj ma maj ms mw ne Γ,
   ⊢ᵃʷₛ Γ ->
   exp_size_wl Γ ne -> ne < me ->
