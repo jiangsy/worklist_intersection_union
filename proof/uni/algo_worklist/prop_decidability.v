@@ -3558,7 +3558,7 @@ Proof.
                       { assert (Hsubst'': exists Γ1 Γ2, aworklist_subst (X3 ~ᵃ ⬒ ;ᵃ X0 ~ᵃ ⬒ ;ᵃ Γ) X (typ_arrow ` X0 ` X3) Γ1 Γ2).
                         { eapply worklist_subst_fresh_etvar_total'; eauto. }
                       destruct Hsubst'' as [Γ0 [Γ3 Hsubst']]. eauto. }
-                      destruct Hsubst' as [Γ0 [Γ3 Hsubst']]. apply H7 in Hsubst' as Jge'; eauto. clear H7.
+                      destruct Hsubst' as [Γ0 [Γ3 Hsubst']]. apply H8 in Hsubst' as Jge'; eauto. clear H8.
                       apply aworklist_subst_rename_tvar with (X1:=X0) (Y:=X1) in Hsubst' as Hsubstrn1.
                       2: simpl; rewrite ftvar_in_exp_open_exp_wrt_exp_upper ; eauto.
                       simpl in Hsubstrn1. destruct_eq_atom.
@@ -3604,7 +3604,7 @@ Proof.
                       eapply a_wf_exp_weaken_etvar_twice; simpl; eauto. 
                       simpl. econstructor; eauto.
                       erewrite aworklist_subst_dom_upper with (Γ:=(work_check (e ᵉ^^ₑ exp_var_f x0) ` X3 ⫤ᵃ x0 ~ᵃ ` X0;ᵃ X3 ~ᵃ ⬒ ;ᵃ X0 ~ᵃ ⬒ ;ᵃ Γ)); eauto.
-                      dependent destruction H6. simpl in H4.
+                      dependent destruction H7. simpl in H5.
                           repeat (constructor; simpl; eauto).
               ** econstructor; eauto.
            ++ remember (dom Ξ). pick fresh x. subst. inst_cofinites_with x.
