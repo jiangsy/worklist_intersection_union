@@ -4450,7 +4450,70 @@ Proof.
           repeat (constructor; simpl; auto).
           apply a_wf_typ_tvar_etvar_cons; auto.
           apply a_wf_typ_weaken_cons; auto.
-        - admit. 
+        - destruct B.
+          + right. intro Hcontra. dependent destruction Hcontra.
+            pick fresh X0. inst_cofinites_with X0.
+            apply rename_tvar_in_a_wf_wwl_a_wl_red with (X:=X0) (Y:=X) in H15 as Hcontra; auto.
+            simpl in Hcontra. destruct_eq_atom.
+            rewrite subst_typ_in_typ_open_typ_wrt_typ_tvar2 in Hcontra; eauto.
+            rewrite rename_tvar_in_aworklist_fresh_eq in Hcontra; eauto.
+            eauto using a_wf_typ_tvar_etvar_cons, a_wf_typ_weaken_cons.
+          + destruct Jg. left. econstructor; eauto.
+            right. unfold not. intros. dependent destruction H15; auto.
+            pick fresh X0. inst_cofinites_with X0.
+            apply rename_tvar_in_a_wf_wwl_a_wl_red with (X:=X0) (Y:=X) in H16 as Hcontra; auto.
+            simpl in Hcontra. destruct_eq_atom.
+            rewrite subst_typ_in_typ_open_typ_wrt_typ_tvar2 in Hcontra; eauto.
+            rewrite rename_tvar_in_aworklist_fresh_eq in Hcontra; eauto.
+            eauto using a_wf_typ_tvar_etvar_cons, a_wf_typ_weaken_cons.
+          + inversion HneqAll.
+          + inversion HneqAll.
+          + right. unfold not. intros. dependent destruction H14.
+            * pick fresh X1. inst_cofinites_with X1.
+              apply rename_tvar_in_a_wf_wwl_a_wl_red with (X:=X1) (Y:=X) in H15 as Hcontra; auto.
+              simpl in Hcontra. destruct_eq_atom.
+              rewrite subst_typ_in_typ_open_typ_wrt_typ_tvar2 in Hcontra; eauto.
+              rewrite rename_tvar_in_aworklist_fresh_eq in Hcontra; eauto.
+              constructor. constructor; simpl. eapply a_wf_typ_tvar_etvar_cons; eauto.
+              apply a_wf_typ_weaken_cons; eauto. eauto.
+            * inversion H15.
+          + right. unfold not. intros. dependent destruction H14. 
+            pick fresh X0. inst_cofinites_with X0.
+            apply rename_tvar_in_a_wf_wwl_a_wl_red with (X:=X0) (Y:=X) in H15 as Hcontra; auto.
+            simpl in Hcontra. destruct_eq_atom.
+            rewrite subst_typ_in_typ_open_typ_wrt_typ_tvar2 in Hcontra; eauto.
+            rewrite subst_typ_in_typ_fresh_eq in Hcontra; auto.
+            rewrite subst_typ_in_typ_fresh_eq in Hcontra; auto.
+            rewrite rename_tvar_in_aworklist_fresh_eq in Hcontra; eauto.
+            dependent destruction H1.
+            repeat (constructor; simpl; auto); eauto using a_wf_typ_tvar_etvar_cons, a_wf_typ_weaken_cons.
+            eapply a_wf_typ_tvar_etvar_cons; eauto.
+          + inversion HneqAll.
+          + edestruct JgUnion2 as [JgUnion2' | JgUnion2']; eauto.
+            edestruct JgUnion1 as [JgUnion1' | JgUnion1']; eauto.
+            right. intro Hcontra. dependent destruction Hcontra; auto.
+            pick fresh X1. inst_cofinites_with X1.
+            apply rename_tvar_in_a_wf_wwl_a_wl_red with (X:=X1) (Y:=X) in H15 as Hcontra; auto.
+            simpl in Hcontra. destruct_eq_atom.
+            rewrite subst_typ_in_typ_open_typ_wrt_typ_tvar2 in Hcontra; eauto.
+            rewrite rename_tvar_in_aworklist_fresh_eq in Hcontra; eauto.
+            rewrite subst_typ_in_typ_fresh_eq in Hcontra; auto.
+            rewrite subst_typ_in_typ_fresh_eq in Hcontra; auto.
+            dependent destruction H1.
+            repeat (constructor; simpl; auto); eauto using a_wf_typ_tvar_etvar_cons, a_wf_typ_weaken_cons.
+            eapply a_wf_typ_tvar_etvar_cons; eauto.
+          + edestruct JgInter1 as [JgInter1' | JgInter1']; eauto.
+            right. intro Hcontra. dependent destruction Hcontra; auto.
+            pick fresh X1. inst_cofinites_with X1.
+            apply rename_tvar_in_a_wf_wwl_a_wl_red with (X:=X1) (Y:=X) in H15 as Hcontra; auto.
+            simpl in Hcontra. destruct_eq_atom.
+            rewrite subst_typ_in_typ_open_typ_wrt_typ_tvar2 in Hcontra; eauto.
+            rewrite rename_tvar_in_aworklist_fresh_eq in Hcontra; eauto.
+            rewrite subst_typ_in_typ_fresh_eq in Hcontra; auto.
+            rewrite subst_typ_in_typ_fresh_eq in Hcontra; auto.
+            dependent destruction H1.
+            repeat (constructor; simpl; auto); eauto using a_wf_typ_tvar_etvar_cons, a_wf_typ_weaken_cons.   
+            eapply a_wf_typ_tvar_etvar_cons; eauto.
     }
     assert (JgInst1: forall (Γ1 Γ2:aworklist) (X:typvar),
               A = typ_var_f X ->
