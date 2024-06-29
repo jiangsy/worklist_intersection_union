@@ -2967,21 +2967,94 @@ Proof.
     eapply IHHs2 in Hs'2; eauto.
 Qed.
 
-Lemma split_depth_total : forall Σ A n,
-  Σ ᵗ⊢ᵃ A -> exists m, split_depth Σ A n m.
+Open Scope abind.
+
+Lemma split_depth_rename_tvar : forall Σ1 Σ2 X Y A b n m,
+  ((exists B, b = abind_var_typ B) -> False) ->
+  uniq (Σ2 ++ X ~ b ++ Σ1) ->
+  (Σ2 ++ X ~ b ++ Σ1) ᵗ⊢ᵃ A ->
+  split_depth (Σ2 ++ X ~ b ++ Σ1) A n m ->
+  split_depth (map (subst_typ_in_abind `Y X) Σ2 ++ Y ~ b ++ Σ1) ({` Y ᵗ/ₜ X} A) n m.
 Proof.
-  intros * Hwf. generalize dependent n.
-  induction Hwf; intro n; eauto.
-  - destruct (IHHwf1 (S n)) as [m1 H1].
-    destruct (IHHwf2 (S n)) as [m2 H2]. eauto.
+  intros * Hbind Hniq Hwf Hsize1. 
+  apply a_wf_typ_lc in Hwf as Hlc.
+  generalize dependent n. generalize dependent m;generalize dependent Σ2; generalize dependent Σ1; dependent induction Hlc; intros; simpl in *; 
+    dependent destruction Hsize1; dependent destruction Hwf; destruct_eq_atom; try unify_binds; eauto using split_depth.
+  - destruct b; eauto.
+    assert (X ~ ■ ∈ᵃ (Σ2 ++ (X, ■) :: Σ1)) by auto.
+    unify_binds. solve_false.
+  - apply binds_remove_mid in H; eauto.
+    apply binds_app_iff in H as [H | H]; eauto. 
+    eauto using split_depth, binds_map.
+    econstructor. apply binds_app_iff. left. eapply binds_map with (f := (subst_typ_in_abind ` Y X)) in H; eauto.
+  - destruct b; eauto.
+    assert (X ~ □ ∈ᵃ (Σ2 ++ (X, □) :: Σ1)) by auto.
+    unify_binds. 
+    assert (X ~ ⬒ ∈ᵃ (Σ2 ++ (X, ⬒) :: Σ1)) by auto.
+    unify_binds. 
+    solve_false.
+  - apply binds_remove_mid in H; eauto.
+    apply binds_app_iff in H as [H | H]; eauto. 
+    eauto using split_depth, binds_map.
+    econstructor. apply binds_app_iff. left. eapply binds_map with (f := (subst_typ_in_abind ` Y X)) in H; eauto.
+  - destruct b; eauto.
+    assert (X ~ ■ ∈ᵃ (Σ2 ++ (X, ■) :: Σ1)) by auto.
+    unify_binds. 
+    solve_false.
+  - apply binds_remove_mid in H; eauto.
+    apply binds_app_iff in H as [H | H]; eauto. 
+    eauto using split_depth, binds_map.
+    eapply split_depth__etvar. apply binds_app_iff. left. eapply binds_map with (f := (subst_typ_in_abind ` Y X)) in H; eauto.
+  - inst_cofinites_for split_depth__all. intros. inst_cofinites_with X0. 
+    rewrite subst_typ_in_typ_open_typ_wrt_typ_fresh2; auto.
+    rewrite_env(map (subst_typ_in_abind ` Y X) (X0 ~ ■  ++ Σ2) ++ (Y , b) :: Σ1).
+    eapply H0; eauto.
+    + simpl. econstructor; eauto.
+    + simpl. apply a_wf_typ_tvar_stvar_cons; eauto.
+Qed.
+
+Lemma split_depth_rename_tvar_cons : forall Σ X Y A n m,
+  uniq (X ~ □ ++ Σ) ->
+  (X ~ □ ++ Σ) ᵗ⊢ᵃ A ->
+  split_depth (X ~ □ ++ Σ) A n m ->
+  split_depth (Y ~ □ ++ Σ) ({` Y ᵗ/ₜ X} A) n m.
+Proof.
+  intros. rewrite_env (map (subst_typ_in_abind ` Y X) nil ++ Y ~ □ ++ Σ).
+  eapply split_depth_rename_tvar; eauto.
+Qed.
+
+Lemma split_depth_rename_stvar_cons : forall Σ X Y A n m,
+  uniq (X ~ ■ ++ Σ) ->
+  (X ~ ■ ++ Σ) ᵗ⊢ᵃ A ->
+  split_depth (X ~ ■ ++ Σ) A n m ->
+  split_depth (Y ~ ■ ++ Σ) ({` Y ᵗ/ₜ X} A) n m.
+Proof.
+  intros. rewrite_env (map (subst_typ_in_abind ` Y X) nil ++ Y ~ ■ ++ Σ).
+  eapply split_depth_rename_tvar; eauto.
+Qed.
+
+Lemma split_depth_total : forall Σ A n,
+  uniq Σ -> 
+  Σ ᵗ⊢ᵃ A -> 
+  exists m, split_depth Σ A n m.
+Proof.
+  intros * Huniq Hwf. apply a_wf_typ_lc in Hwf as Hlc. generalize dependent n. generalize dependent Σ.
+  induction Hlc; intros; dependent destruction Hwf; eauto.
+  - destruct (IHHlc1 _ Huniq Hwf1 (S n)) as [m1 H1].
+    destruct (IHHlc2 _ Huniq Hwf2 (S n)) as [m2 H2]. eauto.
   - pick fresh X. inst_cofinites_with X.
-    destruct (H1 n) as [m ?]. eauto.
-    admit.
-  - destruct (IHHwf1 n) as [m1 H1].
-    destruct (IHHwf2 n) as [m2 H2]. eauto.
-  - destruct (IHHwf1 n) as [m1 H1].
-    destruct (IHHwf2 n) as [m2 H2]. eauto.
-Admitted.
+    apply a_wf_typ_tvar_stvar_cons in H2.
+    assert (Huniq' : uniq ((X, ■) :: Σ)) by eauto.
+    destruct (H0 _ _ Huniq' H2 n) as [m ?]. eauto.
+    exists m.
+    inst_cofinites_for split_depth__all. intros. inst_cofinites_with X0.
+    apply split_depth_rename_stvar_cons with (Y:=X0) in H3; eauto.
+    rewrite  subst_typ_in_typ_open_typ_wrt_typ_tvar2 in H3; eauto.
+  - destruct (IHHlc1 _ Huniq Hwf1 n) as [m1 H1].
+    destruct (IHHlc2 _ Huniq Hwf2 n) as [m2 H2]. eauto.
+  - destruct (IHHlc1 _ Huniq Hwf1 n) as [m1 H1].
+    destruct (IHHlc2 _ Huniq Hwf2 n) as [m2 H2]. eauto.
+Qed.
 
 Inductive split_depth_work : aenv -> work -> nat -> Prop :=
   | split_depth_work__non_sub : forall Σ w,
@@ -3017,8 +3090,8 @@ Lemma split_depth_work_total : forall Σ w,
 Proof.
   intros * Hwf1 Hwf2.
   dependent destruction Hwf2; eauto.
-  eapply split_depth_total with (n := 1) in H as Hs1.
-  eapply split_depth_total with (n := 1) in H0 as Hs2.
+  eapply split_depth_total with (n := 1) in H as Hs1; eauto.
+  eapply split_depth_total with (n := 1) in H0 as Hs2; eauto.
   assert (Hiuv1: exists p1, n_iuv_size A p1).
   { eapply n_iuv_size_total; eauto. }
   assert (Hiuv2: exists p2, n_iuv_size B p2).
