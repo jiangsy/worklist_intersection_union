@@ -3329,8 +3329,7 @@ Proof.
   intros ne ns Γ Hwf He Helt Hj Ht Htj Ha Haj Hs Hslt Hw.
   eapply a_wf_wl_uniq in Hwf as Huniq.
   dependent destruction Hwf; auto.
-  admit. admit. admit.
-  (* - rename H into Hwf. dependent destruction Hwf; auto.
+  - rename H into Hwf. dependent destruction Hwf; auto.
     + simpl in *. dependent destruction He. dependent destruction Hs.
       assert (Jg: Γ ⟶ᵃʷ⁎⋅ \/ ~ Γ ⟶ᵃʷ⁎⋅).
       { eapply IHmw with (ne := n) (ns := n0); eauto. lia. }
@@ -3972,7 +3971,15 @@ Proof.
            assert (He'': exists m, exp_size_work Ξ' w m).
            { eapply exp_size_work_total; eauto.
              eapply a_wf_work_n_wf_work with (Γ := {typ_arrow ` X1 ` X2 ᵃʷ/ₜ X} Γ2 ⧺ Γ1); eauto.
-             admit. admit. (* wf *) }
+             eapply aworklist_subst_wf_wwl with (Γ:=(X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ)); eauto. 
+             simpl; econstructor; eauto.
+             eapply a_wf_work_apply_contd with (cd:=({typ_arrow ` X1 ` X2 ᶜᵈ/ₜ X} cd)) (A:=`X1) (B:=`X2); eauto.
+             eapply aworklist_subst_wf_contd_subst with (Γ:=X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ); eauto.
+              simpl; econstructor; eauto.
+              simpl; apply a_wf_contd_weaken_cons. apply a_wf_contd_weaken_cons. auto.  
+              eapply a_wf_typ__etvar. eapply aworklist_subst_binds_same_atvar with (Γ:=X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ); simpl; eauto. constructor; eauto. econstructor; eauto.
+              eapply a_wf_typ__etvar. eapply aworklist_subst_binds_same_atvar with (Γ:=X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ); simpl; eauto. constructor; eauto. econstructor; eauto.
+           }
            destruct He'' as [m He''].
            eapply apply_contd_exp_size with (n1 := m1') (n2 := m2') in Happly as ?; eauto. subst.
            assert (He''': exists k, exp_size_wl ({typ_arrow ` X1 ` X2 ᵃʷ/ₜ X} Γ2 ⧺ Γ1) k).
@@ -3997,7 +4004,22 @@ Proof.
                eapply aworklist_subst_wf_wwl with (Γ := X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ); eauto.
                repeat (econstructor; simpl; eauto). }
              destruct Hs' as [m' Hs'].
-             eapply IHma; eauto; simpl in *; try lia. admit. (* wf *)
+             eapply IHma; eauto; simpl in *; try lia.
+             - eapply a_wf_wl_apply_contd; eauto. 
+               assert (Hwf1 : ⌊ {typ_arrow ` X1 ` X2 ᵃʷ/ₜ X} Γ2 ⧺ Γ1 ⌋ᵃ ᵗ⊢ᵃ `X1). {
+                eapply aworklist_subst_wf_typ with (Γ := X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ); simpl; eauto.
+                repeat (econstructor; simpl; eauto).
+               }
+               assert (Hwf2 : ⌊ {typ_arrow ` X1 ` X2 ᵃʷ/ₜ X} Γ2 ⧺ Γ1 ⌋ᵃ ᵗ⊢ᵃ `X2). {
+                eapply aworklist_subst_wf_typ with (Γ := X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ); simpl; eauto.
+                repeat (econstructor; simpl; eauto).
+               }
+               repeat (econstructor; simpl; eauto).
+               eapply aworklist_subst_wf_contd_subst with (Γ := X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ); eauto.
+               econstructor; simpl; eauto. 
+               simpl. eapply a_wf_contd_weaken_cons. eapply a_wf_contd_weaken_cons. auto.
+               eapply aworklist_subst_wf_twl with (Γ := X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ); eauto.
+               econstructor; simpl; eauto. 
              - erewrite judge_size_wl_aworklist_subst' with (Γ := X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ);
                   simpl; eauto; try solve [econstructor; eauto].
                erewrite apply_contd_judge_size with (c := {typ_arrow ` X1 ` X2 ᶜᵈ/ₜ X} cd); eauto.
@@ -4435,7 +4457,7 @@ Proof.
     destruct Jg as [Jg | Jg]; auto.
     right. intro Hcontra.
     dependent destruction Hcontra.
-    apply Jg; auto. *)
+    apply Jg; auto. 
   - dependent destruction He. dependent destruction Hs.
     dependent destruction H3. exfalso. eauto. simpl in *.
     assert (HwA: weight A >= 1) by apply weight_gt_0.
