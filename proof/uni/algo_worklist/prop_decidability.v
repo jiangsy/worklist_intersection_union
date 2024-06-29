@@ -4422,7 +4422,7 @@ Proof.
     { intros A1 Heq HneqAll. subst.
       assert (Hwf': ⌊ Γ ⌋ᵃ ᵗ⊢ᵃ typ_all A1) by eauto.
       dependent destruction H. dependent destruction H4. dependent destruction H6.
-      pick fresh X. inst_cofinites_with X.
+      pick fresh X. inst_cofinites_with X (keep).
       assert (JgAlll': (work_sub (A1 ᵗ^ₜ X) B ⫤ᵃ X ~ᵃ ⬒ ;ᵃ Γ) ⟶ᵃʷ⁎⋅ \/
                     ~ (work_sub (A1 ᵗ^ₜ X) B ⫤ᵃ X ~ᵃ ⬒ ;ᵃ Γ) ⟶ᵃʷ⁎⋅).
       { assert (Hs'': exists n, split_depth ((X, ⬒) :: ⌊ Γ ⌋ᵃ) (A1 ᵗ^ₜ X) 1 n).
@@ -4440,7 +4440,17 @@ Proof.
         apply a_wf_typ_weaken_cons; auto.
         eapply mult_le_compat_r with (p := S p2) in Hle. lia.
         simpl. rewrite weight_open_typ_wrt_typ. rewrite iu_size_open_typ_wrt_typ. lia. }
-        admit. (* rename *)
+        destruct JgAlll' as [JgAlll' | JgAlll'].
+        - left. inst_cofinites_for a_wl_red__sub_alll; auto.
+          intros. inst_cofinites_with X0. apply rename_tvar_in_a_wf_wwl_a_wl_red with (X:=X) (Y:=X0) in JgAlll'; auto.
+          simpl in JgAlll'. destruct_eq_atom.
+          rewrite subst_typ_in_typ_open_typ_wrt_typ_tvar2 in JgAlll'; eauto.
+          rewrite subst_typ_in_typ_fresh_eq in JgAlll'; auto.
+          rewrite rename_tvar_in_aworklist_fresh_eq in JgAlll'; eauto.
+          repeat (constructor; simpl; auto).
+          apply a_wf_typ_tvar_etvar_cons; auto.
+          apply a_wf_typ_weaken_cons; auto.
+        - admit. 
     }
     assert (JgInst1: forall (Γ1 Γ2:aworklist) (X:typvar),
               A = typ_var_f X ->
