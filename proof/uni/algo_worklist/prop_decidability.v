@@ -4044,7 +4044,67 @@ Proof.
                { eapply infabs_depth_contd_subst_mono with (Σ := (X1, abind_etvar_empty) :: (X2, abind_etvar_empty) :: nil); eauto.
                  econstructor; eauto. }
                lia. }
-           admit. (* rename *) 
+           destruct Jg as [Jg | Jg]; eauto.      
+           ++ left. inst_cofinites_for a_wl_red__infabs_etvar; auto. intros.
+              dependent destruction H7; eauto. simpl. destruct_eq_atom.
+              econstructor.
+              apply apply_contd_rename_tvar with (X:=X1) (Y:=X0) in Happly as Happlyrn1; eauto.
+              simpl in Happlyrn1. destruct_eq_atom.
+              rewrite subst_typ_in_contd_subst_typ_in_contd in Happlyrn1; eauto.
+              simpl in Happlyrn1. destruct_eq_atom.
+              rewrite subst_typ_in_contd_fresh_eq with (X1:=X1) in Happlyrn1; eauto.
+              apply apply_contd_rename_tvar with (X:=X2) (Y:=X3) in Happlyrn1 as Happlyrn2; eauto.
+              simpl in Happlyrn2. destruct_eq_atom.
+              rewrite subst_typ_in_contd_subst_typ_in_contd in Happlyrn2; eauto.
+              simpl in Happlyrn2. destruct_eq_atom.
+              rewrite subst_typ_in_contd_fresh_eq with (X1:=X2) in Happlyrn2; eauto.
+              apply aworklist_subst_rename_tvar with (X1:=X1) (Y:=X0) in Hsubst as Hsubstrn1; eauto.
+              simpl in Hsubstrn1. destruct_eq_atom.
+              rewrite rename_tvar_in_aworklist_fresh_eq in Hsubstrn1; eauto.  
+              apply aworklist_subst_rename_tvar with (X1:=X2) (Y:=X3) in Hsubstrn1 as Hsubstrn2; eauto.
+              simpl in Hsubstrn2. destruct_eq_atom.
+              rewrite rename_tvar_in_aworklist_fresh_eq in Hsubstrn2; eauto.
+              eapply aworklist_subst_det with (Γ1:=Γ3) in Hsubstrn2 ; eauto. destruct_conj; subst.
+              apply rename_tvar_in_a_wf_wwl_a_wl_red with (X:=X1) (Y:=X0) in Jg as Jgrn1; eauto.
+              simpl in Jgrn1. 
+              rewrite <- rename_tvar_in_aworklist_app in Jgrn1; auto.
+              rewrite subst_typ_in_awl_rename_neq_tvar in Jgrn1; auto.
+              simpl in Jgrn1. destruct_eq_atom.
+              apply rename_tvar_in_a_wf_wwl_a_wl_red with (X:=X2) (Y:=X3) in Jgrn1 as Jgrn2; eauto.
+              simpl in Jgrn2. 
+              rewrite <- rename_tvar_in_aworklist_app in Jgrn2; auto.
+              rewrite subst_typ_in_awl_rename_neq_tvar in Jgrn2; auto.
+              simpl in Jgrn2. destruct_eq_atom.
+              econstructor; eauto.
+              eapply a_wf_wwl_apply_contd; eauto. 
+              assert (Hwf1 : ⌊ {typ_arrow ` X0 ` X2 ᵃʷ/ₜ X} {X0 ᵃʷ/ₜᵥ X1} Γ2 ⧺ {X0 ᵃʷ/ₜᵥ X1} Γ1 ⌋ᵃ ᵗ⊢ᵃ `X0). {
+                eapply aworklist_subst_wf_typ with (Γ:=X2 ~ᵃ ⬒ ;ᵃ X0 ~ᵃ ⬒ ;ᵃ Γ); simpl; eauto 6. 
+                constructor; eauto. constructor; eauto.
+              }
+              assert (Hwf2 : ⌊ {typ_arrow ` X0 ` X2 ᵃʷ/ₜ X} {X0 ᵃʷ/ₜᵥ X1} Γ2 ⧺ {X0 ᵃʷ/ₜᵥ X1} Γ1 ⌋ᵃ ᵗ⊢ᵃ `X2). {
+                eapply aworklist_subst_wf_typ with (Γ:=X2 ~ᵃ ⬒ ;ᵃ X0 ~ᵃ ⬒ ;ᵃ Γ); simpl; eauto 6. 
+                constructor; eauto. constructor; eauto.
+              }
+              repeat (constructor; simpl; eauto). eapply aworklist_subst_wf_contd_subst with (Γ:=(X2 ~ᵃ ⬒ ;ᵃ X0 ~ᵃ ⬒ ;ᵃ Γ)); simpl; eauto.
+              econstructor; eauto. apply a_wf_contd_weaken_cons. apply a_wf_contd_weaken_cons. auto.
+              econstructor; auto. econstructor; auto.
+              eapply aworklist_subst_wf_wwl with (Γ:=(X2 ~ᵃ ⬒ ;ᵃ X0 ~ᵃ ⬒ ;ᵃ Γ)); eauto. simpl; constructor; eauto.
+              simpl. rewrite aworklist_subst_dom_upper with (Γ:=(X2 ~ᵃ ⬒ ;ᵃ X0 ~ᵃ ⬒ ;ᵃ Γ)); eauto.
+              eapply a_wf_wwl_apply_contd; eauto. 
+              assert (Hwf1 : ⌊ {typ_arrow ` X1 ` X2 ᵃʷ/ₜ X} Γ2 ⧺ Γ1 ⌋ᵃ ᵗ⊢ᵃ `X1). {
+                eapply aworklist_subst_wf_typ with (Γ:=X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ); simpl; eauto 6. 
+                constructor; eauto. constructor; eauto.
+              }
+              assert (Hwf2 : ⌊ {typ_arrow ` X1 ` X2 ᵃʷ/ₜ X} Γ2 ⧺ Γ1 ⌋ᵃ ᵗ⊢ᵃ `X2). {
+                eapply aworklist_subst_wf_typ with (Γ:=X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ); simpl; eauto 6. 
+                constructor; eauto. constructor; eauto.
+              }
+              repeat (constructor; simpl; eauto). eapply aworklist_subst_wf_contd_subst with (Γ:=(X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ)); simpl; eauto.
+              econstructor; eauto. apply a_wf_contd_weaken_cons. apply a_wf_contd_weaken_cons. auto.
+              econstructor; auto. econstructor; auto.
+              eapply aworklist_subst_wf_wwl with (Γ:=(X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ)); eauto. simpl; constructor; eauto.
+              simpl. rewrite aworklist_subst_dom_upper with (Γ:=(X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ)); eauto.
+          ++ admit.
         -- destruct (apply_contd_total cd A1 A2) as [w Happly].
           assert (Jg: (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/ ~ (w ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
           { eapply a_wf_wl_apply_contd in Happly as Hwf'; eauto.
