@@ -13,6 +13,9 @@ Require Import uni.algo_worklist.prop_rename.
 Require Import uni.algo_worklist.transfer.
 Require Import uni.ltac_utils.
 
+Open Scope aworklist.
+Open Scope abind.
+
 #[local] Hint Extern 1 ((exists _, _) -> False) => try solve_false : core.
 
 Inductive nbind : Set := 
@@ -2212,7 +2215,7 @@ Proof.
 Qed.
 
 Lemma awl_to_nenv_tvar : forall Γ2 Γ1 X b Ξ Ξ',
-  b = □%abind \/ b = ■%abind \/ b = ⬒ ->
+  b = □ \/ b = ■ \/ b = ⬒ ->
   awl_to_nenv (Γ2 ⧺ X ~ᵃ b; Γ1) Ξ ->
   awl_to_nenv (Γ2 ⧺ Γ1) Ξ' -> Ξ = Ξ'.
 Proof.
@@ -2249,7 +2252,7 @@ Proof.
   - dependent destruction Hsize2.
     assert (Heq: Ξ = Ξ0).
     { eapply IHΓ2; eauto.
-      eapply a_mono_typ_strengthen_mtvar with (b := □%abind); eauto. }
+      eapply a_mono_typ_strengthen_mtvar with (b := □); eauto. }
     subst. eauto.
   - dependent destruction Hsize2.
     assert (Heq: Ξ = Ξ0).
@@ -2472,13 +2475,11 @@ Proof.
     dependent destruction Hsize1. dependent destruction Hsize2. eauto. 
   - dependent destruction Hsize1. dependent destruction Hsize2.
     rewrite awl_rewrite_middle in H.
-    eapply awl_to_nenv_tvar with (X:=Y) (Γ2:=(Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ aworklist_empty)%aworklist) (Γ1:=Γ1) (Ξ':=Ξ0) in H; eauto.
+    eapply awl_to_nenv_tvar with (X:=Y) (Γ2:=(Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ aworklist_empty)) (Γ1:=Γ1) (Ξ':=Ξ0) in H; eauto.
     subst. eapply exp_size_work_det in H0; eauto.
     dependent destruction Huniq. eapply awl_to_nenv_uniq; eauto.
     rewrite <- awl_rewrite_middle. eauto.  
 Qed.
-
-Open Scope aworklist.
 
 Lemma exp_size_wl_aworklist_subst : forall Γ2 X A Γ1 Γ1' Γ2' n m,
   ⊢ᵃʷ (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) ->
@@ -2497,7 +2498,7 @@ Proof.
     try solve [eapply exp_size_wl_det in Hsize1; eauto];
     try solve [dependent destruction Hsize1; eapply IHΓ2; eauto;
       try solve [eapply a_mono_typ_strengthen_var; eauto];
-      try solve [eapply a_mono_typ_strengthen_mtvar with (b := □%abind); eauto];
+      try solve [eapply a_mono_typ_strengthen_mtvar with (b := □); eauto];
       try solve [eapply a_mono_typ_strengthen_mtvar with (b := ⬒); eauto];
       try solve [eapply a_mono_typ_strengthen_stvar; eauto]].
   - eapply worklist_split_etvar_det in x. destruct x. subst.
@@ -2586,7 +2587,7 @@ Proof.
     simpl in *; eauto; try solve [exfalso; eauto];
     try solve [eapply IHΓ2; eauto;
       try solve [eapply a_mono_typ_strengthen_var; eauto];
-      try solve [eapply a_mono_typ_strengthen_mtvar with (b := □%abind); eauto];
+      try solve [eapply a_mono_typ_strengthen_mtvar with (b := □); eauto];
       try solve [eapply a_mono_typ_strengthen_mtvar with (b := ⬒); eauto];
       try solve [eapply a_mono_typ_strengthen_stvar; eauto]].
   - eapply worklist_split_etvar_det in x. destruct x. subst.
@@ -2671,7 +2672,7 @@ Proof.
     simpl in *; eauto; try solve [exfalso; eauto];
     try solve [eapply IHΓ2; eauto;
       try solve [eapply a_mono_typ_strengthen_var; eauto];
-      try solve [eapply a_mono_typ_strengthen_mtvar with (b := □%abind); eauto];
+      try solve [eapply a_mono_typ_strengthen_mtvar with (b := □); eauto];
       try solve [eapply a_mono_typ_strengthen_mtvar with (b := ⬒); eauto];
       try solve [eapply a_mono_typ_strengthen_stvar; eauto]].
   - eapply worklist_split_etvar_det in x. destruct x. subst.
@@ -2735,7 +2736,7 @@ Proof.
     simpl in *; eauto; try solve [exfalso; eauto];
     try solve [eapply IHΓ2; eauto;
       try solve [eapply a_mono_typ_strengthen_var; eauto];
-      try solve [eapply a_mono_typ_strengthen_mtvar with (b := □%abind); eauto];
+      try solve [eapply a_mono_typ_strengthen_mtvar with (b := □); eauto];
       try solve [eapply a_mono_typ_strengthen_mtvar with (b := ⬒); eauto];
       try solve [eapply a_mono_typ_strengthen_stvar; eauto]].
   - eapply worklist_split_etvar_det in x. destruct x. subst.
@@ -2823,7 +2824,7 @@ Proof.
     simpl in *; eauto; try solve [exfalso; eauto];
     try solve [eapply IHΓ2; eauto;
       try solve [eapply a_mono_typ_strengthen_var; eauto];
-      try solve [eapply a_mono_typ_strengthen_mtvar with (b := □%abind); eauto];
+      try solve [eapply a_mono_typ_strengthen_mtvar with (b := □); eauto];
       try solve [eapply a_mono_typ_strengthen_mtvar with (b := ⬒); eauto];
       try solve [eapply a_mono_typ_strengthen_stvar; eauto]].
   - eapply worklist_split_etvar_det in x. destruct x. subst.
@@ -2888,7 +2889,7 @@ Proof.
     simpl in *; eauto; try solve [exfalso; eauto];
     try solve [eapply IHΓ2; eauto;
       try solve [eapply a_mono_typ_strengthen_var; eauto];
-      try solve [eapply a_mono_typ_strengthen_mtvar with (b := □%abind); eauto];
+      try solve [eapply a_mono_typ_strengthen_mtvar with (b := □); eauto];
       try solve [eapply a_mono_typ_strengthen_mtvar with (b := ⬒); eauto];
       try solve [eapply a_mono_typ_strengthen_stvar; eauto]].
   - eapply worklist_split_etvar_det in x. destruct x. subst.
@@ -3151,21 +3152,21 @@ Proof.
 Qed.
 
 Lemma split_depth_stvar_etvar : forall Σ2 Σ1 A X n m m',
-  ⊢ᵃ Σ2 ++ (X, ■%abind) :: Σ1 ->
-  split_depth (Σ2 ++ (X, ■%abind) :: Σ1) A n m ->
+  ⊢ᵃ Σ2 ++ (X, ■) :: Σ1 ->
+  split_depth (Σ2 ++ (X, ■) :: Σ1) A n m ->
   split_depth (Σ2 ++ (X, ⬒) :: Σ1) A n m' ->
   m' <= m.
 Proof.
   intros * Hwf Hs1. generalize dependent m'.
   dependent induction Hs1; intros * Hs2; dependent destruction Hs2; eauto; try lia.
   - destruct (X0 == X); subst.
-    + assert (X ~ ■ ∈ᵃ (Σ2 ++ (X, ■%abind) :: Σ1)) by eauto. unify_binds.
+    + assert (X ~ ■ ∈ᵃ (Σ2 ++ (X, ■) :: Σ1)) by eauto. unify_binds.
     + eapply binds_remove_mid in H; eauto.
       eapply binds_remove_mid in H0; eauto.
       eapply a_wf_env_uniq in Hwf.
       eapply uniq_weaken in Hwf. unify_binds.
   - destruct (X0 == X); subst.
-    + assert (X ~ ■ ∈ᵃ (Σ2 ++ (X, ■%abind) :: Σ1)) by eauto. unify_binds.
+    + assert (X ~ ■ ∈ᵃ (Σ2 ++ (X, ■) :: Σ1)) by eauto. unify_binds.
     + eapply binds_remove_mid in H; eauto.
       eapply binds_remove_mid in H0; eauto.
       eapply a_wf_env_uniq in Hwf.
@@ -3173,7 +3174,7 @@ Proof.
   - eapply IHHs1_1 in Hs2_1; eauto.
     eapply IHHs1_2 in Hs2_2; eauto. lia.
   - pick fresh Y. inst_cofinites_with Y.
-    rewrite_env ((Y ~ ■%abind ++ Σ2) ++ (X, ⬒) :: Σ1) in H1.
+    rewrite_env ((Y ~ ■ ++ Σ2) ++ (X, ⬒) :: Σ1) in H1.
     eapply H0 in H1; eauto. econstructor; eauto.
   - eapply IHHs1_1 in Hs2_1; eauto.
     eapply IHHs1_2 in Hs2_2; eauto. lia.
@@ -3204,7 +3205,7 @@ Proof.
   dependent induction Hs; intros *; eauto.
   inst_cofinites_for split_depth__all.
   intros X Hnotin. inst_cofinites_with X.
-  rewrite_env ((X ~ ■%abind ++ Σ3) ++ Σ2 ++ Σ1).
+  rewrite_env ((X ~ ■ ++ Σ3) ++ Σ2 ++ Σ1).
   eapply H0. simpl. eauto.
 Qed.
 
