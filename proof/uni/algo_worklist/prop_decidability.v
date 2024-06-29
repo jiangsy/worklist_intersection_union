@@ -4905,14 +4905,11 @@ Proof.
                   right; intro Hcontra; dependent destruction Hcontra;
                   eapply JgUnion3'; eauto; try dependent destruction H3].
     -- edestruct JgUnion3 as [JgUnion3' | JgUnion3']; eauto.
-       right. intro Hcontra. dependent destruction Hcontra.
-       dependent destruction H8. auto.
+       right. intro Hcontra. dependent destruction Hcontra; auto.
     -- edestruct JgUnion3 as [JgUnion3' | JgUnion3']; eauto.
-       right. intro Hcontra. dependent destruction Hcontra.
-       dependent destruction H8. auto.
+       right. intro Hcontra. dependent destruction Hcontra; eauto.
     -- edestruct JgUnion3 as [JgUnion3' | JgUnion3']; eauto.
-       right. intro Hcontra. dependent destruction Hcontra.
-       dependent destruction H8. auto.
+       right. intro Hcontra. dependent destruction Hcontra; auto.
     -- edestruct JgUnion1 as [JgUnion1' | JgUnion1']; eauto.
        edestruct JgUnion2 as [JgUnion2' | JgUnion2']; eauto.
        edestruct JgUnion3 as [JgUnion3' | JgUnion3']; eauto.
@@ -4928,9 +4925,9 @@ Proof.
       try solve [right; intro Hcontra; dependent destruction Hcontra;
         try solve [eapply JgInter2'; eauto]; try solve [eapply JgInter3'; eauto];
         dependent destruction H3].
-    -- right. unfold not. intros. dependent destruction H7; auto. dependent destruction H8.
-    -- right. unfold not. intros. dependent destruction H7; auto. dependent destruction H8.    
-    -- right. unfold not. intros. dependent destruction H7; auto. dependent destruction H8.
+    -- right. unfold not. intros. dependent destruction H7; auto. 
+    -- right. unfold not. intros. dependent destruction H7; auto. 
+    -- right. unfold not. intros. dependent destruction H7; auto. 
     -- edestruct JgUnion1 as [JgUnion1' | JgUnion1']; eauto.
        edestruct JgUnion2 as [JgUnion2' | JgUnion2']; eauto.
        right. intro Hcontra. dependent destruction Hcontra.
