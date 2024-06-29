@@ -4854,9 +4854,8 @@ Proof.
          dependent destruction H1.
       -- right. intro Hcontra. dependent destruction Hcontra; try unify_binds.
          dependent destruction H7; try unify_binds.
-      -- admit.
-      (* -- dependent destruction H4. dependent destruction H5.
-         dependent destruction H6. dependent destruction H7.
+      -- dependent destruction H4. dependent destruction H5.
+         dependent destruction H6. dependent destruction H8.
          pick fresh X. inst_cofinites_with X.
          assert (JgAll: (work_sub (A ᵗ^ₜ X) (A0 ᵗ^ₜ X) ⫤ᵃ X ~ᵃ ■ ;ᵃ Γ) ⟶ᵃʷ⁎⋅ \/
                       ~ (work_sub (A ᵗ^ₜ X) (A0 ᵗ^ₜ X) ⫤ᵃ X ~ᵃ ■ ;ᵃ Γ) ⟶ᵃʷ⁎⋅).
@@ -4864,27 +4863,28 @@ Proof.
            eapply a_wf_wl__conswork_sub; auto; simpl. 
            apply a_wf_typ_tvar_stvar_cons; auto.
            apply a_wf_typ_tvar_stvar_cons; auto.
-           econstructor; eauto. econstructor; eauto.
-            admit. simpl in *. admit. }
-          destruct JgAll as [JgAll | JgAll]; eauto.
-          ++ left. inst_cofinites_for a_wl_red__sub_all; eauto.
-             intros X' Hnin. 
-             apply rename_tvar_in_a_wf_wwl_a_wl_red with (X:=X) (Y:=X') in JgAll; auto.
-             ** simpl in JgAll. destruct_eq_atom.
-                rewrite rename_tvar_in_aworklist_fresh_eq in JgAll; auto.
-                rewrite subst_typ_in_typ_open_typ_wrt_typ_tvar2 in JgAll; auto.
-                rewrite subst_typ_in_typ_open_typ_wrt_typ_tvar2 in JgAll; auto.
+           rewrite weight_open_typ_wrt_typ. rewrite weight_open_typ_wrt_typ.
+           rewrite iu_size_open_typ_wrt_typ. rewrite iu_size_open_typ_wrt_typ.
+           lia. }
+         destruct JgAll as [JgAll | JgAll]; eauto.
+         ++ left. inst_cofinites_for a_wl_red__sub_all; eauto.
+            intros X' Hnin. 
+            apply rename_tvar_in_a_wf_wwl_a_wl_red with (X:=X) (Y:=X') in JgAll; auto.
+            ** simpl in JgAll. destruct_eq_atom.
+               rewrite rename_tvar_in_aworklist_fresh_eq in JgAll; auto.
+               rewrite subst_typ_in_typ_open_typ_wrt_typ_tvar2 in JgAll; auto.
+               rewrite subst_typ_in_typ_open_typ_wrt_typ_tvar2 in JgAll; auto.
             ** apply a_wf_wl_a_wf_wwl.
                apply a_wf_wl__conswork_sub; auto. simpl.
                apply a_wf_typ_tvar_stvar with (Σ2 := nil). simpl. auto.
                apply a_wf_typ_tvar_stvar with (Σ2 := nil). simpl. auto.
-          ++ right. intro Hcontra. dependent destruction Hcontra; try solve [dependent destruction H4].
-             pick fresh X1. inst_cofinites_with X1.
-             apply rename_tvar_in_a_wf_wwl_a_wl_red with (X:=X1) (Y:=X) in H4; auto.
-            ** simpl in H4. destruct_eq_atom.
-               rewrite rename_tvar_in_aworklist_fresh_eq in H4; auto.
-               rewrite subst_typ_in_typ_open_typ_wrt_typ_tvar2 in H4; auto.
-               rewrite subst_typ_in_typ_open_typ_wrt_typ_tvar2 in H4; auto.
+         ++ right. intro Hcontra. dependent destruction Hcontra; try solve [dependent destruction H10].
+            pick fresh X1. inst_cofinites_with X1.
+            apply rename_tvar_in_a_wf_wwl_a_wl_red with (X:=X1) (Y:=X) in H10; auto.
+            ** simpl in H10. destruct_eq_atom.
+               rewrite rename_tvar_in_aworklist_fresh_eq in H10; auto.
+               rewrite subst_typ_in_typ_open_typ_wrt_typ_tvar2 in H10; auto.
+               rewrite subst_typ_in_typ_open_typ_wrt_typ_tvar2 in H10; auto.
             ** apply a_wf_wl_a_wf_wwl.
                apply a_wf_wl__conswork_sub; auto. simpl.
                apply a_wf_typ_tvar_stvar with (Σ2 := nil). simpl.
@@ -4892,7 +4892,7 @@ Proof.
                apply a_wf_typ_rename_tvar_cons; auto.
                apply a_wf_typ_tvar_stvar with (Σ2 := nil). simpl.
                rewrite <- subst_typ_in_typ_open_typ_wrt_typ_tvar2 with (X := X); auto.
-               apply a_wf_typ_rename_tvar_cons; auto. *)
+               apply a_wf_typ_rename_tvar_cons; auto.
       -- edestruct JgUnion1 as [JgUnion1' | JgUnion1']; eauto.
          edestruct JgUnion2 as [JgUnion2' | JgUnion2']; eauto.
          destruct (a_wneq_all_dec (⌊ Γ ⌋ᵃ) (typ_union A1 A2)) as [HneqAll | HneqAll]; eauto.
@@ -4927,7 +4927,7 @@ Proof.
         dependent destruction H3].
     -- right. unfold not. intros. dependent destruction H7; auto. 
     -- right. unfold not. intros. dependent destruction H7; auto. 
-    -- right. unfold not. intros. dependent destruction H7; auto. 
+    -- right. unfold not. intros. dependent destruction H7; auto.
     -- edestruct JgUnion1 as [JgUnion1' | JgUnion1']; eauto.
        edestruct JgUnion2 as [JgUnion2' | JgUnion2']; eauto.
        right. intro Hcontra. dependent destruction Hcontra.
