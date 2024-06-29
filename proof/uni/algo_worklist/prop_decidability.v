@@ -414,7 +414,9 @@ Inductive exp_size_wl : aworklist -> nat -> Prop :=
 Hint Constructors n_iuv_size exp_split_size exp_size exp_size_conts exp_size_contd exp_size_work exp_size_wl awl_to_nenv : core.
 
 Lemma num_occurs_in_typ_det : forall X A n n',
-  num_occurs_in_typ X A n -> num_occurs_in_typ X A n' -> n = n'.
+  num_occurs_in_typ X A n -> 
+  num_occurs_in_typ X A n' -> 
+  n = n'.
 Proof.
   intros X A n n' Hoccurs. generalize dependent n'.
   induction Hoccurs; intros n' Hoccurs'; dependent destruction Hoccurs'; eauto;
@@ -424,7 +426,9 @@ Proof.
 Qed.
 
 Lemma n_iuv_size_det : forall A n n',
-  n_iuv_size A n -> n_iuv_size A n' -> n = n'.
+  n_iuv_size A n -> 
+  n_iuv_size A n' -> 
+  n = n'.
 Proof.
   intros A n n' Hsize. generalize dependent n'.
   induction Hsize; intros n' Hsize'; dependent destruction Hsize'; eauto.
@@ -446,7 +450,10 @@ Ltac unify_n_iuv_size :=
   end.
 
 Lemma exp_split_size_det : forall Ξ e n n',
-  uniq Ξ -> exp_split_size Ξ e n -> exp_split_size Ξ e n' -> n = n'.
+  uniq Ξ -> 
+  exp_split_size Ξ e n -> 
+  exp_split_size Ξ e n' -> 
+  n = n'.
 Proof.
   intros Ξ e n n' Huniq Hsize. generalize dependent n'.
   induction Hsize; intros n' Hsize'; dependent destruction Hsize'; eauto.
@@ -461,7 +468,10 @@ Proof.
 Qed.
 
 Lemma exp_size_det : forall Ξ e n m m',
-  uniq Ξ -> exp_size Ξ e n m -> exp_size Ξ e n m' -> m = m'.
+  uniq Ξ -> 
+  exp_size Ξ e n m -> 
+  exp_size Ξ e n m' -> 
+  m = m'.
 Proof.
   intros Ξ e n m m' Huniq Hsize. generalize dependent m'.
   induction Hsize; intros m' Hsize'; dependent destruction Hsize'; eauto.
@@ -480,9 +490,15 @@ Proof.
 Qed.
 
 Lemma exp_size_conts_det : forall Ξ cs n m m',
-  exp_size_conts Ξ cs n m -> uniq Ξ -> exp_size_conts Ξ cs n m' -> m = m'
+  exp_size_conts Ξ cs n m -> 
+  uniq Ξ -> 
+  exp_size_conts Ξ cs n m' -> 
+  m = m'
 with exp_size_contd_det : forall Ξ cd n1 n2 m1 m2 m1' m2',
-  exp_size_contd Ξ cd n1 n2 m1 m2 -> uniq Ξ -> exp_size_contd Ξ cd n1 n2 m1' m2' -> m1 = m1' /\ m2 = m2'.
+  exp_size_contd Ξ cd n1 n2 m1 m2 -> 
+  uniq Ξ -> 
+  exp_size_contd Ξ cd n1 n2 m1' m2' -> 
+  m1 = m1' /\ m2 = m2'.
 Proof.
   - clear exp_size_conts_det. intros Ξ cs n m m' Hsize Huniq Hsize'. generalize dependent m'. generalize dependent n.
     induction cs; intros; dependent destruction Hsize; dependent destruction Hsize'; auto; try solve [unify_n_iuv_size; eauto].
@@ -684,12 +700,12 @@ Lemma exp_split_size_rename_tvar : forall Ξ e X Y n,
   uniq Ξ ->
   Y `notin` dom Ξ ->
   exp_split_size Ξ e n -> 
-  exp_split_size Ξ (subst_typ_in_exp (typ_var_f Y) X e) n.
+  exp_split_size Ξ ({` Y ᵉ/ₜ X} e) n.
 Proof with eauto using exp_split_size.
   intros. dependent induction H1; simpl in *...
   - remember (dom Ξ). inst_cofinites_for exp_split_size__abs. subst. 
     intros. inst_cofinites_with x.
-    replace (exp_var_f x) with (subst_typ_in_exp (typ_var_f Y) X (exp_var_f x))...
+    replace (exp_var_f x) with ({` Y ᵉ/ₜ X} (exp_var_f x))...
     rewrite <- subst_typ_in_exp_open_exp_wrt_exp...
   - econstructor.
     replace (typ_all ({` Y ᵗ/ₜ X} A)) with  ({` Y ᵗ/ₜ X} typ_all A) by auto.
@@ -765,7 +781,9 @@ Proof.
 Qed.
 
 Lemma uniq_equiv_nenv : forall Ξ Ξ',
-  uniq Ξ -> equiv_nenv Ξ Ξ' -> uniq Ξ'. 
+  uniq Ξ -> 
+  equiv_nenv Ξ Ξ' -> 
+  uniq Ξ'. 
 Proof.
   intros. induction H0; eauto using uniq; econstructor.
   - dependent destruction H. auto.
@@ -899,7 +917,6 @@ Proof.
   intros. eapply exp_size_total' with (Ξ':=Ξ); eauto.
   apply equiv_nenv_refl.
 Qed.
-
 
 Lemma exp_size_conts_total : forall Ξ cs n,
   uniq Ξ ->
@@ -1817,7 +1834,8 @@ Qed.
 Lemma exp_size_le : forall Ξ Ξ' e n n' m m',
   uniq Ξ -> le_nenv Ξ Ξ' ->
   exp_size Ξ e n m -> exp_size Ξ' e n' m' ->
-  n <= n' -> m <= m'.
+  n <= n' -> 
+  m <= m'.
 Proof.
   intros Ξ Ξ' e n n' m m' Huniq Hle Hsize.
   generalize dependent m'. generalize dependent n'. generalize dependent Ξ'.
@@ -1843,14 +1861,19 @@ Proof.
 Qed.
 
 Lemma exp_size_conts_le : forall c Ξ Ξ' n n' m m',
-  uniq Ξ -> le_nenv Ξ Ξ' ->
-  exp_size_conts Ξ c n m -> exp_size_conts Ξ' c n' m' ->
+  uniq Ξ -> 
+  le_nenv Ξ Ξ' ->
+  exp_size_conts Ξ c n m -> 
+  exp_size_conts Ξ' c n' m' ->
   n <= n' -> m <= m'
 with exp_size_contd_le : forall c Ξ Ξ' n1 n1' n2 n2' m1 m1' m2 m2',
-  uniq Ξ -> le_nenv Ξ Ξ' ->
+  uniq Ξ -> 
+  le_nenv Ξ Ξ' ->
   exp_size_contd Ξ c n1 n2 m1 m2 ->
   exp_size_contd Ξ' c n1' n2' m1' m2' ->
-  n1 <= n1' -> n2 <= n2' -> m1 <= m1' /\ m2 <= m2'.
+  n1 <= n1' -> 
+  n2 <= n2' -> 
+  m1 <= m1' /\ m2 <= m2'.
 Proof.
   - clear exp_size_conts_le.
     intro c. induction c; intros * Huniq Hle Hsize * Hsize' Hlen; dependent destruction Hsize; dependent destruction Hsize'; try lia.
@@ -1892,8 +1915,11 @@ Proof.
 Qed.
 
 Lemma exp_size_split : forall Ξ Ξ1 Ξ2 e n m n1 n2 m1 m2,
-  uniq Ξ -> exp_size Ξ e n m -> le_nenv Ξ1 Ξ -> le_nenv Ξ2 Ξ ->
-  exp_size Ξ1 e n1 m1 -> exp_size Ξ2 e n2 m2 ->
+  uniq Ξ -> exp_size Ξ e n m -> 
+  le_nenv Ξ1 Ξ -> 
+  le_nenv Ξ2 Ξ ->
+  exp_size Ξ1 e n1 m1 -> 
+  exp_size Ξ2 e n2 m2 ->
   1 + n1 + n2 < n -> m1 + m2 < m.
 Proof.
   intros Ξ Ξ1 Ξ2 e n m n1 n2 m1 m2 Huniq Hsize.
@@ -1976,7 +2002,8 @@ Qed.
 
 Lemma apply_contd_exp_size : forall Ξ c A B w a b n1 n2 m,
   uniq Ξ -> apply_contd c A B w ->
-  n_iuv_size A a -> n_iuv_size B b ->
+  n_iuv_size A a -> 
+  n_iuv_size B b ->
   exp_size_contd Ξ c a b n1 n2 ->
   exp_size_work Ξ w m -> m = n1 + n2.
 Proof.
@@ -2139,9 +2166,12 @@ Proof.
 Qed.
 
 Lemma n_iuv_size_open : forall A B n a b,
-  lc_typ (typ_all A) -> lc_typ B ->
-  n_iuv_size (typ_all A) a -> n_iuv_size B b ->
-  n_iuv_size (A ᵗ^^ₜ B) n -> n <= a + a * b.
+  lc_typ (typ_all A) -> 
+  lc_typ B ->
+  n_iuv_size (typ_all A) a -> 
+  n_iuv_size B b ->
+  n_iuv_size (A ᵗ^^ₜ B) n -> 
+  n <= a + a * b.
 Proof.
   intros * Hlca Hlcb Ha Hb Hn.
   intros. dependent destruction Ha; eauto.
@@ -2154,13 +2184,15 @@ Proof.
 Qed.
 
 Lemma n_iuv_size_mono_typ : forall Σ A,
-  a_mono_typ Σ A -> n_iuv_size A 0.
+  Σ ᵗ⊢ᵃₘ A -> 
+  n_iuv_size A 0.
 Proof.
   intros Σ A Hmono. induction Hmono; eauto.
 Qed.
 
 Lemma num_occurs_in_typ_subst_eq : forall A B X Y n m,
-  X `notin` ftvar_in_typ B `union` (singleton Y) -> lc_typ B ->
+  X `notin` ftvar_in_typ B `union` (singleton Y) -> 
+  lc_typ B ->
   num_occurs_in_typ X (subst_typ_in_typ B Y A) n ->
   num_occurs_in_typ X A m -> n = m.
 Proof.
@@ -2188,7 +2220,8 @@ Proof.
 Qed.
 
 Lemma n_iuv_size_subst_mono' : forall A n Σ B X,
-  n_iuv_size A n -> a_mono_typ Σ B ->
+  n_iuv_size A n -> 
+  Σ ᵗ⊢ᵃₘ B ->
   n_iuv_size ({B ᵗ/ₜ X} A) n.
 Proof.
   intros A n Σ B X Hsize.
@@ -2622,13 +2655,15 @@ Proof.
 Qed.
 
 Lemma inftapp_depth_mono : forall Σ A,
-  Σ ᵗ⊢ᵃₘ A -> inftapp_depth A = 0.
+  Σ ᵗ⊢ᵃₘ A -> 
+  inftapp_depth A = 0.
 Proof.
   intros * Hmono. induction Hmono; simpl in *; eauto.
 Qed.
 
 Lemma inftapp_depth_subst_mono : forall Σ A B X,
-  Σ ᵗ⊢ᵃₘ A -> inftapp_depth B = inftapp_depth ({A ᵗ/ₜ X} B).
+  Σ ᵗ⊢ᵃₘ A -> 
+  inftapp_depth B = inftapp_depth ({A ᵗ/ₜ X} B).
 Proof.
   intros * Hmono. induction B; simpl in *; eauto.
   destruct_eq_atom; simpl; eauto.
@@ -2636,9 +2671,11 @@ Proof.
 Qed.
 
 Lemma inftapp_depth_conts_tail_rec_subst_mono : forall c Σ A X n,
-  Σ ᵗ⊢ᵃₘ A -> inftapp_depth_conts_tail_rec c n = inftapp_depth_conts_tail_rec ({A ᶜˢ/ₜ X} c) n
+  Σ ᵗ⊢ᵃₘ A -> 
+  inftapp_depth_conts_tail_rec c n = inftapp_depth_conts_tail_rec ({A ᶜˢ/ₜ X} c) n
 with inftapp_depth_contd_tail_rec_subst_mono : forall c Σ A X n,
-  Σ ᵗ⊢ᵃₘ A -> inftapp_depth_contd_tail_rec c n = inftapp_depth_contd_tail_rec ({A ᶜᵈ/ₜ X} c) n.
+  Σ ᵗ⊢ᵃₘ A -> 
+  inftapp_depth_contd_tail_rec c n = inftapp_depth_contd_tail_rec ({A ᶜᵈ/ₜ X} c) n.
 Proof.
   - clear inftapp_depth_conts_tail_rec_subst_mono.
     intro c. induction c; simpl; intros * Hmono; eauto;
@@ -2650,7 +2687,8 @@ Proof.
 Qed.
 
 Lemma inftapp_depth_work_subst_mono : forall Σ A X w,
-  Σ ᵗ⊢ᵃₘ A -> inftapp_depth_work w = inftapp_depth_work ({A ʷ/ₜ X} w).
+  Σ ᵗ⊢ᵃₘ A -> 
+  inftapp_depth_work w = inftapp_depth_work ({A ʷ/ₜ X} w).
 Proof.
   intros * Hmono. induction w; simpl in *; eauto;
     try erewrite <- inftapp_depth_subst_mono; eauto;
@@ -2784,9 +2822,11 @@ Proof.
 Qed.
 
 Lemma infabs_depth_conts_subst_mono : forall c Σ A X,
-  Σ ᵗ⊢ᵃₘ A -> infabs_depth_conts ({A ᶜˢ/ₜ X} c) <= infabs_depth_conts c
+  Σ ᵗ⊢ᵃₘ A -> 
+  infabs_depth_conts ({A ᶜˢ/ₜ X} c) <= infabs_depth_conts c
 with infabs_depth_contd_subst_mono : forall c Σ A X,
-  Σ ᵗ⊢ᵃₘ A -> infabs_depth_contd ({A ᶜᵈ/ₜ X} c) <= infabs_depth_contd c.
+  Σ ᵗ⊢ᵃₘ A -> 
+  infabs_depth_contd ({A ᶜᵈ/ₜ X} c) <= infabs_depth_contd c.
 Proof.
   - clear infabs_depth_conts_subst_mono.
     intro c. induction c; simpl; intros * Hmono; eauto.
@@ -2799,7 +2839,8 @@ Proof.
 Qed.
 
 Lemma infabs_depth_work_subst_mono : forall Σ A X w,
-  Σ ᵗ⊢ᵃₘ A -> infabs_depth_work ({A ʷ/ₜ X} w) <= infabs_depth_work w.
+  Σ ᵗ⊢ᵃₘ A -> 
+  infabs_depth_work ({A ʷ/ₜ X} w) <= infabs_depth_work w.
 Proof.
   intros * Hmono. induction w; simpl in *; eauto.
   - eapply infabs_depth_subst_mono with (X := X) (B := A0) in Hmono as Hle.
@@ -3241,6 +3282,15 @@ Lemma iu_size_open_typ_wrt_typ : forall A X,
 Proof.
   intros. eapply iu_size_open_typ_wrt_typ_rec; eauto.
 Qed.
+
+Ltac solve_a_mono_typ_nonmono :=
+  match goal with
+  | [ H : a_mono_typ _ (typ_all ?A) |- _ ] => dependent destruction H
+  | [ H : a_mono_typ _ (typ_union ?A ?B) |- _ ] => dependent destruction H
+  | [ H : a_mono_typ _ (typ_intersection ?A ?B) |- _ ] => dependent destruction H
+  end.
+
+Hint Extern 1 False => solve_a_mono_typ_nonmono : core.
 
 Lemma a_wf_wl_red_decidable : forall me mj mt mtj ma maj ms mw ne ns Γ,
   ⊢ᵃʷₛ Γ ->
@@ -4741,15 +4791,13 @@ Proof.
             }          
             admit. (* TODO: renaming stuff *)
       -- right. intro Hcontra. dependent destruction Hcontra; try unify_binds.
-         dependent destruction H8; try unify_binds.
       -- edestruct JgUnion1 as [JgUnion1' | JgUnion1']; eauto.
          edestruct JgUnion2 as [JgUnion2' | JgUnion2']; eauto.
          right. intro Hcontra. dependent destruction Hcontra; try unify_binds.
-         dependent destruction H2. 
          eapply JgUnion1'; eauto. eapply JgUnion2'; eauto.
       -- edestruct JgInter1 as [JgInter1' | JgInter1']; eauto.
          right. intro Hcontra. dependent destruction Hcontra; try unify_binds.
-         dependent destruction H2. eauto.
+         eauto.
     * dependent destruction H1;
         try solve [right; intro Hcontra;
           dependent destruction Hcontra];
