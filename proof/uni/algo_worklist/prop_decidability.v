@@ -3962,6 +3962,90 @@ Proof.
   eapply num_etvar_wl_aworklist_subst in Hsubst; eauto.
 Qed.
 
+Lemma binds_subst_etvar_inv : forall Γ2 X0 X b A Γ1,
+  X0 <> X ->
+  b = □ \/ b = ■ \/ b = ⬒ ->
+  binds X0 b (⌊ {A ᵃʷ/ₜ X} Γ2 ⧺ Γ1 ⌋ᵃ) ->
+  binds X0 b (⌊ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1 ⌋ᵃ).
+Proof.
+  intro Γ2. induction Γ2; simpl; intros * Hneq Hb Hbinds; eauto.
+  destruct Hb as [Hb | [Hb | Hb]]; subst; destruct ab; destruct_binds; eauto.
+Qed.
+
+Lemma aworklist_subst_mono_typ_inv : forall Γ2 X A T Γ1 Γ1' Γ2',
+  X ∉ ftvar_in_typ T ->
+  a_mono_typ (⌊ {A ᵃʷ/ₜ X} Γ2' ⧺ Γ1' ⌋ᵃ) T ->
+  ⊢ᵃʷ (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) ->
+  aworklist_subst (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) X A Γ1' Γ2' ->
+  a_mono_typ (⌊ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1 ⌋ᵃ) T.
+Proof.
+  intros * Hnotin Hmono Hwf Hsubst.
+  eapply aworklist_subst_same_tvar_binds in Hsubst as Hsame; eauto.
+  destruct Hsame as [Hsame1 [Hsame2 Hsame3]].
+  dependent induction Hmono; eauto; simpl in *; intros.
+  - eapply binds_subst_etvar_inv in H; eauto.
+    eapply Hsame1 in H; eauto.
+  - eapply binds_subst_etvar_inv in H; eauto.
+    eapply Hsame3 in H; eauto.
+  - constructor; eauto.
+Qed.
+
+Lemma aworklist_subst_mono_typ_inv' : forall Γ X A T Γ1 Γ2,
+  X ∉ ftvar_in_typ T ->
+  a_mono_typ (⌊ {A ᵃʷ/ₜ X} Γ2 ⧺ Γ1 ⌋ᵃ) T ->
+  ⊢ᵃʷ Γ -> X ~ ⬒ ∈ᵃ ⌊ Γ ⌋ᵃ ->
+  aworklist_subst Γ X A Γ1 Γ2 ->
+  a_mono_typ (⌊ Γ ⌋ᵃ) T.
+Proof.
+  intros * Hnotin Hmono Hwf Hbinds Hsubst.
+  eapply awl_split_etvar in Hbinds as [Γ1' [Γ2' Hbinds]]. subst.
+  eapply aworklist_subst_mono_typ_inv; eauto.
+Qed.
+
+Lemma aworklist_subst_mono_typ_subst_inv : forall Γ2 X A T Γ1 Γ1' Γ2',
+  a_mono_typ (⌊ {A ᵃʷ/ₜ X} Γ2' ⧺ Γ1' ⌋ᵃ) ({A ᵗ/ₜ X} T) ->
+  ⊢ᵃʷ (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) ->
+  aworklist_subst (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) X A Γ1' Γ2' ->
+  a_mono_typ (⌊ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1 ⌋ᵃ) T.
+Proof.
+  intros * Hmono Hwf Hsubst.
+  eapply aworklist_subst_same_tvar_binds in Hsubst as Hsame; eauto.
+  destruct Hsame as [Hsame1 [Hsame2 Hsame3]].
+  dependent induction Hmono; eauto; simpl in *; intros.
+  - destruct T; simpl; try solve [inversion x]; eauto.
+    inversion x. destruct_eq_atom; eauto.
+    rewrite awl_to_aenv_app. simpl. auto.
+    inversion H0.
+  - destruct T; simpl; try solve [inversion x]; eauto.
+    inversion x. destruct_eq_atom; eauto.
+    rewrite awl_to_aenv_app. simpl. auto.
+    inversion H1. subst.
+    eapply binds_subst_etvar_inv in H; eauto.
+    eapply Hsame1 in H; eauto.
+  - destruct T; simpl; try solve [inversion x]; eauto.
+    inversion x. destruct_eq_atom; eauto.
+    rewrite awl_to_aenv_app. simpl. auto.
+    inversion H1. subst.
+    eapply binds_subst_etvar_inv in H; eauto.
+    eapply Hsame3 in H; eauto.
+  - destruct T; simpl; try solve [inversion x]; eauto.
+    inversion x. destruct_eq_atom; eauto.
+    rewrite awl_to_aenv_app. simpl. auto.
+    inversion H0.
+    simpl in x. inversion x. subst. eauto.
+Qed.
+
+Lemma aworklist_subst_mono_typ_subst_inv' : forall Γ X A T Γ1 Γ2,
+  a_mono_typ (⌊ {A ᵃʷ/ₜ X} Γ2 ⧺ Γ1 ⌋ᵃ) ({A ᵗ/ₜ X} T) ->
+  ⊢ᵃʷ Γ -> X ~ ⬒ ∈ᵃ ⌊ Γ ⌋ᵃ ->
+  aworklist_subst Γ X A Γ1 Γ2 ->
+  a_mono_typ (⌊ Γ ⌋ᵃ) T.
+Proof.
+  intros * Hmono Hwf Hbinds Hsubst.
+  eapply awl_split_etvar in Hbinds as [Γ1' [Γ2' Hbinds]]. subst.
+  eapply aworklist_subst_mono_typ_subst_inv; eauto.
+Qed.
+
 Lemma a_wf_wl_red_decidable : forall me mj mt mtj ma maj ms mev mw ne ns Γ,
   ⊢ᵃʷₛ Γ ->
   exp_size_wl Γ ne -> ne < me ->
@@ -5684,11 +5768,14 @@ Proof.
                   + exfalso. eauto.
                   + eapply split_depth_non_mono_ in Hs2' as Hgt; eauto.
                     eapply split_depth_lt with (n' := 2) in Hs2 as Hlt; eauto; try lia.
-                    intros Hcontra. admit. (* aworklist_subst mono inv *)
+                    intros Hcontra. eapply aworklist_subst_mono_typ_subst_inv' with (Γ := X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) in Hcontra; simpl in *; eauto.
+                    eapply a_mono_typ_strengthen_mtvar in Hcontra; eauto.
+                    eapply a_mono_typ_strengthen_mtvar in Hcontra; eauto.
                 - eapply split_depth_non_mono_ in Hs1' as Hgt; eauto.
                   eapply split_depth_lt with (n' := 2) in Hs1 as Hlt; eauto; try lia.
-                  intros Hcontra. admit. (* aworklist_subst mono inv *)   
-              }
+                  intros Hcontra. eapply aworklist_subst_mono_typ_subst_inv' with (Γ := X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) in Hcontra; simpl in *; eauto.
+                  eapply a_mono_typ_strengthen_mtvar in Hcontra; eauto.
+                  eapply a_mono_typ_strengthen_mtvar in Hcontra; eauto. }
               eapply split_depth_wl_aworklist_subst with (Γ2 := X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ2) (Γ1 := Γ1) (m := n0) in Hs' as Hle; simpl; eauto.
               eapply IHms; simpl in *; eauto; try lia.
               admit. (* wf *)
