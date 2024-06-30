@@ -5684,106 +5684,102 @@ Proof.
                destruct Heq as [Heq1 Heq2]. subst. eauto.
             ** right. intro Hcontra. dependent destruction Hcontra; try unify_binds.
          ++ pick fresh X1. pick fresh X2.
-            eapply awl_split_etvar in H as Hbin; eauto.
-            destruct Hbin as [Γ1 [Γ2 Hbin]]. subst.
-            assert (Hsubst: aworklist_subst (work_sub ` X (typ_arrow A1 A2) ⫤ᵃ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) X
-                                            (typ_arrow ` X1 ` X2) (X1 ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1) (work_sub ` X (typ_arrow A1 A2) ⫤ᵃ Γ2)).
-            { eapply a_ws__work_stay. eapply worklist_subst_fresh_etvar_total with (Γ1 := Γ1) (Γ2 := Γ2); eauto. }
-            assert (JgArr1: (work_sub ` X2 (subst_typ_in_typ (typ_arrow ` X1 ` X2) X A2) ⫤ᵃ work_sub (subst_typ_in_typ (typ_arrow ` X1 ` X2) X A1) ` X1 ⫤ᵃ subst_typ_in_aworklist (typ_arrow ` X1 ` X2) X Γ2 ⧺ X1 ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1) ⟶ᵃʷ⁎⋅ \/
-                          ~ (work_sub ` X2 (subst_typ_in_typ (typ_arrow ` X1 ` X2) X A2) ⫤ᵃ work_sub (subst_typ_in_typ (typ_arrow ` X1 ` X2) X A1) ` X1 ⫤ᵃ subst_typ_in_aworklist (typ_arrow ` X1 ` X2) X Γ2 ⧺ X1 ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1) ⟶ᵃʷ⁎⋅).
-            { dependent destruction Hsubst.
-              assert (Hmono: ⌊ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1 ⌋ᵃ ᵗ⊢ᵃₘ typ_arrow ` X1 ` X2).
+            assert (Hsubst: exists Γ1 Γ2, aworklist_subst (X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ) X (typ_arrow ` X1 ` X2) Γ1 Γ2).
+            { eapply worklist_subst_fresh_etvar_total'; eauto. }
+            destruct Hsubst as [Γ1 [Γ2 Hsubst]].
+            assert (JgArr1: (work_sub ` X2 (subst_typ_in_typ (typ_arrow ` X1 ` X2) X A2) ⫤ᵃ work_sub (subst_typ_in_typ (typ_arrow ` X1 ` X2) X A1) ` X1 ⫤ᵃ subst_typ_in_aworklist (typ_arrow ` X1 ` X2) X Γ2 ⧺ Γ1) ⟶ᵃʷ⁎⋅ \/
+                          ~ (work_sub ` X2 (subst_typ_in_typ (typ_arrow ` X1 ` X2) X A2) ⫤ᵃ work_sub (subst_typ_in_typ (typ_arrow ` X1 ` X2) X A1) ` X1 ⫤ᵃ subst_typ_in_aworklist (typ_arrow ` X1 ` X2) X Γ2 ⧺ Γ1) ⟶ᵃʷ⁎⋅).
+            { assert (Hmono: ⌊ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ ⌋ᵃ ᵗ⊢ᵃₘ typ_arrow ` X1 ` X2).
               { simpl. econstructor; eauto. }
-              assert (Hmono': ⌊ {typ_arrow ` X1 ` X2 ᵃʷ/ₜ X} Γ2 ⧺ X1 ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1 ⌋ᵃ ᵗ⊢ᵃₘ typ_arrow ` X1 ` X2).
+              assert (Hmono': ⌊ {typ_arrow ` X1 ` X2 ᵃʷ/ₜ X} Γ2 ⧺ Γ1 ⌋ᵃ ᵗ⊢ᵃₘ typ_arrow ` X1 ` X2).
               { eapply aworklist_subst_mono_typ; eauto. }
               dependent destruction Hmono. dependent destruction Hmono'.
-              assert (Hwf1: ⊢ᵃʷ (X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1)) by (econstructor; eauto).
-              assert (Hwf2: ⊢ᵃʷ ({typ_arrow ` X1 ` X2 ᵃʷ/ₜ X} Γ2 ⧺ X1 ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1)).
+              assert (Hwf1: ⊢ᵃʷ (X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ)) by (econstructor; eauto).
+              assert (Hwf2: ⊢ᵃʷ ({typ_arrow ` X1 ` X2 ᵃʷ/ₜ X} Γ2 ⧺ Γ1)).
               { eapply aworklist_subst_wf_wwl; eauto. }
               eapply a_wf_wwl_a_wf_env in Hwf2 as Hwf3.
-              assert (Hwf4: ⌊ {typ_arrow ` X1 ` X2 ᵃʷ/ₜ X} Γ2 ⧺ X1 ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1 ⌋ᵃ ᵗ⊢ᵃ {typ_arrow ` X1 ` X2 ᵗ/ₜ X} A1).
-              { eapply aworklist_subst_wf_typ_subst with (Γ := X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1); eauto.
+              assert (Hwf4: ⌊ {typ_arrow ` X1 ` X2 ᵃʷ/ₜ X} Γ2 ⧺ Γ1 ⌋ᵃ ᵗ⊢ᵃ {typ_arrow ` X1 ` X2 ᵗ/ₜ X} A1).
+              { eapply aworklist_subst_wf_typ_subst with (Γ := X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ); eauto.
                 simpl. eapply a_wf_typ_weaken_cons; eauto. eapply a_wf_typ_weaken_cons; eauto. }
-              assert (Hwf5: ⌊ {typ_arrow ` X1 ` X2 ᵃʷ/ₜ X} Γ2 ⧺ X1 ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1 ⌋ᵃ ᵗ⊢ᵃ {typ_arrow ` X1 ` X2 ᵗ/ₜ X} A2).
-              { eapply aworklist_subst_wf_typ_subst with (Γ := X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1); eauto.
+              assert (Hwf5: ⌊ {typ_arrow ` X1 ` X2 ᵃʷ/ₜ X} Γ2 ⧺ Γ1 ⌋ᵃ ᵗ⊢ᵃ {typ_arrow ` X1 ` X2 ᵗ/ₜ X} A2).
+              { eapply aworklist_subst_wf_typ_subst with (Γ := X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ); eauto.
                 simpl. eapply a_wf_typ_weaken_cons; eauto. eapply a_wf_typ_weaken_cons; eauto. }
-              assert (Hsubst': aworklist_subst ((X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ2) ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) X (typ_arrow ` X1 ` X2) (X1 ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1) Γ2) by eauto.
-              assert (He': exists n, exp_size_wl ({typ_arrow ` X1 ` X2 ᵃʷ/ₜ X} Γ2 ⧺ X1 ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1) n).
+              assert (He': exists n, exp_size_wl ({typ_arrow ` X1 ` X2 ᵃʷ/ₜ X} Γ2 ⧺ Γ1) n).
               { eapply exp_size_wl_total; eauto. }
               destruct He' as [n' He'].
-              eapply exp_size_wl_aworklist_subst in Hsubst' as Heq; simpl; eauto. subst.
-              assert (Ha2n1: exists Ξ, awl_to_nenv (work_sub ({typ_arrow ` X1 ` X2 ᵗ/ₜ X} A1) ` X1 ⫤ᵃ {typ_arrow ` X1 ` X2 ᵃʷ/ₜ X} Γ2 ⧺ X1 ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1) Ξ).
+              eapply exp_size_wl_aworklist_subst' in Hsubst as Heq; simpl; eauto. subst.
+              assert (Ha2n1: exists Ξ, awl_to_nenv (work_sub ({typ_arrow ` X1 ` X2 ᵗ/ₜ X} A1) ` X1 ⫤ᵃ {typ_arrow ` X1 ` X2 ᵃʷ/ₜ X} Γ2 ⧺ Γ1) Ξ).
               { eapply awl_to_nenv_total; eauto. }
               destruct Ha2n1 as [Ξ1 Ha2n1].
-              assert (Ha2n2: exists Ξ, awl_to_nenv ({typ_arrow ` X1 ` X2 ᵃʷ/ₜ X} Γ2 ⧺ X1 ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1) Ξ).
+              assert (Ha2n2: exists Ξ, awl_to_nenv ({typ_arrow ` X1 ` X2 ᵃʷ/ₜ X} Γ2 ⧺ Γ1) Ξ).
               { eapply awl_to_nenv_total; eauto. }
               destruct Ha2n2 as [Ξ2 Ha2n2].
               dependent destruction H4. dependent destruction H6.
-              assert (Hs': split_depth (⌊ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1 ⌋ᵃ) ` X 1 0).
+              assert (Hs': split_depth (⌊ Γ ⌋ᵃ) ` X 1 0).
               { eapply split_depth_mono; eauto. }
               eapply split_depth_det with (m := m1) in Hs'; eauto. subst.
               dependent destruction H5. simpl in *.
-              assert (Hs2: exists m, split_depth (⌊ {typ_arrow ` X1 ` X2 ᵃʷ/ₜ X} Γ2 ⧺ X1 ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1 ⌋ᵃ) ({typ_arrow ` X1 ` X2 ᵗ/ₜ X} A2) 1 m).
+              assert (Hs2: exists m, split_depth (⌊ {typ_arrow ` X1 ` X2 ᵃʷ/ₜ X} Γ2 ⧺ Γ1 ⌋ᵃ) ({typ_arrow ` X1 ` X2 ᵗ/ₜ X} A2) 1 m).
               { eapply split_depth_total; simpl; eauto. }
               destruct Hs2 as [m2' Hs2].
-              assert (Hs2': exists m, split_depth (⌊ {typ_arrow ` X1 ` X2 ᵃʷ/ₜ X} Γ2 ⧺ X1 ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1 ⌋ᵃ) ({typ_arrow ` X1 ` X2 ᵗ/ₜ X} A2) 2 m).
+              assert (Hs2': exists m, split_depth (⌊ {typ_arrow ` X1 ` X2 ᵃʷ/ₜ X} Γ2 ⧺ Γ1 ⌋ᵃ) ({typ_arrow ` X1 ` X2 ᵗ/ₜ X} A2) 2 m).
               { eapply split_depth_total; simpl; eauto. }
               destruct Hs2' as [m2'' Hs2'].
               assert (Hele2: m2' <= m2'').
               { eapply split_depth_le with (n := 1) in Hs2'; eauto. }
               assert (Hele2': m2'' <= m2).
-              { eapply split_depth_aworklist_subst' with (Γ := X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) (n := 2) (m := m2) in Hs2' as Hele; simpl; eauto.
+              { eapply split_depth_aworklist_subst' with (Γ := X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ) (n := 2) (m := m2) in Hs2' as Hele; simpl; eauto.
                 eapply a_wf_typ_weaken_cons; eauto. eapply a_wf_typ_weaken_cons; eauto.
                 eapply split_depth_weaken_cons; eauto. eapply split_depth_weaken_cons; eauto. }
-              assert (Hs2'': split_depth (⌊ work_sub ({typ_arrow ` X1 ` X2 ᵗ/ₜ X} A1) ` X1 ⫤ᵃ {typ_arrow ` X1 ` X2 ᵃʷ/ₜ X} Γ2 ⧺ X1 ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1 ⌋ᵃ) ` X2 1 0).
+              assert (Hs2'': split_depth (⌊ work_sub ({typ_arrow ` X1 ` X2 ᵗ/ₜ X} A1) ` X1 ⫤ᵃ {typ_arrow ` X1 ` X2 ᵃʷ/ₜ X} Γ2 ⧺ Γ1 ⌋ᵃ) ` X2 1 0).
               { eapply split_depth_mono; eauto. }
               assert (Hiuv2: exists n, n_iuv_size ({typ_arrow ` X1 ` X2 ᵗ/ₜ X} A2) n).
               { eapply n_iuv_size_total; eauto. }
               destruct Hiuv2 as [n2' Hiuv2].
               eapply n_iuv_size_subst_mono in Hiuv2 as Heq; eauto. subst.
-              assert (Hs1: exists m, split_depth (⌊ {typ_arrow ` X1 ` X2 ᵃʷ/ₜ X} Γ2 ⧺ X1 ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1 ⌋ᵃ) ({typ_arrow ` X1 ` X2 ᵗ/ₜ X} A1) 1 m).
+              assert (Hs1: exists m, split_depth (⌊ {typ_arrow ` X1 ` X2 ᵃʷ/ₜ X} Γ2 ⧺ Γ1 ⌋ᵃ) ({typ_arrow ` X1 ` X2 ᵗ/ₜ X} A1) 1 m).
               { eapply split_depth_total; simpl; eauto. }
               destruct Hs1 as [m0' Hs1].
-              assert (Hs1': exists m, split_depth (⌊ {typ_arrow ` X1 ` X2 ᵃʷ/ₜ X} Γ2 ⧺ X1 ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1 ⌋ᵃ) ({typ_arrow ` X1 ` X2 ᵗ/ₜ X} A1) 2 m).
+              assert (Hs1': exists m, split_depth (⌊ {typ_arrow ` X1 ` X2 ᵃʷ/ₜ X} Γ2 ⧺ Γ1 ⌋ᵃ) ({typ_arrow ` X1 ` X2 ᵗ/ₜ X} A1) 2 m).
               { eapply split_depth_total; simpl; eauto. }
               destruct Hs1' as [m0'' Hs1'].
               assert (Hele1: m0' <= m0'').
               { eapply split_depth_le with (n := 1) in Hs1'; eauto. }
               assert (Hele1': m0'' <= m0).
-              { eapply split_depth_aworklist_subst' with (Γ := X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) (n := 2) (m := m0) in Hs1' as Hele; simpl; eauto.
+              { eapply split_depth_aworklist_subst' with (Γ := X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ) (n := 2) (m := m0) in Hs1' as Hele; simpl; eauto.
                 eapply a_wf_typ_weaken_cons; eauto. eapply a_wf_typ_weaken_cons; eauto.
                 eapply split_depth_weaken_cons; eauto. eapply split_depth_weaken_cons; eauto. }
-              assert (Hs1'': split_depth (⌊ work_sub ({typ_arrow ` X1 ` X2 ᵗ/ₜ X} A1) ` X1 ⫤ᵃ {typ_arrow ` X1 ` X2 ᵃʷ/ₜ X} Γ2 ⧺ X1 ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1 ⌋ᵃ) ` X1 1 0).
+              assert (Hs1'': split_depth (⌊ work_sub ({typ_arrow ` X1 ` X2 ᵗ/ₜ X} A1) ` X1 ⫤ᵃ {typ_arrow ` X1 ` X2 ᵃʷ/ₜ X} Γ2 ⧺ Γ1 ⌋ᵃ) ` X1 1 0).
               { eapply split_depth_mono; eauto. }
               assert (Hiuv1: exists n, n_iuv_size ({typ_arrow ` X1 ` X2 ᵗ/ₜ X} A1) n).
               { eapply n_iuv_size_total; eauto. }
               destruct Hiuv1 as [n1' Hiuv1].
               eapply n_iuv_size_subst_mono in Hiuv1 as Heq; eauto. subst.
-              assert (Hs': exists n, split_depth_wl ({typ_arrow ` X1 ` X2 ᵃʷ/ₜ X} Γ2 ⧺ X1 ~ᵃ ⬒ ;ᵃ X2 ~ᵃ ⬒ ;ᵃ Γ1) n).
+              assert (Hs': exists n, split_depth_wl ({typ_arrow ` X1 ` X2 ᵃʷ/ₜ X} Γ2 ⧺ Γ1) n).
               { eapply split_depth_wl_total; eauto. }
               destruct Hs' as [n' Hs'].
               assert (Hsle: m0' + m2' < m0 + m2).
-              { destruct (a_mono_typ_dec' (⌊ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1 ⌋ᵃ) A1); eauto.
-                - destruct (a_mono_typ_dec' (⌊ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1 ⌋ᵃ) A2); eauto.
+              { destruct (a_mono_typ_dec' (⌊ Γ ⌋ᵃ) A1); eauto.
+                - destruct (a_mono_typ_dec' (⌊ Γ ⌋ᵃ) A2); eauto.
                   + exfalso. eauto.
                   + eapply split_depth_non_mono_ in Hs2' as Hgt; eauto.
                     eapply split_depth_lt with (n' := 2) in Hs2 as Hlt; eauto; try lia.
-                    intros Hcontra. eapply aworklist_subst_mono_typ_subst_inv' with (Γ := X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) in Hcontra; simpl in *; eauto.
+                    intros Hcontra. eapply aworklist_subst_mono_typ_subst_inv' with (Γ := X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ) in Hcontra; simpl in *; eauto.
                     eapply a_mono_typ_strengthen_mtvar in Hcontra; eauto.
                     eapply a_mono_typ_strengthen_mtvar in Hcontra; eauto.
                 - eapply split_depth_non_mono_ in Hs1' as Hgt; eauto.
                   eapply split_depth_lt with (n' := 2) in Hs1 as Hlt; eauto; try lia.
-                  intros Hcontra. eapply aworklist_subst_mono_typ_subst_inv' with (Γ := X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) in Hcontra; simpl in *; eauto.
+                  intros Hcontra. eapply aworklist_subst_mono_typ_subst_inv' with (Γ := X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ) in Hcontra; simpl in *; eauto.
                   eapply a_mono_typ_strengthen_mtvar in Hcontra; eauto.
                   eapply a_mono_typ_strengthen_mtvar in Hcontra; eauto. }
-              eapply split_depth_wl_aworklist_subst with (Γ2 := X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ2) (Γ1 := Γ1) (m := n0) in Hs' as Hle; simpl; eauto.
+              eapply split_depth_wl_aworklist_subst' with (Γ := X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ) (m := n0) in Hs' as Hle; simpl; eauto.
               eapply IHms; simpl in *; eauto; try lia.
               admit. (* wf *)
-              erewrite judge_size_wl_aworklist_subst with (Γ2 := X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ2) (Γ1 := Γ1); eauto.
-              erewrite inftapp_depth_wl_aworklist_subst with (Γ2 := X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ2) (Γ1 := Γ1); eauto.
-              erewrite inftapp_judge_size_wl_aworklist_subst with (Γ2 := X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ2) (Γ1 := Γ1); eauto.
-              eapply infabs_depth_wl_aworklist_subst with (Γ2 := X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ2) (Γ1 := Γ1) in Hsubst as Hle'; eauto. simpl in *. lia.
-              eapply infabs_judge_size_wl_aworklist_subst with (Γ2 := X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ2) (Γ1 := Γ1) in Hsubst as Hle'; eauto. simpl in *. lia. }          
+              erewrite judge_size_wl_aworklist_subst' with (Γ := X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ); simpl; eauto.
+              erewrite inftapp_depth_wl_aworklist_subst' with (Γ := X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ); simpl; eauto.
+              erewrite inftapp_judge_size_wl_aworklist_subst' with (Γ := X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ); simpl; eauto.
+              eapply infabs_depth_wl_aworklist_subst' with (Γ := X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ) in Hsubst as Hle'; simpl; eauto. simpl in *. lia.
+              eapply infabs_judge_size_wl_aworklist_subst' with (Γ := X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ) in Hsubst as Hle'; simpl; eauto. simpl in *. lia. }          
             admit. (* TODO: renaming stuff *)
       -- right. intro Hcontra. dependent destruction Hcontra; try unify_binds.
       -- edestruct JgUnion1 as [JgUnion1' | JgUnion1']; eauto.
