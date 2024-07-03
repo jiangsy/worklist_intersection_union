@@ -468,6 +468,185 @@ Proof with eauto.
   exists*.
 Qed.
 
+Theorem d_inftapp_soundness2 : forall Ψ A B C,
+  Ψ ⊢ A ○ B ⇒⇒ C ->
+  (exists A', Ψ ⊢ A <: typ_all A' /\ Ψ ⊢ C <: open_typ_wrt_typ A' B /\ Ψ ⊢ open_typ_wrt_typ A' B <: C) \/ 
+  (Ψ ⊢ A <: typ_bot /\ Ψ ⊢ C <: typ_bot).
+Proof.
+  intros. dependent induction H; eauto.
+  - left. exists A. repeat split.
+    + apply d_sub_refl; eauto.
+    + apply d_sub_refl; eauto.
+      apply d_wf_typ_all_open; eauto.
+    + apply d_sub_refl; eauto.
+      apply d_wf_typ_all_open; eauto.
+  - inversion IHd_inftapp.
+    + destruct H1 as [A' [Hsub1 Hsub2]]; auto. left.
+      exists A'. split; eauto.
+    + right. destruct_conj. split; eauto.
+  - inversion IHd_inftapp.
+    + destruct H1 as [A' [Hsub1 Hsub2]]; auto. left.
+      exists A'. split; eauto.
+    + right. destruct_conj. split; eauto.
+  - destruct IHd_inftapp1; destruct IHd_inftapp2.
+    + destruct H1 as [A1' [Hsub1 Heq1]]; eauto.
+      destruct H2 as [A2' [Hsub2 Heq2]]; eauto.
+      left.
+      exists (typ_union A1' A2'). split; eauto.
+      econstructor; eauto.
+      * apply sub_transitivity with (B:=typ_all A1'); eauto.
+        apply d_sub_d_wf in Hsub1 as Hwf1.
+        apply d_sub_d_wf in Hsub2 as Hwf2.
+        destruct_conj. dependent destruction H6. dependent destruction H11.
+        inst_cofinites_for d_sub__all; eauto; intros; inst_cofinites_with X.
+        -- unfold open_typ_wrt_typ. simpl.
+           auto. 
+        -- unfold open_typ_wrt_typ. simpl.
+           apply d_sub__union1; eauto.
+           apply d_sub_refl; eauto.
+           apply d_wf_env__stvar; eauto.
+           apply d_wf_typ_tvar_stvar_cons; eauto.
+           apply d_wf_typ_tvar_stvar_cons; eauto.
+      * apply sub_transitivity with (B:=typ_all A2'); eauto.
+        apply d_sub_d_wf in Hsub1 as Hwf1.
+        apply d_sub_d_wf in Hsub2 as Hwf2.
+        destruct_conj. dependent destruction H6. dependent destruction H11.
+        inst_cofinites_for d_sub__all; eauto; intros; inst_cofinites_with X.
+        -- unfold open_typ_wrt_typ. simpl.
+           auto. 
+        -- unfold open_typ_wrt_typ. simpl.
+           apply d_sub__union2; eauto.
+           apply d_sub_refl; eauto.
+           apply d_wf_env__stvar; eauto.
+           apply d_wf_typ_tvar_stvar_cons; eauto.
+           apply d_wf_typ_tvar_stvar_cons; eauto.
+      * destruct_conj; split; unfold open_typ_wrt_typ in *; simpl; subst; auto.
+        -- apply d_sub__union3; eauto.
+           apply sub_transitivity with (B:=open_typ_wrt_typ_rec 0 B A1'); eauto.
+           apply d_sub__union1; eauto. apply d_sub_refl; eauto.
+           apply d_sub_d_wf_typ1 in H4; eauto.
+           apply d_sub_d_wf_typ1 in H2; eauto.
+           apply sub_transitivity with (B:=open_typ_wrt_typ_rec 0 B A2'); eauto.
+           apply d_sub__union2; eauto. apply d_sub_refl; eauto.
+           apply d_sub_d_wf_typ1 in H2; eauto.
+           apply d_sub_d_wf_typ1 in H4; eauto.
+        -- apply d_sub__union3; eauto.
+    + left. destruct H1 as [A1']. 
+      exists A1'. destruct_conj. repeat split; eauto.
+      * apply d_sub__union3; eauto.
+        apply sub_transitivity with (B:=typ_bot); eauto.
+        apply d_sub_d_wf_typ2 in H1; eauto.
+      * apply d_sub__union3; eauto.
+        apply sub_transitivity with (B:=typ_bot); eauto.
+        apply d_sub_d_wf_typ1 in H5; eauto.
+    + left. destruct H2 as [A2']. 
+      exists A2'. destruct_conj. repeat split; eauto.
+      * apply d_sub__union3; eauto.
+        apply sub_transitivity with (B:=typ_bot); eauto.
+        apply d_sub_d_wf_typ2 in H2; eauto.
+      * apply d_sub__union3; eauto.
+        apply sub_transitivity with (B:=typ_bot); eauto.
+        apply d_sub_d_wf_typ1 in H4; eauto.
+    + right. destruct_conj. split; eauto.
+Qed.
+
+Inductive bot_free : typ -> Prop :=
+  | bot_free_tvar : forall X,
+      bot_free (typ_var_f X)
+  | bot_free_unit : 
+      bot_free typ_unit
+  | bot_free_top : 
+      bot_free typ_top
+  | bot_free_arrow : forall A B,
+      bot_free A ->
+      bot_free B ->
+      bot_free (typ_arrow A B)
+  | bot_free_all : forall A L,
+      (forall X, X `notin` L -> bot_free (open_typ_wrt_typ A (typ_var_f X))) ->
+      bot_free (typ_all A)
+  | bot_free_intersection : forall A B,
+      bot_free A ->
+      bot_free B ->
+      bot_free (typ_intersection A B)
+  | bot_free_union : forall A B,
+      bot_free A ->
+      bot_free B ->
+      bot_free (typ_union A B).
+
+Theorem d_inftapp_soundness1 : forall Ψ A B C,
+  bot_free A ->
+  Ψ ⊢ A ○ B ⇒⇒ C ->
+  exists A', Ψ ⊢ A <: typ_all A' /\ C = open_typ_wrt_typ A' B.
+Proof.
+  intros. dependent induction H0; eauto.
+  - inversion H.
+  - exists A. split.
+    + apply d_sub_refl; eauto.
+    + auto.
+  - dependent destruction H. destruct IHd_inftapp as [A' [Hsub1 Hsub2]]; auto.
+    exists A'. split; eauto.
+  - dependent destruction H. destruct IHd_inftapp as [A' [Hsub1 Hsub2]]; auto.
+    exists A'. split; eauto.
+  - dependent destruction H. 
+    destruct IHd_inftapp1 as [A1' [Hsub1 Heq1]]; eauto.
+    destruct IHd_inftapp2 as [A2' [Hsub2 Heq2]]; eauto.
+    exists (typ_union A1' A2'). split; eauto.
+    econstructor; eauto.
+    + apply sub_transitivity with (B:=typ_all A1'); eauto.
+      apply d_sub_d_wf in Hsub1 as Hwf1.
+      apply d_sub_d_wf in Hsub2 as Hwf2.
+      destruct_conj. dependent destruction H6. dependent destruction H7.
+      inst_cofinites_for d_sub__all; eauto; intros; inst_cofinites_with X.
+      * unfold open_typ_wrt_typ. simpl.
+        auto. 
+      *  unfold open_typ_wrt_typ. simpl.
+        apply d_sub__union1; eauto.
+        apply d_sub_refl; eauto.
+        apply d_wf_env__stvar; eauto.
+        apply d_wf_typ_tvar_stvar_cons; eauto.
+        apply d_wf_typ_tvar_stvar_cons; eauto.
+    + apply sub_transitivity with (B:=typ_all A2'); eauto.
+      apply d_sub_d_wf in Hsub1 as Hwf1.
+      apply d_sub_d_wf in Hsub2 as Hwf2.
+      destruct_conj. dependent destruction H6. dependent destruction H7.
+      inst_cofinites_for d_sub__all; eauto; intros; inst_cofinites_with X.
+      * unfold open_typ_wrt_typ. simpl.
+        auto. 
+      * unfold open_typ_wrt_typ. simpl.
+        apply d_sub__union2; eauto.
+        apply d_sub_refl; eauto.
+        apply d_wf_env__stvar; eauto.
+        apply d_wf_typ_tvar_stvar_cons; eauto.
+        apply d_wf_typ_tvar_stvar_cons; eauto.
+    + unfold open_typ_wrt_typ in *. simpl. subst. auto.
+Qed.
+
+(* Theorem d_inftapp_soundness3 : forall Ψ A B C A',
+  Ψ ⊢ A ○ B ⇒⇒ C ->
+  Ψ ⊢ typ_all A' <: A -> Ψ ⊢ open_typ_wrt_typ A' B <: C.
+Proof.
+  intros. dependent induction H; eauto.
+  - dependent destruction H1.
+    eapply d_sub_open_mono_bot_false in H4; eauto. contradiction.
+  - dependent destruction H2.
+    pick fresh X. inst_cofinites_with X.
+    rewrite_env (nil ++ X ~ ■ ++ Ψ) in H4.
+    eapply d_sub_subst_stvar in H4; eauto. simpl in H4.
+    rewrite subst_typ_in_typ_open_typ_wrt_typ_tvar2 in H4; eauto.
+    rewrite subst_typ_in_typ_open_typ_wrt_typ_tvar2 in H4; eauto.
+    inversion H2.
+  - apply d_sub_intersection_inv in H1.
+    destruct_conj; eauto.
+  - apply d_sub_intersection_inv in H1.
+    destruct_conj; eauto.
+  - dependent destruction H1. 
+    + dependent destruction H1.
+      * apply d_wneq_all_tapp_false in H; eauto. contradiction.
+      * apply d_wneq_all_tapp_false in H0; eauto. contradiction.
+    + eauto.
+    + eauto.
+Qed. *)
+
 #[export] Hint Immediate d_infabs_d_wf_env d_infabs_d_wf_typ1 d_infabs_d_wf_typ2 d_infabs_d_wf_typ3 : core.
 
 Theorem d_infabs_subsumption_same_env : forall Ψ A A' B C,
