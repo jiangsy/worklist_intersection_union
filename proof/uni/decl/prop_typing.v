@@ -628,6 +628,37 @@ Proof with eauto.
   exists*.
 Qed.
 
+Theorem d_infabs_soundness : forall Ψ A B C,
+  Ψ ⊢ A ▹ B → C ->
+  Ψ ⊢ A <: typ_arrow B C.
+Proof.
+  intros. induction H; eauto.
+  - apply d_sub_refl; auto.
+  - dependent destruction H0.
+    inst_cofinites_for d_sub__alll T:=T; intros; auto.
+    apply d_infabs_d_wf in H2.
+    econstructor; intuition; eauto.
+  - apply sub_transitivity with (B:=typ_union (typ_arrow B1 C1) (typ_arrow B2 C2)); eauto using d_sub_refl.
+    apply d_sub__union3; eauto.
+    apply d_sub__union3.
+    apply d_sub__arrow; eauto using d_sub_refl.
+    apply d_sub__arrow; eauto using d_sub_refl.
+Qed.
+
+Theorem d_infabs_completeness: forall Ψ A B C,
+  ⊢ᵈₜ Ψ ->
+  Ψ ⊢ A <: typ_arrow B C ->
+  exists B' C',
+    Ψ ⊢ A ▹ B' → C' /\ Ψ ⊢ typ_arrow B' C' <: typ_arrow B C.
+Proof.
+  intros. 
+  eapply d_infabs_subsumption_same_env with (B:=B) (C:=C) in H0; eauto.
+  destruct_conj; eauto.
+  apply d_sub_d_wf in H0.
+  destruct_conj. dependent destruction H2.
+  econstructor; auto.
+Qed.
+
 #[local] Hint Extern 1 (_ < _) => lia : core.
 
 Lemma exp_size_open_var_rec : forall e x n,

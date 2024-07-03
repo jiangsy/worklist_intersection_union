@@ -35,6 +35,15 @@ Proof with auto.
     intuition.
 Qed.
 
+
+Lemma d_sub_intersection_all_inv : forall Ψ A1 A2 B,
+  Ψ ⊢ typ_intersection (typ_all A1) (typ_all A2) <: typ_all B ->
+  Ψ ⊢ typ_all A1 <: typ_all B \/ Ψ ⊢ typ_all A2 <: typ_all B.
+Proof with auto.
+  intros.
+  dependent induction H; auto...
+Qed.
+
 Lemma d_sub_intersection_inv : forall Ψ A B1 B2,
   Ψ ⊢ A <: typ_intersection B1 B2 ->
   Ψ ⊢ A <: B1 /\ Ψ ⊢ A <: B2.
