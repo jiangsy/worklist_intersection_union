@@ -621,6 +621,18 @@ Proof.
     + unfold open_typ_wrt_typ in *. simpl. subst. auto.
 Qed.
 
+Theorem d_inftapp_completness : forall Ψ A A' B,
+  ⊢ᵈₜ Ψ ->
+  Ψ ᵗ⊢ᵈ B ->
+  Ψ ⊢ A <: typ_all A' ->
+  exists C, Ψ ⊢ A ○ B ⇒⇒ C /\ Ψ ⊢ C <: open_typ_wrt_typ A' B. 
+Proof.
+  intros. eapply d_inftapp_subsumption_same_env with (B:=B) (C:=open_typ_wrt_typ A' B) in H1; eauto.
+  destruct H1 as [C].
+  - exists C. intuition.
+  - apply d_sub_d_wf in H1; destruct_conj; eauto.
+Qed.
+
 (* Theorem d_inftapp_soundness3 : forall Ψ A B C A',
   Ψ ⊢ A ○ B ⇒⇒ C ->
   Ψ ⊢ typ_all A' <: A -> Ψ ⊢ open_typ_wrt_typ A' B <: C.
