@@ -1776,3 +1776,86 @@ Proof with eauto.
     exists θ0...
 Qed.
     
+
+Fixpoint denv_to_aenv (Ψ: denv) : aenv :=
+  match Ψ with
+  | nil => nil
+  | (x, dbind_typ A) :: Ψ' => (x, abind_var_typ A) :: denv_to_aenv Ψ'
+  | (X, dbind_tvar_empty) :: Ψ' => (X, abind_tvar_empty) :: denv_to_aenv Ψ'
+  | (X, dbind_stvar_empty) :: Ψ' => (X, abind_stvar_empty) :: denv_to_aenv Ψ'
+  end.
+
+Lemma binds_var_denv_binds_denv_to_aenv : forall Ψ x A,
+  binds x (dbind_typ A) Ψ -> binds x (abind_var_typ A) (denv_to_aenv Ψ).
+Proof.
+  intros. induction Ψ; simpl in *. inversion H.
+  destruct a; destruct d; simpl in *; destruct_binds; auto.
+Qed.
+
+Lemma binds_tvar_denv_binds_denv_to_aenv : forall Ψ X,
+  binds X dbind_tvar_empty Ψ -> binds X abind_tvar_empty (denv_to_aenv Ψ).
+Proof.
+  intros. induction Ψ; simpl in *. inversion H.
+  destruct a; destruct d; simpl in *; destruct_binds; auto.
+Qed.
+
+Lemma binds_stvar_aenv_binds_aenv_to_denv : forall Ψ X,
+  binds X dbind_stvar_empty Ψ -> binds X abind_stvar_empty  (denv_to_aenv Ψ).
+Proof.
+  intros. induction Ψ; simpl in *. inversion H.
+  destruct a; destruct d; simpl in *; destruct_binds; auto.
+Qed.
+
+Lemma d_wf_typ_as_wf_typ : forall Ψ A, 
+  Ψ ᵗ⊢ᵈ A -> denv_to_aenv Ψ ᵗ⊢ᵃ A.
+Proof.
+  intros. induction H; simpl; eauto.
+  - constructor... apply binds_tvar_denv_binds_denv_to_aenv; auto.
+  - apply a_wf_typ__stvar. apply binds_stvar_aenv_binds_aenv_to_denv; auto.
+Qed.
+
+Lemma d_wf_exp_a_wf_exp : forall Ψ e, 
+  Ψ ᵉ⊢ᵈ e -> denv_to_aenv Ψ ᵉ⊢ᵃ e.
+Proof.
+  intros. induction H; simpl; eauto 3 using d_wf_typ_as_wf_typ.
+  - econstructor...
+    eapply binds_var_denv_binds_denv_to_aenv; eauto.
+Qed.
+
+Theorem a_wl_red_chk_completeness : forall e A,  
+  nil ᵉ⊢ᵈ e -> 
+  nil ᵗ⊢ᵈ A -> 
+  nil ⊢ e ⇐ A ->
+  (work_check e A ⫤ᵃ aworklist_empty) ⟶ᵃʷ⁎⋅.
+Proof.
+  intros. 
+  apply a_wl_red_completeness with (Ω := work_check e A ⫤ᵈ dworklist_empty).
+  - eapply d_wl_red_complete.
+    + eauto.
+    + econstructor; eauto.
+  - simpl. 
+    apply d_wf_typ_as_wf_typ in H0. 
+    apply d_wf_exp_a_wf_exp in H. eauto.
+  - econstructor. econstructor; eauto.
+    econstructor; auto.
+    rewrite_env (denv_to_ss nil). 
+    apply trans_exp_refl; eauto.
+Qed.
+
+Theorem a_wl_red_inf_completeness : forall e A,  
+  nil ᵉ⊢ᵈ e -> 
+  nil ⊢ e ⇒ A ->
+  (work_infer e (conts_sub typ_top) ⫤ᵃ aworklist_empty) ⟶ᵃʷ⁎⋅.
+Proof.
+  intros. 
+  apply a_wl_red_completeness with (Ω := work_infer e (conts_sub typ_top) ⫤ᵈ dworklist_empty).
+  - eapply d_wl_red_complete.
+    + eauto.
+    + apply d_chk_inf_wf in H0 as Hwf. destruct_conj; auto.
+      eauto 8.
+  - apply d_wf_exp_a_wf_exp in H. eauto.
+  - econstructor. econstructor; eauto.
+    econstructor; auto.
+    rewrite_env (denv_to_ss nil). 
+    apply trans_exp_refl; eauto.
+Qed.

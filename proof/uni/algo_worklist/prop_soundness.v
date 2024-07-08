@@ -1426,7 +1426,7 @@ Qed.
 Fixpoint aenv_to_denv (Σ: aenv) : denv :=
   match Σ with
   | nil => nil
-  | (X, abind_var_typ T) :: Σ' => (X, dbind_typ T) :: aenv_to_denv Σ'
+  | (x, abind_var_typ T) :: Σ' => (x, dbind_typ T) :: aenv_to_denv Σ'
   | (X, abind_tvar_empty) :: Σ' => (X, dbind_tvar_empty) :: aenv_to_denv Σ'
   | (X, abind_stvar_empty) :: Σ' => (X, dbind_stvar_empty) :: aenv_to_denv Σ'
   | (X, abind_etvar_empty) :: Σ' => (X, dbind_tvar_empty) :: aenv_to_denv Σ'
@@ -1477,10 +1477,11 @@ Proof.
     eapply binds_var_aenv_binds_aenv_to_denv; eauto.
 Qed.
 
-Theorem a_wl_red_chk_sound: forall e A,  
+Theorem a_wl_red_chk_soundness: forall e A,  
   nil ᵉ⊢ᵃ e -> 
   nil ᵗ⊢ᵃ A -> 
-  (work_check e A ⫤ᵃ aworklist_empty) ⟶ᵃʷ⁎⋅ -> nil ⊢ e ⇐ A.
+  (work_check e A ⫤ᵃ aworklist_empty) ⟶ᵃʷ⁎⋅ -> 
+  nil ⊢ e ⇐ A.
 Proof.
   intros. apply a_wl_red_soundness in H1.
   - destruct H1 as [Ω [Htrans Hdred]].
@@ -1505,7 +1506,7 @@ Proof.
   - econstructor; eauto.
 Qed.
 
-Theorem a_wl_red_inf_sound : forall e,  
+Theorem a_wl_red_inf_soundness: forall e,  
   nil ᵉ⊢ᵃ e -> 
   (work_infer e (conts_sub typ_top) ⫤ᵃ aworklist_empty) ⟶ᵃʷ⁎⋅ -> 
   exists A, nil ⊢ e ⇒ A.
