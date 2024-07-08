@@ -1103,6 +1103,14 @@ Proof.
     eapply awl_to_nenv_uniq; eauto.
 Qed.
 
+Lemma exp_size_wl_total' : forall Γ,
+  ⊢ᵃʷₛ Γ ->
+  exists n, exp_size_wl Γ n.
+Proof.
+  intros. apply exp_size_wl_total; eauto.
+  apply a_wf_wl_a_wf_wwl; eauto.
+Qed.
+
 Fixpoint judge_size_conts (cs : conts) : nat :=
   match cs with
   | conts_infabs cd => judge_size_contd cd
@@ -3179,6 +3187,13 @@ Proof.
   eapply split_depth_work_total in H;
     try solve [eapply a_wf_wwl_a_wf_env; eauto]; eauto.
   destruct H as [m Hm]; eauto.
+Qed.
+
+Lemma split_depth_wl_total' : forall Γ,
+  ⊢ᵃʷₛ Γ -> exists n, split_depth_wl Γ n.
+Proof.
+  intros. apply split_depth_wl_total.
+  apply a_wf_wl_a_wf_wwl; eauto.
 Qed.
 
 Lemma split_depth_mono : forall Σ A n,
@@ -6304,4 +6319,15 @@ Proof.
        right. intro Hcontra. dependent destruction Hcontra.
        eapply JgInter1'; eauto. eapply JgInter2'; eauto. eapply JgInter3'; eauto.
     Unshelve. all: auto.
+Qed.
+
+Corollary a_wf_wl_red_decidable_thm : forall Γ,
+  ⊢ᵃʷₛ Γ ->
+  Γ ⟶ᵃʷ⁎⋅ \/ ~ Γ ⟶ᵃʷ⁎⋅.
+Proof.
+  intros.
+  apply exp_size_wl_total' in H as Hexp.
+  apply split_depth_wl_total' in H as Hsplit.
+  destruct_conj.
+  eapply a_wf_wl_red_decidable; eauto.
 Qed.
