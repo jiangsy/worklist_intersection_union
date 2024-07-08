@@ -2278,6 +2278,77 @@ Proof with eauto.
   - inst_cofinites_for trans_typ__all...
 Qed.
 
+Fixpoint denv_to_ss (Ψ : denv) : subst_set :=
+  match Ψ with
+  | nil => nil
+  | (x, dbind_typ T) :: Ψ' => denv_to_ss Ψ'
+  | (X, dbind_stvar_empty) :: Ψ' => (X, dbind_stvar_empty) :: denv_to_ss Ψ'
+  | (X, dbind_tvar_empty) :: Ψ' => (X, dbind_tvar_empty) :: denv_to_ss Ψ'
+  end.
+
+Lemma dom_denv_to_ss_upper : forall Ψ,
+  dom (denv_to_ss Ψ) [<=] dom Ψ.
+Proof.
+  intros. induction Ψ; simpl.
+  - fsetdec.
+  - destruct a; destruct d; simpl; fsetdec.
+Qed. 
+
+Lemma uniq_denv_wf_ss : forall Ψ,
+  uniq Ψ ->
+  wf_ss (denv_to_ss Ψ).
+Proof.
+  intros. dependent induction H; simpl; eauto.
+  destruct a; auto.
+  - constructor; eauto. erewrite dom_denv_to_ss_upper; eauto.
+  - constructor; eauto. erewrite dom_denv_to_ss_upper; eauto.
+Qed.
+
+Lemma in_denv_in_ss : forall Ψ X b,
+  ((exists A, b = dbind_typ A) -> False) ->
+  binds X b Ψ ->
+  binds X b (denv_to_ss Ψ).
+Proof.
+  intros. induction Ψ; eauto.
+  destruct a; destruct d; simpl in *.
+  - destruct_binds; auto. 
+  - destruct_binds; auto.
+  - destruct_binds. solve_false.
+    auto.
+Qed. 
+
+Lemma trans_typ_refl': forall Ψ A,
+  uniq Ψ ->
+  Ψ ᵗ⊢ᵈ A ->
+  (denv_to_ss Ψ) ᵗ⊩ A ⇝ A.
+Proof with eauto using uniq_denv_wf_ss.
+  intros. dependent induction H0...
+  - econstructor...
+    apply in_denv_in_ss; eauto. intros.  solve_false.
+  - eapply trans_typ__stvar...
+    apply in_denv_in_ss; eauto. intros.  solve_false.
+  - inst_cofinites_for trans_typ__all...
+    intros. inst_cofinites_with X.
+    eapply H2; eauto.
+Qed.
+
+Lemma trans_exp_refl: forall Ψ e,
+  uniq Ψ ->
+  Ψ ᵉ⊢ᵈ e ->
+  (denv_to_ss Ψ) ᵉ⊩ e ⇝ e.
+Proof with eauto using uniq_denv_wf_ss.
+  intros. dependent induction H0...
+  - inst_cofinites_for trans_exp__abs; intros; inst_cofinites_with x.
+    eapply H2. constructor; eauto.
+  - inst_cofinites_for trans_exp__tabs; intros; inst_cofinites_with X;
+    assert (Huniq : uniq (X ~ □ ++ Ψ) ) by auto;
+    specialize (H2 Huniq); simpl in *; dependent destruction H2; eauto.
+  - constructor; eauto.
+    apply trans_typ_refl'; eauto.
+  - constructor; eauto.
+    apply trans_typ_refl'; eauto.
+Qed.
+
 Lemma trans_exp_weaken : forall θ1 θ2 θ3 eᵃ eᵈ,
   θ3 ++ θ1 ᵉ⊩ eᵃ ⇝ eᵈ ->
   wf_ss (θ3 ++ θ2 ++ θ1) ->

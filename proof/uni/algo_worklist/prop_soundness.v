@@ -1422,3 +1422,107 @@ Proof with eauto.
     exists θ'. econstructor...
     eapply trans_apply_contd in H5; eauto.
 Qed.
+
+Fixpoint aenv_to_denv (Σ: aenv) : denv :=
+  match Σ with
+  | nil => nil
+  | (X, abind_var_typ T) :: Σ' => (X, dbind_typ T) :: aenv_to_denv Σ'
+  | (X, abind_tvar_empty) :: Σ' => (X, dbind_tvar_empty) :: aenv_to_denv Σ'
+  | (X, abind_stvar_empty) :: Σ' => (X, dbind_stvar_empty) :: aenv_to_denv Σ'
+  | (X, abind_etvar_empty) :: Σ' => (X, dbind_tvar_empty) :: aenv_to_denv Σ'
+  end.
+
+Lemma binds_var_aenv_binds_aenv_to_denv : forall Σ x T,
+  binds x (abind_var_typ T) Σ -> binds x (dbind_typ T) (aenv_to_denv Σ).
+Proof.
+  intros. induction Σ; simpl in *. inversion H.
+  destruct a; destruct a0; simpl in *; destruct_binds; auto.
+Qed.
+
+Lemma binds_tvar_aenv_binds_aenv_to_denv : forall Σ X,
+  binds X abind_tvar_empty Σ -> binds X dbind_tvar_empty (aenv_to_denv Σ).
+Proof.
+  intros. induction Σ; simpl in *. inversion H.
+  destruct a; destruct a0; simpl in *; destruct_binds; auto.
+Qed.
+
+Lemma binds_stvar_aenv_binds_aenv_to_denv : forall Σ X,
+  binds X abind_stvar_empty Σ -> binds X dbind_stvar_empty (aenv_to_denv Σ).
+Proof.
+  intros. induction Σ; simpl in *. inversion H.
+  destruct a; destruct a0; simpl in *; destruct_binds; auto.
+Qed.
+
+Lemma binds_etvar_aenv_binds_aenv_to_denv : forall Σ X,
+  binds X abind_etvar_empty Σ -> binds X dbind_tvar_empty (aenv_to_denv Σ).
+Proof.
+  intros. induction Σ; simpl in *. inversion H.
+  destruct a; destruct a0; simpl in *; destruct_binds; auto.
+Qed.
+
+Lemma a_wf_typ_d_wf_typ : forall Σ A, 
+  Σ ᵗ⊢ᵃ A -> aenv_to_denv Σ ᵗ⊢ᵈ A.
+Proof.
+  intros. induction H; simpl; eauto.
+  - constructor... apply binds_tvar_aenv_binds_aenv_to_denv; auto.
+  - apply d_wf_typ__stvar. apply binds_stvar_aenv_binds_aenv_to_denv; auto.
+  - apply d_wf_typ__tvar. apply binds_etvar_aenv_binds_aenv_to_denv; auto.
+Qed.
+
+Lemma a_wf_exp_d_wf_exp : forall Σ e, 
+  Σ ᵉ⊢ᵃ e -> aenv_to_denv Σ ᵉ⊢ᵈ e.
+Proof.
+  intros. induction H; simpl; eauto 3 using a_wf_typ_d_wf_typ.
+  - econstructor...
+    eapply binds_var_aenv_binds_aenv_to_denv; eauto.
+Qed.
+
+Theorem a_wl_red_chk_sound: forall e A,  
+  nil ᵉ⊢ᵃ e -> 
+  nil ᵗ⊢ᵃ A -> 
+  (work_check e A ⫤ᵃ aworklist_empty) ⟶ᵃʷ⁎⋅ -> nil ⊢ e ⇐ A.
+Proof.
+  intros. apply a_wl_red_soundness in H1.
+  - destruct H1 as [Ω [Htrans Hdred]].
+    dependent destruction Htrans.
+    destruct_trans. dependent destruction H1.
+    dependent destruction Hdred. simpl in *.
+    dependent destruction H1.
+    assert (nil ᵗ⊩ A ⇝ A). {
+      apply trans_typ_refl; eauto.
+      simpl. rewrite_env (aenv_to_denv nil).
+      apply a_wf_typ_d_wf_typ; eauto.
+    }
+    unify_trans_typ.
+    assert (nil ᵉ⊩ e ⇝ e). {
+      rewrite_env (denv_to_ss nil).
+      apply trans_exp_refl; eauto. simpl.
+      rewrite_env (aenv_to_denv nil).
+      apply a_wf_exp_d_wf_exp; eauto.
+    }
+    unify_trans_exp.
+    auto.
+  - econstructor; eauto.
+Qed.
+
+Theorem a_wl_red_inf_sound : forall e,  
+  nil ᵉ⊢ᵃ e -> 
+  (work_infer e (conts_sub typ_top) ⫤ᵃ aworklist_empty) ⟶ᵃʷ⁎⋅ -> 
+  exists A, nil ⊢ e ⇒ A.
+Proof.
+  intros. apply a_wl_red_soundness in H0.
+  - destruct H0 as [Ω [Htrans Hdred]].
+    dependent destruction Htrans.
+    destruct_trans. dependent destruction H0.
+    dependent destruction Hdred. simpl in *.
+    exists A.
+    assert (nil ᵉ⊩ e ⇝ e). {
+      rewrite_env (denv_to_ss nil).
+      apply trans_exp_refl; eauto. simpl. 
+      rewrite_env (aenv_to_denv nil).
+      apply a_wf_exp_d_wf_exp; eauto.
+    }
+    unify_trans_exp.
+    auto.
+  - econstructor; eauto.
+Qed.
