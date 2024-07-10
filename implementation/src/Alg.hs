@@ -485,12 +485,12 @@ bigStep mFlag n m info ws@(WJug (Sub (TAll a t1) t2) : w)
   | useRule "≤∀L" && notAll w t2 = case t2 of
       TIntersection t21 t22 -> case bigStep mFlag (n + 1) m (info ++ curInfo ws "≤∩R") (WJug (Sub (TAll a t1) t21) : WJug (Sub (TAll a t1) t22) : w) of
         (True, info') -> (True, info')
-        (False, info') -> bigStep mFlag (n + 1) m (info ++ info' ++ curInfo ws "≤∀L") ws'
+        (False, info') -> bigStep mFlag (n + 1) m (info' ++ curInfo ws "≤∀L") ws'
       TUnion t21 t22 -> case bigStep mFlag (n + 1) m (info ++ curInfo ws "≤∀L") ws' of
         (True, info') -> (True, info')
-        (False, info') -> case bigStep mFlag (n + 1) m (info ++ info' ++ curInfo ws "≤∪R1") (WJug (Sub (TAll a t1) t21) : w) of
+        (False, info') -> case bigStep mFlag (n + 1) m (info' ++ curInfo ws "≤∪R1") (WJug (Sub (TAll a t1) t21) : w) of
           (True, info'') -> (True, info'')
-          (False, info'') -> bigStep mFlag (n + 1) m (info ++ info' ++ info'' ++ curInfo ws "≤∪R2") (WJug (Sub (TAll a t1) t22) : w)
+          (False, info'') -> bigStep mFlag (n + 1) m (info'' ++ curInfo ws "≤∪R2") (WJug (Sub (TAll a t1) t22) : w)
       _ -> bigStep mFlag (n + 1) m (info ++ curInfo ws "≤∀L") ws'
   where
     b = pickNewTVar ws []
@@ -500,9 +500,9 @@ bigStep mFlag n m info ws@(WJug (Sub (TVar a) t) : w)
   | commonCond && mFlag && monoIU w t = case monoLResult of
       (True, info') -> (True, info')
       (False, info') -> case t of
-        TUnion t1 t2 -> case bigStep mFlag (n + 1) m (info ++ info' ++ curInfo ws "≤∪L1") (WJug (Sub (TVar a) t1) : w) of
+        TUnion t1 t2 -> case bigStep mFlag (n + 1) m (info' ++ curInfo ws "≤∪L1") (WJug (Sub (TVar a) t1) : w) of
           (True, info'') -> (True, info'')
-          (False, info'') -> bigStep mFlag (n + 1) m (info ++ info' ++ info'' ++ curInfo ws "≤∪L2") (WJug (Sub (TVar a) t2) : w)
+          (False, info'') -> bigStep mFlag (n + 1) m (info'' ++ curInfo ws "≤∪L2") (WJug (Sub (TVar a) t2) : w)
         _ -> (False, info')
   | commonCond && not mFlag && mono w t = monoLResult
   where
@@ -513,9 +513,9 @@ bigStep mFlag n m info ws@(WJug (Sub t (TVar a)) : w)
   | commonCond && mFlag && monoIU w t = case monoRResult of
       (True, info') -> (True, info')
       (False, info') -> case t of
-        TIntersection t1 t2 -> case bigStep mFlag (n + 1) m (info ++ info' ++ curInfo ws "≤∩R") (WJug (Sub t1 (TVar a)) : WJug (Sub t2 (TVar a)) : w) of
+        TIntersection t1 t2 -> case bigStep mFlag (n + 1) m (info' ++ curInfo ws "≤∩R") (WJug (Sub t1 (TVar a)) : WJug (Sub t2 (TVar a)) : w) of
           (True, info'') -> (True, info'')
-          (False, info'') -> bigStep mFlag (n + 1) m (info ++ info' ++ info'' ++ curInfo ws "≤∩L") (WJug (Sub t1 (TVar a)) : w)
+          (False, info'') -> bigStep mFlag (n + 1) m (info'' ++ curInfo ws "≤∩L") (WJug (Sub t1 (TVar a)) : w)
         _ -> (False, info')
   | commonCond && not mFlag && mono w t = monoRResult
   where
@@ -541,7 +541,7 @@ bigStep mFlag n m info ws@(WJug (Sub t1 (TIntersection t2 t3)) : w)
 bigStep mFlag n m info ws@(WJug (Sub (TIntersection t11 t12) t2) : w)
   | useRule "≤∩L" = case bigStep mFlag (n + 1) m (info ++ curInfo ws "≤∩L1") (WJug (Sub t11 t2) : w) of
       (True, info') -> (True, info')
-      (False, info') -> bigStep mFlag (n + 1) m (info ++ info' ++ curInfo ws "≤∩L2") (WJug (Sub t12 t2) : w)
+      (False, info') -> bigStep mFlag (n + 1) m (info' ++ curInfo ws "≤∩L2") (WJug (Sub t12 t2) : w)
 bigStep mFlag n m info ws@(WJug (Sub (TUnion t11 t12) t2) : w)
   | useRule "≤∪L" = bigStep mFlag (n + 1) m (info ++ curInfo ws "≤∪L") ws'
   where
@@ -549,7 +549,7 @@ bigStep mFlag n m info ws@(WJug (Sub (TUnion t11 t12) t2) : w)
 bigStep mFlag n m info ws@(WJug (Sub t1 (TUnion t21 t22)) : w)
   | useRule "≤∪R" = case bigStep mFlag (n + 1) m (info ++ curInfo ws "≤∪R1") (WJug (Sub t1 t21) : w) of
       (True, info') -> (True, info')
-      (False, info') -> bigStep mFlag (n + 1) m (info ++ info' ++ curInfo ws "≤∪R2") (WJug (Sub t1 t22) : w)
+      (False, info') -> bigStep mFlag (n + 1) m (info' ++ curInfo ws "≤∪R2") (WJug (Sub t1 t22) : w)
 bigStep mFlag n m info ws@(WJug (Sub (TLabel l1) (TLabel l2)) : w) -- Record Extension
   | useRule "≤Label" && l1 == l2 = bigStep mFlag (n + 1) m (info ++ curInfo ws "≤Label") w
 bigStep mFlag n m info ws@(WJug (Sub (TList a) (TList b)) : w)
@@ -596,7 +596,7 @@ bigStep mFlag n m info ws@(WJug (Chk e (TIntersection t1 t2)) : w)
 bigStep mFlag n m info ws@(WJug (Chk e (TUnion t1 t2)) : w)
   | useRule "⇐∪" = case bigStep mFlag (n + 1) m (info ++ curInfo ws "⇐∪1") (WJug (Chk e t1) : w) of
       (True, info') -> (True, info')
-      (False, info') -> bigStep mFlag (n + 1) m (info ++ info' ++ curInfo ws "⇐∪2") (WJug (Chk e t2) : w)
+      (False, info') -> bigStep mFlag (n + 1) m (info' ++ curInfo ws "⇐∪2") (WJug (Chk e t2) : w)
 bigStep mFlag n m info ws@(WJug (Chk Nil (TList _)) : w) -- Unformalized
   | useRule "⇐[]Nil" = bigStep mFlag (n + 1) m (info ++ curInfo ws "⇐[]Nil") w
 bigStep mFlag n m info ws@(WJug (Chk (Cons e1 e2) (TList a)) : w) -- Unformalized
