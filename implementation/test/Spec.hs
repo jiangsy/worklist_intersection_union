@@ -6,6 +6,9 @@ import System.FilePath.Posix
 main :: IO ()
 main = do
   files <- listDirectory "examples/our_examples"
+  paperExFiles <- listDirectory "examples/ts_examples"
   hspec $ do
     describe "our_examples" $
       mapM_ (\file -> it file (run ("examples/our_examples/" ++ file) False)) [f | f <- files, ".e" `elem` splitExtension f]
+    describe "ts_examples" $
+        mapM_ (\file -> it file (run ("examples/ts_examples/" ++ file) True)) [f | f <- paperExFiles, ".e" `elem` splitExtension f]

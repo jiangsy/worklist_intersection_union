@@ -12,8 +12,12 @@ This project can be built with [Stack](https://docs.haskellstack.org/en/stable/R
 
 ```
 stack build
-stack exec WorklistIntersectionUnion-exe <path>
+stack exec WorklistIntersectionUnion-exe -- <path> [-m]
 ```
+
+#### Options
+
+* -m --mono : whether regard intersection and union of monotypes as monotypes
 
 ### Quick Reference
 
