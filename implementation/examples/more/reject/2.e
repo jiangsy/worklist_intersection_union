@@ -1,1 +1,0 @@
-(\x -> x @((forall a. a -> a) -> Int)) :: (forall a. forall (b <: Top). b -> a) -> ((forall a. a -> a) -> Int) -> (forall a. a -> a) -> Int
