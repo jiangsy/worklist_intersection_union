@@ -819,12 +819,12 @@ run s mFlag = do
   case parseExp code of
     Left err -> putStrLn err
     Right e ->
-      (if flag then putStrLn $ "Accepted!\n" ++ message else putStrLn $ "Rejected!\n" ++ message)
+      (if flag then putStrLn $ "Accepted! (" ++ mFlagMessage ++ ")\n" ++ message else putStrLn $ "Rejected! (" ++ mFlagMessage ++ ")\n" ++ message)
       where
         b = pickNewTVar [] (tvarInExp e)
         ws = [WJug (Inf e b End)]
         (flag, message) = bigStep mFlag 0 400 "" ws
-
+        mFlagMessage = "MonoIU: " ++ if mFlag then "on" else "off"
 ex_ws1 :: [Work]
 ex_ws1 = [WJug (Sub (TAll "a" (TArr (TVar "a") (TVar "a"))) (TAll "a" (TArr (TVar "a") (TVar "a"))))]
 
