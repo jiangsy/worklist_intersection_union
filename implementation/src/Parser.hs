@@ -131,6 +131,15 @@ pLetAnn = do
   rword "in"
   LetA x t e1 <$> expr
 
+pLetRec :: Parser Exp
+pLetRec = do
+  rword "letrec"
+  x <- identifier
+  symbol "="
+  e1 <- expr
+  rword "in"
+  LetRec x e1 <$> expr
+
 pLet :: Parser Exp
 pLet = do
   rword "let"

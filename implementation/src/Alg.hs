@@ -19,6 +19,7 @@ data Judgment
   | CaseChk Exp Typ Typ
   | CaseInf Typ Exp Exp String Judgment
   | ConsInf Typ Exp String Judgment
+  | LetInf String Typ Exp String Judgment
   | End
 
 showJudgment :: Judgment -> String
@@ -39,6 +40,8 @@ showJudgment (CaseInf t e1 e2 a c) =
   show t ++ " # " ++ show e1 ++ " # " ++ show e2 ++ " ➤[]" ++ a ++ " " ++ showJudgment c
 showJudgment (ConsInf t e a c) =
   show e ++ " ⇐ [" ++ show t ++ "] ⇒" ++ a ++ " " ++ showJudgment c
+showJudgment (LetInf x t e a c) =
+  "let " ++ x ++ " :: " ++ show t ++ " in " ++ show e ++ " 🠶 " ++ showJudgment c
 showJudgment End = "End"
 
 instance Show Judgment where
@@ -86,6 +89,9 @@ eesubst sx se (Fix e1) = Fix (eesubst sx se e1)
 eesubst sx se (Let x e1 e2)
   | sx == x = Let x e1 e2
   | otherwise = Let x (eesubst sx se e1) (eesubst sx se e2)
+eesubst sx se (LetRec x e1 e2)
+  | sx == x = LetRec x e1 e2
+  | otherwise = LetRec x (eesubst sx se e1) (eesubst sx se e2)
 eesubst sx se (LetA x t e1 e2)
   | sx == x = LetA x t e1 e2
   | otherwise = LetA x t (eesubst sx se e1) (eesubst sx se e2)
@@ -128,6 +134,7 @@ etsubst sa st (Cons e1 e2) = Cons (etsubst sa st e1) (etsubst sa st e2)
 etsubst sa st (Case e1 e2 e3) = Case (etsubst sa st e1) (etsubst sa st e2) (etsubst sa st e3)
 etsubst sa st (Fix e1) = Fix (etsubst sa st e1)
 etsubst sa st (Let x e1 e2) = Let x (etsubst sa st e1) (etsubst sa st e2)
+etsubst sa st (LetRec x e1 e2) = LetRec x (etsubst sa st e1) (etsubst sa st e2)
 etsubst sa st (LetA x t e1 e2) = LetA x (ttsubst sa st t) (etsubst sa st e1) (etsubst sa st e2)
 etsubst _ _ RcdNil = RcdNil
 etsubst sa st (RcdCons l1 e1 e2) = RcdCons l1 (etsubst sa st e1) (etsubst sa st e2)
@@ -154,6 +161,7 @@ ctsubst sa st (InfTApp t1 t2 a f)
 ctsubst sa st (CaseChk e a b) = CaseChk (etsubst sa st e) (ttsubst sa st a) (ttsubst sa st b)
 ctsubst sa st (CaseInf t1 e e1 a f) = CaseInf (ttsubst sa st t1) (etsubst sa st e) (etsubst sa st e1) a (ctsubst sa st f)
 ctsubst sa st (ConsInf t1 e a f) = ConsInf (ttsubst sa st t1) (etsubst sa st e) a (ctsubst sa st f)
+ctsubst sa st (LetInf x t e a f) = LetInf x (ttsubst sa st t) (etsubst sa st e) a (ctsubst sa st f)
 ctsubst _ _ End = End
 
 ftvarInTyp :: Typ -> [String]
@@ -198,6 +206,7 @@ tvarInExp (Cons e1 e2) = tvarInExp e1 `union` tvarInExp e2
 tvarInExp (Case e1 e2 e3) = tvarInExp e1 `union` tvarInExp e2 `union` tvarInExp e3
 tvarInExp (Fix e) = tvarInExp e
 tvarInExp (Let _ e1 e2) = tvarInExp e1 `union` tvarInExp e2
+tvarInExp (LetRec _ e1 e2) = tvarInExp e1 `union` tvarInExp e2
 tvarInExp (LetA _ t e1 e2) = tvarInTyp t `union` tvarInExp e1 `union` tvarInExp e2
 tvarInExp RcdNil = []
 tvarInExp (RcdCons _ e1 e2) = tvarInExp e1 `union` tvarInExp e2
@@ -214,6 +223,7 @@ tvarInJug (InfTApp t1 t2 a f) = tvarInTyp t1 `union` tvarInTyp t2 `union` tvarIn
 tvarInJug (CaseChk e t1 t2) = tvarInExp e `union` tvarInTyp t1 `union` tvarInTyp t2
 tvarInJug (CaseInf t e1 e2 a f) = tvarInTyp t `union` tvarInExp e1 `union` tvarInExp e2 `union` tvarInJug f `union` [a]
 tvarInJug (ConsInf t e a f) = tvarInTyp t `union` tvarInExp e `union` tvarInJug f `union` [a]
+tvarInJug (LetInf _ t e a f) = tvarInTyp t `union` tvarInExp e `union` tvarInJug f `union` [a]
 tvarInJug End = []
 
 findVar :: String -> Worklist -> Maybe Typ
@@ -251,7 +261,8 @@ varInExp Nil = []
 varInExp (Cons e1 e2) = varInExp e1 `union` varInExp e2
 varInExp (Case e1 e2 e3) = varInExp e1 `union` varInExp e2 `union` varInExp e3
 varInExp (Fix e) = varInExp e
-varInExp (Let x e1 e2) = x : varInExp e1 ++ varInExp e2
+varInExp (Let _ e1 e2) = varInExp e1 `union` varInExp e2
+varInExp (LetRec x e1 e2) = x : varInExp e1 ++ varInExp e2
 varInExp (LetA x _ e1 e2) = x : varInExp e1 ++ varInExp e2
 varInExp RcdNil = []
 varInExp (RcdCons _ e1 e2) = varInExp e1 ++ varInExp e2
@@ -268,6 +279,7 @@ varInJug (InfTApp _ _ _ f) = varInJug f
 varInJug (CaseChk e _ _) = varInExp e
 varInJug (CaseInf _ e1 e2 _ f) = varInExp e1 `union` varInExp e2 `union` varInJug f
 varInJug (ConsInf _ e _ f) = varInExp e `union` varInJug f
+varInJug (LetInf x _ e _ f) = varInExp e `union` varInJug f `union` [x]
 varInJug End = []
 
 varInExps :: [Exp] -> [String]
@@ -439,6 +451,7 @@ extRules =
     "[]Case⇒",
     "⇒Fix",
     "⇒Let",
+    "⇒LetRec",
     "⇒LetA"
   ]
 
@@ -734,6 +747,15 @@ bigStep mFlag n m info ws@(WJug (Inf (Fix e) b c) : w)
     ws' = WJug (Chk e (TArr (TVar a) (TVar a))) : WJug (ctsubst b (TVar a) c) : WTVar a ETVarBind : w
 bigStep mFlag n m info ws@(WJug (Inf (Let x e1 e2) b c) : w)
   | useRule "⇒Let" = bigStep mFlag (n + 1) m (info ++ replicate n ' ' ++ curInfo n ws "⇒Let") ws' -- Unformalized
+  where
+    a = pickNewTVar ws []
+    ws' = WJug (Inf e1 a (LetInf x (TVar a) e2 b c)) : w
+bigStep mFlag n m info ws@(WJug (LetInf x t e b c) : w)
+  | useRule "Let⇒" = bigStep mFlag (n + 1) m (info ++ replicate n ' ' ++ curInfo n ws "Let⇒") ws' -- Unformalized
+  where
+    ws' = WJug (Inf e b c) : WVar x t : w
+bigStep mFlag n m info ws@(WJug (Inf (LetRec x e1 e2) b c) : w)
+  | useRule "⇒LetRec" = bigStep mFlag (n + 1) m (info ++ replicate n ' ' ++ curInfo n ws "⇒LetRec") ws' -- Unformalized
   where
     ws' = WJug (Inf (App (Lam x e2) (Fix (Lam x e1))) b c) : w
 bigStep mFlag n m info ws@(WJug (Inf (LetA x t e1 e2) b c) : w)
