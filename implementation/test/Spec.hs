@@ -20,11 +20,14 @@ prettyPrint (filename, flag, result) = filename ++ (if flag then ", MonoIU on" e
 main :: IO ()
 main = do
   hspec $ do
-    describe "examples" $ do
-      mapM_ (\x@(filename, flag, result) -> it (prettyPrint x) (test ("examples/" ++ filename) flag >>= (`shouldBe` Right result))) exMap
+    describe "variant 1 examples" $ do
+      testAll v1Map
+    describe "variant 2 examples" $ do
+      testAll v2Map
+  where testAll = mapM_ (\x@(filename, flag, result) -> it (prettyPrint x) (test ("examples/" ++ filename) flag >>= (`shouldBe` Right result)))
 
-exMap :: [(String, Bool, Bool)]
-exMap = 
+v1Map :: [(String, Bool, Bool)]
+v1Map = 
   [ ("ex1_1.e", False, True)
   , ("ex1_2.e", False, True)
   , ("h1.e", False, True)
@@ -42,10 +45,8 @@ exMap =
   , ("ex7_2.e", False, True)
   , ("ex8_1.e", False, True)
   , ("ex8_2.e", False, False)
-  , ("ex8_2.e", True, False)
   , ("ex8_3.e", False, True)
   , ("ex8_4.e", False, False)
-  , ("ex8_4.e", True, True)
   , ("h9.e", False, True)
   , ("ex9_1.e", False, True)
   , ("ex9_2.e", False, True)
@@ -55,8 +56,40 @@ exMap =
   , ("ex12_2.e", False, True)
   , ("ex13.e", False, True)
   , ("h14_1.e", False, False)
-  , ("h14_1.e", True, True)
   , ("h14_2.e", False, False)
-  , ("h14_2.e", True, False)
   , ("ex15.e", False, False)
+  ]
+
+v2Map :: [(String, Bool, Bool)]
+v2Map = 
+  [ ("ex1_1.e", True, True)
+  , ("ex1_2.e", True, True)
+  , ("h1.e", True, True)
+  , ("f2.e", True, True)
+  , ("f3_1.e", True, True)
+  , ("f3_2.e", True, True)
+  , ("ex4_1.e", True, True)
+  , ("ex4_2.e", True, True)
+  , ("ex5_1.e", True, False)
+  , ("ex5_2.e", True, True)
+  , ("ex5_3.e", True, False)
+  , ("ex5_4.e", True, True)
+  , ("ex6.e", True, True)
+  , ("ex7_1.e", True, True)
+  , ("ex7_2.e", True, True)
+  , ("ex8_1.e", True, True)
+  , ("ex8_2.e", True, False)
+  , ("ex8_3.e", True, True)
+  , ("ex8_4.e", True, True)
+  , ("h9.e", True, True)
+  , ("ex9_1.e", True, True)
+  , ("ex9_2.e", True, True)
+  , ("ex10.e", True, True)
+  , ("ex11.e", True, True)
+  , ("ex12_1.e", True, True)
+  , ("ex12_2.e", True, True)
+  , ("ex13.e", True, True)
+  , ("h14_1.e", True, True)
+  , ("h14_2.e", True, False)
+  , ("ex15.e", True, False)
   ]
