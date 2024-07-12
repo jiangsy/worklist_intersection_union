@@ -6,7 +6,7 @@ Require Import uni_rec.decl.prop_basic.
 Require Import uni_rec.decl.prop_rename.
 Require Import uni_rec.ltac_utils.
 
-Lemma d_sub_refl : forall Ψ A,
+Lemma d_sub_reflexivity : forall Ψ A,
   ⊢ᵈ Ψ -> 
   Ψ ᵗ⊢ᵈ A -> 
   Ψ ⊢ A <: A.
@@ -72,7 +72,7 @@ Proof.
   - econstructor; eauto.
 Qed.
 
-#[local] Hint Resolve d_sub_refl d_wf_typ_subst_tvar d_wf_typ_subst_stvar d_wf_env_subst_tvar : core.
+#[local] Hint Resolve d_sub_reflexivity d_wf_typ_subst_tvar d_wf_typ_subst_stvar d_wf_env_subst_tvar : core.
 
 Fixpoint d_typ_order (A : typ) : nat :=
   match A with
@@ -305,7 +305,7 @@ Theorem d_sub_subst_stvar : forall Ψ1 X Ψ2 A B C,
   map (subst_typ_in_dbind C X) Ψ2 ++ Ψ1 ⊢ {C ᵗ/ₜ X} A <: {C ᵗ/ₜ X} B.
 Proof with subst; eauto using d_wf_typ_weaken_app.
   intros. dependent induction H; try solve [simpl in *; eauto].
-  - eapply d_sub_refl; auto...
+  - eapply d_sub_reflexivity; auto...
   - simpl. inst_cofinites_for d_sub__all; intros X1 Hfr; inst_cofinites_with X1.
     + rewrite subst_typ_in_typ_open_typ_wrt_typ_fresh2; auto...
       apply s_in_subst_inv; auto...

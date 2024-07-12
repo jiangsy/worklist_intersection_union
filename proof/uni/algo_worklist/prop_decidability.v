@@ -3835,40 +3835,6 @@ Proof.
     + right. intro Hcontra. dependent destruction Hcontra; exfalso; eauto.
 Qed.
 
-(* Lemma judge_size_wl_aworklist_subst : forall Γ2 X A Γ1 Γ1' Γ2',
-  ⊢ᵃʷ (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) ->
-  aworklist_subst (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) X A Γ1' Γ2' ->
-  X `notin` ftvar_in_typ A ->
-  ⌊ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1 ⌋ᵃ ᵗ⊢ᵃₘ A ->
-  judge_size_wl ({A ᵃʷ/ₜ X} Γ2' ⧺ Γ1') = judge_size_wl (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1).
-Proof.
-  intros Γ2. induction Γ2; intros * Hwf Hsubst Hnotin Hmono;
-    dependent destruction Hwf; dependent destruction Hsubst;
-    simpl in *; eauto; try solve [exfalso; eauto];
-    try solve [eapply IHΓ2; eauto;
-      try solve [eapply a_mono_typ_strengthen_var; eauto];
-      try solve [eapply a_mono_typ_strengthen_mtvar with (b := □); eauto];
-      try solve [eapply a_mono_typ_strengthen_mtvar with (b := ⬒); eauto];
-      try solve [eapply a_mono_typ_strengthen_stvar; eauto]].
-  - eapply worklist_split_etvar_det in x. destruct x. subst.
-    rewrite judge_size_wl_move_etvar_back with (Y := X); eauto.
-    eapply IHΓ2 with (Γ1 := X ~ᵃ ⬒ ;ᵃ Γ1) (A := A); eauto.
-    eapply a_wf_wwl_move_etvar_back; eauto.
-    eapply a_mono_typ_move_etvar_back; eauto.
-    eapply a_wf_wwl_tvar_notin_remaining in Hwf; eauto.
-  - rewrite judge_size_work_subst_typ_in_work.
-    erewrite IHΓ2; eauto.
-Qed. *)
-
-(* Lemma judge_size_wl_move_etvar_back : forall X Y Γ1 Γ2,
-  uniq (⌊ Y ~ᵃ ⬒ ;ᵃ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1 ⌋ᵃ) ->
-  judge_size_wl (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) = judge_size_wl (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Y ~ᵃ ⬒ ;ᵃ Γ1).
-Proof.
-  intros * Huniq. induction Γ2; intros; simpl in *; eauto.
-  dependent destruction Huniq. dependent destruction Huniq.
-  eapply IHΓ2; eauto.
-Qed. *)
-
 Lemma weight_wl_move_etvar_back : forall X Y Γ1 Γ2,
   uniq (⌊ Y ~ᵃ ⬒ ;ᵃ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1 ⌋ᵃ) ->
   weight_wl (Y ~ᵃ ⬒ ;ᵃ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) = weight_wl (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Y ~ᵃ ⬒ ;ᵃ Γ1).
@@ -3878,52 +3844,6 @@ Proof.
   f_equal. eapply IHΓ2; eauto.
   eapply IHΓ2 in Huniq. lia.
 Qed. 
-
-(* Lemma weight_mono : forall Σ A,
-  a_mono_typ Σ A -> weight A = 1.
-Proof.
-  intros * Hmono. induction Hmono; eauto. *)
-
-
-(* Lemma weight_subst_typ_in_typ : forall Σ A X B,
-  a_mono_typ Σ A -> weight (subst_typ_in_typ A X B) = weight B.
-Proof.
-  intros Σ A X B Hmono. induction B; simpl; eauto.
-  destruct_eq_atom; eauto.
-  destruct (X == X0); eauto. *)
-
-(* Lemma weight_work_subst_typ_in_work : forall Σ X A w,
-  a_mono_typ Σ A -> weight_work (subst_typ_in_work A X w) = weight_work w.
-Proof.
-  intros Σ X A w.
-  induction w; intros; simpl; eauto.
-    try erewrite weight_conts_subst_typ_in_conts;
-    try erewrite weight_contd_subst_typ_in_contd; eauto.
-Qed. *)
-
-(* Lemma weight_wl_aworklist_subst : forall Γ2 X A Γ1 Γ1' Γ2',
-  ⊢ᵃʷ (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) ->
-  aworklist_subst (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1) X A Γ1' Γ2' ->
-  X `notin` ftvar_in_typ A ->
-  ⌊ Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1 ⌋ᵃ ᵗ⊢ᵃₘ A ->
-  weight_wl ({A ᵃʷ/ₜ X} Γ2' ⧺ Γ1') < weight_wl (Γ2 ⧺ X ~ᵃ ⬒ ;ᵃ Γ1).
-Proof.
-  intros Γ2. induction Γ2; intros * Hwf Hsubst Hnotin Hmono;
-    dependent destruction Hwf; dependent destruction Hsubst;
-    simpl in *; eauto; try solve [exfalso; eauto];
-    try solve [eapply lt_n_S; eapply IHΓ2; eauto;
-      try solve [eapply a_mono_typ_strengthen_var; eauto];
-      try solve [eapply a_mono_typ_strengthen_mtvar with (b := □); eauto];
-      try solve [eapply a_mono_typ_strengthen_mtvar with (b := ⬒); eauto];
-      try solve [eapply a_mono_typ_strengthen_stvar; eauto]].
-  - eapply worklist_split_etvar_det in x. destruct x. subst.
-    eapply IHΓ2 with (Γ1 := X ~ᵃ ⬒ ;ᵃ Γ1) (A := A) in Hsubst as Hlt; eauto.
-    rewrite <- weight_wl_move_etvar_back in Hlt; eauto.
-    eapply a_wf_wwl_move_etvar_back; eauto.
-    eapply a_mono_typ_move_etvar_back; eauto.
-    eapply a_wf_wwl_tvar_notin_remaining in Hwf; eauto.
-  - rewrite weight_work_subst_typ_in_work.
-    erewrite IHΓ2; eauto. *)
 
 Fixpoint num_etvar_wl (Γ : aworklist) : nat :=
   match Γ with
