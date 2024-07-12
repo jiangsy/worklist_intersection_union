@@ -95,6 +95,9 @@ eesubst sx se (LetRec x e1 e2)
 eesubst sx se (LetA x t e1 e2)
   | sx == x = LetA x t e1 e2
   | otherwise = LetA x t (eesubst sx se e1) (eesubst sx se e2)
+eesubst sx se (LetRecA x t e1 e2)
+  | sx == x = LetRecA x t e1 e2
+  | otherwise = LetRecA x t (eesubst sx se e1) (eesubst sx se e2)
 eesubst _ _ RcdNil = RcdNil
 eesubst sx se (RcdCons l1 e1 e2) = RcdCons l1 (eesubst sx se e1) (eesubst sx se e2)
 eesubst sx se (RcdProj e1 l1) = RcdProj (eesubst sx se e1) l1
@@ -136,6 +139,7 @@ etsubst sa st (Fix e1) = Fix (etsubst sa st e1)
 etsubst sa st (Let x e1 e2) = Let x (etsubst sa st e1) (etsubst sa st e2)
 etsubst sa st (LetRec x e1 e2) = LetRec x (etsubst sa st e1) (etsubst sa st e2)
 etsubst sa st (LetA x t e1 e2) = LetA x (ttsubst sa st t) (etsubst sa st e1) (etsubst sa st e2)
+etsubst sa st (LetRecA x t e1 e2) = LetRecA x (ttsubst sa st t) (etsubst sa st e1) (etsubst sa st e2)
 etsubst _ _ RcdNil = RcdNil
 etsubst sa st (RcdCons l1 e1 e2) = RcdCons l1 (etsubst sa st e1) (etsubst sa st e2)
 etsubst sa st (RcdProj e1 l1) = RcdProj (etsubst sa st e1) l1
@@ -208,6 +212,7 @@ tvarInExp (Fix e) = tvarInExp e
 tvarInExp (Let _ e1 e2) = tvarInExp e1 `union` tvarInExp e2
 tvarInExp (LetRec _ e1 e2) = tvarInExp e1 `union` tvarInExp e2
 tvarInExp (LetA _ t e1 e2) = tvarInTyp t `union` tvarInExp e1 `union` tvarInExp e2
+tvarInExp (LetRecA _ t e1 e2) = tvarInTyp t `union` tvarInExp e1 `union` tvarInExp e2
 tvarInExp RcdNil = []
 tvarInExp (RcdCons _ e1 e2) = tvarInExp e1 `union` tvarInExp e2
 tvarInExp (RcdProj e _) = tvarInExp e
@@ -264,6 +269,7 @@ varInExp (Fix e) = varInExp e
 varInExp (Let _ e1 e2) = varInExp e1 `union` varInExp e2
 varInExp (LetRec x e1 e2) = x : varInExp e1 ++ varInExp e2
 varInExp (LetA x _ e1 e2) = x : varInExp e1 ++ varInExp e2
+varInExp (LetRecA x _ e1 e2) = x : varInExp e1 ++ varInExp e2
 varInExp RcdNil = []
 varInExp (RcdCons _ e1 e2) = varInExp e1 ++ varInExp e2
 varInExp (RcdProj e _) = varInExp e
@@ -442,6 +448,7 @@ extRules =
     "⇐Case",
     "⇐Fix",
     "⇐LetA",
+    "⇐LetRecA",
     "Case⇐",
     "⇒Λ",
     "⇒[]Nil",
@@ -452,7 +459,8 @@ extRules =
     "⇒Fix",
     "⇒Let",
     "⇒LetRec",
-    "⇒LetA"
+    "⇒LetA",
+    "⇒LetRecA"
   ]
 
 -- useRule :: String -> Bool
@@ -626,7 +634,11 @@ bigStep mFlag n m info ws@(WJug (Chk (Fix e) t) : w) -- Unformalized
   where
     ws' = WJug (Chk e (TArr t t)) : w
 bigStep mFlag n m info ws@(WJug (Chk (LetA x t1 e1 e2) t2) : w) -- Unformalized
-  | useRule "⇐LetA" = bigStep mFlag (n + 1) m (info ++ replicate n ' ' ++ curInfo n ws "⇐LetA") ws'
+  | useRule "⇐LetA" = bigStep mFlag (n + 1) m (info ++ replicate n ' ' ++ curInfo n ws "⇐LetRecA") ws'
+  where
+    ws' = WJug (Chk (App (Ann (Lam x e2) (TArr t1 t2)) (Ann (Fix (Lam x e1)) t1)) t2) : w
+bigStep mFlag n m info ws@(WJug (Chk (LetRecA x t1 e1 e2) t2) : w) -- Unformalized
+  | useRule "⇐LetRecA" = bigStep mFlag (n + 1) m (info ++ replicate n ' ' ++ curInfo n ws "⇐LetRecA") ws'
   where
     ws' = WJug (Chk (App (Ann (Lam x e2) (TArr t1 t2)) (Ann (Fix (Lam x e1)) t1)) t2) : w
 -- assumes non-overlapping with ⇔∩, ⇔∪
@@ -759,7 +771,11 @@ bigStep mFlag n m info ws@(WJug (Inf (LetRec x e1 e2) b c) : w)
   where
     ws' = WJug (Inf (App (Lam x e2) (Fix (Lam x e1))) b c) : w
 bigStep mFlag n m info ws@(WJug (Inf (LetA x t e1 e2) b c) : w)
-  | useRule "⇒LetA" = bigStep mFlag (n + 1) m (info ++ replicate n ' ' ++ curInfo n ws "⇒LetA") ws' -- Unformalized
+  | useRule "⇒LetA" = bigStep mFlag (n + 1) m (info ++ replicate n ' ' ++ curInfo n ws "⇒LetRecA") ws' -- Unformalized
+  where
+    ws' = WJug (Inf e2 b c) : WJug (Chk e1 t) : WVar x t : w
+bigStep mFlag n m info ws@(WJug (Inf (LetRecA x t e1 e2) b c) : w)
+  | useRule "⇒LetRecA" = bigStep mFlag (n + 1) m (info ++ replicate n ' ' ++ curInfo n ws "⇒LetRecA") ws' -- Unformalized
   where
     ws' = WJug (Inf e2 b c) : WJug (Chk e1 t) : WVar x t : w
 --

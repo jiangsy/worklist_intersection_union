@@ -93,6 +93,7 @@ data Exp
   | Let String Exp Exp
   | LetRec String Exp Exp
   | LetA String Typ Exp Exp
+  | LetRecA String Typ Exp Exp
   | RcdNil
   | RcdCons String Exp Exp
   | RcdProj Exp String
@@ -117,6 +118,7 @@ showExp e = showExpHelper e baseExpPrec True
     showExpHelper (Let x e1 e2) p ap = addParentP (p, baseExpPrec) ap ("let " ++ x ++ " = " ++ showExpHelper e1 baseExpPrec True ++ " in " ++ showExpHelper e2 baseExpPrec True)
     showExpHelper (LetRec x e1 e2) p ap = addParentP (p, baseExpPrec) ap ("letrec " ++ x ++ " = " ++ showExpHelper e1 baseExpPrec True ++ " in " ++ showExpHelper e2 baseExpPrec True)
     showExpHelper (LetA x t e1 e2) p ap = addParentP (p, baseExpPrec) ap ("let " ++ x ++ " :: " ++ show t ++ " = " ++ showExpHelper e1 baseExpPrec True ++ " in " ++ showExpHelper e2 baseExpPrec True)
+    showExpHelper (LetRecA x t e1 e2) p ap = addParentP (p, baseExpPrec) ap ("letrec " ++ x ++ " :: " ++ show t ++ " = " ++ showExpHelper e1 baseExpPrec True ++ " in " ++ showExpHelper e2 baseExpPrec True)
     showExpHelper RcdNil _ _ = "⟨⟩"
     showExpHelper (RcdCons l e1 e2) p ap = addParentP (p, baseExpPrec) ap (l ++ " ↦ " ++ showExpHelper e1 baseExpPrec True ++ ", " ++ showExpHelper e2 baseExpPrec False)
     showExpHelper (RcdProj e l) p ap = addParentP (p, baseExpPrec) ap (showExpHelper e baseExpPrec True ++ "." ++ l)
