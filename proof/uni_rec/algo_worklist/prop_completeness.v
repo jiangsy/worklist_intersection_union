@@ -296,12 +296,6 @@ Proof.
       apply H0 in Htrans; eauto.
       simpl in Htrans. dependent destruction Htrans. rewrite subst_typ_in_typ_open_typ_wrt_typ_fresh2; eauto.
       apply trans_typ_weaken_cons; eauto.
-    (* eapply trans_body_etvar_subst_same_ss' in H4; eauto.
-    + rewrite subst_typ_in_body_open_body_wrt_typ in H4; simpl in *.
-      destruct_eq_atom; auto.
-      eapply trans_typ_lc_atyp; eauto.
-    + rewrite_env (nil ++ (X0 ~ □) ++ θ)%dbind. apply trans_typ_weaken; eauto.
-      constructor; auto. *)
   - dependent destruction H4.
     constructor.
     + apply IHHlc; eauto.

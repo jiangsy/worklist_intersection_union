@@ -6,7 +6,7 @@ Require Import uni.decl.prop_basic.
 Require Import uni.decl.prop_rename.
 Require Import uni.ltac_utils.
 
-Lemma d_sub_refl : forall Ψ A,
+Lemma d_sub_reflexivity : forall Ψ A,
   ⊢ᵈ Ψ -> 
   Ψ ᵗ⊢ᵈ A -> 
   Ψ ⊢ A <: A.
@@ -97,7 +97,7 @@ Proof.
   intros. dependent induction H0; try solve [inversion H; eauto].
 Qed.
 
-#[local] Hint Resolve d_sub_refl d_wf_typ_subst_tvar d_wf_typ_subst_stvar d_wf_env_subst_tvar : core.
+#[local] Hint Resolve d_sub_reflexivity d_wf_typ_subst_tvar d_wf_typ_subst_stvar d_wf_env_subst_tvar : core.
 
 Fixpoint typ_order (A : typ) : nat :=
   match A with
@@ -337,7 +337,7 @@ Theorem d_sub_subst_stvar : forall Ψ1 X Ψ2 A B C,
   map (subst_typ_in_dbind C X) Ψ2 ++ Ψ1 ⊢ {C ᵗ/ₜ X} A <: {C ᵗ/ₜ X} B.
 Proof with subst; eauto using d_wf_typ_weaken_app.
   intros. dependent induction H; try solve [simpl in *; eauto].
-  - eapply d_sub_refl; auto...
+  - eapply d_sub_reflexivity; auto...
   - simpl. inst_cofinites_for d_sub__all; intros X1 Hfr; inst_cofinites_with X1.
     + rewrite subst_typ_in_typ_open_typ_wrt_typ_fresh2; auto...
       apply s_in_subst_inv; auto...
@@ -365,6 +365,21 @@ Proof with subst; eauto using d_wf_typ_weaken_app.
   - simpl. apply d_sub__union2. eauto.
     apply d_wf_typ_subst_stvar; auto...
     destruct (d_sub_d_wf _ _ _ H) as [? [? ?]]. auto.
+Qed.
+
+Theorem d_sub_inst : forall Ψ A B C,
+  Ψ ⊢ typ_all A <: typ_all B ->
+  Ψ ᵗ⊢ᵈ C ->
+  Ψ ⊢ A ᵗ^^ₜ C <: B ᵗ^^ₜ C.
+Proof with subst; eauto using d_wf_typ_weaken_app.
+  - intros. dependent destruction H.
+    + pick fresh X. inst_cofinites_with X. 
+      rewrite_env (nil ++ X ~ ■ ++ Ψ) in H1.
+      apply d_sub_subst_stvar with (C:=C) in H1; auto.
+      simpl in H1.
+      rewrite subst_typ_in_typ_open_typ_wrt_typ_tvar2 in H1; eauto.
+      rewrite subst_typ_in_typ_open_typ_wrt_typ_tvar2 in H1; eauto.
+    + inversion H.
 Qed.
 
 Inductive d_sub_size : denv -> typ -> typ -> nat -> Prop :=    (* defn d_sub *)
@@ -1257,7 +1272,7 @@ Proof with auto.
       * eapply IHn_d_sub_size with (B:=B1) (n1:=n0); eauto...
 Qed.
 
-Theorem sub_transitivity : forall Ψ A B C,
+Theorem d_sub_transitivity : forall Ψ A B C,
   Ψ ⊢ A <: B -> 
   Ψ ⊢ B <: C -> 
   Ψ ⊢ A <: C.

@@ -314,17 +314,6 @@ Proof.
   + destruct a as [X b]; destruct b; simpl; fsetdec.
 Qed.  
 
-(* Lemma wf_ss_d_wf_env : forall θ,
-  wf_ss θ ->
-  d_wf_env (ss_to_denv θ).
-Proof.
-  intros. induction H; auto; simpl in *.
-  - constructor; auto. constructor; auto.
-    rewrite dom_ss_to_denv_upper; auto.
-  - constructor; eauto.
-    rewrite dom_ss_to_denv_upper; auto.
-Qed. *)
-
 Lemma ss_to_denv_app : forall θ1 θ2,
   ss_to_denv (θ2 ++ θ1) = (ss_to_denv θ2) ++ (ss_to_denv θ1).
 Proof.

@@ -53,7 +53,7 @@ Lemma d_subenv_refl: forall Ψ,
 Proof with auto.
   intros. induction H; auto...
   econstructor; auto.
-  apply d_sub_refl; auto. 
+  apply d_sub_reflexivity; auto. 
 Qed.
 
 Lemma d_subtenv_same_dom : forall Ψ Ψ',
@@ -475,10 +475,10 @@ Theorem d_inftapp_soundness2 : forall Ψ A B C,
 Proof.
   intros. dependent induction H; eauto.
   - left. exists A. repeat split.
-    + apply d_sub_refl; eauto.
-    + apply d_sub_refl; eauto.
+    + apply d_sub_reflexivity; eauto.
+    + apply d_sub_reflexivity; eauto.
       apply d_wf_typ_all_open; eauto.
-    + apply d_sub_refl; eauto.
+    + apply d_sub_reflexivity; eauto.
       apply d_wf_typ_all_open; eauto.
   - inversion IHd_inftapp.
     + destruct H1 as [A' [Hsub1 Hsub2]]; auto. left.
@@ -494,7 +494,7 @@ Proof.
       left.
       exists (typ_union A1' A2'). split; eauto.
       econstructor; eauto.
-      * apply sub_transitivity with (B:=typ_all A1'); eauto.
+      * apply d_sub_transitivity with (B:=typ_all A1'); eauto.
         apply d_sub_d_wf in Hsub1 as Hwf1.
         apply d_sub_d_wf in Hsub2 as Hwf2.
         destruct_conj. dependent destruction H6. dependent destruction H11.
@@ -503,11 +503,11 @@ Proof.
            auto. 
         -- unfold open_typ_wrt_typ. simpl.
            apply d_sub__union1; eauto.
-           apply d_sub_refl; eauto.
+           apply d_sub_reflexivity; eauto.
            apply d_wf_env__stvar; eauto.
            apply d_wf_typ_tvar_stvar_cons; eauto.
            apply d_wf_typ_tvar_stvar_cons; eauto.
-      * apply sub_transitivity with (B:=typ_all A2'); eauto.
+      * apply d_sub_transitivity with (B:=typ_all A2'); eauto.
         apply d_sub_d_wf in Hsub1 as Hwf1.
         apply d_sub_d_wf in Hsub2 as Hwf2.
         destruct_conj. dependent destruction H6. dependent destruction H11.
@@ -516,36 +516,36 @@ Proof.
            auto. 
         -- unfold open_typ_wrt_typ. simpl.
            apply d_sub__union2; eauto.
-           apply d_sub_refl; eauto.
+           apply d_sub_reflexivity; eauto.
            apply d_wf_env__stvar; eauto.
            apply d_wf_typ_tvar_stvar_cons; eauto.
            apply d_wf_typ_tvar_stvar_cons; eauto.
       * destruct_conj; split; unfold open_typ_wrt_typ in *; simpl; subst; auto.
         -- apply d_sub__union3; eauto.
-           apply sub_transitivity with (B:=open_typ_wrt_typ_rec 0 B A1'); eauto.
-           apply d_sub__union1; eauto. apply d_sub_refl; eauto.
+           apply d_sub_transitivity with (B:=open_typ_wrt_typ_rec 0 B A1'); eauto.
+           apply d_sub__union1; eauto. apply d_sub_reflexivity; eauto.
            apply d_sub_d_wf_typ1 in H4; eauto.
            apply d_sub_d_wf_typ1 in H2; eauto.
-           apply sub_transitivity with (B:=open_typ_wrt_typ_rec 0 B A2'); eauto.
-           apply d_sub__union2; eauto. apply d_sub_refl; eauto.
+           apply d_sub_transitivity with (B:=open_typ_wrt_typ_rec 0 B A2'); eauto.
+           apply d_sub__union2; eauto. apply d_sub_reflexivity; eauto.
            apply d_sub_d_wf_typ1 in H2; eauto.
            apply d_sub_d_wf_typ1 in H4; eauto.
         -- apply d_sub__union3; eauto.
     + left. destruct H1 as [A1']. 
       exists A1'. destruct_conj. repeat split; eauto.
       * apply d_sub__union3; eauto.
-        apply sub_transitivity with (B:=typ_bot); eauto.
+        apply d_sub_transitivity with (B:=typ_bot); eauto.
         apply d_sub_d_wf_typ2 in H1; eauto.
       * apply d_sub__union3; eauto.
-        apply sub_transitivity with (B:=typ_bot); eauto.
+        apply d_sub_transitivity with (B:=typ_bot); eauto.
         apply d_sub_d_wf_typ1 in H5; eauto.
     + left. destruct H2 as [A2']. 
       exists A2'. destruct_conj. repeat split; eauto.
       * apply d_sub__union3; eauto.
-        apply sub_transitivity with (B:=typ_bot); eauto.
+        apply d_sub_transitivity with (B:=typ_bot); eauto.
         apply d_sub_d_wf_typ2 in H2; eauto.
       * apply d_sub__union3; eauto.
-        apply sub_transitivity with (B:=typ_bot); eauto.
+        apply d_sub_transitivity with (B:=typ_bot); eauto.
         apply d_sub_d_wf_typ1 in H4; eauto.
     + right. destruct_conj. split; eauto.
 Qed.
@@ -581,7 +581,7 @@ Proof.
   intros. dependent induction H0; eauto.
   - inversion H.
   - exists A. split.
-    + apply d_sub_refl; eauto.
+    + apply d_sub_reflexivity; eauto.
     + auto.
   - dependent destruction H. destruct IHd_inftapp as [A' [Hsub1 Hsub2]]; auto.
     exists A'. split; eauto.
@@ -592,7 +592,7 @@ Proof.
     destruct IHd_inftapp2 as [A2' [Hsub2 Heq2]]; eauto.
     exists (typ_union A1' A2'). split; eauto.
     econstructor; eauto.
-    + apply sub_transitivity with (B:=typ_all A1'); eauto.
+    + apply d_sub_transitivity with (B:=typ_all A1'); eauto.
       apply d_sub_d_wf in Hsub1 as Hwf1.
       apply d_sub_d_wf in Hsub2 as Hwf2.
       destruct_conj. dependent destruction H6. dependent destruction H7.
@@ -601,11 +601,11 @@ Proof.
         auto. 
       *  unfold open_typ_wrt_typ. simpl.
         apply d_sub__union1; eauto.
-        apply d_sub_refl; eauto.
+        apply d_sub_reflexivity; eauto.
         apply d_wf_env__stvar; eauto.
         apply d_wf_typ_tvar_stvar_cons; eauto.
         apply d_wf_typ_tvar_stvar_cons; eauto.
-    + apply sub_transitivity with (B:=typ_all A2'); eauto.
+    + apply d_sub_transitivity with (B:=typ_all A2'); eauto.
       apply d_sub_d_wf in Hsub1 as Hwf1.
       apply d_sub_d_wf in Hsub2 as Hwf2.
       destruct_conj. dependent destruction H6. dependent destruction H7.
@@ -614,7 +614,7 @@ Proof.
         auto. 
       * unfold open_typ_wrt_typ. simpl.
         apply d_sub__union2; eauto.
-        apply d_sub_refl; eauto.
+        apply d_sub_reflexivity; eauto.
         apply d_wf_env__stvar; eauto.
         apply d_wf_typ_tvar_stvar_cons; eauto.
         apply d_wf_typ_tvar_stvar_cons; eauto.
@@ -824,16 +824,16 @@ Theorem d_infabs_soundness : forall Ψ A B C,
   Ψ ⊢ A <: typ_arrow B C.
 Proof.
   intros. induction H; eauto.
-  - apply d_sub_refl; auto.
+  - apply d_sub_reflexivity; auto.
   - dependent destruction H0.
     inst_cofinites_for d_sub__alll T:=T; intros; auto.
     apply d_infabs_d_wf in H2.
     econstructor; intuition; eauto.
-  - apply sub_transitivity with (B:=typ_union (typ_arrow B1 C1) (typ_arrow B2 C2)); eauto using d_sub_refl.
+  - apply d_sub_transitivity with (B:=typ_union (typ_arrow B1 C1) (typ_arrow B2 C2)); eauto using d_sub_reflexivity.
     apply d_sub__union3; eauto.
     apply d_sub__union3.
-    apply d_sub__arrow; eauto using d_sub_refl.
-    apply d_sub__arrow; eauto using d_sub_refl.
+    apply d_sub__arrow; eauto using d_sub_reflexivity.
+    apply d_sub__arrow; eauto using d_sub_reflexivity.
 Qed.
 
 Theorem d_infabs_completeness: forall Ψ A B C,
@@ -908,12 +908,12 @@ Proof with auto.
         constructor; eauto. eapply d_subtenv_wf_env; eauto.
       (* e : A => A *)
       * exists A. split.
-        apply d_sub_refl; auto...
+        apply d_sub_reflexivity; auto...
         apply d_wf_tenv_d_wf_env.
         eapply d_chk_inf_wf_env; eauto.
         econstructor. eapply d_subtenv_wf_typ with (Ψ:=Ψ); auto.
         refine (IHn1 _ _ _ _ _ _ _ _ _ _  Hty _ _ _); eauto... simpl in *...
-        apply d_sub_refl; auto...
+        apply d_sub_reflexivity; auto...
         apply d_wf_tenv_d_wf_env. eapply d_chk_inf_wf_env; eauto.
       (* () => 1 *)
       * exists typ_unit. split; auto.
@@ -931,7 +931,7 @@ Proof with auto.
       * exists (typ_arrow A B).
         inst_cofinites_by (L `union` dom Ψ `union` fvar_in_exp e).
         eapply IHn1 with (Ψ':=x ~ dbind_typ A ++ Ψ') in H0 as Hty; eauto... 
-        -- split. eapply d_sub_refl...
+        -- split. eapply d_sub_reflexivity...
            ++ apply d_chk_inf_wf_env in H0. dependent destruction H0...
            ++ apply d_mono_typ_d_wf_typ...
            ++ eapply d_chk_inf__inf_abs_mono with (L:=L `union` dom Ψ').
@@ -939,7 +939,7 @@ Proof with auto.
               intros.
               replace (open_exp_wrt_exp e (exp_var_f x0)) with ({exp_var_f x0 ᵉ/ₑ x} open_exp_wrt_exp e (exp_var_f x)).
               apply d_chk_inf_rename_var_cons. apply Hty; eauto. 
-              ** apply d_sub_refl. eapply d_wf_tenv_d_wf_env. eapply d_chk_inf_wf_env; eauto.
+              ** apply d_sub_reflexivity. eapply d_wf_tenv_d_wf_env. eapply d_chk_inf_wf_env; eauto.
                  apply d_chk_inf_wf_typ in H0; auto.
               ** solve_notin. 
               ** simpl. rewrite subst_exp_in_exp_open_exp_wrt_exp...
@@ -947,19 +947,19 @@ Proof with auto.
                  simpl. case_if; auto...
         -- rewrite <- d_exp_size_open_var. lia.
         -- econstructor...
-          apply d_sub_refl.
+          apply d_sub_reflexivity.
           apply d_chk_inf_wf_env in H0. dependent destruction H0...
           apply d_mono_typ_d_wf_typ in H. dependent destruction H...
       (* /\ a. e : A => forall a. A *)
       * exists (typ_all A); split.
-        -- eapply d_sub_refl; auto.
+        -- eapply d_sub_reflexivity; auto.
            inst_cofinites_by L. apply d_chk_inf_wf_env in H0...
            dependent destruction H0... inst_cofinites_for d_wf_typ__all; intros; inst_cofinites_with X; auto.
            apply d_chk_inf_wf_typ in H0...
         -- pick fresh X and apply d_chk_inf__inf_tabs; inst_cofinites_with X...
            ++ refine (IHn1 _ _ _ _ _ _ _ _ _ _ H0 _ _ _); eauto...
               simpl. rewrite <- d_exp_size_open_typ; lia.
-              apply d_sub_refl...  eauto. 
+              apply d_sub_reflexivity...  eauto. 
               apply d_chk_inf_wf_env in H0; eauto.
               eapply d_chk_inf_wf_typ in H0; auto.
       (* e @T *)
@@ -1018,9 +1018,9 @@ Proof with auto.
         eapply IHn2 in Hty; eauto.
         destruct Hty as [A'' [Hsub Hinf]].
         apply d_chk_inf__chk_sub with (B := A''); auto.
-        apply sub_transitivity with (B := B); auto...
+        apply d_sub_transitivity with (B := B); auto...
         eapply d_sub_subenv; eauto. apply d_subtenv_subenv... 
-        apply sub_transitivity with (B := A); auto...
+        apply d_sub_transitivity with (B := A); auto...
         eapply d_sub_subenv; eauto. apply d_subtenv_subenv... 
         eapply d_sub_subenv; eauto. apply d_subtenv_subenv... 
         simpl. lia.

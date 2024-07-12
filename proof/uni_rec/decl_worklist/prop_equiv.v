@@ -205,23 +205,6 @@ Proof.
   - constructor; auto. solve_false.
 Qed.
 
-(* Ltac destruct_d_wl_del_red' := 
-  match goal with
-  | H : d_wl_del_red (dworklist_cons_work ?Ω ?w) |- _ => 
-    lazymatch w with 
-    | work_apply (?c ?B) ?A => dependent destruction H
-    | work_apply ?c ?A => fail
-    | ?w1 _ _ => dependent destruction H
-    | ?w1 _ _ _ => dependent destruction H
-    end
-  | H : d_wl_del_red (dworklist_cons_var ?Ω ?x ?A) |- _ => 
-    dependent destruction H
-  | H : d_wl_del_red (dworklist_cons_var ?Ω ?x ?b) |- _ => 
-    dependent destruction Hƒ
-  | H : apply_cont ?c ?A ?w |- _ => dependent destruction H
-  (* | H : apply_cont2 ?cc ?A ?B ?w |- _ => dependent destruction H *)
-  end. *)
-
 Ltac destruct_d_wl_del_red' := 
   match goal with
   | H : d_wl_del_red (dworklist_cons_work ?Ω ?w) |- _ => 

@@ -53,7 +53,7 @@ Lemma d_subenv_refl: forall Ψ,
 Proof with auto.
   intros. induction H; auto...
   econstructor; auto.
-  apply d_sub_refl; auto. 
+  apply d_sub_reflexivity; auto. 
 Qed.
 
 Lemma d_subtenv_same_dom : forall Ψ Ψ',
@@ -689,12 +689,12 @@ Proof with auto.
         constructor; eauto. eapply d_subtenv_wf_env; eauto.
       (* e : A => A *)
       * exists A. split.
-        apply d_sub_refl; auto...
+        apply d_sub_reflexivity; auto...
         apply d_wf_tenv_d_wf_env.
         eapply d_chk_inf_wf_env; eauto.
         econstructor. eapply d_subtenv_wf_typ with (Ψ:=Ψ); auto.
         refine (IHn1 _ _ _ _ _ _ _ _ _ _  Hty _ _ _); eauto... simpl in *...
-        apply d_sub_refl; auto...
+        apply d_sub_reflexivity; auto...
         apply d_wf_tenv_d_wf_env. eapply d_chk_inf_wf_env; eauto.
       (* () => 1 *)
       * exists typ_unit. split; auto.
@@ -731,7 +731,7 @@ Proof with auto.
       * exists (typ_arrow A B).
         inst_cofinites_by (L `union` dom Ψ `union` fvar_in_exp e).
         eapply IHn1 with (Ψ':=x ~ dbind_typ A ++ Ψ') in H0 as Hty; eauto... 
-        -- split. eapply d_sub_refl...
+        -- split. eapply d_sub_reflexivity...
            ++ apply d_chk_inf_wf_env in H0. dependent destruction H0...
            ++ apply d_mono_typ_d_wf_typ...
            ++ eapply d_chk_inf__inf_abs_mono with (L:=L `union` dom Ψ').
@@ -739,7 +739,7 @@ Proof with auto.
               intros.
               replace (open_exp_wrt_exp e (exp_var_f x0)) with ({exp_var_f x0 ᵉ/ₑ x} open_exp_wrt_exp e (exp_var_f x)).
               apply d_chk_inf_rename_var_cons. apply Hty; eauto. 
-              ** apply d_sub_refl. eapply d_wf_tenv_d_wf_env. eapply d_chk_inf_wf_env; eauto.
+              ** apply d_sub_reflexivity. eapply d_wf_tenv_d_wf_env. eapply d_chk_inf_wf_env; eauto.
                  apply d_chk_inf_wf_typ in H0; auto.
               ** solve_notin. 
               ** simpl. rewrite subst_exp_in_exp_open_exp_wrt_exp...
@@ -747,12 +747,12 @@ Proof with auto.
                  simpl. case_if; auto...
         -- rewrite <- d_exp_size_open_var. lia.
         -- econstructor...
-           apply d_sub_refl.
+           apply d_sub_reflexivity.
            apply d_chk_inf_wf_env in H0. dependent destruction H0...
            apply d_mono_typ_d_wf_typ in H. dependent destruction H...
       (* /\ a. e : A => forall a. A *)
       * exists (typ_all A); split.
-        -- eapply d_sub_refl; auto.
+        -- eapply d_sub_reflexivity; auto.
            inst_cofinites_by L. apply d_chk_inf_wf_env in H0...
            dependent destruction H0...
            inst_cofinites_for d_wf_typ__all; intros; inst_cofinites_with X; auto.
@@ -762,7 +762,7 @@ Proof with auto.
            ++ intros. inst_cofinites_with X.
               refine (IHn1 _ _ _ _ _ _ _ _ _ _ H0 _ _ _); eauto...
               simpl. rewrite <- d_exp_size_open_typ; lia.
-              apply d_sub_refl... eauto. 
+              apply d_sub_reflexivity... eauto. 
               apply d_chk_inf_wf_env in H0; eauto.
               apply d_chk_inf_wf_typ in H0; eauto.
       (* e @T *)
