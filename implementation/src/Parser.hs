@@ -74,6 +74,8 @@ atom =
       pTAbs,
       pCase,
       pFix,
+      try pLetRec,
+      pLetRecAnn,
       try pLet,
       pLetAnn,
       Var <$> identifier,
@@ -120,6 +122,17 @@ pCase = do
   symbol "->"
   Case e e1 . Lam x . Lam xs <$> expr
 
+pLetRecAnn :: Parser Exp
+pLetRecAnn = do
+  rword "letrec"
+  x <- identifier
+  symbol "::"
+  t <- pType
+  symbol "="
+  e1 <- expr
+  rword "in"
+  LetA x t e1 <$> expr
+
 pLetAnn :: Parser Exp
 pLetAnn = do
   rword "let"
@@ -130,6 +143,15 @@ pLetAnn = do
   e1 <- expr
   rword "in"
   LetA x t e1 <$> expr
+
+pLetRec :: Parser Exp
+pLetRec = do
+  rword "letrec"
+  x <- identifier
+  symbol "="
+  e1 <- expr
+  rword "in"
+  LetRec x e1 <$> expr
 
 pLet :: Parser Exp
 pLet = do

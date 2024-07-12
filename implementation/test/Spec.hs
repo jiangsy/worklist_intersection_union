@@ -20,9 +20,9 @@ prettyPrint (filename, flag, result) = filename ++ (if flag then ", MonoIU on" e
 main :: IO ()
 main = do
   hspec $ do
-    describe "variant 1 examples" $ do
+    describe "Variant 1 examples" $ do
       testAll v1Map
-    describe "variant 2 examples" $ do
+    describe "Variant 2 examples" $ do
       testAll v2Map
   where testAll = mapM_ (\x@(filename, flag, result) -> it (prettyPrint x) (test ("examples/" ++ filename) flag >>= (`shouldBe` Right result)))
 
