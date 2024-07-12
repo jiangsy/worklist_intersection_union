@@ -74,6 +74,7 @@ atom =
       pTAbs,
       pCase,
       pFix,
+      pLetRec,
       try pLet,
       pLetAnn,
       Var <$> identifier,
