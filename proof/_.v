@@ -1,7 +1,6 @@
-
-
+(*      *)
 (* Base *)
-
+(*      *)
 Require Import uni.decl.prop_subtyping.
 Require Import uni.decl.prop_typing.
 Require Import uni.decl.prop_safety.
