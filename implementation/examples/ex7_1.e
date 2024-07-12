@@ -1,4 +1,4 @@
-let f7 :: forall a. a -> a = (/\a. (\x -> x) :: a -> a) in
+let f7 = /\a. (\x -> x) :: a -> a in
     f7 @ (forall a. a -> a) f7 -- ex7_1
 
 -- function f7<A>(x: A): A { return x }
