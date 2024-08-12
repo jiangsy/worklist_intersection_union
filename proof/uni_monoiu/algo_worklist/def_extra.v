@@ -66,7 +66,7 @@ Inductive a_wl_red : aworklist -> Prop :=    (* defn a_wl_red *)
       a_wl_red Γ ->
       a_wl_red (aworklist_cons_work Γ (work_sub (typ_var_f X) (typ_var_f X)))
   | a_wl_red__subarrow : forall (Γ:aworklist) (B1 B2 A1 A2:typ),
-      a_wl_red (aworklist_cons_work (aworklist_cons_work Γ (work_sub A1 B1)) (work_sub B2 A2)) ->
+      a_wl_red (aworklist_cons_work (aworklist_cons_work Γ (work_sub B2 A2)) (work_sub A1 B1)) ->
       a_wl_red (aworklist_cons_work Γ (work_sub (typ_arrow B1 B2) (typ_arrow A1 A2)))
   | a_wl_red__sub_alll : forall (L:vars) (Γ:aworklist) (B1 A1:typ),
       a_wneq_all (awl_to_aenv Γ) A1 ->

@@ -88,7 +88,7 @@ Inductive d_wl_red : dworklist -> Prop :=    (* defn d_wl_red *)
      d_wl_red Ω ->
      d_wl_red (dworklist_cons_work Ω (work_sub (typ_var_f X) (typ_var_f X)))
  | d_wl_red__sub_arrow : forall (Ω:dworklist) (A1 A2 B1 B2:typ),
-     d_wl_red (dworklist_cons_work (dworklist_cons_work Ω (work_sub B1 A1)) (work_sub A2 B2)) ->
+     d_wl_red (dworklist_cons_work (dworklist_cons_work Ω (work_sub A2 B2)) (work_sub B1 A1)) ->
      d_wl_red (dworklist_cons_work Ω (work_sub (typ_arrow A1 A2) (typ_arrow B1 B2)))
  | d_wl_red__sub_all : forall (L:vars) (Ω:dworklist) (A B:typ),
      ( forall X , X `notin` L -> 

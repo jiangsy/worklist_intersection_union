@@ -5621,8 +5621,8 @@ Proof.
             assert (Hsubst: exists Γ1 Γ2, aworklist_subst (X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ) X (typ_arrow ` X1 ` X2) Γ1 Γ2).
             { eapply worklist_subst_fresh_etvar_total'; eauto. }
             destruct Hsubst as [Γ1 [Γ2 Hsubst]].
-            assert (JgArr1: (work_sub ` X2 (subst_typ_in_typ (typ_arrow ` X1 ` X2) X A2) ⫤ᵃ work_sub (subst_typ_in_typ (typ_arrow ` X1 ` X2) X A1) ` X1 ⫤ᵃ subst_typ_in_aworklist (typ_arrow ` X1 ` X2) X Γ2 ⧺ Γ1) ⟶ᵃʷ⁎⋅ \/
-                          ~ (work_sub ` X2 (subst_typ_in_typ (typ_arrow ` X1 ` X2) X A2) ⫤ᵃ work_sub (subst_typ_in_typ (typ_arrow ` X1 ` X2) X A1) ` X1 ⫤ᵃ subst_typ_in_aworklist (typ_arrow ` X1 ` X2) X Γ2 ⧺ Γ1) ⟶ᵃʷ⁎⋅).
+            assert (JgArr1: (work_sub (subst_typ_in_typ (typ_arrow ` X1 ` X2) X A1) ` X1 ⫤ᵃ work_sub ` X2 (subst_typ_in_typ (typ_arrow ` X1 ` X2) X A2) ⫤ᵃ subst_typ_in_aworklist (typ_arrow ` X1 ` X2) X Γ2 ⧺ Γ1) ⟶ᵃʷ⁎⋅ \/
+                          ~ (work_sub (subst_typ_in_typ (typ_arrow ` X1 ` X2) X A1) ` X1 ⫤ᵃ work_sub ` X2 (subst_typ_in_typ (typ_arrow ` X1 ` X2) X A2) ⫤ᵃ subst_typ_in_aworklist (typ_arrow ` X1 ` X2) X Γ2 ⧺ Γ1) ⟶ᵃʷ⁎⋅).
             { assert (Hmono: ⌊ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ ⌋ᵃ ᵗ⊢ᵃₘ typ_arrow ` X1 ` X2).
               { simpl. econstructor; eauto. }
               assert (Hmono': ⌊ {typ_arrow ` X1 ` X2 ᵃʷ/ₜ X} Γ2 ⧺ Γ1 ⌋ᵃ ᵗ⊢ᵃₘ typ_arrow ` X1 ` X2).
@@ -5716,75 +5716,75 @@ Proof.
               erewrite inftapp_judge_size_wl_aworklist_subst' with (Γ := X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ); simpl; eauto.
               eapply infabs_depth_wl_aworklist_subst' with (Γ := X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ) in Hsubst as Hle'; simpl; eauto. simpl in *. lia.
               eapply infabs_judge_size_wl_aworklist_subst' with (Γ := X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ) in Hsubst as Hle'; simpl; eauto. simpl in *. lia. }          
-           destruct JgArr1 as [JgArr1 | JgArr1]; eauto.
+              destruct JgArr1 as [JgArr1 | JgArr1]; eauto.
            ** left. inst_cofinites_for a_wl_red__sub_arrow1; auto. intros.
-           clear IHme. clear IHmj. clear IHmt. clear IHmtj. clear IHma. clear IHmaj. 
-           clear IHms. clear IHmev. clear IHmw.
-           apply aworklist_subst_rename_tvar with (X1:=X1) (Y:=X0) in Hsubst as Hsubstrn1.
-           simpl in Hsubstrn1. destruct_eq_atom.
-           dependent destruction H8.
-           rewrite rename_tvar_in_aworklist_fresh_eq in Hsubstrn1; auto.
-           apply aworklist_subst_rename_tvar with (X1:=X2) (Y:=X3) in Hsubstrn1 as Hsubstrn2.
-           simpl in Hsubstrn2. destruct_eq_atom.
-           rewrite rename_tvar_in_aworklist_fresh_eq in Hsubstrn2; auto.
-           eapply aworklist_subst_det with (Γ1:=Γ3) in Hsubstrn2; eauto. destruct_conj. subst.
-           simpl. destruct_eq_atom. constructor.
-           apply rename_tvar_in_a_wf_wwl_a_wl_red with (X:=X1) (Y:=X0) in JgArr1 as Jgrn1; simpl; auto.
-           simpl in Jgrn1.
-           rewrite <- rename_tvar_in_aworklist_app in Jgrn1. simpl in Jgrn1.
-           destruct_eq_atom.
-           rewrite subst_typ_in_typ_subst_typ_in_typ in Jgrn1; auto.
-           rewrite subst_typ_in_typ_subst_typ_in_typ with (A1:=A2) in Jgrn1; auto.
-           rewrite subst_typ_in_awl_rename_neq_tvar in Jgrn1; auto.
-           simpl in Jgrn1. destruct_eq_atom.
-           rewrite subst_typ_in_typ_fresh_eq with (A2:=A1) in Jgrn1; auto.
-           rewrite subst_typ_in_typ_fresh_eq with (A2:=A2) in Jgrn1; auto.
-           apply rename_tvar_in_a_wf_wwl_a_wl_red with (X:=X2) (Y:=X3) in Jgrn1 as Jgrn2; simpl; auto.
-           simpl in Jgrn2.
-           rewrite <- rename_tvar_in_aworklist_app in Jgrn2. simpl in Jgrn2.
-           destruct_eq_atom.
-           rewrite subst_typ_in_typ_subst_typ_in_typ in Jgrn2; auto.
-           rewrite subst_typ_in_typ_subst_typ_in_typ with (A1:=A2) in Jgrn2; auto.
-           rewrite subst_typ_in_awl_rename_neq_tvar in Jgrn2; auto.
-           simpl in Jgrn2. destruct_eq_atom.
-           rewrite subst_typ_in_typ_fresh_eq with (A2:=A1) in Jgrn2; auto.
-           rewrite subst_typ_in_typ_fresh_eq with (A2:=A2) in Jgrn2; auto.
-           --- assert (X2 ~ ⬒ ∈ᵃ ⌊ {typ_arrow ` X0 ` X2 ᵃʷ/ₜ X} {X0 ᵃʷ/ₜᵥ X1} Γ2 ⧺ {X0 ᵃʷ/ₜᵥ X1} Γ1 ⌋ᵃ). {
-                 eapply aworklist_subst_binds_same_atvar with (Γ:=(X2 ~ᵃ ⬒ ;ᵃ X0 ~ᵃ ⬒ ;ᵃ Γ)); eauto.
-                 simpl; auto.
-               }
-               assert (X0 ~ ⬒ ∈ᵃ ⌊ {typ_arrow ` X0 ` X2 ᵃʷ/ₜ X} {X0 ᵃʷ/ₜᵥ X1} Γ2 ⧺ {X0 ᵃʷ/ₜᵥ X1} Γ1 ⌋ᵃ). {
-                 eapply aworklist_subst_binds_same_atvar with (Γ:=(X2 ~ᵃ ⬒ ;ᵃ X0 ~ᵃ ⬒ ;ᵃ Γ)); eauto.
-                 simpl; auto.
-               }
-               assert ((X2, ⬒) :: (X0, ⬒) :: ⌊ Γ ⌋ᵃ ᵗ⊢ᵃ A1) by (apply a_wf_typ_weaken_cons; apply a_wf_typ_weaken_cons; auto).
-               assert ((X2, ⬒) :: (X0, ⬒) :: ⌊ Γ ⌋ᵃ ᵗ⊢ᵃ A2) by (apply a_wf_typ_weaken_cons; apply a_wf_typ_weaken_cons; auto).
-               assert (⊢ᵃ (X2, ⬒) :: (X0, ⬒) :: ⌊ Γ ⌋ᵃ). {  econstructor; simpl; auto; econstructor; auto. }
-               assert ((X2, ⬒) :: (X0, ⬒) :: ⌊ Γ ⌋ᵃ ᵗ⊢ᵃ typ_arrow ` X0 ` X2) by (simpl; constructor; eauto).
-              repeat (constructor; simpl; eauto).
-               eapply aworklist_subst_wf_typ_subst with (Γ:=(X2 ~ᵃ ⬒ ;ᵃ X0 ~ᵃ ⬒ ;ᵃ Γ)); simpl; eauto.
-               eapply aworklist_subst_wf_typ_subst with (Γ:=(X2 ~ᵃ ⬒ ;ᵃ X0 ~ᵃ ⬒ ;ᵃ Γ)); simpl; eauto.
-               eapply aworklist_subst_wf_wwl with (Γ:=X2 ~ᵃ ⬒ ;ᵃ X0 ~ᵃ ⬒ ;ᵃ Γ); eauto.
-           --- rewrite aworklist_subst_dom_upper with (Γ:=(X2 ~ᵃ ⬒ ;ᵃ X0 ~ᵃ ⬒ ;ᵃ Γ)); eauto.
-           --- assert (X2 ~ ⬒ ∈ᵃ ⌊ {typ_arrow ` X1 ` X2 ᵃʷ/ₜ X} Γ2 ⧺ Γ1 ⌋ᵃ). {
-                 eapply aworklist_subst_binds_same_atvar with (Γ:=(X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ)); eauto.
-                 simpl; auto.
-               }
-               assert (X1~ ⬒ ∈ᵃ ⌊ {typ_arrow ` X1 ` X2 ᵃʷ/ₜ X} Γ2 ⧺ Γ1 ⌋ᵃ). {
-                 eapply aworklist_subst_binds_same_atvar with (Γ:=(X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ)); eauto.
-                 simpl; auto.
-               }
-               assert ((X2, ⬒) :: (X1, ⬒) :: ⌊ Γ ⌋ᵃ ᵗ⊢ᵃ A1) by (apply a_wf_typ_weaken_cons; apply a_wf_typ_weaken_cons; auto).
-               assert ((X2, ⬒) :: (X1, ⬒) :: ⌊ Γ ⌋ᵃ ᵗ⊢ᵃ A2) by (apply a_wf_typ_weaken_cons; apply a_wf_typ_weaken_cons; auto).
-               assert (⊢ᵃ (X2, ⬒) :: (X1, ⬒) :: ⌊ Γ ⌋ᵃ). {  econstructor; simpl; auto; econstructor; auto. }
-               assert ((X2, ⬒) :: (X1, ⬒) :: ⌊ Γ ⌋ᵃ ᵗ⊢ᵃ typ_arrow ` X1 ` X2) by (simpl; constructor; eauto).
-              repeat (constructor; simpl; eauto).
-               eapply aworklist_subst_wf_typ_subst with (Γ:=(X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ)); simpl; eauto.
-               eapply aworklist_subst_wf_typ_subst with (Γ:=(X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ)); simpl; eauto.
-               eapply aworklist_subst_wf_wwl with (Γ:=X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ); eauto.
-           --- rewrite aworklist_subst_dom_upper with (Γ:=(X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ)); eauto.
-           --- simpl; auto.
-           --- simpl; auto.
+              clear IHme. clear IHmj. clear IHmt. clear IHmtj. clear IHma. clear IHmaj. 
+              clear IHms. clear IHmev. clear IHmw.
+              apply aworklist_subst_rename_tvar with (X1:=X1) (Y:=X0) in Hsubst as Hsubstrn1.
+              simpl in Hsubstrn1. destruct_eq_atom.
+              dependent destruction H8.
+              rewrite rename_tvar_in_aworklist_fresh_eq in Hsubstrn1; auto.
+              apply aworklist_subst_rename_tvar with (X1:=X2) (Y:=X3) in Hsubstrn1 as Hsubstrn2.
+              simpl in Hsubstrn2. destruct_eq_atom.
+              rewrite rename_tvar_in_aworklist_fresh_eq in Hsubstrn2; auto.
+              eapply aworklist_subst_det with (Γ1:=Γ3) in Hsubstrn2; eauto. destruct_conj. subst.
+              simpl. destruct_eq_atom. constructor.
+              apply rename_tvar_in_a_wf_wwl_a_wl_red with (X:=X1) (Y:=X0) in JgArr1 as Jgrn1; simpl; auto.
+              simpl in Jgrn1.
+              rewrite <- rename_tvar_in_aworklist_app in Jgrn1. simpl in Jgrn1.
+              destruct_eq_atom.
+              rewrite subst_typ_in_typ_subst_typ_in_typ in Jgrn1; auto.
+              rewrite subst_typ_in_typ_subst_typ_in_typ with (A1:=A1) in Jgrn1; auto.
+              rewrite subst_typ_in_awl_rename_neq_tvar in Jgrn1; auto.
+              simpl in Jgrn1. destruct_eq_atom.
+              rewrite subst_typ_in_typ_fresh_eq with (A2:=A2) in Jgrn1; auto.
+              rewrite subst_typ_in_typ_fresh_eq with (A2:=A1) in Jgrn1; auto.
+              apply rename_tvar_in_a_wf_wwl_a_wl_red with (X:=X2) (Y:=X3) in Jgrn1 as Jgrn2; simpl; auto.
+              simpl in Jgrn2.
+              rewrite <- rename_tvar_in_aworklist_app in Jgrn2. simpl in Jgrn2.
+              destruct_eq_atom.
+              rewrite subst_typ_in_typ_subst_typ_in_typ in Jgrn2; auto.
+              rewrite subst_typ_in_typ_subst_typ_in_typ with (A1:=A1) in Jgrn2; auto.
+              rewrite subst_typ_in_awl_rename_neq_tvar in Jgrn2; auto.
+              simpl in Jgrn2. destruct_eq_atom.
+              rewrite subst_typ_in_typ_fresh_eq with (A2:=A2) in Jgrn2; auto.
+              rewrite subst_typ_in_typ_fresh_eq with (A2:=A1) in Jgrn2; auto.
+              --- assert (X2 ~ ⬒ ∈ᵃ ⌊ {typ_arrow ` X0 ` X2 ᵃʷ/ₜ X} {X0 ᵃʷ/ₜᵥ X1} Γ2 ⧺ {X0 ᵃʷ/ₜᵥ X1} Γ1 ⌋ᵃ). {
+                    eapply aworklist_subst_binds_same_atvar with (Γ:=(X2 ~ᵃ ⬒ ;ᵃ X0 ~ᵃ ⬒ ;ᵃ Γ)); eauto.
+                    simpl; auto.
+                  }
+                  assert (X0 ~ ⬒ ∈ᵃ ⌊ {typ_arrow ` X0 ` X2 ᵃʷ/ₜ X} {X0 ᵃʷ/ₜᵥ X1} Γ2 ⧺ {X0 ᵃʷ/ₜᵥ X1} Γ1 ⌋ᵃ). {
+                    eapply aworklist_subst_binds_same_atvar with (Γ:=(X2 ~ᵃ ⬒ ;ᵃ X0 ~ᵃ ⬒ ;ᵃ Γ)); eauto.
+                    simpl; auto.
+                  }
+                  assert ((X2, ⬒) :: (X0, ⬒) :: ⌊ Γ ⌋ᵃ ᵗ⊢ᵃ A1) by (apply a_wf_typ_weaken_cons; apply a_wf_typ_weaken_cons; auto).
+                  assert ((X2, ⬒) :: (X0, ⬒) :: ⌊ Γ ⌋ᵃ ᵗ⊢ᵃ A2) by (apply a_wf_typ_weaken_cons; apply a_wf_typ_weaken_cons; auto).
+                  assert (⊢ᵃ (X2, ⬒) :: (X0, ⬒) :: ⌊ Γ ⌋ᵃ). {  econstructor; simpl; auto; econstructor; auto. }
+                  assert ((X2, ⬒) :: (X0, ⬒) :: ⌊ Γ ⌋ᵃ ᵗ⊢ᵃ typ_arrow ` X0 ` X2) by (simpl; constructor; eauto).
+                  repeat (constructor; simpl; eauto).
+                  eapply aworklist_subst_wf_typ_subst with (Γ:=(X2 ~ᵃ ⬒ ;ᵃ X0 ~ᵃ ⬒ ;ᵃ Γ)); simpl; eauto.
+                  eapply aworklist_subst_wf_typ_subst with (Γ:=(X2 ~ᵃ ⬒ ;ᵃ X0 ~ᵃ ⬒ ;ᵃ Γ)); simpl; eauto.
+                  eapply aworklist_subst_wf_wwl with (Γ:=X2 ~ᵃ ⬒ ;ᵃ X0 ~ᵃ ⬒ ;ᵃ Γ); eauto.
+              --- rewrite aworklist_subst_dom_upper with (Γ:=(X2 ~ᵃ ⬒ ;ᵃ X0 ~ᵃ ⬒ ;ᵃ Γ)); eauto.
+              --- assert (X2 ~ ⬒ ∈ᵃ ⌊ {typ_arrow ` X1 ` X2 ᵃʷ/ₜ X} Γ2 ⧺ Γ1 ⌋ᵃ). {
+                    eapply aworklist_subst_binds_same_atvar with (Γ:=(X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ)); eauto.
+                    simpl; auto.
+                  }
+                  assert (X1~ ⬒ ∈ᵃ ⌊ {typ_arrow ` X1 ` X2 ᵃʷ/ₜ X} Γ2 ⧺ Γ1 ⌋ᵃ). {
+                    eapply aworklist_subst_binds_same_atvar with (Γ:=(X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ)); eauto.
+                    simpl; auto.
+                  }
+                  assert ((X2, ⬒) :: (X1, ⬒) :: ⌊ Γ ⌋ᵃ ᵗ⊢ᵃ A1) by (apply a_wf_typ_weaken_cons; apply a_wf_typ_weaken_cons; auto).
+                  assert ((X2, ⬒) :: (X1, ⬒) :: ⌊ Γ ⌋ᵃ ᵗ⊢ᵃ A2) by (apply a_wf_typ_weaken_cons; apply a_wf_typ_weaken_cons; auto).
+                  assert (⊢ᵃ (X2, ⬒) :: (X1, ⬒) :: ⌊ Γ ⌋ᵃ). {  econstructor; simpl; auto; econstructor; auto. }
+                  assert ((X2, ⬒) :: (X1, ⬒) :: ⌊ Γ ⌋ᵃ ᵗ⊢ᵃ typ_arrow ` X1 ` X2) by (simpl; constructor; eauto).
+                  repeat (constructor; simpl; eauto).
+                  eapply aworklist_subst_wf_typ_subst with (Γ:=(X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ)); simpl; eauto.
+                  eapply aworklist_subst_wf_typ_subst with (Γ:=(X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ)); simpl; eauto.
+                  eapply aworklist_subst_wf_wwl with (Γ:=X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ); eauto.
+              --- rewrite aworklist_subst_dom_upper with (Γ:=(X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ)); eauto.
+              --- simpl; auto.
+              --- simpl; auto.
          ** right. unfold not. intros. dependent destruction H2.
             --- pick fresh X0. pick fresh X3. inst_cofinites_with X0.
                 inst_cofinites_with X3. 
@@ -5805,21 +5805,21 @@ Proof.
                 rewrite <- rename_tvar_in_aworklist_app in Jgrn1. simpl in Jgrn1.
                 destruct_eq_atom.
                 rewrite subst_typ_in_typ_subst_typ_in_typ in Jgrn1; auto.
-                rewrite subst_typ_in_typ_subst_typ_in_typ with (A1:=A2) in Jgrn1; auto.
+                rewrite subst_typ_in_typ_subst_typ_in_typ with (A1:=A1) in Jgrn1; auto.
                 rewrite subst_typ_in_awl_rename_neq_tvar in Jgrn1; auto.
                 simpl in Jgrn1. destruct_eq_atom.
-                rewrite subst_typ_in_typ_fresh_eq with (A2:=A1) in Jgrn1; auto.
                 rewrite subst_typ_in_typ_fresh_eq with (A2:=A2) in Jgrn1; auto.
+                rewrite subst_typ_in_typ_fresh_eq with (A2:=A1) in Jgrn1; auto.
                 apply rename_tvar_in_a_wf_wwl_a_wl_red with (X:=X3) (Y:=X2) in Jgrn1 as Jgrn2; simpl; auto.
                 simpl in Jgrn2.
                 rewrite <- rename_tvar_in_aworklist_app in Jgrn2. simpl in Jgrn2.
                 destruct_eq_atom.
                 rewrite subst_typ_in_typ_subst_typ_in_typ in Jgrn2; auto.
-                rewrite subst_typ_in_typ_subst_typ_in_typ with (A1:=A2) in Jgrn2; auto.
+                rewrite subst_typ_in_typ_subst_typ_in_typ with (A1:=A1) in Jgrn2; auto.
                 rewrite subst_typ_in_awl_rename_neq_tvar in Jgrn2; auto.
                 simpl in Jgrn2. destruct_eq_atom.
-                rewrite subst_typ_in_typ_fresh_eq with (A2:=A1) in Jgrn2; auto.
                 rewrite subst_typ_in_typ_fresh_eq with (A2:=A2) in Jgrn2; auto.
+                rewrite subst_typ_in_typ_fresh_eq with (A2:=A1) in Jgrn2; auto.
                 +++ assert (X3 ~ ⬒ ∈ᵃ ⌊ {typ_arrow ` X1 ` X3 ᵃʷ/ₜ X} {X1 ᵃʷ/ₜᵥ X0} Γ3 ⧺ {X1 ᵃʷ/ₜᵥ X0} Γ0 ⌋ᵃ). {
                       eapply aworklist_subst_binds_same_atvar with (Γ:=(X3 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ)); eauto.
                       simpl; auto.
@@ -5887,8 +5887,8 @@ Proof.
             assert (Hsubst: exists Γ1 Γ2, aworklist_subst (X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ) X (typ_arrow ` X1 ` X2) Γ1 Γ2).
             { eapply worklist_subst_fresh_etvar_total'; eauto. }
             destruct Hsubst as [Γ1 [Γ2 Hsubst]].
-            assert (JgArr2: (work_sub (subst_typ_in_typ (typ_arrow ` X1 ` X2) X A2) ` X2 ⫤ᵃ work_sub ` X1 (subst_typ_in_typ (typ_arrow ` X1 ` X2) X A1) ⫤ᵃ subst_typ_in_aworklist (typ_arrow ` X1 ` X2) X Γ2 ⧺ Γ1) ⟶ᵃʷ⁎⋅ \/
-                          ~ (work_sub (subst_typ_in_typ (typ_arrow ` X1 ` X2) X A2) ` X2 ⫤ᵃ work_sub ` X1 (subst_typ_in_typ (typ_arrow ` X1 ` X2) X A1) ⫤ᵃ subst_typ_in_aworklist (typ_arrow ` X1 ` X2) X Γ2 ⧺ Γ1) ⟶ᵃʷ⁎⋅).
+            assert (JgArr2: (work_sub ` X1 (subst_typ_in_typ (typ_arrow ` X1 ` X2) X A1) ⫤ᵃ work_sub (subst_typ_in_typ (typ_arrow ` X1 ` X2) X A2) ` X2 ⫤ᵃ subst_typ_in_aworklist (typ_arrow ` X1 ` X2) X Γ2 ⧺ Γ1) ⟶ᵃʷ⁎⋅ \/
+                          ~ (work_sub ` X1 (subst_typ_in_typ (typ_arrow ` X1 ` X2) X A1) ⫤ᵃ work_sub (subst_typ_in_typ (typ_arrow ` X1 ` X2) X A2) ` X2 ⫤ᵃ subst_typ_in_aworklist (typ_arrow ` X1 ` X2) X Γ2 ⧺ Γ1) ⟶ᵃʷ⁎⋅).
             { assert (Hmono: ⌊ X2 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ ⌋ᵃ ᵗ⊢ᵃₘ typ_arrow ` X1 ` X2).
               { simpl. econstructor; eauto. }
               assert (Hmono': ⌊ {typ_arrow ` X1 ` X2 ᵃʷ/ₜ X} Γ2 ⧺ Γ1 ⌋ᵃ ᵗ⊢ᵃₘ typ_arrow ` X1 ` X2).
@@ -6000,21 +6000,21 @@ Proof.
            rewrite <- rename_tvar_in_aworklist_app in Jgrn1. simpl in Jgrn1.
            destruct_eq_atom.
            rewrite subst_typ_in_typ_subst_typ_in_typ in Jgrn1; auto.
-           rewrite subst_typ_in_typ_subst_typ_in_typ with (A1:=A2) in Jgrn1; auto.
+           rewrite subst_typ_in_typ_subst_typ_in_typ with (A1:=A1) in Jgrn1; auto.
            rewrite subst_typ_in_awl_rename_neq_tvar in Jgrn1; auto.
            simpl in Jgrn1. destruct_eq_atom.
-           rewrite subst_typ_in_typ_fresh_eq with (A2:=A1) in Jgrn1; auto.
            rewrite subst_typ_in_typ_fresh_eq with (A2:=A2) in Jgrn1; auto.
+           rewrite subst_typ_in_typ_fresh_eq with (A2:=A1) in Jgrn1; auto.
            apply rename_tvar_in_a_wf_wwl_a_wl_red with (X:=X2) (Y:=X3) in Jgrn1 as Jgrn2; simpl; auto.
            simpl in Jgrn2.
            rewrite <- rename_tvar_in_aworklist_app in Jgrn2. simpl in Jgrn2.
            destruct_eq_atom.
            rewrite subst_typ_in_typ_subst_typ_in_typ in Jgrn2; auto.
-           rewrite subst_typ_in_typ_subst_typ_in_typ with (A1:=A2) in Jgrn2; auto.
+           rewrite subst_typ_in_typ_subst_typ_in_typ with (A1:=A1) in Jgrn2; auto.
            rewrite subst_typ_in_awl_rename_neq_tvar in Jgrn2; auto.
            simpl in Jgrn2. destruct_eq_atom.
-           rewrite subst_typ_in_typ_fresh_eq with (A2:=A1) in Jgrn2; auto.
            rewrite subst_typ_in_typ_fresh_eq with (A2:=A2) in Jgrn2; auto.
+           rewrite subst_typ_in_typ_fresh_eq with (A2:=A1) in Jgrn2; auto.
            --- assert (X2 ~ ⬒ ∈ᵃ ⌊ {typ_arrow ` X0 ` X2 ᵃʷ/ₜ X} {X0 ᵃʷ/ₜᵥ X1} Γ2 ⧺ {X0 ᵃʷ/ₜᵥ X1} Γ1 ⌋ᵃ). {
                  eapply aworklist_subst_binds_same_atvar with (Γ:=(X2 ~ᵃ ⬒ ;ᵃ X0 ~ᵃ ⬒ ;ᵃ Γ)); eauto.
                  simpl; auto.
@@ -6071,21 +6071,21 @@ Proof.
                 rewrite <- rename_tvar_in_aworklist_app in Jgrn1. simpl in Jgrn1.
                 destruct_eq_atom.
                 rewrite subst_typ_in_typ_subst_typ_in_typ in Jgrn1; auto.
-                rewrite subst_typ_in_typ_subst_typ_in_typ with (A1:=A2) in Jgrn1; auto.
+                rewrite subst_typ_in_typ_subst_typ_in_typ with (A1:=A1) in Jgrn1; auto.
                 rewrite subst_typ_in_awl_rename_neq_tvar in Jgrn1; auto.
                 simpl in Jgrn1. destruct_eq_atom.
-                rewrite subst_typ_in_typ_fresh_eq with (A2:=A1) in Jgrn1; auto.
                 rewrite subst_typ_in_typ_fresh_eq with (A2:=A2) in Jgrn1; auto.
+                rewrite subst_typ_in_typ_fresh_eq with (A2:=A1) in Jgrn1; auto.
                 apply rename_tvar_in_a_wf_wwl_a_wl_red with (X:=X3) (Y:=X2) in Jgrn1 as Jgrn2; simpl; auto.
                 simpl in Jgrn2.
                 rewrite <- rename_tvar_in_aworklist_app in Jgrn2. simpl in Jgrn2.
                 destruct_eq_atom.
                 rewrite subst_typ_in_typ_subst_typ_in_typ in Jgrn2; auto.
-                rewrite subst_typ_in_typ_subst_typ_in_typ with (A1:=A2) in Jgrn2; auto.
+                rewrite subst_typ_in_typ_subst_typ_in_typ with (A1:=A1) in Jgrn2; auto.
                 rewrite subst_typ_in_awl_rename_neq_tvar in Jgrn2; auto.
                 simpl in Jgrn2. destruct_eq_atom.
-                rewrite subst_typ_in_typ_fresh_eq with (A2:=A1) in Jgrn2; auto.
                 rewrite subst_typ_in_typ_fresh_eq with (A2:=A2) in Jgrn2; auto.
+                rewrite subst_typ_in_typ_fresh_eq with (A2:=A1) in Jgrn2; auto.
                 +++ assert (X3 ~ ⬒ ∈ᵃ ⌊ {typ_arrow ` X1 ` X3 ᵃʷ/ₜ X} {X1 ᵃʷ/ₜᵥ X0} Γ3 ⧺ {X1 ᵃʷ/ₜᵥ X0} Γ0 ⌋ᵃ). {
                       eapply aworklist_subst_binds_same_atvar with (Γ:=(X3 ~ᵃ ⬒ ;ᵃ X1 ~ᵃ ⬒ ;ᵃ Γ)); eauto.
                       simpl; auto.
@@ -6123,8 +6123,8 @@ Proof.
               +++ simpl; auto.
               +++ simpl; auto.
           --- auto.
-      -- assert (JgArr: (work_sub A2 A3 ⫤ᵃ work_sub A0 A1 ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/
-                      ~ (work_sub A2 A3 ⫤ᵃ work_sub A0 A1 ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
+      -- assert (JgArr: (work_sub A0 A1 ⫤ᵃ work_sub A2 A3 ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅ \/
+                      ~ (work_sub A0 A1 ⫤ᵃ work_sub A2 A3 ⫤ᵃ Γ) ⟶ᵃʷ⁎⋅).
          { dependent destruction H3. dependent destruction H4.
            dependent destruction H5. dependent destruction H6.
            eapply split_depth_total with (n := 1) in H as Hs1; auto. destruct Hs1 as [m1' Hs1].
@@ -6139,7 +6139,7 @@ Proof.
            apply mult_le_compat_r with (p := S n2) in Hs3'.
            apply mult_le_compat_r with (p := S n1) in Hs0'.
            apply mult_le_compat_r with (p := S n3) in Hs1'.
-           assert (Hs': split_depth_wl (work_sub A2 A3 ⫤ᵃ work_sub A0 A1 ⫤ᵃ Γ) ((m0' * (S n4) + m3' * (S n2)) + ((m2' * (S n1) + m1' * (S n3)) + n0))) by eauto.
+           assert (Hs': split_depth_wl (work_sub A0 A1 ⫤ᵃ work_sub A2 A3 ⫤ᵃ Γ) (((m2' * (S n1) + m1' * (S n3)) + (m0' * (S n4) + m3' * (S n2) + n0)))) by eauto.
            eapply IHmw; eauto; simpl in *; try lia. }
          destruct JgArr as [JgArr | JgArr]; eauto.
          right. intro Hcontra. dependent destruction Hcontra.
