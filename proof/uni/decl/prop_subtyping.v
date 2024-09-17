@@ -492,7 +492,7 @@ Proof.
     + simpl. constructor. eapply IHd_wf_env with (Ψ1:=Ψ1); eauto.
 Qed.
 
-Theorem d_wneq_weaken_sound : forall Ψ A B,
+Theorem d_wneq_all_sound : forall Ψ A B,
   d_wneq_all Ψ A ->
   Ψ ⊢ A <: typ_all B ->
   False.
@@ -501,6 +501,26 @@ Proof.
   - inversion Hneq. eauto.
   - inversion Hneq. eauto.
   - inversion Hneq; subst; eauto.
+Qed.
+
+Theorem d_wneq_all_dec : forall Ψ A,
+  d_wf_env Ψ ->
+  d_wf_typ Ψ A ->
+  d_wneq_all Ψ A \/ ~ d_wneq_all Ψ A.
+Proof.
+  intros. induction H0; eauto using d_wneq_all; try solve [right; solve_false].
+  - right. unfold not. intros.
+    dependent destruction H1; eauto. unify_binds.
+  - apply IHd_wf_typ1 in H as IH1.
+    apply IHd_wf_typ2 in H as IH2.
+    destruct IH1; destruct IH2; eauto using d_wneq_all; try solve [intuition; eauto].
+    + right. unfold not. intros. dependent destruction H2; eauto.
+  - apply IHd_wf_typ1 in H as IH1.
+    apply IHd_wf_typ2 in H as IH2.
+    destruct IH1; destruct IH2; eauto using d_wneq_all; try solve [intuition; eauto].
+    + right. unfold not. intros. dependent destruction H2; eauto.
+    + right. unfold not. intros. dependent destruction H2; eauto.
+    + right. unfold not. intros. dependent destruction H2; eauto.
 Qed.
 
 Lemma d_sub_size_rename_stvar : forall Ψ1 Ψ2 X Y A B n,
