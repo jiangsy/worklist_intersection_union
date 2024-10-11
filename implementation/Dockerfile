@@ -1,4 +1,4 @@
-FROM haskell:9.0.2
+FROM haskell:9.6.5
 
 COPY . /implementation
 WORKDIR /implementation
