@@ -41,7 +41,7 @@ USER coq
 RUN cd /home/coq && \
     git clone https://github.com/plclub/metalib && \
     cd metalib && git -c advice.detachedHead=false checkout badeeab && \
-    cd metalib/Metalib && make install
+    cd Metalib && make install
 
 RUN cd /home/coq && \
     git clone https://github.com/sweirich/ott.git && \
