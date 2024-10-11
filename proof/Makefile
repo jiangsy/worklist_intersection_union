@@ -25,7 +25,6 @@ endif
 %/def_ott.v : %/language.ott
 	ott -i $^ -o $@ ${OTT_FLAGS}
 	sed -e "/Ott.ott_list_core/d" ${SED_FLAG} $@
-	sed -e "/lc_typ[ ](exp_tabs[ ](body_anno/d" ${SED_FLAG} $@ 
 	sed -e "s/dW/Ω/g" ${SED_FLAG} $@ 
 	sed -e "s/aW/Γ/g" ${SED_FLAG} $@ 
 	sed -e "s/dE/Ψ/g" ${SED_FLAG} $@
