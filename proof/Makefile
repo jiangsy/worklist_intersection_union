@@ -20,7 +20,7 @@ else
 	SED_FLAG := -i
 endif
 
-.PHONY: ott lngen coq clean
+.PHONY: ott lngen coq clean clean-coq coq-only
 
 %/def_ott.v : %/language.ott
 	ott -i $^ -o $@ ${OTT_FLAGS}
@@ -54,6 +54,11 @@ ${COQ_MAKEFILE} : ${COQ_PROJECT} .FILE_LIST ${LNGEN_OUTS}
 coq : ${COQ_MAKEFILE}
 	${MAKE} -f ${COQ_MAKEFILE}
 
-clean :
+coq-only : 
+	${MAKE} -f ${COQ_MAKEFILE}
+
+clean-coq  : 
 	${MAKE} -f ${COQ_MAKEFILE} clean
+
+clean : clean-coq
 	rm */prop_ln.v */def_ott.v ${COQ_MAKEFILE} ${COQ_MAKEFILE}.conf .FILE_LIST
