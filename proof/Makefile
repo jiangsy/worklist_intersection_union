@@ -54,9 +54,6 @@ ${COQ_MAKEFILE} : ${COQ_PROJECT} .FILE_LIST ${LNGEN_OUTS}
 coq : ${COQ_MAKEFILE}
 	${MAKE} -f ${COQ_MAKEFILE}
 
-coq-only : 
-	${MAKE} -f ${COQ_MAKEFILE}
-
 clean-coq  : 
 	${MAKE} -f ${COQ_MAKEFILE} clean
 
