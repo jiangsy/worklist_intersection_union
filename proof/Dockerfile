@@ -61,4 +61,3 @@ USER coq
 
 COPY --chown=coq:coq . /proofs
 WORKDIR /proofs
-RUN make coq
