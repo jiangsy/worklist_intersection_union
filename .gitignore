@@ -11,7 +11,6 @@
 *.glob
 *.aux
 .lia.cache
-.FILE_LIST
 
 dist
 dist-*

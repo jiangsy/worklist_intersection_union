@@ -20,7 +20,7 @@ else
 	SED_FLAG := -i
 endif
 
-.PHONY: ott lngen coq clean clean-coq coq-only
+.PHONY: ott lngen coq coq-only clean clean-coq-only
 
 %/def_ott.v : %/language.ott
 	ott -i $^ -o $@ ${OTT_FLAGS}
@@ -41,21 +41,24 @@ ott : ${OTT_OUTS}
 lngen : ${LNGEN_OUTS}
 
 # a hack to force makefile to detect source file changes
-.FILE_LIST : ${LNGEN_OUTS} FORCE
-	tree . -if -I ${IGNORE_DIRS} | grep -E "v$$" | cut -c3- | sort -s > .FILE_LIST.tmp
-	diff $@ .FILE_LIST.tmp || cp .FILE_LIST.tmp $@
-	rm .FILE_LIST.tmp
+# .FILE_LIST : ${LNGEN_OUTS} FORCE
+# 	tree . -if -I ${IGNORE_DIRS} | grep -E "v$$" | cut -c3- | sort -s > .FILE_LIST.tmp
+# 	diff $@ .FILE_LIST.tmp || cp .FILE_LIST.tmp $@
+# 	rm .FILE_LIST.tmp
 
 FORCE:
 
-${COQ_MAKEFILE} : ${COQ_PROJECT} .FILE_LIST ${LNGEN_OUTS}
+${COQ_MAKEFILE} : ${COQ_PROJECT}  .FILE_LIST
 	tree . -if | grep -E "v$$" | cut -c3- | xargs coq_makefile -o $@ -f ${COQ_PROJECT}
 
-coq : ${COQ_MAKEFILE}
+coq : ${LNGEN_OUTS} ${COQ_MAKEFILE}
 	${MAKE} -f ${COQ_MAKEFILE}
 
-clean-coq  : 
+coq-only : ${COQ_MAKEFILE}
+	${MAKE} -f ${COQ_MAKEFILE}
+
+clean-coq-only : 
 	${MAKE} -f ${COQ_MAKEFILE} clean
 
 clean : clean-coq
-	rm */prop_ln.v */def_ott.v ${COQ_MAKEFILE} ${COQ_MAKEFILE}.conf .FILE_LIST
+	rm */prop_ln.v */def_ott.v ${COQ_MAKEFILE} ${COQ_MAKEFILE}.conf
