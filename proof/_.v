@@ -1,16 +1,39 @@
+Require uni.notations.
+Require uni.decl.prop_subtyping.
+Require uni.decl.prop_typing.
+Require uni.decl.prop_safety.
+Require uni.decl_worklist.prop_equiv.
+Require uni.algo_worklist.prop_soundness.
+Require uni.algo_worklist.prop_completeness.
+Require uni.algo_worklist.prop_decidability.
+
+Require uni_rec.notations.
+Require uni_rec.decl.prop_subtyping.
+Require uni_rec.decl.prop_typing.
+Require uni_rec.decl_worklist.prop_equiv.
+Require uni_rec.algo_worklist.prop_soundness.
+Require uni_rec.algo_worklist.prop_completeness.
+
+Require uni_monoiu.notations.
+Require uni_monoiu.decl.prop_subtyping.
+Require uni_monoiu.decl.prop_typing.
+Require uni_monoiu.decl_worklist.prop_equiv.
+Require uni_monoiu.algo_worklist.prop_soundness.
+
+
 (*      *)
 (* Base *)
 (*      *)
 Section Base.
 
-    Require Import uni.notations.
-    Require Import uni.decl.prop_subtyping.
-    Require Import uni.decl.prop_typing.
-    Require Import uni.decl.prop_safety.
-    Require Import uni.decl_worklist.prop_equiv.
-    Require Import uni.algo_worklist.prop_soundness.
-    Require Import uni.algo_worklist.prop_completeness.
-    Require Import uni.algo_worklist.prop_decidability.
+    Import uni.notations.
+    Import uni.decl.prop_subtyping.
+    Import uni.decl.prop_typing.
+    Import uni.decl.prop_safety.
+    Import uni.decl_worklist.prop_equiv.
+    Import uni.algo_worklist.prop_soundness.
+    Import uni.algo_worklist.prop_completeness.
+    Import uni.algo_worklist.prop_decidability.
 
     (* Prop of decl system *)
     Check uni.decl.prop_subtyping.d_sub_transitivity.
@@ -42,12 +65,12 @@ End Base.
 (*                  *)
 Section Rcd_Extension.
 
-    Require Import uni_rec.notations.
-    Require Import uni_rec.decl.prop_subtyping.
-    Require Import uni_rec.decl.prop_typing.
-    Require Import uni_rec.decl_worklist.prop_equiv.
-    Require Import uni_rec.algo_worklist.prop_soundness.
-    Require Import uni_rec.algo_worklist.prop_completeness.
+    Import uni_rec.notations.
+    Import uni_rec.decl.prop_subtyping.
+    Import uni_rec.decl.prop_typing.
+    Import uni_rec.decl_worklist.prop_equiv.
+    Import uni_rec.algo_worklist.prop_soundness.
+    Import uni_rec.algo_worklist.prop_completeness.
 
     (* Prop of decl system *)
     Check uni_rec.decl.prop_subtyping.d_sub_transitivity.
@@ -75,11 +98,11 @@ End Rcd_Extension.
 (*                                                      *)
 Section Monoiu_Extension.
 
-    Require Import uni_monoiu.notations.
-    Require Import uni_monoiu.decl.prop_subtyping.
-    Require Import uni_monoiu.decl.prop_typing.
-    Require Import uni_monoiu.decl_worklist.prop_equiv.
-    Require Import uni_monoiu.algo_worklist.prop_soundness.
+    Import uni_monoiu.notations.
+    Import uni_monoiu.decl.prop_subtyping.
+    Import uni_monoiu.decl.prop_typing.
+    Import uni_monoiu.decl_worklist.prop_equiv.
+    Import uni_monoiu.algo_worklist.prop_soundness.
 
     (* Prop of decl system *)
     Check uni_monoiu.decl.prop_subtyping.d_sub_transitivity.
