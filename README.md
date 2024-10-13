@@ -13,7 +13,10 @@ Title of the submitted paper: #283-Bidirectional Higher-Rank Polymorphism with I
 
   * `src/implementation/`: A Haskell implementation of our type inference algorithm capable of running the examples provided in the paper. The implementation will print the algorithmic derivation rules employed during the inference process;
 * `docker_image_amd64.zip` docker images for the amd64 platform that pre-install all the dependencies to check the proof and test the implementation;
-* `docker_image_arm64.zip` docker images for the arm64 platform that pre-install all the dependencies to check the proof and test the implementation.
+* `docker_image_arm64.zip` docker images for the arm64 platform that pre-install all the dependencies to check the proof and test the implementation;
+* `main.pdf` The submitted paper;
+* `appendix.pdf` Appendix to the submitted paper.
+
 
 We claim all three badges including **available, functional, and reusable badges**.
 
@@ -34,7 +37,7 @@ The `_.v` file contains all the references to the important lemmas and theorems 
   * bidirectional worklist properties: soundness and completeness (Theorem 5.5, System I, II & III);
   * algorithmic properties: soundness (Theorem 5.6, System I, II & III), completeness (Theorem 5.7, System I, II), and decidability of the algorithm (Theorem 4.2, System I).
 
-The following table illustrates the mapping from all the theorems
+The following table (also included in the `appendix.pdf`) illustrates the mapping from all the theorems
 in the paper to their corresponding theorem names in the Coq proof.
 
 ### Lemmas and Theorems
@@ -164,7 +167,7 @@ All the examples provided in the paper run in our implementation.
 
 * **Test all the examples**: To test all the examples presented in the paper (including cases expected to be rejected), please run `stack test`.
 
-Expected Output: The output will show the type-checking results of all the examples. Variant 1 refers to System I and variant 2 refers to System III. `[✔]` at the end of each line means the result is consistent with the result reported in the appendix of the paper.
+Expected Output: The output will show the type-checking results of all the examples. Variant 1 refers to System I and variant 2 refers to System III. `[✔]` at the end of each line means the result is consistent with the result reported in the appendix of the paper (`appendix.pdf`).
 
 ``` bash
 Variant 1 examples
