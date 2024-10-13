@@ -492,7 +492,7 @@ Proof.
     + simpl. constructor. eapply IHd_wf_env with (Ψ1:=Ψ1); eauto.
 Qed.
 
-Theorem d_wneq_weaken_sound : forall Ψ A B,
+Theorem d_wneq_all_sound : forall Ψ A B,
   d_wneq_all Ψ A ->
   Ψ ⊢ A <: typ_all B ->
   False.
