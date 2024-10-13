@@ -112,7 +112,7 @@ run `make clean-coq-only` first to clean all the previously checked results.
 
 * Install [docker](https://www.docker.com/)
 
-* Based on your architecture, load the docker image
+* Based on your architecture, unzip `docker_image_*.zip` and load the docker image
 
   `docker load < 35-proof-*.tar.gz`
 
@@ -120,7 +120,7 @@ run `make clean-coq-only` first to clean all the previously checked results.
 
     `docker run -it 35-proof bash`
 
-* Run `make coq`
+* Run the command, e.g., `make coq-only`
 
 #### Building from source
 
@@ -134,7 +134,10 @@ run `make clean-coq-only` first to clean all the previously checked results.
    make install
    ```
 
-- (Optional) Follow the installation guidelines for [Ott (forked version)](https://github.com/sweirich/ott/tree/ln-close) and [LNgen](https://github.com/plclub/lngen) to install them.
+- (Optional (only if you want to regenerate `def_ott.v` and `prop_ln.v`)) Follow the installation guidelines for [Ott (forked version)](https://github.com/sweirich/ott/tree/ln-close) and [LNgen](https://github.com/plclub/lngen) to install them.
+
+- Run the command, e.g., `make coq-only`
+
 
 ## Implementation
 
@@ -251,7 +254,7 @@ Finished in 0.0247 seconds
   
 * Install [docker](https://www.docker.com/)
 
-* Based on your architecture, load the docker image
+* Based on your architecture, unzip `docker_image_*.zip` and load the docker image
 
   `docker load < 35-implementation-*.tar.gz`
 
@@ -259,9 +262,10 @@ Finished in 0.0247 seconds
 
     `docker run -it 35-implementation bash`
 
-* Run `stack test`
+* Run the command, e.g., `stack test`
 
 #### Building from source
 
 * **Dependencies**: Require [GHC](https://www.haskell.org/downloads/) and [Stack](https://docs.haskellstack.org/en/stable/README/)
 * **Build the project**: navigate to `src/implementation/` directory and run `stack build`.
+* Run the command, e.g., `stack test`
