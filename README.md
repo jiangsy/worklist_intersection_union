@@ -4,7 +4,7 @@ Title of the submitted paper: #283-Bidirectional Higher-Rank Polymorphism with I
 
 ## Overview
 
-* `src.zip`: source files of the proof and the implementaton
+* `src.zip`: source files of the proof and the implementation
   * `src/proof/`: The whole Coq proof project, which can be compiled with Coq 8.15.2;
 
     * `src/proof/uni/` Proofs of the base system (system I);
@@ -12,19 +12,19 @@ Title of the submitted paper: #283-Bidirectional Higher-Rank Polymorphism with I
     * `src/proof/uni_monoiu/` Proofs of the system with record extension and mono intersection and union types (system III);
 
   * `src/implementation/`: A Haskell implementation of our type inference algorithm capable of running the examples provided in the paper. The implementation will print the algorithmic derivation rules employed during the inference process;
-* `docker_image_amd64.zip` docker images for the amd64 platform that pre-install all the dependency to check the proof and test the implementation;
-* `docker_image_arm64.zip` docker images for the arm64 platform that pre-install all the dependency to check the proof and test the implementation.
+* `docker_image_amd64.zip` docker images for the amd64 platform that pre-install all the dependencies to check the proof and test the implementation;
+* `docker_image_arm64.zip` docker images for the arm64 platform that pre-install all the dependencies to check the proof and test the implementation.
 
-We claim all three badges including **available, functional and reusable badges**.
+We claim all three badges including **available, functional, and reusable badges**.
 
-The paper has claimed that we formalized the correctness of a type inference algorithm for a system with higher-rank polymorphism, intersection and union types and explicit type application and provided a prototype implementation. They are all included in this artifact.
+The paper has claimed that we formalized the correctness of a type inference algorithm for a system with higher-rank polymorphism, intersection and union types, and explicit type application and provided a prototype implementation. They are all included in this artifact.
 
 * All the theorems claimed in the paper are formalized in Coq. Please refer to the [Proof](#Proof) section for more details.
 * The implementation includes all the typing rules listed in the paper with some add-ons to type-check some more interesting programs. Please refer to the [Implementation](#Implementation) section for more details.
 
 In addition, this Coq artifact is also reusable. All the raw files to generate the syntactic definitions (by `ott`) and locally-nameless properties (by `lngen`) are provided, as well as the build scripts. Interested users can easily extend them with new syntaxes and features. Coq is also a widely used proof assistant for the PL community.
 
-We agree to publishing our artifact under a Creative Commons license.
+We agree to publish our artifact under a Creative Commons license.
 
 ## Proof
 
@@ -32,9 +32,9 @@ The `_.v` file contains all the references to the important lemmas and theorems 
 
   * bidirectional properties: subtyping transitivity (Theorem 3.2, System I, II & III), checking subsumption (Theorem 2.2, System I, II & III), and type safety (Theorem 5.4, System I);
   * bidirectional worklist properties: soundness and completeness (Theorem 5.5, System I, II & III);
-  * algorithmic properties: soundness (Theorem 5.6, System I, II & III), completeness (Theorem 5.7, System I, II) and decidability of the algorithm (Theorem 4.2, System I).
+  * algorithmic properties: soundness (Theorem 5.6, System I, II & III), completeness (Theorem 5.7, System I, II), and decidability of the algorithm (Theorem 4.2, System I).
 
-The following table illustrates the mapping from the all the theorems
+The following table illustrates the mapping from all the theorems
 in the paper to their corresponding theorem names in the Coq proof.
 
 ### Lemmas and Theorems
@@ -61,9 +61,9 @@ in the paper to their corresponding theorem names in the Coq proof.
 
 ### Usage
 
-* **Check the proofs**: navigate to `src/proof/` directory and run `make coq-only`. In case you want to recheck the proof, 
+* **Check the proofs**: navigate to the `src/proof/` directory and run `make coq-only`. In case you want to recheck the proof, 
 run `make clean-coq-only` first to clean all the previously checked results.
-(NOTES: The proof may take a long time to check. For reference, it's about 1 hour on a M2 Max MacBook)
+(NOTES: The proof may take a long time to check. For reference, it's about 1 hour on an M2 Max MacBook)
 
     Expected Output: Definition of each theorem and lemma and axioms used by it. The only axiom used by all the theorems is `Eqdep.Eq_rect_eq.eq_rect_eq`. This
     is introduced by the Coq tactic `dependent destruction` and does not harm the consistency.
@@ -123,7 +123,7 @@ run `make clean-coq-only` first to clean all the previously checked results.
 
 * **Dependencies**: Requires Coq 8.15.2, along with [`Metalib`](https://github.com/plclub/metalib) for the locally nameless infrastructure.
 * **Installation guide**: Install Coq 8.15.2 via `opam` (Please refer to the
-   [official guide](https://coq.inria.fr/opam-using.html) for detailed steps). After instalation, please clone and install [`Metalib`](https://github.com/plclub/metalib) using the following commands:
+   [official guide](https://coq.inria.fr/opam-using.html) for detailed steps). After installation, please clone and install [`Metalib`](https://github.com/plclub/metalib) using the following commands:
 
    ``` bash
    git clone https://github.com/plclub/metalib
@@ -164,7 +164,7 @@ All the examples provided in the paper run in our implementation.
 
 * **Test all the examples**: To test all the examples presented in the paper (including cases expected to be rejected), please run `stack test`.
 
-Expected Output: The output will show the type checking results of all the examples. Variant 1 refers to System I and variant 2 refers to System III. `[✔]` at the end of each line means the result is consistent with the result reported in the appendix of the paper.
+Expected Output: The output will show the type-checking results of all the examples. Variant 1 refers to System I and variant 2 refers to System III. `[✔]` at the end of each line means the result is consistent with the result reported in the appendix of the paper.
 
 ``` bash
 Variant 1 examples
@@ -241,7 +241,7 @@ Finished in 0.0247 seconds
     ```
 
   * `<path>`: the path of the input file.
-  * `[-m]`: whether considers regard intersection and union of monotypes as monotypes.
+  * `[-m]`: whether regard intersection and union of monotypes as monotypes.
   * For example, run `stack exec WorklistIntersectionUnion-exe -- examples/ex12_2.e -m` to show the inference process of file `examples/ex12_2.e` and enable the inference of intersection and union of monotypes.
 
 #### Using Docker Images (Recommended)
