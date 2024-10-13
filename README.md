@@ -49,13 +49,14 @@ in the paper to their corresponding theorem names in the Coq proof.
 
 ### Usage
 
-* **Build the proofs**: navigate to [proof/](./proof) directory and run `make coq-only`. In case you want to recheck the proof, run `make clean-coq-only` first to clean all the checked results.
+* **Check the proofs**: navigate to [proof/](./proof) directory and run `make coq-only`. In case you want to recheck the proof, 
+run `make clean-coq-only` first to clean all the previously checked results.
 (NOTES: The proof may take a long time to check. For reference, it's about 1 hour on a M2 Max MacBook)
 
     Expected Output: Definition of each theorem and lemma and axioms used by it. The only axiom used by all the theorems is `Eqdep.Eq_rect_eq.eq_rect_eq`. This
     is introduced by the Coq tactic `dependent destruction` and does not harm the consistency.
 
-    ``` bash
+    ``` coq
     d_sub_transitivity
         : forall (Ψ : denv) (A B C : typ),
         Ψ ⊢ A <: B -> Ψ ⊢ B <: C -> Ψ ⊢ A <: C
@@ -108,7 +109,7 @@ in the paper to their corresponding theorem names in the Coq proof.
 
 #### Building from source
 
-* **Dependencies**: Requires Coq 8.15.2, along with [`Metalib`](https://github.com/plclub/metalib) for the locally nameless
+* **Dependencies**: Requires Coq 8.15.2, along with [`Metalib`](https://github.com/plclub/metalib) for the locally nameless infrastructure.
 * **Installation guide**: Install Coq 8.15.2 via `opam` (Please refer to the
    [official guide](https://coq.inria.fr/opam-using.html) for detailed steps). After instalation, please clone and install [`Metalib`](https://github.com/plclub/metalib) using the following commands:
 
@@ -151,7 +152,7 @@ All the examples provided in the paper run in our implementation.
 
 * **Test all the examples**: To test all the examples presented in the paper (including cases expected to be rejected), please run `stack test`.
 
-Expected Output: The output will show the type checking results of all the examples. Variant 1 refers to System I and variant 2 refers to System III.
+Expected Output: The output will show the type checking results of all the examples. Variant 1 refers to System I and variant 2 refers to System III. `[✔]` at the end of each line means the result is consistent with the result reported in the appendix of the paper.
 
 ``` bash
 Variant 1 examples
