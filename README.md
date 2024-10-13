@@ -4,17 +4,29 @@ Title of the submitted paper: #283-Bidirectional Higher-Rank Polymorphism with I
 
 ## Overview
 
-* [.src/](.src/): source files of the proof and the implementaton
-  * [.src/proof/](.src/proof): The whole Coq proof project, which can be compiled with Coq 8.15.2.
+* `src.zip`: source files of the proof and the implementaton
+  * `src/proof/`: The whole Coq proof project, which can be compiled with Coq 8.15.2;
 
-    * [.src/proof/uni](.src/proof/uni) Proofs of the base system (system I)
-    * [.src/proof/uni_rec](.src/proof/uni) Proofs of the system with record extension (system II)
-    * [.src/proof/uni_monoiu](.src/proof/uni) Proofs of the system with record extension and mono intersection and union types (system III)
+    * `src/proof/uni/` Proofs of the base system (system I);
+    * `src/proof/uni_rec/` Proofs of the system with record extension (system II);
+    * `src/proof/uni_monoiu/` Proofs of the system with record extension and mono intersection and union types (system III);
 
-  * [.src/implementation/](.src/implementation): A Haskell implementation of our type inference algorithm capable of running the examples provided in the paper. The implementation will print the algorithmic derivation rules employed during the inference process.
-* [.docker_image/](.docker_image/) docker images that pre-install all the dependency to check the proof and test the implementation
+  * `src/implementation/`: A Haskell implementation of our type inference algorithm capable of running the examples provided in the paper. The implementation will print the algorithmic derivation rules employed during the inference process;
+* `docker_image_amd64.zip` docker images for the amd64 platform that pre-install all the dependency to check the proof and test the implementation;
+* `docker_image_arm64.zip` docker images for the arm64 platform that pre-install all the dependency to check the proof and test the implementation.
 
-## Proofs
+We claim all three badges including **available, functional and reusable badges**.
+
+The paper has claimed that we formalized the correctness of a type inference algorithm for a system with higher-rank polymorphism, intersection and union types and explicit type application and provided a prototype implementation. They are all included in this artifact.
+
+* All the theorems claimed in the paper are formalized in Coq. Please refer to the [Proof](#Proof) section for more details.
+* The implementation includes all the typing rules listed in the paper with some add-ons to type-check some more interesting programs. Please refer to the [Implementation](#Implementation) section for more details.
+
+In addition, this Coq artifact is also reusable. All the raw files to generate the syntactic definitions (by `ott`) and locally-nameless properties (by `lngen`) are provided, as well as the build scripts. Interested users can easily extend them with new syntaxes and features. Coq is also a widely used proof assistant for the PL community.
+
+We agree to publishing our artifact under a Creative Commons license.
+
+## Proof
 
 The `_.v` file contains all the references to the important lemmas and theorems of each system, including :
 
@@ -49,7 +61,7 @@ in the paper to their corresponding theorem names in the Coq proof.
 
 ### Usage
 
-* **Check the proofs**: navigate to [proof/](./proof) directory and run `make coq-only`. In case you want to recheck the proof, 
+* **Check the proofs**: navigate to `src/proof/` directory and run `make coq-only`. In case you want to recheck the proof, 
 run `make clean-coq-only` first to clean all the previously checked results.
 (NOTES: The proof may take a long time to check. For reference, it's about 1 hour on a M2 Max MacBook)
 
@@ -222,7 +234,7 @@ Finished in 0.0247 seconds
 60 examples, 0 failures
 ```
 
-* **Run the examples**: [implementation/examples/](./implementation/examples) contains all the examples presented in the paper.
+* **Run the examples**: `src/implementation/examples/` contains all the examples presented in the paper.
 
     ``` bash
     stack exec WorklistIntersectionUnion-exe -- <path> [-m]
@@ -249,4 +261,4 @@ Finished in 0.0247 seconds
 #### Building from source
 
 * **Dependencies**: Require [GHC](https://www.haskell.org/downloads/) and [Stack](https://docs.haskellstack.org/en/stable/README/)
-* **Build the project**: navigate to [implementation/](./implementation) directory and run `stack build`.
+* **Build the project**: navigate to `src/implementation/` directory and run `stack build`.
