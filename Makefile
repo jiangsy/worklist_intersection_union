@@ -1,6 +1,6 @@
 .PHONY : artifact
 
-UNAME_P := $(shell uname -p) # store the output of the command in a variable
+UNAME_P := $(shell uname -p)
 
 ifeq ($(UNAME_P),arm )
 	SUFFIX := arm64

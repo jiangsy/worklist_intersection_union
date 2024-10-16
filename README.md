@@ -4,7 +4,19 @@ Title of the submitted paper: #283-Bidirectional Higher-Rank Polymorphism with I
 
 ## Overview
 
-The paper discusses three systems: (1). base system,(2). base system with record extensions, (3). base systems with record extensions and intersection and unions of monotypes as monotypes. For brevity, we can them system I, II and III.
+The paper discusses three systems: (1). base system; (2). base system with record; (3). base systems with record and intersection/union inference. For brevity, we refer to them as system I, II, and III in the following. (Please refer to Sec 2.3 of the paper for more details).
+We believe this artifact is eligible for all three badges: **Available, Functional, and Reusable**.
+
+* **Available** : This artifact is published at zenodo. We agree to publish our artifact under a Creative Commons license.
+
+* **Functional** : The paper has claimed that we formalized the correctness of a type inference algorithm for a system with higher-rank polymorphism, intersection and union types, and explicit type application and provided a prototype implementation. They are all included in this artifact.
+
+  * All the theorems claimed in the paper are formalized in Coq. Please refer to the [Proof](#Proof) section for more details.
+  * The implementation includes all the typing rules listed in the paper with some add-ons to type-check some more interesting programs. Please refer to the [Implementation](#Implementation) section for more details.
+
+* **Reusable** : For the proof part, all the raw files to generate the syntactic definitions (by `ott`) and locally-nameless properties (by `lngen`) are provided, as well as the build scripts. Interested users can easily extend them with new syntaxes and features. Coq is also a widely used proof assistant for the PL community. For the implementation part, we provide a full implementation that includes a parser and type-checker. The core function `bigStep` is about 300 LoC Haskell code and easy to modify.
+
+### Component
 
 * `src.zip`: source files of the proof and the implementation
   * `src/proof/`: The whole Coq proof project, which can be compiled with Coq 8.15.2;
@@ -16,20 +28,7 @@ The paper discusses three systems: (1). base system,(2). base system with record
   * `src/implementation/`: A Haskell implementation of our type inference algorithm capable of running the examples provided in the paper. We implement system I, II, III in a single implementation, with a flag to enable each extension. The implementation will print the algorithmic derivation rules employed during the inference process;
 * `docker_image_amd64.zip` docker images for the amd64 platform that pre-install all the dependencies to check the proof and test the implementation;
 * `docker_image_arm64.zip` docker images for the arm64 platform that pre-install all the dependencies to check the proof and test the implementation;
-* `main.pdf` The submitted paper;
-* `appendix.pdf` Appendix to the submitted paper.
-
-
-We believe this artifact is eligible for all three badges: **available, functional, and reusable**.
-
-* **available** : This artifact is published at zenodo. We agree to publish our artifact under a Creative Commons license.
-
-* **functional** : The paper has claimed that we formalized the correctness of a type inference algorithm for a system with higher-rank polymorphism, intersection and union types, and explicit type application and provided a prototype implementation. They are all included in this artifact.
-
-  * All the theorems claimed in the paper are formalized in Coq. Please refer to the [Proof](#Proof) section for more details.
-  * The implementation includes all the typing rules listed in the paper with some add-ons to type-check some more interesting programs. Please refer to the [Implementation](#Implementation) section for more details.
-
-* **reusable** : For the proof part, all the raw files to generate the syntactic definitions (by `ott`) and locally-nameless properties (by `lngen`) are provided, as well as the build scripts. Interested users can easily extend them with new syntaxes and features. Coq is also a widely used proof assistant for the PL community. For the implementation part, we provide a full implementation that includes a parser and type-checker. The core function `bigStep` is about 300 LoC Haskell code and easy to modify.
+* `paper.zip` submission version of the paper and the appendix;
 
 ## Proof
 
