@@ -25,7 +25,7 @@ We believe this artifact is eligible for all three badges: **Available, Function
     * `src/proof/uni_rec/` Proofs of system II;
     * `src/proof/uni_monoiu/` Proofs of system III;
 
-  * `src/implementation/`: A Haskell implementation of our type inference algorithm capable of running the examples provided in the paper. We implement system I, II, III in a single implementation, with a flag to enable each extension. The implementation will print the algorithmic derivation rules employed during the inference process;
+  * `src/implementation/`: A Haskell implementation of our type inference algorithm capable of running the examples provided in the paper. We implement system I, II, III in a single implementation, with a flag to enable extensions. The implementation will print the algorithmic derivation rules employed during the inference process;
 * `docker_image_amd64.zip` docker images for the amd64 platform that pre-install all the dependencies to check the proof and test the implementation;
 * `docker_image_arm64.zip` docker images for the arm64 platform that pre-install all the dependencies to check the proof and test the implementation;
 * `paper.zip` submission version of the paper and the appendix;
