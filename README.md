@@ -4,7 +4,7 @@ Title of the submitted paper: #283-Bidirectional Higher-Rank Polymorphism with I
 
 ## Overview
 
-The paper discusses three systems: (1). base system; (2). base system with record; (3). base systems with record and intersection/union inference. For brevity, we refer to them as system I, II, and III in the following. (Please refer to Sec 2.3 of the paper for more details).
+The paper discusses three systems: (1). base system; (2). base system with record; (3). base systems with record and intersection/union inference. For brevity, we refer to them as system I, II, and III in the following (These systems are introduced in Sec 2.3 of the paper).
 We believe this artifact is eligible for all three badges: **Available, Functional, and Reusable**.
 
 * **Available** : This artifact is published at zenodo. We agree to publish our artifact under a Creative Commons license.
@@ -14,7 +14,7 @@ We believe this artifact is eligible for all three badges: **Available, Function
   * All the theorems claimed in the paper are formalized in Coq. Please refer to the [Proof](#Proof) section for more details.
   * The implementation includes all the typing rules listed in the paper with some add-ons to type-check some more interesting programs. Please refer to the [Implementation](#Implementation) section for more details.
 
-* **Reusable** : For the proof part, all the raw files to generate the syntactic definitions (by `ott`) and locally-nameless properties (by `lngen`) are provided, as well as the build scripts. Interested users can easily extend them with new syntaxes and features. Coq is also a widely used proof assistant for the PL community. For the implementation part, we provide a full implementation that includes a parser and type-checker. The core function `bigStep` is about 300 LoC Haskell code and easy to modify.
+* **Reusable** : For the proof part, all the raw files to generate the syntactic definitions (by `ott`) and locally-nameless properties (by `lngen`) are provided, as well as the build scripts. Interested users can easily extend them with new syntaxes and features. Coq is a widely used proof assistant for the PL community. For the implementation part, we provide a full implementation that includes a parser and type-checker. The core function `bigStep` is about 300 LoC Haskell code and easy to modify.
 
 ### Component
 
@@ -69,8 +69,8 @@ in the paper to their corresponding theorem names in the Coq proof.
 run `make clean-coq-only` first to clean all the previously checked results.
 (NOTES: The proof may take a long time to check. For reference, it's about 1 hour on an M2 Max MacBook)
 
-    Expected Output: Definition of each theorem and lemma and axioms used by it. The only axiom used by all the theorems is `Eqdep.Eq_rect_eq.eq_rect_eq`. This
-    is introduced by the Coq tactic `dependent destruction` and does not harm the consistency.
+    Expected Output: Definition of each theorem and lemma and axioms used by it. The only axiom used is `Eqdep.Eq_rect_eq.eq_rect_eq`. This
+    is introduced by the Coq built-in tactic `dependent destruction` and does not harm the consistency.
 
     ``` coq
     d_sub_transitivity
@@ -107,7 +107,7 @@ run `make clean-coq-only` first to clean all the previously checked results.
     ...
     ```
 
-* **Reproduce the generated code (optional)**: `ott` and `lngen` are used to generate the `def_ott.v` and `prop_ln.v` files already provided in the artifact. You can build all the proofs without these tools installed unless you need to modify the language definitions.  Once installed, use `make clean` to delete the previously generated files. Then executing `make coq` will regenerate the files and check all the proof.
+* **Reproduce the generated code (optional)**: `ott` and `lngen` are used to generate the `def_ott.v` and `prop_ln.v` files (i.e. locally-namess related definitions and lemmas) from `language.ott`. These files (`def_ott.v` and `prop_ln.v`) are already generated and included in the artifact. You can check all the proofs without these tools installed. If you want to check if the Coq definitions (in `def_ott.v`) are consistent with the ones provided in `language.ott` or tweak the definitions yourself, you need to additionally install `ott` and `lngen`.  Once installed, use `make clean` to delete the previously generated files, and then use `make coq` to regenerate the files and check all the proof.
 
 #### Using Docker Images for Proof (Recommended)
 
@@ -149,7 +149,7 @@ pattern matching on lists;
 * Recursion via a fixpoint operator;
 * Recursive let expressions
 
-All the examples provided in the paper run in this implementation.
+All the examples provided in the paper run in this implementation (these examples do not involve aforementioned extensions).
 
 ### Quick Reference
 
