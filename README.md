@@ -34,11 +34,11 @@ We believe this artifact is eligible for all three badges: **Available, Function
 
 The `_.v` file contains all the references to the important lemmas and theorems of each system, including :
 
-  * bidirectional properties: subtyping transitivity (Theorem 3.2, System I, II & III), checking subsumption (Theorem 2.2, System I, II & III), and type safety (Theorem 5.4, System I);
-  * bidirectional worklist properties: soundness and completeness (Theorem 5.5, System I, II & III);
-  * algorithmic properties: soundness (Theorem 5.6, System I, II & III), completeness (Theorem 5.7, System I, II), and decidability (Theorem 4.2, System I).
+* Bidirectional properties: subtyping transitivity (Theorem 3.2, System I, II & III), checking subsumption (Theorem 2.2, System I, II & III), and type safety (Theorem 5.4, System I);
+* Bidirectional worklist properties: soundness and completeness (Theorem 5.5, System I, II & III);
+* Algorithmic properties: soundness (Theorem 5.6, System I, II & III), completeness (Theorem 5.7, System I, II), and decidability (Theorem 4.2, System I).
 
-The following table (also included in the `appendix.pdf`) illustrates the mapping from all the theorems
+The following table (also included in the `appendix.pdf`) shows the mapping from all the theorems
 in the paper to their corresponding theorem names in the Coq proof.
 
 ### Lemmas and Theorems
@@ -109,9 +109,9 @@ run `make clean-coq-only` first to clean all the previously checked results.
 
 * **Reproduce the generated code (optional)**: `ott` and `lngen` are used to generate the `def_ott.v` and `prop_ln.v` files already provided in the artifact. You can build all the proofs without these tools installed unless you need to modify the language definitions.  Once installed, use `make clean` to delete the previously generated files. Then executing `make coq` will regenerate the files and check all the proof.
 
-#### Using Docker Images (Recommended)
+#### Using Docker Images for Proof (Recommended)
 
-* Install [docker](https://www.docker.com/)
+* Install [Docker](https://www.docker.com/)
 
 * Based on your architecture, unzip `docker_image_*.zip` and load the docker image
 
@@ -123,7 +123,7 @@ run `make clean-coq-only` first to clean all the previously checked results.
 
 * Run the command, e.g., `make coq-only`
 
-#### Building from source
+#### Building from Source for Proof
 
 * **Dependencies**: Requires Coq 8.15.2, along with [`Metalib`](https://github.com/plclub/metalib) for the locally nameless infrastructure.
 * **Installation guide**: Install Coq 8.15.2 via `opam` (Please refer to the
@@ -135,10 +135,9 @@ run `make clean-coq-only` first to clean all the previously checked results.
    make install
    ```
 
-- (Optional (only if you want to regenerate `def_ott.v` and `prop_ln.v`)) Follow the installation guidelines for [Ott (forked version)](https://github.com/sweirich/ott/tree/ln-close) and [LNgen](https://github.com/plclub/lngen) to install them.
+* (Optional (only if you want to regenerate `def_ott.v` and `prop_ln.v`)) Follow the installation guidelines for [Ott (forked version)](https://github.com/sweirich/ott/tree/ln-close) and [LNgen](https://github.com/plclub/lngen) to install them.
 
-- Run the command, e.g., `make coq-only`
-
+* Run the command, e.g., `make coq-only`
 
 ## Implementation
 
@@ -171,7 +170,7 @@ All the examples provided in the paper run in this implementation.
 
 * **Test all the examples**: To test all the examples presented in the paper (including cases expected to be rejected), please run `stack test`.
 
-  Expected Output: The output will show the type-checking results of all the examples. Variant 1 refers to System I and variant 2 refers to System III. `[✔]` at the end of each line means the result is consistent with the result reported in the appendix of the paper (`appendix.pdf`).
+  Expected Output: The output will show the type-checking results of all the examples. Variant 1 refers to System I and variant 2 refers to System III (because it's less interesting to just have record without intersection/union inference, we do not output results of system II). `[✔]` at the end of each line means the result is consistent with the result reported in the appendix of the paper (`appendix.pdf`).
 
   ``` bash
   Variant 1 examples
@@ -251,9 +250,9 @@ All the examples provided in the paper run in this implementation.
   * `[-m]`: whether regard intersection and union of monotypes as monotypes.
   * For example, run `stack exec WorklistIntersectionUnion-exe -- examples/ex12_2.e -m` to show the inference process of file `examples/ex12_2.e` and enable the inference of intersection and union of monotypes.
 
-#### Using Docker Images (Recommended)
+#### Using Docker Images for Implementation (Recommended)
   
-* Install [docker](https://www.docker.com/)
+* Install [Docker](https://www.docker.com/)
 
 * Based on your architecture, unzip `docker_image_*.zip` and load the docker image
 
@@ -265,8 +264,8 @@ All the examples provided in the paper run in this implementation.
 
 * Run the command, e.g., `stack test`
 
-#### Building from source
+#### Building from Source for Implementation
 
-* **Dependencies**: Require [GHC](https://www.haskell.org/downloads/) and [Stack](https://docs.haskellstack.org/en/stable/README/)
+* **Dependencies**: [GHC](https://www.haskell.org/downloads/) and [Stack](https://docs.haskellstack.org/en/stable/README/) (Stack will automatically install other Haskell libraries that this implementation depend on).
 * **Build the project**: navigate to `src/implementation/` directory and run `stack build`.
 * Run the command, e.g., `stack test`
