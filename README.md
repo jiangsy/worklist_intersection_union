@@ -1,20 +1,25 @@
-# #35-Bidirectional Higher-Rank Polymorphism with Intersection and Union Types (Artifact)
+
+
+# 35-Bidirectional Higher-Rank Polymorphism with Intersection and Union Types (Artifact)
+
+[![CC BY 4.0][cc-by-shield]][cc-by]
 
 Title of the submitted paper: #283-Bidirectional Higher-Rank Polymorphism with Intersection and Union Types
+
 
 ## Overview
 
 The paper discusses three systems: (1). base system; (2). base system with record; (3). base systems with record and intersection/union inference. For brevity, we refer to them as system I, II, and III in the following (These systems are introduced in Sec 2.3 of the paper).
 We believe this artifact is eligible for all three badges: **Available, Functional, and Reusable**.
 
-* **Available** : This artifact is published at zenodo. We agree to publish our artifact under a Creative Commons license.
+* **Available** : This artifact is published at zenodo.
 
 * **Functional** : The paper has claimed that we formalized the correctness of a type inference algorithm for a system with higher-rank polymorphism, intersection and union types, and explicit type application and provided a prototype implementation. They are all included in this artifact.
 
   * All the theorems claimed in the paper are formalized in Coq. Please refer to the [Proof](#Proof) section for more details.
   * The implementation includes all the typing rules listed in the paper with some add-ons to type-check some more interesting programs. Please refer to the [Implementation](#Implementation) section for more details.
 
-* **Reusable** : For the proof part, all the raw files to generate the syntactic definitions (by `ott`) and locally-nameless properties (by `lngen`) are provided, as well as the build scripts. Interested users can easily extend them with new syntaxes and features. Coq is a widely used proof assistant for the PL community. For the implementation part, we provide a full implementation that includes a parser and type-checker. The core function `bigStep` is about 300 LoC Haskell code and easy to modify.
+* **Reusable** : We agree to publish our artifact under a Creative Commons license (CC BY 4.0). For the proof part, all the raw files to generate the syntactic definitions (by `ott`) and locally-nameless properties (by `lngen`) are provided, as well as the build scripts. Interested users can easily extend them with new syntaxes and features. Coq is a widely used proof assistant for the PL community. For the implementation part, we provide a full implementation that includes a parser and type-checker. The core function `bigStep` is about 300 LoC Haskell code and easy to modify.
 
 ### Component
 
@@ -269,3 +274,15 @@ All the examples provided in the paper run in this implementation (these example
 * **Dependencies**: [GHC](https://www.haskell.org/downloads/) and [Stack](https://docs.haskellstack.org/en/stable/README/) (Stack will automatically install other Haskell libraries that this implementation depend on).
 * **Build the project**: navigate to `src/implementation/` directory and run `stack build`.
 * Run the command, e.g., `stack test`
+
+
+## License
+
+This work is licensed under a
+[Creative Commons Attribution 4.0 International License][cc-by].
+
+[![CC BY 4.0][cc-by-image]][cc-by]
+
+[cc-by]: http://creativecommons.org/licenses/by/4.0/
+[cc-by-image]: https://i.creativecommons.org/l/by/4.0/88x31.png
+[cc-by-shield]: https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey.svg

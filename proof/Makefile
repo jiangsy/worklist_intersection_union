@@ -41,10 +41,10 @@ ott : ${OTT_OUTS}
 lngen : ${LNGEN_OUTS}
 
 # a hack to force makefile to detect source file changes
-# .FILE_LIST : ${LNGEN_OUTS} FORCE
-# 	tree . -if -I ${IGNORE_DIRS} | grep -E "v$$" | cut -c3- | sort -s > .FILE_LIST.tmp
-# 	diff $@ .FILE_LIST.tmp || cp .FILE_LIST.tmp $@
-# 	rm .FILE_LIST.tmp
+.FILE_LIST : ${LNGEN_OUTS} FORCE
+	tree . -if -I ${IGNORE_DIRS} | grep -E "v$$" | cut -c3- | sort -s > .FILE_LIST.tmp
+	diff $@ .FILE_LIST.tmp || cp .FILE_LIST.tmp $@
+	rm .FILE_LIST.tmp
 
 FORCE:
 
