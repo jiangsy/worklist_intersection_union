@@ -1,7 +1,7 @@
-Require Export uni_rec.def_ott.
-Require Export uni_rec.def_extra.
-Require Export uni_rec.decl.def_extra.
-Require Export uni_rec.prop_ln.
+Require Export uni_rcd.def_ott.
+Require Export uni_rcd.def_extra.
+Require Export uni_rcd.decl.def_extra.
+Require Export uni_rcd.prop_ln.
 
 Notation "x ∉ L" := (x `notin` L)
   (at level 70, no associativity).

@@ -1,10 +1,10 @@
 Require Import Coq.Program.Equality.
 Require Import Lia.
 
-Require Import uni_rec.notations.
-Require Import uni_rec.decl.prop_basic.
-Require Import uni_rec.decl.prop_rename.
-Require Import uni_rec.ltac_utils.
+Require Import uni_rcd.notations.
+Require Import uni_rcd.decl.prop_basic.
+Require Import uni_rcd.decl.prop_rename.
+Require Import uni_rcd.ltac_utils.
 
 Lemma d_sub_reflexivity : forall Ψ A,
   ⊢ᵈ Ψ -> 

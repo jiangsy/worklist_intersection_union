@@ -4,9 +4,9 @@ Require Import Lia.
 Require Import Metalib.Metatheory.
 Require Import LibTactics.
 
-Require Import uni_rec.notations.
-Require Import uni_rec.decl.prop_basic.
-Require Import uni_rec.ltac_utils.
+Require Import uni_rcd.notations.
+Require Import uni_rcd.decl.prop_basic.
+Require Import uni_rcd.ltac_utils.
 
 Lemma d_wf_typ_rename_var : forall Ψ1 Ψ2 x y A B,
   (Ψ2 ++ (x , dbind_typ B) :: Ψ1) ᵗ⊢ᵈ A ->
@@ -85,6 +85,7 @@ Proof.
   - destruct_eq_atom; eauto.
   - rewrite IHe; auto.
   - rewrite IHe1. rewrite IHe2. auto.
+  - rewrite IHe. auto.
   - rewrite IHe. auto.
   - rewrite IHe. auto.
   - rewrite IHe. auto.
@@ -269,6 +270,7 @@ Proof with auto.
   - rewrite IHe...
   - rewrite IHe... rewrite subst_typ_in_typ_refl_eq...
   - rewrite IHe... rewrite subst_typ_in_typ_refl_eq...
+  - rewrite IHe... 
   - rewrite IHe1... rewrite IHe2...
   - rewrite IHe... 
 Qed.

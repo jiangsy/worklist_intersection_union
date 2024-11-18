@@ -2,8 +2,8 @@ Require Import Bool.
 Require Import Metalib.Metatheory.
 Require Import List.
 
-Require Import uni_rec.prop_ln.
-Require Export uni_rec.def_ott.
+Require Import uni_rcd.prop_ln.
+Require Export uni_rcd.def_ott.
 
 Inductive d_sub : denv -> typ -> typ -> Prop :=    (* defn d_sub *)
  | d_sub__top : forall (Ψ:denv) (A:typ),
@@ -132,9 +132,10 @@ Inductive d_chk_inf : denv -> exp -> typing_mode -> typ -> Prop :=
   | d_chk_inf__inf_unit : forall (Ψ:denv),
       d_wf_tenv Ψ ->
       d_chk_inf Ψ exp_unit typingmode__inf typ_unit
-  | d_chk_inf__inf_rcd_empty : forall (Ψ:denv),
+  | d_chk_inf__inf_rcd_empty : forall (Ψ:denv) (l1:label) (e1:exp) (A1:typ),
       d_wf_tenv Ψ ->
-      d_chk_inf Ψ exp_rcd_nil typingmode__inf typ_unit
+      d_chk_inf Ψ e1 typingmode__inf A1 ->
+      d_chk_inf Ψ (exp_rcd_single l1 e1) typingmode__inf (typ_arrow (typ_label l1) A1)
   | d_chk_inf__inf_rcd_cons : forall (Ψ:denv) (e1 e2:exp) (l1:label) (A1 A2:typ),
       d_wf_tenv Ψ ->
       d_chk_inf Ψ e1 typingmode__inf A1 ->

@@ -4,8 +4,8 @@ Require Import Lia.
 Require Import Metalib.Metatheory.
 Require Import LibTactics.
 
-Require Import uni_rec.notations.
-Require Import uni_rec.ltac_utils.
+Require Import uni_rcd.notations.
+Require Import uni_rcd.ltac_utils.
 
 #[export] Hint Constructors d_wf_typ: core.
 #[export] Hint Constructors d_wf_env: core.
@@ -372,6 +372,9 @@ Proof.
     inversion x. subst.
     constructor; eauto.
     eapply lc_typ_subst_inv; eauto.
+  - destruct e; try solve [inversion x]; auto.
+    inversion x. subst.
+    constructor; eauto.
   - destruct e; try solve [inversion x]; auto.
     inversion x. subst.
     constructor; eauto.

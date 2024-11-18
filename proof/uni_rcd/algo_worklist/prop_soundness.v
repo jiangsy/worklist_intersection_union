@@ -3,16 +3,16 @@ Require Import Program.Tactics.
 Require Import Metalib.Metatheory.
 Require Import List.
 
-Require Import uni_rec.notations.
-Require Import uni_rec.decl.prop_basic.
-Require Import uni_rec.decl.prop_subtyping.
-Require Import uni_rec.decl.prop_typing.
-Require Import uni_rec.decl.prop_rename.
-Require Import uni_rec.decl_worklist.prop_equiv.
-Require Import uni_rec.algo_worklist.def_extra.
-Require Import uni_rec.algo_worklist.prop_basic.
-Require Import uni_rec.algo_worklist.transfer.
-Require Import uni_rec.ltac_utils.  
+Require Import uni_rcd.notations.
+Require Import uni_rcd.decl.prop_basic.
+Require Import uni_rcd.decl.prop_subtyping.
+Require Import uni_rcd.decl.prop_typing.
+Require Import uni_rcd.decl.prop_rename.
+Require Import uni_rcd.decl_worklist.prop_equiv.
+Require Import uni_rcd.algo_worklist.def_extra.
+Require Import uni_rcd.algo_worklist.prop_basic.
+Require Import uni_rcd.algo_worklist.transfer.
+Require Import uni_rcd.ltac_utils.  
 
 Hint Constructors a_wf_wl : core.
 
@@ -1296,9 +1296,9 @@ Proof with eauto.
            eapply d_chk_inf_rename_tvar_cons in H11...
       * destruct_d_wl_del_red... 
   (* ⟨ ⟩ => _  *)
-  - exists (work_infer exp_rcd_nil csᵈ ⫤ᵈ Ω)...
+  - exists (work_infer (exp_rcd_single l eᵈ) csᵈ ⫤ᵈ Ω)...
     split. exists θ...
-    econstructor...
+    destruct_d_wl_del_red...
   (* ⟨ l : e1 , e2 ⟩ => _ *)
   - exists (work_infer (exp_rcd_cons l1 eᵈ eᵈ0) csᵈ ⫤ᵈ Ω)...
     split. exists θ...
@@ -1510,6 +1510,9 @@ Proof with eauto.
     destruct_d_wl_del_red...
   - exists (work_unioninftapp C1ᵈ C2ᵈ csᵈ ⫤ᵈ Ω).
     split...
+  - dependent destruction H4_.
+    rename_typ.
+    exists (work_infrcdsingle l Aᵈ csᵈ ⫤ᵈ Ω). split...
   - dependent destruction H6_.
     rename_typ.
     exists (work_infrcdconsintersection l1 A1ᵈ eᵈ csᵈ ⫤ᵈ Ω). split...

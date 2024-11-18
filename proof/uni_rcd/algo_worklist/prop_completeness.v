@@ -4,15 +4,15 @@ Require Import Metalib.Metatheory.
 Require Import Lia.
 Require Import List.
 
-Require Import uni_rec.notations.
-Require Import uni_rec.prop_basic.
-Require Import uni_rec.decl.prop_basic.
-Require Import uni_rec.decl.prop_subtyping.
-Require Import uni_rec.decl_worklist.prop_equiv.
-Require Import uni_rec.algo_worklist.def_extra.
-Require Import uni_rec.algo_worklist.prop_basic.
-Require Import uni_rec.algo_worklist.transfer.
-Require Import uni_rec.ltac_utils.
+Require Import uni_rcd.notations.
+Require Import uni_rcd.prop_basic.
+Require Import uni_rcd.decl.prop_basic.
+Require Import uni_rcd.decl.prop_subtyping.
+Require Import uni_rcd.decl_worklist.prop_equiv.
+Require Import uni_rcd.algo_worklist.def_extra.
+Require Import uni_rcd.algo_worklist.prop_basic.
+Require Import uni_rcd.algo_worklist.transfer.
+Require Import uni_rcd.ltac_utils.
 
 Ltac destruct_trans_wl :=
   match goal with 
@@ -30,7 +30,6 @@ Ltac destruct_trans' :=
   | H : trans_contd ?θ ?wᵃ (?C_CD _ _ _) |- _ => dependent destruction H
   | H : trans_exp ?θ ?eᵃ (open_exp_wrt_exp _ _) |- _ => fail
   | H : trans_exp ?θ ?eᵃ exp_unit |- _ => dependent destruction H
-  | H : trans_exp ?θ ?eᵃ exp_rcd_nil |- _ => dependent destruction H
   | H : trans_exp ?θ ?eᵃ (?C_E _) |- _ => dependent destruction H
   | H : trans_exp ?θ ?eᵃ (?C_E _ _) |- _ => dependent destruction H
   | H : trans_typ ?θ (` ?X) ?Aᵈ |- _ => fail
@@ -1836,6 +1835,13 @@ Proof with eauto.
     destruct_a_wf_wl...
     constructor... 
     apply IHd_wl_red... constructor...
+  - solve_awl_trailing_etvar.
+    destruct_trans.
+    destruct_a_wf_wl...
+    constructor...
+    apply IHd_wl_red...
+    exists θ0...
+    constructor...
   - solve_awl_trailing_etvar.
     destruct_trans.
     destruct_a_wf_wl...

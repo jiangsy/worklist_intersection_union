@@ -7,12 +7,12 @@ Require uni.algo_worklist.prop_soundness.
 Require uni.algo_worklist.prop_completeness.
 Require uni.algo_worklist.prop_decidability.
 
-Require uni_rec.notations.
-Require uni_rec.decl.prop_subtyping.
-Require uni_rec.decl.prop_typing.
-Require uni_rec.decl_worklist.prop_equiv.
-Require uni_rec.algo_worklist.prop_soundness.
-Require uni_rec.algo_worklist.prop_completeness.
+Require uni_rcd.notations.
+Require uni_rcd.decl.prop_subtyping.
+Require uni_rcd.decl.prop_typing.
+Require uni_rcd.decl_worklist.prop_equiv.
+Require uni_rcd.algo_worklist.prop_soundness.
+Require uni_rcd.algo_worklist.prop_completeness.
 
 Require uni_monoiu.notations.
 Require uni_monoiu.decl.prop_subtyping.
@@ -65,30 +65,30 @@ End Base.
 (*                  *)
 Section Rcd_Extension.
 
-    Import uni_rec.notations.
-    Import uni_rec.decl.prop_subtyping.
-    Import uni_rec.decl.prop_typing.
-    Import uni_rec.decl_worklist.prop_equiv.
-    Import uni_rec.algo_worklist.prop_soundness.
-    Import uni_rec.algo_worklist.prop_completeness.
+    Import uni_rcd.notations.
+    Import uni_rcd.decl.prop_subtyping.
+    Import uni_rcd.decl.prop_typing.
+    Import uni_rcd.decl_worklist.prop_equiv.
+    Import uni_rcd.algo_worklist.prop_soundness.
+    Import uni_rcd.algo_worklist.prop_completeness.
 
     (* Prop of decl system *)
-    Check uni_rec.decl.prop_subtyping.d_sub_transitivity.
-    Print Assumptions uni_rec.decl.prop_subtyping.d_sub_transitivity.
-    Check uni_rec.decl.prop_typing.d_chk_inf_subsumption.
-    Print Assumptions uni_rec.decl.prop_typing.d_chk_inf_subsumption.
+    Check uni_rcd.decl.prop_subtyping.d_sub_transitivity.
+    Print Assumptions uni_rcd.decl.prop_subtyping.d_sub_transitivity.
+    Check uni_rcd.decl.prop_typing.d_chk_inf_subsumption.
+    Print Assumptions uni_rcd.decl.prop_typing.d_chk_inf_subsumption.
 
     (* Prop of decl worklist system *)
-    Check uni_rec.decl_worklist.prop_equiv.d_wl_red_sound.
-    Print Assumptions uni_rec.decl_worklist.prop_equiv.d_wl_red_sound.
-    Check uni_rec.decl_worklist.prop_equiv.d_wl_red_complete.
-    Print Assumptions uni_rec.decl_worklist.prop_equiv.d_wl_red_complete.
+    Check uni_rcd.decl_worklist.prop_equiv.d_wl_red_sound.
+    Print Assumptions uni_rcd.decl_worklist.prop_equiv.d_wl_red_sound.
+    Check uni_rcd.decl_worklist.prop_equiv.d_wl_red_complete.
+    Print Assumptions uni_rcd.decl_worklist.prop_equiv.d_wl_red_complete.
 
     (* Prop of algo worklist system *)
-    Check uni_rec.algo_worklist.prop_soundness.a_wl_red_soundness.
-    Print Assumptions uni_rec.algo_worklist.prop_soundness.a_wl_red_soundness.
-    Check uni_rec.algo_worklist.prop_completeness.a_wl_red_completeness.
-    Print Assumptions uni_rec.algo_worklist.prop_completeness.a_wl_red_completeness.
+    Check uni_rcd.algo_worklist.prop_soundness.a_wl_red_soundness.
+    Print Assumptions uni_rcd.algo_worklist.prop_soundness.a_wl_red_soundness.
+    Check uni_rcd.algo_worklist.prop_completeness.a_wl_red_completeness.
+    Print Assumptions uni_rcd.algo_worklist.prop_completeness.a_wl_red_completeness.
     
 End Rcd_Extension.
 

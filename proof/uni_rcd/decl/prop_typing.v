@@ -3,11 +3,11 @@ Require Import Program.Tactics.
 Require Import Lia.
 Require Import Metalib.Metatheory.
 
-Require Import uni_rec.notations.
-Require Import uni_rec.decl.prop_basic.
-Require Import uni_rec.decl.prop_rename.
-Require Import uni_rec.decl.prop_subtyping.
-Require Import uni_rec.ltac_utils.
+Require Import uni_rcd.notations.
+Require Import uni_rcd.decl.prop_basic.
+Require Import uni_rcd.decl.prop_rename.
+Require Import uni_rcd.decl.prop_subtyping.
+Require Import uni_rcd.ltac_utils.
 
 Hint Constructors d_wf_typ: core.
 Hint Constructors d_wf_env: core.
@@ -326,7 +326,7 @@ Fixpoint exp_size (e:exp) : nat :=
     | exp_anno e1 _ => 1 + exp_size e1
     | exp_tapp e1 _ => 1 + exp_size e1
     | exp_tabs e => 1 + exp_size e
-    | exp_rcd_nil => 1
+    | exp_rcd_single _ e => 1 + exp_size e
     | exp_rcd_cons _ e1 e2 => 1 + exp_size e1 + exp_size e2
     | exp_rcd_proj e _ => 1 + exp_size e
   end.
@@ -700,8 +700,10 @@ Proof with auto.
       * exists typ_unit. split; auto.
         econstructor. eapply d_subtenv_wf_env; eauto.
       (* e1 e2 => A *)
-      * exists typ_unit. split; auto.
-        econstructor. eapply d_subtenv_wf_env; eauto.
+      * eapply IHn1 in Hty; eauto.
+        destruct Hty as [A1' [Hsub1 Hinf1]].
+        exists (typ_arrow (typ_label l1) A1'). split; auto.
+        econstructor; eauto. eapply d_subtenv_wf_env; eauto. 
       (* ⟨ l ↦ e1, e2 ⟩ => A *)
       * eapply IHn1 in Hty1; eauto.
         eapply IHn1 in Hty2; eauto.
