@@ -330,7 +330,7 @@ Fixpoint exp_size (e:exp) : nat :=
     | exp_anno e1 _ => 1 + exp_size e1
     | exp_tapp e1 _ => 1 + exp_size e1
     | exp_tabs e => 1 + exp_size e
-    | exp_rcd_nil => 1
+    | exp_rcd_single l e => 1 + exp_size e
     | exp_rcd_cons _ e1 e2 => 1 + exp_size e1 + exp_size e2
     | exp_rcd_proj e _ => 1 + exp_size e
   end.
@@ -531,8 +531,8 @@ Proof with auto using d_mono_typ_d_wf_typ.
       dependent destruction H2. dependent destruction H4.
       eauto...
   - dependent induction H2.
-    + exists typ_top typ_bot.
-      econstructor; eauto...
+    + exists typ_top typ_bot. 
+      econstructor; eauto... 
     + assert (Ψ ⊢ A0 ᵗ^^ₜ T <: A ᵗ^^ₜ T). {
         pick fresh SZ. forwards*: H5 SZ.
         rewrite_env (nil++ (SZ, ■) :: Ψ ) in H6.
@@ -707,8 +707,11 @@ Proof with auto.
       (* () => 1 *)
       * exists typ_unit. split; auto.
         econstructor. eapply d_subtenv_wf_env; eauto.
-      * exists typ_unit. split; auto.
-        econstructor. eapply d_subtenv_wf_env; eauto.
+      * eapply IHn1 in Hty; eauto.
+        destruct Hty as [A1' [Hsub1 Hinf1]].
+        exists ((typ_arrow (typ_label l1) A1')). split.
+        -- apply d_sub_d_wf in Hsub1 as d_wf1. intuition.
+        -- eauto. econstructor; eauto. eapply d_subtenv_wf_env; eauto.
       * eapply IHn1 in Hty1; eauto.
         eapply IHn1 in Hty2; eauto.
         destruct Hty1 as [A1' [Hsub1 Hinf1]].

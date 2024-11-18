@@ -112,7 +112,7 @@ Inductive d_infabs : denv -> typ -> typ -> typ -> Prop :=
   | d_infabs__union : forall (Ψ:denv) (A1 A2 B1 B2 C1 C2:typ),
       d_infabs Ψ A1 B1 C1 ->
       d_infabs Ψ A2 B2 C2 ->
-      d_infabs Ψ (typ_union A1 A2) (typ_intersection B1 B2) (typ_union C1 C2).
+      d_infabs Ψ (typ_union A1 A2) (typ_intersection B1 B2) (typ_union C1 C2).      
 
 Inductive typing_mode :=
   | typingmode__inf 
@@ -130,9 +130,10 @@ Inductive d_chk_inf : denv -> exp -> typing_mode -> typ -> Prop :=
   | d_chk_inf__inf_unit : forall (Ψ:denv),
       d_wf_tenv Ψ ->
       d_chk_inf Ψ exp_unit typingmode__inf typ_unit
-  | d_chk_inf__inf_rcd_empty : forall (Ψ:denv),
+  | d_chk_inf__inf_rcd_single : forall (Ψ:denv) (l1:label) (e1:exp) (A1:typ),
       d_wf_tenv Ψ ->
-      d_chk_inf Ψ exp_rcd_nil typingmode__inf typ_unit
+      d_chk_inf Ψ e1 typingmode__inf A1 ->
+      d_chk_inf Ψ (exp_rcd_single l1 e1) typingmode__inf (typ_arrow (typ_label l1) A1)
   | d_chk_inf__inf_rcd_cons : forall (Ψ:denv) (e1 e2:exp) (l1:label) (A1 A2:typ),
       d_wf_tenv Ψ ->
       d_chk_inf Ψ e1 typingmode__inf A1 ->

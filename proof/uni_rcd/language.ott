@@ -26,7 +26,7 @@ exp, e, f, g :: exp_ ::=
   | \ X . e                             ::   :: tabs (+ bind X in e +) 
   | e @ A                               ::   :: tapp
   | e : A                               ::   :: anno
-  | ⟨ l : e1 ⟩                          ::   :: rcd_single
+  | ⟨ l : e ⟩                           ::   :: rcd_single
   | ⟨ l : e1 , e2 ⟩                     ::   :: rcd_cons
   | e . l                               ::   :: rcd_proj
   | ( e )                               :: S :: paren  {{ coq ([[e]]) }}
@@ -851,7 +851,6 @@ aE |- cs
 -------------------- :: unioninftapp
 aE |- _ ⊔∘ A >> cs  
 
-aE |- e 
 aE |- cs
 --------------------------- :: infrcdsingle
 aE |- l ~> _ =>=> cs  

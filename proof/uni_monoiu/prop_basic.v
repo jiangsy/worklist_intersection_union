@@ -398,6 +398,9 @@ Proof.
     constructor; eauto.
   - destruct e; try solve [inversion x]; auto.
     inversion x. subst.
+    constructor; eauto.
+  - destruct e; try solve [inversion x]; auto.
+    inversion x. subst.
     constructor. eauto.
 Qed.
 

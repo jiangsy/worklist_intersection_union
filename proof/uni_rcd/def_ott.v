@@ -28,7 +28,7 @@ Inductive exp : Set :=
  | exp_tabs (e:exp)
  | exp_tapp (e:exp) (A:typ)
  | exp_anno (e:exp) (A:typ)
- | exp_rcd_single (l:label) (e1:exp)
+ | exp_rcd_single (l:label) (e:exp)
  | exp_rcd_cons (l:label) (e1:exp) (e2:exp)
  | exp_rcd_proj (e:exp) (l:label).
 
@@ -130,7 +130,7 @@ Fixpoint open_exp_wrt_exp_rec (k:nat) (e_5:exp) (e__6:exp) {struct e__6}: exp :=
   | (exp_tabs e) => exp_tabs (open_exp_wrt_exp_rec k e_5 e)
   | (exp_tapp e A) => exp_tapp (open_exp_wrt_exp_rec k e_5 e) A
   | (exp_anno e A) => exp_anno (open_exp_wrt_exp_rec k e_5 e) A
-  | (exp_rcd_single l e1) => exp_rcd_single l (open_exp_wrt_exp_rec k e_5 e1)
+  | (exp_rcd_single l e) => exp_rcd_single l (open_exp_wrt_exp_rec k e_5 e)
   | (exp_rcd_cons l e1 e2) => exp_rcd_cons l (open_exp_wrt_exp_rec k e_5 e1) (open_exp_wrt_exp_rec k e_5 e2)
   | (exp_rcd_proj e l) => exp_rcd_proj (open_exp_wrt_exp_rec k e_5 e) l
 end.
@@ -145,7 +145,7 @@ Fixpoint open_exp_wrt_typ_rec (k:nat) (A_5:typ) (e_5:exp) {struct e_5}: exp :=
   | (exp_tabs e) => exp_tabs (open_exp_wrt_typ_rec (S k) A_5 e)
   | (exp_tapp e A) => exp_tapp (open_exp_wrt_typ_rec k A_5 e) (open_typ_wrt_typ_rec k A_5 A)
   | (exp_anno e A) => exp_anno (open_exp_wrt_typ_rec k A_5 e) (open_typ_wrt_typ_rec k A_5 A)
-  | (exp_rcd_single l e1) => exp_rcd_single l (open_exp_wrt_typ_rec k A_5 e1)
+  | (exp_rcd_single l e) => exp_rcd_single l (open_exp_wrt_typ_rec k A_5 e)
   | (exp_rcd_cons l e1 e2) => exp_rcd_cons l (open_exp_wrt_typ_rec k A_5 e1) (open_exp_wrt_typ_rec k A_5 e2)
   | (exp_rcd_proj e l) => exp_rcd_proj (open_exp_wrt_typ_rec k A_5 e) l
 end.
@@ -329,7 +329,7 @@ Fixpoint close_exp_wrt_typ_rec (k:nat) (A_5:var) (e_5:exp) {struct e_5}: exp :=
   | (exp_tabs e) => exp_tabs (close_exp_wrt_typ_rec (S k) A_5 e)
   | (exp_tapp e A) => exp_tapp (close_exp_wrt_typ_rec k A_5 e) (close_typ_wrt_typ_rec k A_5 A)
   | (exp_anno e A) => exp_anno (close_exp_wrt_typ_rec k A_5 e) (close_typ_wrt_typ_rec k A_5 A)
-  | (exp_rcd_single l e1) => exp_rcd_single l (close_exp_wrt_typ_rec k A_5 e1)
+  | (exp_rcd_single l e) => exp_rcd_single l (close_exp_wrt_typ_rec k A_5 e)
   | (exp_rcd_cons l e1 e2) => exp_rcd_cons l (close_exp_wrt_typ_rec k A_5 e1) (close_exp_wrt_typ_rec k A_5 e2)
   | (exp_rcd_proj e l) => exp_rcd_proj (close_exp_wrt_typ_rec k A_5 e) l
 end.
@@ -347,7 +347,7 @@ Fixpoint close_exp_wrt_exp_rec (k:nat) (e_5:var) (e__6:exp) {struct e__6}: exp :
   | (exp_tabs e) => exp_tabs (close_exp_wrt_exp_rec k e_5 e)
   | (exp_tapp e A) => exp_tapp (close_exp_wrt_exp_rec k e_5 e) A
   | (exp_anno e A) => exp_anno (close_exp_wrt_exp_rec k e_5 e) A
-  | (exp_rcd_single l e1) => exp_rcd_single l (close_exp_wrt_exp_rec k e_5 e1)
+  | (exp_rcd_single l e) => exp_rcd_single l (close_exp_wrt_exp_rec k e_5 e)
   | (exp_rcd_cons l e1 e2) => exp_rcd_cons l (close_exp_wrt_exp_rec k e_5 e1) (close_exp_wrt_exp_rec k e_5 e2)
   | (exp_rcd_proj e l) => exp_rcd_proj (close_exp_wrt_exp_rec k e_5 e) l
 end.
@@ -558,9 +558,9 @@ Inductive lc_exp : exp -> Prop :=    (* defn lc_exp *)
      (lc_exp e) ->
      (lc_typ A) ->
      (lc_exp (exp_anno e A))
- | lc_exp_rcd_single : forall (l:label) (e1:exp),
-     (lc_exp e1) ->
-     (lc_exp (exp_rcd_single l e1))
+ | lc_exp_rcd_single : forall (l:label) (e:exp),
+     (lc_exp e) ->
+     (lc_exp (exp_rcd_single l e))
  | lc_exp_rcd_cons : forall (l:label) (e1 e2:exp),
      (lc_exp e1) ->
      (lc_exp e2) ->
@@ -775,7 +775,7 @@ Fixpoint ftvar_in_exp (e_5:exp) : vars :=
   | (exp_tabs e) => (ftvar_in_exp e)
   | (exp_tapp e A) => (ftvar_in_exp e) \u (ftvar_in_typ A)
   | (exp_anno e A) => (ftvar_in_exp e) \u (ftvar_in_typ A)
-  | (exp_rcd_single l e1) => (ftvar_in_exp e1)
+  | (exp_rcd_single l e) => (ftvar_in_exp e)
   | (exp_rcd_cons l e1 e2) => (ftvar_in_exp e1) \u (ftvar_in_exp e2)
   | (exp_rcd_proj e l) => (ftvar_in_exp e)
 end.
@@ -790,7 +790,7 @@ Fixpoint fvar_in_exp (e_5:exp) : vars :=
   | (exp_tabs e) => (fvar_in_exp e)
   | (exp_tapp e A) => (fvar_in_exp e)
   | (exp_anno e A) => (fvar_in_exp e)
-  | (exp_rcd_single l e1) => (fvar_in_exp e1)
+  | (exp_rcd_single l e) => (fvar_in_exp e)
   | (exp_rcd_cons l e1 e2) => (fvar_in_exp e1) \u (fvar_in_exp e2)
   | (exp_rcd_proj e l) => (fvar_in_exp e)
 end.
@@ -941,7 +941,7 @@ Fixpoint subst_typ_in_exp (A_5:typ) (X5:typvar) (e_5:exp) {struct e_5} : exp :=
   | (exp_tabs e) => exp_tabs (subst_typ_in_exp A_5 X5 e)
   | (exp_tapp e A) => exp_tapp (subst_typ_in_exp A_5 X5 e) (subst_typ_in_typ A_5 X5 A)
   | (exp_anno e A) => exp_anno (subst_typ_in_exp A_5 X5 e) (subst_typ_in_typ A_5 X5 A)
-  | (exp_rcd_single l e1) => exp_rcd_single l (subst_typ_in_exp A_5 X5 e1)
+  | (exp_rcd_single l e) => exp_rcd_single l (subst_typ_in_exp A_5 X5 e)
   | (exp_rcd_cons l e1 e2) => exp_rcd_cons l (subst_typ_in_exp A_5 X5 e1) (subst_typ_in_exp A_5 X5 e2)
   | (exp_rcd_proj e l) => exp_rcd_proj (subst_typ_in_exp A_5 X5 e) l
 end.
@@ -956,7 +956,7 @@ Fixpoint subst_exp_in_exp (e_5:exp) (x5:expvar) (e__6:exp) {struct e__6} : exp :
   | (exp_tabs e) => exp_tabs (subst_exp_in_exp e_5 x5 e)
   | (exp_tapp e A) => exp_tapp (subst_exp_in_exp e_5 x5 e) A
   | (exp_anno e A) => exp_anno (subst_exp_in_exp e_5 x5 e) A
-  | (exp_rcd_single l e1) => exp_rcd_single l (subst_exp_in_exp e_5 x5 e1)
+  | (exp_rcd_single l e) => exp_rcd_single l (subst_exp_in_exp e_5 x5 e)
   | (exp_rcd_cons l e1 e2) => exp_rcd_cons l (subst_exp_in_exp e_5 x5 e1) (subst_exp_in_exp e_5 x5 e2)
   | (exp_rcd_proj e l) => exp_rcd_proj (subst_exp_in_exp e_5 x5 e) l
 end.
@@ -1588,8 +1588,7 @@ Inductive a_wf_conts : aenv -> conts -> Prop :=    (* defn a_wf_conts *)
      a_wf_typ Σ A ->
      a_wf_conts Σ cs ->
      a_wf_conts Σ (conts_unioninftapp A cs)
- | a_wf_conts__infrcdsingle : forall (Σ:aenv) (l:label) (cs:conts) (e:exp),
-     a_wf_exp Σ e ->
+ | a_wf_conts__infrcdsingle : forall (Σ:aenv) (l:label) (cs:conts),
      a_wf_conts Σ cs ->
      a_wf_conts Σ (conts_infrcdsingle l cs)
  | a_wf_conts__infrcdconsintersection : forall (Σ:aenv) (l:label) (e:exp) (cs:conts),

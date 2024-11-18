@@ -175,8 +175,8 @@ with a_wf_contd_weaken : forall Σ1 Σ2 Σ3 cd,
   Σ3 ++ Σ1 ᶜᵈ⊢ᵃ cd ->
   Σ3 ++ Σ2 ++ Σ1 ᶜᵈ⊢ᵃ cd.
 Proof with eauto using a_wf_typ_weaken, a_wf_exp_weaken.
-  - intros. dependent induction H; constructor...
-  - intros. dependent induction H; constructor...
+  - intros. clear a_wf_conts_weaken. dependent induction H...
+  - intros. clear a_wf_contd_weaken. dependent induction H...
 Qed.
 
 Lemma a_wf_conts_weaken_cons : forall Σ X b cs,
@@ -1417,6 +1417,8 @@ Proof.
     fsetdec.
   - simpl. rewrite IHa_wf_exp; eauto.
     rewrite ftvar_in_a_wf_typ_upper; eauto.
+    fsetdec.
+  - simpl. rewrite IHa_wf_exp; eauto.
     fsetdec.
   - simpl. rewrite IHa_wf_exp1; eauto.
     rewrite IHa_wf_exp2; eauto.

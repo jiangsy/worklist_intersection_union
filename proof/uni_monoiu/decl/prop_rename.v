@@ -88,6 +88,7 @@ Proof.
   - rewrite IHe; auto. 
   - rewrite IHe. auto.
   - rewrite IHe. auto.
+  - rewrite IHe. auto.
   - rewrite IHe1.
     rewrite IHe2. auto.
   - rewrite IHe. auto.
@@ -270,6 +271,7 @@ Proof with auto.
   - rewrite IHe... 
   - rewrite subst_typ_in_typ_refl_eq. rewrite IHe. auto.
   - rewrite subst_typ_in_typ_refl_eq. rewrite IHe. auto.
+  - rewrite IHe...
   - rewrite IHe1. rewrite IHe2. auto. 
   - rewrite IHe. auto.
 Qed.

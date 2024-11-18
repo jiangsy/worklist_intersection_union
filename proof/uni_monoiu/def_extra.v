@@ -5,27 +5,27 @@ Require Import uni_monoiu.def_ott.
 
 Fixpoint ftvar_in_aworklist' (Γ_5:aworklist) : vars :=
   match Γ_5 with
-    | aworklist_empty => empty
-    | (aworklist_cons_var Γ X ab) => 
-      match ab with 
-      | abind_var_typ A => (ftvar_in_aworklist' Γ) \u (ftvar_in_abind ab) 
-      | _ => (ftvar_in_aworklist' Γ) \u (singleton X)
-      end
-    | (aworklist_cons_work Γ w) => (ftvar_in_aworklist' Γ) \u (ftvar_in_work w)
-  end.
+  | aworklist_empty => empty
+  | (aworklist_cons_var Γ X ab) => 
+    match ab with 
+    | abind_var_typ A => (ftvar_in_aworklist' Γ) \u (ftvar_in_abind ab) 
+    | _ => (ftvar_in_aworklist' Γ) \u (singleton X)
+    end
+  | (aworklist_cons_work Γ w) => (ftvar_in_aworklist' Γ) \u (ftvar_in_work w)
+end.
 
 Fixpoint fvar_in_aworklist' (Γ_5:aworklist) : vars :=
   match Γ_5 with
-    | aworklist_empty => {}
-    | (aworklist_cons_var Γ x ab) => 
-      match ab with 
-      | abind_var_typ A => (fvar_in_aworklist' Γ) \u (singleton x)
-      | _ => (fvar_in_aworklist' Γ)
-      end
-    | (aworklist_cons_work Γ w) => (fvar_in_aworklist' Γ) \u (fvar_in_work w)
-  end.
+  | aworklist_empty => {}
+  | (aworklist_cons_var Γ x ab) => 
+    match ab with 
+    | abind_var_typ A => (fvar_in_aworklist' Γ) \u (singleton x)
+    | _ => (fvar_in_aworklist' Γ)
+    end
+  | (aworklist_cons_work Γ w) => (fvar_in_aworklist' Γ) \u (fvar_in_work w)
+end.
   
-  Inductive apply_conts : conts -> typ -> work -> Prop :=
+Inductive apply_conts : conts -> typ -> work -> Prop :=
   | apply_conts__infabs: forall A cs,
       apply_conts (conts_infabs cs) A (work_infabs A cs)
   | apply_conts__inftapp : forall A B cs,
@@ -34,6 +34,8 @@ Fixpoint fvar_in_aworklist' (Γ_5:aworklist) : vars :=
       apply_conts (conts_inftappunion A2 B cs) C1 (work_inftappunion C1 A2 B cs)
   | apply_conts__unioninftapp : forall A1 A2 cs,
       apply_conts (conts_unioninftapp A1 cs) A2 (work_unioninftapp A1 A2 cs)
+  | apply_conts__infrcdsingle : forall l A cs,
+      apply_conts (conts_infrcdsingle l cs) A (work_infrcdsingle l A cs)
   | apply_conts__infrcdconsintersection : forall l1 A1 e2 cs,
       apply_conts (conts_infrcdconsintersection l1 e2 cs) A1 (work_infrcdconsintersection l1 A1 e2 cs)
   | apply_conts__intersectioninfrcdcons : forall A1 A2 cs,
