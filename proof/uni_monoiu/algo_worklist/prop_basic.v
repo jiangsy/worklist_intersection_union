@@ -1134,6 +1134,8 @@ Proof with eauto using aworklist_subst_wf_typ_subst.
       eapply H1 with (Γ:=X0 ~ᵃ □ ;ᵃ Γ); simpl; eauto.
       * apply a_wf_typ_weaken_cons...
       * constructor; eauto.
+  - econstructor; eauto.
+    eapply is_exp_rcd_subst_tvar; eauto.
 Qed.
 
 Lemma aworklist_subst_wf_contd_subst : forall Γ X A cd Γ1 Γ2,

@@ -2049,6 +2049,20 @@ Proof with eauto.
   destruct H0 as [Aᵈ [Hbinds _]]. eauto.  
 Qed.
 
+Lemma trans_exp_is_dexp_rcd : forall θ eᵃ eᵈ,
+  is_exp_rcd eᵃ -> 
+  θ ᵉ⊩ eᵃ ⇝ eᵈ ->
+  is_exp_rcd eᵈ.
+Proof.
+  intros. generalize dependent eᵈ; intros; dependent induction H.
+  - inversion H0; subst; eauto.
+    econstructor. eauto using trans_exp_lc_dexp.
+  - inversion H1; subst; eauto.
+    dependent destruction H1;
+    econstructor. eauto using trans_exp_lc_dexp.
+    eapply IHis_exp_rcd; eauto.
+Qed.
+
 Lemma trans_wl_a_wf_exp_d_wf_exp' : forall Γ Ω θ eᵃ eᵈ,
   lc_exp eᵃ ->
   nil ⊩ Γ ⇝ Ω ⫣ θ ->
@@ -2085,6 +2099,7 @@ Proof with auto.
     eapply trans_wl_a_wf_typ_d_wf_typ; eauto.
   - dependent destruction Hwfe; constructor; eauto.
   - dependent destruction Hwfe; constructor; eauto.
+    eapply trans_exp_is_dexp_rcd; eauto.
   - dependent destruction Hwfe; constructor; eauto.
 Qed.
 

@@ -136,6 +136,7 @@ Inductive d_chk_inf : denv -> exp -> typing_mode -> typ -> Prop :=
       d_chk_inf Ψ (exp_rcd_single l1 e1) typingmode__inf (typ_arrow (typ_label l1) A1)
   | d_chk_inf__inf_rcd_cons : forall (Ψ:denv) (e1 e2:exp) (l1:label) (A1 A2:typ),
       d_wf_tenv Ψ ->
+      is_exp_rcd e2 ->
       d_chk_inf Ψ e1 typingmode__inf A1 ->
       d_chk_inf Ψ e2 typingmode__inf A2 ->
       d_chk_inf Ψ (exp_rcd_cons l1 e1 e2) typingmode__inf (typ_intersection (typ_arrow (typ_label l1) A1) A2)
