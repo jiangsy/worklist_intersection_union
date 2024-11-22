@@ -3,9 +3,9 @@ Require Import Program.Tactics.
 Require Import Lia.
 Require Import Metalib.Metatheory.
 
-Require Import uni_rec.notations.
-Require Export uni_rec.prop_basic.
-Require Import uni_rec.ltac_utils.
+Require Import uni_rcd.notations.
+Require Export uni_rcd.prop_basic.
+Require Import uni_rcd.ltac_utils.
 
 Open Scope dbind_scope.
 
@@ -1133,6 +1133,7 @@ Proof with eauto using d_wf_typ_var_binds_another.
     eauto.
   - econstructor. eapply d_wf_typ_var_binds_another; eauto.
     eauto.
+  - econstructor; eauto.
   - econstructor; eauto.
   - econstructor; eauto.
 Qed.

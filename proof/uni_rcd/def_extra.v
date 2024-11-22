@@ -1,7 +1,7 @@
 Require Export Metalib.Metatheory.
 Require Import List.
 
-Require Import uni_rec.def_ott.
+Require Import uni_rcd.def_ott.
 
 Fixpoint ftvar_in_aworklist' (Γ_5:aworklist) : vars :=
   match Γ_5 with
@@ -34,6 +34,8 @@ Inductive apply_conts : conts -> typ -> work -> Prop :=
       apply_conts (conts_inftappunion A2 B cs) C1 (work_inftappunion C1 A2 B cs)
   | apply_conts__unioninftapp : forall A1 A2 cs,
       apply_conts (conts_unioninftapp A1 cs) A2 (work_unioninftapp A1 A2 cs)
+  | apply_conts__infrcdsingle : forall l A cs,
+      apply_conts (conts_infrcdsingle l cs) A (work_infrcdsingle l A cs)
   | apply_conts__infrcdconsintersection : forall l1 A1 e2 cs,
       apply_conts (conts_infrcdconsintersection l1 e2 cs) A1 (work_infrcdconsintersection l1 A1 e2 cs)
   | apply_conts__intersectioninfrcdcons : forall A1 A2 cs,

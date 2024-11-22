@@ -14,7 +14,6 @@ typ, A, B, C, T    :: typ_ ::=
   | A1 ⊔ A2        ::   :: union
   | A1 ⊓ A2        ::   :: intersection
   | LABEL l        ::   :: label
-  % | Rec A          ::   :: rec
   | ( A )          :: S :: paren {{ coq ([[A]]) }}
   | { A2 / X } A1  :: M :: subst {{ coq (open_typ_wrt_typ [[X A1]] [[A2]]) }}
 
@@ -27,7 +26,7 @@ exp, e, f, g :: exp_ ::=
   | \ X . e                             ::   :: tabs (+ bind X in e +) 
   | e @ A                               ::   :: tapp
   | e : A                               ::   :: anno
-  | ⟨ ⟩                                 ::   :: rcd_nil
+  | ⟨ l : e ⟩                           ::   :: rcd_single
   | ⟨ l : e1 , e2 ⟩                     ::   :: rcd_cons
   | e . l                               ::   :: rcd_proj
   | ( e )                               :: S :: paren  {{ coq ([[e]]) }}
@@ -52,6 +51,7 @@ conts, cs :: 'conts_' ::=
   | _ ○ A =>=> cs                     ::   :: inftapp
   | _ ⊔∘ A1 ○ A2 =>=> cs              ::   :: inftappunion
   | _ ⊔∘ A2 >> cs                     ::   :: unioninftapp
+  | l ~> _  =>=> cs                   ::   :: infrcdsingle
   | l ~> _ ⊓⇒ e =>=> cs               ::   :: infrcdconsintersection
   | _ ⊓⇒ A >> cs                      ::   :: intersectioninfrcdcons
   | _ <: A                            ::   :: sub
@@ -71,6 +71,7 @@ work, w :: 'work_' ::=
   | A1 ~> B1 ⊔▹ A2 ▹ cd                    ::   :: infabsunion
   | A ~> B • e =>=> cs                     ::   :: infapp
   | A ~> B • C =>=> cs                     ::   :: infproj
+  | l ~> A =>=> cs                         ::   :: infrcdsingle
   | l ~> A ⊓⇒ e =>=> cs                    ::   :: infrcdconsintersection
   | A1 ⊓⇒ A2 >> cs                         ::   :: intersectioninfrcdcons
   | A1 ○ A2 =>=> cs                        ::   :: inftapp
@@ -156,7 +157,7 @@ Fixpoint awl_to_aenv (aW : aworklist) : aenv :=
 
 }}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 defns 
 J_is_exp_rcd :: '' ::=
@@ -164,10 +165,10 @@ J_is_exp_rcd :: '' ::=
 defn 
 e = ⟨ . ⟩  :: :: is_exp_rcd :: 'is_exp_rcd__' by
 
----------------------- :: nil
-⟨ ⟩ = ⟨ . ⟩
+---------------------- :: single_
+⟨ l : e1 ⟩ = ⟨ . ⟩
 
-
+e2 = ⟨ . ⟩
 -------------------------- :: cons
 ⟨ l : e1 , e2 ⟩ = ⟨ . ⟩
 
@@ -359,12 +360,13 @@ dE |- e
 ----------------- :: anno 
 dE |- e : A
 
------------------ :: rcd_nil
-dE |- ⟨ ⟩
+dE |- e1
+----------------- :: rcd_single
+dE |- ⟨ l : e1 ⟩
 
 dE |- e1
 dE |- e2
-% e2 = ⟨ . ⟩
+e2 = ⟨ . ⟩ 
 ----------------- :: rcd_cons
 dE |- ⟨ l : e1 , e2 ⟩
 
@@ -462,6 +464,10 @@ dE |- A
 dE |- cs
 -------------------- :: unioninftapp
 dE |- _ ⊔∘ A >> cs  
+
+dE |- cs
+---------------------- :: infrcdcsingle
+dE |- l ~> _ =>=> cs  
 
 dE |- e 
 dE |- cs
@@ -564,6 +570,11 @@ dE |- C
 dE |- cs
 -------------------- :: infproj
 dE |- A ~> B • C =>=> cs
+
+dE |- A 
+dE |- cs
+---------------------------- :: infrcdsingle
+dE |- l ~> A =>=> cs
 
 dE |- A 
 dE |- e
@@ -750,7 +761,7 @@ aE |-m UNIT
 --------------- :: tvar
 aE |-m X
 
-(X : ⬒  ) in aE
+(X : ⬒ ) in aE
 ----------------- :: etvar
 aE |-m X
 
@@ -800,13 +811,13 @@ aE |- e
 ----------------- :: anno 
 aE |- e : A
 
-
------------------ :: rcd_nil
-aE |- ⟨ ⟩
+aE |- e1
+----------------- :: rcd_single
+aE |- ⟨ l : e1 ⟩
 
 aE |- e1
 aE |- e2
-% e2 = ⟨ . ⟩
+e2 = ⟨ . ⟩
 ----------------- :: rcd_cons
 aE |- ⟨ l : e1 , e2 ⟩
 
@@ -840,6 +851,10 @@ aE |- A
 aE |- cs
 -------------------- :: unioninftapp
 aE |- _ ⊔∘ A >> cs  
+
+aE |- cs
+--------------------------- :: infrcdsingle
+aE |- l ~> _ =>=> cs  
 
 aE |- e 
 aE |- cs
@@ -941,6 +956,11 @@ aE |- C
 aE |- cs
 -------------------- :: infproj
 aE |-  A ~> B • C =>=> cs
+
+aE |- A 
+aE |- cs
+-------------------- :: infrcdsingle
+aE |- l ~> A =>=> cs
 
 aE |- A 
 aE |- e
@@ -1068,7 +1088,6 @@ X `notin` dom ⌊ aW ⌋
 |- aW
 -------------------- :: conswork_sub
 |- aW , A <: B
-
 
 
 defns

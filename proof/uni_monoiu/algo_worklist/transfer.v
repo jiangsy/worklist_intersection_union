@@ -106,9 +106,10 @@ Inductive trans_exp : subst_set -> exp -> exp -> Prop :=
   | trans_exp__var : forall θ x,
       wf_ss θ ->
       trans_exp θ (exp_var_f x) (exp_var_f x)
-  | trans_exp__rcd_nil : forall θ,
+  | trans_exp__rcd_single : forall θ l eᵃ eᵈ,
       wf_ss θ ->
-      trans_exp θ exp_rcd_nil exp_rcd_nil 
+      trans_exp θ eᵃ eᵈ ->
+      trans_exp θ (exp_rcd_single l eᵃ) (exp_rcd_single l eᵈ)
   | trans_exp__rcd_cons : forall θ l1 e1ᵃ e1ᵈ e2ᵃ e2ᵈ,
       trans_exp θ e1ᵃ e1ᵈ ->
       trans_exp θ e2ᵃ e2ᵈ ->
@@ -158,6 +159,9 @@ Inductive trans_conts : subst_set -> conts -> conts -> Prop :=
       trans_typ θ Aᵃ Aᵈ ->
       trans_conts θ csᵃ csᵈ ->
       trans_conts θ (conts_unioninftapp Aᵃ csᵃ) (conts_unioninftapp Aᵈ csᵈ)
+  | trans_conts__infrcdsingle : forall θ l csᵃ csᵈ,
+      trans_conts θ csᵃ csᵈ ->
+      trans_conts θ (conts_infrcdsingle l csᵃ ) (conts_infrcdsingle l csᵈ)
   | trans_conts__infrcdconsintersection : forall θ l eᵃ eᵈ csᵃ csᵈ,
       trans_exp θ eᵃ eᵈ ->
       trans_conts θ csᵃ csᵈ ->
@@ -246,6 +250,10 @@ Inductive trans_work : subst_set -> work -> work -> Prop :=
       trans_typ θ B2ᵃ B2ᵈ ->
       trans_contd θ cdᵃ cdᵈ ->
       trans_work θ (work_unioninfabs A1ᵃ B1ᵃ A2ᵃ B2ᵃ cdᵃ) (work_unioninfabs A1ᵈ B1ᵈ A2ᵈ B2ᵈ cdᵈ)
+  | trans_work__infrcdsingle : forall θ l Aᵃ Aᵈ csᵃ csᵈ,
+      trans_typ θ Aᵃ Aᵈ ->
+      trans_conts θ csᵃ csᵈ ->
+      trans_work θ (work_infrcdsingle l Aᵃ csᵃ) (work_infrcdsingle l Aᵈ csᵈ)
   | trans_work__infrcdconsintersection : forall θ l1 A1ᵃ A1ᵈ e2ᵃ e2ᵈ csᵃ csᵈ,
       trans_typ θ A1ᵃ A1ᵈ ->
       trans_exp θ e2ᵃ e2ᵈ ->
@@ -740,6 +748,7 @@ Lemma trans_exp_det : forall θ eᵃ e₁ᵈ e₂ᵈ,
 Proof with eauto.
   intros * Huniq Htrans1 Htrans2. generalize dependent e₂ᵈ.
   induction Htrans1; (intros; dependent destruction Htrans2; auto).
+  - apply f_equal2... 
   - apply f_equal3...
   - apply f_equal2... 
   - inst_cofinites_by (L `union` L0 `union` (fvar_in_exp eᵈ) `union` (fvar_in_exp eᵈ0) `union`  dom θ) using_name x.
@@ -778,6 +787,7 @@ Proof with eauto.
     + apply f_equal2... unify_trans_typ.
     + apply f_equal3; repeat unify_trans_typ. 
     + apply f_equal2... unify_trans_typ.
+    + apply f_equal2...
     + apply f_equal3... unify_trans_exp.
     + apply f_equal2... unify_trans_typ.
     + apply f_equal. unify_trans_typ.
@@ -1548,6 +1558,10 @@ Proof with eauto using trans_typ_total.
       intros. destruct_conj...
     } 
     apply Hex...
+  - assert (Hex: (exists eᵈ, θ ᵉ⊩ e1 ⇝ eᵈ) -> exists eᵈ, θ ᵉ⊩ exp_rcd_single l e1 ⇝ eᵈ). {
+      intros. destruct_conj...
+    }
+    apply Hex...
   - assert (Hex: (exists e1ᵈ, θ ᵉ⊩ e1 ⇝ e1ᵈ) -> (exists e2ᵈ, θ ᵉ⊩ e2 ⇝ e2ᵈ) -> exists eᵈ, θ ᵉ⊩ exp_rcd_cons l e1 e2 ⇝ eᵈ). {
       intros. destruct_conj...
     } 
@@ -1587,6 +1601,10 @@ Proof with eauto using trans_typ_total, trans_exp_total.
       apply Hex...
     + assert (Hex: (exists Aᵈ, θ ᵗ⊩ A ⇝ Aᵈ) -> (exists csᵈ, θ ᶜˢ⊩ cs ⇝ csᵈ) ->
         exists csᵈ, θ ᶜˢ⊩ conts_unioninftapp A cs ⇝ csᵈ). {
+        intros. destruct_conj...
+      }
+      apply Hex...
+    + assert (Hex: (exists csᵈ, θ ᶜˢ⊩ cs ⇝ csᵈ) -> exists csᵈ, θ ᶜˢ⊩ conts_infrcdsingle l cs ⇝ csᵈ). {
         intros. destruct_conj...
       }
       apply Hex...
@@ -2048,6 +2066,20 @@ Proof with eauto.
   destruct H0 as [Aᵈ [Hbinds _]]. eauto.  
 Qed.
 
+Lemma trans_exp_is_dexp_rcd : forall θ eᵃ eᵈ,
+  is_exp_rcd eᵃ -> 
+  θ ᵉ⊩ eᵃ ⇝ eᵈ ->
+  is_exp_rcd eᵈ.
+Proof.
+  intros. generalize dependent eᵈ; intros; dependent induction H.
+  - inversion H0; subst; eauto.
+    econstructor. eauto using trans_exp_lc_dexp.
+  - inversion H1; subst; eauto.
+    dependent destruction H1;
+    econstructor. eauto using trans_exp_lc_dexp.
+    eapply IHis_exp_rcd; eauto.
+Qed.
+
 Lemma trans_wl_a_wf_exp_d_wf_exp' : forall Γ Ω θ eᵃ eᵈ,
   lc_exp eᵃ ->
   nil ⊩ Γ ⇝ Ω ⫣ θ ->
@@ -2083,6 +2115,8 @@ Proof with auto.
   - dependent destruction Hwfe; constructor; eauto.
     eapply trans_wl_a_wf_typ_d_wf_typ; eauto.
   - dependent destruction Hwfe; constructor; eauto.
+  - dependent destruction Hwfe; constructor; eauto.
+    eapply trans_exp_is_dexp_rcd; eauto.
   - dependent destruction Hwfe; constructor; eauto.
 Qed.
 

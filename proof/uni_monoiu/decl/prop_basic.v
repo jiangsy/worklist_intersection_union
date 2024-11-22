@@ -1148,6 +1148,7 @@ Proof with eauto using d_wf_typ_var_binds_another.
     eauto.
   - econstructor; eauto.
   - econstructor; eauto.
+  - econstructor; eauto.
 Qed.
 
 Lemma d_wf_exp_var_binds_another_cons : forall Ψ1 x e A1 A2,

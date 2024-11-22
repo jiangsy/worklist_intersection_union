@@ -1,8 +1,8 @@
 Require Import Program.Equality.
 
-Require Export uni_rec.def_ott.
-Require Export uni_rec.def_extra.
-Require Export uni_rec.decl.def_extra.
+Require Export uni_rcd.def_ott.
+Require Export uni_rcd.def_extra.
+Require Export uni_rcd.decl.def_extra.
 
 Fixpoint dwl_app (Ω1 Ω2 : dworklist) :=
   match Ω1 with 
@@ -53,6 +53,9 @@ Inductive d_wl_del_red : dworklist -> Prop :=
   | d_wl_del_red__unioninftapp : forall Ω A1 A2 cs,
       d_wl_del_red (dworklist_cons_work Ω (work_applys cs (typ_union A1 A2))) -> 
       d_wl_del_red (dworklist_cons_work Ω (work_unioninftapp A1 A2 cs))
+  | d_wl_del_red__infrcdsingle : forall Ω l A cs,
+      d_wl_del_red (dworklist_cons_work Ω (work_applys cs (typ_arrow (typ_label l) A))) ->
+      d_wl_del_red (dworklist_cons_work Ω (work_infrcdsingle l A cs))
   | d_wl_del_red__infrcdconsintersection : forall Ω l1 A1 A2 e2 cs,
       d_chk_inf (dwl_to_denv Ω) e2 typingmode__inf A2 ->
       d_wl_del_red (dworklist_cons_work Ω (work_applys cs (typ_intersection (typ_arrow (typ_label l1) A1) A2))) ->
@@ -167,9 +170,9 @@ Inductive d_wl_red : dworklist -> Prop :=    (* defn d_wl_red *)
   | d_wl_red__inf_unit : forall (Ω:dworklist) (cs:conts),
       d_wl_red (dworklist_cons_work Ω (work_applys cs typ_unit)) ->
       d_wl_red (dworklist_cons_work Ω (work_infer exp_unit cs))
-  | d_wl_red__inf_rcd_nil : forall (Ω:dworklist) (cs:conts),
-      d_wl_red (dworklist_cons_work Ω (work_applys cs typ_unit)) ->
-      d_wl_red (dworklist_cons_work Ω (work_infer exp_rcd_nil cs))
+  | d_wl_red__inf_rcd_single : forall (Ω:dworklist) (l:label) (e:exp) (cs:conts),
+      d_wl_red (dworklist_cons_work Ω (work_infer e (conts_infrcdsingle l cs))) ->
+      d_wl_red (dworklist_cons_work Ω (work_infer (exp_rcd_single l e) cs))
   | d_wl_red__inf_rcd_cons : forall (Ω:dworklist) (l1:label) (e1 e2:exp) (cs:conts),
       d_wl_red (dworklist_cons_work Ω (work_infer e1 (conts_infrcdconsintersection l1 e2 cs))) ->
       d_wl_red (dworklist_cons_work Ω (work_infer (exp_rcd_cons l1 e1 e2) cs))
@@ -233,6 +236,9 @@ Inductive d_wl_red : dworklist -> Prop :=    (* defn d_wl_red *)
   | d_wl_red__infabsunion: forall (Ω:dworklist) (A B C:typ) (cd:contd),
       d_wl_red (dworklist_cons_work Ω (work_infabs A (contd_unioninfabs B C cd))) ->
       d_wl_red (dworklist_cons_work Ω (work_infabsunion B C A cd))
+  | d_Wl_red__infrcdsingle : forall (Ω:dworklist) (l:label) (A:typ) (cs:conts),
+      d_wl_red (dworklist_cons_work Ω (work_applys cs (typ_arrow (typ_label l) A))) ->
+      d_wl_red (dworklist_cons_work Ω (work_infrcdsingle l A cs))
   | d_wl_red__infrcdconsintersection : forall (Ω:dworklist) (l1:label) (A1:typ) (e2:exp) (cs:conts),
       d_wl_red (dworklist_cons_work Ω (work_infer e2 (conts_intersectioninfrcdcons (typ_arrow (typ_label l1) A1) cs))) ->
       d_wl_red (dworklist_cons_work Ω (work_infrcdconsintersection l1 A1 e2 cs))

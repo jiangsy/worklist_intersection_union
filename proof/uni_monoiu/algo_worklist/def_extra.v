@@ -157,9 +157,9 @@ Inductive a_wl_red : aworklist -> Prop :=    (* defn a_wl_red *)
       ( forall X , X \notin  L  -> 
         a_wl_red (aworklist_cons_work (aworklist_cons_var (aworklist_cons_work Γ (work_applys cs  ( (typ_all A) ) )) X abind_tvar_empty) (work_check  ( open_exp_wrt_typ e (typ_var_f X) )   ( open_typ_wrt_typ A (typ_var_f X) ) )) )  ->
       a_wl_red (aworklist_cons_work Γ (work_infer (exp_tabs (exp_anno e A)) cs))
-  | a_wl_red__inf_rcd_nil : forall (Γ:aworklist) (cs:conts),
-      a_wl_red (aworklist_cons_work Γ (work_applys cs typ_unit)) ->
-      a_wl_red (aworklist_cons_work Γ (work_infer exp_rcd_nil cs))
+  | a_wl_red__inf_rcd_single : forall (Γ:aworklist) (l:label) (e:exp) (cs:conts),
+      a_wl_red (aworklist_cons_work Γ (work_infer e (conts_infrcdsingle l cs))) ->
+      a_wl_red (aworklist_cons_work Γ (work_infer (exp_rcd_single l e) cs))
   | a_wl_red__inf_rcd_cons : forall (Γ:aworklist) (l1:label) (e1 e2:exp) (cs:conts),
       a_wl_red (aworklist_cons_work Γ (work_infer e1 (conts_infrcdconsintersection l1 e2 cs))) ->
       a_wl_red (aworklist_cons_work Γ (work_infer (exp_rcd_cons l1 e1 e2) cs))
@@ -238,6 +238,9 @@ Inductive a_wl_red : aworklist -> Prop :=    (* defn a_wl_red *)
   | a_wl_red__unioninftapp : forall (Γ:aworklist) (C2 C1:typ) (cs:conts),
       a_wl_red (aworklist_cons_work Γ (work_applys cs (typ_union C1 C2))) ->
       a_wl_red (aworklist_cons_work Γ (work_unioninftapp C1 C2 cs))
+  | a_wl_red__infrcdsingle : forall (Γ:aworklist) (l:label) (A:typ) (cs:conts),
+      a_wl_red (aworklist_cons_work Γ (work_applys cs (typ_arrow (typ_label l) A))) ->
+      a_wl_red (aworklist_cons_work Γ (work_infrcdsingle l A cs))
   | a_wl_red__infrcdconsintersection : forall (Γ:aworklist) (l1:label) (A1:typ) (e2:exp) (cs:conts),
       a_wl_red (aworklist_cons_work Γ (work_infer e2 (conts_intersectioninfrcdcons (typ_arrow (typ_label l1) A1) cs))) ->
       a_wl_red (aworklist_cons_work Γ (work_infrcdconsintersection l1 A1 e2 cs))

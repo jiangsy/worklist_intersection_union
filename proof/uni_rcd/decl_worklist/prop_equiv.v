@@ -1,12 +1,12 @@
 Require Import Coq.Program.Equality.
 
-Require Import uni_rec.decl.def_extra.
-Require Import uni_rec.decl.prop_basic.
-Require Import uni_rec.decl.prop_typing.
-Require Import uni_rec.def_ott.
-Require Import uni_rec.notations.
-Require Import uni_rec.decl_worklist.def.
-Require Import uni_rec.ltac_utils.
+Require Import uni_rcd.decl.def_extra.
+Require Import uni_rcd.decl.prop_basic.
+Require Import uni_rcd.decl.prop_typing.
+Require Import uni_rcd.def_ott.
+Require Import uni_rcd.notations.
+Require Import uni_rcd.decl_worklist.def.
+Require Import uni_rcd.ltac_utils.
 
 Open Scope dworklist.
 
@@ -145,6 +145,8 @@ Proof with auto.
     rewrite_dwl_app. eapply IHHred; eauto...
   - econstructor; rewrite_dwl_app;
     eapply IHHred; simpl; eauto...
+  - econstructor; rewrite_dwl_app;
+    eapply IHHred; simpl; eauto...
   - rewrite dwl_app_cons_work in H. rewrite d_wl_app_all_work_same_env in H...
     econstructor; eauto.
     rewrite_dwl_app. eapply IHHred; eauto...
@@ -181,6 +183,7 @@ Theorem d_wf_work_apply_conts : forall Ω c A w,
 Proof.
   intros. induction H2; simpl; auto;
   dependent destruction H0; auto.
+  - constructor; auto. constructor; auto. solve_false.
   - constructor; auto. constructor; auto. solve_false.
   - constructor; auto. constructor; auto. solve_false.
   - constructor; auto. constructor; auto. solve_false.
@@ -506,6 +509,11 @@ Proof with auto.
   - econstructor. 
     eapply IHd_chk_inf; eauto.
     destruct_d_wf_wl...
+  - econstructor.  
+    eapply IHd_chk_inf; eauto.
+    destruct_d_wf_wl...
+    apply d_wl_red__applys with (w:=work_infrcdsingle l1 A1 c); eauto.
+    econstructor; eauto. 
   - econstructor. 
     eapply IHd_chk_inf1; eauto.
     destruct_d_wf_wl...
@@ -514,7 +522,7 @@ Proof with auto.
     econstructor...
     eapply IHd_chk_inf2; eauto...
     destruct_d_wf_wl...
-    apply d_chk_inf_wf_typ in H0...
+    apply d_chk_inf_wf_typ in H1...
     econstructor...
     apply d_wl_red__applys with (w:=work_intersectioninfrcdcons (typ_arrow (typ_label l1) A1) A2 c); eauto...
     econstructor.

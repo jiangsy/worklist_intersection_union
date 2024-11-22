@@ -103,7 +103,7 @@ Fixpoint size_exp (e1 : exp) {struct e1} : nat :=
     | exp_tabs e2 => 1 + (size_exp e2)
     | exp_tapp e2 A1 => 1 + (size_exp e2) + (size_typ A1)
     | exp_anno e2 A1 => 1 + (size_exp e2) + (size_typ A1)
-    | exp_rcd_nil => 1
+    | exp_rcd_single l1 e2 => 1 + (size_exp e2)
     | exp_rcd_cons l1 e2 e3 => 1 + (size_exp e2) + (size_exp e3)
     | exp_rcd_proj e2 l1 => 1 + (size_exp e2)
   end.
@@ -122,6 +122,7 @@ with size_conts (cs1 : conts) {struct cs1} : nat :=
     | conts_inftapp A1 cs2 => 1 + (size_typ A1) + (size_conts cs2)
     | conts_inftappunion A1 A2 cs2 => 1 + (size_typ A1) + (size_typ A2) + (size_conts cs2)
     | conts_unioninftapp A1 cs2 => 1 + (size_typ A1) + (size_conts cs2)
+    | conts_infrcdsingle l1 cs2 => 1 + (size_conts cs2)
     | conts_infrcdconsintersection l1 e1 cs2 => 1 + (size_exp e1) + (size_conts cs2)
     | conts_intersectioninfrcdcons A1 cs2 => 1 + (size_typ A1) + (size_conts cs2)
     | conts_sub A1 => 1 + (size_typ A1)
@@ -142,6 +143,7 @@ Fixpoint size_work (w1 : work) {struct w1} : nat :=
     | work_infabsunion A1 B1 A2 cd1 => 1 + (size_typ A1) + (size_typ B1) + (size_typ A2) + (size_contd cd1)
     | work_infapp A1 B1 e1 cs1 => 1 + (size_typ A1) + (size_typ B1) + (size_exp e1) + (size_conts cs1)
     | work_infproj A1 B1 C1 cs1 => 1 + (size_typ A1) + (size_typ B1) + (size_typ C1) + (size_conts cs1)
+    | work_infrcdsingle l1 A1 cs1 => 1 + (size_typ A1) + (size_conts cs1)
     | work_infrcdconsintersection l1 A1 e1 cs1 => 1 + (size_typ A1) + (size_exp e1) + (size_conts cs1)
     | work_intersectioninfrcdcons A1 A2 cs1 => 1 + (size_typ A1) + (size_typ A2) + (size_conts cs1)
     | work_inftapp A1 A2 cs1 => 1 + (size_typ A1) + (size_typ A2) + (size_conts cs1)
@@ -237,8 +239,9 @@ Inductive degree_exp_wrt_typ : nat -> exp -> Prop :=
     degree_exp_wrt_typ n1 e1 ->
     degree_typ_wrt_typ n1 A1 ->
     degree_exp_wrt_typ n1 (exp_anno e1 A1)
-  | degree_wrt_typ_exp_rcd_nil : forall n1,
-    degree_exp_wrt_typ n1 (exp_rcd_nil)
+  | degree_wrt_typ_exp_rcd_single : forall n1 l1 e1,
+    degree_exp_wrt_typ n1 e1 ->
+    degree_exp_wrt_typ n1 (exp_rcd_single l1 e1)
   | degree_wrt_typ_exp_rcd_cons : forall n1 l1 e1 e2,
     degree_exp_wrt_typ n1 e1 ->
     degree_exp_wrt_typ n1 e2 ->
@@ -271,8 +274,9 @@ Inductive degree_exp_wrt_exp : nat -> exp -> Prop :=
   | degree_wrt_exp_exp_anno : forall n1 e1 A1,
     degree_exp_wrt_exp n1 e1 ->
     degree_exp_wrt_exp n1 (exp_anno e1 A1)
-  | degree_wrt_exp_exp_rcd_nil : forall n1,
-    degree_exp_wrt_exp n1 (exp_rcd_nil)
+  | degree_wrt_exp_exp_rcd_single : forall n1 l1 e1,
+    degree_exp_wrt_exp n1 e1 ->
+    degree_exp_wrt_exp n1 (exp_rcd_single l1 e1)
   | degree_wrt_exp_exp_rcd_cons : forall n1 l1 e1 e2,
     degree_exp_wrt_exp n1 e1 ->
     degree_exp_wrt_exp n1 e2 ->
@@ -329,6 +333,9 @@ with degree_conts_wrt_typ : nat -> conts -> Prop :=
     degree_typ_wrt_typ n1 A1 ->
     degree_conts_wrt_typ n1 cs1 ->
     degree_conts_wrt_typ n1 (conts_unioninftapp A1 cs1)
+  | degree_wrt_typ_conts_infrcdsingle : forall n1 l1 cs1,
+    degree_conts_wrt_typ n1 cs1 ->
+    degree_conts_wrt_typ n1 (conts_infrcdsingle l1 cs1)
   | degree_wrt_typ_conts_infrcdconsintersection : forall n1 l1 e1 cs1,
     degree_exp_wrt_typ n1 e1 ->
     degree_conts_wrt_typ n1 cs1 ->
@@ -369,6 +376,9 @@ with degree_conts_wrt_exp : nat -> conts -> Prop :=
   | degree_wrt_exp_conts_unioninftapp : forall n1 A1 cs1,
     degree_conts_wrt_exp n1 cs1 ->
     degree_conts_wrt_exp n1 (conts_unioninftapp A1 cs1)
+  | degree_wrt_exp_conts_infrcdsingle : forall n1 l1 cs1,
+    degree_conts_wrt_exp n1 cs1 ->
+    degree_conts_wrt_exp n1 (conts_infrcdsingle l1 cs1)
   | degree_wrt_exp_conts_infrcdconsintersection : forall n1 l1 e1 cs1,
     degree_exp_wrt_exp n1 e1 ->
     degree_conts_wrt_exp n1 cs1 ->
@@ -443,6 +453,10 @@ Inductive degree_work_wrt_typ : nat -> work -> Prop :=
     degree_typ_wrt_typ n1 C1 ->
     degree_conts_wrt_typ n1 cs1 ->
     degree_work_wrt_typ n1 (work_infproj A1 B1 C1 cs1)
+  | degree_wrt_typ_work_infrcdsingle : forall n1 l1 A1 cs1,
+    degree_typ_wrt_typ n1 A1 ->
+    degree_conts_wrt_typ n1 cs1 ->
+    degree_work_wrt_typ n1 (work_infrcdsingle l1 A1 cs1)
   | degree_wrt_typ_work_infrcdconsintersection : forall n1 l1 A1 e1 cs1,
     degree_typ_wrt_typ n1 A1 ->
     degree_exp_wrt_typ n1 e1 ->
@@ -511,6 +525,9 @@ Inductive degree_work_wrt_exp : nat -> work -> Prop :=
   | degree_wrt_exp_work_infproj : forall n1 A1 B1 C1 cs1,
     degree_conts_wrt_exp n1 cs1 ->
     degree_work_wrt_exp n1 (work_infproj A1 B1 C1 cs1)
+  | degree_wrt_exp_work_infrcdsingle : forall n1 l1 A1 cs1,
+    degree_conts_wrt_exp n1 cs1 ->
+    degree_work_wrt_exp n1 (work_infrcdsingle l1 A1 cs1)
   | degree_wrt_exp_work_infrcdconsintersection : forall n1 l1 A1 e1 cs1,
     degree_exp_wrt_exp n1 e1 ->
     degree_conts_wrt_exp n1 cs1 ->
@@ -648,8 +665,9 @@ Inductive lc_set_exp : exp -> Set :=
     lc_set_exp e1 ->
     lc_set_typ A1 ->
     lc_set_exp (exp_anno e1 A1)
-  | lc_set_exp_rcd_nil :
-    lc_set_exp (exp_rcd_nil)
+  | lc_set_exp_rcd_single : forall l1 e1,
+    lc_set_exp e1 ->
+    lc_set_exp (exp_rcd_single l1 e1)
   | lc_set_exp_rcd_cons : forall l1 e1 e2,
     lc_set_exp e1 ->
     lc_set_exp e2 ->
@@ -710,6 +728,9 @@ with lc_set_conts : conts -> Set :=
     lc_set_typ A1 ->
     lc_set_conts cs1 ->
     lc_set_conts (conts_unioninftapp A1 cs1)
+  | lc_set_conts_infrcdsingle : forall l1 cs1,
+    lc_set_conts cs1 ->
+    lc_set_conts (conts_infrcdsingle l1 cs1)
   | lc_set_conts_infrcdconsintersection : forall l1 e1 cs1,
     lc_set_exp e1 ->
     lc_set_conts cs1 ->
@@ -801,6 +822,10 @@ Inductive lc_set_work : work -> Set :=
     lc_set_typ C1 ->
     lc_set_conts cs1 ->
     lc_set_work (work_infproj A1 B1 C1 cs1)
+  | lc_set_work_infrcdsingle : forall l1 A1 cs1,
+    lc_set_typ A1 ->
+    lc_set_conts cs1 ->
+    lc_set_work (work_infrcdsingle l1 A1 cs1)
   | lc_set_work_infrcdconsintersection : forall l1 A1 e1 cs1,
     lc_set_typ A1 ->
     lc_set_exp e1 ->

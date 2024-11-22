@@ -1,7 +1,7 @@
 Require Import Coq.Program.Equality.
 Require Export Metalib.Metatheory.
 
-Require Import uni_rec.notations.
+Require Import uni_rcd.notations.
 Require Export LibTactics.
 
 Ltac inst_cofinite_impl H x :=

@@ -398,6 +398,9 @@ Proof.
     constructor; eauto.
   - destruct e; try solve [inversion x]; auto.
     inversion x. subst.
+    constructor; eauto.
+  - destruct e; try solve [inversion x]; auto.
+    inversion x. subst.
     constructor. eauto.
 Qed.
 
@@ -499,4 +502,26 @@ Proof.
   - apply s_in__arrow2; auto. apply lc_typ_subst; auto.
   - apply s_in__all with (L:=L `union` singleton X). intros. inst_cofinites_with Y0. 
     rewrite subst_typ_in_typ_open_typ_wrt_typ_fresh2; auto...
+Qed.
+
+Lemma is_exp_rcd_rename_var : forall x y e,
+  is_exp_rcd e ->
+  is_exp_rcd ({exp_var_f y ᵉ/ₑ x} e).
+Proof.
+  intros. induction H; simpl; eauto using is_exp_rcd, lc_exp_subst_exp_in_exp.
+Qed.
+
+Lemma is_exp_rcd_rename_tvar : forall X Y e,
+  is_exp_rcd e ->
+  is_exp_rcd (subst_typ_in_exp (typ_var_f Y) X e).
+Proof.
+  intros. induction H; simpl; eauto using is_exp_rcd, lc_exp_subst_typ_in_exp.
+Qed.
+
+Lemma is_exp_rcd_subst_tvar : forall X A e,
+  is_exp_rcd e ->
+  lc_typ A ->
+  is_exp_rcd (subst_typ_in_exp A X e).
+Proof.
+  intros. induction H; simpl; eauto using is_exp_rcd, lc_exp_subst_typ_in_exp.
 Qed.

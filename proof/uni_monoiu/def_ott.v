@@ -28,7 +28,7 @@ Inductive exp : Set :=
  | exp_tabs (e:exp)
  | exp_tapp (e:exp) (A:typ)
  | exp_anno (e:exp) (A:typ)
- | exp_rcd_nil : exp
+ | exp_rcd_single (l:label) (e:exp)
  | exp_rcd_cons (l:label) (e1:exp) (e2:exp)
  | exp_rcd_proj (e:exp) (l:label).
 
@@ -37,6 +37,7 @@ Inductive conts : Set :=
  | conts_inftapp (A:typ) (cs:conts)
  | conts_inftappunion (A1:typ) (A2:typ) (cs:conts)
  | conts_unioninftapp (A2:typ) (cs:conts)
+ | conts_infrcdsingle (l:label) (cs:conts)
  | conts_infrcdconsintersection (l:label) (e:exp) (cs:conts)
  | conts_intersectioninfrcdcons (A:typ) (cs:conts)
  | conts_sub (A:typ)
@@ -58,6 +59,7 @@ Inductive work : Set :=
  | work_infabsunion (A1:typ) (B1:typ) (A2:typ) (cd:contd)
  | work_infapp (A:typ) (B:typ) (e:exp) (cs:conts)
  | work_infproj (A:typ) (B:typ) (C:typ) (cs:conts)
+ | work_infrcdsingle (l:label) (A:typ) (cs:conts)
  | work_infrcdconsintersection (l:label) (A:typ) (e:exp) (cs:conts)
  | work_intersectioninfrcdcons (A1:typ) (A2:typ) (cs:conts)
  | work_inftapp (A1:typ) (A2:typ) (cs:conts)
@@ -128,7 +130,7 @@ Fixpoint open_exp_wrt_exp_rec (k:nat) (e_5:exp) (e__6:exp) {struct e__6}: exp :=
   | (exp_tabs e) => exp_tabs (open_exp_wrt_exp_rec k e_5 e)
   | (exp_tapp e A) => exp_tapp (open_exp_wrt_exp_rec k e_5 e) A
   | (exp_anno e A) => exp_anno (open_exp_wrt_exp_rec k e_5 e) A
-  | exp_rcd_nil => exp_rcd_nil 
+  | (exp_rcd_single l e) => exp_rcd_single l (open_exp_wrt_exp_rec k e_5 e)
   | (exp_rcd_cons l e1 e2) => exp_rcd_cons l (open_exp_wrt_exp_rec k e_5 e1) (open_exp_wrt_exp_rec k e_5 e2)
   | (exp_rcd_proj e l) => exp_rcd_proj (open_exp_wrt_exp_rec k e_5 e) l
 end.
@@ -143,7 +145,7 @@ Fixpoint open_exp_wrt_typ_rec (k:nat) (A_5:typ) (e_5:exp) {struct e_5}: exp :=
   | (exp_tabs e) => exp_tabs (open_exp_wrt_typ_rec (S k) A_5 e)
   | (exp_tapp e A) => exp_tapp (open_exp_wrt_typ_rec k A_5 e) (open_typ_wrt_typ_rec k A_5 A)
   | (exp_anno e A) => exp_anno (open_exp_wrt_typ_rec k A_5 e) (open_typ_wrt_typ_rec k A_5 A)
-  | exp_rcd_nil => exp_rcd_nil 
+  | (exp_rcd_single l e) => exp_rcd_single l (open_exp_wrt_typ_rec k A_5 e)
   | (exp_rcd_cons l e1 e2) => exp_rcd_cons l (open_exp_wrt_typ_rec k A_5 e1) (open_exp_wrt_typ_rec k A_5 e2)
   | (exp_rcd_proj e l) => exp_rcd_proj (open_exp_wrt_typ_rec k A_5 e) l
 end.
@@ -161,6 +163,7 @@ with open_conts_wrt_exp_rec (k:nat) (e5:exp) (cs5:conts) {struct cs5}: conts :=
   | (conts_inftapp A cs) => conts_inftapp A (open_conts_wrt_exp_rec k e5 cs)
   | (conts_inftappunion A1 A2 cs) => conts_inftappunion A1 A2 (open_conts_wrt_exp_rec k e5 cs)
   | (conts_unioninftapp A2 cs) => conts_unioninftapp A2 (open_conts_wrt_exp_rec k e5 cs)
+  | (conts_infrcdsingle l cs) => conts_infrcdsingle l (open_conts_wrt_exp_rec k e5 cs)
   | (conts_infrcdconsintersection l e cs) => conts_infrcdconsintersection l (open_exp_wrt_exp_rec k e5 e) (open_conts_wrt_exp_rec k e5 cs)
   | (conts_intersectioninfrcdcons A cs) => conts_intersectioninfrcdcons A (open_conts_wrt_exp_rec k e5 cs)
   | (conts_sub A) => conts_sub A
@@ -179,6 +182,7 @@ with open_conts_wrt_typ_rec (k:nat) (A_5:typ) (cs5:conts) {struct cs5}: conts :=
   | (conts_inftapp A cs) => conts_inftapp (open_typ_wrt_typ_rec k A_5 A) (open_conts_wrt_typ_rec k A_5 cs)
   | (conts_inftappunion A1 A2 cs) => conts_inftappunion (open_typ_wrt_typ_rec k A_5 A1) (open_typ_wrt_typ_rec k A_5 A2) (open_conts_wrt_typ_rec k A_5 cs)
   | (conts_unioninftapp A2 cs) => conts_unioninftapp (open_typ_wrt_typ_rec k A_5 A2) (open_conts_wrt_typ_rec k A_5 cs)
+  | (conts_infrcdsingle l cs) => conts_infrcdsingle l (open_conts_wrt_typ_rec k A_5 cs)
   | (conts_infrcdconsintersection l e cs) => conts_infrcdconsintersection l (open_exp_wrt_typ_rec k A_5 e) (open_conts_wrt_typ_rec k A_5 cs)
   | (conts_intersectioninfrcdcons A cs) => conts_intersectioninfrcdcons (open_typ_wrt_typ_rec k A_5 A) (open_conts_wrt_typ_rec k A_5 cs)
   | (conts_sub A) => conts_sub (open_typ_wrt_typ_rec k A_5 A)
@@ -192,6 +196,7 @@ Definition open_work_wrt_exp_rec (k:nat) (e5:exp) (w5:work) : work :=
   | (work_infabsunion A1 B1 A2 cd) => work_infabsunion A1 B1 A2 (open_contd_wrt_exp_rec k e5 cd)
   | (work_infapp A B e cs) => work_infapp A B (open_exp_wrt_exp_rec k e5 e) (open_conts_wrt_exp_rec k e5 cs)
   | (work_infproj A B C cs) => work_infproj A B C (open_conts_wrt_exp_rec k e5 cs)
+  | (work_infrcdsingle l A cs) => work_infrcdsingle l A (open_conts_wrt_exp_rec k e5 cs)
   | (work_infrcdconsintersection l A e cs) => work_infrcdconsintersection l A (open_exp_wrt_exp_rec k e5 e) (open_conts_wrt_exp_rec k e5 cs)
   | (work_intersectioninfrcdcons A1 A2 cs) => work_intersectioninfrcdcons A1 A2 (open_conts_wrt_exp_rec k e5 cs)
   | (work_inftapp A1 A2 cs) => work_inftapp A1 A2 (open_conts_wrt_exp_rec k e5 cs)
@@ -218,6 +223,7 @@ Definition open_work_wrt_typ_rec (k:nat) (A_5:typ) (w5:work) : work :=
   | (work_infabsunion A1 B1 A2 cd) => work_infabsunion (open_typ_wrt_typ_rec k A_5 A1) (open_typ_wrt_typ_rec k A_5 B1) (open_typ_wrt_typ_rec k A_5 A2) (open_contd_wrt_typ_rec k A_5 cd)
   | (work_infapp A B e cs) => work_infapp (open_typ_wrt_typ_rec k A_5 A) (open_typ_wrt_typ_rec k A_5 B) (open_exp_wrt_typ_rec k A_5 e) (open_conts_wrt_typ_rec k A_5 cs)
   | (work_infproj A B C cs) => work_infproj (open_typ_wrt_typ_rec k A_5 A) (open_typ_wrt_typ_rec k A_5 B) (open_typ_wrt_typ_rec k A_5 C) (open_conts_wrt_typ_rec k A_5 cs)
+  | (work_infrcdsingle l A cs) => work_infrcdsingle l (open_typ_wrt_typ_rec k A_5 A) (open_conts_wrt_typ_rec k A_5 cs)
   | (work_infrcdconsintersection l A e cs) => work_infrcdconsintersection l (open_typ_wrt_typ_rec k A_5 A) (open_exp_wrt_typ_rec k A_5 e) (open_conts_wrt_typ_rec k A_5 cs)
   | (work_intersectioninfrcdcons A1 A2 cs) => work_intersectioninfrcdcons (open_typ_wrt_typ_rec k A_5 A1) (open_typ_wrt_typ_rec k A_5 A2) (open_conts_wrt_typ_rec k A_5 cs)
   | (work_inftapp A1 A2 cs) => work_inftapp (open_typ_wrt_typ_rec k A_5 A1) (open_typ_wrt_typ_rec k A_5 A2) (open_conts_wrt_typ_rec k A_5 cs)
@@ -326,7 +332,7 @@ Fixpoint close_exp_wrt_exp_rec (k:nat) (e_5:var) (e__6:exp) {struct e__6}: exp :
   | (exp_tabs e) => exp_tabs (close_exp_wrt_exp_rec k e_5 e)
   | (exp_tapp e A) => exp_tapp (close_exp_wrt_exp_rec k e_5 e) A
   | (exp_anno e A) => exp_anno (close_exp_wrt_exp_rec k e_5 e) A
-  | exp_rcd_nil => exp_rcd_nil 
+  | (exp_rcd_single l e) => exp_rcd_single l (close_exp_wrt_exp_rec k e_5 e)
   | (exp_rcd_cons l e1 e2) => exp_rcd_cons l (close_exp_wrt_exp_rec k e_5 e1) (close_exp_wrt_exp_rec k e_5 e2)
   | (exp_rcd_proj e l) => exp_rcd_proj (close_exp_wrt_exp_rec k e_5 e) l
 end.
@@ -341,7 +347,7 @@ Fixpoint close_exp_wrt_typ_rec (k:nat) (A_5:var) (e_5:exp) {struct e_5}: exp :=
   | (exp_tabs e) => exp_tabs (close_exp_wrt_typ_rec (S k) A_5 e)
   | (exp_tapp e A) => exp_tapp (close_exp_wrt_typ_rec k A_5 e) (close_typ_wrt_typ_rec k A_5 A)
   | (exp_anno e A) => exp_anno (close_exp_wrt_typ_rec k A_5 e) (close_typ_wrt_typ_rec k A_5 A)
-  | exp_rcd_nil => exp_rcd_nil 
+  | (exp_rcd_single l e) => exp_rcd_single l (close_exp_wrt_typ_rec k A_5 e)
   | (exp_rcd_cons l e1 e2) => exp_rcd_cons l (close_exp_wrt_typ_rec k A_5 e1) (close_exp_wrt_typ_rec k A_5 e2)
   | (exp_rcd_proj e l) => exp_rcd_proj (close_exp_wrt_typ_rec k A_5 e) l
 end.
@@ -359,6 +365,7 @@ with close_conts_wrt_exp_rec (k:nat) (e5:var) (cs5:conts) {struct cs5}: conts :=
   | (conts_inftapp A cs) => conts_inftapp A (close_conts_wrt_exp_rec k e5 cs)
   | (conts_inftappunion A1 A2 cs) => conts_inftappunion A1 A2 (close_conts_wrt_exp_rec k e5 cs)
   | (conts_unioninftapp A2 cs) => conts_unioninftapp A2 (close_conts_wrt_exp_rec k e5 cs)
+  | (conts_infrcdsingle l cs) => conts_infrcdsingle l (close_conts_wrt_exp_rec k e5 cs)
   | (conts_infrcdconsintersection l e cs) => conts_infrcdconsintersection l (close_exp_wrt_exp_rec k e5 e) (close_conts_wrt_exp_rec k e5 cs)
   | (conts_intersectioninfrcdcons A cs) => conts_intersectioninfrcdcons A (close_conts_wrt_exp_rec k e5 cs)
   | (conts_sub A) => conts_sub A
@@ -377,6 +384,7 @@ with close_conts_wrt_typ_rec (k:nat) (A_5:var) (cs5:conts) {struct cs5}: conts :
   | (conts_inftapp A cs) => conts_inftapp (close_typ_wrt_typ_rec k A_5 A) (close_conts_wrt_typ_rec k A_5 cs)
   | (conts_inftappunion A1 A2 cs) => conts_inftappunion (close_typ_wrt_typ_rec k A_5 A1) (close_typ_wrt_typ_rec k A_5 A2) (close_conts_wrt_typ_rec k A_5 cs)
   | (conts_unioninftapp A2 cs) => conts_unioninftapp (close_typ_wrt_typ_rec k A_5 A2) (close_conts_wrt_typ_rec k A_5 cs)
+  | (conts_infrcdsingle l cs) => conts_infrcdsingle l (close_conts_wrt_typ_rec k A_5 cs)
   | (conts_infrcdconsintersection l e cs) => conts_infrcdconsintersection l (close_exp_wrt_typ_rec k A_5 e) (close_conts_wrt_typ_rec k A_5 cs)
   | (conts_intersectioninfrcdcons A cs) => conts_intersectioninfrcdcons (close_typ_wrt_typ_rec k A_5 A) (close_conts_wrt_typ_rec k A_5 cs)
   | (conts_sub A) => conts_sub (close_typ_wrt_typ_rec k A_5 A)
@@ -390,6 +398,7 @@ Definition close_work_wrt_exp_rec (k:nat) (e5:var) (w5:work) : work :=
   | (work_infabsunion A1 B1 A2 cd) => work_infabsunion A1 B1 A2 (close_contd_wrt_exp_rec k e5 cd)
   | (work_infapp A B e cs) => work_infapp A B (close_exp_wrt_exp_rec k e5 e) (close_conts_wrt_exp_rec k e5 cs)
   | (work_infproj A B C cs) => work_infproj A B C (close_conts_wrt_exp_rec k e5 cs)
+  | (work_infrcdsingle l A cs) => work_infrcdsingle l A (close_conts_wrt_exp_rec k e5 cs)
   | (work_infrcdconsintersection l A e cs) => work_infrcdconsintersection l A (close_exp_wrt_exp_rec k e5 e) (close_conts_wrt_exp_rec k e5 cs)
   | (work_intersectioninfrcdcons A1 A2 cs) => work_intersectioninfrcdcons A1 A2 (close_conts_wrt_exp_rec k e5 cs)
   | (work_inftapp A1 A2 cs) => work_inftapp A1 A2 (close_conts_wrt_exp_rec k e5 cs)
@@ -416,6 +425,7 @@ Definition close_work_wrt_typ_rec (k:nat) (A_5:var) (w5:work) : work :=
   | (work_infabsunion A1 B1 A2 cd) => work_infabsunion (close_typ_wrt_typ_rec k A_5 A1) (close_typ_wrt_typ_rec k A_5 B1) (close_typ_wrt_typ_rec k A_5 A2) (close_contd_wrt_typ_rec k A_5 cd)
   | (work_infapp A B e cs) => work_infapp (close_typ_wrt_typ_rec k A_5 A) (close_typ_wrt_typ_rec k A_5 B) (close_exp_wrt_typ_rec k A_5 e) (close_conts_wrt_typ_rec k A_5 cs)
   | (work_infproj A B C cs) => work_infproj (close_typ_wrt_typ_rec k A_5 A) (close_typ_wrt_typ_rec k A_5 B) (close_typ_wrt_typ_rec k A_5 C) (close_conts_wrt_typ_rec k A_5 cs)
+  | (work_infrcdsingle l A cs) => work_infrcdsingle l (close_typ_wrt_typ_rec k A_5 A) (close_conts_wrt_typ_rec k A_5 cs)
   | (work_infrcdconsintersection l A e cs) => work_infrcdconsintersection l (close_typ_wrt_typ_rec k A_5 A) (close_exp_wrt_typ_rec k A_5 e) (close_conts_wrt_typ_rec k A_5 cs)
   | (work_intersectioninfrcdcons A1 A2 cs) => work_intersectioninfrcdcons (close_typ_wrt_typ_rec k A_5 A1) (close_typ_wrt_typ_rec k A_5 A2) (close_conts_wrt_typ_rec k A_5 cs)
   | (work_inftapp A1 A2 cs) => work_inftapp (close_typ_wrt_typ_rec k A_5 A1) (close_typ_wrt_typ_rec k A_5 A2) (close_conts_wrt_typ_rec k A_5 cs)
@@ -548,8 +558,9 @@ Inductive lc_exp : exp -> Prop :=    (* defn lc_exp *)
      (lc_exp e) ->
      (lc_typ A) ->
      (lc_exp (exp_anno e A))
- | lc_exp_rcd_nil : 
-     (lc_exp exp_rcd_nil)
+ | lc_exp_rcd_single : forall (l:label) (e:exp),
+     (lc_exp e) ->
+     (lc_exp (exp_rcd_single l e))
  | lc_exp_rcd_cons : forall (l:label) (e1 e2:exp),
      (lc_exp e1) ->
      (lc_exp e2) ->
@@ -594,6 +605,9 @@ with lc_conts : conts -> Prop :=    (* defn lc_conts *)
      (lc_typ A2) ->
      (lc_conts cs) ->
      (lc_conts (conts_unioninftapp A2 cs))
+ | lc_conts_infrcdsingle : forall (l:label) (cs:conts),
+     (lc_conts cs) ->
+     (lc_conts (conts_infrcdsingle l cs))
  | lc_conts_infrcdconsintersection : forall (l:label) (e:exp) (cs:conts),
      (lc_exp e) ->
      (lc_conts cs) ->
@@ -648,6 +662,10 @@ Inductive lc_work : work -> Prop :=    (* defn lc_work *)
      (lc_typ C) ->
      (lc_conts cs) ->
      (lc_work (work_infproj A B C cs))
+ | lc_work_infrcdsingle : forall (l:label) (A:typ) (cs:conts),
+     (lc_typ A) ->
+     (lc_conts cs) ->
+     (lc_work (work_infrcdsingle l A cs))
  | lc_work_infrcdconsintersection : forall (l:label) (A:typ) (e:exp) (cs:conts),
      (lc_typ A) ->
      (lc_exp e) ->
@@ -757,7 +775,7 @@ Fixpoint ftvar_in_exp (e_5:exp) : vars :=
   | (exp_tabs e) => (ftvar_in_exp e)
   | (exp_tapp e A) => (ftvar_in_exp e) \u (ftvar_in_typ A)
   | (exp_anno e A) => (ftvar_in_exp e) \u (ftvar_in_typ A)
-  | exp_rcd_nil => {}
+  | (exp_rcd_single l e) => (ftvar_in_exp e)
   | (exp_rcd_cons l e1 e2) => (ftvar_in_exp e1) \u (ftvar_in_exp e2)
   | (exp_rcd_proj e l) => (ftvar_in_exp e)
 end.
@@ -772,7 +790,7 @@ Fixpoint fvar_in_exp (e_5:exp) : vars :=
   | (exp_tabs e) => (fvar_in_exp e)
   | (exp_tapp e A) => (fvar_in_exp e)
   | (exp_anno e A) => (fvar_in_exp e)
-  | exp_rcd_nil => {}
+  | (exp_rcd_single l e) => (fvar_in_exp e)
   | (exp_rcd_cons l e1 e2) => (fvar_in_exp e1) \u (fvar_in_exp e2)
   | (exp_rcd_proj e l) => (fvar_in_exp e)
 end.
@@ -790,6 +808,7 @@ with ftvar_in_conts (cs5:conts) : vars :=
   | (conts_inftapp A cs) => (ftvar_in_typ A) \u (ftvar_in_conts cs)
   | (conts_inftappunion A1 A2 cs) => (ftvar_in_typ A1) \u (ftvar_in_typ A2) \u (ftvar_in_conts cs)
   | (conts_unioninftapp A2 cs) => (ftvar_in_typ A2) \u (ftvar_in_conts cs)
+  | (conts_infrcdsingle l cs) => (ftvar_in_conts cs)
   | (conts_infrcdconsintersection l e cs) => (ftvar_in_exp e) \u (ftvar_in_conts cs)
   | (conts_intersectioninfrcdcons A cs) => (ftvar_in_typ A) \u (ftvar_in_conts cs)
   | (conts_sub A) => (ftvar_in_typ A)
@@ -808,6 +827,7 @@ with fvar_in_conts (cs5:conts) : vars :=
   | (conts_inftapp A cs) => (fvar_in_conts cs)
   | (conts_inftappunion A1 A2 cs) => (fvar_in_conts cs)
   | (conts_unioninftapp A2 cs) => (fvar_in_conts cs)
+  | (conts_infrcdsingle l cs) => (fvar_in_conts cs)
   | (conts_infrcdconsintersection l e cs) => (fvar_in_exp e) \u (fvar_in_conts cs)
   | (conts_intersectioninfrcdcons A cs) => (fvar_in_conts cs)
   | (conts_sub A) => {}
@@ -821,6 +841,7 @@ Definition ftvar_in_work (w5:work) : vars :=
   | (work_infabsunion A1 B1 A2 cd) => (ftvar_in_typ A1) \u (ftvar_in_typ B1) \u (ftvar_in_typ A2) \u (ftvar_in_contd cd)
   | (work_infapp A B e cs) => (ftvar_in_typ A) \u (ftvar_in_typ B) \u (ftvar_in_exp e) \u (ftvar_in_conts cs)
   | (work_infproj A B C cs) => (ftvar_in_typ A) \u (ftvar_in_typ B) \u (ftvar_in_typ C) \u (ftvar_in_conts cs)
+  | (work_infrcdsingle l A cs) => (ftvar_in_typ A) \u (ftvar_in_conts cs)
   | (work_infrcdconsintersection l A e cs) => (ftvar_in_typ A) \u (ftvar_in_exp e) \u (ftvar_in_conts cs)
   | (work_intersectioninfrcdcons A1 A2 cs) => (ftvar_in_typ A1) \u (ftvar_in_typ A2) \u (ftvar_in_conts cs)
   | (work_inftapp A1 A2 cs) => (ftvar_in_typ A1) \u (ftvar_in_typ A2) \u (ftvar_in_conts cs)
@@ -855,6 +876,7 @@ Definition fvar_in_work (w5:work) : vars :=
   | (work_infabsunion A1 B1 A2 cd) => (fvar_in_contd cd)
   | (work_infapp A B e cs) => (fvar_in_exp e) \u (fvar_in_conts cs)
   | (work_infproj A B C cs) => (fvar_in_conts cs)
+  | (work_infrcdsingle l A cs) => (fvar_in_conts cs)
   | (work_infrcdconsintersection l A e cs) => (fvar_in_exp e) \u (fvar_in_conts cs)
   | (work_intersectioninfrcdcons A1 A2 cs) => (fvar_in_conts cs)
   | (work_inftapp A1 A2 cs) => (fvar_in_conts cs)
@@ -919,7 +941,7 @@ Fixpoint subst_typ_in_exp (A_5:typ) (X5:typvar) (e_5:exp) {struct e_5} : exp :=
   | (exp_tabs e) => exp_tabs (subst_typ_in_exp A_5 X5 e)
   | (exp_tapp e A) => exp_tapp (subst_typ_in_exp A_5 X5 e) (subst_typ_in_typ A_5 X5 A)
   | (exp_anno e A) => exp_anno (subst_typ_in_exp A_5 X5 e) (subst_typ_in_typ A_5 X5 A)
-  | exp_rcd_nil => exp_rcd_nil 
+  | (exp_rcd_single l e) => exp_rcd_single l (subst_typ_in_exp A_5 X5 e)
   | (exp_rcd_cons l e1 e2) => exp_rcd_cons l (subst_typ_in_exp A_5 X5 e1) (subst_typ_in_exp A_5 X5 e2)
   | (exp_rcd_proj e l) => exp_rcd_proj (subst_typ_in_exp A_5 X5 e) l
 end.
@@ -934,7 +956,7 @@ Fixpoint subst_exp_in_exp (e_5:exp) (x5:expvar) (e__6:exp) {struct e__6} : exp :
   | (exp_tabs e) => exp_tabs (subst_exp_in_exp e_5 x5 e)
   | (exp_tapp e A) => exp_tapp (subst_exp_in_exp e_5 x5 e) A
   | (exp_anno e A) => exp_anno (subst_exp_in_exp e_5 x5 e) A
-  | exp_rcd_nil => exp_rcd_nil 
+  | (exp_rcd_single l e) => exp_rcd_single l (subst_exp_in_exp e_5 x5 e)
   | (exp_rcd_cons l e1 e2) => exp_rcd_cons l (subst_exp_in_exp e_5 x5 e1) (subst_exp_in_exp e_5 x5 e2)
   | (exp_rcd_proj e l) => exp_rcd_proj (subst_exp_in_exp e_5 x5 e) l
 end.
@@ -952,6 +974,7 @@ with subst_typ_in_conts (A_5:typ) (X5:typvar) (cs5:conts) {struct cs5} : conts :
   | (conts_inftapp A cs) => conts_inftapp (subst_typ_in_typ A_5 X5 A) (subst_typ_in_conts A_5 X5 cs)
   | (conts_inftappunion A1 A2 cs) => conts_inftappunion (subst_typ_in_typ A_5 X5 A1) (subst_typ_in_typ A_5 X5 A2) (subst_typ_in_conts A_5 X5 cs)
   | (conts_unioninftapp A2 cs) => conts_unioninftapp (subst_typ_in_typ A_5 X5 A2) (subst_typ_in_conts A_5 X5 cs)
+  | (conts_infrcdsingle l cs) => conts_infrcdsingle l (subst_typ_in_conts A_5 X5 cs)
   | (conts_infrcdconsintersection l e cs) => conts_infrcdconsintersection l (subst_typ_in_exp A_5 X5 e) (subst_typ_in_conts A_5 X5 cs)
   | (conts_intersectioninfrcdcons A cs) => conts_intersectioninfrcdcons (subst_typ_in_typ A_5 X5 A) (subst_typ_in_conts A_5 X5 cs)
   | (conts_sub A) => conts_sub (subst_typ_in_typ A_5 X5 A)
@@ -970,6 +993,7 @@ with subst_exp_in_conts (e5:exp) (x5:expvar) (cs5:conts) {struct cs5} : conts :=
   | (conts_inftapp A cs) => conts_inftapp A (subst_exp_in_conts e5 x5 cs)
   | (conts_inftappunion A1 A2 cs) => conts_inftappunion A1 A2 (subst_exp_in_conts e5 x5 cs)
   | (conts_unioninftapp A2 cs) => conts_unioninftapp A2 (subst_exp_in_conts e5 x5 cs)
+  | (conts_infrcdsingle l cs) => conts_infrcdsingle l (subst_exp_in_conts e5 x5 cs)
   | (conts_infrcdconsintersection l e cs) => conts_infrcdconsintersection l (subst_exp_in_exp e5 x5 e) (subst_exp_in_conts e5 x5 cs)
   | (conts_intersectioninfrcdcons A cs) => conts_intersectioninfrcdcons A (subst_exp_in_conts e5 x5 cs)
   | (conts_sub A) => conts_sub A
@@ -983,6 +1007,7 @@ Definition subst_typ_in_work (A_5:typ) (X5:typvar) (w5:work) : work :=
   | (work_infabsunion A1 B1 A2 cd) => work_infabsunion (subst_typ_in_typ A_5 X5 A1) (subst_typ_in_typ A_5 X5 B1) (subst_typ_in_typ A_5 X5 A2) (subst_typ_in_contd A_5 X5 cd)
   | (work_infapp A B e cs) => work_infapp (subst_typ_in_typ A_5 X5 A) (subst_typ_in_typ A_5 X5 B) (subst_typ_in_exp A_5 X5 e) (subst_typ_in_conts A_5 X5 cs)
   | (work_infproj A B C cs) => work_infproj (subst_typ_in_typ A_5 X5 A) (subst_typ_in_typ A_5 X5 B) (subst_typ_in_typ A_5 X5 C) (subst_typ_in_conts A_5 X5 cs)
+  | (work_infrcdsingle l A cs) => work_infrcdsingle l (subst_typ_in_typ A_5 X5 A) (subst_typ_in_conts A_5 X5 cs)
   | (work_infrcdconsintersection l A e cs) => work_infrcdconsintersection l (subst_typ_in_typ A_5 X5 A) (subst_typ_in_exp A_5 X5 e) (subst_typ_in_conts A_5 X5 cs)
   | (work_intersectioninfrcdcons A1 A2 cs) => work_intersectioninfrcdcons (subst_typ_in_typ A_5 X5 A1) (subst_typ_in_typ A_5 X5 A2) (subst_typ_in_conts A_5 X5 cs)
   | (work_inftapp A1 A2 cs) => work_inftapp (subst_typ_in_typ A_5 X5 A1) (subst_typ_in_typ A_5 X5 A2) (subst_typ_in_conts A_5 X5 cs)
@@ -1017,6 +1042,7 @@ Definition subst_exp_in_work (e5:exp) (x5:expvar) (w5:work) : work :=
   | (work_infabsunion A1 B1 A2 cd) => work_infabsunion A1 B1 A2 (subst_exp_in_contd e5 x5 cd)
   | (work_infapp A B e cs) => work_infapp A B (subst_exp_in_exp e5 x5 e) (subst_exp_in_conts e5 x5 cs)
   | (work_infproj A B C cs) => work_infproj A B C (subst_exp_in_conts e5 x5 cs)
+  | (work_infrcdsingle l A cs) => work_infrcdsingle l A (subst_exp_in_conts e5 x5 cs)
   | (work_infrcdconsintersection l A e cs) => work_infrcdconsintersection l A (subst_exp_in_exp e5 x5 e) (subst_exp_in_conts e5 x5 cs)
   | (work_intersectioninfrcdcons A1 A2 cs) => work_intersectioninfrcdcons A1 A2 (subst_exp_in_conts e5 x5 cs)
   | (work_inftapp A1 A2 cs) => work_inftapp A1 A2 (subst_exp_in_conts e5 x5 cs)
@@ -1079,11 +1105,12 @@ Fixpoint awl_to_aenv (Γ : aworklist) : aenv :=
 
 (* defns J_is_exp_rcd *)
 Inductive is_exp_rcd : exp -> Prop :=    (* defn is_exp_rcd *)
- | is_exp_rcd__nil : 
-     is_exp_rcd exp_rcd_nil
+ | is_exp_rcd__single_ : forall (l:label) (e1:exp),
+     lc_exp e1 ->
+     is_exp_rcd (exp_rcd_single l e1)
  | is_exp_rcd__cons : forall (l:label) (e1 e2:exp),
      lc_exp e1 ->
-     lc_exp e2 ->
+     is_exp_rcd e2 ->
      is_exp_rcd (exp_rcd_cons l e1 e2).
 
 (* defns J_strong_in *)
@@ -1220,11 +1247,13 @@ Inductive d_wf_exp : denv -> exp -> Prop :=    (* defn d_wf_exp *)
      d_wf_typ Ψ A ->
      d_wf_exp Ψ e ->
      d_wf_exp Ψ (exp_anno e A)
- | d_wf_exp__rcd_nil : forall (Ψ:denv),
-     d_wf_exp Ψ exp_rcd_nil
+ | d_wf_exp__rcd_single : forall (Ψ:denv) (l:label) (e1:exp),
+     d_wf_exp Ψ e1 ->
+     d_wf_exp Ψ (exp_rcd_single l e1)
  | d_wf_exp__rcd_cons : forall (Ψ:denv) (l:label) (e1 e2:exp),
      d_wf_exp Ψ e1 ->
      d_wf_exp Ψ e2 ->
+     is_exp_rcd e2 ->
      d_wf_exp Ψ (exp_rcd_cons l e1 e2)
  | d_wf_exp__rcd_projs : forall (Ψ:denv) (e:exp) (l:label),
      d_wf_exp Ψ e ->
@@ -1294,6 +1323,9 @@ Inductive d_wf_conts : denv -> conts -> Prop :=    (* defn d_wf_conts *)
      d_wf_typ Ψ A ->
      d_wf_conts Ψ cs ->
      d_wf_conts Ψ (conts_unioninftapp A cs)
+ | d_wf_conts__infrcdcsingle : forall (Ψ:denv) (l:label) (cs:conts),
+     d_wf_conts Ψ cs ->
+     d_wf_conts Ψ (conts_infrcdsingle l cs)
  | d_wf_conts__infrcdconsintersection : forall (Ψ:denv) (l:label) (e:exp) (cs:conts),
      d_wf_exp Ψ e ->
      d_wf_conts Ψ cs ->
@@ -1373,6 +1405,10 @@ Inductive d_wf_work : denv -> work -> Prop :=    (* defn d_wf_work *)
      d_wf_typ Ψ C ->
      d_wf_conts Ψ cs ->
      d_wf_work Ψ (work_infproj A B C cs)
+ | d_wf_work__infrcdsingle : forall (Ψ:denv) (l:label) (A:typ) (cs:conts),
+     d_wf_typ Ψ A ->
+     d_wf_conts Ψ cs ->
+     d_wf_work Ψ (work_infrcdsingle l A cs)
  | d_wf_work__infrcdconsintersection : forall (Ψ:denv) (l:label) (A:typ) (e:exp) (cs:conts),
      d_wf_typ Ψ A ->
      d_wf_exp Ψ e ->
@@ -1550,11 +1586,13 @@ Inductive a_wf_exp : aenv -> exp -> Prop :=    (* defn a_wf_exp *)
      a_wf_typ Σ A ->
      a_wf_exp Σ e ->
      a_wf_exp Σ (exp_anno e A)
- | a_wf_exp__rcd_nil : forall (Σ:aenv),
-     a_wf_exp Σ exp_rcd_nil
+ | a_wf_exp__rcd_single : forall (Σ:aenv) (l:label) (e1:exp),
+     a_wf_exp Σ e1 ->
+     a_wf_exp Σ (exp_rcd_single l e1)
  | a_wf_exp__rcd_cons : forall (Σ:aenv) (l:label) (e1 e2:exp),
      a_wf_exp Σ e1 ->
      a_wf_exp Σ e2 ->
+     is_exp_rcd e2 ->
      a_wf_exp Σ (exp_rcd_cons l e1 e2)
  | a_wf_exp__rcd_projs : forall (Σ:aenv) (e:exp) (l:label),
      a_wf_exp Σ e ->
@@ -1578,6 +1616,9 @@ Inductive a_wf_conts : aenv -> conts -> Prop :=    (* defn a_wf_conts *)
      a_wf_typ Σ A ->
      a_wf_conts Σ cs ->
      a_wf_conts Σ (conts_unioninftapp A cs)
+ | a_wf_conts__infrcdsingle : forall (Σ:aenv) (l:label) (cs:conts),
+     a_wf_conts Σ cs ->
+     a_wf_conts Σ (conts_infrcdsingle l cs)
  | a_wf_conts__infrcdconsintersection : forall (Σ:aenv) (l:label) (e:exp) (cs:conts),
      a_wf_exp Σ e ->
      a_wf_conts Σ cs ->
@@ -1657,6 +1698,10 @@ Inductive a_wf_work : aenv -> work -> Prop :=    (* defn a_wf_work *)
      a_wf_typ Σ C ->
      a_wf_conts Σ cs ->
      a_wf_work Σ (work_infproj A B C cs)
+ | a_wf_work__infrcdsingle : forall (Σ:aenv) (l:label) (A:typ) (cs:conts),
+     a_wf_typ Σ A ->
+     a_wf_conts Σ cs ->
+     a_wf_work Σ (work_infrcdsingle l A cs)
  | a_wf_work__infrcdconsintersection : forall (Σ:aenv) (l:label) (A:typ) (e:exp) (cs:conts),
      a_wf_typ Σ A ->
      a_wf_exp Σ e ->

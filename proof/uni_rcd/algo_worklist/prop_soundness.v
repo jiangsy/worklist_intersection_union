@@ -3,16 +3,16 @@ Require Import Program.Tactics.
 Require Import Metalib.Metatheory.
 Require Import List.
 
-Require Import uni_rec.notations.
-Require Import uni_rec.decl.prop_basic.
-Require Import uni_rec.decl.prop_subtyping.
-Require Import uni_rec.decl.prop_typing.
-Require Import uni_rec.decl.prop_rename.
-Require Import uni_rec.decl_worklist.prop_equiv.
-Require Import uni_rec.algo_worklist.def_extra.
-Require Import uni_rec.algo_worklist.prop_basic.
-Require Import uni_rec.algo_worklist.transfer.
-Require Import uni_rec.ltac_utils.  
+Require Import uni_rcd.notations.
+Require Import uni_rcd.decl.prop_basic.
+Require Import uni_rcd.decl.prop_subtyping.
+Require Import uni_rcd.decl.prop_typing.
+Require Import uni_rcd.decl.prop_rename.
+Require Import uni_rcd.decl_worklist.prop_equiv.
+Require Import uni_rcd.algo_worklist.def_extra.
+Require Import uni_rcd.algo_worklist.prop_basic.
+Require Import uni_rcd.algo_worklist.transfer.
+Require Import uni_rcd.ltac_utils.  
 
 Hint Constructors a_wf_wl : core.
 
@@ -1295,14 +1295,15 @@ Proof with eauto.
            destruct_d_wl_del_red. simpl in *.
            eapply d_chk_inf_rename_tvar_cons in H11...
       * destruct_d_wl_del_red... 
-  (* ⟨ ⟩ => _  *)
-  - exists (work_infer exp_rcd_nil csᵈ ⫤ᵈ Ω)...
+  (* ⟨ l ↦ e1 ⟩ => _  *)
+  - exists (work_infer (exp_rcd_single l eᵈ) csᵈ ⫤ᵈ Ω)...
     split. exists θ...
-    econstructor...
-  (* ⟨ l : e1 , e2 ⟩ => _ *)
+    destruct_d_wl_del_red...
+  (* ⟨ l ↦ e1 , e2 ⟩ => _ *)
   - exists (work_infer (exp_rcd_cons l1 eᵈ eᵈ0) csᵈ ⫤ᵈ Ω)...
     split. exists θ...
     destruct_d_wl_del_red...
+    econstructor; eauto using trans_exp_is_dexp_rcd.
   (* \x. e => _ *)
   - destruct_a_wf_wl.
     pick fresh x. pick fresh X1. pick fresh X2.
@@ -1396,7 +1397,6 @@ Proof with eauto.
       eapply d_wl_del_red__infabs with (B:=B) (C:=C); auto.
       eapply d_infabs__all with (T:=T)...
       * eapply trans_wl_ss_mono_typ_d_wl_mono_typ... 
-      * apply d_mono_typ_d_wf_typ. eapply trans_wl_ss_mono_typ_d_wl_mono_typ... 
       * inst_cofinites_for d_wf_typ__all; intros; inst_cofinites_with X0; rewrite_close_open_subst.
         apply s_in_rename. eapply trans_typ_dtvar_atyp_s_in_dtyp with (b:=dbind_tvar_empty)...
         apply d_wf_typ_rename_tvar_cons.
@@ -1510,6 +1510,9 @@ Proof with eauto.
     destruct_d_wl_del_red...
   - exists (work_unioninftapp C1ᵈ C2ᵈ csᵈ ⫤ᵈ Ω).
     split...
+  - dependent destruction H4_.
+    rename_typ.
+    exists (work_infrcdsingle l Aᵈ csᵈ ⫤ᵈ Ω). split...
   - dependent destruction H6_.
     rename_typ.
     exists (work_infrcdconsintersection l1 A1ᵈ eᵈ csᵈ ⫤ᵈ Ω). split...

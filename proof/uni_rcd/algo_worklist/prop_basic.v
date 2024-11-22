@@ -3,10 +3,10 @@ Require Import Program.Tactics.
 Require Import Metalib.Metatheory.
 Require Import List.
 
-Require Import uni_rec.notations.
-Require Import uni_rec.prop_basic.
-Require Import uni_rec.algo_worklist.def_extra.
-Require Import uni_rec.ltac_utils.
+Require Import uni_rcd.notations.
+Require Import uni_rcd.prop_basic.
+Require Import uni_rcd.algo_worklist.def_extra.
+Require Import uni_rcd.ltac_utils.
 
 Open Scope aworklist_scope.
 Open Scope abind_scope.
@@ -189,8 +189,8 @@ with a_wf_contd_weaken : forall Σ1 Σ2 Σ3 cd,
   Σ3 ++ Σ1 ᶜᵈ⊢ᵃ cd ->
   Σ3 ++ Σ2 ++ Σ1 ᶜᵈ⊢ᵃ cd.
 Proof with eauto using a_wf_typ_weaken, a_wf_exp_weaken.
-  - intros. dependent induction H; constructor...
-  - intros. dependent induction H; constructor...
+  - intros. clear a_wf_conts_weaken. dependent induction H...
+  - intros. clear a_wf_contd_weaken. dependent induction H...
 Qed.
 
 Lemma a_wf_conts_weaken_cons : forall Σ X b cs,
@@ -1146,6 +1146,8 @@ Proof with eauto using aworklist_subst_wf_typ_subst.
       eapply H1 with (Γ:=X0 ~ᵃ □ ;ᵃ Γ); simpl; eauto.
       * apply a_wf_typ_weaken_cons...
       * constructor; eauto.
+  - econstructor; eauto.
+    eapply is_exp_rcd_subst_tvar; eauto.
 Qed.
 
 Lemma aworklist_subst_wf_contd_subst : forall Γ X A cd Γ1 Γ2,
@@ -1428,6 +1430,7 @@ Proof.
   - simpl. rewrite IHa_wf_exp; eauto.
     rewrite ftvar_in_a_wf_typ_upper; eauto.
     fsetdec.
+  - simpl. rewrite IHa_wf_exp; eauto. fsetdec.
   - simpl. rewrite IHa_wf_exp1; eauto.
     simpl. rewrite IHa_wf_exp2; eauto.
     fsetdec.
