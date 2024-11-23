@@ -1,25 +1,12 @@
 
 
-# 35-Bidirectional Higher-Rank Polymorphism with Intersection and Union Types (Artifact)
+# Bidirectional Higher-Rank Polymorphism with Intersection and Union Types (Artifact)
 
 [![CC BY 4.0][cc-by-shield]][cc-by]
-
-Title of the submitted paper: #283-Bidirectional Higher-Rank Polymorphism with Intersection and Union Types
-
 
 ## Overview
 
 The paper discusses three systems: (1). base system; (2). base system with record; (3). base systems with record and intersection/union inference. For brevity, we refer to them as system I, II, and III in the following (These systems are introduced in Sec 2.3 of the paper).
-We believe this artifact is eligible for all three badges: **Available, Functional, and Reusable**.
-
-* **Available** : This artifact is published at zenodo.
-
-* **Functional** : The paper has claimed that we formalized the correctness of a type inference algorithm for a system with higher-rank polymorphism, intersection and union types, and explicit type application and provided a prototype implementation. They are all included in this artifact.
-
-  * All the theorems claimed in the paper are formalized in Coq. Please refer to the [Proof](#Proof) section for more details.
-  * The implementation includes all the typing rules listed in the paper with some add-ons to type-check some more interesting programs. Please refer to the [Implementation](#Implementation) section for more details.
-
-* **Reusable** : We agree to publish our artifact under a Creative Commons license (CC BY 4.0). For the proof part, all the raw files to generate the syntactic definitions (by `ott`) and locally-nameless properties (by `lngen`) are provided, as well as the build scripts. Interested users can easily extend them with new syntaxes and features. Coq is a widely used proof assistant for the PL community. For the implementation part, we provide a full implementation that includes a parser and type-checker. The core function `bigStep` is about 300 LoC Haskell code and easy to modify.
 
 ### Component
 
@@ -120,11 +107,11 @@ run `make clean-coq-only` first to clean all the previously checked results.
 
 * Based on your architecture, unzip `docker_image_*.zip` and load the docker image
 
-  `docker load < 35-proof-*.tar.gz`
+  `docker load < proof-*.tar.gz`
 
 * Start the container
 
-    `docker run -it 35-proof bash`
+    `docker run -it proof bash`
 
 * Run the command, e.g., `make coq-only`
 
@@ -261,11 +248,11 @@ All the examples provided in the paper run in this implementation (these example
 
 * Based on your architecture, unzip `docker_image_*.zip` and load the docker image
 
-  `docker load < 35-implementation-*.tar.gz`
+  `docker load < implementation-*.tar.gz`
 
 * Start the container
 
-    `docker run -it 35-implementation bash`
+    `docker run -it implementation bash`
 
 * Run the command, e.g., `stack test`
 
