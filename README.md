@@ -20,7 +20,7 @@ The paper discusses three systems: (1). base system; (2). base system with recor
   * `src/implementation/`: A Haskell implementation of our type inference algorithm capable of running the examples provided in the paper. We implement system I, II, III in a single implementation, with a flag to enable extensions. The implementation will print the algorithmic derivation rules employed during the inference process;
 * `docker_image_amd64.zip` docker images for the amd64 platform that pre-install all the dependencies to check the proof and test the implementation;
 * `docker_image_arm64.zip` docker images for the arm64 platform that pre-install all the dependencies to check the proof and test the implementation;
-* `paper.zip` submission version of the paper and the appendix;
+* `paper_extended.pdf` extended version of the paper with the appendix.
 
 ## Proof
 
